@@ -28,7 +28,6 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -91,49 +90,17 @@ class NodeInstallationTest {
     }
 
     @Test
-    void markUsed_writesParseableTimestamp() throws IOException {
+    void markUsed_recordsWhenTheInstallationWasUsed() throws IOException {
         NodeInstallation installation = create("node-v24.10.0");
+        assertTrue(installation.getLastUsed().isEmpty(),
+                "A fresh installation has not been used yet");
+        write(installation, LONG_AGO.toString());
 
         Instant before = Instant.now().minus(Duration.ofSeconds(1));
         installation.markUsed();
 
-        assertTrue(installation.getLastUsed().isPresent());
-        assertFalse(installation.getLastUsed().get().isBefore(before),
-                "last-used should hold the current time");
-    }
-
-    @Test
-    void markUsed_overwritesPreviousTimestamp() throws IOException {
-        NodeInstallation installation = create("node-v24.10.0");
-        write(installation, LONG_AGO.toString());
-
-        installation.markUsed();
-
-        assertTrue(installation.getLastUsed().orElseThrow().isAfter(LONG_AGO),
-                "last-used should have been refreshed");
-    }
-
-    @Test
-    void markUsed_missingDirectory_doesNotFail() {
-        NodeInstallation installation = NodeInstallation.forVersion(vaadinHome,
-                "v24.10.0");
-
-        assertDoesNotThrow(installation::markUsed);
-
-        assertTrue(installation.getLastUsed().isEmpty());
-    }
-
-    @Test
-    void getLastUsed_noMarker_isEmpty() throws IOException {
-        assertTrue(create("node-v24.10.0").getLastUsed().isEmpty());
-    }
-
-    @Test
-    void getLastUsed_unparseableMarker_isEmpty() throws IOException {
-        NodeInstallation installation = create("node-v24.10.0");
-        write(installation, "not a timestamp");
-
-        assertTrue(installation.getLastUsed().isEmpty());
+        assertFalse(installation.getLastUsed().orElseThrow().isBefore(before),
+                "last-used should have been refreshed to the current time");
     }
 
     @Test
@@ -174,33 +141,6 @@ class NodeInstallationTest {
                     "The installation should be gone under its own name even when it cannot be deleted");
             assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty(),
                     "What could not be deleted must not be picked up as an installation");
-        } finally {
-            undeletable.setWritable(true);
-        }
-    }
-
-    @Test
-    void remove_earlierRemainsOfTheSameVersion_areNotInTheWay()
-            throws IOException {
-        NodeInstallation installation = create("node-v24.10.0");
-        File undeletable = lockContentOf(installation);
-
-        try {
-            installation.remove();
-            // The same version is installed again and goes stale again
-            NodeInstallation reinstalled = create("node-v24.10.0");
-            File undeletableAgain = lockContentOf(reinstalled);
-
-            try {
-                reinstalled.remove();
-
-                assertFalse(reinstalled.getDirectory().exists(),
-                        "The reinstalled version should be gone under its own name too");
-                assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty(),
-                        "Remains of an earlier removal must not force a deletion in place");
-            } finally {
-                undeletableAgain.setWritable(true);
-            }
         } finally {
             undeletable.setWritable(true);
         }

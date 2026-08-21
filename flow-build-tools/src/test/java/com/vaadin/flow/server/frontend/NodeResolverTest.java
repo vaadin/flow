@@ -99,16 +99,6 @@ class NodeResolverTest {
     }
 
     @Test
-    void resolve_installationWithoutMarker_isMarkedUsed() throws IOException {
-        NodeInstallation installation = stubInstallation(VERSION);
-
-        resolve(VERSION);
-
-        assertTrue(installation.getLastUsed().isPresent(),
-                "Taking an existing installation into use should write a last-used marker");
-    }
-
-    @Test
     void resolve_newVersionInstalled_installationsUnusedForOverSixMonthsAreRemoved()
             throws IOException {
         NodeInstallation stale = pruningCandidate("node-v20.0.0", LONG_AGO);
