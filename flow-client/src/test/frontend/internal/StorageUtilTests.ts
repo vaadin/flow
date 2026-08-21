@@ -7,6 +7,9 @@ import {
 } from '../../../main/frontend/internal/StorageUtil';
 
 describe('StorageUtil', () => {
+  // Every case here is beyond the Java suite: com.vaadin.client.StorageUtil has no Java test,
+  // so there is nothing to port 1:1 and all coverage below is additional
+  // (PORTING.md rule 13.6).
   const key = 'flow-storage-util-test';
   afterEach(() => {
     window.localStorage.removeItem(key);
