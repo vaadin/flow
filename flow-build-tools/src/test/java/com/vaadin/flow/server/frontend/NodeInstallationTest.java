@@ -107,7 +107,7 @@ class NodeInstallationTest {
         Instant before = Instant.now().minus(Duration.ofSeconds(1));
         installation.markUsed();
 
-        assertFalse(installation.getLastUsed().orElseThrow().isBefore(before),
+        assertTrue(installation.getLastUsed().orElseThrow().isAfter(before),
                 "last-used should have been refreshed to the current time");
     }
 
