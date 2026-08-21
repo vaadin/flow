@@ -828,8 +828,7 @@ public abstract class VaadinService implements Serializable {
      *
      * <pre>
      * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
-     * service.getEventBus().fireEvent(new MyEvent(service),
-     *         VaadinServiceEventBus.logErrors());
+     * service.getEventBus().fireEvent(new MyEvent(service));
      * </pre>
      *
      * @return the event bus of this service, not {@code null}
