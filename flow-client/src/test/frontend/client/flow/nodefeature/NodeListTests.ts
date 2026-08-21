@@ -1,17 +1,9 @@
 import { expect } from '@open-wc/testing';
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/nodefeature/NodeListTests.ts
 import { Computation } from '../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeList } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
 import type { ListSpliceEvent } from '../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
 import type { NodeFeatureNode } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
-========
-import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
-import { NodeList } from '../../../../main/frontend/internal/nodefeature/NodeList';
-import type { ListSpliceEvent } from '../../../../main/frontend/internal/nodefeature/ListSpliceEvent';
-import type { NodeFeatureNode } from '../../../../main/frontend/internal/nodefeature/NodeFeature';
->>>>>>>> 6a9bb40c361 (refactor(flow-client): mirror module directory layout in test files):flow-client/src/test/frontend/internal/nodefeature/NodeListTests.ts
 
 const node: NodeFeatureNode = {
   getTree: () => {

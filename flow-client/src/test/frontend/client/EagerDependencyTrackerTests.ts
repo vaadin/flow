@@ -4,7 +4,7 @@ import {
   resetForTesting,
   runWhenEagerDependenciesLoaded,
   startEagerDependencyLoading
-} from '../../main/frontend/internal/EagerDependencyTracker';
+} from '../../../main/frontend/internal/client/EagerDependencyTracker';
 
 describe('EagerDependencyTracker', () => {
   beforeEach(() => resetForTesting());

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../main/frontend/internal/ApplicationConfiguration';
+import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
 
 describe('ApplicationConfiguration', () => {
   it('round-trips the URL / id / timeout configuration', () => {

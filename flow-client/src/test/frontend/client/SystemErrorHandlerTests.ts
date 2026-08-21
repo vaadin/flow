@@ -5,7 +5,7 @@ import {
   recreateNodes,
   showPopover,
   SystemErrorHandler
-} from '../../main/frontend/internal/SystemErrorHandler';
+} from '../../../main/frontend/internal/client/SystemErrorHandler';
 
 describe('SystemErrorHandler', () => {
   describe('handleError', () => {

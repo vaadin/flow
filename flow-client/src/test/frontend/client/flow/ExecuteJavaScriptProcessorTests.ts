@@ -3,7 +3,7 @@ import {
   ExecuteJavaScriptProcessor,
   getContextExecutionObject,
   invokeJavaScript
-} from '../../main/frontend/internal/ExecuteJavaScriptProcessor';
+} from '../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 
 describe('ExecuteJavaScriptProcessor', () => {
   function makeCallbacks() {

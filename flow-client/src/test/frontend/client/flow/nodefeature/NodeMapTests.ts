@@ -1,5 +1,4 @@
 import { expect } from '@open-wc/testing';
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/nodefeature/NodeMapTests.ts
 import { Computation } from '../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import type { MapProperty } from '../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
@@ -8,16 +7,6 @@ import { NodeMap } from '../../../../../main/frontend/internal/client/flow/nodef
 import type { MapPropertyAddEvent } from '../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyAddEvent';
 import type { NodeFeatureNode } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-========
-import { Computation } from '../../../../main/frontend/internal/reactive/Computation';
-import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
-import type { MapProperty } from '../../../../main/frontend/internal/nodefeature/MapProperty';
-import type { MapPropertyChangeEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyChangeEvent';
-import { NodeMap } from '../../../../main/frontend/internal/nodefeature/NodeMap';
-import type { MapPropertyAddEvent } from '../../../../main/frontend/internal/nodefeature/MapPropertyAddEvent';
-import type { NodeFeatureNode } from '../../../../main/frontend/internal/nodefeature/NodeFeature';
-import { NodeFeatures } from '../../../../main/frontend/internal/nodefeature/NodeFeatures';
->>>>>>>> 6a9bb40c361 (refactor(flow-client): mirror module directory layout in test files):flow-client/src/test/frontend/internal/nodefeature/NodeMapTests.ts
 
 // Minimal StateNode stand-in; node-feature tests do not reach into the tree.
 const node: NodeFeatureNode = {
