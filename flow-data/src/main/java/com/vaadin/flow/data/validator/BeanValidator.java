@@ -19,6 +19,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.MessageInterpolator.Context;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
+import jakarta.validation.groups.Default;
 import jakarta.validation.metadata.ConstraintDescriptor;
 
 import java.io.Serializable;
@@ -30,6 +31,7 @@ import java.util.Set;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
@@ -75,12 +77,16 @@ public class BeanValidator implements Validator<Object> {
 
     }
 
+    private static final Class<?>[] NO_GROUPS = new Class<?>[0];
+
     private String propertyName;
     private Class<?> beanType;
+    private SerializableSupplier<Class<?>[]> validationGroupsSupplier;
 
     /**
      * Creates a new JSR-303 {@code BeanValidator} that validates values of the
-     * specified property. Localizes validation messages using the
+     * specified property against the constraints of the {@linkplain Default
+     * default validation group}. Localizes validation messages using the
      * {@linkplain Locale#getDefault() default locale}.
      *
      * @param beanType
@@ -92,6 +98,57 @@ public class BeanValidator implements Validator<Object> {
      *             false
      */
     public BeanValidator(Class<?> beanType, String propertyName) {
+        this(beanType, propertyName, NO_GROUPS);
+    }
+
+    /**
+     * Creates a new JSR-303 {@code BeanValidator} that validates values of the
+     * specified property against the constraints of the given validation
+     * groups. Localizes validation messages using the
+     * {@linkplain Locale#getDefault() default locale}.
+     * <p>
+     * Note that the validation groups replace, rather than extend, the
+     * {@linkplain Default default group}: pass {@code Default.class} explicitly
+     * to validate the constraints that do not declare a group as well.
+     *
+     * @param beanType
+     *            the bean type declaring the property, not null
+     * @param propertyName
+     *            the property to validate, not null
+     * @param validationGroups
+     *            the validation groups to validate against, or none to use the
+     *            {@linkplain Default default group}
+     * @throws IllegalStateException
+     *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
+     *             false
+     * @throws IllegalArgumentException
+     *             if any of the given validation groups is not an interface
+     */
+    public BeanValidator(Class<?> beanType, String propertyName,
+            Class<?>... validationGroups) {
+        this(beanType, propertyName, groupsSupplier(validationGroups));
+    }
+
+    /**
+     * Creates a new JSR-303 {@code BeanValidator} that validates values of the
+     * specified property against the constraints of the validation groups
+     * provided by the given supplier. The supplier is queried on every
+     * validation, which allows the validation groups to be changed after the
+     * validator has been created.
+     *
+     * @param beanType
+     *            the bean type declaring the property, not null
+     * @param propertyName
+     *            the property to validate, not null
+     * @param validationGroupsSupplier
+     *            supplier of the validation groups to validate against, not
+     *            null
+     * @throws IllegalStateException
+     *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
+     *             false
+     */
+    public BeanValidator(Class<?> beanType, String propertyName,
+            SerializableSupplier<Class<?>[]> validationGroupsSupplier) {
         if (!BeanUtil.checkBeanValidationAvailable()) {
             throw new IllegalStateException("Cannot create a "
                     + BeanValidator.class.getSimpleName()
@@ -99,9 +156,45 @@ public class BeanValidator implements Validator<Object> {
         }
         Objects.requireNonNull(beanType, "bean class cannot be null");
         Objects.requireNonNull(propertyName, "property name cannot be null");
+        Objects.requireNonNull(validationGroupsSupplier,
+                "validation groups supplier cannot be null");
 
         this.beanType = beanType;
         this.propertyName = propertyName;
+        this.validationGroupsSupplier = validationGroupsSupplier;
+    }
+
+    private static SerializableSupplier<Class<?>[]> groupsSupplier(
+            Class<?>[] validationGroups) {
+        if (validationGroups == null || validationGroups.length == 0) {
+            return () -> NO_GROUPS;
+        }
+        Class<?>[] groups = validationGroups.clone();
+        for (Class<?> group : groups) {
+            Objects.requireNonNull(group, "validation group cannot be null");
+            if (!group.isInterface()) {
+                throw new IllegalArgumentException("The validation group "
+                        + group.getName() + " is not an interface. "
+                        + "A validation group has to be an interface, "
+                        + "see the Jakarta Bean Validation specification.");
+            }
+        }
+        return () -> groups;
+    }
+
+    /**
+     * Gets the validation groups this validator validates against. An empty
+     * array means that the {@linkplain Default default group} is used.
+     *
+     * @return the validation groups, not null
+     */
+    public Class<?>[] getValidationGroups() {
+        return validationGroups().clone();
+    }
+
+    private Class<?>[] validationGroups() {
+        Class<?>[] groups = validationGroupsSupplier.get();
+        return groups == null ? NO_GROUPS : groups;
     }
 
     /**
@@ -112,6 +205,9 @@ public class BeanValidator implements Validator<Object> {
      * <p>
      * Null values are accepted unless the property has an {@code @NotNull}
      * annotation or equivalent.
+     * <p>
+     * Only the constraints belonging to the {@linkplain #getValidationGroups()
+     * validation groups} of this validator are taken into account.
      *
      * @param value
      *            the input value to validate
@@ -122,7 +218,8 @@ public class BeanValidator implements Validator<Object> {
     @Override
     public ValidationResult apply(final Object value, ValueContext context) {
         Set<? extends ConstraintViolation<?>> violations = getJavaxBeanValidator()
-                .validateValue(beanType, propertyName, value);
+                .validateValue(beanType, propertyName, value,
+                        validationGroups());
 
         Locale locale = context.getLocale().orElse(Locale.getDefault());
 
