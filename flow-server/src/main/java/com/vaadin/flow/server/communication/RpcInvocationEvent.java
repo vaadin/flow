@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.util.EventObject;
-
 import com.vaadin.flow.component.UI;
 
 /**
@@ -41,11 +39,7 @@ import com.vaadin.flow.component.UI;
  *             event bus} instead
  */
 @Deprecated(since = "25.3", forRemoval = true)
-public class RpcInvocationEvent extends EventObject {
-
-    private final String type;
-    private final int nodeId;
-    private final String name;
+public class RpcInvocationEvent extends AbstractRpcInvocationEvent {
 
     /**
      * Creates a new RPC invocation event.
@@ -65,49 +59,6 @@ public class RpcInvocationEvent extends EventObject {
      *            or {@code null} if none applies
      */
     public RpcInvocationEvent(UI ui, String type, int nodeId, String name) {
-        super(ui);
-        this.type = type;
-        this.nodeId = nodeId;
-        this.name = name;
-    }
-
-    /**
-     * Gets the UI the invocation is handled against.
-     *
-     * @return the UI, not {@code null}
-     */
-    public UI getUI() {
-        return (UI) getSource();
-    }
-
-    /**
-     * Gets the protocol-level invocation type, for example {@code event},
-     * {@code publishedEventHandler}, {@code navigation} or {@code channel}.
-     *
-     * @return the invocation type, not {@code null}
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Gets the id of the {@code StateNode} the invocation targets.
-     *
-     * @return the node id, or {@code -1} if the invocation does not target a
-     *         node
-     */
-    public int getNodeId() {
-        return nodeId;
-    }
-
-    /**
-     * Gets a human-readable identifier for the invocation, such as the DOM
-     * event name, the invoked {@code @ClientCallable}/template method name, or
-     * the navigation location.
-     *
-     * @return the invocation name, or {@code null} if none applies
-     */
-    public String getName() {
-        return name;
+        super(ui, type, nodeId, name);
     }
 }
