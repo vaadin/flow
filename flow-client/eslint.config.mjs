@@ -32,6 +32,8 @@ export default [
           allowDefaultProject: [
             'src/test/frontend/*',
             'src/test/frontend/internal/client/*',
+            'src/test/frontend/internal/client/flow/*',
+            'src/test/frontend/internal/client/flow/util/*',
             'src/test/frontend/internal/client/flow/collection/*',
             'src/test/frontend/internal/client/flow/nodefeature/*',
             'src/test/frontend/internal/client/flow/reactive/*',
