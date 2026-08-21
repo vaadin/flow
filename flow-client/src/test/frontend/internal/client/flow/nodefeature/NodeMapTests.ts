@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { countingComputation } from '../reactive/CountingComputation';
 import type { MapProperty } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
 import type { MapPropertyChangeEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyChangeEvent';
 import { NodeMap } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeMap';
@@ -15,15 +15,6 @@ const node: NodeFeatureNode = {
   },
   getDebugJson: () => null
 };
-
-function countingComputation(reader: () => void): { getCount: () => number } {
-  let count = 0;
-  void new Computation(() => {
-    count++;
-    reader();
-  });
-  return { getCount: () => count };
-}
 
 describe('NodeMap', () => {
   let map: NodeMap;

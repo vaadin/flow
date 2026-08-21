@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { countingComputation } from '../reactive/CountingComputation';
 import { NodeList } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
 import type { ListSpliceEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
 import type { NodeFeatureNode } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
@@ -11,15 +11,6 @@ const node: NodeFeatureNode = {
   },
   getDebugJson: () => null
 };
-
-function countingComputation(reader: () => void): { getCount: () => number } {
-  let count = 0;
-  void new Computation(() => {
-    count++;
-    reader();
-  });
-  return { getCount: () => count };
-}
 
 describe('NodeList', () => {
   let list: NodeList;

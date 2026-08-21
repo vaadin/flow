@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Computation } from '../../../../../../main/frontend/internal/client/flow/reactive/Computation';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { countingComputation } from '../reactive/CountingComputation';
 import {
   MapProperty,
   type MapPropertyNode,
@@ -20,16 +20,6 @@ function makeProperty(active = true, forceValueUpdate = false): { property: MapP
   const node: MapPropertyNode = { getTree: () => tree };
   const map: MapPropertyOwner = { getNode: () => node };
   return { property: new MapProperty('foo', map, forceValueUpdate), synced };
-}
-
-// Mirrors the Java CountingComputation helper.
-function countingComputation(reader: () => void): { computation: Computation; getCount: () => number } {
-  let count = 0;
-  const computation = new Computation(() => {
-    count++;
-    reader();
-  });
-  return { computation, getCount: () => count };
 }
 
 describe('MapProperty', () => {
