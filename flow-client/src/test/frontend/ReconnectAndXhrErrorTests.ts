@@ -1,8 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { ReconnectConfiguration } from '../../main/frontend/internal/communication/ReconnectConfiguration';
-import { XhrConnectionError } from '../../main/frontend/internal/communication/XhrConnectionError';
-import { MapProperty, type MapPropertyOwner } from '../../main/frontend/internal/nodefeature/MapProperty';
-import { Reactive } from '../../main/frontend/internal/reactive/Reactive';
+import { ReconnectConfiguration } from '../../main/frontend/internal/client/communication/ReconnectConfiguration';
+import { XhrConnectionError } from '../../main/frontend/internal/client/communication/XhrConnectionError';
+import { MapProperty, type MapPropertyOwner } from '../../main/frontend/internal/client/flow/nodefeature/MapProperty';
+import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 
 const RECONNECT_DIALOG_CONFIGURATION = 9;
 

@@ -25,13 +25,13 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
-import { getServerId, isResynchronize, PendingMessageQueue } from './communication/MessageOrdering';
-import { ResynchronizationState } from './communication/ResynchronizationState';
-import { runWhenEagerDependenciesLoaded } from './EagerDependencyTracker';
-import { Reactive } from './reactive/Reactive';
-import { processChanges as applyTreeChanges } from './TreeChangeProcessor';
-import { UIState } from './UILifecycle';
-import { Console } from './Console';
+import { getServerId, isResynchronize, PendingMessageQueue } from './MessageOrdering';
+import { ResynchronizationState } from './ResynchronizationState';
+import { runWhenEagerDependenciesLoaded } from '../EagerDependencyTracker';
+import { Reactive } from '../flow/reactive/Reactive';
+import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';
+import { UIState } from '../UILifecycle';
+import { Console } from '../Console';
 
 /** Removes the link and style elements with the given dependency id. */
 export function removeStylesheetByIdFromDom(dependencyId: string): void {

@@ -18,10 +18,10 @@
 // requests to the server over XHR and routes the response to the MessageHandler
 // or, on failure, to the ConnectionStateHandler.
 
-import { BrowserInfo } from './BrowserInfo';
-import { XhrConnectionError } from './communication/XhrConnectionError';
+import { BrowserInfo } from '../BrowserInfo';
+import { XhrConnectionError } from './XhrConnectionError';
 import { parseJSONResponse } from './MessageHandler';
-import { addGetParameter } from './shared/util/SharedUtil';
+import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 
 // com.vaadin.flow.shared.ApplicationConstants / JsonConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';

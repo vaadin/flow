@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { observe as observeLoadingIndicator } from '../../main/frontend/internal/communication/LoadingIndicatorConfigurator';
-import { observe as observePoll } from '../../main/frontend/internal/communication/PollConfigurator';
+import { observe as observeLoadingIndicator } from '../../main/frontend/internal/client/communication/LoadingIndicatorConfigurator';
+import { observe as observePoll } from '../../main/frontend/internal/client/communication/PollConfigurator';
 
 // A MapProperty stand-in that captures its change listener and can fire it.
 function fakeProperty() {

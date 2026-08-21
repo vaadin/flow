@@ -20,7 +20,7 @@
 // indicator singleton via ConnectionIndicator.
 
 import { setProperty } from '../ConnectionIndicator';
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 
 // com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap
 const FIRST_DELAY_KEY = 'first';

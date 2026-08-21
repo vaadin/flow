@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { ConnectionMessageType } from '../../main/frontend/internal/communication/ConnectionMessageType';
-import { ReconnectStateMachine } from '../../main/frontend/internal/communication/ReconnectStateMachine';
+import { ConnectionMessageType } from '../../../../main/frontend/internal/client/communication/ConnectionMessageType';
+import { ReconnectStateMachine } from '../../../../main/frontend/internal/client/communication/ReconnectStateMachine';
 
 function makeRegistry(reconnectAttempts = 3) {
   const log = { endRequests: 0, stopLoadings: 0, heartbeatIntervals: [] as number[] };

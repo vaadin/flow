@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Poller } from '../../main/frontend/internal/communication/Poller';
+import { Poller } from '../../../../main/frontend/internal/client/communication/Poller';
 
 function makeRegistry() {
   const lifecycleHandlers: Array<(event: { getUiLifecycle(): { isTerminated(): boolean } }) => void> = [];

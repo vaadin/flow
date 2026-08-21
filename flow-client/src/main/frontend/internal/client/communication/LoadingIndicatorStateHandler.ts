@@ -20,7 +20,7 @@
 // connection-indicator calls go through ConnectionIndicator.
 
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
-import { JsonConstants } from '../JsonConstants';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // High-frequency events whose RPC requests should not trigger loading
 // indication.

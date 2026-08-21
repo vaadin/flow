@@ -20,8 +20,8 @@
 // connection-state handler's configurationUpdated() whenever the configuration
 // changes (reactively).
 
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { Reactive } from '../reactive/Reactive';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
+import { Reactive } from '../flow/reactive/Reactive';
 
 // com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap
 const DIALOG_TEXT_KEY = 'dialogText';

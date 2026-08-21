@@ -7,7 +7,7 @@ import {
   doPush,
   FragmentedMessage,
   isAtmosphereLoaded
-} from '../../main/frontend/internal/AtmospherePushConnection';
+} from '../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 

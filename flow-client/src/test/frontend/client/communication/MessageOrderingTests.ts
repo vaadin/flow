@@ -3,7 +3,7 @@ import {
   getServerId,
   isResynchronize,
   PendingMessageQueue
-} from '../../main/frontend/internal/communication/MessageOrdering';
+} from '../../../../main/frontend/internal/client/communication/MessageOrdering';
 
 describe('MessageOrdering', () => {
   it('reads the server id and resync flag from a message', () => {

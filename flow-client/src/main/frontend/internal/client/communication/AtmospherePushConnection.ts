@@ -22,10 +22,10 @@
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
 import { parseJSONResponse } from './MessageHandler';
-import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
-import { addGetParameter } from './shared/util/SharedUtil';
-import type { PushConnection } from './communication/PushConnection';
-import { Console } from './Console';
+import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
+import { addGetParameter } from '../../flow/shared/util/SharedUtil';
+import type { PushConnection } from './PushConnection';
+import { Console } from '../Console';
 
 // com.vaadin.flow.shared.communication.PushConstants
 const WEBSOCKET_FRAGMENT_SIZE = 16384 / 4 - 1; // 4095

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ServerConnector } from '../../main/frontend/internal/communication/ServerConnector';
+import { ServerConnector } from '../../../../main/frontend/internal/client/communication/ServerConnector';
 
 // Captures enqueued messages and processMessage calls.
 function makeRegistry() {

@@ -22,8 +22,8 @@
 // cutover; this is the real implementation of StateTree's ServerConnector
 // contract.
 
-import { encodeWithoutTypeInfo } from '../ClientJsonCodec';
-import { JsonConstants } from '../JsonConstants';
+import { encodeWithoutTypeInfo } from '../flow/util/ClientJsonCodec';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 /** The slice of StateNode that ServerConnector reads. */
 interface ConnectorNode {

@@ -18,7 +18,7 @@
 // alongside the Java version. It observes the poll-interval property in the
 // node's POLL_CONFIGURATION feature and reconfigures the poller on change.
 
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 
 // com.vaadin.flow.internal.nodefeature.PollConfigurationMap.POLL_INTERVAL_KEY
 const POLL_INTERVAL_KEY = 'pollInterval';

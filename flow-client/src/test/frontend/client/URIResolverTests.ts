@@ -4,7 +4,7 @@ import {
   getCurrentLocationRelativeToBaseUri,
   resolveVaadinUri,
   URIResolver
-} from '../../main/frontend/internal/URIResolver';
+} from '../../../main/frontend/internal/client/URIResolver';
 
 describe('URIResolver', () => {
   it('resolves the context:// protocol against the context root', () => {

@@ -21,8 +21,8 @@
 // so all parts of the configuration are updated first). The Registry/StateTree/
 // MessageSender are contracts satisfied at cutover.
 
-import { NodeFeatures } from '../nodefeature/NodeFeatures';
-import { Reactive } from '../reactive/Reactive';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
+import { Reactive } from '../flow/reactive/Reactive';
 
 // com.vaadin.flow.internal.nodefeature.PushConfigurationMap
 const PUSHMODE_KEY = 'pushMode';
