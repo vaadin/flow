@@ -77,6 +77,13 @@ They consolidate the review feedback from the migration PR stack (#24933,
    - A module that is a **TypeScript-only split** of a Java class (e.g.
      `ResourceRegistry` out of `ResourceLoader`, `MessageOrdering` out of
      `MessageHandler`) lives in the package of the class it was split from.
+     - **Exception — two modules from one Java file.**
+       `SimpleElementBindingStrategy.java` is ported as two modules: the
+       sliced strategy itself, which takes the mirrored path
+       `internal/client/flow/binding/SimpleElementBindingStrategy.ts`, and a
+       Polymer model-property bridge split out of it. Only one of them can own
+       the mirrored file name, so the bridge stays at the `internal/` root
+       until it is either given a name of its own or folded back in.
    - **Tests mirror this layout too.** A `*Tests.ts` (and its helper modules)
      lives in the same package-path subdirectory under `src/test/frontend/` as
      the module under test does under `src/main/frontend/internal/`, e.g.
