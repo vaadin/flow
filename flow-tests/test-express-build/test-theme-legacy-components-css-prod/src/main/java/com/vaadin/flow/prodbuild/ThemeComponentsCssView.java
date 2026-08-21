@@ -18,7 +18,6 @@ package com.vaadin.flow.prodbuild;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
@@ -30,11 +29,15 @@ public class ThemeComponentsCssView extends Div {
         add(new MyComponent());
     }
 
-    // Same dependency as in test prod-bundle.
-    // If no <theme>/components/vaadin-horizontal-layout.css files are present,
+    // Backed by the faux faux-horizontal-layout.js custom element (a
+    // ThemableMixin element with a <slot>), registered under the
+    // vaadin-horizontal-layout tag so the <theme>/components/
+    // vaadin-horizontal-layout.css files keep matching. The per-component CSS
+    // uses ::slotted(...) to color the light-DOM children, so a <slot> is
+    // required. If no components/vaadin-horizontal-layout.css files are
+    // present,
     // the bundle will not be rebuilt.
-    @JsModule("@vaadin/horizontal-layout")
-    @NpmPackage(value = "@vaadin/horizontal-layout", version = "25.1.0-beta1")
+    @JsModule("./faux-horizontal-layout.js")
     @Tag("vaadin-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {
