@@ -21,7 +21,7 @@
 import { BrowserInfo } from './BrowserInfo';
 import { XhrConnectionError } from './communication/XhrConnectionError';
 import { parseJSONResponse } from './MessageHandler';
-import { addGetParameter } from './SharedUtil';
+import { addGetParameter } from './shared/util/SharedUtil';
 
 // com.vaadin.flow.shared.ApplicationConstants / JsonConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';

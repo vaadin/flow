@@ -21,7 +21,7 @@
 // Registry/ApplicationConfiguration/UILifecycle/ConnectionStateHandler are
 // contracts satisfied at cutover.
 
-import { addGetParameter } from '../SharedUtil';
+import { addGetParameter } from '../shared/util/SharedUtil';
 import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants

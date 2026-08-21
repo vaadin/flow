@@ -23,7 +23,7 @@
 
 import { parseJSONResponse } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
-import { addGetParameter } from './SharedUtil';
+import { addGetParameter } from './shared/util/SharedUtil';
 import type { PushConnection } from './communication/PushConnection';
 import { Console } from './Console';
 
