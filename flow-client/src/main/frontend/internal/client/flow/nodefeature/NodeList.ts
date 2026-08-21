@@ -17,7 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeList, on top of the
 // TS reactive core.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';
 import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';

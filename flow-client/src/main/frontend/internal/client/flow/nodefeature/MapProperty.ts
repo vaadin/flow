@@ -18,7 +18,7 @@
 // the TS reactive core. The thin slice of the state-tree classes it touches is
 // declared here as contracts that NodeMap, StateNode and StateTree satisfy.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { Reactive } from '../reactive/Reactive';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';

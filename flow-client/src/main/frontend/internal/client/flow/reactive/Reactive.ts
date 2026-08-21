@@ -17,7 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.reactive.Reactive. The static
 // fields of Reactive.java are kept as module-level state here.
 
-import type { EventRemover } from '../EventRemover';
+import type { EventRemover } from '../../../EventRemover';
 import { Computation } from './Computation';
 import type { FlushListener } from './FlushListener';
 import type { ReactiveValueChangeEvent } from './ReactiveValueChangeEvent';
