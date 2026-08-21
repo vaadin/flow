@@ -31,9 +31,12 @@ public class FrontendStubs {
     public static final String VITE_PACKAGE_JSON = "node_modules/vite/package.json";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
-    private static final String NPM_BIN_PATH = System.getProperty("os.name")
-            .startsWith("Windows") ? "node/node_modules/npm/bin/"
-                    : "node/lib/node_modules/npm/bin/";
+    private static final boolean IS_WINDOWS = System.getProperty("os.name")
+            .startsWith("Windows");
+
+    private static final String NPM_BIN_PATH = IS_WINDOWS
+            ? "node/node_modules/npm/bin/"
+            : "node/lib/node_modules/npm/bin/";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
     /**
@@ -58,22 +61,25 @@ public class FrontendStubs {
      */
     public static File createStubVersionedNode(String version, String baseDir)
             throws IOException {
-        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         String normalizedVersion = version.startsWith("v")
                 ? version.substring(1)
                 : version;
         File installation = new File(baseDir, "node-v" + normalizedVersion);
 
-        File node = new File(installation, isWindows ? "node.exe" : "bin/node");
+        File node = new File(installation,
+                IS_WINDOWS ? "node.exe" : "bin/node");
         FileUtils.forceMkdir(node.getParentFile());
         FileUtils.write(
                 node, ToolStubInfo.builder(Tool.NODE)
                         .withVersion(normalizedVersion).build().getScript(),
                 StandardCharsets.UTF_8);
-        node.setExecutable(true);
+        if (!node.setExecutable(true)) {
+            throw new IOException("Could not make the node stub " + node
+                    + " executable, so it cannot be run");
+        }
 
         File npmCli = new File(installation,
-                isWindows ? "node_modules/npm/bin/npm-cli.js"
+                IS_WINDOWS ? "node_modules/npm/bin/npm-cli.js"
                         : "lib/node_modules/npm/bin/npm-cli.js");
         FileUtils.forceMkdir(npmCli.getParentFile());
         FileUtils.write(npmCli,
@@ -116,16 +122,14 @@ public class FrontendStubs {
             FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
                     StandardCharsets.UTF_8);
         }
-        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-
         if (stubNode.isStubbed()) {
             File nodeDir = new File(baseDir, "node");
             FileUtils.forceMkdir(nodeDir);
             File node = new File(baseDir,
-                    isWindows ? "node/node.exe" : "node/node");
+                    IS_WINDOWS ? "node/node.exe" : "node/node");
             node.createNewFile();
             node.setExecutable(true);
-            if (isWindows) {
+            if (IS_WINDOWS) {
                 // Commented out until a node.exe is created that is not flagged
                 // by Windows defender.
                 // FileUtils.copyFile(new File(
