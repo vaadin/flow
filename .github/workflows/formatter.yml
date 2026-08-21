@@ -3,8 +3,11 @@ name: Formatter
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    # spotless available in 25.x
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are checked too, not only those targeting main. Spotless
+    # is only configured in 25.x, which is all this copy of the workflow can
+    # ever run against: PRs against an older maintenance branch use that
+    # branch's own copy of this file.
   merge_group:
 
 # Cancel previous runs if a new one is triggered

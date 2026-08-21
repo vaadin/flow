@@ -40,6 +40,8 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -810,15 +812,11 @@ public class ComponentUtil {
     }
 
     /**
-     * Resolves the id of {@code targetComponent} lazily, before the next client
-     * response after {@code sourceElement} is attached. If the target still
-     * does not have an id at that point, one is generated using
-     * {@code generatedIdPrefix} followed by a random UUID and assigned to the
-     * target. The resolved id is then passed to {@code idConsumer}.
-     * <p>
-     * This allows components that need to reference another component by id
-     * (e.g. for {@code for} or {@code aria-labelledby} attributes) to accept a
-     * {@link Component} instead of requiring the caller to assign an id first.
+     * Resolves the id of {@code targetComponent} lazily, as described in
+     * {@link #resolveOrGenerateIdLater(Element, Component, String, SerializableSupplier, SerializableConsumer)},
+     * but without a getter for the current value, so the resolution cannot
+     * detect that it has been superseded, and with a consumer that is not
+     * necessarily serializable.
      *
      * @param sourceElement
      *            the element whose attachment triggers the resolution, not
@@ -830,23 +828,96 @@ public class ComponentUtil {
      * @param idConsumer
      *            receives the resolved id at sync time, not {@code null}
      * @since 25.2
+     * @deprecated use
+     *             {@link #resolveOrGenerateIdLater(Element, Component, String, SerializableSupplier, SerializableConsumer)}
+     *             instead. Without a getter, a value set after this call is
+     *             overwritten when the resolution runs, and the target of a
+     *             superseded resolution is still assigned a generated id. In
+     *             addition, the pending resolution is stored in the state tree,
+     *             or as an attach listener while {@code sourceElement} is
+     *             detached, so a consumer that is not serializable makes the
+     *             session fail to serialize.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public static void resolveOrGenerateIdLater(Element sourceElement,
             Component targetComponent, String generatedIdPrefix,
             Consumer<String> idConsumer) {
+        sourceElement.getNode().runWhenAttached(
+                ui -> ui.getInternals().getStateTree().beforeClientResponse(
+                        sourceElement.getNode(), context -> idConsumer.accept(
+                                targetComponent.getId().orElseGet(() -> {
+                                    String generated = generatedIdPrefix
+                                            + UUID.randomUUID();
+                                    targetComponent.setId(generated);
+                                    return generated;
+                                }))));
+    }
+
+    /**
+     * References {@code targetComponent} by id, generating an id for it if
+     * needed, so that components can accept a {@link Component} for references
+     * such as {@code for} or {@code aria-labelledby} instead of requiring the
+     * caller to assign an id first.
+     * <p>
+     * The id that the target is going to have is passed to {@code idConsumer}
+     * immediately: either the target's current id, or one generated from
+     * {@code generatedIdPrefix} followed by a random UUID. A generated id is
+     * only assigned to the target before the next client response after
+     * {@code sourceElement} is attached, so the target's own id can still be
+     * set after this call, in which case {@code idConsumer} receives that id
+     * instead.
+     * <p>
+     * The value read by {@code idGetter} tells the pending resolution whether
+     * it is still the one in effect. If the value differs from what was passed
+     * to {@code idConsumer}, because the caller has set an explicit value,
+     * cleared it, or referenced another component in the meantime, the pending
+     * resolution does nothing and the target keeps its original, possibly
+     * absent, id.
+     * <p>
+     * Since the value can still change before the next client response, callers
+     * should not cache the value read through {@code idGetter} within the same
+     * request.
+     *
+     * @param sourceElement
+     *            the element whose attachment triggers the resolution, not
+     *            {@code null}
+     * @param targetComponent
+     *            the component whose id should be resolved, not {@code null}
+     * @param generatedIdPrefix
+     *            prefix used when an id needs to be generated, not {@code null}
+     * @param idGetter
+     *            reads the current value written through {@code idConsumer},
+     *            not {@code null}
+     * @param idConsumer
+     *            receives the id referencing the target, not {@code null}
+     */
+    public static void resolveOrGenerateIdLater(Element sourceElement,
+            Component targetComponent, String generatedIdPrefix,
+            SerializableSupplier<Optional<String>> idGetter,
+            SerializableConsumer<String> idConsumer) {
+        // Written right away so that a value set later, including a cleared
+        // one, is recognized as superseding this resolution
+        String pendingId = targetComponent.getId()
+                .orElseGet(() -> generatedIdPrefix + UUID.randomUUID());
+        idConsumer.accept(pendingId);
+
         sourceElement.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(sourceElement.getNode(),
                                 context -> {
+                                    if (!Optional.of(pendingId)
+                                            .equals(idGetter.get())) {
+                                        return;
+                                    }
                                     String id = targetComponent.getId()
                                             .orElseGet(() -> {
-                                                String generated = generatedIdPrefix
-                                                        + UUID.randomUUID();
                                                 targetComponent
-                                                        .setId(generated);
-                                                return generated;
+                                                        .setId(pendingId);
+                                                return pendingId;
                                             });
-                                    idConsumer.accept(id);
+                                    if (!pendingId.equals(id)) {
+                                        idConsumer.accept(id);
+                                    }
                                 }));
     }
 
