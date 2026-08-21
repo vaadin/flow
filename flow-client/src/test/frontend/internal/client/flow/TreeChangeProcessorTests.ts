@@ -35,17 +35,19 @@ describe('TreeChangeProcessor', () => {
     expect(tree.getNode(2)!.getMap(ELEMENT_PROPERTIES).getProperty('title').getValue()).to.equal('hi');
   });
 
-  it('applies a put change with a node value and sets the parent', () => {
+  it('applies a put change with a node value', () => {
     const tree = makeTree();
-    processChanges(tree, [
-      { type: 'attach', node: 2 },
-      { type: 'attach', node: 3 },
-      { type: 'put', node: 2, feat: ELEMENT_PROPERTIES, key: 'child', nodeValue: 3 }
-    ]);
-    const parent = tree.getNode(2)!;
-    const child = tree.getNode(3)!;
-    expect(parent.getMap(ELEMENT_PROPERTIES).getProperty('child').getValue()).to.equal(child);
-    expect(child.getParent()).to.equal(parent);
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+
+    const child = new StateNode(2, tree);
+    tree.registerNode(child);
+
+    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+
+    const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
+    expect(value).to.equal(child);
+    expect(node).to.equal(tree.getRootNode());
   });
 
   it('applies a splice change adding child nodes', () => {
@@ -70,12 +72,25 @@ describe('TreeChangeProcessor', () => {
     expect(tree.getNode(2)!.getMap(ELEMENT_PROPERTIES).getProperty('title').hasValue()).to.be.false;
   });
 
-  it('detaches a node on a detach change', () => {
+  it('removes a node and notifies its unregister listener on detach', () => {
     const tree = makeTree();
-    processChanges(tree, [{ type: 'attach', node: 2 }]);
-    expect(tree.getNode(2)).to.not.equal(null);
-    processChange(tree, { type: 'detach', node: 2 });
-    expect(tree.getNode(2)).to.equal(null);
+    let unregisterCount = 0;
+
+    const childNode = new StateNode(2, tree);
+    childNode.addUnregisterListener(() => {
+      unregisterCount++;
+    });
+    tree.registerNode(childNode);
+
+    expect(tree.getNode(childNode.getId())).to.equal(childNode);
+    expect(unregisterCount).to.equal(0);
+
+    const updatedNodes = processChanges(tree, [{ type: 'detach', node: childNode.getId() }]);
+
+    expect(tree.getNode(childNode.getId())).to.equal(null);
+    expect(unregisterCount).to.equal(1);
+    expect(updatedNodes.size).to.equal(1);
+    expect(updatedNodes.has(childNode)).to.be.true;
   });
 
   it('applies primitive splice changes to a list', () => {
@@ -156,6 +171,22 @@ describe('TreeChangeProcessor', () => {
 
     expect(property.getValue()).to.equal(child);
     expect(node).to.equal(tree.getRootNode());
+  });
+
+  it('sets the parent of a node put as a map value', () => {
+    const tree = makeTree();
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+
+    const child = new StateNode(2, tree);
+    tree.registerNode(child);
+
+    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+
+    const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
+    expect(value).to.equal(child);
+    expect(node).to.equal(tree.getRootNode());
+    expect(child.getParent()).to.equal(node);
   });
 
   it('assigns correct parents down a node chain', () => {
