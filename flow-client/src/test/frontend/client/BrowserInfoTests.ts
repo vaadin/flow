@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { BrowserInfo } from '../../../main/frontend/internal/BrowserInfo';
+import { BrowserInfo } from '../../../main/frontend/internal/client/BrowserInfo';
 
 // BrowserInfo is a thin singleton wrapper over BrowserDetails, detecting the
 // browser only once from the current navigator user agent. The user-agent
