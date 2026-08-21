@@ -291,7 +291,8 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_retainedInvocationBecomesVisible_notSubscribedToReturnValue() {
+    void dumpPendingJavaScriptInvocations_retainedInvocationBecomesVisible_notSubscribedToReturnValue()
+            throws Exception {
         StateNode node = new StateNode(ElementData.class);
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -311,6 +312,8 @@ class UIInternalsTest {
         assertEquals(List.of(invocation), dumped);
         assertFalse(dumped.get(0).isSubscribed(),
                 "Retaining an invocation should not subscribe to its return value, since that makes the client send back a value that the server has no use for");
+        assertEquals(0, invocationOwners(internals).size(),
+                "Sending an invocation should stop tracking its owner");
     }
 
     @Test
@@ -497,6 +500,12 @@ class UIInternalsTest {
     private static Collection<?> pendingInvocations(UIInternals internals)
             throws Exception {
         return (Collection<?>) readField(internals, "pendingJsInvocations");
+    }
+
+    private static Collection<?> invocationOwners(UIInternals internals)
+            throws Exception {
+        return (Collection<?>) readField(internals,
+                "pendingJsInvocationOwners");
     }
 
     private static Object readField(UIInternals internals, String name)

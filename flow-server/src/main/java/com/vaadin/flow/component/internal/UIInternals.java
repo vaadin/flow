@@ -195,6 +195,13 @@ public class UIInternals implements Serializable {
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     /**
+     * The owners of everything currently in {@link #pendingJsInvocations}.
+     * Detaching a component tree unregisters every node in it, so this keeps
+     * the check that runs for each of them down to a single lookup.
+     */
+    private Set<StateNode> pendingJsInvocationOwners = new HashSet<>();
+
+    /**
      * The related UI.
      */
     private final UI ui;
@@ -673,6 +680,7 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+        pendingJsInvocationOwners.add(invocation.getOwner());
     }
 
     /**
@@ -711,8 +719,12 @@ public class UIInternals implements Serializable {
         List<PendingJavaScriptInvocation> readyToSend = partition.get(true);
         readyToSend.forEach(PendingJavaScriptInvocation::setSentToBrowser);
 
+        List<PendingJavaScriptInvocation> retained = partition.get(false);
         // ensure collection is mutable
-        pendingJsInvocations = new LinkedHashSet<>(partition.get(false));
+        pendingJsInvocations = new LinkedHashSet<>(retained);
+        pendingJsInvocationOwners = retained.stream()
+                .map(PendingJavaScriptInvocation::getOwner)
+                .collect(Collectors.toCollection(HashSet::new));
 
         return readyToSend;
     }
@@ -723,14 +735,17 @@ public class UIInternals implements Serializable {
      * no longer knows the node, so keeping it in the queue would only leak the
      * node.
      * <p>
-     * Called by {@link StateTree} for every node that is detached. Between
-     * requests the queue only holds invocations that are waiting for their
-     * owner to become visible again, so it is normally empty when this runs.
+     * Called by {@link StateTree} for every node that is detached, so it only
+     * scans the queue for the few nodes that {@link #pendingJsInvocationOwners}
+     * knows to have something queued.
      *
      * @param detachedNode
      *            the node that was detached, not <code>null</code>
      */
     public void discardPendingJavaScriptInvocations(StateNode detachedNode) {
+        if (!pendingJsInvocationOwners.remove(detachedNode)) {
+            return;
+        }
         if (session != null) {
             // A closed UI has no session to lock, but its queue can still be
             // reached through a node that is detached after the UI is gone
