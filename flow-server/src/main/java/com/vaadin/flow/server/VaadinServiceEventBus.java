@@ -237,10 +237,14 @@ public class VaadinServiceEventBus implements Serializable {
             SerializableBiConsumer<? super E, Exception> errorHandler) {
         Objects.requireNonNull(event, "Event cannot be null");
         Objects.requireNonNull(errorHandler, "Error handler cannot be null");
+        List<SerializableConsumer<E>> listeners = listenersFor(event);
+        if (listeners.isEmpty()) {
+            return;
+        }
         // Taken as one snapshot, since reading the size and then iterating
         // down from it would be two reads of a list that another thread can be
         // removing listeners from
-        Object[] registered = listenersFor(event).toArray();
+        Object[] registered = listeners.toArray();
         for (int i = registered.length - 1; i >= 0; i--) {
             notifyListener((SerializableConsumer<E>) registered[i], event,
                     errorHandler);

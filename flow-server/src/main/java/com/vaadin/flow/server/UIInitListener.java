@@ -20,6 +20,11 @@ import java.io.Serializable;
 /**
  * Event listener that can be registered for receiving an event when a
  * {@link com.vaadin.flow.component.UI} is initialized.
+ * <p>
+ * An exception thrown by a listener is logged and the remaining listeners are
+ * notified regardless, so a failing listener does not stop the UI from being
+ * initialized. A listener that has to prevent the UI from being used has to say
+ * so through the UI itself.
  *
  * @since 1.0
  */
