@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { Console } from '../../../main/frontend/internal/client/Console';
+import { Console } from '../../../../main/frontend/internal/client/Console';
 
 type Level = 'debug' | 'log' | 'warn' | 'error';
 const LEVELS: Level[] = ['debug', 'log', 'warn', 'error'];

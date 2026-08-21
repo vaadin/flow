@@ -13,7 +13,7 @@ import {
   reset,
   setEnabled,
   setProfilerResultConsumer
-} from '../../../main/frontend/internal/client/Profiler';
+} from '../../../../main/frontend/internal/client/Profiler';
 
 type Win = {
   Vaadin?: { Flow?: { gwtStatsEvents?: unknown[] } };

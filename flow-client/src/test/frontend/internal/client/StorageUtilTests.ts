@@ -4,7 +4,7 @@ import {
   getSessionItem,
   setLocalItem,
   setSessionItem
-} from '../../../main/frontend/internal/client/StorageUtil';
+} from '../../../../main/frontend/internal/client/StorageUtil';
 
 describe('StorageUtil', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.StorageUtil has no Java test,
