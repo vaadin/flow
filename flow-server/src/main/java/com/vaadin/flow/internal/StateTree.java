@@ -249,6 +249,7 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
     @Override
