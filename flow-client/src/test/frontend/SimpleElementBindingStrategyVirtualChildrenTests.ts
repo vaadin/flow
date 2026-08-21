@@ -1,6 +1,9 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
-import { bindVirtualChildren, BindingContext } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import {
+  bindVirtualChildren,
+  BindingContext
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import {
   type CollectingTree,
   NodeFeatures,

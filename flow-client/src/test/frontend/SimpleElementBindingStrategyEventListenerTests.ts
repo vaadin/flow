@@ -2,7 +2,7 @@ import { expect } from '@open-wc/testing';
 import {
   BindingContext,
   bindDomEventListeners
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import { Debouncer } from '../../main/frontend/internal/client/flow/binding/Debouncer';
 import {

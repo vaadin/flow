@@ -5,7 +5,7 @@ import {
   handlePropertiesChanged,
   handlePropertyChange,
   InitialPropertyUpdate
-} from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
   BindGuardStateNode,

@@ -1,6 +1,9 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../main/frontend/internal/client/flow/reactive/Reactive';
-import { bindVisibility, BindingContext } from '../../main/frontend/internal/binding/SimpleElementBindingStrategy';
+import {
+  bindVisibility,
+  BindingContext
+} from '../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 
 // A stateful MapProperty stand-in.
 function fakeProperty(initial?: unknown) {

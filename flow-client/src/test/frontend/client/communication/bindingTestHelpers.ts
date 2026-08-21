@@ -5,21 +5,12 @@
 // StateTree, so this harness builds that same stack instead of the per-function
 // fakes used by the unit-level binding tests.
 
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/model/bindingTestHelpers.ts
-import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
-import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
-import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
-========
 import { bind } from '../../../../main/frontend/internal/client/flow/binding/Binder';
 import { ConstantPool } from '../../../../main/frontend/internal/client/flow/ConstantPool';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
->>>>>>>> 8404a57de9b (refactor(flow-client): mirror the Java package path verbatim):flow-client/src/test/frontend/client/communication/bindingTestHelpers.ts
 
 // Arguments collected by the sendExistingElementWithIdAttachToServer RPC; mirrors
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.
