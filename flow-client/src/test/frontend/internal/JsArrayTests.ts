@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { clear, isEmpty, pushArray, remove, removeItem, spliceArray } from '../../main/frontend/internal/JsArray';
+import { clear, isEmpty, pushArray, remove, removeItem, spliceArray } from '../../../main/frontend/internal/JsArray';
 
 describe('JsArray helpers', () => {
   it('pushArray appends all values and returns the new length', () => {
