@@ -25,12 +25,19 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
+          // Test files use the default project. They mirror the ported modules'
+          // directory layout, so each test subdirectory is listed here (the
+          // typescript-eslint allowDefaultProject globs do not support the `**`
+          // multi-level wildcard, hence one entry per level).
           allowDefaultProject: [
             'src/test/frontend/*',
             'src/test/frontend/client/*',
             'src/test/frontend/client/flow/collection/*',
+            'src/test/frontend/client/flow/nodefeature/*',
+            'src/test/frontend/client/flow/reactive/*',
             'src/test/frontend/flow/shared/*',
-            'src/test/frontend/flow/shared/util/*'
+            'src/test/frontend/flow/shared/util/*',
+            'src/test/frontend/internal/reactive/*'
           ],
           // The migration adds a *Tests.ts per converted module; the test files
           // use the default project, so raise its file cap (default 8) to keep
@@ -71,7 +78,7 @@ export default [
     }
   },
   {
-    files: ['src/test/frontend/*.ts'],
+    files: ['src/test/frontend/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.mocha
