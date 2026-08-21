@@ -208,22 +208,10 @@ type PortalEntry = {
 type FlowPortalProps = React.PropsWithChildren<
     Readonly<{
         domNode: HTMLElement;
-        onRemove(): void;
     }>
 >;
 
-function FlowPortal({ children, domNode, onRemove }: FlowPortalProps) {
-    useEffect(() => {
-        domNode.addEventListener(
-            'flow-portal-remove',
-            (event: Event) => {
-                event.preventDefault();
-                onRemove();
-            },
-            { once: true }
-        );
-    }, []);
-
+function FlowPortal({ children, domNode }: FlowPortalProps) {
     return createPortal(children, domNode);
 }
 
@@ -378,15 +366,32 @@ function Flow() {
         (event: CustomEvent<PortalEntry>) => {
             event.preventDefault();
 
+            const { domNode, children } = event.detail;
             const key = Math.random().toString(36).slice(2);
+
+            // Register the removal listener synchronously, not from an effect
+            // inside FlowPortal: the portal renders asynchronously, so a
+            // 'flow-portal-remove' dispatched before the portal is committed
+            // would be missed, leaving a duplicate portal and a double render.
+            // This guards the case where the element is disconnected and
+            // reconnected within the same task, right after Flow attaches it.
+            const removeListener = (removeEvent: Event) => {
+                // 'flow-portal-remove' bubbles, so a nested adapter's removal
+                // reaches this listener too. Only react to this element's own
+                // removal, otherwise a child unmount would drop the parent.
+                if (removeEvent.target !== domNode) {
+                    return;
+                }
+                removeEvent.preventDefault();
+                domNode.removeEventListener('flow-portal-remove', removeListener);
+                dispatchPortalAction(removeFlowPortal(key));
+            };
+            domNode.addEventListener('flow-portal-remove', removeListener);
+
             dispatchPortalAction(
                 addFlowPortal(
-                    <FlowPortal
-                        key={key}
-                        domNode={event.detail.domNode}
-                        onRemove={() => dispatchPortalAction(removeFlowPortal(key))}
-                    >
-                        {event.detail.children}
+                    <FlowPortal key={key} domNode={domNode}>
+                        {children}
                     </FlowPortal>
                 )
             );
