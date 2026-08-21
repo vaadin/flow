@@ -32,6 +32,7 @@ export default [
           allowDefaultProject: [
             'src/test/frontend/*',
             'src/test/frontend/client/*',
+            'src/test/frontend/client/bootstrap/*',
             'src/test/frontend/client/flow/*',
             'src/test/frontend/client/flow/binding/*',
             'src/test/frontend/client/flow/collection/*',

@@ -105,4 +105,19 @@ describe('Console', () => {
       }
     });
   });
+
+  describe('ApplicationConfiguration wiring', () => {
+    it('applies the configured production mode to the logger', () => {
+      window.localStorage.removeItem(KEY);
+      const configuration = new ApplicationConfiguration();
+
+      configuration.setProductionMode(true);
+      Console.warn('suppressed');
+      expect(stubs.warn.called).to.be.false;
+
+      configuration.setProductionMode(false);
+      Console.warn('logged');
+      expect(stubs.warn.calledOnceWithExactly('logged')).to.be.true;
+    });
+  });
 });
