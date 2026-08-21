@@ -25,7 +25,14 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['src/test/frontend/*'],
+          allowDefaultProject: [
+            // typescript-eslint allowDefaultProject globs do not support the `**`
+            // multi-level wildcard, hence one entry per level.
+            'src/test/frontend/*',
+            'src/test/frontend/internal/*',
+            'src/test/frontend/internal/shared/*',
+            'src/test/frontend/internal/shared/util/*'
+          ],
           // The migration adds a *Tests.ts per converted module; the test files
           // use the default project, so raise its file cap (default 8) to keep
           // linting working as the suite grows.

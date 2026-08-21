@@ -13,7 +13,7 @@ import {
   splitCamelCase,
   trimTrailingSlashes,
   upperCamelCaseToDashSeparatedLowerCase
-} from '../../main/frontend/internal/SharedUtil';
+} from '../../../../../main/frontend/internal/shared/util/SharedUtil';
 
 describe('SharedUtil', () => {
   it('adds a parameter with ? to a bare URI', () => {

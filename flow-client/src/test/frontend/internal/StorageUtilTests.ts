@@ -1,5 +1,10 @@
 import { expect } from '@open-wc/testing';
-import { getLocalItem, getSessionItem, setLocalItem, setSessionItem } from '../../main/frontend/internal/StorageUtil';
+import {
+  getLocalItem,
+  getSessionItem,
+  setLocalItem,
+  setSessionItem
+} from '../../../main/frontend/internal/StorageUtil';
 
 describe('StorageUtil', () => {
   const key = 'flow-storage-util-test';
