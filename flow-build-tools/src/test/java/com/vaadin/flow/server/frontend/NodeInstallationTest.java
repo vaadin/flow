@@ -91,10 +91,18 @@ class NodeInstallationTest {
 
     @Test
     void markUsed_recordsWhenTheInstallationWasUsed() throws IOException {
+        NodeInstallation missing = NodeInstallation.forVersion(vaadinHome,
+                "v24.10.0");
+        missing.markUsed();
+        assertTrue(missing.getLastUsed().isEmpty(),
+                "There is nothing to mark before the installation exists");
+
         NodeInstallation installation = create("node-v24.10.0");
         assertTrue(installation.getLastUsed().isEmpty(),
                 "A fresh installation has not been used yet");
-        write(installation, LONG_AGO.toString());
+        write(installation, "not a timestamp");
+        assertTrue(installation.getLastUsed().isEmpty(),
+                "A marker that cannot be read tells nothing about the last use");
 
         Instant before = Instant.now().minus(Duration.ofSeconds(1));
         installation.markUsed();

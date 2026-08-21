@@ -76,12 +76,15 @@ class NodeInstallationsTest {
 
     @Test
     void removeUnused_theLastInstallationIsKept() throws IOException {
-        NodeInstallation only = installation("node-v20.0.0", LONG_AGO);
+        NodeInstallation older = installation("node-v20.0.0", LONG_AGO);
+        NodeInstallation newer = installation("node-v22.0.0",
+                LONG_AGO.plus(Duration.ofDays(10)));
 
         NodeInstallations.removeUnused(vaadinHome, null);
 
-        assertTrue(exists(only),
-                "The last version in the folder should never be removed");
+        assertFalse(exists(older));
+        assertTrue(exists(newer),
+                "When everything is stale the most recently used one is the one to keep");
     }
 
     @Test
@@ -113,7 +116,8 @@ class NodeInstallationsTest {
         File notInstalled = archive("node-v26.0.0-linux-x64.tar.gz", LONG_AGO);
         File downloading = archive("node-v24.20.0-linux-x64.tar.gz",
                 Instant.now());
-        File notAnArchive = archive("node-SHASUMS256.txt", LONG_AGO);
+        File notNodeJs = archive("node-SHASUMS256.txt", LONG_AGO);
+        File notAnArchive = archive("node-v20.0.0-notes.txt", LONG_AGO);
 
         NodeInstallations.removeUnused(vaadinHome, inUse);
 
@@ -125,8 +129,10 @@ class NodeInstallationsTest {
                 "An archive of a version that is not installed may have been put there to install from");
         assertTrue(downloading.exists(),
                 "An archive that another process may still be downloading should be kept");
+        assertTrue(notNodeJs.exists(),
+                "Files that are not named after a Node.js version should not be touched");
         assertTrue(notAnArchive.exists(),
-                "Files that are not Node.js archives should not be touched");
+                "Files that are not archives should not be touched");
     }
 
     /**

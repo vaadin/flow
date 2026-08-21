@@ -243,17 +243,10 @@ final class NodeInstallation {
      * @return the directory to delete
      */
     private File moveAside() {
-        File parent = directory.getParentFile();
-        String name = REMOVED_PREFIX + directory.getName();
-
-        File beingRemoved = new File(parent, name);
-        if (directory.renameTo(beingRemoved)) {
-            return beingRemoved;
-        }
-
-        // An earlier removal of the same version may not have managed to
-        // delete everything it moved aside, so make room next to it
-        beingRemoved = new File(parent, name + "-" + System.nanoTime());
+        // The name is made unique so that the remains of an earlier removal of
+        // the same version can never be in the way
+        File beingRemoved = new File(directory.getParentFile(),
+                REMOVED_PREFIX + directory.getName() + "-" + System.nanoTime());
         if (directory.renameTo(beingRemoved)) {
             return beingRemoved;
         }
