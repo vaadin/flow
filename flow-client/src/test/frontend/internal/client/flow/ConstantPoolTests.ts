@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ConstantPool } from '../../main/frontend/internal/ConstantPool';
+import { ConstantPool } from '../../../../main/frontend/internal/client/flow/ConstantPool';
 
 describe('ConstantPool', () => {
   it('imports constants from JSON and reads them back', () => {

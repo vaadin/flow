@@ -20,9 +20,9 @@
 // feature populate) to the StateTree. Changes are plain JS objects; values are
 // passed through ClientJsonCodec.decodeWithoutTypeInfo (a no-op in JS).
 
-import { assert } from './assert';
-import { decodeWithoutTypeInfo } from './ClientJsonCodec';
-import { JsonConstants } from './JsonConstants';
+import { assert } from '../../assert';
+import { decodeWithoutTypeInfo } from './util/ClientJsonCodec';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 import { StateNode } from './StateNode';
 import type { StateTree } from './StateTree';
 
