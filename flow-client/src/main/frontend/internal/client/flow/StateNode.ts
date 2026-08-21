@@ -20,8 +20,8 @@
 // original Java Class<?>-keyed nodeData map becomes a map keyed by JS constructor
 // function.
 
-import { assert } from './assert';
-import type { EventRemover } from './EventRemover';
+import { assert } from '../../assert';
+import type { EventRemover } from '../../EventRemover';
 import type { MapProperty } from './nodefeature/MapProperty';
 import type { JsonValue, NodeFeature, NodeFeatureNode } from './nodefeature/NodeFeature';
 import { NodeList } from './nodefeature/NodeList';
