@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { sendBeacon } from '../../../../main/frontend/internal/client/communication/MessageSender';
+import { sendBeacon } from '../../main/frontend/internal/client/communication/MessageSender';
 
 describe('MessageSender', () => {
   it('forwards url and payload to navigator.sendBeacon', () => {
