@@ -17,7 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.ConstantPool, built alongside the
 // Java version.
 
-import { assert } from './assert';
+import { assert } from '../../assert';
 
 /** Map of constant values received from the server; mirrors ConstantPool.java. */
 export class ConstantPool {

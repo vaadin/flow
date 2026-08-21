@@ -32,12 +32,13 @@ export default [
           allowDefaultProject: [
             'src/test/frontend/*',
             'src/test/frontend/client/*',
+            'src/test/frontend/client/flow/*',
             'src/test/frontend/client/flow/collection/*',
             'src/test/frontend/client/flow/nodefeature/*',
             'src/test/frontend/client/flow/reactive/*',
+            'src/test/frontend/client/flow/util/*',
             'src/test/frontend/flow/shared/*',
-            'src/test/frontend/flow/shared/util/*',
-            'src/test/frontend/internal/reactive/*'
+            'src/test/frontend/flow/shared/util/*'
           ],
           // The migration adds a *Tests.ts per converted module; the test files
           // use the default project, so raise its file cap (default 8) to keep

@@ -1,11 +1,6 @@
 import { expect } from '@open-wc/testing';
-<<<<<<<< HEAD:flow-client/src/test/frontend/client/flow/reactive/ReactiveTests.ts
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { TestReactiveEventRouter } from '../../../internal/reactive/TestReactiveEventRouter';
-========
-import { Reactive } from '../../../../main/frontend/internal/reactive/Reactive';
 import { TestReactiveEventRouter } from './TestReactiveEventRouter';
->>>>>>>> 6a9bb40c361 (refactor(flow-client): mirror module directory layout in test files):flow-client/src/test/frontend/internal/reactive/ReactiveTests.ts
 
 describe('reactive core: Reactive', () => {
   beforeEach(() => Reactive.reset());

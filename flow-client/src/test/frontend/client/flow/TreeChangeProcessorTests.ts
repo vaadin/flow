@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
-import { processChange, processChanges } from '../../main/frontend/internal/TreeChangeProcessor';
-import { StateNode } from '../../main/frontend/internal/StateNode';
-import { StateTree } from '../../main/frontend/internal/StateTree';
+import { processChange, processChanges } from '../../../../main/frontend/internal/client/flow/TreeChangeProcessor';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 
 const ELEMENT_PROPERTIES = 1;
 const ELEMENT_CHILDREN = 2;
