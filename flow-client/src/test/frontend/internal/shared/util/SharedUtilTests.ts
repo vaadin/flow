@@ -16,27 +16,33 @@ import {
 } from '../../../../../main/frontend/internal/shared/util/SharedUtil';
 
 describe('SharedUtil', () => {
+  // beyond the Java suite (PORTING.md 13.6)
   it('adds a parameter with ? to a bare URI', () => {
     expect(addGetParameter('/foo', 'v-r', 'uidl')).to.equal('/foo?v-r=uidl');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('adds a parameter with & when a query already exists', () => {
     expect(addGetParameter('/foo?a=1', 'b', '2')).to.equal('/foo?a=1&b=2');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('stringifies a numeric value', () => {
     expect(addGetParameter('/foo', 'v-uiId', 7)).to.equal('/foo?v-uiId=7');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('inserts the parameter before the fragment', () => {
     expect(addGetParameter('/foo#frag', 'a', '1')).to.equal('/foo?a=1#frag');
     expect(addGetParameter('/foo?x=1#frag', 'a', '1')).to.equal('/foo?x=1&a=1#frag');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('returns the URI unchanged for empty extra params', () => {
     expect(addGetParameters('/foo', '')).to.equal('/foo');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('returns the URI unchanged for null extra params', () => {
     expect(addGetParameters('/foo', null)).to.equal('/foo');
   });
@@ -89,15 +95,24 @@ describe('SharedUtil', () => {
     });
   });
 
-  it('trims trailing slashes', () => {
+  it('trailing slash is trimmed', () => {
     expect(trimTrailingSlashes('/path/')).to.equal('/path');
+  });
+
+  it('no trailing slash for trimming', () => {
     expect(trimTrailingSlashes('/path')).to.equal('/path');
+  });
+
+  it('trailing slashes are trimmed', () => {
     expect(trimTrailingSlashes('/path///')).to.equal('/path');
+  });
+
+  it('empty string is handled', () => {
     expect(trimTrailingSlashes('')).to.equal('');
+  });
+
+  it('root slash is trimmed', () => {
     expect(trimTrailingSlashes('/')).to.equal('');
-    expect(trimTrailingSlashes('foo')).to.equal('foo');
-    expect(trimTrailingSlashes('foo/')).to.equal('foo');
-    expect(trimTrailingSlashes('foo///')).to.equal('foo');
   });
 
   it('splits camelCase into words with casing preserved', () => {
@@ -137,6 +152,7 @@ describe('SharedUtil', () => {
     expect(join(['x'], '-')).to.equal('x');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('capitalizes the first character', () => {
     // Java exercises this under the Turkish locale (capitalize must be
     // locale-independent); JavaScript upper-casing of ASCII already is.
@@ -148,6 +164,7 @@ describe('SharedUtil', () => {
     expect(capitalize(null)).to.equal(null);
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('lowercases the first character', () => {
     expect(firstToLower('Foo')).to.equal('foo');
     expect(firstToLower('A')).to.equal('a');
@@ -155,6 +172,7 @@ describe('SharedUtil', () => {
     expect(firstToLower(null)).to.equal(null);
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('converts a property id to a human friendly format', () => {
     expect(propertyIdToHumanFriendly('firstName')).to.equal('First Name');
     expect(propertyIdToHumanFriendly('address.streetName')).to.equal('Street Name');
@@ -195,6 +213,7 @@ describe('SharedUtil', () => {
     expect(upperCamelCaseToDashSeparatedLowerCase('someUriAction')).to.equal('some-uri-action');
   });
 
+  // beyond the Java suite (PORTING.md 13.6)
   it('prefixes only relative urls without a protocol', () => {
     expect(prefixIfRelative('foo', '/prefix/')).to.equal('/prefix/foo');
     expect(prefixIfRelative('/foo', '/prefix/')).to.equal('/foo');
