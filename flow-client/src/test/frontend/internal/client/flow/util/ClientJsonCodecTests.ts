@@ -4,7 +4,7 @@ import {
   createReturnChannelCallback,
   decodeStateNode,
   decodeWithTypeInfo
-} from '../../main/frontend/internal/ClientJsonCodec';
+} from '../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
 
 describe('ClientJsonCodec', () => {
   it('createReturnChannelCallback forwards all arguments to the sender', () => {

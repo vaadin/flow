@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { StateNode, type StateTree } from '../../main/frontend/internal/StateNode';
-import type { NodeFeature } from '../../main/frontend/internal/nodefeature/NodeFeature';
+import { StateNode, type StateTree } from '../../../../main/frontend/internal/client/flow/StateNode';
+import type { NodeFeature } from '../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 
 // Minimal StateTree stand-in; StateNode tests do not reach into the tree.
 const tree: StateTree = {

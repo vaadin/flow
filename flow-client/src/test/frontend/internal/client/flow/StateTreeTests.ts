@@ -1,8 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { type NodeUnregisterEvent, StateNode } from '../../main/frontend/internal/StateNode';
-import { StateTree, type Registry } from '../../main/frontend/internal/StateTree';
-import { NodeFeatures } from '../../main/frontend/internal/nodefeature/NodeFeatures';
-import { NodeProperties } from '../../main/frontend/internal/nodefeature/NodeProperties';
+import { type NodeUnregisterEvent, StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree, type Registry } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 
 interface Sync {
   node: StateNode;

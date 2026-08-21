@@ -20,14 +20,14 @@
 // Registry/connector satisfy. ServerEventObject lookup (used only during resync)
 // is injected, defaulting to "no server event object".
 
-import { assert } from './assert';
+import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
 import { NodeList } from './nodefeature/NodeList';
 import type { NodeMap } from './nodefeature/NodeMap';
-import { NodeFeatures } from './nodefeature/NodeFeatures';
-import { NodeProperties } from './nodefeature/NodeProperties';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { StateNode, type StateTree as StateTreeContract } from './StateNode';
-import { Console } from './Console';
+import { Console } from '../Console';
 
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
