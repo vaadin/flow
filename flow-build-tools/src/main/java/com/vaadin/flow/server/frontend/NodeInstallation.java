@@ -32,8 +32,7 @@ import com.vaadin.flow.internal.FrontendVersion;
  * directory, i.e. a {@code node-v24.10.0} directory under {@code ~/.vaadin}.
  * <p>
  * Knows where the executables of the installation are and which version it is.
- * Use {@link NodeInstallations} to find the installations of an install
- * directory.
+ * The installation directory does not have to exist.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

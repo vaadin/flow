@@ -258,8 +258,8 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
-     * Resolves an existing compatible node installation in the alternative
-     * directory, or installs a new one.
+     * Uses the requested node version from the alternative directory, or
+     * installs it there.
      *
      * @return the active node installation information
      * @throws IllegalStateException
@@ -273,30 +273,13 @@ class NodeResolver implements java.io.Serializable {
             nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
         }
 
-        // First, check if the exact requested version is already installed
+        // Check whether the requested version is already installed
         ActiveNodeInstallation active = tryUseInstalled(
-                NodeInstallation.forVersion(alternativeDirFile, nodeVersion),
-                nodeVersion);
+                NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
         if (active != null) {
             getLogger().debug("Node {} is already installed in {}", nodeVersion,
                     alternativeDir);
             return active;
-        }
-
-        // Check if any other compatible version is available. Note that the
-        // installed binary still has to report the configured version, so a
-        // fallback of a different version ends up being installed below.
-        String fallbackVersion = findCompatibleInstalledVersion(
-                alternativeDirFile);
-        if (fallbackVersion != null) {
-            active = tryUseInstalled(NodeInstallation.forVersion(
-                    alternativeDirFile, fallbackVersion), nodeVersion);
-            if (active != null) {
-                getLogger().debug(
-                        "Using existing Node {} instead of installing {}",
-                        fallbackVersion, nodeVersion);
-                return active;
-            }
         }
 
         // No suitable version found, install the requested version
@@ -314,17 +297,15 @@ class NodeResolver implements java.io.Serializable {
 
     /**
      * Takes an already installed Node.js into use, provided that its binary
-     * really reports the required version.
+     * really reports the requested version.
      *
      * @param installation
      *            the installation to try, which does not have to exist
-     * @param requiredVersion
-     *            the version the installed binary has to report
      * @return the active node installation, or {@code null} if the installation
      *         cannot be used
      */
     private ActiveNodeInstallation tryUseInstalled(
-            NodeInstallation installation, String requiredVersion) {
+            NodeInstallation installation) {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
@@ -338,7 +319,7 @@ class NodeResolver implements java.io.Serializable {
                     installation.getInstalledVersion().getFullVersion());
 
             if (reported.equals(NodeInstallation.forVersion(installDirectory,
-                    requiredVersion))) {
+                    nodeVersion))) {
                 return createActiveInstallation(installation,
                         installation.getVersion());
             }
@@ -403,70 +384,6 @@ class NodeResolver implements java.io.Serializable {
 
         return new ActiveNodeInstallation(nodePath, nodeVersion, npmCliScript,
                 npmVersion);
-    }
-
-    /**
-     * Scans the install directory for installed Node.js versions and returns
-     * the newest one that is supported.
-     *
-     * @param installDir
-     *            the installation directory to scan
-     * @return the version string (e.g., "v24.10.0") of the best available
-     *         version, or null if none found
-     */
-    private String findCompatibleInstalledVersion(File installDir) {
-        FrontendVersion bestVersion = null;
-        String bestVersionString = null;
-
-        for (NodeInstallation installation : NodeInstallations
-                .findAll(installDir)) {
-            String versionString = installation.getVersion();
-
-            try {
-                FrontendVersion version = new FrontendVersion(versionString);
-
-                // Skip versions older than minimum auto-installed version
-                if (version.isOlderThan(
-                        FrontendTools.MINIMUM_AUTO_INSTALLED_NODE)) {
-                    getLogger().debug(
-                            "Skipping {} - older than minimum auto-installed {}",
-                            versionString,
-                            FrontendTools.MINIMUM_AUTO_INSTALLED_NODE
-                                    .getFullVersion());
-                    continue;
-                }
-
-                // Skip versions with major version higher than maximum
-                // supported
-                if (version
-                        .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-                    getLogger().debug(
-                            "Skipping {} - major version {} is newer than maximum supported {}",
-                            versionString, version.getMajorVersion(),
-                            FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION);
-                    continue;
-                }
-
-                // Verify the node executable actually exists
-                if (!installation.hasNodeExecutable()) {
-                    getLogger().debug(
-                            "Skipping {} - executable not found at {}",
-                            versionString, installation.getNodeExecutable());
-                    continue;
-                }
-
-                // Keep the newest version
-                if (bestVersion == null || version.isNewerThan(bestVersion)) {
-                    bestVersion = version;
-                    bestVersionString = versionString;
-                }
-            } catch (NumberFormatException e) {
-                getLogger().debug("Could not parse version from directory: {}",
-                        installation.getDirectory().getName());
-            }
-        }
-
-        return bestVersionString;
     }
 
     /**
