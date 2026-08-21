@@ -19,24 +19,34 @@ import jakarta.servlet.MultipartConfigElement;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.atmosphere.cpr.ApplicationConfig;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.bootstrap.VaadinAsyncInitFutureRegistry;
+import com.vaadin.flow.spring.bootstrap.VaadinDefaultAsyncInitFutureRegistry;
 import com.vaadin.flow.spring.springnative.ClientCallableAotProcessor;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 
@@ -52,6 +62,9 @@ import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotPro
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringBootAutoConfiguration {
 
+    private static final Logger LOG = LoggerFactory
+            .getLogger(SpringBootAutoConfiguration.class);
+
     @Autowired
     private WebApplicationContext context;
 
@@ -65,14 +78,45 @@ public class SpringBootAutoConfiguration {
         return new ClientCallableAotProcessor();
     }
 
+    @Bean
+    @ConditionalOnProperty(name = "vaadin.bootstrap.async")
+    @ConditionalOnMissingBean
+    public VaadinAsyncInitFutureRegistry vaadinWaitForAsyncInitContainer() {
+        return new VaadinDefaultAsyncInitFutureRegistry();
+    }
+
     /**
      * Creates a {@link ServletContextInitializer} instance.
      *
      * @return a custom ServletContextInitializer instance
      */
     @Bean
-    public ServletContextInitializer contextInitializer() {
-        return new VaadinServletContextInitializer(context);
+    @ConditionalOnMissingBean
+    public VaadinServletContextInitializer contextInitializer(
+            Map<String, AsyncTaskExecutor> taskExecutors,
+            Optional<VaadinAsyncInitFutureRegistry> optVaadinAsyncInitFutureRegistry) {
+        Consumer<Runnable> contextInitializedExecutor = optVaadinAsyncInitFutureRegistry
+                .<Consumer<Runnable>> map(reg -> {
+                    final AsyncTaskExecutor asyncTaskExecutor = determineBootstrapExecutor(
+                            taskExecutors);
+                    if (asyncTaskExecutor == null) {
+                        return null;
+                    }
+                    LOG.debug("Will use async bootstrap using {}",
+                            asyncTaskExecutor);
+                    return asyncTaskExecutor::submit;
+                }).orElseGet(() -> Runnable::run);
+        return new VaadinServletContextInitializer(context,
+                contextInitializedExecutor);
+    }
+
+    // NOTE: Based on JpaBaseConfiguration
+    protected @Nullable AsyncTaskExecutor determineBootstrapExecutor(
+            Map<String, AsyncTaskExecutor> taskExecutors) {
+        return taskExecutors.size() == 1
+                ? taskExecutors.values().iterator().next()
+                : taskExecutors.get(
+                        TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
     }
 
     /**
@@ -90,12 +134,13 @@ public class SpringBootAutoConfiguration {
     @ConditionalOnMissingBean(value = SpringServlet.class, parameterizedContainer = ServletRegistrationBean.class)
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
-            VaadinConfigurationProperties configurationProperties) {
+            VaadinConfigurationProperties configurationProperties,
+            Optional<VaadinAsyncInitFutureRegistry> optVaadinAsyncInitFutureRegistry) {
         boolean rootMapping = RootMappedCondition
                 .isRootMapping(configurationProperties.getUrlMapping());
         return configureServletRegistrationBean(multipartConfig,
-                configurationProperties,
-                new SpringServlet(context, rootMapping));
+                configurationProperties, new SpringServlet(context, rootMapping,
+                        optVaadinAsyncInitFutureRegistry));
     }
 
     public static ServletRegistrationBean<SpringServlet> configureServletRegistrationBean(

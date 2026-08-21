@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.shared.util.SharedUtil;
+import com.vaadin.flow.spring.bootstrap.VaadinAsyncInitFutureRegistry;
 
 /**
  * Spring application context aware Vaadin servlet implementation.
@@ -75,6 +78,7 @@ public class SpringServlet extends VaadinServlet {
 
     private final ApplicationContext context;
     private final boolean rootMapping;
+    private final Optional<VaadinAsyncInitFutureRegistry> optVaadinAsyncInitFutureRegistry;
 
     /**
      * Creates a new Vaadin servlet instance with the application
@@ -91,7 +95,6 @@ public class SpringServlet extends VaadinServlet {
      * mapping which doesn't overlap with any endpoint mapping. In this case use
      * {@code false} for the {@code forwardingEnforced} parameter.
      *
-     *
      * @param context
      *            the Spring application context
      * @param rootMapping
@@ -100,8 +103,45 @@ public class SpringServlet extends VaadinServlet {
      * @since 11.0
      */
     public SpringServlet(ApplicationContext context, boolean rootMapping) {
+        this(context, rootMapping, Optional.empty());
+    }
+
+    /**
+     * Creates a new Vaadin servlet instance with the application
+     * {@code context} provided.
+     * <p>
+     * Use {@code true} as a value for {@code forwardingEnforced} parameter if
+     * your servlet is mapped to the root ({@code "/*"}). In the case of root
+     * mapping a {@link RootMappedCondition} is checked and
+     * {@link VaadinServletConfiguration} is applied conditionally. This
+     * configuration provide a {@link ServletForwardingController} so that other
+     * Spring endpoints may co-exist with Vaadin application (it's required
+     * since root mapping handles any request to the context). This is not
+     * needed if you are using non-root mapping since are you free to use the
+     * mapping which doesn't overlap with any endpoint mapping. In this case use
+     * {@code false} for the {@code forwardingEnforced} parameter.
+     *
+     * @param context
+     *            the Spring application context
+     * @param rootMapping
+     *            the incoming HttpServletRequest is wrapped in
+     *            ForwardingRequestWrapper if {@code true}
+     * @param optVaadinAsyncInitFutureRegistry
+     *            Optional {@link VaadinAsyncInitFutureRegistry}
+     * @since 11.0
+     */
+    public SpringServlet(ApplicationContext context, boolean rootMapping,
+            Optional<VaadinAsyncInitFutureRegistry> optVaadinAsyncInitFutureRegistry) {
         this.context = context;
         this.rootMapping = rootMapping;
+        this.optVaadinAsyncInitFutureRegistry = optVaadinAsyncInitFutureRegistry;
+    }
+
+    @Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        optVaadinAsyncInitFutureRegistry.ifPresent(
+                VaadinAsyncInitFutureRegistry::waitForAllUntilFinishedAndClose);
+        super.init(servletConfig);
     }
 
     @Override
