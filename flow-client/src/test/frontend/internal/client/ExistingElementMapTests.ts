@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ExistingElementMap } from '../../../main/frontend/internal/client/ExistingElementMap';
+import { ExistingElementMap } from '../../../../main/frontend/internal/client/ExistingElementMap';
 
 describe('ExistingElementMap', () => {
   it('maps an id to an element and back after add', () => {
