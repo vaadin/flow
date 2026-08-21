@@ -744,8 +744,8 @@ public class UIInternals implements Serializable {
      */
     public void discardPendingJavaScriptInvocations(StateNode detachedNode) {
         if (session != null) {
-            // A closed UI has no session to lock, but its queue can still be
-            // reached through a node that is detached after the UI is gone
+            // Nodes are also detached from the tree of a UI that has not
+            // been attached to a session, and there is no lock to check then
             session.checkHasLock();
         }
         if (!pendingJsInvocationOwners.remove(detachedNode)) {
