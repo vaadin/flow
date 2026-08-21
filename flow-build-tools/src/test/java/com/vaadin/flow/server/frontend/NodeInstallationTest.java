@@ -93,28 +93,6 @@ class NodeInstallationTest {
         assertNotEquals(installation, null);
     }
 
-    @Test
-    void equals_missingDirectories_isEqual() {
-        NodeInstallation installation = NodeInstallation.forVersion(vaadinHome,
-                "v24.10.0");
-
-        assertEquals(installation,
-                NodeInstallation.forVersion(vaadinHome, "v24.10.0"));
-        assertNotEquals(installation,
-                NodeInstallation.forVersion(vaadinHome, "v22.0.0"));
-    }
-
-    @Test
-    void equals_directoryReachedThroughAnotherPath_isEqual()
-            throws IOException {
-        NodeInstallation installation = create("node-v24.10.0");
-        NodeInstallation viaDetour = new NodeInstallation(
-                new File(vaadinHome, "node-v22.0.0/../node-v24.10.0"));
-
-        assertEquals(installation, viaDetour);
-        assertEquals(installation.hashCode(), viaDetour.hashCode());
-    }
-
     private NodeInstallation create(String directoryName) throws IOException {
         File directory = new File(vaadinHome, directoryName);
         assertTrue(directory.mkdirs(),

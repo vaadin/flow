@@ -17,8 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +28,6 @@ import com.vaadin.flow.server.frontend.NodeResolver.ActiveNodeInstallation;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
@@ -70,28 +67,9 @@ class NodeResolverTest {
                 vaadinHome.toURI(), true, List.of(), null).resolve();
     }
 
-    /**
-     * Creates an installation whose node binary reports the given version and
-     * which has an npm-cli.js where the versioned layout expects it.
-     */
     private NodeInstallation stubInstallation(String version)
             throws IOException {
-        NodeInstallation installation = NodeInstallation.forVersion(vaadinHome,
-                version);
-
-        File nodeExecutable = installation.getNodeExecutable();
-        assertTrue(nodeExecutable.getParentFile().mkdirs());
-        Files.writeString(nodeExecutable.toPath(),
-                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NODE)
-                        .withVersion(NodeInstallation.normalizeVersion(version))
-                        .build().getScript(),
-                StandardCharsets.UTF_8);
-        assertTrue(nodeExecutable.setExecutable(true));
-
-        File npmCliScript = installation.getNpmCliScript();
-        assertTrue(npmCliScript.getParentFile().mkdirs());
-        Files.writeString(npmCliScript.toPath(), "", StandardCharsets.UTF_8);
-
-        return installation;
+        return new NodeInstallation(FrontendStubs.createStubVersionedNode(
+                version, vaadinHome.getAbsolutePath()));
     }
 }
