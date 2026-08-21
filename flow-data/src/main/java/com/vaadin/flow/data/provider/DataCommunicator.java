@@ -1002,11 +1002,11 @@ public class DataCommunicator<T> implements Serializable {
     public int getDataProviderSize() {
         assert definedSize
                 : "This method should never be called when using undefined size";
-        if (countCallback != null) {
-            return countCallback.count(new Query(getFilter()));
-        } else {
-            return getDataProvider().size(new Query(getFilter()));
-        }
+        return DataFetchObserver.count(getUI(), getComponent(),
+                getFilter() != null,
+                () -> countCallback != null
+                        ? countCallback.count(new Query(getFilter()))
+                        : getDataProvider().size(new Query(getFilter())));
     }
 
     private void updateUndefinedSize() {
@@ -1570,20 +1570,27 @@ public class DataCommunicator<T> implements Serializable {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        try (Stream<T> stream = fetchFromProvider(range.getStart(),
-                range.length())) {
-            stream.forEach(bean -> {
-                boolean mapperHasKey = keyMapper.has(bean);
-                String key = keyMapper.key(bean);
-                if (mapperHasKey) {
-                    // Ensure latest instance from provider is used
-                    keyMapper.refresh(bean);
-                    passivatedByUpdate.values().stream()
-                            .forEach(set -> set.remove(key));
-                }
-                activeKeys.add(key);
-            });
-        }
+        DataFetchObserver.fetch(getUI(), getComponent(), range.getStart(),
+                range.length(), getFilter() != null, () -> {
+                    // The stream is consumed inside the observed query, so the
+                    // reported duration covers the backend round-trip even for
+                    // a data provider returning a lazily evaluated stream.
+                    try (Stream<T> stream = fetchFromProvider(range.getStart(),
+                            range.length())) {
+                        stream.forEach(bean -> {
+                            boolean mapperHasKey = keyMapper.has(bean);
+                            String key = keyMapper.key(bean);
+                            if (mapperHasKey) {
+                                // Ensure latest instance from provider is used
+                                keyMapper.refresh(bean);
+                                passivatedByUpdate.values().stream()
+                                        .forEach(set -> set.remove(key));
+                            }
+                            activeKeys.add(key);
+                        });
+                    }
+                    return activeKeys.size();
+                });
         boolean needsSizeRecheck = activeKeys.size() < range.length();
         return new Activation(activeKeys, needsSizeRecheck);
     }
@@ -1605,12 +1612,34 @@ public class DataCommunicator<T> implements Serializable {
                 MAXIMUM_ALLOWED_PAGES * pageSize);
     }
 
-    private UI getUI() {
+    /**
+     * Gets the UI this data communicator belongs to.
+     *
+     * @return the UI, or {@code null} if the component is not attached
+     */
+    protected UI getUI() {
         NodeOwner owner = stateNode.getOwner();
         if (owner instanceof StateTree) {
             return ((StateTree) owner).getUI();
         }
         return null;
+    }
+
+    /**
+     * Gets the component this data communicator loads data for, so that
+     * observers can attribute a query to it.
+     *
+     * @return the component, or {@code null} if none can be resolved, for
+     *         example when the communicator is driven by a bare element
+     */
+    protected Component getComponent() {
+        try {
+            return Element.get(stateNode).getComponent().orElse(null);
+        } catch (RuntimeException e) {
+            // Resolution is best-effort enrichment: the node may not be an
+            // element.
+            return null;
+        }
     }
 
     private static class Activation implements Serializable {
