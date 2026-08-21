@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { TestReactiveEventRouter } from '../../../internal/reactive/TestReactiveEventRouter';
+import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { TestReactiveEventRouter } from '../../../reactive/TestReactiveEventRouter';
 
 describe('reactive core: Reactive', () => {
   beforeEach(() => Reactive.reset());
