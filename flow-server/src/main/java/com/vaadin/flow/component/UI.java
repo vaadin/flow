@@ -831,6 +831,16 @@ public class UI extends Component
      * piece of application logic to opt in to view transitions for individual
      * updates without enabling them globally.
      * <p>
+     * This is useful whenever an arbitrary, server-driven change to the UI
+     * would otherwise be applied instantly and you want it to animate instead.
+     * For example, a feature that fills in a form on the server can call this
+     * before updating the fields so that the new values and the change from
+     * editable to read-only cross-fade into place; other examples include
+     * toggling the visibility of components, reordering items in a list or
+     * swapping the contents of a layout. The browser snapshots the affected
+     * elements before and after the update and animates between the two states,
+     * so no per-component animation code is needed.
+     * <p>
      * The view transition is applied on a best-effort basis: if the browser
      * does not support the View Transitions API, the changes are applied
      * without any transition.
