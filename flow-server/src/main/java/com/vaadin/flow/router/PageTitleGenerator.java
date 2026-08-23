@@ -52,8 +52,17 @@ import java.io.Serializable;
  * they are instantiated through the application {@code Instantiator} (so
  * dependency injection is available) every time a title is resolved, never the
  * navigation target itself.
+ * <p>
+ * If the title instead depends on the live state of the already shown view
+ * &mdash; for example a value looked up and cached while building the view, or
+ * a title that changes after navigation &mdash; implement
+ * {@link HasDynamicTitle} on the view instead. That resolves the title from the
+ * view instance, so it only applies to the route that is actually shown and not
+ * to routes rendered in breadcrumbs or menus.
  *
  * @author Vaadin Ltd
+ * @see DynamicPageTitle
+ * @see HasDynamicTitle
  */
 @FunctionalInterface
 public interface PageTitleGenerator extends Serializable {
