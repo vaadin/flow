@@ -33,7 +33,6 @@ import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -395,12 +394,33 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the raw platform string reported by the browser through
+     * {@code window.navigator.platform}, for example {@code "iPhone"},
+     * {@code "MacIntel"} or {@code "Linux x86_64"}.
+     * <p>
+     * The underlying browser API is deprecated and the values it reports are
+     * neither standardized nor reliable: browsers freeze, spoof or omit them,
+     * and the same platform string is reported for different devices (iPadOS
+     * reports {@code "MacIntel"}, the same value as a desktop Mac). Prefer
+     * feature detection over branching on this value.
+     *
+     * @return the platform reported by the browser, or {@code null} if the
+     *         browser did not report one
+     */
+    public String getNavigatorPlatform() {
+        return navigatorPlatform;
+    }
+
+    /**
      * Check if the browser is run on IPad.
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information from the browser is present
      * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIPad() {
         return navigatorPlatform != null && (navigatorPlatform
                 .startsWith("iPad")
@@ -413,11 +433,14 @@ public class ExtendedClientDetails implements Serializable {
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
      * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIOS() {
-        return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
-                || (navigatorPlatform != null
-                        && navigatorPlatform.startsWith("iPod"));
+        return isIPad() || (navigatorPlatform != null
+                && (navigatorPlatform.startsWith("iPhone")
+                        || navigatorPlatform.startsWith("iPod")));
     }
 
     /**
@@ -532,7 +555,7 @@ public class ExtendedClientDetails implements Serializable {
      *            resolves a browser-detail key to its raw string value, or
      *            {@code null} if not present
      * @return the parsed details
-     * @since 25.3
+     * @since 25.2.1
      */
     public static ExtendedClientDetails updateFromValues(UI ui,
             UnaryOperator<String> getStringElseNull) {

@@ -39,12 +39,16 @@ public enum ValueChangeMode {
      * <p>
      * The recommended default timeout for input fields is
      * {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     * 
+     * @since 2.0
      */
     LAZY,
 
     /**
      * Syncs the value at defined intervals as long as the value changes from
      * one event to the next.
+     * 
+     * @since 2.0
      */
     TIMEOUT,
 
@@ -55,7 +59,14 @@ public enum ValueChangeMode {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">Blur
      *      event description</a>
+     * @deprecated This mode is deprecated and will be removed in Vaadin 27. Use
+     *             {@link #ON_CHANGE} instead: it also triggers when the
+     *             component loses focus, but only if the value has actually
+     *             changed, and it additionally covers cases that ON_BLUR
+     *             misses, for example clicking TextField's clear button while
+     *             the field is not focused.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     ON_BLUR,
 
     /**

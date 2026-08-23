@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
@@ -50,7 +51,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public class TaskCopyFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
@@ -79,7 +80,10 @@ public class TaskCopyFrontendFiles
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         Set<String> existingFiles;
         try {
-            existingFiles = getFilesInDirectory(targetDirectory);
+            // The tsconfig.json generated for the copied add-on sources is not
+            // copied from a jar, so it must not be seen as a leftover file
+            existingFiles = getFilesInDirectory(targetDirectory,
+                    TaskGenerateTsConfig.TSCONFIG_JSON);
         } catch (IOException e) {
             // If we do not find the existing files, we will not delete anything
             existingFiles = new HashSet<>();
@@ -126,9 +130,11 @@ public class TaskCopyFrontendFiles
                                 WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
+        TaskGenerateJarResourcesTsConfig.discardCopiedTsConfigs(targetDirectory,
+                handledFiles);
         existingFiles.removeAll(handledFiles);
-        existingFiles.forEach(
-                filename -> new File(targetDirectory, filename).delete());
+        existingFiles.forEach(filename -> FileIOUtils
+                .deleteQuietly(new File(targetDirectory, filename)));
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);

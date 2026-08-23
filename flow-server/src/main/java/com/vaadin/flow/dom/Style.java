@@ -368,6 +368,9 @@ public interface Style extends Serializable {
         return set(STYLE_BORDER_RADIUS, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum BoxSizing {
         CONTENT_BOX, BORDER_BOX, INITIAL, INHERIT
     }
@@ -490,6 +493,9 @@ public interface Style extends Serializable {
         return applyOrErase(STYLE_FILTER, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum Display {
         INLINE,
         BLOCK,
@@ -734,6 +740,9 @@ public interface Style extends Serializable {
         return set(STYLE_OPACITY, value);
     }
 
+    /**
+     * @since 24.1
+     */
     public enum Overflow {
         VISIBLE, HIDDEN, CLIP, SCROLL, AUTO, INITIAL, INHERIT
     }

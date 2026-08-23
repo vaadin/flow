@@ -174,7 +174,7 @@ public abstract class Trigger implements Serializable {
      * @param action
      *            supplies the action to wire once {@code attachTarget} is
      *            attached, not {@code null}
-     * @since 25.3
+     * @since 25.2.1
      */
     public final void triggers(Component attachTarget,
             SerializableSupplier<Action> action) {

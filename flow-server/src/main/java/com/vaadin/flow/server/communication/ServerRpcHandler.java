@@ -42,9 +42,11 @@ import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.flow.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
@@ -324,8 +326,7 @@ public class ServerRpcHandler implements Serializable {
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException,
             MessageIdSyncException {
-        handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
-                request);
+        handleRpc(ui, getMessage(reader, request), request);
     }
 
     /**
@@ -628,13 +629,17 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        VaadinService service = ui.getSession().getService();
-        RpcInvocationEvent event = service.hasRpcInvocationListeners()
-                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
-                        invocationName(type, invocationJson))
-                : null;
-        if (event != null) {
-            service.fireRpcInvocationStarted(event);
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        boolean observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
+                || eventBus.hasListener(RpcInvocationFailedEvent.class)
+                || eventBus.hasListener(RpcInvocationEndedEvent.class);
+        // Details are extracted once and shared by the phase events
+        int nodeId = observed ? nodeId(invocationJson) : -1;
+        String name = observed ? invocationName(type, invocationJson) : null;
+        if (observed) {
+            eventBus.fireEvent(
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
@@ -642,13 +647,15 @@ public class ServerRpcHandler implements Serializable {
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
-            if (event != null) {
-                service.fireRpcInvocationFailed(event, throwable);
+            if (observed) {
+                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
+                        nodeId, name, throwable));
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
-            if (event != null) {
-                service.fireRpcInvocationEnded(event);
+            if (observed) {
+                eventBus.fireEvent(
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
             }
         }
     }
@@ -695,20 +702,28 @@ public class ServerRpcHandler implements Serializable {
     }
 
     protected String getMessage(Reader reader) throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader);
+    }
 
-        StringBuilder sb = new StringBuilder(
-                SynchronizedRequestHandler.MAX_BUFFER_SIZE);
-        char[] buffer = new char[SynchronizedRequestHandler.MAX_BUFFER_SIZE];
-
-        while (true) {
-            int read = reader.read(buffer);
-            if (read == -1) {
-                break;
-            }
-            sb.append(buffer, 0, read);
-        }
-
-        return sb.toString();
+    /**
+     * Reads the RPC message from the given reader, enforcing the maximum
+     * request body size configured for the given request.
+     *
+     * @param reader
+     *            the reader to read the message from
+     * @param request
+     *            the request the message was received through
+     * @return the message as a string
+     * @throws IOException
+     *             if reading fails
+     * @throws RequestBodyTooLargeException
+     *             if the message exceeds the configured maximum size
+     * @since 25.2.2
+     */
+    protected String getMessage(Reader reader, VaadinRequest request)
+            throws IOException {
+        return SynchronizedRequestHandler.getRequestBody(reader,
+                SynchronizedRequestHandler.getMaxRequestBodySize(request));
     }
 
     private static Logger getLogger() {

@@ -42,10 +42,16 @@ public class BrowserDetails implements Serializable {
         UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS
     }
 
+    /**
+     * @since 25.0
+     */
     public enum BrowserName {
         UNKNOWN, SAFARI, CHROME, FIREFOX, OPERA, IE, EDGE
     }
 
+    /**
+     * @since 25.0
+     */
     public enum BrowserEngine {
         UNKNOWN, GECKO, WEBKIT, PRESTO, TRIDENT
     }

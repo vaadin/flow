@@ -143,8 +143,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Creates an instance of the handler with default {@link PageBuilder}.
-     * 
-     * @since 2.0
      */
     public BootstrapHandler() {
         this(new BootstrapPageBuilder());
@@ -1385,7 +1383,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         session.addUI(ui);
 
         // After init and adding UI to session fire init listeners.
-        session.getService().fireUIInitListeners(ui);
+        VaadinService service = session.getService();
+        service.getEventBus().fireEvent(new UIInitEvent(ui, service));
 
         initializeUIWithRouter(context, ui);
 

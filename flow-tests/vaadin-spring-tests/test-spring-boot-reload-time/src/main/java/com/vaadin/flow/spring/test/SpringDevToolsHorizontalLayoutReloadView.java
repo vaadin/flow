@@ -38,6 +38,9 @@ public class SpringDevToolsHorizontalLayoutReloadView extends Div {
 
         Div layout = new Div(new NativeButton("Button"), new Input());
         layout.getStyle().set("display", "flex").set("flex-direction", "row");
+        // Animate the measured element itself so render detection does not rely
+        // on an animationstart bubbling from a child (see benchmark.js).
+        layout.addClassName("measure-render-target");
         add(startTriggerButton, result);
         add(new Html("<br/>"));
         add(layout);

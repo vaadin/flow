@@ -97,6 +97,8 @@ public class HandlerHelper implements Serializable {
 
         /**
          * INIT requests.
+         * 
+         * @since 3.0
          */
         INIT(ApplicationConstants.REQUEST_TYPE_INIT),
 
@@ -107,6 +109,8 @@ public class HandlerHelper implements Serializable {
 
         /**
          * WebComponent resynchronization requests.
+         * 
+         * @since 23.3.2
          */
         WEBCOMPONENT_RESYNC(
                 ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC),
@@ -122,11 +126,15 @@ public class HandlerHelper implements Serializable {
 
         /**
          * Page showing that the browser is unsupported.
+         * 
+         * @since 23.4
          */
         BROWSER_TOO_OLD("oldbrowser"),
 
         /**
          * Translation properties file requests.
+         * 
+         * @since 24.4
          */
         TRANSLATION_FILE(ApplicationConstants.REQUEST_TYPE_TRANSLATION_FILE);
 

@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
  * connection.
  * <p>
  * Forwards all messages from one to the other.
+ * 
+ * @since 24.3.22
  */
 public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
 
