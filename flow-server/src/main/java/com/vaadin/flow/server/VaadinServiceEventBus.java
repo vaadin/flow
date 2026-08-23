@@ -54,6 +54,7 @@ import com.vaadin.flow.shared.Registration;
  * a supertype is not notified of subtype events.
  *
  * @see VaadinService#getEventBus()
+ * @since 25.3
  */
 public class VaadinServiceEventBus implements Serializable {
 

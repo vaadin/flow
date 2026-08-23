@@ -31,6 +31,8 @@ import com.vaadin.flow.server.VaadinService;
  * {@link RpcInvocationStartedEvent}, {@link RpcInvocationFailedEvent} and
  * {@link RpcInvocationEndedEvent}, since the event bus dispatches events by
  * their exact type.
+ * 
+ * @since 25.3
  */
 public abstract class AbstractRpcInvocationEvent extends EventObject {
 
