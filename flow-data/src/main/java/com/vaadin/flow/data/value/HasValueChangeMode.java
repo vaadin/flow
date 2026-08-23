@@ -38,6 +38,8 @@ public interface HasValueChangeMode extends Serializable {
 
     /**
      * Default value change timeout for textual inputs in milliseconds.
+     * 
+     * @since 2.0
      */
     int DEFAULT_CHANGE_TIMEOUT = 400;
 
@@ -72,6 +74,7 @@ public interface HasValueChangeMode extends Serializable {
      * @throws UnsupportedOperationException
      *             if neither {@link ValueChangeMode#LAZY}, nor
      *             {@link ValueChangeMode#TIMEOUT} is supported
+     * @since 2.0
      */
     default void setValueChangeTimeout(int valueChangeTimeout) {
         throw new UnsupportedOperationException();
@@ -87,6 +90,7 @@ public interface HasValueChangeMode extends Serializable {
      * @throws UnsupportedOperationException
      *             if neither {@link ValueChangeMode#LAZY}, nor
      *             {@link ValueChangeMode#TIMEOUT} is supported
+     * @since 2.0
      */
     default int getValueChangeTimeout() {
         throw new UnsupportedOperationException();

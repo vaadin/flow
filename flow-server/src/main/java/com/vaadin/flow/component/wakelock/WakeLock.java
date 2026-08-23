@@ -66,6 +66,8 @@ import com.vaadin.flow.signals.Signal;
  * <li>Some browsers release the lock on low battery or when the device enters
  * power-saving mode; {@link #activeSignal()} reflects this immediately.</li>
  * </ul>
+ *
+ * @since 25.2
  */
 public final class WakeLock {
 

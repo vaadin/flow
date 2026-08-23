@@ -79,6 +79,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class DownloadAction extends Action {
 
@@ -205,7 +207,7 @@ public class DownloadAction extends Action {
         }
 
         @Override
-        protected JsFunction toJs(Trigger trigger) {
+        public JsFunction toJs(Trigger trigger) {
             // Register-and-resolve in one step: the URI is stable per
             // (handler, host) pair, so multiple toJs() calls for the same
             // host reuse the same resource.

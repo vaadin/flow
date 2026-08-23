@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
  *            {@code text/plain} contents, or {@code null} if not present
  * @param html
  *            {@code text/html} contents, or {@code null} if not present
+ * @since 25.2
  */
 public record ClipboardPayload(@Nullable String text,
         @Nullable String html) implements Serializable {

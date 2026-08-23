@@ -27,6 +27,8 @@ import com.vaadin.flow.component.UI;
  * Typical usage: hide a "keep screen on" toggle entirely when the value is
  * {@link #UNSUPPORTED} (no user action can change this), and otherwise offer it
  * and observe {@link WakeLock#activeSignal(UI)} for the actual state.
+ *
+ * @since 25.2
  */
 public enum WakeLockAvailability {
     /**

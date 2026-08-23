@@ -200,6 +200,7 @@ public class Html extends Component {
      *             if reading the stream fails
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(InputStream stream,
             SerializableSupplier<Safelist> safelistSupplier) {
@@ -260,6 +261,7 @@ public class Html extends Component {
      *            not <code>null</code>
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(String outerHtml,
             SerializableSupplier<Safelist> safelistSupplier) {
@@ -280,6 +282,7 @@ public class Html extends Component {
      * @throws IllegalArgumentException
      *             if the signal is {@code null} or its current value is null or
      *             empty, or doesn't have exactly one root element
+     * @since 25.1
      */
     public Html(Signal<String> htmlSignal) {
         super(null);
@@ -320,6 +323,7 @@ public class Html extends Component {
      *             empty, or doesn't have exactly one root element
      * @throws NullPointerException
      *             if the supplier is <code>null</code>
+     * @since 25.2
      */
     public Html(Signal<String> htmlSignal,
             SerializableSupplier<Safelist> safelistSupplier) {
@@ -355,6 +359,7 @@ public class Html extends Component {
      *
      * @param html
      *            the HTML to wrap
+     * @since 23.3
      */
     public void setHtmlContent(String html) {
         ensureNoHtmlContentBinding();
@@ -527,6 +532,7 @@ public class Html extends Component {
      *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
+     * @since 25.1
      */
     public SignalBinding<String> bindHtmlContent(Signal<String> htmlSignal) {
         Objects.requireNonNull(htmlSignal, "Signal cannot be null");

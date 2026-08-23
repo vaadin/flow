@@ -240,6 +240,7 @@ public interface DomListenerRegistration extends Registration {
      *
      * @return timeout in milliseconds, or <code>0</code> if debouncing is
      *         disabled
+     * @since 2.0
      */
     default int getDebounceTimeout() {
         /*
@@ -257,6 +258,7 @@ public interface DomListenerRegistration extends Registration {
      * @see #throttle(int)
      *
      * @return debounce phases
+     * @since 2.0
      */
     default Set<DebouncePhase> getDebouncePhases() {
         /*
@@ -270,6 +272,7 @@ public interface DomListenerRegistration extends Registration {
      * Gets the event type that the listener is registered for.
      *
      * @return DOM event type of the listener
+     * @since 2.0
      */
     default String getEventType() {
         /*
@@ -307,6 +310,7 @@ public interface DomListenerRegistration extends Registration {
      *            the name of the property to synchronize, not <code>null</code>
      *            or <code>""</code>
      * @return this registration, for chaining
+     * @since 1.3
      */
     default DomListenerRegistration synchronizeProperty(String propertyName) {
         if (propertyName == null || propertyName.isEmpty()) {
@@ -376,6 +380,7 @@ public interface DomListenerRegistration extends Registration {
      *      docs for related JS DOM API</a>
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.2
      */
     default public DomListenerRegistration stopPropagation() {
         addEventData("event.stopPropagation()");
@@ -396,6 +401,7 @@ public interface DomListenerRegistration extends Registration {
      *      docs for related JS DOM API</a>
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.2
      */
     default public DomListenerRegistration preventDefault() {
         addEventData("event.preventDefault()");
@@ -432,6 +438,7 @@ public interface DomListenerRegistration extends Registration {
      *            data, not <code>null</code>
      * @return this registration, for chaining
      * @see #addEventData(String)
+     * @since 25.0
      */
     default DomListenerRegistration addEventData(Class<?> type) {
         if (type == null) {
@@ -463,6 +470,7 @@ public interface DomListenerRegistration extends Registration {
      *            the event data, not <code>null</code>
      * @return this registration, for chaining
      * @see #addEventData(String)
+     * @since 25.0
      */
     default DomListenerRegistration addEventData(
             TypeReference<?> typeReference) {
@@ -523,6 +531,7 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @see DomEvent#getEventDetail(Class)
      * @see DomEvent#getEventDetail(TypeReference)
+     * @since 25.0
      */
     default DomListenerRegistration addEventDetail() {
         return addEventData("event.detail");
@@ -559,6 +568,7 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @see DomEvent#getEventDetail(Class)
      * @see DomEvent#getEventDetail(TypeReference)
+     * @since 25.0
      */
     default DomListenerRegistration addEventDetail(Class<?> type) {
         if (type == null) {
@@ -583,6 +593,7 @@ public interface DomListenerRegistration extends Registration {
      * events.
      *
      * @return the DomListenerRegistration for further configuration
+     * @since 24.4
      */
     public DomListenerRegistration allowInert();
 

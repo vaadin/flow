@@ -108,8 +108,9 @@ public class RouteConfiguration implements Serializable {
      *            not {@code null}
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         target has no logical parent
+     * @since 25.2
      */
-    public Optional<RouteParentReference> getRouteParent(
+    public Optional<RouteReference> getRouteParent(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         return RouteUtil.getRouteParent(handledRegistry, navigationTarget,
@@ -135,8 +136,9 @@ public class RouteConfiguration implements Serializable {
      *            not {@code null}
      * @return the chain of the target and its logical ancestors, ordered from
      *         root to the navigation target, never empty
+     * @since 25.2
      */
-    public List<RouteParentReference> getRouteHierarchy(
+    public List<RouteReference> getRouteHierarchy(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         return RouteUtil.getRouteHierarchy(handledRegistry, navigationTarget,
@@ -167,6 +169,7 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *            path to check for availability
      * @return true if there exists a route for the given path
+     * @since 4.0
      */
     public boolean isPathAvailable(String path) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
@@ -479,6 +482,7 @@ public class RouteConfiguration implements Serializable {
      * @param navigationTarget
      *            target class.
      * @return main template for the given target.
+     * @since 4.0
      */
     public Optional<String> getTemplate(
             Class<? extends Component> navigationTarget) {
@@ -546,6 +550,7 @@ public class RouteConfiguration implements Serializable {
      * @throws NotFoundException
      *             in case the navigationTarget is not registered with a url
      *             template matching the given parameters.
+     * @since 4.0
      */
     public String getUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -593,6 +598,7 @@ public class RouteConfiguration implements Serializable {
      * Automatically adds access controls from UI if available.
      *
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes() {
         UI ui = UI.getCurrent();
@@ -616,6 +622,7 @@ public class RouteConfiguration implements Serializable {
      * @param accessControls
      *            the access controls to use for checking access
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes(
             Collection<BeforeEnterListener> accessControls) {

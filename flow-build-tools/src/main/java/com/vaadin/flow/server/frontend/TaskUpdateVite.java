@@ -40,15 +40,23 @@ import com.vaadin.flow.server.PwaConfiguration;
  * Updates the Vite configuration files according with current project settings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private final Options options;
 
     private final Set<String> webComponentTags;
-    private static final String[] reactPluginTemplatesUsedInStarters = new String[] {
+    /**
+     * Configurations that Flow or a starter has generated in the past and that
+     * the user has not touched since. They carry no customizations, so they can
+     * be replaced with the current default to pick up fixes made to it.
+     */
+    private static final String[] outdatedUnmodifiedTemplates = new String[] {
             getSimplifiedTemplate("vite.config-react.ts"),
-            getSimplifiedTemplate("vite.config-react-swc.ts") };
+            getSimplifiedTemplate("vite.config-react-swc.ts"),
+            getSimplifiedTemplate("vite.config-v25.2.ts") };
 
     static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
 
@@ -94,7 +102,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 return;
             }
             log().info(
-                    "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
+                    "Replacing the unmodified vite.config.ts with the current default version");
         }
 
         try (InputStream resource = this.getClass().getClassLoader()
@@ -108,7 +116,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     private boolean replaceWithDefault(File configFile) throws IOException {
         String text = simplifyTemplate(
                 Files.readString(configFile.toPath(), StandardCharsets.UTF_8));
-        for (String template : reactPluginTemplatesUsedInStarters) {
+        for (String template : outdatedUnmodifiedTemplates) {
             if (text.equals(template)) {
                 return true;
             }
@@ -169,7 +177,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .getFrontendDependenciesScanner().getPwaConfiguration();
         if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
             return template.replace("//#serviceWorkerPluginImport#",
-                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';")
+                    "import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker/index.ts';")
                     .replace("//#serviceWorkerPlugin#",
                             "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),");
         }

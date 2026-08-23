@@ -179,6 +179,8 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
+     * 
+     * @since 25.0
      */
     public void inline() {
         if (!response.containsHeader("Content-Disposition")) {
@@ -201,6 +203,7 @@ public class DownloadEvent {
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
+     * @since 25.0
      */
     public void inline(String fileName) {
         if (response.containsHeader("Content-Disposition")) {

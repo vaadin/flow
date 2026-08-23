@@ -38,6 +38,8 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
  * Clipboard.onClick(button).write(ClipboardContent.create().text("Hello")
  *         .html("<b>Hello</b>").image(previewImage));
  * }</pre>
+ *
+ * @since 25.2
  */
 public final class ClipboardContent implements Serializable {
 

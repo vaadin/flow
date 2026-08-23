@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.JacksonCodec;
  * as a capture.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 public final class JsFunction implements Serializable {
 

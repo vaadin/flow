@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.EventObject;
-
 /**
  * Event fired to {@link SessionLockListener}s around acquisition and release of
  * a Vaadin session lock.
@@ -30,8 +28,14 @@ import java.util.EventObject;
  * outermost lock-hold, so timing state can be kept in a thread local.
  *
  * @see SessionLockListener
+ * @since 25.2
+ * @deprecated use {@link SessionLockRequestedEvent},
+ *             {@link SessionLockAcquiredEvent} and
+ *             {@link SessionLockReleasedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead
  */
-public class SessionLockEvent extends EventObject {
+@Deprecated(since = "25.3", forRemoval = true)
+public class SessionLockEvent extends AbstractSessionLockEvent {
 
     /**
      * Creates a new session lock event.
@@ -42,24 +46,5 @@ public class SessionLockEvent extends EventObject {
      */
     public SessionLockEvent(VaadinService service) {
         super(service);
-    }
-
-    /**
-     * Gets the Vaadin service from which this event originates.
-     *
-     * @return the Vaadin service instance
-     */
-    @Override
-    public VaadinService getSource() {
-        return (VaadinService) super.getSource();
-    }
-
-    /**
-     * Gets the Vaadin service from which this event originates.
-     *
-     * @return the Vaadin service instance
-     */
-    public VaadinService getService() {
-        return getSource();
     }
 }

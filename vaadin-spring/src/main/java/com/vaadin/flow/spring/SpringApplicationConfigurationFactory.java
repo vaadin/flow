@@ -28,6 +28,7 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  *
  * @author Vaadin Ltd
  *
+ * @since 16.0
  */
 public class SpringApplicationConfigurationFactory
         extends DefaultApplicationConfigurationFactory {

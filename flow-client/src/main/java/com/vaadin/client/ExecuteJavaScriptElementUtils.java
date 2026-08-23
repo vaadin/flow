@@ -22,7 +22,6 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -79,13 +78,12 @@ public final class ExecuteJavaScriptElementUtils {
     public static void attachExistingElement(StateNode parent,
             Element previousSibling, String tagName, int id) {
         Element existingElement = null;
-        JsArray<Node> childNodes = DomApi.wrap(parent.getDomNode())
-                .getChildNodes();
+        elemental.dom.NodeList childNodes = parent.getDomNode().getChildNodes();
         JsMap<Node, Integer> indices = new JsMap<>();
         boolean afterSibling = previousSibling == null;
         int elementIndex = -1;
-        for (int i = 0; i < childNodes.length(); i++) {
-            Node node = childNodes.get(i);
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
             indices.set(node, i);
             if (node.equals(previousSibling)) {
                 afterSibling = true;

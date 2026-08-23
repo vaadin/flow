@@ -10,7 +10,9 @@ import './Download';
 import './ElementResize';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
 import './WakeLock';
+import { isShareSupported } from './WebShare';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -434,13 +436,21 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      const browserDetailsParam = browserDetails
-        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+      // Browser details are appended as individual query parameters rather
+      // than as a single JSON-encoded value. A JSON payload in the URL
+      // produces many percent-encoded escape sequences (%7B, %22, %3A, ...)
+      // that some firewalls/WAFs (e.g. Sophos) flag and block, which would
+      // fail the bootstrap on the very first page load. Plain key=value pairs
+      // avoid that pattern entirely.
+      const browserDetailsParams = browserDetails
+        ? Object.entries(browserDetails)
+            .map(([key, value]) => `&${key}=${encodeURIComponent(value)}`)
+            .join('')
         : '';
 
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParams}`;
 
       httpRequest.open('GET', requestPath);
 
@@ -552,6 +562,11 @@ export class Flow {
     /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
     params['v-fs'] = currentFullscreenState();
 
+    /* Screen orientation — initial state of screen.orientation, empty
+       when the Screen Orientation API is unavailable. */
+    params['v-so'] = currentScreenOrientationType();
+    params['v-soa'] = currentScreenOrientationAngle();
+
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';
@@ -575,6 +590,9 @@ export class Flow {
     if (wakeLock) {
       params['v-wla'] = wakeLock.queryAvailability();
     }
+
+    /* Web Share API support */
+    params['v-ws'] = isShareSupported();
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

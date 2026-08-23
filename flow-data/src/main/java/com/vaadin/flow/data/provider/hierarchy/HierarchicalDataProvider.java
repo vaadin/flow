@@ -38,9 +38,12 @@ import com.vaadin.flow.function.SerializableFunction;
  *            data type
  * @param <F>
  *            filter type
- * @since 1.2
+ * @since 1.1
  */
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
+    /**
+     * @since 25.0
+     */
     public enum HierarchyFormat {
         /**
          * The nested hierarchy format refers to a data provider implementation
@@ -213,8 +216,6 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          * example, the use of recursive CTEs (Common Table Expressions) to
          * retrieve all descendants of an item in a single SQL query.
          * </ul>
-         *
-         * @since 25.0
          */
         FLATTENED,
     }
@@ -326,6 +327,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *         root item
      * @throws UnsupportedOperationException
      *             if not implemented
+     * @since 25.0
      */
     default T getParent(T item) {
         throw new UnsupportedOperationException(
@@ -353,6 +355,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @return the index of the provided item or -1 if not found
      * @throws UnsupportedOperationException
      *             if not implemented
+     * @since 25.0
      */
     default int getItemIndex(T item, HierarchicalQuery<T, F> query) {
         if (isInMemory()) {
@@ -378,6 +381,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @return the depth of the item in the hierarchy
      * @throws UnsupportedOperationException
      *             if not implemented
+     * @since 25.0
      */
     default public int getDepth(T item) {
         if (HierarchyFormat.FLATTENED.equals(getHierarchyFormat())) {

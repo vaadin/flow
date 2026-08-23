@@ -36,6 +36,8 @@ import com.vaadin.flow.component.Component;
  * Utility class for bundle operations.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 public final class BundleUtils {
 

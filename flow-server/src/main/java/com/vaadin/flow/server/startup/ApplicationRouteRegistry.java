@@ -61,6 +61,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      *
      * @param context
      *            the Vaadin context
+     * @since 9.0
      */
     protected ApplicationRouteRegistry(VaadinContext context) {
         this.context = context;
@@ -70,6 +71,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
 
     /**
      * RouteRegistry wrapper class for storing the ApplicationRouteRegistry.
+     * 
+     * @since 2.2
      */
     protected static class ApplicationRouteRegistryWrapper
             implements Serializable {
@@ -105,6 +108,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
      * @return a registry instance for the given context, not <code>null</code>
+     * @since 2.2
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;

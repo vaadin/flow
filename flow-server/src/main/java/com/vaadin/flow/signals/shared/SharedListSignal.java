@@ -49,6 +49,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *
  * @param <T>
  *            the element type
+ * @since 25.1
  */
 public class SharedListSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<@NonNull List<SharedValueSignal<T>>> {
@@ -315,6 +316,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllLast(
             Collection<? extends T> values) {
@@ -332,6 +334,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllFirst(
             Collection<? extends T> values) {
@@ -356,6 +359,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllAt(
             Collection<? extends T> values, ListPosition at) {

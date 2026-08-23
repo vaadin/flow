@@ -104,9 +104,16 @@ public class NativeLabel extends HtmlContainer {
      * If the provided component does not have an id set, one will be
      * automatically generated.
      * <p>
-     * The id is resolved lazily when the label is attached and sent to the
-     * client. This means the component's id can be set after calling this
-     * method. If no id is set by then, one will be generated.
+     * The {@code for} value is available right away, but a generated id is only
+     * assigned to the described component before the next client response after
+     * the label is attached. This means the component's id can be set after
+     * calling this method, in which case that id is referenced instead. For
+     * that reason the value read with {@link #getFor()} should not be cached
+     * within the same request.
+     * <p>
+     * Calling {@link #setFor(String)} or referencing another component cancels
+     * a pending resolution, leaving the previously described component's id
+     * untouched.
      *
      * @param forComponent
      *            the component that this label describes, not <code>null</code>
@@ -117,16 +124,19 @@ public class NativeLabel extends HtmlContainer {
                     "The provided component cannot be null");
         }
         ComponentUtil.resolveOrGenerateIdLater(getElement(), forComponent,
-                "nativelabel-", this::setFor);
+                "nativelabel-", this::getFor, this::setFor);
     }
 
     /**
      * Sets the id of the component that this label describes. The id should be
      * defined in case the described component is not an ancestor of the label.
+     * <p>
+     * Passing an empty string clears the <code>for</code> attribute, so that
+     * {@link #getFor()} returns an empty optional.
      *
      * @param forId
-     *            the id of the described component, or <code>null</code> if
-     *            there is no value
+     *            the id of the described component, or an empty string to clear
+     *            the <code>for</code> attribute, not <code>null</code>
      */
     public void setFor(String forId) {
         set(forDescriptor, forId);

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.router;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
@@ -28,7 +28,7 @@ import com.vaadin.flow.server.VaadinService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class InternalServerErrorTest {
 
     private BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);

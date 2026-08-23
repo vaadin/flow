@@ -45,7 +45,17 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  *
  * @see VaadinService#addRpcInvocationListener(RpcInvocationListener)
  * @see RpcInvocationEvent
+ * @since 25.2
+ * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+ *             {@link RpcInvocationFailedEvent} and
+ *             {@link RpcInvocationEndedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead.
+ *             The callbacks of this listener are served by those events, one
+ *             instance each, so an implementation that correlates the callbacks
+ *             of an invocation has to do so through the thread they are
+ *             delivered on rather than through the identity of the event
  */
+@Deprecated(since = "25.3", forRemoval = true)
 public interface RpcInvocationListener extends Serializable {
 
     /**

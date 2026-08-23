@@ -20,6 +20,8 @@ package com.vaadin.flow.component.geolocation;
  * {@link GeolocationWatcher#positionSignal()} until the browser reports its
  * first position or error. One-shot {@link Geolocation#getPosition} callers
  * never observe this value.
+ *
+ * @since 25.2
  */
 public record GeolocationPending() implements GeolocationResult {
 }

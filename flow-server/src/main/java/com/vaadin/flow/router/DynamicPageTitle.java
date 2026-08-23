@@ -48,6 +48,7 @@ import java.lang.annotation.Target;
  * view itself.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  * @see HasDynamicTitle
  * @see PageTitleGenerator
  */

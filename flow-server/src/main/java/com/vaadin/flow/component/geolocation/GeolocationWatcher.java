@@ -53,6 +53,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * immediately, otherwise it starts on first attach. Calling {@link #stop()}
  * before the first attach cancels the pending activation; the watcher can still
  * be activated later by calling {@link #resume()} on an attached owner.
+ *
+ * @since 25.2
  */
 public class GeolocationWatcher implements Serializable {
 

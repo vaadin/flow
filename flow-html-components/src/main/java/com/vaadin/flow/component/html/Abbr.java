@@ -27,6 +27,7 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;abbr&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 25.0
  */
 @Tag(Tag.ABBR)
 public class Abbr extends HtmlContainer implements ClickNotifier<Abbr> {
@@ -66,6 +67,7 @@ public class Abbr extends HtmlContainer implements ClickNotifier<Abbr> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Abbr(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

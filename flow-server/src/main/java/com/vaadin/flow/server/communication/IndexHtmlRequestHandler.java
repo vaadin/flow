@@ -83,6 +83,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * and inject baseHref as well as the bundle scripts into the template.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 3.0
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
@@ -384,6 +386,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      *
      * @param indexDocument
      *            the document to add the license checker to
+     * @since 23.2
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker

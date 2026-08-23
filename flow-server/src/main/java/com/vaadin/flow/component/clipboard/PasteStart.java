@@ -32,6 +32,7 @@ import java.io.Serializable;
  *            of the files about to be delivered
  * @param totalFiles
  *            the number of files the browser said the paste contains
+ * @since 25.2
  */
 public record PasteStart(long pasteId, int totalFiles) implements Serializable {
 }

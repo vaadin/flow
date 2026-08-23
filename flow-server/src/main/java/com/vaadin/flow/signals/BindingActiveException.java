@@ -18,6 +18,8 @@ package com.vaadin.flow.signals;
 /**
  * Exception indicating that an operation could not be performed because a
  * binding is active.
+ * 
+ * @since 25.1
  */
 public class BindingActiveException extends IllegalStateException {
 

@@ -35,6 +35,8 @@ package com.vaadin.flow.component.geolocation;
  * <li>{@link #PROMPT} / {@link #UNKNOWN} — wait for an explicit user action
  * (click a button) before triggering a browser prompt.</li>
  * </ul>
+ *
+ * @since 25.2
  */
 public enum GeolocationAvailability {
     /**

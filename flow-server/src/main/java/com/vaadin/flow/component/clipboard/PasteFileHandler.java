@@ -76,6 +76,8 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * sanitized. Treat it as untrusted &mdash; never use it directly as a
  * filesystem path without sanitizing it first.</li>
  * </ul>
+ *
+ * @since 25.2
  */
 public final class PasteFileHandler implements Serializable {
 

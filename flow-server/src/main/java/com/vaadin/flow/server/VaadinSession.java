@@ -164,6 +164,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Creates the StreamResourceRegistry for this session.
      *
      * @return A StreamResourceRegistry instance
+     * @since 2.2
      */
     protected StreamResourceRegistry createStreamResourceRegistry() {
         return new StreamResourceRegistry(this);
@@ -246,6 +247,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @param browser
      *            the web browser object
+     * @since 5.0
      */
     public void setBrowser(WebBrowser browser) {
         checkHasLock();
@@ -413,6 +415,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
+     * @since 25.1
      */
     public Signal<Locale> localeSignal() {
         checkHasLock();
@@ -531,6 +534,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the session destroy listener
      * @return a handle that can be used for removing the listener
      * @see VaadinService#addSessionDestroyListener
+     * @since 24.4.10
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
@@ -1250,6 +1254,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * the current time and midnight, January 1, 1970 UTC.
      *
      * @return last lock operation timestamp.
+     * @since 23.2.6
      */
     public long getLastLocked() {
         return lastLocked;
@@ -1263,6 +1268,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * the current time and midnight, January 1, 1970 UTC.
      *
      * @return last unlock operation timestamp.
+     * @since 23.2.6
      */
     public long getLastUnlocked() {
         return lastUnlocked;
@@ -1282,6 +1288,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the element instance
      * @throws IllegalArgumentException
      *             if the element was not found
+     * @since 24.0
      */
     public Element findElement(int uiId, int nodeId)
             throws IllegalArgumentException {

@@ -969,4 +969,38 @@ class BinderSignalTest extends SignalsUnitTest {
 
         assertFalse(field.isInvalid());
     }
+
+    // Reproduces #24790: removing a binding and then re-binding the same field
+    // with a different configuration must not throw when the field is later
+    // attached. The field is bound while detached, removed, re-bound, and only
+    // then added to the UI.
+    @Test
+    void removeBinding_thenRebindAndAttach_noErrorAndRebindingWorks() {
+        item.setFirstName("first");
+        item.setLastName("last");
+        binder.setBean(item);
+
+        var field = new TestTextField();
+        binder.forField(field)
+                .withValidator(value -> !value.isEmpty(), "Required")
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        binder.removeBinding(field);
+
+        binder.forField(field).bind(Person::getLastName, Person::setLastName);
+
+        UI.getCurrent().add(field);
+
+        // No exception was reported to the session error handler on attach.
+        assertTrue(events.isEmpty());
+
+        // The re-bound binding is the one that is now active.
+        assertEquals("last", field.getValue());
+
+        // The re-bound binding still propagates edits back to the bean instead
+        // of the stale, removed binding.
+        field.setValue("edited");
+        assertEquals("edited", item.getLastName());
+        assertEquals("first", item.getFirstName());
+    }
 }

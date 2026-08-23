@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * A signal containing a numeric value. The value is updated as a single atomic
  * change. In addition to the regular {@link SharedValueSignal} operation, this
  * class also supports atomically incrementing the value.
+ * 
+ * @since 25.1
  */
 public class SharedNumberSignal extends SharedValueSignal<Double> {
 

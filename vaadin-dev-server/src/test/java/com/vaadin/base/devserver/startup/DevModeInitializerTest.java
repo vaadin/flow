@@ -39,11 +39,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -57,6 +58,8 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendBuildUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -74,7 +77,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-@NotThreadSafe
+@Isolated
 class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @TempDir(cleanup = CleanupMode.NEVER)
@@ -251,6 +254,28 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         mainPackageFile.delete();
         process();
         assertDevModeHandlerStarted();
+    }
+
+    @Test
+    void minimumFrontendPackageAgeDays_readFromConfig_passedToOptions()
+            throws Exception {
+        Mockito.when(appConfig.getStringProperty(
+                InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"))
+                .thenReturn("7");
+
+        assertEquals(7,
+                captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
+    }
+
+    private Options captureNodeTasksOptions() throws Exception {
+        List<Options> captured = new ArrayList<>();
+        try (MockedConstruction<NodeTasks> ignored = Mockito
+                .mockConstruction(NodeTasks.class, (mock, context) -> captured
+                        .add((Options) context.arguments().get(0)))) {
+            process();
+        }
+        assertEquals(1, captured.size());
+        return captured.get(0);
     }
 
     @Test
@@ -570,6 +595,18 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         List<String> frontendExtraFileExtensions = DevModeInitializer
                 .getFrontendExtraFileExtensions(appConfig);
         assertEquals(3, frontendExtraFileExtensions.size());
+    }
+
+    @Test
+    void parsePackageList_emptyProperty_returnsEmptyList() {
+        assertTrue(DevModeInitializer.parsePackageList("").isEmpty());
+    }
+
+    @Test
+    void parsePackageList_packagesSet_returnsTrimmedNonBlankList() {
+        List<String> packages = DevModeInitializer
+                .parsePackageList("foo, bar ,,baz");
+        assertEquals(List.of("foo", "bar", "baz"), packages);
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)

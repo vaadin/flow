@@ -56,6 +56,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @param <T>
  *            the runtime type of the value produced
+ * @since 25.2
  */
 public class SignalInput<T> extends Action.Input<T> {
 
@@ -93,7 +94,7 @@ public class SignalInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(Trigger trigger) {
+    public JsFunction toJs(Trigger trigger) {
         installEffectIfNeeded();
         // $0 = the owner element (resolved to a DOM ref on the wire); $1 =
         // the mirrored property name. Matches PropertyInput's shape — both

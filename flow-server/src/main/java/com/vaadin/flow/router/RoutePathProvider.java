@@ -21,6 +21,7 @@ package com.vaadin.flow.router;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 @FunctionalInterface
 public interface RoutePathProvider {

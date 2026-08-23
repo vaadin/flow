@@ -126,6 +126,7 @@ public class Query<T, F> implements Serializable {
      * until it is. Updates the page size value if it has been raised.
      *
      * @return the zero-based page index
+     * @since 4.0
      */
     public int getPage() {
         int pageSize = getPageSize();
@@ -161,6 +162,7 @@ public class Query<T, F> implements Serializable {
      * item.
      *
      * @return the page size used for data access
+     * @since 4.0
      */
     public int getPageSize() {
         if (pageSize != null) {
@@ -232,6 +234,7 @@ public class Query<T, F> implements Serializable {
      * {@code getOffset() + getLimit()} where the end is exclusive.
      *
      * @return the requested range end
+     * @since 4.0
      */
     public int getRequestedRangeEnd() {
         return getOffset() + getLimit();

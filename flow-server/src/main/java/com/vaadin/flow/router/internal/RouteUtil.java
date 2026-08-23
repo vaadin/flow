@@ -37,21 +37,15 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
-import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PageTitleContext;
-import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
@@ -60,10 +54,10 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.RouteParentContext;
-import com.vaadin.flow.router.RouteParentReference;
 import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
@@ -104,6 +98,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle
      * @return parent layouts for target
+     * @since 9.0
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             VaadinContext context, Class<?> component, String path) {
@@ -143,6 +138,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle
      * @return parent layouts for target
+     * @since 24.5
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             RouteRegistry handledRegistry, Class<?> component, String path) {
@@ -180,6 +176,7 @@ public class RouteUtil {
      * @param component
      *            navigation target component to get route path for
      * @return actual path for given route target
+     * @since 9.0
      */
     public static String getRoutePath(VaadinContext context,
             Class<?> component) {
@@ -267,6 +264,7 @@ public class RouteUtil {
      *            the layout class for which the parent layouts are collected.
      * @return a list of all parent layout classes starting from the given
      *         layout and including all ancestors in the hierarchy.
+     * @since 24.5
      */
     public static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
             Class<? extends RouterLayout> layout) {
@@ -317,6 +315,7 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle or null for error views.
      * @return top parent layout for target or null if none found
+     * @since 9.0
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             VaadinContext context, final Class<?> component,
@@ -369,6 +368,7 @@ public class RouteUtil {
      *            the component where the route points to
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
+     * @since 9.0
      */
     public static String resolve(VaadinContext context, Class<?> component) {
         RoutePathProvider provider = null;
@@ -409,6 +409,7 @@ public class RouteUtil {
      *            modified classes
      * @param deletedClasses
      *            deleted classes
+     * @since 3.1
      */
     public static void updateRouteRegistry(RouteRegistry registry,
             Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
@@ -586,6 +587,7 @@ public class RouteUtil {
      *            path to determine if we are targeting a {@link RouteAlias}
      *            instead of {@link Route}
      * @return {@code true} if auto layout can be used
+     * @since 24.5
      */
     public static boolean isAutolayoutEnabled(Class<?> target, String path) {
         if (target.isAnnotationPresent(RouteAlias.class)
@@ -627,6 +629,7 @@ public class RouteUtil {
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
+     * @since 24.5.1
      */
     public static void checkForClientRouteCollisions(VaadinService service,
             List<RouteData> flowRoutes)
@@ -648,6 +651,7 @@ public class RouteUtil {
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
+     * @since 24.5.1
      */
     public static void checkForClientRouteCollisions(VaadinService service,
             String... flowRouteTemplates)
@@ -688,6 +692,7 @@ public class RouteUtil {
      * @param registry
      *            the registry to check
      * @return {@code true} if the registry has any auto layouts
+     * @since 24.5
      */
     public static boolean hasAutoLayout(AbstractRouteRegistry registry) {
         return !registry.getLayouts().isEmpty();
@@ -700,6 +705,7 @@ public class RouteUtil {
      * @param configuration
      *            deployment configuration
      * @return {@code true} if any client route has auto layout
+     * @since 24.5
      */
     public static boolean hasClientRouteWithAutoLayout(
             AbstractConfiguration configuration) {
@@ -713,6 +719,7 @@ public class RouteUtil {
      * @param registry
      *            the registry to check
      * @return {@code true} if the registry has any auto layouts
+     * @since 24.5
      */
     public static boolean hasServerRouteWithAutoLayout(
             AbstractRouteRegistry registry) {
@@ -746,6 +753,7 @@ public class RouteUtil {
      *            instance of UI, not {@code null}
      * @return dynamic page title found in the routes chain, or empty optional
      *         if no implementor of {@link HasDynamicTitle} was found
+     * @since 24.5
      */
     public static Optional<String> getDynamicTitle(UI ui) {
         return Objects.requireNonNull(ui).getInternals()
@@ -753,71 +761,6 @@ public class RouteUtil {
                 .filter(HasDynamicTitle.class::isInstance)
                 .map(element -> ((HasDynamicTitle) element).getPageTitle())
                 .filter(Objects::nonNull).findFirst();
-    }
-
-    /**
-     * Resolves the page title of the given navigation target without creating
-     * an instance of it, by applying the {@link DynamicPageTitle} /
-     * {@link PageTitle} resolution chain.
-     * <p>
-     * The title is resolved in this order:
-     * <ol>
-     * <li>the per-route {@link DynamicPageTitle} generator;</li>
-     * <li>the application-wide default {@link PageTitleGenerator} from the
-     * instantiator;</li>
-     * <li>the static {@link PageTitle#value()}.</li>
-     * </ol>
-     * The declared {@link PageTitle#value()} is always passed to a generator
-     * through {@link PageTitleContext#value()}. An empty result means the
-     * target declares no title; callers decide the fallback (an empty title or,
-     * for menus, the class simple name).
-     *
-     * @param instantiator
-     *            the instantiator used to create the generator and look up the
-     *            default generator, or {@code null} to create generators
-     *            reflectively and skip the default generator
-     * @param navigationTarget
-     *            the navigation target to resolve the title for, not
-     *            {@code null}
-     * @param routeParameters
-     *            the route parameters the target is resolved with, not
-     *            {@code null}
-     * @param queryParameters
-     *            the query parameters the target is resolved with, not
-     *            {@code null}
-     * @return the resolved title, or an empty {@link Optional} if the target
-     *         declares no title and no default generator is available
-     */
-    public static Optional<String> resolvePageTitle(Instantiator instantiator,
-            Class<? extends Component> navigationTarget,
-            RouteParameters routeParameters, QueryParameters queryParameters) {
-        PageTitle pageTitle = navigationTarget.getAnnotation(PageTitle.class);
-        DynamicPageTitle dynamic = navigationTarget
-                .getAnnotation(DynamicPageTitle.class);
-        String value = pageTitle != null ? pageTitle.value() : "";
-
-        PageTitleGenerator generator;
-        if (dynamic != null) {
-            generator = instantiatePageTitleGenerator(instantiator,
-                    dynamic.value());
-        } else {
-            generator = instantiator != null
-                    ? instantiator.getPageTitleGenerator()
-                    : null;
-        }
-        if (generator != null) {
-            return Optional.of(generator
-                    .generatePageTitle(new PageTitleContext(navigationTarget,
-                            routeParameters, queryParameters, value)));
-        }
-        return pageTitle != null ? Optional.of(value) : Optional.empty();
-    }
-
-    private static PageTitleGenerator instantiatePageTitleGenerator(
-            Instantiator instantiator,
-            Class<? extends PageTitleGenerator> generatorType) {
-        return instantiator != null ? instantiator.getOrCreate(generatorType)
-                : ReflectTools.createInstance(generatorType);
     }
 
     /**
@@ -846,8 +789,9 @@ public class RouteUtil {
      *            not {@code null}
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         target has no logical parent
+     * @since 25.2
      */
-    public static Optional<RouteParentReference> getRouteParent(
+    public static Optional<RouteReference> getRouteParent(
             RouteRegistry registry, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         Objects.requireNonNull(navigationTarget,
@@ -861,7 +805,7 @@ public class RouteUtil {
                         new RouteParentContext(navigationTarget, parameters));
             }
             if (!Component.class.equals(annotation.value())) {
-                return Optional.of(new RouteParentReference(annotation.value(),
+                return Optional.of(new RouteReference(annotation.value(),
                         narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
@@ -908,7 +852,7 @@ public class RouteUtil {
      * Derives the logical parent of a route from the route URL by walking up
      * the path until a registered route serving an ancestor path is found.
      */
-    private static Optional<RouteParentReference> getUrlBasedRouteParent(
+    private static Optional<RouteReference> getUrlBasedRouteParent(
             RouteRegistry registry, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         if (registry == null) {
@@ -930,7 +874,7 @@ public class RouteUtil {
                 Class<? extends Component> parentTarget = parent
                         .getRouteTarget().getTarget();
                 if (!parentTarget.equals(navigationTarget)) {
-                    return Optional.of(new RouteParentReference(parentTarget,
+                    return Optional.of(new RouteReference(parentTarget,
                             parent.getRouteParameters()));
                 }
             }
@@ -965,14 +909,15 @@ public class RouteUtil {
      *            not {@code null}
      * @return the chain of the target and its logical ancestors, ordered from
      *         root to the navigation target, never empty
+     * @since 25.2
      */
-    public static List<RouteParentReference> getRouteHierarchy(
-            RouteRegistry registry, Class<? extends Component> navigationTarget,
+    public static List<RouteReference> getRouteHierarchy(RouteRegistry registry,
+            Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        List<RouteParentReference> hierarchy = new ArrayList<>();
+        List<RouteReference> hierarchy = new ArrayList<>();
         Set<Class<? extends Component>> visited = new HashSet<>();
-        RouteParentReference current = new RouteParentReference(
-                navigationTarget, parameters);
+        RouteReference current = new RouteReference(navigationTarget,
+                parameters);
         while (current != null && visited.add(current.navigationTarget())) {
             hierarchy.add(current);
             current = getRouteParent(registry, current.navigationTarget(),
@@ -1000,6 +945,7 @@ public class RouteUtil {
      *
      * @return a {@link Optional} containing the template of the client route
      *         target or an empty {@link Optional}.
+     * @since 24.5.1
      */
     public static Optional<String> getClientNavigationRouteTargetTemplate(
             String url) {

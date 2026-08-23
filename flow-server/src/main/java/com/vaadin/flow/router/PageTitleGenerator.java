@@ -61,6 +61,7 @@ import java.io.Serializable;
  * to routes rendered in breadcrumbs or menus.
  *
  * @author Vaadin Ltd
+ * @since 25.2
  * @see DynamicPageTitle
  * @see HasDynamicTitle
  */

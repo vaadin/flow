@@ -126,6 +126,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @return a {@link DownloadHandler} that is served regardless of the
      *         owner's enabled state, or {@code this} if the disabled mode is
      *         already {@link DisabledUpdateMode#ALWAYS}
+     * @since 25.1.6
      */
     default DownloadHandler allowDisabled() {
         if (getDisabledUpdateMode() == DisabledUpdateMode.ALWAYS) {
@@ -444,6 +445,8 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            <code>path</code> and also used as a download request URL
      *            postfix
      * @return DownloadHandler implementation for download from an input stream
+     *
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride) {
@@ -495,6 +498,8 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @param listener
      *            listener for transfer progress events
      * @return DownloadHandler implementation for download from an input stream
+     *
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride,
