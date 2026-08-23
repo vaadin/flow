@@ -87,11 +87,7 @@ public final class ElementEffect implements Serializable {
             // execution context.
             enableEffect(owner);
 
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
+            registerDetachListener();
         } else {
             // Element is not yet attached: run a probe immediately so that
             // structural errors (e.g. MissingSignalUsageException) are reported
@@ -106,11 +102,33 @@ public final class ElementEffect implements Serializable {
         attachRegistration = owner.addAttachListener(attach -> {
             enableEffect(attach.getSource());
 
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
+            registerDetachListener();
+        });
+    }
+
+    /**
+     * Registers the detach listener that disables the effect when the owner is
+     * detached.
+     * <p>
+     * A detach listener from a previous attach may still be registered if the
+     * element was re-attached without a detach event firing in between - e.g.
+     * {@code StateNode.removeFromTree(false)} as used by
+     * {@code UIInternals.moveToNewUI} for {@code @PreserveOnRefresh}. Such a
+     * stale listener is removed first so that the effect never accumulates
+     * multiple detach listeners sharing the single {@link #detachRegistration}
+     * field, which would otherwise cause a {@link NullPointerException} when
+     * the second listener dereferences the already-nulled registration.
+     */
+    private void registerDetachListener() {
+        if (detachRegistration != null) {
+            detachRegistration.remove();
+        }
+        detachRegistration = owner.addDetachListener(detach -> {
+            disableEffect();
+            if (detachRegistration != null) {
                 detachRegistration.remove();
                 detachRegistration = null;
-            });
+            }
         });
     }
 

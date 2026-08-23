@@ -15,22 +15,27 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
@@ -48,24 +53,25 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
-    static final String ELEMENT_LOCATOR_JS = //@formatter:off
-            "const listenOn=this;" // this is the listenOn component's element
-                    + "const delegate=%1$s;" // the output of the JsLocator
-                    + "if (delegate) {"
-                    + "delegate.addEventListener('keydown', function(event) {"
-                    + "if (%2$s) {" // the filter text to match the key
-                    + "%3$s" // allow reset focus on active element if desired
-                    + "const new_event = new event.constructor(event.type, event);"
-                    + "listenOn.dispatchEvent(new_event);"
-                    + "%4$s" // the new event allows default if desired
-                    + "event.stopPropagation();}" // the new event bubbles if desired
-                    + "});" // end matches filter
-                    + "} else {"
-                    + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
-                    + "}";//@formatter:on
+
+    // Client helper resource lazily loaded per UI (see initShortcutClient),
+    // holding the origin guards and the keydown delegate (#24974).
+    static final String SHORTCUT_CLIENT_JS = "META-INF/frontend/FlowShortcut.js";
+    static final String SHORTCUT_CLIENT_INITIALIZED = "_shortcut_client_initialized";
 
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
+
+    private boolean allowEventsFromNestedModals = false;
+
+    // Marker attribute set on the lifecycle owner element so the client-side
+    // origin guard can locate it within the event's popover/modal scope
+    // (#24974). The token is a UUID rather than a JVM-local counter so it stays
+    // unique across session serialization/deserialization onto another JVM,
+    // where a counter would restart and new shortcuts could reuse a restored
+    // token.
+    static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
+    private final String ownerToken = "sc-" + UUID.randomUUID();
 
     private boolean resetFocusOnActiveElement = false;
 
@@ -130,9 +136,16 @@ public class ShortcutRegistration implements Registration, Serializable {
                 addListenOnDetachListeners();
             }
 
+            // Load the client helpers before the shortcut listeners/filters
+            // that reference them are queued for this response.
+            lifecycleOwner.getUI()
+                    .ifPresent(ShortcutRegistration.this::initShortcutClient);
+
             for (int i = 0; i < listenOnComponents.length; i++) {
                 updateHandlerListenerRegistration(i);
             }
+
+            updateOwnerMarker();
 
             markClean();
         }
@@ -262,6 +275,25 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * Allow the shortcut to trigger for keyboard events that originate from a
+     * modal or popover nested inside the shortcut's listening scope.
+     * <p>
+     * By default the shortcut does not trigger for such events. This restores
+     * behavior where a shortcut bound to a parent overlay would react to a
+     * keydown coming from a nested dialog/overlay that has focus.
+     *
+     * @return this <code>ShortcutRegistration</code>
+     * @see #setEventsFromNestedModalsAllowed(boolean)
+     */
+    public ShortcutRegistration allowEventsFromNestedModals() {
+        if (!allowEventsFromNestedModals) {
+            allowEventsFromNestedModals = true;
+            prepareForClientResponse();
+        }
+        return this;
+    }
+
+    /**
      * Reset focus on active element before triggering shortcut event handler.
      *
      * @return this <code>ShortcutRegistration</code>
@@ -288,8 +320,9 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration bindLifecycleTo(Component component) {
-        // this does not require setDirty as the shortcut configuration is
-        // not affected by this change
+        // Changing the lifecycle owner moves the owner marker the origin guard
+        // relies on, so setLifecycleOwner re-runs the client update when the
+        // owner actually changes.
 
         if (component == null) {
             throw new IllegalArgumentException(
@@ -361,6 +394,9 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
         removeAllListenerRegistrations();
 
+        if (lifecycleOwner != null && lifecycleOwner.getElement() != null) {
+            removeOwnerToken(lifecycleOwner.getElement());
+        }
         lifecycleOwner = null;
         listenOnComponents = null;
 
@@ -448,6 +484,36 @@ public class ShortcutRegistration implements Registration, Serializable {
     public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
         if (allowEventPropagation != eventPropagationAllowed) {
             allowEventPropagation = eventPropagationAllowed;
+            prepareForClientResponse();
+        }
+    }
+
+    /**
+     * Checks if the shortcut triggers for keyboard events originating from a
+     * modal or popover nested inside the shortcut's listening scope. The
+     * default value is {@code false}.
+     *
+     * @return {@code true} if events from nested modals are allowed to trigger
+     *         the shortcut
+     */
+    public boolean isEventsFromNestedModalsAllowed() {
+        return allowEventsFromNestedModals;
+    }
+
+    /**
+     * Sets whether the shortcut triggers for keyboard events that originate
+     * from a modal or popover nested inside the shortcut's listening scope. The
+     * default value is {@code false}, meaning a keydown coming from a nested
+     * dialog/overlay does not trigger a shortcut bound to a parent scope.
+     *
+     * @param eventsFromNestedModalsAllowed
+     *            {@code true} to allow events from nested modals to trigger the
+     *            shortcut
+     */
+    public void setEventsFromNestedModalsAllowed(
+            boolean eventsFromNestedModalsAllowed) {
+        if (allowEventsFromNestedModals != eventsFromNestedModalsAllowed) {
+            allowEventsFromNestedModals = eventsFromNestedModalsAllowed;
             prepareForClientResponse();
         }
     }
@@ -560,7 +626,19 @@ public class ShortcutRegistration implements Registration, Serializable {
             lifecycleRegistration.remove();
         }
 
+        final boolean ownerChanged = lifecycleOwner != null
+                && lifecycleOwner != owner;
+        if (ownerChanged && lifecycleOwner.getElement() != null) {
+            // Drop the marker from the previous owner; the new owner is marked
+            // by updateOwnerMarker on the client update triggered below.
+            removeOwnerToken(lifecycleOwner.getElement());
+        }
+
         registerLifecycleOwner(owner);
+
+        if (ownerChanged) {
+            prepareForClientResponse();
+        }
     }
 
     private void addKey(Key key) {
@@ -685,6 +763,28 @@ public class ShortcutRegistration implements Registration, Serializable {
                 DomListenerRegistration listenerRegistration = (DomListenerRegistration) r;
 
                 String filterText = filterText();
+                /*
+                 * Ignore keydown events that originate from a modal/popover
+                 * nested deeper than the shortcut's lifecycle owner (#24974).
+                 * The listener is often bound to the UI (body) while the owner
+                 * lives inside an overlay, so the guard is anchored on the
+                 * owner's own popover/modal scope, not the listener element. It
+                 * runs before the preventDefault/stopPropagation side effects
+                 * so that non-matching events are left untouched.
+                 *
+                 * Skipped when this listenOn has an element-locator delegate:
+                 * that delegate evaluates its own boundary guard on the
+                 * original event and then re-dispatches a cloned event to
+                 * listenOn. The clone's composedPath no longer reflects the
+                 * real origin, so the composedPath-based owner-scope guard must
+                 * not run on it.
+                 */
+                final boolean hasEventDelegate = ComponentUtil.getData(
+                        getComponentEventSource(listenOnIndex),
+                        Shortcuts.ELEMENT_LOCATOR_JS_KEY) != null;
+                if (!allowEventsFromNestedModals && !hasEventDelegate) {
+                    filterText += " && " + generateOwnerScopeFilter();
+                }
                 /*
                  * Due to https://github.com/vaadin/flow/issues/4871 we are not
                  * able to use setEventData for these values, so we hack the
@@ -872,6 +972,99 @@ public class ShortcutRegistration implements Registration, Serializable {
                 + ".indexOf(event.key) !== -1)";
     }
 
+    /**
+     * Builds a JS boolean expression that is {@code true} when the event is
+     * allowed to fire the shortcut, delegating to
+     * {@code window.Vaadin.Flow.shortcut.eventWithinBoundary}. That helper
+     * walks {@code event.composedPath()} up to the boundary element and
+     * suppresses the shortcut when an open popover/modal shadows the boundary.
+     *
+     * @param boundaryExpr
+     *            JS expression evaluating to the element the listener is bound
+     *            to (e.g. {@code "delegate"})
+     * @return the guard expression
+     */
+    private static String generateNestedModalOriginFilter(String boundaryExpr) {
+        // Delegate path: the boundary element is the listener element the
+        // delegate re-dispatches to. Evaluated on the original event, so its
+        // composedPath is correct. Helper defined in FlowShortcut.js.
+        return "window.Vaadin.Flow.shortcut.eventWithinBoundary(event, "
+                + boundaryExpr + ")";
+    }
+
+    /**
+     * Builds a JS boolean expression that is {@code true} when the event does
+     * <em>not</em> originate from a modal/popover nested deeper than the
+     * shortcut's lifecycle owner, i.e. when the shortcut is allowed to fire.
+     * <p>
+     * It finds the nearest open popover/modal ancestor of the event target (the
+     * event's "scope") and fires only if that scope also contains the lifecycle
+     * owner element (located via its {@link #SHORTCUT_OWNER_ATTRIBUTE} marker).
+     * An event outside any popover fires; an event in a popover that does not
+     * contain the owner is treated as originating from a foreign or nested
+     * scope and is ignored.
+     *
+     * @return the guard expression
+     */
+    private String generateOwnerScopeFilter() {
+        // Normal path: locate the owner element via its marker attribute and
+        // fire only when it shares the event's popover/modal scope. Helper
+        // defined in FlowShortcut.js.
+        return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
+                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken + "\"]')";
+    }
+
+    /**
+     * Marks or unmarks the lifecycle owner element so that
+     * {@link #generateOwnerScopeFilter()} can locate it on the client. The
+     * marker is only needed while the origin guard is active.
+     */
+    private void updateOwnerMarker() {
+        if (lifecycleOwner == null) {
+            return;
+        }
+        final Element element = lifecycleOwner.getElement();
+        if (element == null) {
+            return;
+        }
+        if (allowEventsFromNestedModals) {
+            removeOwnerToken(element);
+        } else {
+            addOwnerToken(element);
+        }
+    }
+
+    private void addOwnerToken(Element element) {
+        final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+        if (current == null || current.isBlank()) {
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+            return;
+        }
+        final Set<String> tokens = new LinkedHashSet<>(
+                Arrays.asList(current.trim().split("\\s+")));
+        if (tokens.add(ownerToken)) {
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
+                    String.join(" ", tokens));
+        }
+    }
+
+    private void removeOwnerToken(Element element) {
+        final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+        if (current == null || current.isBlank()) {
+            return;
+        }
+        final Set<String> tokens = new LinkedHashSet<>(
+                Arrays.asList(current.trim().split("\\s+")));
+        if (tokens.remove(ownerToken)) {
+            if (tokens.isEmpty()) {
+                element.removeAttribute(SHORTCUT_OWNER_ATTRIBUTE);
+            } else {
+                element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
+                        String.join(" ", tokens));
+            }
+        }
+    }
+
     /*
      * #7799, vaadin/vaadin-dialog#229 This could be changed to use a generic
      * feature for DOM events by either using existing DOM event handling or by
@@ -883,15 +1076,24 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (elementLocatorJs != null) {
             // #10362 only prevent default when key filter matches to not block
             // typing or existing shortcuts
-            final String filterText = filterText();
-            final String focusJs = resetFocusOnActiveElement
-                    ? "window.Vaadin.Flow.resetFocus();"
-                    : "";
-            // enable default actions if desired
-            final String preventDefault = allowDefaultBehavior ? ""
-                    : "event.preventDefault();";
-            final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
-                    elementLocatorJs, filterText, focusJs, preventDefault);
+            String filterText = filterText();
+            // #24974 ignore keydown events bubbling from a modal/popover nested
+            // inside the delegate element (e.g. a nested dialog overlay). The
+            // delegate re-dispatches a clone that loses the origin, so the
+            // guard must run on the original event here, before the clone.
+            if (!allowEventsFromNestedModals) {
+                filterText += " && "
+                        + generateNestedModalOriginFilter("delegate");
+            }
+            // Relay keydown events via the client helper. 'this' is the
+            // listenOn element, elementLocatorJs resolves the delegate element,
+            // and the matcher receives (event, delegate).
+            final String jsExpression = String.format(
+                    "window.Vaadin.Flow.shortcut.registerKeydownDelegate("
+                            + "this, %1$s, function(event, delegate) {"
+                            + " return %2$s; }, %3$b, %4$b)",
+                    elementLocatorJs, filterText, resetFocusOnActiveElement,
+                    allowDefaultBehavior);
 
             final String expressionHash = StringUtil.getHash(jsExpression);
             final Set<String> expressions = getOrInitListenData(listenOn);
@@ -900,6 +1102,35 @@ public class ShortcutRegistration implements Registration, Serializable {
             }
             expressions.add(expressionHash);
             listenOn.getElement().executeJs(jsExpression);
+        }
+    }
+
+    /**
+     * Lazily loads the shortcut client helpers ({@code FlowShortcut.js}) into
+     * the given UI, once per UI, mirroring how {@code WebPush} loads its client
+     * code. The helpers back the popover/modal origin guards and the keydown
+     * delegate, so they must be present before the shortcut listeners that
+     * reference them run on the client.
+     */
+    private void initShortcutClient(UI ui) {
+        if (ComponentUtil.getData(ui, SHORTCUT_CLIENT_INITIALIZED) != null) {
+            return;
+        }
+        ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, Boolean.TRUE);
+        try (InputStream stream = ShortcutRegistration.class.getClassLoader()
+                .getResourceAsStream(SHORTCUT_CLIENT_JS)) {
+            if (stream == null) {
+                throw new IOException("resource not found on the classpath");
+            }
+            ui.getPage().executeJs(
+                    StringUtil.removeComments(StringUtil.toUTF8String(stream)));
+        } catch (IOException e) {
+            // Loading failed: clear the flag so a later registration retries.
+            ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, null);
+            throw new IllegalStateException(
+                    "Could not load shortcut client code from "
+                            + SHORTCUT_CLIENT_JS,
+                    e);
         }
     }
 

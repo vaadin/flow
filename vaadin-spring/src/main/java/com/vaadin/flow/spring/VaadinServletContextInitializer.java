@@ -106,6 +106,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @see ServletContainerInitializer
  * @see RouteRegistry
+ * @since 10.0
  */
 public class VaadinServletContextInitializer
         implements ServletContextInitializer {

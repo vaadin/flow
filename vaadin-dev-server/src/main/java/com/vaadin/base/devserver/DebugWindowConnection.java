@@ -57,6 +57,7 @@ import com.vaadin.pro.licensechecker.Product;
  *
  * @author Vaadin Ltd
  *
+ * @since 24.3.22
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 
@@ -263,6 +264,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
      *
      * @param msg
      *            the message to broadcast
+     * @since 24.8
      */
     public void broadcast(ObjectNode msg) {
         resources.keySet().forEach(resourceRef -> {

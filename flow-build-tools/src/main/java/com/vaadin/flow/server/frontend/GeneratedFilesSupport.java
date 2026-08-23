@@ -33,6 +33,8 @@ import com.vaadin.flow.internal.FileIOUtils;
  * files are tracked and can be fetched by post-processing tasks.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.4
  */
 public final class GeneratedFilesSupport {
 

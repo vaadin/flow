@@ -25,6 +25,7 @@ import java.net.URI;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 24.5
  */
 public interface FileDownloader {
 

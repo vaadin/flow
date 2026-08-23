@@ -26,11 +26,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class DefaultInstantiatorI18NTest {
     @TempDir
     Path temporaryFolder;

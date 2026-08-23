@@ -624,10 +624,7 @@ public class Page implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("URL must not be null");
         }
-        if (!UrlUtil.isSafeUrl(url)) {
-            throw new IllegalArgumentException(UrlUtil.getUnsafeUrlMessage(
-                    "URL", url, "openUnsafe(String, String)"));
-        }
+        UrlUtil.validateUrl(ui, "URL", url, "openUnsafe(String, String)");
         openInternal(url, windowName);
     }
 
@@ -644,7 +641,7 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to open.
-     * @since 25.2
+     * @since 25.1.12
      */
     public void openUnsafe(String url) {
         openInternal(url, "_blank");
@@ -666,7 +663,7 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
-     * @since 25.2
+     * @since 25.1.12
      */
     public void openUnsafe(String url, String windowName) {
         openInternal(url, windowName);

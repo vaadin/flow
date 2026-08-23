@@ -23,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Helpers for authentication related tasks.
+ * 
+ * @since 23.1
  */
 public class AuthenticationUtil {
 
@@ -60,6 +62,7 @@ public class AuthenticationUtil {
      * @param rolePrefix
      *            Prefix for the given role.
      * @return a function for checking if the given user has the given role
+     * @since 24.3
      */
     public static Function<String, Boolean> getSecurityHolderRoleChecker(
             String rolePrefix) {
