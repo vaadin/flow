@@ -336,6 +336,7 @@ public class FrontendTools {
      *            the task options to read the frontend tools configuration
      *            from, not {@code null}
      * @return a new {@link FrontendTools} instance
+     * @since 25.2.5
      */
     public static FrontendTools fromOptions(Options options) {
         FrontendToolsSettings settings = new FrontendToolsSettings(
