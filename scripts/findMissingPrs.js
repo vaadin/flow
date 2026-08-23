@@ -64,9 +64,17 @@ async function main() {
       };
     })
     .filter(Boolean)
-    // Group by commit type (fix, chore, feat, ...); the stable sort keeps the
-    // newest-first order from the git log within each group.
-    .sort((a, b) => commitType(a.title).localeCompare(commitType(b.title)));
+    // Group by commit type (fix, chore, feat, ...); titles with no recognizable
+    // prefix sort last. The stable sort keeps the newest-first order from the
+    // git log within each group.
+    .sort((a, b) => {
+      const ta = commitType(a.title);
+      const tb = commitType(b.title);
+      if (ta === tb) return 0;
+      if (ta === null) return 1;
+      if (tb === null) return -1;
+      return ta.localeCompare(tb);
+    });
 
   if (missingPrs.length === 0) {
     console.log(`No PRs missing from ${otherBranch}`);
@@ -125,11 +133,11 @@ function prTitle(line) {
   return line.replace(/^\S+\s+/, '');
 }
 
-// The conventional-commit type of a title, e.g. `fix` for `fix(server): ...`.
-// Falls back to the empty string when there is no recognizable prefix.
+// The conventional-commit type of a title, e.g. `fix` for `fix(server): ...`,
+// or null when the title has no lowercase `type:` prefix.
 function commitType(title) {
-  const match = title.match(/^(\w+)/);
-  return match ? match[1].toLowerCase() : '';
+  const match = title.match(/^([a-z]+)(\([^)]*\))?!?:/);
+  return match ? match[1] : null;
 }
 
 // Interactive multi-select list. Navigate with arrows or j/k, toggle with
