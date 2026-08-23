@@ -22,9 +22,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -39,6 +37,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
@@ -49,6 +48,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -72,6 +72,8 @@ class ServerRpcHandlerTest {
     void setup() {
         request = Mockito.mock(VaadinRequest.class);
         service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getEventBus())
+                .thenReturn(new VaadinServiceEventBus(service));
         session = Mockito.mock(VaadinSession.class);
         wrappedSession = Mockito.mock(WrappedSession.class);
         ui = Mockito.mock(UI.class);
@@ -310,7 +312,12 @@ class ServerRpcHandlerTest {
     void handleRpc_firesRpcInvocationListener_withTypeNameAndNode()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        List<RpcInvocationStartedEvent> started = new ArrayList<>();
+        List<RpcInvocationEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                started::add);
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                ended::add);
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
         ui = new UI();
@@ -318,29 +325,30 @@ class ServerRpcHandlerTest {
 
         serverRpcHandler.handleRpc(ui, reader, request);
 
-        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
-                .forClass(RpcInvocationEvent.class);
-        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
+        assertEquals(1, started.size());
         // Ended is always fired (in a finally) so observers can close spans.
-        Mockito.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
-        RpcInvocationEvent event = captor.getValue();
+        assertEquals(1, ended.size());
+        RpcInvocationStartedEvent event = started.get(0);
         assertEquals("event", event.getType());
         assertEquals("click", event.getName());
         assertEquals(1, event.getNodeId());
     }
 
     @Test
-    void handleRpc_mapSync_firesRpcInvocationListener_withSyncedPropertyAsName()
+    void handleRpc_mapSync_firesRpcInvocationEvents_withSyncedPropertyAsName()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
-        // The notifications must bracket the property change event, so that a
-        // listener timing the invocation measures the application code it runs.
+        // The events must bracket the property change event, so that a listener
+        // timing the invocation measures the application code it runs.
         List<String> sequence = new ArrayList<>();
-        Mockito.doAnswer(invocation -> sequence.add("started")).when(service)
-                .fireRpcInvocationStarted(ArgumentMatchers.any());
-        Mockito.doAnswer(invocation -> sequence.add("ended")).when(service)
-                .fireRpcInvocationEnded(ArgumentMatchers.any());
+        List<RpcInvocationStartedEvent> started = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                event -> {
+                    started.add(event);
+                    sequence.add("started");
+                });
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                event -> sequence.add("ended"));
 
         ui = new UI();
         ui.getInternals().setSession(session);
@@ -356,11 +364,8 @@ class ServerRpcHandlerTest {
 
         serverRpcHandler.handleRpc(ui, reader, request);
 
-        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
-                .forClass(RpcInvocationEvent.class);
-        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
-        Mockito.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
-        RpcInvocationEvent event = captor.getValue();
+        assertEquals(1, started.size());
+        RpcInvocationStartedEvent event = started.get(0);
         assertEquals(JsonConstants.RPC_TYPE_MAP_SYNC, event.getType());
         assertEquals("value", event.getName());
         assertEquals(nodeId, event.getNodeId());
@@ -371,9 +376,20 @@ class ServerRpcHandlerTest {
     void handleRpc_mapSyncListenerThrows_firesRpcInvocationFailed_withSyncedPropertyAsName()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
         Mockito.when(session.getErrorHandler())
                 .thenReturn(Mockito.mock(ErrorHandler.class));
+        List<String> sequence = new ArrayList<>();
+        List<RpcInvocationFailedEvent> failed = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                event -> sequence.add("started"));
+        service.getEventBus().addListener(RpcInvocationFailedEvent.class,
+                event -> {
+                    failed.add(event);
+                    sequence.add("failed");
+                });
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                event -> sequence.add("ended"));
+
         ui = new UI();
         ui.getInternals().setSession(session);
         RuntimeException failure = new RuntimeException("in value change");
@@ -390,22 +406,18 @@ class ServerRpcHandlerTest {
 
         serverRpcHandler.handleRpc(ui, reader, request);
 
-        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
-                .forClass(RpcInvocationEvent.class);
-        InOrder inOrder = Mockito.inOrder(service);
-        inOrder.verify(service)
-                .fireRpcInvocationStarted(ArgumentMatchers.any());
-        inOrder.verify(service).fireRpcInvocationFailed(captor.capture(),
-                ArgumentMatchers.same(failure));
-        inOrder.verify(service).fireRpcInvocationEnded(ArgumentMatchers.any());
-        assertEquals("value", captor.getValue().getName());
+        assertEquals(List.of("started", "failed", "ended"), sequence);
+        assertEquals("value", failed.get(0).getName());
+        assertSame(failure, failed.get(0).getError());
     }
 
     @Test
     void handleRpc_invocationsForMissingNode_reportsEventButNotPropertySync()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        Mockito.when(service.hasRpcInvocationListeners()).thenReturn(true);
+        List<RpcInvocationStartedEvent> started = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                started::add);
         ui = new UI();
         ui.getInternals().setSession(session);
 
@@ -420,10 +432,8 @@ class ServerRpcHandlerTest {
 
         serverRpcHandler.handleRpc(ui, reader, request);
 
-        ArgumentCaptor<RpcInvocationEvent> captor = ArgumentCaptor
-                .forClass(RpcInvocationEvent.class);
-        Mockito.verify(service).fireRpcInvocationStarted(captor.capture());
-        assertEquals(JsonConstants.RPC_TYPE_EVENT, captor.getValue().getType());
+        assertEquals(1, started.size());
+        assertEquals(JsonConstants.RPC_TYPE_EVENT, started.get(0).getType());
     }
 
     private void enableDau() {

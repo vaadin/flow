@@ -17,18 +17,27 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.FrontendUtils;
 
+import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class NodeInstallationTest {
+
+    private static final Instant LONG_AGO = Instant.now()
+            .minus(Duration.ofDays(400));
 
     @TempDir
     File vaadinHome;
@@ -81,6 +90,28 @@ class NodeInstallationTest {
     }
 
     @Test
+    void markUsed_recordsWhenTheInstallationWasUsed() throws IOException {
+        NodeInstallation missing = NodeInstallation.forVersion(vaadinHome,
+                "v24.10.0");
+        missing.markUsed();
+        assertTrue(missing.getLastUsed().isEmpty(),
+                "There is nothing to mark before the installation exists");
+
+        NodeInstallation installation = create("node-v24.10.0");
+        assertTrue(installation.getLastUsed().isEmpty(),
+                "A fresh installation has not been used yet");
+        write(installation, "not a timestamp");
+        assertTrue(installation.getLastUsed().isEmpty(),
+                "A marker that cannot be read tells nothing about the last use");
+
+        Instant before = Instant.now().minus(Duration.ofSeconds(1));
+        installation.markUsed();
+
+        assertTrue(installation.getLastUsed().orElseThrow().isAfter(before),
+                "last-used should have been refreshed to the current time");
+    }
+
+    @Test
     void equals_sameDirectory_isEqual() throws IOException {
         NodeInstallation installation = create("node-v24.10.0");
         NodeInstallation other = create("node-v22.0.0");
@@ -93,10 +124,65 @@ class NodeInstallationTest {
         assertNotEquals(installation, null);
     }
 
+    @Test
+    void remove_deletesTheWholeInstallation() throws IOException {
+        NodeInstallation installation = create("node-v24.10.0");
+        File nodeExecutable = installation.getNodeExecutable();
+        assertTrue(nodeExecutable.getParentFile().mkdirs());
+        assertTrue(nodeExecutable.createNewFile());
+
+        installation.remove();
+
+        assertFalse(installation.getDirectory().exists());
+    }
+
+    @Test
+    void remove_deletionFails_theRemainsAreNoLongerAnInstallation()
+            throws IOException {
+        NodeInstallation installation = create("node-v24.10.0");
+        File undeletable = lockContentOf(installation);
+
+        try {
+            installation.remove();
+
+            assertFalse(installation.getDirectory().exists(),
+                    "The installation should be gone under its own name even when it cannot be deleted");
+            assertTrue(NodeInstallations.findAll(vaadinHome).isEmpty(),
+                    "What could not be deleted must not be picked up as an installation");
+        } finally {
+            undeletable.setWritable(true);
+        }
+    }
+
+    /**
+     * Makes the installation impossible to delete completely, by taking away
+     * the permission to remove a file from one of its directories.
+     *
+     * @return the directory to make writable again once the test is done
+     */
+    private File lockContentOf(NodeInstallation installation)
+            throws IOException {
+        File directory = new File(installation.getDirectory(), "lib");
+        assertTrue(directory.mkdirs());
+        assertTrue(new File(directory, "kept").createNewFile());
+        assertTrue(directory.setWritable(false));
+
+        assumeFalse(directory.canWrite(),
+                "The test needs a directory that files cannot be deleted from");
+        return directory;
+    }
+
     private NodeInstallation create(String directoryName) throws IOException {
         File directory = new File(vaadinHome, directoryName);
         assertTrue(directory.mkdirs(),
                 "Test setup should be able to create " + directoryName);
         return new NodeInstallation(directory);
+    }
+
+    private static void write(NodeInstallation installation, String content)
+            throws IOException {
+        Files.writeString(
+                new File(installation.getDirectory(), LAST_USED_FILE).toPath(),
+                content, StandardCharsets.UTF_8);
     }
 }

@@ -46,6 +46,7 @@ import com.vaadin.flow.server.RequestBodyTooLargeException;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.flow.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
@@ -618,35 +619,42 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
-     * Runs the deferred change event of a {@code mSync} invocation, notifying
-     * {@link RpcInvocationListener}s around it.
+     * Runs the deferred change event of a {@code mSync} invocation, firing the
+     * invocation phase events around it.
      * <p>
      * A property synchronization is handled in two steps: the value is first
      * applied to the state node for every {@code mSync} invocation in the
      * request, and only then are the change events fired, so that application
      * code sees a fully updated state tree. This second step is the one that
      * runs application code, so it is the one the invocation is observed
-     * around; see {@link RpcInvocationListener} for what that means for a
+     * around; see {@link AbstractRpcInvocationEvent} for what that means for a
      * property whose update produces no change event.
      */
     private void runPropertyChangeEvent(UI ui, JsonNode invocationJson,
             Runnable changeEvent) {
-        VaadinService service = ui.getSession().getService();
-        RpcInvocationEvent event = createInvocationEvent(ui,
-                JsonConstants.RPC_TYPE_MAP_SYNC, invocationJson);
-        if (event != null) {
-            service.fireRpcInvocationStarted(event);
+        String type = JsonConstants.RPC_TYPE_MAP_SYNC;
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        boolean observed = isInvocationObserved(eventBus);
+        // Details are extracted once and shared by the phase events
+        int nodeId = observed ? nodeId(invocationJson) : -1;
+        String name = observed ? invocationName(type, invocationJson) : null;
+        if (observed) {
+            eventBus.fireEvent(
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
         }
         try {
             changeEvent.run();
         } catch (Throwable throwable) {
-            if (event != null) {
-                service.fireRpcInvocationFailed(event, throwable);
+            if (observed) {
+                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
+                        nodeId, name, throwable));
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
-            if (event != null) {
-                service.fireRpcInvocationEnded(event);
+            if (observed) {
+                eventBus.fireEvent(
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
             }
         }
     }
@@ -658,11 +666,15 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        VaadinService service = ui.getSession().getService();
-        RpcInvocationEvent event = createInvocationEvent(ui, type,
-                invocationJson);
-        if (event != null) {
-            service.fireRpcInvocationStarted(event);
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        boolean observed = isInvocationObserved(eventBus);
+        // Details are extracted once and shared by the phase events
+        int nodeId = observed ? nodeId(invocationJson) : -1;
+        String name = observed ? invocationName(type, invocationJson) : null;
+        if (observed) {
+            eventBus.fireEvent(
+                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
@@ -670,23 +682,24 @@ public class ServerRpcHandler implements Serializable {
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
-            if (event != null) {
-                service.fireRpcInvocationFailed(event, throwable);
+            if (observed) {
+                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
+                        nodeId, name, throwable));
             }
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
-            if (event != null) {
-                service.fireRpcInvocationEnded(event);
+            if (observed) {
+                eventBus.fireEvent(
+                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
             }
         }
     }
 
-    private static RpcInvocationEvent createInvocationEvent(UI ui, String type,
-            JsonNode invocationJson) {
-        return ui.getSession().getService().hasRpcInvocationListeners()
-                ? new RpcInvocationEvent(ui, type, nodeId(invocationJson),
-                        invocationName(type, invocationJson))
-                : null;
+    private static boolean isInvocationObserved(
+            VaadinServiceEventBus eventBus) {
+        return eventBus.hasListener(RpcInvocationStartedEvent.class)
+                || eventBus.hasListener(RpcInvocationFailedEvent.class)
+                || eventBus.hasListener(RpcInvocationEndedEvent.class);
     }
 
     private static int nodeId(JsonNode invocationJson) {

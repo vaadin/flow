@@ -28,42 +28,14 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * session lock while processing a request).
  * <p>
  * A single client request typically carries several invocations; the listener
- * is notified once per invocation. Being notified does not mean the invocation
- * had an effect: an RPC targeting a node that is detached, disabled or inert is
- * reported and only then discarded unhandled by the handler it is routed to. A
- * property synchronization is the exception, since its notifications are tied
- * to the change event described below and are absent entirely when the update
- * is discarded.
- * <p>
- * {@link #invocationStarted}, {@link #invocationFailed} (only when the handler
- * threw) and {@link #invocationEnded} for one invocation are delivered on the
- * same thread, in that order, with {@code invocationEnded} always delivered
- * after {@code invocationStarted} regardless of outcome, so a listener may keep
- * timing state in a {@link ThreadLocal}. Within the handling of one request the
- * notifications do not nest: the callbacks of one invocation complete before
- * those of the next begin. Requests belonging to different sessions are handled
- * concurrently, however, so a listener registered on the service must expect
- * invocations of several sessions to be in flight on several threads at once.
- * <p>
- * Synchronized property updates ({@code mSync}) deserve two remarks, because
- * they are handled in two steps: the value of every synchronized property in
- * the request is applied to the state tree first, and only then are the
- * corresponding property change events fired, so that application code sees a
- * fully updated tree.
- * <ul>
- * <li>The notifications surround the second step, the property change event,
- * since that is the step that runs application code. When the update produces
- * no change event the callbacks therefore surround no work: this is the case
- * when the value was already the one the client sent, when a model filter
- * rejects the update, and when the property is bound to a signal through
- * {@code Element.bindProperty}, whose listeners run while the value is being
- * written to the signal in the first step. Failures of a signal-bound update
- * consequently reach the session error handler without being reported to
- * {@link #invocationFailed}.</li>
- * <li>Because the first step is completed for the whole request up front, all
- * property updates in a request are reported before any other invocation it
- * carries, even those the client sent earlier in the request.</li>
- * </ul>
+ * is notified once per invocation. {@link #invocationStarted},
+ * {@link #invocationFailed} (only when the handler threw) and
+ * {@link #invocationEnded} for one invocation are delivered on the same thread,
+ * in that order, with {@code invocationEnded} always delivered after
+ * {@code invocationStarted} regardless of outcome, so a listener may keep
+ * timing state in a {@link ThreadLocal}. See {@link AbstractRpcInvocationEvent}
+ * for which invocations are reported, what a synchronized property update
+ * reports, and how the notifications of concurrent requests relate.
  * <p>
  * Implementations must be fast and non-blocking: callbacks run on the request
  * thread directly around invocation handling. Exceptions thrown from a callback
@@ -76,7 +48,16 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * @see VaadinService#addRpcInvocationListener(RpcInvocationListener)
  * @see RpcInvocationEvent
  * @since 25.2
+ * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+ *             {@link RpcInvocationFailedEvent} and
+ *             {@link RpcInvocationEndedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead.
+ *             The callbacks of this listener are served by those events, one
+ *             instance each, so an implementation that correlates the callbacks
+ *             of an invocation has to do so through the thread they are
+ *             delivered on rather than through the identity of the event
  */
+@Deprecated(since = "25.3", forRemoval = true)
 public interface RpcInvocationListener extends Serializable {
 
     /**

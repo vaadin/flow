@@ -288,8 +288,16 @@ class NodeResolver implements java.io.Serializable {
         try {
             nodeInstaller.setNodeVersion(nodeVersion);
             nodeInstaller.install();
-            return createActiveInstallation(NodeInstallation
-                    .forVersion(alternativeDirFile, nodeVersion), nodeVersion);
+            NodeInstallation installation = NodeInstallation
+                    .forVersion(alternativeDirFile, nodeVersion);
+            installation.markUsed();
+            active = createActiveInstallation(installation, nodeVersion);
+
+            // Only once the new installation is known to work, so that a
+            // broken install does not also take away the versions that could
+            // have been used instead
+            NodeInstallations.removeUnused(alternativeDirFile, installation);
+            return active;
         } catch (InstallationException e) {
             throw new IllegalStateException("Failed to install Node", e);
         }
@@ -320,6 +328,7 @@ class NodeResolver implements java.io.Serializable {
 
             if (reported.equals(NodeInstallation.forVersion(installDirectory,
                     nodeVersion))) {
+                installation.markUsed();
                 return createActiveInstallation(installation,
                         installation.getVersion());
             }
