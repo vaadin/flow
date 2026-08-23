@@ -13,26 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.flow.dom;
+package com.vaadin.flow.todo;
 
-import elemental.dom.Node;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.JsModule;
 
 /**
- * A DOM API abstraction layer to be used via {@link DomApi#wrap(Node)}.
- *
- * @author Vaadin Ltd
- * @since 1.0
+ * An add-on element whose frontend source is TypeScript using experimental
+ * decorators, which the bundle build has to transpile.
  */
-@FunctionalInterface
-public interface DomApiImpl {
+@Tag(DecoratorElement.TAG)
+@JsModule("./DecoratorElement.ts")
+public class DecoratorElement extends Component {
 
-    /**
-     * Wraps the given DOM node to make it safe to invoke any of the methods
-     * from {@link DomNode} or {@link DomElement}.
-     *
-     * @param node
-     *            the node to wrap
-     * @return the wrapped element
-     */
-    DomElement wrap(Node node);
+    public static final String TAG = "decorator-element";
 }

@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     private RouteConfiguration routeConfiguration;
     private UI ui;

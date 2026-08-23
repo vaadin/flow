@@ -30,9 +30,9 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,18 +40,16 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -66,6 +64,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -78,14 +77,18 @@ import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.communication.AbstractRpcInvocationEvent;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationEvent;
+import com.vaadin.flow.server.communication.RpcInvocationFailedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationListener;
+import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -151,19 +154,14 @@ public abstract class VaadinService implements Serializable {
     private final DeploymentConfiguration deploymentConfiguration;
 
     /*
-     * Can't use EventRouter for these listeners since it's not thread safe. One
-     * option would be to use an EventRouter instance guarded with a lock, but
-     * then we would needlessly hold a "global" lock while invoking potentially
-     * slow listener implementations.
+     * All listeners registered on the service live in this bus. It can't be an
+     * EventRouter since that one isn't thread safe; one option would be to use
+     * an EventRouter instance guarded with a lock, but then we would needlessly
+     * hold a "global" lock while invoking potentially slow listener
+     * implementations.
      */
-    private final Set<ServiceDestroyListener> serviceDestroyListeners = Collections
-            .newSetFromMap(new ConcurrentHashMap<>());
-
-    private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
-    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
-    private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
-    private final List<RpcInvocationListener> rpcInvocationListeners = new CopyOnWriteArrayList<>();
-    private final List<SessionLockListener> sessionLockListeners = new CopyOnWriteArrayList<>();
+    private final VaadinServiceEventBus eventBus = new VaadinServiceEventBus(
+            this);
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
@@ -808,7 +806,35 @@ public abstract class VaadinService implements Serializable {
      * @see SessionInitListener
      */
     public Registration addSessionInitListener(SessionInitListener listener) {
-        return Registration.addAndRemove(sessionInitListeners, listener);
+        return eventBus.addListener(SessionInitEvent.class, event -> {
+            try {
+                listener.sessionInit(event);
+            } catch (ServiceException e) {
+                // A bus listener cannot declare the checked exception that
+                // sessionInit does, so it is caught and handed to the session
+                // error handler here instead
+                event.getSession().getErrorHandler().error(new ErrorEvent(e));
+            }
+        });
+    }
+
+    /**
+     * Gets the event bus of this service, through which events can be fired to
+     * the listeners registered on the service.
+     * <p>
+     * Anything that wants to notify service-level listeners can define its own
+     * event type and fire it through the bus, without the service needing a
+     * dedicated {@code fireXyz} method for it:
+     *
+     * <pre>
+     * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
+     * service.getEventBus().fireEvent(new MyEvent(service));
+     * </pre>
+     *
+     * @return the event bus of this service, not {@code null}
+     */
+    public VaadinServiceEventBus getEventBus() {
+        return eventBus;
     }
 
     /**
@@ -820,7 +846,7 @@ public abstract class VaadinService implements Serializable {
      * @see UIInitListener
      */
     public Registration addUIInitListener(UIInitListener listener) {
-        return Registration.addAndRemove(uiInitListeners, listener);
+        return eventBus.addListener(UIInitEvent.class, listener::uiInit);
     }
 
     /**
@@ -837,82 +863,45 @@ public abstract class VaadinService implements Serializable {
      * @return a handle that can be used for removing the listener
      * @see RpcInvocationListener
      * @since 25.2
+     * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+     *             {@link RpcInvocationFailedEvent} and
+     *             {@link RpcInvocationEndedEvent} through
+     *             {@link #getEventBus()} instead
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Registration addRpcInvocationListener(
             RpcInvocationListener listener) {
-        return Registration.addAndRemove(rpcInvocationListeners, listener);
+        return Registration.combine(
+                eventBus.addListener(RpcInvocationStartedEvent.class,
+                        event -> listener
+                                .invocationStarted(rpcInvocationEvent(event))),
+                eventBus.addListener(RpcInvocationFailedEvent.class,
+                        event -> listener.invocationFailed(
+                                rpcInvocationEvent(event), event.getError())),
+                eventBus.addListener(RpcInvocationEndedEvent.class,
+                        event -> listener
+                                .invocationEnded(rpcInvocationEvent(event))));
+    }
+
+    @SuppressWarnings("removal")
+    private static RpcInvocationEvent rpcInvocationEvent(
+            AbstractRpcInvocationEvent event) {
+        return new RpcInvocationEvent(event.getUI(), event.getType(),
+                event.getNodeId(), event.getName());
     }
 
     /**
-     * Tells whether any {@link RpcInvocationListener} is registered, so callers
-     * can skip building per-invocation events when nobody is observing.
-     *
-     * @return {@code true} if at least one listener is registered
-     * @since 25.2
+     * Creates an error handler that routes exceptions thrown by listeners to
+     * the error handler of the given session.
+     * <p>
+     * For now, the session error handler is used; in the future, there could be
+     * an API for using some other handler for session init and destroy
+     * listeners.
      */
-    public boolean hasRpcInvocationListeners() {
-        return !rpcInvocationListeners.isEmpty();
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation is about
-     * to start. For internal use by the RPC handling machinery.
-     *
-     * @param event
-     *            the invocation event
-     * @since 25.2
-     */
-    public void fireRpcInvocationStarted(RpcInvocationEvent event) {
-        for (RpcInvocationListener listener : rpcInvocationListeners) {
-            try {
-                listener.invocationStarted(event);
-            } catch (RuntimeException e) {
-                getLogger().error(
-                        "Error in RpcInvocationListener.invocationStarted", e);
-            }
-        }
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation threw.
-     * For internal use by the RPC handling machinery.
-     *
-     * @param event
-     *            the invocation event
-     * @param error
-     *            the throwable raised by the invocation handler
-     * @since 25.2
-     */
-    public void fireRpcInvocationFailed(RpcInvocationEvent event,
-            Throwable error) {
-        for (RpcInvocationListener listener : rpcInvocationListeners) {
-            try {
-                listener.invocationFailed(event, error);
-            } catch (RuntimeException e) {
-                getLogger().error(
-                        "Error in RpcInvocationListener.invocationFailed", e);
-            }
-        }
-    }
-
-    /**
-     * Notifies registered listeners that handling of an RPC invocation has
-     * finished, whether normally or via an exception. For internal use by the
-     * RPC handling machinery.
-     *
-     * @param event
-     *            the invocation event
-     * @since 25.2
-     */
-    public void fireRpcInvocationEnded(RpcInvocationEvent event) {
-        for (RpcInvocationListener listener : rpcInvocationListeners) {
-            try {
-                listener.invocationEnded(event);
-            } catch (RuntimeException e) {
-                getLogger().error(
-                        "Error in RpcInvocationListener.invocationEnded", e);
-            }
-        }
+    private static SerializableBiConsumer<EventObject, Exception> sessionErrorHandler(
+            VaadinSession session) {
+        return (event, error) -> session.getErrorHandler()
+                .error(new ErrorEvent(error));
     }
 
     /**
@@ -929,64 +918,23 @@ public abstract class VaadinService implements Serializable {
      * @return a handle that can be used for removing the listener
      * @see SessionLockListener
      * @since 25.2
+     * @deprecated add listeners for {@link SessionLockRequestedEvent},
+     *             {@link SessionLockAcquiredEvent} and
+     *             {@link SessionLockReleasedEvent} through
+     *             {@link #getEventBus()} instead
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Registration addSessionLockListener(SessionLockListener listener) {
-        return Registration.addAndRemove(sessionLockListeners, listener);
-    }
-
-    boolean hasSessionLockListeners() {
-        return !sessionLockListeners.isEmpty();
-    }
-
-    void fireSessionLockRequested() {
-        if (sessionLockListeners.isEmpty()) {
-            return;
-        }
-        SessionLockEvent event = new SessionLockEvent(this);
-        for (SessionLockListener listener : sessionLockListeners) {
-            try {
-                listener.lockRequested(event);
-            } catch (RuntimeException e) {
-                getLogger().error("Error in SessionLockListener.lockRequested",
-                        e);
-            }
-        }
-    }
-
-    void fireSessionLockAcquired() {
-        if (sessionLockListeners.isEmpty()) {
-            return;
-        }
-        SessionLockEvent event = new SessionLockEvent(this);
-        for (SessionLockListener listener : sessionLockListeners) {
-            try {
-                listener.lockAcquired(event);
-            } catch (RuntimeException e) {
-                getLogger().error("Error in SessionLockListener.lockAcquired",
-                        e);
-            }
-        }
-    }
-
-    void fireSessionLockReleased() {
-        if (sessionLockListeners.isEmpty()) {
-            return;
-        }
-        SessionLockEvent event = new SessionLockEvent(this);
-        // Released is fired in reverse registration order so that listeners
-        // are nested: a listener's lockReleased runs before the lockReleased
-        // of the listeners that were notified before it on lockAcquired.
-        ListIterator<SessionLockListener> listeners = sessionLockListeners
-                .listIterator(sessionLockListeners.size());
-        while (listeners.hasPrevious()) {
-            SessionLockListener listener = listeners.previous();
-            try {
-                listener.lockReleased(event);
-            } catch (RuntimeException e) {
-                getLogger().error("Error in SessionLockListener.lockReleased",
-                        e);
-            }
-        }
+        return Registration.combine(
+                eventBus.addListener(SessionLockRequestedEvent.class,
+                        event -> listener.lockRequested(
+                                new SessionLockEvent(event.getService()))),
+                eventBus.addListener(SessionLockAcquiredEvent.class,
+                        event -> listener.lockAcquired(
+                                new SessionLockEvent(event.getService()))),
+                eventBus.addListener(SessionLockReleasedEvent.class,
+                        event -> listener.lockReleased(
+                                new SessionLockEvent(event.getService()))));
     }
 
     /**
@@ -1010,7 +958,8 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
-        return Registration.addAndRemove(sessionDestroyListeners, listener);
+        return eventBus.addListener(SessionDestroyEvent.class,
+                listener::sessionDestroy);
     }
 
     /**
@@ -1067,19 +1016,16 @@ public abstract class VaadinService implements Serializable {
             }
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
-            Stream.concat(session.destroyListeners.stream(),
-                    sessionDestroyListeners.stream()).forEach(listener -> {
-                        try {
-                            listener.sessionDestroy(event);
-                        } catch (Exception e) {
-                            /*
-                             * for now, use the session error handler; in the
-                             * future, could have an API for using some other
-                             * handler for session init and destroy listeners
-                             */
-                            session.getErrorHandler().error(new ErrorEvent(e));
-                        }
-                    });
+            // Listeners registered on the session are notified before the ones
+            // registered on the service
+            session.destroyListeners.forEach(listener -> {
+                try {
+                    listener.sessionDestroy(event);
+                } catch (Exception e) {
+                    session.getErrorHandler().error(new ErrorEvent(e));
+                }
+            });
+            eventBus.fireEvent(event, sessionErrorHandler(session));
 
             session.setState(VaadinSessionState.CLOSED);
         });
@@ -1416,18 +1362,7 @@ public abstract class VaadinService implements Serializable {
     private void onVaadinSessionStarted(VaadinRequest request,
             VaadinSession session) {
         SessionInitEvent event = new SessionInitEvent(this, session, request);
-        for (SessionInitListener listener : sessionInitListeners) {
-            try {
-                listener.sessionInit(event);
-            } catch (Exception e) {
-                /*
-                 * for now, use the session error handler; in the future, could
-                 * have an API for using some other handler for session init and
-                 * destroy listeners
-                 */
-                session.getErrorHandler().error(new ErrorEvent(e));
-            }
-        }
+        eventBus.fireEvent(event, sessionErrorHandler(session));
     }
 
     private void closeSession(VaadinSession vaadinSession,
@@ -2559,7 +2494,8 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addServiceDestroyListener(
             ServiceDestroyListener listener) {
-        return Registration.addAndRemove(serviceDestroyListeners, listener);
+        return eventBus.addListener(ServiceDestroyEvent.class,
+                listener::serviceDestroy);
     }
 
     /**
@@ -2576,20 +2512,19 @@ public abstract class VaadinService implements Serializable {
             cast.shutdownNow();
             this.executor = null;
         }
-        RuntimeException exception = null;
-        for (ServiceDestroyListener listener : serviceDestroyListeners) {
-            try {
-                listener.serviceDestroy(event);
-            } catch (RuntimeException e) {
-                if (exception == null) {
-                    exception = e;
-                } else {
-                    e.addSuppressed(e);
-                }
+        // All listeners are notified even if some of them throw; the first
+        // failure is rethrown with the later ones suppressed
+        AtomicReference<Exception> failure = new AtomicReference<>();
+        eventBus.fireEvent(event, (destroyEvent, error) -> {
+            if (!failure.compareAndSet(null, error)) {
+                failure.get().addSuppressed(error);
             }
-        }
-        if (exception != null) {
-            throw exception;
+        });
+        Exception error = failure.get();
+        if (error instanceof RuntimeException runtimeException) {
+            throw runtimeException;
+        } else if (error != null) {
+            throw new RuntimeException(error);
         }
     }
 
@@ -2732,10 +2667,12 @@ public abstract class VaadinService implements Serializable {
      *
      * @param ui
      *            the initialized {@link UI}
+     * @deprecated fire a {@link UIInitEvent} through {@link #getEventBus()}
+     *             instead
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public void fireUIInitListeners(UI ui) {
-        UIInitEvent initEvent = new UIInitEvent(ui, this);
-        uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
+        eventBus.fireEvent(new UIInitEvent(ui, this));
     }
 
     /**
