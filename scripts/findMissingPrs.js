@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const readline = require('readline');
 const execSync = require('child_process').execSync;
+const execFile = require('util').promisify(require('child_process').execFile);
 
 const args = process.argv.slice(2);
 if (args.length != 1) {
@@ -35,32 +36,41 @@ const ignoredTitlePatterns = [
   /update default Node\.js version/i,
 ];
 
-const missingPrs = Object.keys(mainPrs)
+const candidates = Object.keys(mainPrs)
   .filter((pr) => !backported.has(pr))
-  .filter((pr) => !ignoredTitlePatterns.some((pattern) => pattern.test(mainPrs[pr])))
-  .map((pr) => {
-    const labels = findLabels(pr);
-    // A null result means the number is not a PR (e.g. an issue reference that
-    // happened to be the last `(#NNN)` on the line); skip it.
-    if (labels === null) return null;
-    const failedLabel = failedPickLabels.find((label) => labels.includes(label)) || null;
-    const alreadyTargeted = labels.includes(targetLabel);
-    return {
-      pr,
-      title: prTitle(mainPrs[pr]),
-      failed: failedLabel !== null,
-      failedLabel,
-      alreadyTargeted,
-    };
-  })
-  .filter(Boolean);
+  .filter((pr) => !ignoredTitlePatterns.some((pattern) => pattern.test(mainPrs[pr])));
 
-if (missingPrs.length === 0) {
-  console.log(`No PRs missing from ${otherBranch}`);
-  process.exit(0);
-}
+main();
 
-selectPrs(missingPrs).then((selected) => {
+async function main() {
+  // A label lookup is one network round-trip per candidate PR and dominates the
+  // runtime, so run the lookups concurrently instead of one at a time.
+  const labelsByPr = await mapWithConcurrency(candidates, 16, findLabels);
+
+  const missingPrs = candidates
+    .map((pr, i) => {
+      const labels = labelsByPr[i];
+      // A null result means the number is not a PR (e.g. an issue reference that
+      // happened to be the last `(#NNN)` on the line); skip it.
+      if (labels === null) return null;
+      const failedLabel = failedPickLabels.find((label) => labels.includes(label)) || null;
+      const alreadyTargeted = labels.includes(targetLabel);
+      return {
+        pr,
+        title: prTitle(mainPrs[pr]),
+        failed: failedLabel !== null,
+        failedLabel,
+        alreadyTargeted,
+      };
+    })
+    .filter(Boolean);
+
+  if (missingPrs.length === 0) {
+    console.log(`No PRs missing from ${otherBranch}`);
+    return;
+  }
+
+  const selected = await selectPrs(missingPrs);
   if (selected.length === 0) {
     console.log('\nNothing selected.');
     return;
@@ -90,7 +100,22 @@ selectPrs(missingPrs).then((selected) => {
       `for pr in ${prs.join(' ')}; do gh pr edit "$pr" --repo vaadin/flow --remove-label "${failedLabel}"; done`,
     );
   }
-});
+}
+
+// Runs `worker` over `items` with at most `limit` in flight at once, preserving
+// input order in the returned results.
+async function mapWithConcurrency(items, limit, worker) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function run() {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await worker(items[i]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
+  return results;
+}
 
 // Strip the leading commit hash from a `git log --oneline` line.
 function prTitle(line) {
@@ -183,14 +208,15 @@ function selectPrs(items) {
 // PR. Issue and PR numbers share one namespace on GitHub, so a `(#NNN)` picked
 // from a commit title may be an issue; the pulls endpoint then returns 404 and
 // `gh` exits non-zero, which we treat as "not a PR" rather than a hard error.
-function findLabels(pr) {
+async function findLabels(pr) {
   let output;
   try {
-    output = execSync(`gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/vaadin/flow/pulls/${pr}`, {
-      encoding: 'utf8',
-      maxBuffer: 256 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
+    ({ stdout: output } = await execFile('gh', [
+      'api',
+      '-H', 'Accept: application/vnd.github+json',
+      '-H', 'X-GitHub-Api-Version: 2022-11-28',
+      `/repos/vaadin/flow/pulls/${pr}`,
+    ], { maxBuffer: 256 * 1024 * 1024 }));
   } catch {
     return null;
   }
