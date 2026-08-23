@@ -63,7 +63,10 @@ async function main() {
         alreadyTargeted,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    // Group by commit type (fix, chore, feat, ...); the stable sort keeps the
+    // newest-first order from the git log within each group.
+    .sort((a, b) => commitType(a.title).localeCompare(commitType(b.title)));
 
   if (missingPrs.length === 0) {
     console.log(`No PRs missing from ${otherBranch}`);
@@ -120,6 +123,13 @@ async function mapWithConcurrency(items, limit, worker) {
 // Strip the leading commit hash from a `git log --oneline` line.
 function prTitle(line) {
   return line.replace(/^\S+\s+/, '');
+}
+
+// The conventional-commit type of a title, e.g. `fix` for `fix(server): ...`.
+// Falls back to the empty string when there is no recognizable prefix.
+function commitType(title) {
+  const match = title.match(/^(\w+)/);
+  return match ? match[1].toLowerCase() : '';
 }
 
 // Interactive multi-select list. Navigate with arrows or j/k, toggle with
