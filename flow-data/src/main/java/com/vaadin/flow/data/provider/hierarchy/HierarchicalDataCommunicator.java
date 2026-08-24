@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
@@ -555,13 +556,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void preloadRange(Cache<T> cache, int start, int length) {
         var range = Range.withLength(start, length)
                 .restrictTo(Range.withLength(0, cache.getSize()));
-        DataFetchObserver.fetch(getUI(), getComponent(), range.getStart(),
-                range.length(), getFilter() != null, () -> {
-                    var items = fetchDataProviderChildren(cache.getParentItem(),
-                            range);
-                    cache.setItems(range.getStart(), items);
-                    return items.size();
-                });
+        IntSupplier fetchChildren = () -> {
+            var items = fetchDataProviderChildren(cache.getParentItem(), range);
+            cache.setItems(range.getStart(), items);
+            return items.size();
+        };
+
+        DataFetchObserver.fetch(getUI(), getComponent(), range,
+                getFilter() != null, fetchChildren);
     }
 
     /**

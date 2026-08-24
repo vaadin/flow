@@ -20,6 +20,7 @@ import java.util.function.IntSupplier;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinSession;
@@ -54,7 +55,7 @@ public final class DataFetchObserver implements Serializable {
      * Resolves the event bus to report on, or {@code null} when there is
      * nothing to report to.
      */
-    private static VaadinServiceEventBus eventBus(UI ui) {
+    private static VaadinServiceEventBus getEventBus(UI ui) {
         if (ui == null) {
             return null;
         }
@@ -66,9 +67,6 @@ public final class DataFetchObserver implements Serializable {
         if (service == null) {
             return null;
         }
-        // A service implementation is not obliged to supply an event bus, and
-        // test doubles routinely do not, so an absent one means the query
-        // simply runs unreported rather than failing.
         return service.getEventBus();
     }
 
@@ -92,7 +90,7 @@ public final class DataFetchObserver implements Serializable {
      */
     public static int count(UI ui, Component component, boolean filtered,
             IntSupplier query) {
-        VaadinServiceEventBus eventBus = eventBus(ui);
+        VaadinServiceEventBus eventBus = getEventBus(ui);
         if (eventBus == null) {
             return query.getAsInt();
         }
@@ -127,22 +125,22 @@ public final class DataFetchObserver implements Serializable {
      * @param component
      *            the component whose data is being fetched, or {@code null} if
      *            it could not be resolved
-     * @param offset
-     *            the index of the first item requested
-     * @param limit
-     *            the number of items requested
+     * @param range
+     *            the range of items requested
      * @param filtered
      *            whether the query carries a filter
      * @param query
      *            the fetch query to run, returning the number of items loaded
      * @return whatever the query returned
      */
-    public static int fetch(UI ui, Component component, int offset, int limit,
+    public static int fetch(UI ui, Component component, Range range,
             boolean filtered, IntSupplier query) {
-        VaadinServiceEventBus eventBus = eventBus(ui);
+        VaadinServiceEventBus eventBus = getEventBus(ui);
         if (eventBus == null) {
             return query.getAsInt();
         }
+        int offset = range.getStart();
+        int limit = range.length();
         eventBus.fireEvent(new DataFetchStartedEvent(ui, component, offset,
                 limit, filtered));
         int reported = -1;

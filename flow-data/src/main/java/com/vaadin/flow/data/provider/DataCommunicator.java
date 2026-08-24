@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +46,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -1570,27 +1572,30 @@ public class DataCommunicator<T> implements Serializable {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        DataFetchObserver.fetch(getUI(), getComponent(), range.getStart(),
-                range.length(), getFilter() != null, () -> {
-                    // The stream is consumed inside the observed query, so the
-                    // reported duration covers the backend round-trip even for
-                    // a data provider returning a lazily evaluated stream.
-                    try (Stream<T> stream = fetchFromProvider(range.getStart(),
-                            range.length())) {
-                        stream.forEach(bean -> {
-                            boolean mapperHasKey = keyMapper.has(bean);
-                            String key = keyMapper.key(bean);
-                            if (mapperHasKey) {
-                                // Ensure latest instance from provider is used
-                                keyMapper.refresh(bean);
-                                passivatedByUpdate.values().stream()
-                                        .forEach(set -> set.remove(key));
-                            }
-                            activeKeys.add(key);
-                        });
+
+        // The stream is consumed inside the observed query, so the reported
+        // duration covers the backend round-trip even for a data provider
+        // returning a lazily evaluated stream.
+        IntSupplier fetchActiveKeys = () -> {
+            try (Stream<T> stream = fetchFromProvider(range.getStart(),
+                    range.length())) {
+                stream.forEach(bean -> {
+                    boolean mapperHasKey = keyMapper.has(bean);
+                    String key = keyMapper.key(bean);
+                    if (mapperHasKey) {
+                        // Ensure latest instance from provider is used
+                        keyMapper.refresh(bean);
+                        passivatedByUpdate.values().stream()
+                                .forEach(set -> set.remove(key));
                     }
-                    return activeKeys.size();
+                    activeKeys.add(key);
                 });
+            }
+            return activeKeys.size();
+        };
+
+        DataFetchObserver.fetch(getUI(), getComponent(), range,
+                getFilter() != null, fetchActiveKeys);
         boolean needsSizeRecheck = activeKeys.size() < range.length();
         return new Activation(activeKeys, needsSizeRecheck);
     }
@@ -1633,13 +1638,8 @@ public class DataCommunicator<T> implements Serializable {
      *         example when the communicator is driven by a bare element
      */
     protected Component getComponent() {
-        try {
-            return Element.get(stateNode).getComponent().orElse(null);
-        } catch (RuntimeException e) {
-            // Resolution is best-effort enrichment: the node may not be an
-            // element.
-            return null;
-        }
+        return ElementUtil.from(stateNode).flatMap(Element::getComponent)
+                .orElse(null);
     }
 
     private static class Activation implements Serializable {
