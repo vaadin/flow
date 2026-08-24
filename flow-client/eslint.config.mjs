@@ -33,10 +33,10 @@ export default [
             'src/test/frontend/*',
             'src/test/frontend/internal/client/*',
             'src/test/frontend/internal/client/flow/*',
-            'src/test/frontend/internal/client/flow/util/*',
             'src/test/frontend/internal/client/flow/collection/*',
             'src/test/frontend/internal/client/flow/nodefeature/*',
             'src/test/frontend/internal/client/flow/reactive/*',
+            'src/test/frontend/internal/client/flow/util/*',
             'src/test/frontend/internal/flow/shared/*',
             'src/test/frontend/internal/flow/shared/util/*'
           ],
