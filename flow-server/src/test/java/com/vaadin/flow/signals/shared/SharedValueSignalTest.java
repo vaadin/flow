@@ -17,9 +17,13 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
@@ -51,6 +55,9 @@ public class SharedValueSignalTest extends SignalTestBase {
      * of that functionality is instead tested through its simplest subclass,
      * i.e. SharedValueSignal
      */
+
+    private static final TypeReference<Set<UUID>> ID_SET = new TypeReference<>() {
+    };
 
     @Test
     void constructor_type_noValueAndTypeIsUsed() {
@@ -85,6 +92,56 @@ public class SharedValueSignalTest extends SignalTestBase {
             raw.set(new Object());
         });
         assertEquals("a string", signal.peek());
+    }
+
+    @Test
+    void constructor_typeReference_parameterizedTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedValueSignal<Set<UUID>> signal = new SharedValueSignal<>(ID_SET);
+        assertNull(signal.peek());
+
+        signal.set(Set.of(id));
+
+        assertEquals(Set.of(id), signal.peek());
+    }
+
+    @Test
+    void constructor_initialValueAndTypeReference_parameterizedTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedValueSignal<Set<UUID>> signal = new SharedValueSignal<>(
+                Set.of(id), ID_SET);
+        assertEquals(Set.of(id), signal.peek());
+
+        UUID otherId = UUID.randomUUID();
+        signal.set(Set.of(otherId));
+
+        assertEquals(Set.of(otherId), signal.peek());
+    }
+
+    @Test
+    void constructor_typeReference_nestedTypeArgumentsAreRetained() {
+        UUID id = UUID.randomUUID();
+        SharedValueSignal<Map<String, List<UUID>>> signal = new SharedValueSignal<>(
+                new TypeReference<Map<String, List<UUID>>>() {
+                });
+
+        signal.set(Map.of("key", List.of(id)));
+
+        assertEquals(Map.of("key", List.of(id)), signal.peek());
+    }
+
+    @Test
+    void constructor_classType_parameterizedTypeIsLost() {
+        // Contrast to the type reference constructors above: a class token
+        // cannot express the element type, so the elements are read back as
+        // whatever the JSON binds to without one
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedValueSignal<Set<UUID>> signal = new SharedValueSignal<Set<UUID>>(
+                (Class) Set.class);
+        signal.set(Set.of(UUID.randomUUID()));
+
+        Set<?> erased = signal.peek();
+        assertEquals(String.class, erased.iterator().next().getClass());
     }
 
     @Test
@@ -687,6 +744,12 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertNotEquals(signal, signal.asReadonly());
         assertNotEquals(signal, signal.asNode());
         assertNotEquals(signal, signal.asNode().asValue(Double.class));
+
+        SharedValueSignal<Set<UUID>> idSet = new SharedValueSignal<>(ID_SET);
+        assertEquals(idSet, idSet.asNode().asValue(ID_SET));
+        assertNotEquals(idSet,
+                idSet.asNode().asValue(new TypeReference<Set<String>>() {
+                }));
     }
 
     @Test
