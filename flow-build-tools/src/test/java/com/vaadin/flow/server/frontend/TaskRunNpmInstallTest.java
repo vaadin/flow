@@ -846,14 +846,29 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void resolveMinimumFrontendPackageAge_pnpmNothingConfigured_usesDefault() {
-        // 1 day = 1440 minutes, passed as a pnpm setting
-        assertEquals("--config.minimum-release-age="
-                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS
-                        * 24 * 60,
-                resolveMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnablePnpm(true),
-                        mockToolsWithoutMinimumReleaseAge()).orElseThrow());
+    void resolveMinimumFrontendPackageAge_npmTooOldWithBeforeConfigured_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+                .thenReturn(false);
+        // npm older than 11.10 has no min-release-age setting, so the
+        // counterpart of the --before fallback is what it is asked for
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq("before"), Mockito.eq(npmFolder)))
+                .thenReturn(Optional.of("2026-01-01"));
+
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), tools).isPresent());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmTooOldWithNothingConfigured_usesBeforeDefault() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+                .thenReturn(false);
+
+        assertTrue(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), tools).orElseThrow()
+                .startsWith("--before="));
     }
 
     @Test
@@ -872,14 +887,21 @@ class TaskRunNpmInstallTest {
 
     @Test
     void resolveMinimumFrontendPackageAge_bun_configurationIsNotRead() {
-        // bun cannot report its resolved configuration, so the default is
-        // applied without looking at bunfig.toml
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // whatever bun might resolve is ignored, as bun cannot report it
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.anyString(), Mockito.any()))
+                .thenReturn(Optional.of("4320"));
+
+        // bunfig.toml is not looked at, so the default is applied
         assertEquals("--minimum-release-age="
                 + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS
                         * 24 * 60 * 60,
                 resolveMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnableBun(true),
-                        mockToolsWithoutMinimumReleaseAge()).orElseThrow());
+                        new MockOptions(npmFolder).withEnableBun(true), tools)
+                        .orElseThrow());
+        Mockito.verify(tools, Mockito.never()).getConfiguredSetting(
+                Mockito.anyList(), Mockito.anyString(), Mockito.any());
     }
 
     private FrontendTools mockToolsWithoutMinimumReleaseAge() {
