@@ -21,6 +21,8 @@ import java.util.concurrent.Executor;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -593,11 +595,62 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      */
     protected static <T> @Nullable T fromJson(@Nullable JsonNode value,
             Class<T> targetType) {
+        return fromJson(value, constructType(targetType));
+    }
+
+    /**
+     * Helper to convert the given JSON to a Java instance of the given type
+     * using the global signal object mapper. In contrast to
+     * {@link #fromJson(JsonNode, Class)}, the type arguments of a parameterized
+     * type such as <code>Set&lt;String&gt;</code> are retained.
+     *
+     * @see SignalEnvironment
+     *
+     * @param <T>
+     *            the target type
+     * @param value
+     *            the JSON value to convert
+     * @param targetType
+     *            the target type, not <code>null</code>
+     * @return the converted Java instance
+     * @since 25.3
+     */
+    protected static <T> @Nullable T fromJson(@Nullable JsonNode value,
+            JavaType targetType) {
         try {
             return OBJECT_MAPPER.treeToValue(value, targetType);
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Resolves the given class into a type definition that can be used for
+     * reading signal values.
+     *
+     * @param type
+     *            the class to resolve, not <code>null</code>
+     * @return the resolved type, not <code>null</code>
+     * @since 25.3
+     */
+    protected static JavaType constructType(Class<?> type) {
+        return OBJECT_MAPPER.constructType(Objects.requireNonNull(type));
+    }
+
+    /**
+     * Resolves the given type reference into a type definition that can be used
+     * for reading signal values. In contrast to {@link #constructType(Class)},
+     * the type arguments of a parameterized type such as
+     * <code>Set&lt;String&gt;</code> are retained.
+     *
+     * @param typeReference
+     *            the type reference to resolve, not <code>null</code>
+     * @return the resolved type, not <code>null</code>
+     * @since 25.3
+     */
+    protected static JavaType constructType(TypeReference<?> typeReference) {
+        return OBJECT_MAPPER
+                .constructType(Objects.requireNonNull(typeReference));
     }
 
     /**
@@ -613,6 +666,25 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * @return the converted Java instance
      */
     protected static <T> @Nullable T nodeValue(Node node, Class<T> valueType) {
+        return nodeValue(node, constructType(valueType));
+    }
+
+    /**
+     * Helper to convert the value of the given node into Java object of the
+     * given type. In contrast to {@link #nodeValue(Node, Class)}, the type
+     * arguments of a parameterized type such as <code>Set&lt;String&gt;</code>
+     * are retained.
+     *
+     * @param <T>
+     *            the Java object type
+     * @param node
+     *            the signal node to read the value from, not <code>null</code>
+     * @param valueType
+     *            the type to convert to, not <code>null</code>
+     * @return the converted Java instance
+     * @since 25.3
+     */
+    protected static <T> @Nullable T nodeValue(Node node, JavaType valueType) {
         assert node instanceof Data;
 
         return fromJson(((Data) node).value(), valueType);
