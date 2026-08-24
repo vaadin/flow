@@ -63,8 +63,10 @@ import com.vaadin.flow.server.VaadinService;
  * <li>The first step can fail on its own, when the property is not synchronized
  * at all or a signal bound to it rejects the write. There is then no change
  * event to surround, so the events are fired at that point instead, with a
- * {@link RpcInvocationFailedEvent} carrying the failure, and the remaining
- * invocations of the request are still handled.</li>
+ * {@link RpcInvocationFailedEvent} carrying the failure. Refusing a value the
+ * client should not have sent aborts the request, so unlike a failure of the
+ * application code an invocation runs, the remaining invocations of the request
+ * are not handled and the client is sent an internal error.</li>
  * <li>Because the first step is completed for the whole request up front, all
  * property updates in a request are reported before any other invocation it
  * carries, even those the client sent earlier in the request.</li>

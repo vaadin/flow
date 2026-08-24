@@ -526,14 +526,46 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    void handleRpc_mapSyncOfNonSynchronizedProperty_reportsFailureAndHandlesRest()
+    void handleRpc_mapSyncOfReadOnlySignalBoundProperty_reportsFailureAndAborts()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        // A binding with no write callback rejects the write while the value is
+        // applied. The client is told about it by the request being aborted, so
+        // the failure must keep propagating out of handleRpc.
+        List<String> sequence = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                event -> sequence.add("started"));
+        service.getEventBus().addListener(RpcInvocationFailedEvent.class,
+                event -> sequence.add("failed:" + event.getName()));
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                event -> sequence.add("ended"));
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change", event -> {
+        });
+        ui.getElement().appendChild(input);
+        input.bindProperty("value", new ValueSignal<>("read-only"), null);
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        assertThrows(RuntimeException.class,
+                () -> serverRpcHandler.handleRpc(ui, reader, request));
+        assertEquals(List.of("started", "failed:value", "ended"), sequence);
+    }
+
+    @Test
+    void handleRpc_mapSyncOfNonSynchronizedProperty_reportsFailureAndAborts()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         // Applying the value fails before there is any change event to observe,
-        // so the invocation is reported as failed at that point rather than
-        // aborting the request.
-        ErrorHandler errorHandler = Mockito.mock(ErrorHandler.class);
-        Mockito.when(session.getErrorHandler()).thenReturn(errorHandler);
+        // so the invocation is reported as failed at that point. Refusing a
+        // value the client should not have sent still aborts the request, so
+        // the invocation that follows it is never reached.
         List<String> sequence = new ArrayList<>();
         List<RpcInvocationFailedEvent> failed = new ArrayList<>();
         service.getEventBus().addListener(RpcInvocationStartedEvent.class,
@@ -552,21 +584,20 @@ class ServerRpcHandlerTest {
         ui.getElement().appendChild(input);
         int nodeId = input.getNode().getId();
 
-        // "value" is never made synchronized on the element, so the update is
-        // vetoed. The click that follows it must still be handled.
+        // "value" is never made synchronized on the element, so it is vetoed
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
                 + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" },"
                 + "{\"type\": \"event\", \"node\" : " + nodeId
                 + ", \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
 
-        serverRpcHandler.handleRpc(ui, reader, request);
+        assertThrows(IllegalArgumentException.class,
+                () -> serverRpcHandler.handleRpc(ui, reader, request));
 
-        assertEquals(List.of("started:mSync", "failed:value", "ended:mSync",
-                "started:event", "ended:event"), sequence);
+        assertEquals(List.of("started:mSync", "failed:value", "ended:mSync"),
+                sequence);
         assertInstanceOf(IllegalArgumentException.class,
                 failed.get(0).getError());
-        Mockito.verify(errorHandler).error(ArgumentMatchers.any());
     }
 
     @Test

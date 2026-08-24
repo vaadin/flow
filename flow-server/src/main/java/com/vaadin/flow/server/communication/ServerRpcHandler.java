@@ -620,8 +620,11 @@ public class ServerRpcHandler implements Serializable {
      * that is where a property change listener runs. Applying the value can
      * fail on its own though: the property may not be synchronized at all, or a
      * signal bound to it may reject the write. The change event that would have
-     * reported such a failure is never reached, so it is reported here instead,
-     * and the rest of the request is still handled.
+     * reported such a failure is never reached, so the phase events are fired
+     * here instead. The failure is then rethrown, since refusing a value the
+     * client should not have sent aborts the request and reports an internal
+     * error to the client, rather than being handled like a failure of the
+     * application code an invocation runs.
      *
      * @param ui
      *            the UI the invocation is handled against
@@ -643,8 +646,7 @@ public class ServerRpcHandler implements Serializable {
             events.started();
             events.failed(throwable);
             events.ended();
-            callErrorHandler(ui, invocationJson, throwable);
-            return Optional.empty();
+            throw throwable;
         }
     }
 
