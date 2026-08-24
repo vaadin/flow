@@ -1004,11 +1004,12 @@ public class DataCommunicator<T> implements Serializable {
     public int getDataProviderSize() {
         assert definedSize
                 : "This method should never be called when using undefined size";
+        IntSupplier countItems = () -> countCallback != null
+                ? countCallback.count(new Query(getFilter()))
+                : getDataProvider().size(new Query(getFilter()));
+
         return DataFetchObserver.count(getUI(), getComponent(),
-                getFilter() != null,
-                () -> countCallback != null
-                        ? countCallback.count(new Query(getFilter()))
-                        : getDataProvider().size(new Query(getFilter())));
+                getFilter() != null, countItems);
     }
 
     private void updateUndefinedSize() {

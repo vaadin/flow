@@ -864,19 +864,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @SuppressWarnings("unchecked")
     private int getDataProviderChildCount(T parent) {
-        return DataFetchObserver.count(getUI(), getComponent(),
-                getFilter() != null, () -> {
-                    var query = new HierarchicalQuery<>(getFilter(),
-                            getExpandedItemIds(), parent);
+        IntSupplier countChildren = () -> {
+            var query = new HierarchicalQuery<>(getFilter(),
+                    getExpandedItemIds(), parent);
 
-                    var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                            .getChildCount(query);
-                    if (count < 0) {
-                        throw new IllegalStateException(
-                                "Data provider returned a negative child count. Negative values are not supported");
-                    }
-                    return count;
-                });
+            var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                    .getChildCount(query);
+            if (count < 0) {
+                throw new IllegalStateException(
+                        "Data provider returned a negative child count. Negative values are not supported");
+            }
+            return count;
+        };
+
+        return DataFetchObserver.count(getUI(), getComponent(),
+                getFilter() != null, countChildren);
     }
 
     private RootCache<T> ensureRootCache() {
