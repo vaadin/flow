@@ -22,8 +22,11 @@ type JsFunction = (...args: unknown[]) => unknown;
  * Creates the function exposed for a server return channel. Calling it forwards
  * all of its arguments (as an array) to the supplied sender, which the Java
  * caller wires (exception-guarded) to ServerConnector.sendReturnChannelMessage.
+ *
+ * Private in the Java source (`private static native`); kept module-local and
+ * exercised through the public `decodeWithTypeInfo` (`@v-return`) surface.
  */
-export function createReturnChannelCallback(sendMessage: (args: unknown[]) => void): JsFunction {
+function createReturnChannelCallback(sendMessage: (args: unknown[]) => void): JsFunction {
   return (...args: unknown[]) => {
     sendMessage(args);
   };
@@ -33,8 +36,11 @@ export function createReturnChannelCallback(sendMessage: (args: unknown[]) => vo
  * Wraps `fn` in a function that prepends `captures` to the runtime arguments
  * before delegating, while leaving `this` controlled by the caller (unlike
  * Function.prototype.bind, which would pre-bind `this`).
+ *
+ * Private in the Java source (`private static native`); kept module-local and
+ * exercised through the public `decodeWithTypeInfo` (`@v-fn`) surface.
  */
-export function applyCaptures(fn: JsFunction, captures: ArrayLike<unknown>): JsFunction {
+function applyCaptures(fn: JsFunction, captures: ArrayLike<unknown>): JsFunction {
   return function (this: unknown, ...callArgs: unknown[]): unknown {
     const args = Array.from(captures).concat(callArgs);
     return fn.apply(this, args);

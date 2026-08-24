@@ -95,6 +95,17 @@ They consolidate the review feedback from the migration PR stack (#24933,
 3. Java `public`/`protected` → `export` / class member; Java `private` →
    non-exported module-local function or a JS-native `#`-private class member
    (use `#`, not the TypeScript `private` keyword).
+   - **Do not widen visibility for tests.** Never add an `export` (or promote a
+     `#`-private member to public) just so a test can reach a helper that is
+     `private` in Java — that breaks visibility parity. Test a private helper
+     through the existing public surface that already exercises it, mirroring how
+     the Java `*Test` covers it. A Java method that is *itself* public "for
+     testing purposes" (e.g. `TreeChangeProcessor.processChange`) is genuine
+     public API and is exported as such — that is not a test-only export.
+     (Regression this prevents: `ClientJsonCodec`'s `applyCaptures` and
+     `createReturnChannelCallback`, both `private static native` in Java, were
+     exported only so the test could call them directly; they are covered instead
+     through the public `decodeWithTypeInfo` `@v-fn` / `@v-return` paths.)
 
 ## Completeness & ordering
 
