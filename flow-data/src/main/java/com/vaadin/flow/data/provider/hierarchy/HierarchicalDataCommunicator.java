@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
@@ -34,6 +35,7 @@ import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
+import com.vaadin.flow.data.provider.DataFetchObserver;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
@@ -554,8 +556,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void preloadRange(Cache<T> cache, int start, int length) {
         var range = Range.withLength(start, length)
                 .restrictTo(Range.withLength(0, cache.getSize()));
-        var items = fetchDataProviderChildren(cache.getParentItem(), range);
-        cache.setItems(range.getStart(), items);
+        IntSupplier fetchChildren = () -> {
+            var items = fetchDataProviderChildren(cache.getParentItem(), range);
+            cache.setItems(range.getStart(), items);
+            return items.size();
+        };
+
+        DataFetchObserver.fetch(getUI(), getComponent(), range,
+                getFilter() != null, fetchChildren);
     }
 
     /**
@@ -856,16 +864,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @SuppressWarnings("unchecked")
     private int getDataProviderChildCount(T parent) {
-        var query = new HierarchicalQuery<>(getFilter(), getExpandedItemIds(),
-                parent);
+        IntSupplier countChildren = () -> {
+            var query = new HierarchicalQuery<>(getFilter(),
+                    getExpandedItemIds(), parent);
 
-        var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                .getChildCount(query);
-        if (count < 0) {
-            throw new IllegalStateException(
-                    "Data provider returned a negative child count. Negative values are not supported");
-        }
-        return count;
+            var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                    .getChildCount(query);
+            if (count < 0) {
+                throw new IllegalStateException(
+                        "Data provider returned a negative child count. Negative values are not supported");
+            }
+            return count;
+        };
+
+        return DataFetchObserver.count(getUI(), getComponent(),
+                getFilter() != null, countChildren);
     }
 
     private RootCache<T> ensureRootCache() {
