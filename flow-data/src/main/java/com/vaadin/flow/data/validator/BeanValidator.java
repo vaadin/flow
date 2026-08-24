@@ -123,6 +123,7 @@ public class BeanValidator implements Validator<Object> {
      *             false
      * @throws IllegalArgumentException
      *             if any of the given validation groups is not an interface
+     * @since 25.3
      */
     public BeanValidator(Class<?> beanType, String propertyName,
             Class<?>... validationGroups) {
@@ -146,6 +147,7 @@ public class BeanValidator implements Validator<Object> {
      * @throws IllegalStateException
      *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
      *             false
+     * @since 25.3
      */
     public BeanValidator(Class<?> beanType, String propertyName,
             SerializableSupplier<Class<?>[]> validationGroupsSupplier) {
@@ -187,6 +189,7 @@ public class BeanValidator implements Validator<Object> {
      * array means that the {@linkplain Default default group} is used.
      *
      * @return the validation groups, not null
+     * @since 25.3
      */
     public Class<?>[] getValidationGroups() {
         return validationGroups().clone();

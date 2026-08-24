@@ -69,6 +69,8 @@ import com.vaadin.flow.server.VaadinService;
  * property updates in a request are reported before any other invocation it
  * carries, even those the client sent earlier in the request.</li>
  * </ul>
+ *
+ * @since 25.3
  */
 public abstract class AbstractRpcInvocationEvent extends EventObject {
 

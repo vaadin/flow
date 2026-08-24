@@ -97,6 +97,7 @@ public abstract class AbstractRpcInvocationHandler
      * @param node
      *            the target node, may be {@code null}
      * @return a description of the target, not {@code null}
+     * @since 25.3
      */
     protected static String describeTarget(StateNode node) {
         if (node == null) {

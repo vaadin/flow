@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.communication;
+package com.vaadin.flow.server.data;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinService;
 
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
- * when handling a client-to-server RPC invocation threw, before the matching
- * {@link RpcInvocationEndedEvent}. The framework routes the throwable to the
- * session error handler independently of this event.
+ * when a count query threw, before the matching {@link DataCountEndedEvent}.
+ * The framework propagates the throwable independently of this event.
  *
- * @see AbstractRpcInvocationEvent
+ * @see AbstractDataCountEvent
  * @since 25.3
  */
-public class RpcInvocationFailedEvent extends AbstractRpcInvocationEvent {
+public class DataCountFailedEvent extends AbstractDataCountEvent {
 
     private final transient Throwable error;
 
@@ -35,26 +35,23 @@ public class RpcInvocationFailedEvent extends AbstractRpcInvocationEvent {
      * Creates a new event.
      *
      * @param ui
-     *            the UI the invocation is handled against, not {@code null}
-     * @param type
-     *            the protocol-level invocation type, not {@code null}
-     * @param nodeId
-     *            the id of the targeted {@code StateNode}, or {@code -1} if the
-     *            invocation does not target a node
-     * @param name
-     *            a human-readable identifier for the invocation, or
-     *            {@code null} if none applies
+     *            the UI the counting component belongs to, not {@code null}
+     * @param component
+     *            the component whose data is being counted, or {@code null} if
+     *            it could not be resolved
+     * @param filtered
+     *            whether a filter was set on the query
      * @param error
-     *            the throwable raised by the invocation handler
+     *            the throwable raised by the data provider
      */
-    public RpcInvocationFailedEvent(UI ui, String type, int nodeId, String name,
+    public DataCountFailedEvent(UI ui, Component component, boolean filtered,
             Throwable error) {
-        super(ui, type, nodeId, name);
+        super(ui, component, filtered);
         this.error = error;
     }
 
     /**
-     * Gets the throwable raised by the invocation handler.
+     * Gets the throwable raised by the data provider.
      *
      * @return the throwable
      */

@@ -832,6 +832,7 @@ public abstract class VaadinService implements Serializable {
      * </pre>
      *
      * @return the event bus of this service, not {@code null}
+     * @since 25.3
      */
     public VaadinServiceEventBus getEventBus() {
         return eventBus;
