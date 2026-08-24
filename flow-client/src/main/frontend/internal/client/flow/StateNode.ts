@@ -93,7 +93,10 @@ export class StateNode implements NodeFeatureNode {
       feature = new NodeList(id, this);
       this.#features.set(id, feature);
     }
-    return feature as NodeList;
+
+    assert(feature instanceof NodeList, 'Feature is not a NodeList');
+
+    return feature;
   }
 
   /**
@@ -109,7 +112,10 @@ export class StateNode implements NodeFeatureNode {
       feature = new NodeMap(id, this);
       this.#features.set(id, feature);
     }
-    return feature as NodeMap;
+
+    assert(feature instanceof NodeMap, 'Feature is not a NodeMap');
+
+    return feature;
   }
 
   /**
