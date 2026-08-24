@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { TrackingScheduler } from '../../main/frontend/internal/TrackingScheduler';
+import { TrackingScheduler } from '../../../main/frontend/internal/client/TrackingScheduler';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 

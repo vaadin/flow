@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { UILifecycle, UIState } from '../../main/frontend/internal/UILifecycle';
+import { UILifecycle, UIState } from '../../../main/frontend/internal/client/UILifecycle';
 
 describe('UILifecycle', () => {
   it('starts in INITIALIZING and is neither running nor terminated', () => {

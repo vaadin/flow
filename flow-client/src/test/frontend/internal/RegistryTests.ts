@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Registry, type ServiceKey } from '../../main/frontend/internal/Registry';
+import { Registry, type ServiceKey } from '../../../main/frontend/internal/client/Registry';
 
 // Test subclass exposing the protected container API (the cutover subclass will
 // instead register concrete services and add typed getters).

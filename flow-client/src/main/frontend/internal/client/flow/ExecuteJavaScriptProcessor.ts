@@ -33,19 +33,19 @@
 // are contracts satisfied at cutover.
 
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
-import { decodeStateNode, decodeWithTypeInfo } from './ClientJsonCodec';
+import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
 import {
   attachExistingElement,
   disposeInitializer,
   populateModelProperties,
   registerInitializer,
   registerUpdatableModelProperties
-} from './ExecuteJavaScriptElementUtils';
+} from '../ExecuteJavaScriptElementUtils';
 import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
 import type { StateTree } from './StateTree';
-import { UIState } from './UILifecycle';
-import { Console } from './Console';
+import { UIState } from '../UILifecycle';
+import { Console } from '../Console';
 
 // NodeFeatures.ELEMENT_DATA / NodeProperties
 const ELEMENT_DATA = 0;

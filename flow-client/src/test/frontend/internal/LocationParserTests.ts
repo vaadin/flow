@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { getParameter } from '../../main/frontend/internal/LocationParser';
+import { getParameter } from '../../../main/frontend/internal/client/bootstrap/LocationParser';
 
 describe('LocationParser', () => {
   it('parses parameters from a search string', () => {

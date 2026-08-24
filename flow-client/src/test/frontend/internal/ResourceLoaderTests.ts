@@ -3,7 +3,7 @@ import {
   addOnloadHandler,
   getStyleSheetLength,
   runPromiseExpression
-} from '../../main/frontend/internal/ResourceLoader';
+} from '../../../main/frontend/internal/client/ResourceLoader';
 
 type HandlerEl = {
   onload: (() => void) | null;
