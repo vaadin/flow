@@ -26,6 +26,7 @@ import com.vaadin.flow.server.VaadinService;
  * local.
  *
  * @see AbstractRpcInvocationEvent
+ * @since 25.3
  */
 public class RpcInvocationEndedEvent extends AbstractRpcInvocationEvent {
 

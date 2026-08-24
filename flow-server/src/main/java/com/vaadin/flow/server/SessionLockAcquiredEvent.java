@@ -21,6 +21,7 @@ package com.vaadin.flow.server;
  * only.
  *
  * @see AbstractSessionLockEvent
+ * @since 25.3
  */
 public class SessionLockAcquiredEvent extends AbstractSessionLockEvent {
 
