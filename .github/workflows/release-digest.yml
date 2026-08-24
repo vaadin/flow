@@ -1,0 +1,88 @@
+name: Release Digest
+
+# Summarises every branch with unreleased changes — including main's next
+# pre-release — with the suggested version, the commits behind it, and whether
+# they look worth releasing, and posts it to #flow-dev.
+#
+# Complements "Maintained Branch Release Check", which tracks the same patch
+# releases as GitHub issues. Both read their branch list from validation.yml.
+#
+# Run from the Actions tab for now. To make it weekly once the Slack target is
+# configured, add alongside workflow_dispatch:
+#
+#   schedule:
+#     - cron: '0 6 * * 1'   # Mondays 06:00 UTC, Monday morning in Finland
+#
+# A scheduled run needs no further change: it posts, where a manual run only
+# posts when asked.
+on:
+  workflow_dispatch:
+    inputs:
+      post:
+        description: Post to Slack as well as to the job summary
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history + tags for every branch so the script can diff each
+          # branch against its latest release tag.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Installed outside the workspace so the repository stays clean — Flow has
+      # no root package.json to add a dependency to.
+      - name: Install the Anthropic SDK
+        run: npm install --prefix "$RUNNER_TEMP/deps" --no-audit --no-fund @anthropic-ai/sdk
+
+      - name: Compute pending releases
+        run: node ./scripts/checkReleases.js --out=release-check --include-main
+
+      - name: Build the digest, and post it to Slack
+        env:
+          NODE_PATH: ${{ runner.temp }}/deps/node_modules
+          # Optional: without it the digest posts using commit types alone.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # A Workflow Builder webhook trigger, which takes a plain-text
+          # variable. Posting Block Kit instead needs a Slack app, which the
+          # workspace does not let us create.
+          SLACK_TRIGGER_URL: ${{ secrets.SLACK_RELEASE_DIGEST_TRIGGER }}
+          SLACK_TRIGGER_VARIABLE: digest
+          # A manual run only posts when asked, so the digest can be read in
+          # the job summary without any Slack target configured — while a run
+          # that is meant to post still fails loudly when it cannot. Anything
+          # not triggered by hand, a schedule above all, always posts.
+          POST: ${{ github.event_name != 'workflow_dispatch' || inputs.post }}
+        run: |
+          [ "$POST" = 'true' ] || NO_POST=--no-post
+          node ./scripts/releaseDigest.js --in=release-check \
+            --save=release-check/digest.txt $NO_POST
+
+      # The digest is written here whether or not it was posted, so a run that
+      # does not post still shows the exact message it built.
+      - name: Job summary
+        if: always()
+        run: |
+          cat release-check/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f release-check/digest.txt ]; then
+            {
+              echo
+              echo '## The Slack message'
+              echo
+              echo '```text'
+              cat release-check/digest.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

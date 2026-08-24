@@ -1,30 +1,43 @@
 #!/usr/bin/env node
 /**
- * Reports which maintained branches have unreleased changes worth a patch
- * release, producing one issue body per branch so releases can be tracked and
- * assigned individually.
+ * Reports which branches have unreleased changes worth a release, producing one
+ * issue body per branch so releases can be tracked and assigned individually,
+ * plus a structured report the Slack digest renders from.
  *
  * The maintained branches are read from `.github/workflows/validation.yml`
  * (the `on.push.branches` list) so this stays in sync with CI and there is no
- * second list to keep up to date.
+ * second list to keep up to date. `--include-main` adds `main`, whose version
+ * line comes from its POM version rather than its branch name because
+ * pre-releases (`25.3.0-alphaN`) are cut from it.
  *
- * For each branch it finds the latest release tag on that version line and
- * lists the `feat:` and `fix:` commits merged since then. `chore:`,
- * `refactor:` and other prefixes are ignored because they don't, on their own,
- * justify a release.
+ * For each branch it finds the latest tag on that version line and classifies
+ * every commit merged since then by its conventional-commit type:
+ *
+ *   releasable  feat / fix / perf / revert / any `!` — on their own justify a release
+ *   deps        chore(deps) and similar scopes      — worth releasing in a batch
+ *   internal    refactor / docs / test / ci / …     — do not justify a release
+ *
+ * The resulting verdict (`release` / `consider` / `skip`) depends only on commit
+ * types. `releaseDigest.js` pairs it with a model-written recommendation that
+ * reads what the commits actually do, and still posts without one.
  *
  * Usage:
- *   ./scripts/checkReleases.js [--out=release-check] [--no-fetch]
+ *   ./scripts/checkReleases.js [--out=release-check] [--no-fetch] [--include-main]
  *
  * Outputs, under the out directory (default `release-check`):
  *   - `<branch>.md`   Issue body for each branch with pending changes.
  *   - `manifest.json` { pending: [{branch,title,next,count,body}], clean: [branch] }
  *                     The workflow uses this to upsert one issue per pending
  *                     branch and to close issues for branches now up to date.
+ *   - `report.json`   Full per-branch classification, consumed by the digest.
  *   - `summary.md`    Combined overview for the Actions job summary.
  *
- * The script fetches the maintained branches and tags itself, so the workflow
- * only needs a shallow checkout.
+ * `manifest.json` intentionally keeps counting only `feat:`/`fix:` commits, so
+ * the issue-tracking workflow behaves exactly as before this classification was
+ * added.
+ *
+ * The script fetches the branches and tags itself, so the workflow only needs a
+ * shallow checkout.
  */
 
 const fs = require('fs');
@@ -32,16 +45,19 @@ const { execFileSync } = require('child_process');
 
 const REMOTE = process.env.RELEASE_CHECK_REMOTE || 'origin';
 const VALIDATION_YML = '.github/workflows/validation.yml';
+const MAIN_BRANCH = 'main';
+const REPO_URL = 'https://github.com/vaadin/flow';
 
 function git(args) {
   return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 }
 
 function parseArgs(argv) {
-  const opts = { outDir: 'release-check', fetch: true };
+  const opts = { outDir: 'release-check', fetch: true, includeMain: false };
   for (const arg of argv) {
     if (arg.startsWith('--out=')) opts.outDir = arg.slice('--out='.length);
     else if (arg === '--no-fetch') opts.fetch = false;
+    else if (arg === '--include-main') opts.includeMain = true;
   }
   return opts;
 }
@@ -61,6 +77,23 @@ function readMaintainedBranches() {
     .split(',')
     .map((s) => s.trim().replace(/^['"]|['"]$/g, ''))
     .filter(Boolean);
+}
+
+/**
+ * The version line `main` is currently building, taken from the `flow-project`
+ * POM version (`25.3-SNAPSHOT` -> `25.3`). Unlike a maintained branch, `main`
+ * is not named after its line, so its tags cannot be found from the branch
+ * name alone.
+ */
+function readMainVersionLine() {
+  const pom = git(['show', `${REMOTE}/${MAIN_BRANCH}:pom.xml`]);
+  const m = pom.match(
+    /<artifactId>flow-project<\/artifactId>\s*<version>(\d+\.\d+)[^<]*<\/version>/
+  );
+  if (!m) {
+    throw new Error(`Could not read the flow-project version from ${MAIN_BRANCH}'s pom.xml`);
+  }
+  return m[1];
 }
 
 /** Parses a tag like `24.9.19` or `25.2.0-beta1` into a comparable structure. */
@@ -93,9 +126,9 @@ function fetchRefs(branches) {
   git(['fetch', '--quiet', '--tags', REMOTE, ...refspecs]);
 }
 
-/** Latest tag (release or pre-release) on a branch's version line, or null. */
-function latestTagFor(branch) {
-  const prefix = `${branch}.`;
+/** Latest tag (release or pre-release) on a version line, or null. */
+function latestTagFor(line) {
+  const prefix = `${line}.`;
   const versions = git(['tag', '--list', `${prefix}*`])
     .split('\n')
     .map((t) => t.trim())
@@ -107,28 +140,74 @@ function latestTagFor(branch) {
   return versions[versions.length - 1];
 }
 
-/** The patch version that the pending changes would be released as. */
+/**
+ * The version the pending changes would be released as: the next patch for a
+ * final release, or the next iteration of the same pre-release series so `main`
+ * gets a concrete `25.3.0-alpha8` rather than a placeholder.
+ */
 function suggestNextVersion(version) {
   if (!version) return null;
-  // Don't guess the next pre-release identifier; only suggest for finals.
-  if (version.pre) return null;
-  return `${version.major}.${version.minor}.${version.patch + 1}`;
+  if (!version.pre) {
+    return `${version.major}.${version.minor}.${version.patch + 1}`;
+  }
+  const series = version.pre.match(/^(.*?)(\d+)$/);
+  // An unnumbered pre-release identifier has no obvious successor.
+  if (!series) return null;
+  return `${version.major}.${version.minor}.${version.patch}-${series[1]}${Number(series[2]) + 1}`;
 }
 
-const RELEASABLE = /^(feat|fix)(\([^)]*\))?!?:\s/i;
+/**
+ * Conventional-commit types grouped by what they mean for a release. Anything
+ * unrecognised (including a subject with no type prefix) counts as internal, so
+ * an unparseable subject can never on its own trigger a release recommendation.
+ */
+const RELEASABLE_TYPES = new Set(['feat', 'fix', 'perf', 'revert']);
+const CONVENTIONAL = /^(\w+)(?:\(([^)]*)\))?(!)?:\s*(.*)$/;
 
-/** feat:/fix: commit subjects merged since `tag` on the branch. */
-function pendingCommits(tag, branch) {
+/** Splits a subject into `{type, scope, breaking, category}`. */
+function classify(subject) {
+  const m = subject.match(CONVENTIONAL);
+  if (!m) {
+    return { type: null, scope: null, breaking: false, category: 'internal' };
+  }
+  const [, type, scope = null, bang] = m;
+  const lower = type.toLowerCase();
+  const breaking = Boolean(bang);
+  let category;
+  if (breaking || RELEASABLE_TYPES.has(lower)) {
+    category = 'releasable';
+  } else if (scope && /^deps/i.test(scope)) {
+    category = 'deps';
+  } else {
+    category = 'internal';
+  }
+  return { type: lower, scope, breaking, category };
+}
+
+/** Every non-merge commit since `tag`, classified. */
+function commitsSince(tag, branch) {
   const range = tag ? `${tag}..${REMOTE}/${branch}` : `${REMOTE}/${branch}`;
-  const lines = git(['log', '--no-merges', '--format=%h\t%s', range])
+  return git(['log', '--no-merges', '--format=%h\t%s', range])
     .split('\n')
-    .filter(Boolean);
-  return lines
+    .filter(Boolean)
     .map((line) => {
       const tab = line.indexOf('\t');
-      return { sha: line.slice(0, tab), subject: line.slice(tab + 1) };
-    })
-    .filter((c) => RELEASABLE.test(c.subject));
+      const sha = line.slice(0, tab);
+      const subject = line.slice(tab + 1);
+      return { sha, subject, ...classify(subject) };
+    });
+}
+
+/**
+ * Recommendation derived purely from commit types: `feat:`/`fix:` warrant a
+ * release, dependency bumps alone are a judgement call, everything else waits.
+ * The digest shows this next to any model-written recommendation so the two can
+ * be compared rather than one silently overriding the other.
+ */
+function verdictFor(counts) {
+  if (counts.releasable > 0) return 'release';
+  if (counts.deps > 0) return 'consider';
+  return 'skip';
 }
 
 /**
@@ -144,7 +223,7 @@ function issueTitle(branch) {
 /** Issue body for a single branch's pending release. */
 function branchBody(r, now) {
   const target = r.next ? `\`${r.next}\`` : 'the next pre-release';
-  const n = r.commits.length;
+  const n = r.releasable.length;
   const lines = [];
   lines.push(`Branch \`${r.branch}\` has **${n}** unreleased \`feat:\`/\`fix:\` commit${n === 1 ? '' : 's'} since \`${r.lastTag || 'the start of the branch'}\`.`);
   lines.push('');
@@ -152,7 +231,7 @@ function branchBody(r, now) {
   lines.push('');
   lines.push('### Changes to release');
   lines.push('');
-  for (const c of r.commits) {
+  for (const c of r.releasable) {
     lines.push(`- ${c.subject} (${c.sha})`);
   }
   lines.push('');
@@ -166,27 +245,29 @@ function branchBody(r, now) {
 
 /** Combined overview written to the Actions job summary. */
 function buildSummary(results, now) {
-  const pending = results.filter((r) => r.commits.length > 0);
   const lines = [];
-  lines.push('## Maintained branch release check');
+  lines.push('## Branch release check');
   lines.push('');
   lines.push(`_Generated ${now} from \`${VALIDATION_YML}\` maintained branches._`);
   lines.push('');
-  if (!pending.length) {
-    lines.push('No maintained branch has unreleased `feat:`/`fix:` changes. 🎉');
+  const active = results.filter((r) => r.verdict !== 'skip');
+  if (!active.length) {
+    lines.push('No branch has unreleased changes worth a release. 🎉');
     return lines.join('\n');
   }
-  lines.push('One issue is opened/updated per branch below.');
-  lines.push('');
-  lines.push('| Branch | Last release | Next | feat/fix commits |');
-  lines.push('| --- | --- | --- | --- |');
-  for (const r of pending) {
-    lines.push(`| \`${r.branch}\` | ${r.lastTag || '—'} | ${r.next || '—'} | ${r.commits.length} |`);
+  lines.push('| Branch | Last release | Next | feat/fix | deps | other | Verdict |');
+  lines.push('| --- | --- | --- | --- | --- | --- | --- |');
+  for (const r of active) {
+    const c = r.counts;
+    lines.push(
+      `| \`${r.branch}\` | ${r.lastTag || '—'} | ${r.next || '—'} | ` +
+        `${c.releasable} | ${c.deps} | ${c.internal} | ${r.verdict} |`
+    );
   }
-  const clean = results.filter((r) => r.commits.length === 0);
-  if (clean.length) {
+  const quiet = results.filter((r) => r.verdict === 'skip');
+  if (quiet.length) {
     lines.push('');
-    lines.push(`Up to date: ${clean.map((r) => `\`${r.branch}\``).join(', ')}.`);
+    lines.push(`Nothing to release: ${quiet.map((r) => `\`${r.branch}\``).join(', ')}.`);
   }
   return lines.join('\n');
 }
@@ -194,42 +275,69 @@ function buildSummary(results, now) {
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const branches = readMaintainedBranches();
+  // `main` leads the digest: its pre-release is the one people forget.
+  if (opts.includeMain) branches.unshift(MAIN_BRANCH);
   if (opts.fetch) {
     fetchRefs(branches);
   }
 
   const now = new Date().toISOString().slice(0, 10);
   const results = branches.map((branch) => {
-    const version = latestTagFor(branch);
-    const commits = pendingCommits(version && version.tag, branch);
+    const line = branch === MAIN_BRANCH ? readMainVersionLine() : branch;
+    const version = latestTagFor(line);
+    const lastTag = version ? version.tag : null;
+    const commits = commitsSince(lastTag, branch);
+    const counts = {
+      releasable: commits.filter((c) => c.category === 'releasable').length,
+      deps: commits.filter((c) => c.category === 'deps').length,
+      internal: commits.filter((c) => c.category === 'internal').length,
+      total: commits.length,
+    };
     return {
       branch,
-      lastTag: version && version.tag,
+      line,
+      lastTag,
       next: suggestNextVersion(version),
+      prerelease: Boolean(version && version.pre),
+      counts,
+      verdict: verdictFor(counts),
+      compareUrl: lastTag
+        ? `${REPO_URL}/compare/${lastTag}...${branch}`
+        : `${REPO_URL}/commits/${branch}`,
       commits,
+      releasable: commits.filter((c) => c.category === 'releasable'),
     };
   });
 
   fs.mkdirSync(opts.outDir, { recursive: true });
 
+  // `main` is deliberately absent from the manifest: the issue workflow tracks
+  // patch releases of maintained branches, and pre-releases are not those.
+  const tracked = results.filter((r) => r.branch !== MAIN_BRANCH);
   const pending = [];
-  for (const r of results) {
-    if (r.commits.length === 0) continue;
+  for (const r of tracked) {
+    if (r.releasable.length === 0) continue;
     const bodyFile = `${opts.outDir}/${r.branch}.md`;
     fs.writeFileSync(bodyFile, branchBody(r, now) + '\n');
     pending.push({
       branch: r.branch,
       title: issueTitle(r.branch),
       next: r.next,
-      count: r.commits.length,
+      count: r.releasable.length,
       body: bodyFile,
     });
   }
-  const clean = results.filter((r) => r.commits.length === 0).map((r) => issueTitle(r.branch));
+  const clean = tracked.filter((r) => r.releasable.length === 0).map((r) => issueTitle(r.branch));
 
   fs.writeFileSync(
     `${opts.outDir}/manifest.json`,
     JSON.stringify({ pending, clean }, null, 2) + '\n'
+  );
+  // `releasable` is a working field; `commits` already carries each category.
+  const reported = results.map(({ releasable, ...branch }) => branch);
+  fs.writeFileSync(
+    `${opts.outDir}/report.json`,
+    JSON.stringify({ generated: now, repository: REPO_URL, branches: reported }, null, 2) + '\n'
   );
   fs.writeFileSync(`${opts.outDir}/summary.md`, buildSummary(results, now) + '\n');
 
@@ -239,7 +347,11 @@ function main() {
       : 'No pending patch releases'
   );
   for (const r of results) {
-    console.log(`  ${r.branch}: ${r.commits.length} pending (last ${r.lastTag || 'none'})`);
+    const c = r.counts;
+    console.log(
+      `  ${r.branch}: ${r.verdict} — ${c.releasable} feat/fix, ${c.deps} deps, ` +
+        `${c.internal} other (last ${r.lastTag || 'none'})`
+    );
   }
 
   if (process.env.GITHUB_OUTPUT) {
