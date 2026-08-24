@@ -410,6 +410,33 @@ class UIInternalsTest {
     }
 
     @Test
+    void executeJs_elementMovedDuringResponsePhase_invocationStillSent() {
+        UI realUI = new UI();
+        UIInternals realInternals = realUI.getInternals();
+        realInternals.setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element first = new Element("div");
+        Element second = new Element("div");
+        realUI.getElement().appendChild(first, second);
+
+        Element child = new Element("span");
+        first.appendChild(child);
+        child.executeJs("this.foo = $0", "bar");
+
+        // Registered after the callback that queues the invocation, so the
+        // element is moved once the invocation is already in the queue. The
+        // attach and the detach cancel out within the same response, so the
+        // client still knows the node.
+        realInternals.getStateTree().beforeClientResponse(second.getNode(),
+                context -> second.appendChild(child));
+
+        realInternals.getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals(1, realInternals.dumpPendingJavaScriptInvocations().size(),
+                "Moving an element while its JavaScript is queued should not drop the invocation");
+    }
+
+    @Test
     void closedUI_retainedInvocationCanceled_noNullPointerException() {
         UI closedUI = new UI();
         UIInternals closedInternals = closedUI.getInternals();
