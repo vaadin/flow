@@ -105,7 +105,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Recursively decodes a JSON object, processing any nested @v references.
+ * Recursively decodes a JSON object, processing any nested `@v` references.
  * Returns a native JS object that can store decoded values including DOM
  * elements.
  *
@@ -120,7 +120,7 @@ function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, un
 }
 
 /**
- * Recursively decodes a JSON array, processing any nested @v references.
+ * Recursively decodes a JSON array, processing any nested `@v` references.
  *
  * Private in Java; covered through the public `decodeWithTypeInfo` surface.
  */
