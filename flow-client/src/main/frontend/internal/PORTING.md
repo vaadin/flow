@@ -22,6 +22,16 @@ These conventions apply to the incremental port of the GWT client
 They consolidate the review feedback from the migration PR stack (#24933,
 #24947, …) so follow-up PRs stay consistent.
 
+Reviewing a port against these rules has its own procedure — enumeration,
+evidence and verification requirements — in
+[`PORTING-REVIEW.md`](./PORTING-REVIEW.md). A review that does not follow it is
+not a review of this document.
+
+A rule added after the series started carries the branch it appeared at
+(`_Introduced during #NNNNN._`). Ported code written before that branch is graded
+against the rules that existed for it, and any retrofit still owed is listed in
+the [retrofit backlog](#retrofit-backlog) at the end of this file.
+
 ## Module layout
 
 1. **One Java *source file* → one TypeScript module.** The split follows the
@@ -233,3 +243,39 @@ They consolidate the review feedback from the migration PR stack (#24933,
        it from there, even across package directories. (Regression this
        prevents: `MapPropertyTests`, `NodeMapTests` and `NodeListTests` each
        carried their own `countingComputation` copy instead of the shared one.)
+
+## Language mapping
+
+14. **Settled mappings — cite these, do not re-derive or reopen them.** Each was
+    decided once for the whole series; a review may point at the rule number, and
+    may reopen one only with new evidence. _Introduced during #24948._
+    1. **Value comparison uses strict `===`.** Java `Objects.equals` becomes
+       `===`, accepting that `undefined` and `null` stay distinct where GWT's
+       compiled `==` treated them alike. This is deliberate: the stricter
+       behaviour is preferred, and the consequences are handled where they
+       surface.
+    2. **`Optional<T>` becomes `T | undefined`**, with `Optional.ofNullable`
+       mapping to a `null` → `undefined` normalisation at the setter (see
+       `MapProperty.setPreviousDomValue`).
+    3. **A Java `Class<T>` token becomes the JS constructor function** — see the
+       `nodeData` map in `StateNode`.
+    4. **Java `assert` becomes the always-on `assert()` helper**, including the
+       structural and consistency assertions, not only the null checks. Drop only
+       an assertion that TypeScript's non-null types make unreachable, and say so
+       at the site. (Regression this prevents: eight structural asserts were
+       dropped from `StateTree` / `TreeChangeProcessor` while the
+       null-precondition ones were correctly dropped, so the omission read as
+       deliberate.)
+    5. **A GWT-compiler-only construct has no port** — `crazyJsCast`,
+       `crazyJsoCast`, deferred binding — and its absence is documented at the
+       site that would have called it.
+
+## Retrofit backlog
+
+Rules added mid-series that earlier ported code does not satisfy yet. A row is
+removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
+§8 for how rows get here and where a retrofit is allowed to land.
+
+| Rule | Affected modules | Retrofit lands in | Status |
+| --- | --- | --- | --- |
+| — | — | — | none open |
