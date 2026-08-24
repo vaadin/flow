@@ -63,78 +63,64 @@ class DataQueryEventsTest {
     }
 
     @Test
-    void countStarted_exposesUiComponentAndFilter() {
-        DataCountStartedEvent event = new DataCountStartedEvent(ui, component,
-                true);
-
-        assertSame(ui, event.getUI());
-        assertSame(ui, event.getSource());
-        assertSame(component, event.getComponent().orElseThrow());
-        assertTrue(event.isFiltered());
-    }
-
-    @Test
-    void countFailed_exposesTheThrowable() {
-        IllegalStateException error = new IllegalStateException(
-                "count is down");
-        DataCountFailedEvent event = new DataCountFailedEvent(ui, component,
-                false, error);
-
-        assertSame(error, event.getError());
-        assertFalse(event.isFiltered());
-        assertSame(component, event.getComponent().orElseThrow());
-    }
-
-    @Test
-    void countEnded_exposesTheCount() {
+    void endedEvents_reportMinusOneWhenTheQueryThrew() {
         assertEquals(42,
                 new DataCountEndedEvent(ui, component, false, 42).getCount());
         assertEquals(-1,
                 new DataCountEndedEvent(ui, component, false, -1).getCount(),
-                "a count query that threw reports -1");
-    }
+                "a count query that threw reports -1, not a count of zero");
 
-    @Test
-    void fetchStarted_exposesTheRequestedRange() {
-        DataFetchStartedEvent event = new DataFetchStartedEvent(ui, component,
-                20, 50, true);
-
-        assertSame(ui, event.getUI());
-        assertSame(component, event.getComponent().orElseThrow());
-        assertEquals(20, event.getOffset());
-        assertEquals(50, event.getLimit());
-        assertTrue(event.isFiltered());
-    }
-
-    @Test
-    void fetchFailed_exposesTheThrowable() {
-        IllegalStateException error = new IllegalStateException("backend down");
-        DataFetchFailedEvent event = new DataFetchFailedEvent(ui, component, 0,
-                10, false, error);
-
-        assertSame(error, event.getError());
-        assertEquals(0, event.getOffset());
-        assertEquals(10, event.getLimit());
-    }
-
-    @Test
-    void fetchEnded_exposesRowsReturnedAgainstTheLimit() {
-        DataFetchEndedEvent event = new DataFetchEndedEvent(ui, component, 0,
-                50, false, 30);
-
-        assertEquals(50, event.getLimit(), "what was asked for");
-        assertEquals(30, event.getRowsReturned(), "what came back");
+        assertEquals(30,
+                new DataFetchEndedEvent(ui, component, 0, 50, false, 30)
+                        .getRowsReturned());
         assertEquals(-1,
                 new DataFetchEndedEvent(ui, component, 0, 50, false, -1)
                         .getRowsReturned(),
-                "a fetch that threw reports -1");
+                "a fetch that threw reports -1, not an empty page");
     }
 
     @Test
-    void eventWithoutComponent_reportsEmptyComponent() {
+    void fetchEvents_keepRequestedAndReturnedApart() {
+        DataFetchStartedEvent started = new DataFetchStartedEvent(ui, component,
+                20, 50, true);
+        assertEquals(20, started.getOffset());
+        assertEquals(50, started.getLimit());
+        assertTrue(started.isFiltered(),
+                "a combo box loading matches for typed text is a filtered "
+                        + "query");
+
+        // A short page is the signal that a data provider returned less than
+        // the component asked for, so the two numbers must stay separate.
+        DataFetchEndedEvent ended = new DataFetchEndedEvent(ui, component, 20,
+                50, true, 30);
+        assertEquals(50, ended.getLimit());
+        assertEquals(30, ended.getRowsReturned());
+
+        IllegalStateException error = new IllegalStateException("backend down");
+        assertSame(error,
+                new DataFetchFailedEvent(ui, component, 20, 50, true, error)
+                        .getError());
+    }
+
+    @Test
+    void componentIsOptional_becauseANodeNeedNotBeAComponent() {
+        // A data communicator driven by a bare element has no component, so
+        // observers must be able to attribute a query to nothing.
         assertTrue(new DataFetchStartedEvent(ui, null, 0, 10, false)
                 .getComponent().isEmpty());
         assertTrue(new DataCountStartedEvent(ui, null, false).getComponent()
                 .isEmpty());
+
+        IllegalStateException error = new IllegalStateException(
+                "count is down");
+        DataCountFailedEvent attributed = new DataCountFailedEvent(ui,
+                component, false, error);
+        assertSame(error, attributed.getError(),
+                "a failed count carries its throwable, as a failed fetch does");
+        assertSame(component, attributed.getComponent().orElseThrow());
+        assertSame(ui, attributed.getUI());
+        assertSame(ui, attributed.getSource(),
+                "the UI is the event source, as for the RPC events");
+        assertFalse(attributed.isFiltered());
     }
 }
