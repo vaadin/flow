@@ -823,7 +823,7 @@ class TaskRunNpmInstallTest {
     void resolveMinimumFrontendPackageAge_npmrcValue_doesNotOverrideIt() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq("min-release-age"), Mockito.eq(npmFolder)))
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age")))
                 .thenReturn(Optional.of("7"));
 
         // No argument is passed, so npm applies its own configuration
@@ -835,7 +835,7 @@ class TaskRunNpmInstallTest {
     void resolveMinimumFrontendPackageAge_configuredInVaadin_overridesNpmrcValue() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq("min-release-age"), Mockito.eq(npmFolder)))
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age")))
                 .thenReturn(Optional.of("7"));
 
         assertEquals("--min-release-age=3",
@@ -853,7 +853,7 @@ class TaskRunNpmInstallTest {
         // npm older than 11.10 has no min-release-age setting, so the
         // counterpart of the --before fallback is what it is asked for
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq("before"), Mockito.eq(npmFolder)))
+                Mockito.eq(npmFolder), Mockito.eq("before")))
                 .thenReturn(Optional.of("2026-01-01"));
 
         assertFalse(resolveMinimumFrontendPackageAgeArgument(
@@ -876,7 +876,8 @@ class TaskRunNpmInstallTest {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // pnpm names the setting minimumReleaseAge, unlike npm
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq("minimumReleaseAge"), Mockito.eq(npmFolder)))
+                Mockito.eq(npmFolder), Mockito.eq("minimumReleaseAge"),
+                Mockito.eq("minimum-release-age")))
                 .thenReturn(Optional.of("4320"));
 
         // No argument is passed, so pnpm applies its own configuration
@@ -890,7 +891,7 @@ class TaskRunNpmInstallTest {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // whatever bun might resolve is ignored, as bun cannot report it
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.anyString(), Mockito.any()))
+                Mockito.any(), Mockito.any(String[].class)))
                 .thenReturn(Optional.of("4320"));
 
         // bunfig.toml is not looked at, so the default is applied
@@ -901,7 +902,7 @@ class TaskRunNpmInstallTest {
                         new MockOptions(npmFolder).withEnableBun(true), tools)
                         .orElseThrow());
         Mockito.verify(tools, Mockito.never()).getConfiguredSetting(
-                Mockito.anyList(), Mockito.anyString(), Mockito.any());
+                Mockito.anyList(), Mockito.any(), Mockito.any(String[].class));
     }
 
     private FrontendTools mockToolsWithoutMinimumReleaseAge() {
@@ -909,7 +910,7 @@ class TaskRunNpmInstallTest {
         Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
                 .thenReturn(true);
         Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.anyString(), Mockito.any()))
+                Mockito.any(), Mockito.any(String[].class)))
                 .thenReturn(Optional.empty());
         return tools;
     }

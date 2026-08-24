@@ -515,18 +515,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return Optional.empty();
         }
         if (options.isEnablePnpm()) {
-            // pnpm names the setting minimumReleaseAge, and reads it from
-            // pnpm-workspace.yaml and, up to pnpm 10, from .npmrc as well
-            return tools.getConfiguredSetting(toolCommand, "minimumReleaseAge",
-                    npmFolder);
+            // pnpm reads the setting from pnpm-workspace.yaml and, up to pnpm
+            // 10, from .npmrc as well, reporting it camel-cased since pnpm 11
+            return tools.getConfiguredSetting(toolCommand, npmFolder,
+                    "minimumReleaseAge", "minimum-release-age");
         }
         if (npmSupportsMinReleaseAge) {
-            return tools.getConfiguredSetting(toolCommand, "min-release-age",
-                    npmFolder);
+            return tools.getConfiguredSetting(toolCommand, npmFolder,
+                    "min-release-age");
         }
         // Older npm has no min-release-age setting, but the --before argument
         // used as a fallback does have a configuration counterpart
-        return tools.getConfiguredSetting(toolCommand, "before", npmFolder);
+        return tools.getConfiguredSetting(toolCommand, npmFolder, "before");
     }
 
     /**

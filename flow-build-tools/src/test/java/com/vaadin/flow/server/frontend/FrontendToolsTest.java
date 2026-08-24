@@ -953,26 +953,62 @@ class FrontendToolsTest {
     }
 
     @Test
-    void getConfiguredSetting_readsTheKeyWithConfigGet()
+    void getConfiguredSetting_pnpm_readsTheConfigurationWithConfigList()
             throws CommandExecutionException {
-        List<String> pnpmCommand = List.of("node", "pnpm.cjs");
         try (MockedStatic<FrontendUtils> frontendUtils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             frontendUtils
                     .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
                             Mockito.any()))
-                    .thenReturn("4320" + System.lineSeparator());
+                    .thenReturn("{\"minimumReleaseAge\": 4320}");
 
-            assertEquals(Optional.of("4320"), tools.getConfiguredSetting(
-                    pnpmCommand, "minimumReleaseAge", new File(baseDir)));
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
 
-            // pnpm has no 'config ls --json' subcommand, so a key has to be
-            // read with 'config get' for the value to be found at all
+            // the subcommand has to be 'list', as pnpm does not know the 'ls'
+            // alias npm accepts
+            frontendUtils.verify(() -> FrontendUtils.executeCommand(Mockito.eq(
+                    List.of("node", "pnpm.cjs", "config", "list", "--json")),
+                    Mockito.any()));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_firstKeyMissing_fallsBackToTheNextOne()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // pnpm 10 reports the setting kebab-cased, pnpm 11 camel-cased
             frontendUtils
-                    .verify(() -> FrontendUtils.executeCommand(
-                            Mockito.eq(List.of("node", "pnpm.cjs", "config",
-                                    "get", "minimumReleaseAge")),
-                            Mockito.any()));
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"minimum-release-age\": 4320}");
+
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_keyWithoutValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // npm lists every key it knows, using null for the unconfigured
+            // ones, while pnpm lists only the configured ones
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"min-release-age\": null}");
+
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "min-release-age"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "before"));
         }
     }
 
@@ -989,30 +1025,8 @@ class FrontendToolsTest {
 
             assertEquals(Optional.empty(),
                     tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
-                            "minimumReleaseAge", new File(baseDir)));
+                            new File(baseDir), "minimumReleaseAge"));
         }
-    }
-
-    @Test
-    void parseConfiguredSetting_keyWithoutValue_isEmpty() {
-        // pnpm prints 'undefined' and npm 'null' or 'undefined' for a key
-        // that has no value
-        assertEquals(Optional.empty(),
-                FrontendTools.parseConfiguredSetting("undefined\n"));
-        assertEquals(Optional.empty(),
-                FrontendTools.parseConfiguredSetting("null\n"));
-        assertEquals(Optional.empty(),
-                FrontendTools.parseConfiguredSetting(""));
-    }
-
-    @Test
-    void parseConfiguredSetting_configuredKey_valueIsReturned() {
-        assertEquals(Optional.of("4320"),
-                FrontendTools.parseConfiguredSetting("4320\n"));
-        // only the last line is the value, anything printed before it is a
-        // notice from the tool
-        assertEquals(Optional.of("7"), FrontendTools
-                .parseConfiguredSetting("npm notice a new version\n7\n"));
     }
 
 }
