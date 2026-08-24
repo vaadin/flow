@@ -102,6 +102,10 @@ export class StateTree {
    * @see {@link isUpdateInProgress}
    */
   setUpdateInProgress(updateInProgress: boolean): void {
+    assert(
+      this.#updateInProgress !== updateInProgress,
+      `Inconsistent state tree updating status, expected ${updateInProgress ? 'no ' : ''} updates in progress.`
+    );
     this.#updateInProgress = updateInProgress;
     this.getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
   }
@@ -228,6 +232,21 @@ export class StateTree {
   }
 
   /**
+   * Verifies that the provided node is not null and properly registered with
+   * this state tree.
+   *
+   * @param node - the node to test
+   * @returns always `true`, for use with the `assert` helper
+   */
+  #assertValidNode(node: StateNode | null): boolean {
+    assert(node !== null, 'Node is null');
+    assert(node.getTree() === this, 'Node is not created for this tree');
+    assert(node === this.getNode(node.getId()), 'Node id is not registered with this tree');
+
+    return true;
+  }
+
+  /**
    * Validates that the provided node is not null and is properly registered for
    * this state tree.
    *
@@ -341,6 +360,7 @@ export class StateTree {
     tagName: string,
     index: number
   ): void {
+    assert(this.#assertValidNode(parent), 'Invalid node');
     this.#registry
       .getServerConnector()
       .sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName, index);
@@ -361,6 +381,7 @@ export class StateTree {
     assignedId: number,
     id: string
   ): void {
+    assert(this.#assertValidNode(parent), 'Invalid node');
     this.#registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
   }
 
@@ -411,8 +432,13 @@ export class StateTree {
   /**
    * Returns a human readable string for the name space with the given id.
    *
+   * Package-private in Java; exported here only because TypeScript has no
+   * package-private visibility and the same-package `StateNode` needs it. Not
+   * public API.
+   *
    * @param id - the node feature id
    * @returns a human readable string describing the node feature
+   * @internal
    */
   getFeatureDebugName(id: number): string {
     if (this.#nodeFeatureDebugName === null) {

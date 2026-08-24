@@ -3,7 +3,6 @@ import { processChange, processChanges } from '../../../../../main/frontend/inte
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 
-const ELEMENT_PROPERTIES = 1;
 const ELEMENT_CHILDREN = 2;
 
 function makeTree(): StateTree {
@@ -19,23 +18,55 @@ function makeTree(): StateTree {
 }
 
 describe('TreeChangeProcessor', () => {
-  // Beyond the Java suite: no equivalent @Test in TreeChangeProcessorTest.java.
-  // Exercises the attach change and the affected-node set returned by
-  // processChanges (PORTING.md rule 13.6).
-  it('attaches new nodes and returns the affected set', () => {
-    const tree = makeTree();
-    const nodes = processChanges(tree, [{ type: 'attach', node: 2 }]);
-    expect(tree.getNode(2)).to.not.equal(null);
-    expect([...nodes].map((n) => n.getId())).to.deep.equal([2]);
-  });
-
   it('applies a put change with a scalar value', () => {
     const tree = makeTree();
-    processChanges(tree, [
-      { type: 'attach', node: 2 },
-      { type: 'put', node: 2, feat: ELEMENT_PROPERTIES, key: 'title', value: 'hi' }
-    ]);
-    expect(tree.getNode(2)!.getMap(ELEMENT_PROPERTIES).getProperty('title').getValue()).to.equal('hi');
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+
+    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', value: 'myValue' });
+
+    const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
+    expect(value).to.equal('myValue');
+    expect(node).to.equal(tree.getRootNode());
+  });
+
+  it('ignores a detach for a nonexistent node during resync', () => {
+    const tree = makeTree();
+    // Register the node but never in the tree map, so the detach targets an
+    // unknown id
+    tree.prepareForResync();
+    expect(() => processChange(tree, { type: 'detach', node: 2 })).to.not.throw();
+  });
+
+  it('removes a property value on a remove change', () => {
+    const tree = makeTree();
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+    const property = tree.getRootNode().getMap(ns).getProperty('myKey');
+    property.setValue('myValue');
+
+    const node = processChange(tree, { type: 'remove', node: rootId, feat: ns, key: 'myKey' });
+
+    expect(property.hasValue()).to.be.false;
+    expect(node).to.equal(tree.getRootNode());
+  });
+
+  it('re-adds a removed map value with a node value', () => {
+    const tree = makeTree();
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+    const property = tree.getRootNode().getMap(ns).getProperty('myKey');
+    property.setValue('myValue');
+
+    processChange(tree, { type: 'remove', node: rootId, feat: ns, key: 'myKey' });
+
+    const child = new StateNode(2, tree);
+    tree.registerNode(child);
+
+    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+
+    expect(property.getValue()).to.equal(child);
+    expect(node).to.equal(tree.getRootNode());
   });
 
   it('applies a put change with a node value', () => {
@@ -51,49 +82,6 @@ describe('TreeChangeProcessor', () => {
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal(child);
     expect(node).to.equal(tree.getRootNode());
-  });
-
-  it('applies a splice change adding child nodes', () => {
-    const tree = makeTree();
-    processChanges(tree, [
-      { type: 'attach', node: 2 },
-      { type: 'attach', node: 3 },
-      { type: 'splice', node: 2, feat: ELEMENT_CHILDREN, index: 0, addNodes: [3] }
-    ]);
-    const list = tree.getNode(2)!.getList(ELEMENT_CHILDREN);
-    expect(list.length()).to.equal(1);
-    expect(list.get(0)).to.equal(tree.getNode(3));
-  });
-
-  it('removes a property value on a remove change', () => {
-    const tree = makeTree();
-    processChanges(tree, [
-      { type: 'attach', node: 2 },
-      { type: 'put', node: 2, feat: ELEMENT_PROPERTIES, key: 'title', value: 'hi' }
-    ]);
-    processChange(tree, { type: 'remove', node: 2, feat: ELEMENT_PROPERTIES, key: 'title' });
-    expect(tree.getNode(2)!.getMap(ELEMENT_PROPERTIES).getProperty('title').hasValue()).to.be.false;
-  });
-
-  it('removes a node and notifies its unregister listener on detach', () => {
-    const tree = makeTree();
-    let unregisterCount = 0;
-
-    const childNode = new StateNode(2, tree);
-    childNode.addUnregisterListener(() => {
-      unregisterCount++;
-    });
-    tree.registerNode(childNode);
-
-    expect(tree.getNode(childNode.getId())).to.equal(childNode);
-    expect(unregisterCount).to.equal(0);
-
-    const updatedNodes = processChanges(tree, [{ type: 'detach', node: childNode.getId() }]);
-
-    expect(tree.getNode(childNode.getId())).to.equal(null);
-    expect(unregisterCount).to.equal(1);
-    expect(updatedNodes.size).to.equal(1);
-    expect(updatedNodes.has(childNode)).to.be.true;
   });
 
   it('applies primitive splice changes to a list', () => {
@@ -122,6 +110,60 @@ describe('TreeChangeProcessor', () => {
     expect(node).to.equal(tree.getRootNode());
   });
 
+  it('applies a splice change adding child nodes', () => {
+    const tree = makeTree();
+    const rootId = tree.getRootNode().getId();
+    const ns = 0;
+
+    const child = new StateNode(2, tree);
+    tree.registerNode(child);
+
+    const node = processChange(tree, { type: 'splice', node: rootId, feat: ns, index: 0, addNodes: [2] });
+
+    const list = tree.getRootNode().getList(ns);
+    expect(list.length()).to.equal(1);
+    expect(list.get(0)).to.equal(child);
+    expect(node).to.equal(tree.getRootNode());
+  });
+
+  it('applies a put change before the corresponding attach change', () => {
+    const tree = makeTree();
+    const nodeId = 2;
+    const ns = 0;
+
+    const updatedNodes = processChanges(tree, [
+      { type: 'put', node: nodeId, feat: ns, key: 'myKey', value: 'myValue' },
+      { type: 'attach', node: nodeId }
+    ]);
+
+    const value = tree.getNode(nodeId)!.getMap(ns).getProperty('myKey').getValue();
+    expect(value).to.equal('myValue');
+
+    expect(updatedNodes.size).to.equal(1);
+    expect(updatedNodes.has(tree.getNode(nodeId)!)).to.be.true;
+  });
+
+  it('removes a node and notifies its unregister listener on detach', () => {
+    const tree = makeTree();
+    let unregisterCount = 0;
+
+    const childNode = new StateNode(2, tree);
+    childNode.addUnregisterListener(() => {
+      unregisterCount++;
+    });
+    tree.registerNode(childNode);
+
+    expect(tree.getNode(childNode.getId())).to.equal(childNode);
+    expect(unregisterCount).to.equal(0);
+
+    const updatedNodes = processChanges(tree, [{ type: 'detach', node: childNode.getId() }]);
+
+    expect(tree.getNode(childNode.getId())).to.equal(null);
+    expect(unregisterCount).to.equal(1);
+    expect(updatedNodes.size).to.equal(1);
+    expect(updatedNodes.has(childNode)).to.be.true;
+  });
+
   it('populates a map feature on a noop change', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
@@ -148,32 +190,6 @@ describe('TreeChangeProcessor', () => {
     // No assertion error because of a wrong feature instance
     node.getList(featureId);
     expect(updatedNode).to.equal(node);
-  });
-
-  it('ignores a detach for a nonexistent node during resync', () => {
-    const tree = makeTree();
-    // Register the node but never in the tree map, so the detach targets an
-    // unknown id
-    tree.prepareForResync();
-    expect(() => processChange(tree, { type: 'detach', node: 2 })).to.not.throw();
-  });
-
-  it('re-adds a removed map value with a node value', () => {
-    const tree = makeTree();
-    const rootId = tree.getRootNode().getId();
-    const ns = 0;
-    const property = tree.getRootNode().getMap(ns).getProperty('myKey');
-    property.setValue('myValue');
-
-    processChange(tree, { type: 'remove', node: rootId, feat: ns, key: 'myKey' });
-
-    const child = new StateNode(2, tree);
-    tree.registerNode(child);
-
-    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
-
-    expect(property.getValue()).to.equal(child);
-    expect(node).to.equal(tree.getRootNode());
   });
 
   it('sets the parent of a node put as a map value', () => {
@@ -216,23 +232,6 @@ describe('TreeChangeProcessor', () => {
     expect(subChild.getParent()).to.equal(child);
   });
 
-  it('applies a put change before the corresponding attach change', () => {
-    const tree = makeTree();
-    const nodeId = 2;
-    const ns = 0;
-
-    const updatedNodes = processChanges(tree, [
-      { type: 'put', node: nodeId, feat: ns, key: 'myKey', value: 'myValue' },
-      { type: 'attach', node: nodeId }
-    ]);
-
-    const value = tree.getNode(nodeId)!.getMap(ns).getProperty('myKey').getValue();
-    expect(value).to.equal('myValue');
-
-    expect(updatedNodes.size).to.equal(1);
-    expect(updatedNodes.has(tree.getNode(nodeId)!)).to.be.true;
-  });
-
   it('clears the parent when a node is detached', () => {
     const tree = makeTree();
     const rootId = tree.getRootNode().getId();
@@ -250,5 +249,15 @@ describe('TreeChangeProcessor', () => {
 
     processChange(tree, { type: 'detach', node: child.getId() });
     expect(child.getParent()).to.equal(null);
+  });
+
+  // Beyond the Java suite: no equivalent @Test in TreeChangeProcessorTest.java.
+  // Exercises the attach change and the affected-node set returned by
+  // processChanges (PORTING.md rule 13.6).
+  it('attaches new nodes and returns the affected set', () => {
+    const tree = makeTree();
+    const nodes = processChanges(tree, [{ type: 'attach', node: 2 }]);
+    expect(tree.getNode(2)).to.not.equal(null);
+    expect([...nodes].map((n) => n.getId())).to.deep.equal([2]);
   });
 });

@@ -104,6 +104,13 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Recursively decodes a JSON object, processing any nested @v references.
+ * Returns a native JS object that can store decoded values including DOM
+ * elements.
+ *
+ * Private in Java; covered through the public `decodeWithTypeInfo` surface.
+ */
 function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(jsonObject)) {
@@ -112,6 +119,11 @@ function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, un
   return result;
 }
 
+/**
+ * Recursively decodes a JSON array, processing any nested @v references.
+ *
+ * Private in Java; covered through the public `decodeWithTypeInfo` surface.
+ */
 function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown[] {
   return jsonArray.map((value) => decodeWithTypeInfo(tree, value));
 }

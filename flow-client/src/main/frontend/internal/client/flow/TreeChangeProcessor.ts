@@ -25,6 +25,7 @@ import { decodeWithoutTypeInfo } from './util/ClientJsonCodec';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 import { StateNode } from './StateNode';
 import type { StateTree } from './StateTree';
+import { stringify } from '../WidgetUtil';
 
 type Change = Record<string, unknown>;
 
@@ -48,6 +49,10 @@ function processAttachChanges(tree: StateTree, changes: Change[]): Set<StateNode
 }
 
 function populateFeature(change: Change, node: StateNode): void {
+  assert(
+    JsonConstants.CHANGE_FEATURE_TYPE in change,
+    "Change doesn't contain feature type. Don't know how to populate feature"
+  );
   const featureId = change[JsonConstants.CHANGE_FEATURE] as number;
   if (change[JsonConstants.CHANGE_FEATURE_TYPE] as boolean) {
     // list feature
@@ -74,7 +79,7 @@ function processPutChange(change: Change, node: StateNode): void {
     child.setParent(node);
     property.setValue(child);
   } else {
-    assert(false, 'Put change should have either a value or a node value');
+    assert(false, `Change should have either value or nodeValue property: ${stringify(change)}`);
   }
 }
 
@@ -133,25 +138,26 @@ export function processChange(tree: StateTree, change: Change): StateNode | null
     // Resync should not stop handling changes.
     return node;
   }
+  assert(node !== null, 'No attached node found');
 
   switch (type) {
     case JsonConstants.CHANGE_TYPE_NOOP:
-      populateFeature(change, node!);
+      populateFeature(change, node);
       break;
     case JsonConstants.CHANGE_TYPE_SPLICE:
-      processSpliceChange(change, node!);
+      processSpliceChange(change, node);
       break;
     case JsonConstants.CHANGE_TYPE_PUT:
-      processPutChange(change, node!);
+      processPutChange(change, node);
       break;
     case JsonConstants.CHANGE_TYPE_REMOVE:
-      processRemoveChange(change, node!);
+      processRemoveChange(change, node);
       break;
     case JsonConstants.CHANGE_TYPE_DETACH:
-      processDetachChange(tree, node!);
+      processDetachChange(tree, node);
       break;
     case JsonConstants.CHANGE_TYPE_CLEAR:
-      processClearChange(change, node!);
+      processClearChange(change, node);
       break;
     default:
       assert(false, `Unsupported change type: ${type}`);
@@ -167,6 +173,7 @@ export function processChange(tree: StateTree, change: Change): StateNode | null
  * @returns a set of updated nodes addressed by the `changes`
  */
 export function processChanges(tree: StateTree, changes: Change[]): Set<StateNode> {
+  assert(!tree.isUpdateInProgress(), 'Previous tree change processing has not completed');
   try {
     tree.setUpdateInProgress(true);
 

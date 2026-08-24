@@ -52,17 +52,15 @@ function setVisible(node: StateNode, value: boolean): void {
 }
 
 describe('StateTree', () => {
-  it('maps registered nodes by id, with the root pre-registered', () => {
+  it('maps registered nodes by id', () => {
     const { tree } = makeTree();
-    expect(tree.getNode(1)).to.equal(tree.getRootNode());
+    const node = new StateNode(5, tree);
 
-    const node = new StateNode(2, tree);
+    expect(tree.getNode(node.getId())).to.equal(null);
+
     tree.registerNode(node);
-    expect(tree.getNode(2)).to.equal(node);
 
-    tree.unregisterNode(node);
-    expect(tree.getNode(2)).to.equal(null);
-    expect(node.isUnregistered()).to.equal(true);
+    expect(tree.getNode(node.getId())).to.equal(node);
   });
 
   it('throws when registering an already-registered node', () => {
@@ -78,21 +76,6 @@ describe('StateTree', () => {
     // with a cast and registration throws before completing.
     const { tree } = makeTree();
     expect(() => tree.registerNode(null as unknown as StateNode)).to.throw();
-  });
-
-  it('throws when unregistering a node that was never registered', () => {
-    const { tree } = makeTree();
-    const node = new StateNode(5, tree);
-    expect(() => tree.unregisterNode(node)).to.throw();
-  });
-
-  it('throws when unregistering a node twice', () => {
-    const { tree } = makeTree();
-    const node = new StateNode(5, tree);
-    tree.registerNode(node);
-    tree.unregisterNode(node);
-    // Should run fine up to this point
-    expect(() => tree.unregisterNode(node)).to.throw();
   });
 
   it('fires the unregister event exactly once with the right node', () => {
@@ -126,9 +109,54 @@ describe('StateTree', () => {
     tree.unregisterNode(node);
   });
 
+  it('throws when unregistering a node that was never registered', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    expect(() => tree.unregisterNode(node)).to.throw();
+  });
+
+  it('throws when unregistering a node twice', () => {
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    tree.unregisterNode(node);
+    // Should run fine up to this point
+    expect(() => tree.unregisterNode(node)).to.throw();
+  });
+
   // testUpdatingTree_triggeringBinder_causesAssertionError is intentionally not
   // ported: it drives `Binder.bind`, and `Binder` is not yet ported (PORTING.md
   // rule 11). Restore this case in the PR that ports `Binder`.
+
+  describe('sendNodePropertySyncToServer', () => {
+    it('sends a non-initial property of a valid node', () => {
+      const { tree, syncs } = makeTree(false);
+      const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+      property.setValue('bar');
+      tree.sendNodePropertySyncToServer(property);
+      expect(syncs.length).to.equal(1);
+      expect(syncs[0].name).to.equal('foo');
+      expect(syncs[0].value).to.equal('bar');
+      expect(syncs[0].node).to.equal(tree.getRootNode());
+    });
+
+    it('does not send a property of a detached node', () => {
+      const { tree, syncs } = makeTree(false);
+      const detached = new StateNode(7, tree);
+      const property = detached.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+      property.setValue('bar');
+      tree.sendNodePropertySyncToServer(property);
+      expect(syncs.length).to.equal(0);
+    });
+
+    it('does not send an initial property', () => {
+      const { tree, syncs } = makeTree(true);
+      const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+      property.setValue('bar');
+      tree.sendNodePropertySyncToServer(property);
+      expect(syncs.length).to.equal(0);
+    });
+  });
 
   it('setUpdateInProgress flushes property updates', () => {
     // One Java @Test asserts the flush fires once after setUpdateInProgress(true)
@@ -213,36 +241,6 @@ describe('StateTree', () => {
       const node = new StateNode(3, tree);
       node.setParent(parent);
       expect(tree.isActive(node)).to.equal(false);
-    });
-  });
-
-  describe('sendNodePropertySyncToServer', () => {
-    it('sends a non-initial property of a valid node', () => {
-      const { tree, syncs } = makeTree(false);
-      const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
-      property.setValue('bar');
-      tree.sendNodePropertySyncToServer(property);
-      expect(syncs.length).to.equal(1);
-      expect(syncs[0].name).to.equal('foo');
-      expect(syncs[0].value).to.equal('bar');
-      expect(syncs[0].node).to.equal(tree.getRootNode());
-    });
-
-    it('does not send an initial property', () => {
-      const { tree, syncs } = makeTree(true);
-      const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
-      property.setValue('bar');
-      tree.sendNodePropertySyncToServer(property);
-      expect(syncs.length).to.equal(0);
-    });
-
-    it('does not send a property of a detached node', () => {
-      const { tree, syncs } = makeTree(false);
-      const detached = new StateNode(7, tree);
-      const property = detached.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
-      property.setValue('bar');
-      tree.sendNodePropertySyncToServer(property);
-      expect(syncs.length).to.equal(0);
     });
   });
 

@@ -279,7 +279,7 @@ export class StateNode implements NodeFeatureNode {
    * @param object - the object to store
    * @typeParam T - the type of the node data to set
    */
-  setNodeData(object: object): void {
+  setNodeData<T extends object>(object: T): void {
     this.#nodeData.set(object.constructor, object);
   }
 
@@ -304,7 +304,7 @@ export class StateNode implements NodeFeatureNode {
    * @param object - the object to remove
    * @typeParam T - the type of the object to remove
    */
-  clearNodeData(object: object): void {
+  clearNodeData<T extends object>(object: T): void {
     this.#nodeData.delete(object.constructor);
   }
 }
