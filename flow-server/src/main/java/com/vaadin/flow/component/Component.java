@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -487,6 +488,51 @@ public abstract class Component
      */
     public String getTestId() {
         return getElement().getAttribute("data-testid");
+    }
+
+    /**
+     * Runs the given handler each time this component is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the component
+     * is detached again. The handler is run immediately if the component is
+     * already attached.
+     * <p>
+     * This keeps logic that is active only while the component is attached in
+     * one place, instead of spreading it over {@link #onAttach(AttachEvent)},
+     * {@link #onDetach(DetachEvent)} and a field for carrying the state from
+     * one to the other:
+     *
+     * <pre>
+     * public MyComponent() {
+     *     whileAttached(ui -&gt; registerForPush(this, ui));
+     * }
+     * </pre>
+     * <p>
+     * Since the method is public, it can also be used to hook into the
+     * life-cycle of another component:
+     *
+     * <pre>
+     * avatarGroup.whileAttached(ui -&gt; {
+     *     presence.put(userId, user);
+     *     return () -&gt; presence.remove(userId);
+     * });
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     *
+     * @see Element#whileAttached(SerializableFunction)
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whileAttached(
+            SerializableFunction<UI, Registration> attachHandler) {
+        return getElement().whileAttached(attachHandler);
     }
 
     /**

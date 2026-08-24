@@ -171,6 +171,7 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("executeJs");
         // Returns Registration
         ignore.add("addJsInitializer");
+        ignore.add("whileAttached");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
