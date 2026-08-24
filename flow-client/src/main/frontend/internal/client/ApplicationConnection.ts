@@ -20,13 +20,13 @@
 // (start/isActive/poll/resolveUri/sendEventMessage/...) drives the application.
 // create() is the entry point wired into the live bootstrap.
 
-import { bind } from './binding/Binder';
+import { bind } from './flow/binding/Binder';
 import { observe as observeLoadingIndicator } from './communication/LoadingIndicatorConfigurator';
 import { observe as observePoll } from './communication/PollConfigurator';
 import { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import { DefaultRegistry } from './DefaultRegistry';
-import { NodeFeatures } from './nodefeature/NodeFeatures';
-import { NodeProperties } from './nodefeature/NodeProperties';
+import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
