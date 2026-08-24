@@ -165,7 +165,14 @@ They consolidate the review feedback from the migration PR stack (#24933,
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
     future ported class will satisfy at cutover — see `MapPropertyTree` /
-    `MapPropertyNode` / `MapPropertyOwner` in `MapProperty.ts`.
+    `MapPropertyNode` / `MapPropertyOwner` in `MapProperty.ts`. A slice is only
+    for a class that is **not yet ported**, never a permanent decoupling from one
+    that is: once the referenced class lands, replace the slice with a real
+    `import` of the ported type and delete the interface. (E.g. `StateNode` and
+    `ClientJsonCodec` import the real `StateTree` rather than re-declaring a
+    `getNode` / `getRegistry` slice, and where a real consumer needs a member the
+    slice omitted — such as `ServerConnector.sendReturnChannelMessage` — extend
+    the still-unported slice to cover it.)
 
 ## Tests
 

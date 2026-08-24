@@ -1,14 +1,25 @@
 import { expect } from '@open-wc/testing';
-import { StateNode, type StateTree } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import type { NodeFeature } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 
-// Minimal StateTree stand-in; StateNode tests do not reach into the tree.
-const tree: StateTree = {
-  getNode: () => null,
-  getFeatureDebugName: (id) => String(id),
-  isActive: () => true,
-  sendNodePropertySyncToServer: () => {}
+// Minimal registry; StateNode tests do not reach into the tree or the server.
+const registry: Registry = {
+  getInitialPropertiesHandler: () => ({
+    flushPropertyUpdates: () => {},
+    nodeRegistered: () => {},
+    handlePropertyUpdate: () => false
+  }),
+  getServerConnector: () => ({
+    sendEventMessage: () => {},
+    sendNodeSyncMessage: () => {},
+    sendTemplateEventMessage: () => {},
+    sendExistingElementAttachToServer: () => {},
+    sendExistingElementWithIdAttachToServer: () => {},
+    sendReturnChannelMessage: () => {}
+  })
 };
+const tree = new StateTree(registry);
 
 class TestData {
   readonly marker = 'test-data';

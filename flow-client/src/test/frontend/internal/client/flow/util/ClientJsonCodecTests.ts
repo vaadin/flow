@@ -3,11 +3,45 @@ import {
   decodeStateNode,
   decodeWithTypeInfo
 } from '../../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree, type Registry } from '../../../../../../main/frontend/internal/client/flow/StateTree';
+
+interface ReturnMessage {
+  nodeId: number;
+  channelId: number;
+  args: unknown[];
+}
+
+// Builds a real StateTree from a minimal registry so the codec is exercised
+// through the ported StateTree/StateNode rather than a hand-rolled stand-in.
+function makeTree(sent: ReturnMessage[] = []): StateTree {
+  const registry: Registry = {
+    getInitialPropertiesHandler: () => ({
+      flushPropertyUpdates: () => {},
+      nodeRegistered: () => {},
+      handlePropertyUpdate: () => false
+    }),
+    getServerConnector: () => ({
+      sendEventMessage: () => {},
+      sendNodeSyncMessage: () => {},
+      sendTemplateEventMessage: () => {},
+      sendExistingElementAttachToServer: () => {},
+      sendExistingElementWithIdAttachToServer: () => {},
+      sendReturnChannelMessage: (nodeId, channelId, args) => sent.push({ nodeId, channelId, args })
+    })
+  };
+  return new StateTree(registry);
+}
 
 describe('ClientJsonCodec', () => {
   describe('decodeStateNode', () => {
-    const node = { id: 5 };
-    const tree = { getNode: (nodeId: number) => (nodeId === 5 ? node : null) };
+    let tree: StateTree;
+    let node: StateNode;
+    beforeEach(() => {
+      tree = makeTree();
+      node = new StateNode(5, tree);
+      tree.registerNode(node);
+    });
 
     it('resolves an @v-node element reference to its state node', () => {
       expect(decodeStateNode(tree, { '@v-node': 5 })).to.equal(node);
@@ -27,18 +61,17 @@ describe('ClientJsonCodec', () => {
   });
 
   describe('decodeWithTypeInfo', () => {
-    const domNode = { tag: 'div' };
-    const node = { getDomNode: () => domNode };
-    const sent: Array<{ nodeId: number; channelId: number; args: unknown[] }> = [];
-    const tree = {
-      getNode: (nodeId: number) => (nodeId === 5 ? node : null),
-      getRegistry: () => ({
-        getServerConnector: () => ({
-          sendReturnChannelMessage: (nodeId: number, channelId: number, args: unknown[]) =>
-            sent.push({ nodeId, channelId, args })
-        })
-      })
-    };
+    const sent: ReturnMessage[] = [];
+    let tree: StateTree;
+    let domNode: Node;
+    beforeEach(() => {
+      sent.length = 0;
+      tree = makeTree(sent);
+      domNode = document.createElement('div');
+      const node = new StateNode(5, tree);
+      node.setDomNode(domNode);
+      tree.registerNode(node);
+    });
 
     it('passes primitives through unchanged', () => {
       expect(decodeWithTypeInfo(tree, 'hi')).to.equal('hi');

@@ -26,7 +26,7 @@ import { NodeList } from './nodefeature/NodeList';
 import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
-import { StateNode, type StateTree as StateTreeContract } from './StateNode';
+import { StateNode } from './StateNode';
 import { Console } from '../Console';
 
 /** The slice of ServerConnector that StateTree uses. */
@@ -42,6 +42,7 @@ export interface ServerConnector {
     index: number
   ): void;
   sendExistingElementWithIdAttachToServer(parent: StateNode, requestedId: number, assignedId: number, id: string): void;
+  sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void;
 }
 
 /** The slice of InitialPropertiesHandler that StateTree uses. */
@@ -63,7 +64,7 @@ export type ServerEventObjectAccess = (dom: Node) => { rejectPromises(): void } 
 /**
  * A client-side representation of a server-side state tree.
  */
-export class StateTree implements StateTreeContract {
+export class StateTree {
   readonly #idToNode = new Map<number, StateNode>();
 
   readonly #registry: Registry;

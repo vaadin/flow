@@ -16,6 +16,9 @@
 
 // Implementations migrated from ClientJsonCodec.java.
 
+import type { StateNode } from '../StateNode';
+import type { StateTree } from '../StateTree';
+
 type JsFunction = (...args: unknown[]) => unknown;
 
 /**
@@ -73,11 +76,6 @@ export function decodeWithoutTypeInfo(json: unknown): unknown {
   return json;
 }
 
-/** Resolves nodes by id; the slice of StateTree decodeStateNode uses. */
-interface NodeResolvingTree<N> {
-  getNode(nodeId: number): N | null;
-}
-
 /**
  * Decodes the state node encoded in a type-info-tagged JSON value, if it is an
  * element reference (`@v-node`); returns null otherwise. Mirrors
@@ -89,7 +87,7 @@ interface NodeResolvingTree<N> {
  * @param json - the JSON value to decode
  * @returns the decoded state node if any
  */
-export function decodeStateNode<N>(tree: NodeResolvingTree<N>, json: unknown): N | null {
+export function decodeStateNode(tree: StateTree, json: unknown): StateNode | null {
   if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
     const nodeIdValue = (json as Record<string, unknown>)['@v-node'];
     if (nodeIdValue !== undefined && nodeIdValue !== null) {
@@ -102,19 +100,11 @@ export function decodeStateNode<N>(tree: NodeResolvingTree<N>, json: unknown): N
   return null;
 }
 
-/** The slice of StateTree decodeWithTypeInfo uses. */
-export interface TypeInfoTree {
-  getNode(nodeId: number): { getDomNode(): unknown } | null;
-  getRegistry(): {
-    getServerConnector(): { sendReturnChannelMessage(nodeId: number, channelId: number, args: unknown[]): void };
-  };
-}
-
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function decodeObjectWithTypeInfo(tree: TypeInfoTree, jsonObject: Record<string, unknown>): Record<string, unknown> {
+function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(jsonObject)) {
     result[key] = decodeWithTypeInfo(tree, jsonObject[key]);
@@ -122,11 +112,11 @@ function decodeObjectWithTypeInfo(tree: TypeInfoTree, jsonObject: Record<string,
   return result;
 }
 
-function decodeArrayWithTypeInfo(tree: TypeInfoTree, jsonArray: unknown[]): unknown[] {
+function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown[] {
   return jsonArray.map((value) => decodeWithTypeInfo(tree, value));
 }
 
-function decodeJsFunction(tree: TypeInfoTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
+function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
   const body = fnObject.body;
   if (typeof body !== 'string') {
     throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
@@ -175,7 +165,7 @@ function decodeJsFunction(tree: TypeInfoTree, fnObject: Record<string, unknown>,
  * @param json - the JSON value to decode
  * @returns the decoded value
  */
-export function decodeWithTypeInfo(tree: TypeInfoTree, json: unknown): unknown {
+export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
   if (isPlainObject(json)) {
     const nodeIdValue = json['@v-node'];
     if (nodeIdValue !== undefined && nodeIdValue !== null) {

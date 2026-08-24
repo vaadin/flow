@@ -15,26 +15,17 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.StateNode, on top of the TS node
-// features. The slice of StateTree that StateNode needs is declared here as a
-// contract that StateTree satisfies. The original Java Class<?>-keyed nodeData
+// features and the ported StateTree. The original Java Class<?>-keyed nodeData
 // map becomes a map keyed by JS constructor function.
 
 import { assert } from '../../assert';
 import type { EventRemover } from '../../EventRemover';
-import type { MapProperty } from './nodefeature/MapProperty';
 import type { JsonValue, NodeFeature, NodeFeatureNode } from './nodefeature/NodeFeature';
 import { NodeList } from './nodefeature/NodeList';
 import { NodeMap } from './nodefeature/NodeMap';
 import { NodeUnregisterEvent } from './NodeUnregisterEvent';
 import type { NodeUnregisterListener } from './NodeUnregisterListener';
-
-/** The slice of StateTree that StateNode and the node features use. */
-export interface StateTree {
-  getNode(id: number): StateNode | null;
-  getFeatureDebugName(id: number): string;
-  isActive(node: StateNode): boolean;
-  sendNodePropertySyncToServer(property: MapProperty): void;
-}
+import type { StateTree } from './StateTree';
 
 type Constructor<T> = abstract new (...args: never[]) => T;
 
