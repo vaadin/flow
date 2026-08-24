@@ -269,6 +269,25 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     5. **A GWT-compiler-only construct has no port** — `crazyJsCast`,
        `crazyJsoCast`, deferred binding — and its absence is documented at the
        site that would have called it.
+    6. **Non-null access mirrors Java's — use `!`, not `?.`.** Where Java
+       dereferences a reference its own types treat as non-null — a plain
+       `x.foo()` with no guarding `assert` that would throw
+       `NullPointerException` if `x` were null — the port mirrors it with a
+       non-null assertion (`x!.foo()`), **not** optional chaining (`x?.foo()`).
+       Strict parity is preferred: optional chaining silently yields `undefined`
+       exactly on the input Java rejects, quietly diverging behaviour instead of
+       failing as Java does. (Regression this prevents:
+       `ClientJsonCodec.decodeWithTypeInfo`'s `@v-node` branch used
+       `tree.getNode(id)?.getDomNode()`, returning `undefined` for a missing node
+       where Java's `tree.getNode(id).getDomNode()` throws.) The opposite case —
+       normalising a JS `undefined` to `null` for a *value* Java also treats as
+       nullable, e.g. `map.get(...) ?? null` mirroring a Java `Map.get` that
+       returns `null` — is faithful and stays, because it restores Java's
+       contract rather than deviating from it. Where Java *does* guard the access
+       with an `assert`, port the assert (rule 14.4) rather than a bare `!`. If
+       `eslint-config-vaadin`'s `@typescript-eslint/no-non-null-assertion` fires
+       on the `!`, disable it at that line with a note (as rule 8 does for
+       `max-params`) rather than reshaping the access into a silent `?.`.
 
 ## Retrofit backlog
 
