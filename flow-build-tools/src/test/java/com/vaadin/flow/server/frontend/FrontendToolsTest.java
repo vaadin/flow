@@ -1027,14 +1027,16 @@ class FrontendToolsTest {
                             "unknown subcommand"))
                     .thenReturn("minimum-release-age=4320\n");
 
-            // a tool that fails, and one that answers in some other format,
-            // are both ignored rather than failing the build
             assertEquals(Optional.empty(),
                     tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
-                            new File(baseDir), "minimumReleaseAge"));
+                            new File(baseDir), "minimumReleaseAge"),
+                    "a tool that fails should be ignored rather than failing the build");
+            // the key the output would yield if it were read as key=value
+            // pairs, so that only JSON is accepted
             assertEquals(Optional.empty(),
                     tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
-                            new File(baseDir), "minimumReleaseAge"));
+                            new File(baseDir), "minimum-release-age"),
+                    "a tool answering in some other format should be ignored rather than failing the build");
         }
     }
 }
