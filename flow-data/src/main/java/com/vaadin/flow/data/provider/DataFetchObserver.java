@@ -51,6 +51,9 @@ import com.vaadin.flow.server.data.DataFetchStartedEvent;
  */
 public final class DataFetchObserver implements Serializable {
 
+    private DataFetchObserver() {
+    }
+
     /**
      * Resolves the event bus to report on, or {@code null} when there is
      * nothing to report to.
@@ -68,9 +71,6 @@ public final class DataFetchObserver implements Serializable {
             return null;
         }
         return service.getEventBus();
-    }
-
-    private DataFetchObserver() {
     }
 
     /**
@@ -102,6 +102,12 @@ public final class DataFetchObserver implements Serializable {
             reported = query.getAsInt();
             return reported;
         } catch (Throwable t) {
+            // Throwable rather than Exception so that an Error is reported
+            // too, which for a data query is the most interesting failure
+            // there is: a fetch large enough to exhaust the heap. Nothing is
+            // swallowed, the throwable is rethrown immediately, and the
+            // ended event below fires either way. ServerRpcHandler catches
+            // Throwable around the RPC phase events for the same reason.
             eventBus.fireEvent(
                     new DataCountFailedEvent(ui, component, filtered, t));
             throw t;
@@ -148,6 +154,8 @@ public final class DataFetchObserver implements Serializable {
             reported = query.getAsInt();
             return reported;
         } catch (Throwable t) {
+            // See the note on count: Throwable so an Error is reported, and
+            // rethrown immediately.
             eventBus.fireEvent(new DataFetchFailedEvent(ui, component, offset,
                     limit, filtered, t));
             throw t;

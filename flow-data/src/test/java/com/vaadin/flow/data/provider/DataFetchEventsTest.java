@@ -59,6 +59,8 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies that data provider count and fetch queries are reported on the
@@ -418,27 +420,30 @@ class DataFetchEventsTest {
 
     private DataCommunicator<String> flatCommunicator() {
         return new DataCommunicator<>((item, json) -> {
-        }, Mockito.mock(ArrayUpdater.class, Mockito.RETURNS_DEEP_STUBS),
-                data -> {
-                }, component.getElement().getNode());
+        }, mock(ArrayUpdater.class, Mockito.RETURNS_DEEP_STUBS), data -> {
+        }, component.getElement().getNode());
     }
 
     private HierarchicalDataCommunicator<String> hierarchicalCommunicator(
             TreeData<String> data) {
         CompositeDataGenerator<String> generator = new CompositeDataGenerator<>();
-        ArrayUpdater updater = Mockito.mock(ArrayUpdater.class);
-        Mockito.when(updater.startUpdate(Mockito.anyInt()))
+        ArrayUpdater updater = mock(ArrayUpdater.class);
+        when(updater.startUpdate(Mockito.anyInt()))
                 .thenReturn(new ArrayUpdater.Update() {
                     @Override
                     public void clear(int start, int length) {
+                        // The test asserts on the reported events, not on
+                        // what reaches the client
                     }
 
                     @Override
                     public void set(int start, List<JsonNode> items) {
+                        // See clear
                     }
 
                     @Override
                     public void commit(int updateId) {
+                        // See clear
                     }
                 });
         HierarchicalDataCommunicator<String> communicator = new HierarchicalDataCommunicator<>(
