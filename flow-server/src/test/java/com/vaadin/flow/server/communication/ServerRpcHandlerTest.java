@@ -553,7 +553,7 @@ class ServerRpcHandlerTest {
                 + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
                 + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
 
-        assertThrows(RuntimeException.class,
+        assertThrows(IllegalStateException.class,
                 () -> serverRpcHandler.handleRpc(ui, reader, request));
         assertEquals(List.of("started", "failed:value", "ended"), sequence);
     }
