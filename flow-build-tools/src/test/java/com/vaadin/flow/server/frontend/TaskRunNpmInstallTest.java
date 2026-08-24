@@ -846,6 +846,31 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
+    void resolveMinimumFrontendPackageAge_pnpmNothingConfigured_usesDefault() {
+        // 1 day = 1440 minutes, passed as a pnpm setting
+        assertEquals("--config.minimum-release-age="
+                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS
+                        * 24 * 60,
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnablePnpm(true),
+                        mockToolsWithoutMinimumReleaseAge()).orElseThrow());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_pnpmConfiguredValue_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // pnpm names the setting minimumReleaseAge, unlike npm
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq("minimumReleaseAge"), Mockito.eq(npmFolder)))
+                .thenReturn(Optional.of("4320"));
+
+        // No argument is passed, so pnpm applies its own configuration
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder).withEnablePnpm(true), tools)
+                .isPresent());
+    }
+
+    @Test
     void resolveMinimumFrontendPackageAge_bun_configurationIsNotRead() {
         // bun cannot report its resolved configuration, so the default is
         // applied without looking at bunfig.toml

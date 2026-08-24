@@ -615,26 +615,45 @@ public class FrontendTools {
      *         map if the configuration cannot be read
      */
     Map<String, String> getConfiguredRegistries(File workingDirectory) {
-        JsonNode config = getResolvedConfiguration(getNpmExecutable(false),
-                workingDirectory);
+        List<String> command = new ArrayList<>(getNpmExecutable(false));
+        command.add("config");
+        command.add("ls");
+        command.add("--json");
         Map<String, String> registries = new HashMap<>();
-        for (String key : config.propertyNames()) {
-            if ((key.equals("registry") || key.endsWith(":registry"))
-                    && config.get(key).isString()) {
-                registries.put(key, config.get(key).asString());
+        try {
+            String output = FrontendUtils.executeCommand(command,
+                    builder -> builder.directory(workingDirectory));
+            JsonNode config = JacksonUtils.readTree(output);
+            for (String key : config.propertyNames()) {
+                if ((key.equals("registry") || key.endsWith(":registry"))
+                        && config.get(key).isString()) {
+                    registries.put(key, config.get(key).asString());
+                }
             }
+        } catch (CommandExecutionException | RuntimeException e) {
+            getLogger().debug("Could not read the npm registry configuration; "
+                    + "assuming the default registry.", e);
         }
         return registries;
     }
 
     /**
      * Reads the value the given npm or pnpm command resolves for a
-     * configuration key.
+     * configuration key by running {@code config get <key>}.
+     * <p>
+     * The value is read from the tool itself, so it accounts for every
+     * configuration source and precedence rule the tool applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc} and,
+     * for pnpm, {@code pnpm-workspace.yaml}). {@code config get} is used rather
+     * than {@code config ls --json} because pnpm has no such subcommand, and
+     * the format of its {@code config list} output differs between pnpm
+     * versions.
      *
      * @param toolCommand
      *            the npm or pnpm command to run
      * @param key
-     *            the configuration key to read
+     *            the configuration key to read, spelled the way the tool
+     *            expects it on the command line
      * @param workingDirectory
      *            the directory the configuration is resolved from, so that a
      *            project {@code .npmrc} is taken into account
@@ -644,48 +663,44 @@ public class FrontendTools {
      */
     Optional<String> getConfiguredSetting(List<String> toolCommand, String key,
             File workingDirectory) {
-        JsonNode value = getResolvedConfiguration(toolCommand, workingDirectory)
-                .get(key);
-        // npm lists every key it knows, using null for the ones that are not
-        // configured; pnpm lists only the configured ones
-        if (value == null || value.isNull()) {
-            return Optional.empty();
-        }
-        return Optional.of(value.asString());
-    }
-
-    /**
-     * Reads the configuration the given npm or pnpm command resolves for a
-     * directory by running {@code config ls --json}.
-     * <p>
-     * The configuration is read from the tool itself, so it accounts for every
-     * configuration source and precedence rule the tool applies (command line,
-     * environment variables, project/user/global/builtin {@code .npmrc} and,
-     * for pnpm, {@code pnpm-workspace.yaml}).
-     *
-     * @param toolCommand
-     *            the npm or pnpm command to run
-     * @param workingDirectory
-     *            the directory the configuration is resolved from, so that a
-     *            project {@code .npmrc} is taken into account
-     * @return the resolved configuration, or an empty object if it cannot be
-     *         read
-     */
-    JsonNode getResolvedConfiguration(List<String> toolCommand,
-            File workingDirectory) {
         List<String> command = new ArrayList<>(toolCommand);
         command.add("config");
-        command.add("ls");
-        command.add("--json");
+        command.add("get");
+        command.add(key);
         try {
             String output = FrontendUtils.executeCommand(command,
                     builder -> builder.directory(workingDirectory));
-            return JacksonUtils.readTree(output);
+            return parseConfiguredSetting(output);
         } catch (CommandExecutionException | RuntimeException e) {
             getLogger().debug("Could not read the configuration using '{}'",
                     String.join(" ", command), e);
-            return JacksonUtils.createObjectNode();
+            return Optional.empty();
         }
+    }
+
+    /**
+     * Extracts the value from the output of a {@code config get} run, treating
+     * the placeholder the tool prints for a key without a value as not
+     * configured.
+     *
+     * @param output
+     *            the command output, npm printing {@code null} and pnpm
+     *            {@code undefined} for a key that has no value
+     * @return the value, or an empty optional if the key has no value
+     */
+    static Optional<String> parseConfiguredSetting(String output) {
+        // The value is printed on a line of its own; any preceding notice
+        // line is skipped by only looking at the last non-blank one.
+        String value = output == null ? "" : output.trim();
+        int lastLineBreak = value.lastIndexOf('\n');
+        if (lastLineBreak >= 0) {
+            value = value.substring(lastLineBreak + 1).trim();
+        }
+        if (value.isEmpty() || "null".equals(value)
+                || "undefined".equals(value)) {
+            return Optional.empty();
+        }
+        return Optional.of(value);
     }
 
     /**

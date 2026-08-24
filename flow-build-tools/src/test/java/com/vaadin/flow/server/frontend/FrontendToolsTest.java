@@ -45,10 +45,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.internal.ReflectTools;
@@ -947,6 +950,69 @@ class FrontendToolsTest {
                         "https://registry.npmjs.org/", "@vaadin:registry",
                         "https://nexus.corp/repository/npm/")),
                 "only the non-default scoped registry should be returned");
+    }
+
+    @Test
+    void getConfiguredSetting_readsTheKeyWithConfigGet()
+            throws CommandExecutionException {
+        List<String> pnpmCommand = List.of("node", "pnpm.cjs");
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("4320" + System.lineSeparator());
+
+            assertEquals(Optional.of("4320"), tools.getConfiguredSetting(
+                    pnpmCommand, "minimumReleaseAge", new File(baseDir)));
+
+            // pnpm has no 'config ls --json' subcommand, so a key has to be
+            // read with 'config get' for the value to be found at all
+            frontendUtils
+                    .verify(() -> FrontendUtils.executeCommand(
+                            Mockito.eq(List.of("node", "pnpm.cjs", "config",
+                                    "get", "minimumReleaseAge")),
+                            Mockito.any()));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_commandFails_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenThrow(new CommandExecutionException(1, "",
+                            "unknown subcommand"));
+
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            "minimumReleaseAge", new File(baseDir)));
+        }
+    }
+
+    @Test
+    void parseConfiguredSetting_keyWithoutValue_isEmpty() {
+        // pnpm prints 'undefined' and npm 'null' or 'undefined' for a key
+        // that has no value
+        assertEquals(Optional.empty(),
+                FrontendTools.parseConfiguredSetting("undefined\n"));
+        assertEquals(Optional.empty(),
+                FrontendTools.parseConfiguredSetting("null\n"));
+        assertEquals(Optional.empty(),
+                FrontendTools.parseConfiguredSetting(""));
+    }
+
+    @Test
+    void parseConfiguredSetting_configuredKey_valueIsReturned() {
+        assertEquals(Optional.of("4320"),
+                FrontendTools.parseConfiguredSetting("4320\n"));
+        // only the last line is the value, anything printed before it is a
+        // notice from the tool
+        assertEquals(Optional.of("7"), FrontendTools
+                .parseConfiguredSetting("npm notice a new version\n7\n"));
     }
 
 }

@@ -479,7 +479,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         if (configuredDays != null) {
             days = configuredDays;
         } else {
-            Optional<String> packageManagerValue = getPackageManagerMinimumReleaseAge(
+            Optional<String> packageManagerValue = getPackageManagerConfiguredMinimumReleaseAge(
                     options, tools, toolCommand, npmSupportsMinReleaseAge);
             if (packageManagerValue.isPresent()) {
                 logger.info(
@@ -507,7 +507,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
      * therefore not taken into account.
      */
-    private static Optional<String> getPackageManagerMinimumReleaseAge(
+    private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
             Options options, FrontendTools tools, List<String> toolCommand,
             boolean npmSupportsMinReleaseAge) {
         File npmFolder = options.getNpmFolder();
@@ -515,9 +515,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return Optional.empty();
         }
         if (options.isEnablePnpm()) {
-            // pnpm reads this from .npmrc and pnpm-workspace.yaml alike
-            return tools.getConfiguredSetting(toolCommand,
-                    "minimum-release-age", npmFolder);
+            // pnpm names the setting minimumReleaseAge, and reads it from
+            // pnpm-workspace.yaml and, up to pnpm 10, from .npmrc as well
+            return tools.getConfiguredSetting(toolCommand, "minimumReleaseAge",
+                    npmFolder);
         }
         if (npmSupportsMinReleaseAge) {
             return tools.getConfiguredSetting(toolCommand, "min-release-age",
