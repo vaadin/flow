@@ -596,38 +596,61 @@ public class ServerRpcHandler implements Serializable {
             String type = invocationJson.get(JsonConstants.RPC_TYPE).asString();
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
-                // Handle these before any RPC invocations. What is observed
-                // is the deferred change event rather than the value
-                // application here, since that is the step which runs
-                // application code; see AbstractRpcInvocationEvent.
-                mapSyncHandler.handle(ui, invocationJson)
-                        .ifPresent(runnable -> pendingChangeEvents
+                // Apply the value of every synchronized property in the request
+                // before firing any change event, so that application code sees
+                // a fully updated tree.
+                applyPropertySync(ui, type, invocationJson, mapSyncHandler)
+                        .ifPresent(changeEvent -> pendingChangeEvents
                                 .add(() -> observeInvocation(ui, type,
-                                        invocationJson, runnable)));
+                                        invocationJson, changeEvent)));
             } else {
                 data.add(invocationJson);
             }
         }
 
-        pendingChangeEvents.forEach(runnable -> runMapSyncTask(ui, runnable));
+        pendingChangeEvents.forEach(Runnable::run);
         data.forEach(json -> handleInvocationData(ui, json));
     }
 
-    private void runMapSyncTask(UI ui, Runnable runnable) {
+    /**
+     * Applies the value of one synchronized property, the first of the two
+     * steps a property synchronization is handled in.
+     * <p>
+     * The invocation is observed around the change event this returns, since
+     * that is where a property change listener runs. Applying the value can
+     * fail on its own though: the property may not be synchronized at all, or a
+     * signal bound to it may reject the write. The change event that would have
+     * reported such a failure is never reached, so it is reported here instead,
+     * and the rest of the request is still handled.
+     *
+     * @param ui
+     *            the UI the invocation is handled against
+     * @param type
+     *            the protocol-level invocation type
+     * @param invocationJson
+     *            the property synchronization being handled
+     * @param mapSyncHandler
+     *            the handler applying the value
+     * @return the deferred change event, or empty if there is none to fire
+     */
+    private static Optional<Runnable> applyPropertySync(UI ui, String type,
+            JsonNode invocationJson, RpcInvocationHandler mapSyncHandler) {
         try {
-            runnable.run();
+            return mapSyncHandler.handle(ui, invocationJson);
         } catch (Throwable throwable) {
-            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
+            InvocationEvents events = new InvocationEvents(ui, type,
+                    invocationJson);
+            events.started();
+            events.failed(throwable);
+            events.ended();
+            callErrorHandler(ui, invocationJson, throwable);
+            return Optional.empty();
         }
     }
 
     /**
      * Handles one invocation, firing the invocation phase events around it and
      * routing a failure to the error handler of the session.
-     * <p>
-     * The details the events carry are extracted once per invocation, and only
-     * when the event bus has a listener for one of the phases, so that an
-     * application observing nothing allocates nothing here.
      *
      * @param ui
      *            the UI the invocation is handled against
@@ -640,27 +663,61 @@ public class ServerRpcHandler implements Serializable {
      */
     private static void observeInvocation(UI ui, String type,
             JsonNode invocationJson, Runnable invocation) {
-        VaadinServiceEventBus eventBus = ui.getSession().getService()
-                .getEventBus();
-        boolean observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
-                || eventBus.hasListener(RpcInvocationFailedEvent.class)
-                || eventBus.hasListener(RpcInvocationEndedEvent.class);
-        // Details are extracted once and shared by the phase events
-        int nodeId = observed ? nodeId(invocationJson) : -1;
-        String name = observed ? invocationName(type, invocationJson) : null;
-        if (observed) {
-            eventBus.fireEvent(
-                    new RpcInvocationStartedEvent(ui, type, nodeId, name));
-        }
+        InvocationEvents events = new InvocationEvents(ui, type,
+                invocationJson);
+        events.started();
         try {
             invocation.run();
         } catch (Throwable throwable) {
-            if (observed) {
-                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
-                        nodeId, name, throwable));
-            }
+            events.failed(throwable);
             callErrorHandler(ui, invocationJson, throwable);
         } finally {
+            events.ended();
+        }
+    }
+
+    /**
+     * The invocation phase events of a single invocation.
+     * <p>
+     * The details they carry are extracted once, and only when the event bus
+     * has a listener for one of the phases, so that an application observing
+     * nothing allocates nothing per invocation.
+     */
+    private static final class InvocationEvents implements Serializable {
+
+        private final VaadinServiceEventBus eventBus;
+        private final UI ui;
+        private final String type;
+        private final int nodeId;
+        private final String name;
+        private final boolean observed;
+
+        private InvocationEvents(UI ui, String type, JsonNode invocationJson) {
+            this.ui = ui;
+            this.type = type;
+            eventBus = ui.getSession().getService().getEventBus();
+            observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
+                    || eventBus.hasListener(RpcInvocationFailedEvent.class)
+                    || eventBus.hasListener(RpcInvocationEndedEvent.class);
+            nodeId = observed ? nodeId(invocationJson) : -1;
+            name = observed ? invocationName(type, invocationJson) : null;
+        }
+
+        private void started() {
+            if (observed) {
+                eventBus.fireEvent(
+                        new RpcInvocationStartedEvent(ui, type, nodeId, name));
+            }
+        }
+
+        private void failed(Throwable error) {
+            if (observed) {
+                eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
+                        nodeId, name, error));
+            }
+        }
+
+        private void ended() {
             if (observed) {
                 eventBus.fireEvent(
                         new RpcInvocationEndedEvent(ui, type, nodeId, name));

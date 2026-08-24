@@ -47,7 +47,7 @@ import com.vaadin.flow.server.VaadinService;
  * so a listener on the service event bus must expect invocations of several
  * sessions to be in flight on several threads at once.
  * <p>
- * Synchronized property updates ({@code mSync}) deserve two remarks, because
+ * Synchronized property updates ({@code mSync}) deserve a few remarks, because
  * they are handled in two steps: the value of every synchronized property in
  * the request is applied to the state tree first, and only then are the
  * corresponding property change events fired, so that application code sees a
@@ -58,10 +58,13 @@ import com.vaadin.flow.server.VaadinService;
  * change event they therefore surround no work: this is the case when the value
  * was already the one the client sent, when a model filter rejects the update,
  * and when the property is bound to a signal through
- * {@code Element.bindProperty}, whose listeners run while the value is being
- * written to the signal in the first step. Failures of a signal-bound update
- * consequently reach the session error handler without a
- * {@link RpcInvocationFailedEvent}.</li>
+ * {@code Element.bindProperty}, whose write callback runs in the first step
+ * instead.</li>
+ * <li>The first step can fail on its own, when the property is not synchronized
+ * at all or a signal bound to it rejects the write. There is then no change
+ * event to surround, so the events are fired at that point instead, with a
+ * {@link RpcInvocationFailedEvent} carrying the failure, and the remaining
+ * invocations of the request are still handled.</li>
  * <li>Because the first step is completed for the whole request up front, all
  * property updates in a request are reported before any other invocation it
  * carries, even those the client sent earlier in the request.</li>

@@ -47,9 +47,11 @@ import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -490,7 +492,88 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    void handleRpc_unsupportedInvocationType_throws() {
+    void handleRpc_mapSyncOfSignalBoundProperty_bracketsNoChangeEvent()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        // A signal write callback is application code that runs while the value
+        // is applied, before the events, and leaves no change event to fire.
+        List<String> sequence = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                event -> sequence.add("started"));
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                event -> sequence.add("ended"));
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        Element input = ElementFactory.createInput();
+        input.addPropertyChangeListener("value", "change",
+                event -> sequence.add("changeEvent"));
+        ui.getElement().appendChild(input);
+        ValueSignal<String> signal = new ValueSignal<>("");
+        input.bindProperty("value", signal, value -> {
+            sequence.add("writeCallback");
+            signal.set(value);
+        });
+        int nodeId = input.getNode().getId();
+
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        assertEquals(List.of("writeCallback", "started", "ended"), sequence);
+    }
+
+    @Test
+    void handleRpc_mapSyncOfNonSynchronizedProperty_reportsFailureAndHandlesRest()
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
+        // Applying the value fails before there is any change event to observe,
+        // so the invocation is reported as failed at that point rather than
+        // aborting the request.
+        ErrorHandler errorHandler = Mockito.mock(ErrorHandler.class);
+        Mockito.when(session.getErrorHandler()).thenReturn(errorHandler);
+        List<String> sequence = new ArrayList<>();
+        List<RpcInvocationFailedEvent> failed = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                event -> sequence.add("started:" + event.getType()));
+        service.getEventBus().addListener(RpcInvocationFailedEvent.class,
+                event -> {
+                    failed.add(event);
+                    sequence.add("failed:" + event.getName());
+                });
+        service.getEventBus().addListener(RpcInvocationEndedEvent.class,
+                event -> sequence.add("ended:" + event.getType()));
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        Element input = ElementFactory.createInput();
+        ui.getElement().appendChild(input);
+        int nodeId = input.getNode().getId();
+
+        // "value" is never made synchronized on the element, so the update is
+        // vetoed. The click that follows it must still be handled.
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
+                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" },"
+                + "{\"type\": \"event\", \"node\" : " + nodeId
+                + ", \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
+
+        serverRpcHandler.handleRpc(ui, reader, request);
+
+        assertEquals(List.of("started:mSync", "failed:value", "ended:mSync",
+                "started:event", "ended:event"), sequence);
+        assertInstanceOf(IllegalArgumentException.class,
+                failed.get(0).getError());
+        Mockito.verify(errorHandler).error(ArgumentMatchers.any());
+    }
+
+    @Test
+    void handleRpc_unsupportedInvocationType_throwsWithoutReportingIt() {
+        List<RpcInvocationStartedEvent> started = new ArrayList<>();
+        service.getEventBus().addListener(RpcInvocationStartedEvent.class,
+                started::add);
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"notAnRpcType\", \"node\" : 1 }], \"syncId\": 0, \"clientId\":0}");
         ui = new UI();
@@ -498,6 +581,8 @@ class ServerRpcHandlerTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> serverRpcHandler.handleRpc(ui, reader, request));
+        // There is no handler to route to, so nothing was ever invoked
+        assertTrue(started.isEmpty());
     }
 
     private void enableDau() {
