@@ -841,6 +841,12 @@ public class UI extends Component
      * elements before and after the update and animates between the two states,
      * so no per-component animation code is needed.
      * <p>
+     * By default the browser applies a simple cross-fade. More elaborate
+     * transitions can be defined purely with CSS by assigning a
+     * {@code view-transition-name} to the relevant elements and styling the
+     * {@code ::view-transition-*} pseudo-elements; this method only takes care
+     * of wrapping the update so that such transitions can run.
+     * <p>
      * The view transition is applied on a best-effort basis: if the browser
      * does not support the View Transitions API, the changes are applied
      * without any transition.
