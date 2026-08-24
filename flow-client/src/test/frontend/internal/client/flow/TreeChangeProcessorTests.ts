@@ -3,6 +3,9 @@ import { processChange, processChanges } from '../../../../../main/frontend/inte
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
+
+type Change = Record<string, unknown>;
 
 function makeTree(): StateTree {
   const registry: Registry = {
@@ -23,13 +26,89 @@ function makeTree(): StateTree {
   return new StateTree(registry);
 }
 
+// Change builders mirroring the private static helpers in
+// TreeChangeProcessorTest.java: every wire key and change-type value is taken
+// from JsonConstants by name rather than hard-coded (PORTING.md rule 9).
+function baseChange(node: number, type: string): Change {
+  return {
+    [JsonConstants.CHANGE_TYPE]: type,
+    [JsonConstants.CHANGE_NODE]: node
+  };
+}
+
+function mapBaseChange(node: number, ns: number, type: string, key: string): Change {
+  const change = baseChange(node, type);
+  change[JsonConstants.CHANGE_FEATURE] = ns;
+  change[JsonConstants.CHANGE_MAP_KEY] = key;
+  return change;
+}
+
+function attachChange(node: number): Change {
+  return baseChange(node, JsonConstants.CHANGE_TYPE_ATTACH);
+}
+
+function populateChange(node: number, isList: boolean, featureId: number): Change {
+  const change = baseChange(node, JsonConstants.CHANGE_TYPE_NOOP);
+  change[JsonConstants.CHANGE_FEATURE] = featureId;
+  change[JsonConstants.CHANGE_FEATURE_TYPE] = isList;
+  return change;
+}
+
+function detachChange(node: number): Change {
+  return baseChange(node, JsonConstants.CHANGE_TYPE_DETACH);
+}
+
+function putChange(node: number, ns: number, key: string, value: unknown): Change {
+  const change = mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_PUT, key);
+  change[JsonConstants.CHANGE_PUT_VALUE] = value;
+  return change;
+}
+
+function removeChange(node: number, ns: number, key: string): Change {
+  return mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_REMOVE, key);
+}
+
+function putNodeChange(node: number, ns: number, key: string, child: number): Change {
+  const change = mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_PUT, key);
+  change[JsonConstants.CHANGE_PUT_NODE_VALUE] = child;
+  return change;
+}
+
+function spliceBaseChange(node: number, ns: number, index: number, remove: number): Change {
+  const change = baseChange(node, JsonConstants.CHANGE_TYPE_SPLICE);
+  change[JsonConstants.CHANGE_FEATURE] = ns;
+  change[JsonConstants.CHANGE_SPLICE_INDEX] = index;
+  if (remove > 0) {
+    change[JsonConstants.CHANGE_SPLICE_REMOVE] = remove;
+  }
+  return change;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- positional params deliberately match the Java helper spliceChange(node, ns, index, remove, add...)
+function spliceChange(node: number, ns: number, index: number, remove: number, add: unknown[] = []): Change {
+  const change = spliceBaseChange(node, ns, index, remove);
+  if (add.length !== 0) {
+    change[JsonConstants.CHANGE_SPLICE_ADD] = add;
+  }
+  return change;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params -- positional params deliberately match the Java helper nodeSpliceChange(node, ns, index, remove, children...)
+function nodeSpliceChange(node: number, ns: number, index: number, remove: number, children: number[] = []): Change {
+  const change = spliceBaseChange(node, ns, index, remove);
+  if (children.length !== 0) {
+    change[JsonConstants.CHANGE_SPLICE_ADD_NODES] = children;
+  }
+  return change;
+}
+
 describe('TreeChangeProcessor', () => {
   it('applies a put change with a scalar value', () => {
     const tree = makeTree();
     const rootId = tree.getRootNode().getId();
     const ns = 0;
 
-    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', value: 'myValue' });
+    const node = processChange(tree, putChange(rootId, ns, 'myKey', 'myValue'));
 
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal('myValue');
@@ -41,7 +120,7 @@ describe('TreeChangeProcessor', () => {
     // No node with id 2 is registered, so the detach targets an unknown id;
     // during resync the change is skipped instead of failing an assertion.
     tree.prepareForResync();
-    expect(() => processChange(tree, { type: 'detach', node: 2 })).to.not.throw();
+    expect(() => processChange(tree, detachChange(2))).to.not.throw();
   });
 
   it('removes a property value on a remove change', () => {
@@ -51,7 +130,7 @@ describe('TreeChangeProcessor', () => {
     const property = tree.getRootNode().getMap(ns).getProperty('myKey');
     property.setValue('myValue');
 
-    const node = processChange(tree, { type: 'remove', node: rootId, feat: ns, key: 'myKey' });
+    const node = processChange(tree, removeChange(rootId, ns, 'myKey'));
 
     expect(property.hasValue()).to.be.false;
     expect(node).to.equal(tree.getRootNode());
@@ -64,12 +143,12 @@ describe('TreeChangeProcessor', () => {
     const property = tree.getRootNode().getMap(ns).getProperty('myKey');
     property.setValue('myValue');
 
-    processChange(tree, { type: 'remove', node: rootId, feat: ns, key: 'myKey' });
+    processChange(tree, removeChange(rootId, ns, 'myKey'));
 
     const child = new StateNode(2, tree);
     tree.registerNode(child);
 
-    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+    const node = processChange(tree, putNodeChange(rootId, ns, 'myKey', child.getId()));
 
     expect(property.getValue()).to.equal(child);
     expect(node).to.equal(tree.getRootNode());
@@ -83,7 +162,7 @@ describe('TreeChangeProcessor', () => {
     const child = new StateNode(2, tree);
     tree.registerNode(child);
 
-    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+    const node = processChange(tree, putNodeChange(rootId, ns, 'myKey', child.getId()));
 
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal(child);
@@ -95,21 +174,21 @@ describe('TreeChangeProcessor', () => {
     const rootId = tree.getRootNode().getId();
     const ns = 0;
 
-    let node = processChange(tree, { type: 'splice', node: rootId, feat: ns, index: 0, add: ['foo', 'bar'] });
+    let node = processChange(tree, spliceChange(rootId, ns, 0, 0, ['foo', 'bar']));
     const list = tree.getRootNode().getList(ns);
     expect(list.length()).to.equal(2);
     expect(list.get(0)).to.equal('foo');
     expect(list.get(1)).to.equal('bar');
     expect(node).to.equal(tree.getRootNode());
 
-    node = processChange(tree, { type: 'splice', node: rootId, feat: ns, index: 1, add: ['baz'] });
+    node = processChange(tree, spliceChange(rootId, ns, 1, 0, ['baz']));
     expect(list.length()).to.equal(3);
     expect(list.get(0)).to.equal('foo');
     expect(list.get(1)).to.equal('baz');
     expect(list.get(2)).to.equal('bar');
     expect(node).to.equal(tree.getRootNode());
 
-    node = processChange(tree, { type: 'splice', node: rootId, feat: ns, index: 1, remove: 1 });
+    node = processChange(tree, spliceChange(rootId, ns, 1, 1));
     expect(list.length()).to.equal(2);
     expect(list.get(0)).to.equal('foo');
     expect(list.get(1)).to.equal('bar');
@@ -124,7 +203,7 @@ describe('TreeChangeProcessor', () => {
     const child = new StateNode(2, tree);
     tree.registerNode(child);
 
-    const node = processChange(tree, { type: 'splice', node: rootId, feat: ns, index: 0, addNodes: [2] });
+    const node = processChange(tree, nodeSpliceChange(rootId, ns, 0, 0, [child.getId()]));
 
     const list = tree.getRootNode().getList(ns);
     expect(list.length()).to.equal(1);
@@ -137,10 +216,7 @@ describe('TreeChangeProcessor', () => {
     const nodeId = 2;
     const ns = 0;
 
-    const updatedNodes = processChanges(tree, [
-      { type: 'put', node: nodeId, feat: ns, key: 'myKey', value: 'myValue' },
-      { type: 'attach', node: nodeId }
-    ]);
+    const updatedNodes = processChanges(tree, [putChange(nodeId, ns, 'myKey', 'myValue'), attachChange(nodeId)]);
 
     const value = tree.getNode(nodeId)!.getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal('myValue');
@@ -162,7 +238,7 @@ describe('TreeChangeProcessor', () => {
     expect(tree.getNode(childNode.getId())).to.equal(childNode);
     expect(unregisterCount).to.equal(0);
 
-    const updatedNodes = processChanges(tree, [{ type: 'detach', node: childNode.getId() }]);
+    const updatedNodes = processChanges(tree, [detachChange(childNode.getId())]);
 
     expect(tree.getNode(childNode.getId())).to.equal(null);
     expect(unregisterCount).to.equal(1);
@@ -176,7 +252,7 @@ describe('TreeChangeProcessor', () => {
     tree.registerNode(node);
     const featureId = 11;
 
-    const updatedNode = processChange(tree, { type: 'empty', node: 2, feat: featureId, featType: false });
+    const updatedNode = processChange(tree, populateChange(node.getId(), false, featureId));
 
     expect(node.hasFeature(featureId)).to.be.true;
     // No assertion error because of a wrong feature instance
@@ -190,7 +266,7 @@ describe('TreeChangeProcessor', () => {
     tree.registerNode(node);
     const featureId = 12;
 
-    const updatedNode = processChange(tree, { type: 'empty', node: 3, feat: featureId, featType: true });
+    const updatedNode = processChange(tree, populateChange(node.getId(), true, featureId));
 
     expect(node.hasFeature(featureId)).to.be.true;
     // No assertion error because of a wrong feature instance
@@ -206,7 +282,7 @@ describe('TreeChangeProcessor', () => {
     const child = new StateNode(2, tree);
     tree.registerNode(child);
 
-    const node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+    const node = processChange(tree, putNodeChange(rootId, ns, 'myKey', child.getId()));
 
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal(child);
@@ -226,14 +302,14 @@ describe('TreeChangeProcessor', () => {
     tree.registerNode(subChild);
     child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, child);
 
-    let node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+    let node = processChange(tree, putNodeChange(rootId, ns, 'myKey', child.getId()));
     expect(node).to.equal(tree.getRootNode());
 
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal(child);
     expect(child.getParent()).to.equal(node);
 
-    node = processChange(tree, { type: 'put', node: child.getId(), feat: ns, key: 'myKey', nodeValue: 3 });
+    node = processChange(tree, putNodeChange(child.getId(), ns, 'myKey', subChild.getId()));
     expect(node).to.equal(child);
     expect(subChild.getParent()).to.equal(child);
   });
@@ -246,14 +322,14 @@ describe('TreeChangeProcessor', () => {
     const child = new StateNode(2, tree);
     tree.registerNode(child);
 
-    let node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
+    const node = processChange(tree, putNodeChange(rootId, ns, 'myKey', child.getId()));
     expect(node).to.equal(tree.getRootNode());
 
     const value = tree.getRootNode().getMap(ns).getProperty('myKey').getValue();
     expect(value).to.equal(child);
     expect(child.getParent()).to.equal(node);
 
-    processChange(tree, { type: 'detach', node: child.getId() });
+    processChange(tree, detachChange(child.getId()));
     expect(child.getParent()).to.equal(null);
   });
 
@@ -262,7 +338,7 @@ describe('TreeChangeProcessor', () => {
   // processChanges (PORTING.md rule 13.6).
   it('attaches new nodes and returns the affected set', () => {
     const tree = makeTree();
-    const nodes = processChanges(tree, [{ type: 'attach', node: 2 }]);
+    const nodes = processChanges(tree, [attachChange(2)]);
     expect(tree.getNode(2)).to.not.equal(null);
     expect([...nodes].map((n) => n.getId())).to.deep.equal([2]);
   });

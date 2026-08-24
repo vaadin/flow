@@ -210,7 +210,7 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
     const fnValue = json['@v-fn'];
     if (fnValue !== undefined && fnValue !== null) {
       if (!isPlainObject(fnValue)) {
-        throw new Error(`@v-fn value must be an object in ${JSON.stringify(json)}`);
+        throw new Error(`@v-fn value must be an object, got ${typeof fnValue} in ${JSON.stringify(json)}`);
       }
       return decodeJsFunction(tree, fnValue, JSON.stringify(json));
     }

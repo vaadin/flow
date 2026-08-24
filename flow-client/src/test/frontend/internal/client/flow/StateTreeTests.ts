@@ -36,7 +36,8 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendNodeSyncMessage: (node, mapId, name, value) => syncs.push({ node, mapId, name, value }),
       sendTemplateEventMessage: () => {},
       sendExistingElementAttachToServer: () => {},
-      sendExistingElementWithIdAttachToServer: () => {}
+      sendExistingElementWithIdAttachToServer: () => {},
+      sendReturnChannelMessage: () => {}
     })
   };
   return {
@@ -248,16 +249,13 @@ describe('StateTree', () => {
 
   it('prepareForResync leaves only the root registered', () => {
     const { tree } = makeTree();
-    const a = new StateNode(2, tree);
-    const b = new StateNode(3, tree);
-    tree.registerNode(a);
-    tree.registerNode(b);
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
 
     tree.prepareForResync();
 
-    expect(tree.getNode(1)).to.equal(tree.getRootNode());
-    expect(tree.getNode(2)).to.equal(null);
-    expect(tree.getNode(3)).to.equal(null);
+    expect(tree.getRootNode().isUnregistered()).to.equal(false);
+    expect(node.isUnregistered()).to.equal(true);
     expect(tree.isResync()).to.equal(true);
   });
 });
