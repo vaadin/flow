@@ -112,7 +112,7 @@ export class StateTree {
 
   /**
    * Returns whether this tree is currently being updated by
-   * `TreeChangeProcessor.processChanges`.
+   * {@link TreeChangeProcessor.processChanges}.
    *
    * @returns `true` if being updated, `false` if not
    */
@@ -334,6 +334,9 @@ export class StateTree {
    */
   sendTemplateEventToServer(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
     if (this.#isValidNode(node)) {
+      // Java does `JsonArray array = WidgetUtil.crazyJsCast(argsArray)` here;
+      // crazyJsCast is a GWT-compiler-only unchecked cast with no port (it is
+      // erased in TypeScript), so argsArray is passed straight through.
       this.#registry.getServerConnector().sendTemplateEventMessage(node, methodName, argsArray, promiseId);
     }
   }

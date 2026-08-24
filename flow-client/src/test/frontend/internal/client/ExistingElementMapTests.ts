@@ -17,8 +17,6 @@ describe('ExistingElementMap', () => {
     map.remove(3);
     expect(map.getElement(3)).to.equal(null);
     expect(map.getId(element)).to.equal(null);
-    // Removing an unknown id is a no-op.
-    expect(() => map.remove(99)).to.not.throw();
   });
 
   // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java
@@ -27,5 +25,12 @@ describe('ExistingElementMap', () => {
     const map = new ExistingElementMap();
     expect(map.getElement(0)).to.equal(null);
     expect(map.getId(document.createElement('span'))).to.equal(null);
+  });
+
+  // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java
+  // (PORTING.md rule 13.6).
+  it('is a no-op when removing an unknown id', () => {
+    const map = new ExistingElementMap();
+    expect(() => map.remove(99)).to.not.throw();
   });
 });
