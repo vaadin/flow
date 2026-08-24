@@ -1,18 +1,24 @@
 import { expect } from '@open-wc/testing';
 import { processChange, processChanges } from '../../../../../main/frontend/internal/client/flow/TreeChangeProcessor';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
-
-const ELEMENT_CHILDREN = 2;
+import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 
 function makeTree(): StateTree {
-  const registry: any = {
+  const registry: Registry = {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {},
       nodeRegistered: () => {},
       handlePropertyUpdate: () => false
     }),
-    getServerConnector: () => ({})
+    getServerConnector: () => ({
+      sendEventMessage: () => {},
+      sendNodeSyncMessage: () => {},
+      sendTemplateEventMessage: () => {},
+      sendExistingElementAttachToServer: () => {},
+      sendExistingElementWithIdAttachToServer: () => {},
+      sendReturnChannelMessage: () => {}
+    })
   };
   return new StateTree(registry);
 }
@@ -32,8 +38,8 @@ describe('TreeChangeProcessor', () => {
 
   it('ignores a detach for a nonexistent node during resync', () => {
     const tree = makeTree();
-    // Register the node but never in the tree map, so the detach targets an
-    // unknown id
+    // No node with id 2 is registered, so the detach targets an unknown id;
+    // during resync the change is skipped instead of failing an assertion.
     tree.prepareForResync();
     expect(() => processChange(tree, { type: 'detach', node: 2 })).to.not.throw();
   });
@@ -218,7 +224,7 @@ describe('TreeChangeProcessor', () => {
 
     const subChild = new StateNode(3, tree);
     tree.registerNode(subChild);
-    child.getList(ELEMENT_CHILDREN).add(0, child);
+    child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, child);
 
     let node = processChange(tree, { type: 'put', node: rootId, feat: ns, key: 'myKey', nodeValue: 2 });
     expect(node).to.equal(tree.getRootNode());

@@ -37,8 +37,10 @@ function createReturnChannelCallback(sendMessage: (args: unknown[]) => void): Js
 
 /**
  * Wraps `fn` in a function that prepends `captures` to the runtime arguments
- * before delegating, while leaving `this` controlled by the caller (unlike
- * Function.prototype.bind, which would pre-bind `this`).
+ * before delegating, while leaving `this` controlled by the caller.
+ * `Function.prototype.bind` would also pre-bind `this` to `undefined`, which
+ * prevents callers from setting `this` via `.call()` or `.apply()` on the
+ * resulting function.
  *
  * Private in the Java source (`private static native`); kept module-local and
  * exercised through the public `decodeWithTypeInfo` (`@v-fn`) surface.
@@ -190,10 +192,12 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
     const returnArray = json['@v-return'];
     if (returnArray !== undefined && returnArray !== null) {
       if (!Array.isArray(returnArray)) {
-        throw new Error(`@v-return value must be an array in ${JSON.stringify(json)}`);
+        throw new Error(`@v-return value must be an array, got ${typeof returnArray} in ${JSON.stringify(json)}`);
       }
       if (returnArray.length < 2) {
-        throw new Error(`@v-return array must have at least 2 elements in ${JSON.stringify(json)}`);
+        throw new Error(
+          `@v-return array must have at least 2 elements, got ${returnArray.length} in ${JSON.stringify(json)}`
+        );
       }
       const returnNodeId = returnArray[0] as number;
       const channelId = returnArray[1] as number;

@@ -58,6 +58,8 @@ export class ConstantPool {
    */
   // Returns any type to make it easier to use constants as JsInterop types
   get<T>(key: string): T {
-    return this.#constants.get(key) as T;
+    // Mirror the Java contract: a missing key yields null, not undefined
+    // (Map.get returns undefined).
+    return (this.#constants.get(key) ?? null) as T;
   }
 }

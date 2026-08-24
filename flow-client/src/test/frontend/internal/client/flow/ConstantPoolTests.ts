@@ -20,7 +20,7 @@ describe('ConstantPool', () => {
     const pool = new ConstantPool();
     pool.importFromJson({ a: 'value-a' });
     expect(pool.has('missing')).to.equal(false);
-    expect(pool.get<string>('missing')).to.equal(undefined);
+    expect(pool.get<string>('missing')).to.equal(null);
   });
 
   it('accumulates constants across imports', () => {

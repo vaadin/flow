@@ -144,11 +144,7 @@ export class StateTree {
    * @param node - the node to unregister
    */
   unregisterNode(node: StateNode): void {
-    // Mirrors Java StateTree.assertValidNode: reject a node not created for or
-    // not registered with this tree (matches the always-on assert in
-    // registerNode, and lets an invalid resync be caught and recovered).
-    assert(node.getTree() === this, 'Node is not created for this tree');
-    assert(node === this.getNode(node.getId()), 'Node id is not registered with this tree');
+    assert(this.#assertValidNode(node), 'Invalid node');
     assert(node !== this.#rootNode, "Root node can't be unregistered");
     this.#idToNode.delete(node.getId());
     node.unregister();

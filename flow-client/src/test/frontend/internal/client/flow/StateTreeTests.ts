@@ -142,9 +142,11 @@ describe('StateTree', () => {
 
     it('does not send a property of a detached node', () => {
       const { tree, syncs } = makeTree(false);
-      const detached = new StateNode(7, tree);
-      const property = detached.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+      const node = new StateNode(7, tree);
+      tree.registerNode(node);
+      const property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
       property.setValue('bar');
+      tree.unregisterNode(node);
       tree.sendNodePropertySyncToServer(property);
       expect(syncs.length).to.equal(0);
     });

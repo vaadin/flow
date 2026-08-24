@@ -75,7 +75,8 @@ function processPutChange(change: Change, node: StateNode): void {
     property.setValue(decodeWithoutTypeInfo(change[JsonConstants.CHANGE_PUT_VALUE]));
   } else if (JsonConstants.CHANGE_PUT_NODE_VALUE in change) {
     const childId = change[JsonConstants.CHANGE_PUT_NODE_VALUE] as number;
-    const child = node.getTree().getNode(childId)!;
+    const child = node.getTree().getNode(childId);
+    assert(child !== null, 'No child node found');
     child.setParent(node);
     property.setValue(child);
   } else {
@@ -102,7 +103,8 @@ function processSpliceChange(change: Change, node: StateNode): void {
     const addNodes = change[JsonConstants.CHANGE_SPLICE_ADD_NODES] as number[];
     const tree = node.getTree();
     const add = addNodes.map((childId) => {
-      const child = tree.getNode(childId)!;
+      const child = tree.getNode(childId);
+      assert(child !== null, `No child node found with id ${childId}`);
       child.setParent(node);
       return child;
     });
