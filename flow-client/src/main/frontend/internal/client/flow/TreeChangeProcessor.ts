@@ -117,8 +117,12 @@ function processDetachChange(tree: StateTree, node: StateNode): void {
 }
 
 /**
- * Applies a single JSON change to the tree, returning the affected node. Public
- * for testing. Mirrors TreeChangeProcessor.processChange.
+ * Update a state tree based on a JSON change. This method is public for testing
+ * purposes.
+ *
+ * @param tree - the tree to update
+ * @param change - the JSON change
+ * @returns the updated node addressed by the provided `change`
  */
 export function processChange(tree: StateTree, change: Change): StateNode | null {
   const type = change[JsonConstants.CHANGE_TYPE] as string;
@@ -156,9 +160,11 @@ export function processChange(tree: StateTree, change: Change): StateNode | null
 }
 
 /**
- * Applies a batch of JSON changes to the tree: all attaches first, then the
- * rest. Returns the set of nodes addressed by the changes. Mirrors
- * TreeChangeProcessor.processChanges.
+ * Update a state tree based on a JSON array of changes.
+ *
+ * @param tree - the tree to update
+ * @param changes - the JSON array of changes
+ * @returns a set of updated nodes addressed by the `changes`
  */
 export function processChanges(tree: StateTree, changes: Change[]): Set<StateNode> {
   try {

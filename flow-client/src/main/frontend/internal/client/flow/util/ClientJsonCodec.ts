@@ -46,6 +46,9 @@ export function applyCaptures(fn: JsFunction, captures: ArrayLike<unknown>): JsF
  * representation is used as-is; only `undefined`/`null` are normalized to null
  * (the JVM-only conversions in the Java version are test scaffolding). Mirrors
  * ClientJsonCodec.encodeWithoutTypeInfo.
+ *
+ * @param value - the value to encode
+ * @returns the value encoded as JSON
  */
 export function encodeWithoutTypeInfo(value: unknown): unknown {
   // undefined shouldn't go as undefined; encode it as null.
@@ -56,6 +59,9 @@ export function encodeWithoutTypeInfo(value: unknown): unknown {
  * Decodes a value transported without type information. In JavaScript the JSON
  * representation is used as-is (the JVM-only conversions in the Java version are
  * test scaffolding). Mirrors ClientJsonCodec.decodeWithoutTypeInfo.
+ *
+ * @param json - the JSON value to convert
+ * @returns the decoded value
  */
 export function decodeWithoutTypeInfo(json: unknown): unknown {
   return json;
@@ -72,6 +78,10 @@ interface NodeResolvingTree<N> {
  * ClientJsonCodec.decodeStateNode (the node-returning counterpart of
  * decodeWithTypeInfo). Used e.g. by ExecuteJavaScriptProcessor to find the state
  * node behind an element parameter.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded state node if any
  */
 export function decodeStateNode<N>(tree: NodeResolvingTree<N>, json: unknown): N | null {
   if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
@@ -154,6 +164,10 @@ function decodeJsFunction(tree: TypeInfoTree, fnObject: Record<string, unknown>,
  * messages the server), manifested functions (`@v-fn`), and nested
  * objects/arrays (decoded recursively); other values pass through unchanged.
  * Mirrors ClientJsonCodec.decodeWithTypeInfo.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
  */
 export function decodeWithTypeInfo(tree: TypeInfoTree, json: unknown): unknown {
   if (isPlainObject(json)) {

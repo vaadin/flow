@@ -60,7 +60,9 @@ export interface Registry {
 /** Looks up a server event object attached to a DOM node; mirrors ServerEventObject.getIfPresent. */
 export type ServerEventObjectAccess = (dom: Node) => { rejectPromises(): void } | null;
 
-/** A client-side representation of a server-side state tree; mirrors StateTree.java. */
+/**
+ * A client-side representation of a server-side state tree.
+ */
 export class StateTree implements StateTreeContract {
   readonly #idToNode = new Map<number, StateNode>();
 
@@ -76,6 +78,14 @@ export class StateTree implements StateTreeContract {
 
   #resync = false;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   * @param serverEventObjectAccess - looks up a server event object attached to
+   *          a DOM node during resync; port deviation for the not-yet-ported
+   *          ServerEventObject, defaulting to "no server event object"
+   */
   constructor(registry: Registry, serverEventObjectAccess: ServerEventObjectAccess = () => null) {
     this.#registry = registry;
     this.#serverEventObjectAccess = serverEventObjectAccess;
@@ -83,15 +93,33 @@ export class StateTree implements StateTreeContract {
     this.registerNode(this.#rootNode);
   }
 
+  /**
+   * Mark this tree as being updated.
+   *
+   * @param updateInProgress - `true` if the tree is being updated, `false` if
+   *          not
+   * @see {@link isUpdateInProgress}
+   */
   setUpdateInProgress(updateInProgress: boolean): void {
     this.#updateInProgress = updateInProgress;
     this.getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
   }
 
+  /**
+   * Returns whether this tree is currently being updated by
+   * `TreeChangeProcessor.processChanges`.
+   *
+   * @returns `true` if being updated, `false` if not
+   */
   isUpdateInProgress(): boolean {
     return this.#updateInProgress;
   }
 
+  /**
+   * Registers a node with this tree.
+   *
+   * @param node - the node to register
+   */
   registerNode(node: StateNode): void {
     assert(node.getTree() === this, 'Node is not created for this tree');
     assert(!node.isUnregistered(), "Can't re-register a node");
@@ -104,6 +132,12 @@ export class StateTree implements StateTreeContract {
     }
   }
 
+  /**
+   * Unregisters a node from this tree. Once the node has been unregistered, it
+   * can't be registered again.
+   *
+   * @param node - the node to unregister
+   */
   unregisterNode(node: StateNode): void {
     // Mirrors Java StateTree.assertValidNode: reject a node not created for or
     // not registered with this tree (matches the always-on assert in
@@ -115,6 +149,11 @@ export class StateTree implements StateTreeContract {
     node.unregister();
   }
 
+  /**
+   * Unregisters all nodes except root from this tree, and clears the root's
+   * features. Use to reset the tree in preparation for rebuilding it in in a
+   * resynchronization response.
+   */
   prepareForResync(): void {
     this.#rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN).forEach((sn) => this.#clearLists(sn as StateNode));
     this.#clearLists(this.#rootNode);
@@ -136,14 +175,34 @@ export class StateTree implements StateTreeContract {
     this.setResync(true);
   }
 
+  /**
+   * Check if tree is resynchronizing after a {@link prepareForResync}
+   *
+   * @returns true if resync called
+   */
   isResync(): boolean {
     return this.#resync;
   }
 
+  /**
+   * Set the resynchronization state for the StateTree.
+   *
+   * @param resync - resynchronization state to set
+   */
   setResync(resync: boolean): void {
     this.#resync = resync;
   }
 
+  /**
+   * Returns the state node in the tree for the given dom node or `null` if none
+   * found.
+   *
+   * Comparison is done with Node.isSameNode() method which is same as `===`
+   * comparison.
+   *
+   * @param domNode - the dom node to find state node for
+   * @returns the state node or null
+   */
   getStateNodeForDomNode(domNode: Node): StateNode | null {
     for (const stateNode of this.#idToNode.values()) {
       if (domNode.isSameNode(stateNode.getDomNode())) {
@@ -167,6 +226,15 @@ export class StateTree implements StateTreeContract {
     });
   }
 
+  /**
+   * Validates that the provided node is not null and is properly registered for
+   * this state tree.
+   *
+   * Logs a warning if there was a problem with the node.
+   *
+   * @param node - node to test
+   * @returns node is valid
+   */
   #isValidNode(node: StateNode | null): boolean {
     let isValid = true;
     if (node === null) {
@@ -182,20 +250,45 @@ export class StateTree implements StateTreeContract {
     return isValid;
   }
 
+  /**
+   * Finds the node with the given id.
+   *
+   * @param id - the id
+   * @returns the node with the given id, or `null` if no such node is
+   *          registered.
+   */
   getNode(id: number): StateNode | null {
     return this.#idToNode.get(id) ?? null;
   }
 
+  /**
+   * Gets the root node of this tree.
+   *
+   * @returns the root node
+   */
   getRootNode(): StateNode {
     return this.#rootNode;
   }
 
+  /**
+   * Sends an event to the server.
+   *
+   * @param node - the node that listened to the event
+   * @param eventType - the type of event
+   * @param eventData - extra data associated with the event
+   */
   sendEventToServer(node: StateNode, eventType: string, eventData: unknown): void {
     if (this.#isValidNode(node)) {
       this.#registry.getServerConnector().sendEventMessage(node, eventType, eventData);
     }
   }
 
+  /**
+   * Sends a map property sync to the server.
+   *
+   * @param property - the property that should have its value synced to the
+   *          server, not `null`
+   */
   sendNodePropertySyncToServer(property: MapProperty): void {
     const nodeMap = property.getMap() as NodeMap;
     const node = nodeMap.getNode() as StateNode;
@@ -209,12 +302,36 @@ export class StateTree implements StateTreeContract {
       .sendNodeSyncMessage(node, nodeMap.getId(), property.getName(), property.getValue());
   }
 
+  /**
+   * Sends a request to call server side method with `methodName` using
+   * `argsArray` as argument values.
+   *
+   * In cases when the state tree has been changed and we receive a delayed or
+   * deferred template event the event is just ignored.
+   *
+   * @param node - the node referring to the server side instance containing the
+   *          method
+   * @param methodName - the method name
+   * @param argsArray - the arguments array for the method
+   * @param promiseId - the promise id to use for getting the result back, or -1
+   *          if no result is expected
+   */
   sendTemplateEventToServer(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
     if (this.#isValidNode(node)) {
       this.#registry.getServerConnector().sendTemplateEventMessage(node, methodName, argsArray, promiseId);
     }
   }
 
+  /**
+   * Sends a data for attach existing element server side callback.
+   *
+   * @param parent - parent of the node to attach
+   * @param requestedId - originally requested id of a server side node
+   * @param assignedId - identifier which should be used on the server side for
+   *          the element (instead of requestedId)
+   * @param tagName - the requested tagName
+   * @param index - the index of the element on the server side
+   */
   // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java sendExistingElementAttachToServer signature
   sendExistingElementAttachToServer(
     parent: StateNode,
@@ -228,6 +345,15 @@ export class StateTree implements StateTreeContract {
       .sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName, index);
   }
 
+  /**
+   * Sends a data for attach existing element with id server side callback.
+   *
+   * @param parent - parent of the node to attach
+   * @param requestedId - originally requested id of a server side node
+   * @param assignedId - identifier which should be used on the server side for
+   *          the element (instead of requestedId)
+   * @param id - id of requested element
+   */
   sendExistingElementWithIdAttachToServer(
     parent: StateNode,
     requestedId: number,
@@ -237,10 +363,21 @@ export class StateTree implements StateTreeContract {
     this.#registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
   }
 
+  /**
+   * Gets the {@link Registry} that this state tree belongs to.
+   *
+   * @returns the registry of this tree, not `null`
+   */
   getRegistry(): Registry {
     return this.#registry;
   }
 
+  /**
+   * Returns the visibility state of the `node`.
+   *
+   * @param node - the node whose visibility is tested
+   * @returns `true` is the node is visible, `false` otherwise
+   */
   isVisible(node: StateNode): boolean {
     if (!node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
       return true;
@@ -253,6 +390,14 @@ export class StateTree implements StateTreeContract {
     return visibility !== false;
   }
 
+  /**
+   * Checks whether the `node` is active.
+   *
+   * The node is active if it's visible and all its ancestors are visible.
+   *
+   * @param node - the node whose activity is tested
+   * @returns `true` is the node is active, `false` otherwise
+   */
   isActive(node: StateNode): boolean {
     const visible = this.isVisible(node);
     const parent = node.getParent();
@@ -262,6 +407,12 @@ export class StateTree implements StateTreeContract {
     return this.isActive(parent);
   }
 
+  /**
+   * Returns a human readable string for the name space with the given id.
+   *
+   * @param id - the node feature id
+   * @returns a human readable string describing the node feature
+   */
   getFeatureDebugName(id: number): string {
     if (this.#nodeFeatureDebugName === null) {
       const names = new Map<number, string>();

@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { type NodeUnregisterEvent, StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
 import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';

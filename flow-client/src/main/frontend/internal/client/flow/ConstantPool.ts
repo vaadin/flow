@@ -24,8 +24,10 @@ export class ConstantPool {
   readonly #constants = new Map<string, unknown>();
 
   /**
-   * Imports new constants into this pool from a JSON object mapping constant
-   * keys to constant values.
+   * Imports new constants into this pool.
+   *
+   * @param json - a JSON object mapping constant keys to constant values, not
+   *          `null`
    */
   importFromJson(json: Record<string, unknown>): void {
     for (const key of Object.keys(json)) {
@@ -36,16 +38,25 @@ export class ConstantPool {
     }
   }
 
-  /** Checks whether this constant pool contains a value for the given key. */
+  /**
+   * Checks whether this constant pool contains a value for the given key.
+   *
+   * @param key - the key to check, not `null`
+   * @returns `true` if there is a constant for the given key; otherwise `false`
+   */
   has(key: string): boolean {
     return this.#constants.has(key);
   }
 
   /**
-   * Gets the constant with a given key, or <code>undefined</code> if there is
-   * no constant with the given key. Returns any type to make it easier to use
-   * constants as typed values.
+   * Gets the constant with a given key.
+   *
+   * @param key - the key to get a constant for, not `null`
+   * @typeParam T - the constant type
+   * @returns the constant value, or `null` if there is no constant with the
+   *          given key
    */
+  // Returns any type to make it easier to use constants as JsInterop types
   get<T>(key: string): T {
     return this.#constants.get(key) as T;
   }
