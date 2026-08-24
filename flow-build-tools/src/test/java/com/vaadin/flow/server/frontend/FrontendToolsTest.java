@@ -1016,26 +1016,7 @@ class FrontendToolsTest {
     }
 
     @Test
-    void getConfiguredSetting_outputIsNotJson_isEmpty()
-            throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            // a tool answering in some other format is ignored rather than
-            // failing the build
-            frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
-                    .thenReturn("minimum-release-age=4320\n");
-
-            assertEquals(Optional.empty(),
-                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
-                            new File(baseDir), "minimumReleaseAge",
-                            "minimum-release-age"));
-        }
-    }
-
-    @Test
-    void getConfiguredSetting_commandFails_isEmpty()
+    void getConfiguredSetting_configurationCannotBeRead_isEmpty()
             throws CommandExecutionException {
         try (MockedStatic<FrontendUtils> frontendUtils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -1043,12 +1024,17 @@ class FrontendToolsTest {
                     .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
                             Mockito.any()))
                     .thenThrow(new CommandExecutionException(1, "",
-                            "unknown subcommand"));
+                            "unknown subcommand"))
+                    .thenReturn("minimum-release-age=4320\n");
 
+            // a tool that fails, and one that answers in some other format,
+            // are both ignored rather than failing the build
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge"));
             assertEquals(Optional.empty(),
                     tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
                             new File(baseDir), "minimumReleaseAge"));
         }
     }
-
 }

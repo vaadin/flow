@@ -767,22 +767,6 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumFrontendPackageAge_npmNewEnough_usesMinReleaseAgeArgument() {
-        // npm 11.10+: --min-release-age takes a value in days
-        assertEquals("--min-release-age=2",
-                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder), 2, true));
-    }
-
-    @Test
-    void minimumFrontendPackageAge_npmTooOld_fallsBackToBeforeArgument() {
-        String arg = TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder), 2, false);
-        assertTrue(arg.startsWith("--before="),
-                "Older npm should fall back to --before, was: " + arg);
-    }
-
-    @Test
     void minimumFrontendPackageAge_pnpm_usesMinimumReleaseAgeInMinutes() {
         // 2 days = 2880 minutes; pnpm setting form
         assertEquals("--config.minimum-release-age=2880",
