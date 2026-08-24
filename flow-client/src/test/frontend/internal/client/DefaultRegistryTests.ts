@@ -1,9 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
-import { DefaultConnectionStateHandler } from '../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
-import { DefaultRegistry } from '../../../main/frontend/internal/client/DefaultRegistry';
-import { MessageSender } from '../../../main/frontend/internal/client/communication/MessageSender';
-import { UILifecycle } from '../../../main/frontend/internal/client/UILifecycle';
+import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { DefaultConnectionStateHandler } from '../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
+import { DefaultRegistry } from '../../../../main/frontend/internal/client/DefaultRegistry';
+import { MessageSender } from '../../../../main/frontend/internal/client/communication/MessageSender';
+import { UILifecycle } from '../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(): DefaultRegistry {
   const config = new ApplicationConfiguration();
