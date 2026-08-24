@@ -25,7 +25,7 @@
 // `this`/`arguments` inside the patched functions -- those must stay regular
 // `function` expressions, not arrows.
 
-import { isPolymerElement, mayBePolymerElement } from './PolymerUtils';
+import { isPolymerElement, mayBePolymerElement } from './client/PolymerUtils';
 
 // The StateNode/StateTree-coupled actions, supplied by the caller with node/tree
 // captured. fireReadyEvent receives the element; the others receive only the
