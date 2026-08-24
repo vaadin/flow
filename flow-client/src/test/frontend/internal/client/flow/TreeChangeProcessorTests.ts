@@ -19,6 +19,9 @@ function makeTree(): StateTree {
 }
 
 describe('TreeChangeProcessor', () => {
+  // Beyond the Java suite: no equivalent @Test in TreeChangeProcessorTest.java.
+  // Exercises the attach change and the affected-node set returned by
+  // processChanges (PORTING.md rule 13.6).
   it('attaches new nodes and returns the affected set', () => {
     const tree = makeTree();
     const nodes = processChanges(tree, [{ type: 'attach', node: 2 }]);

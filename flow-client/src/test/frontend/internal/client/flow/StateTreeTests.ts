@@ -72,6 +72,14 @@ describe('StateTree', () => {
     expect(() => tree.registerNode(node)).to.throw();
   });
 
+  it('throws when registering a null node', () => {
+    // testRegisterNullThrows: registering null is rejected. Java asserts an
+    // AssertionError via `assert node != null`; TypeScript reaches the argument
+    // with a cast and registration throws before completing.
+    const { tree } = makeTree();
+    expect(() => tree.registerNode(null as unknown as StateNode)).to.throw();
+  });
+
   it('throws when unregistering a node that was never registered', () => {
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
@@ -118,17 +126,18 @@ describe('StateTree', () => {
     tree.unregisterNode(node);
   });
 
+  // testUpdatingTree_triggeringBinder_causesAssertionError is intentionally not
+  // ported: it drives `Binder.bind`, and `Binder` is not yet ported (PORTING.md
+  // rule 11). Restore this case in the PR that ports `Binder`.
+
   it('setUpdateInProgress flushes property updates', () => {
+    // One Java @Test asserts the flush fires once after setUpdateInProgress(true)
+    // and again (twice total) after setUpdateInProgress(false); kept as a single
+    // it() so the case maps 1:1 to the Java method (PORTING.md rule 13.4).
     const { tree, getFlushCount } = makeTree();
     expect(getFlushCount()).to.equal(0);
     tree.setUpdateInProgress(true);
     expect(tree.isUpdateInProgress()).to.equal(true);
-    expect(getFlushCount()).to.equal(1);
-  });
-
-  it('setUpdateInProgress flushes property updates again when set to false', () => {
-    const { tree, getFlushCount } = makeTree();
-    tree.setUpdateInProgress(true);
     expect(getFlushCount()).to.equal(1);
     tree.setUpdateInProgress(false);
     expect(getFlushCount()).to.equal(2);

@@ -1,6 +1,8 @@
 import { expect } from '@open-wc/testing';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 
+// Beyond the Java suite: ConstantPool has no *Test.java counterpart, so every
+// case here is new coverage rather than a 1:1 port (PORTING.md rule 13.6).
 describe('ConstantPool', () => {
   it('imports constants from JSON and reads them back', () => {
     const pool = new ConstantPool();

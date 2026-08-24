@@ -33,6 +33,8 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
   return new StateTree(registry);
 }
 
+// Beyond the Java suite: ClientJsonCodec has no *Test.java counterpart, so every
+// case here is new coverage rather than a 1:1 port (PORTING.md rule 13.6).
 describe('ClientJsonCodec', () => {
   describe('decodeStateNode', () => {
     let tree: StateTree;
