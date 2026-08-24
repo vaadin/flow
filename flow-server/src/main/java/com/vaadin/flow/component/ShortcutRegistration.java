@@ -284,6 +284,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return this <code>ShortcutRegistration</code>
      * @see #setEventsFromNestedModalsAllowed(boolean)
+     * @since 25.2.6
      */
     public ShortcutRegistration allowEventsFromNestedModals() {
         if (!allowEventsFromNestedModals) {
@@ -495,6 +496,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return {@code true} if events from nested modals are allowed to trigger
      *         the shortcut
+     * @since 25.2.6
      */
     public boolean isEventsFromNestedModalsAllowed() {
         return allowEventsFromNestedModals;
@@ -509,6 +511,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @param eventsFromNestedModalsAllowed
      *            {@code true} to allow events from nested modals to trigger the
      *            shortcut
+     * @since 25.2.6
      */
     public void setEventsFromNestedModalsAllowed(
             boolean eventsFromNestedModalsAllowed) {
