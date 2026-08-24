@@ -84,7 +84,7 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.1.0</spring.boot.version>
+    <spring.boot.version>4.1.1</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.3.Final</hibernate.validator.version>
@@ -92,9 +92,9 @@
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.5</jackson.version>
     <jaxb.version>4.0.9</jaxb.version>
-    <guava.version>33.6.0-jre</guava.version>
+    <guava.version>33.7.1-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
-    <junit.jupiter.version>6.1.2</junit.jupiter.version>
+    <junit.jupiter.version>6.1.3</junit.jupiter.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -106,13 +106,16 @@
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
+    <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
+         repository metadata when modules install in parallel (-T). -->
+    <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
     <testbench.version>25.2.1</testbench.version>
     <jetty.version>12.1.12</jetty.version>
     <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.16</maven.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
-    <spotless.plugin.version>3.9.0</spotless.plugin.version>
+    <spotless.plugin.version>3.10.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
 
@@ -129,7 +132,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.3.0</bnd.version>
+    <bnd.version>7.4.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -203,7 +206,7 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.11</version>
+        <version>1.18.12</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
@@ -411,7 +414,16 @@
               </goals>
               <configuration>
                 <rules>
-                  <dependencyConvergence/>
+                  <dependencyConvergence>
+                    <excludes>
+                      <!-- Spring Boot brings in jspecify 1.0.1 while Selenium
+                           and JUnit still depend on 1.0.0. The releases differ
+                           only in documentation, so the split is harmless.
+                           Remove once the transitive dependencies have caught
+                           up. -->
+                      <exclude>org.jspecify:jspecify</exclude>
+                    </excludes>
+                  </dependencyConvergence>
                 </rules>
               </configuration>
             </execution>
@@ -421,6 +433,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>${maven.jar.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${maven.install.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

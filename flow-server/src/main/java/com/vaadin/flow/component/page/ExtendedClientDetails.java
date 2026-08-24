@@ -406,6 +406,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the platform reported by the browser, or {@code null} if the
      *         browser did not report one
+     * @since 25.3
      */
     public String getNavigatorPlatform() {
         return navigatorPlatform;

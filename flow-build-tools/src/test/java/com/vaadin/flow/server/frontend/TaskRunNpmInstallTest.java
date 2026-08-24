@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@NotThreadSafe
+@Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class TaskRunNpmInstallTest {
 
