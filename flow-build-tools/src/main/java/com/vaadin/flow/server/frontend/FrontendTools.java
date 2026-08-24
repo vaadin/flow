@@ -605,7 +605,7 @@ public class FrontendTools {
 
     /**
      * Reads the registry URLs npm resolves for the given directory by running
-     * {@code npm config ls --json}. The returned map contains the global
+     * {@code npm config list --json}. The returned map contains the global
      * {@code registry} entry and every scoped {@code @scope:registry} entry, as
      * resolved by npm across all its configuration sources.
      *
@@ -641,8 +641,8 @@ public class FrontendTools {
      *            project {@code .npmrc} is taken into account
      * @param keys
      *            the configuration keys to look for, in order of preference
-     * @return the configured value, or an empty optional if none of the keys is
-     *         configured or the configuration cannot be read
+     * @return the configured value, or an empty optional if none of the keys
+     *         has a scalar value or the configuration cannot be read
      */
     Optional<String> getConfiguredSetting(List<String> toolCommand,
             File workingDirectory, String... keys) {
@@ -651,8 +651,10 @@ public class FrontendTools {
         for (String key : keys) {
             JsonNode value = config.get(key);
             // npm lists every key it knows, using null for the ones that are
-            // not configured; pnpm lists only the configured ones
-            if (value != null && !value.isNull()) {
+            // not configured; pnpm lists only the configured ones. Settings
+            // that npm lists as an array, such as omit or noproxy, are not
+            // values this can return.
+            if (value != null && value.isValueNode() && !value.isNull()) {
                 return Optional.of(value.asString());
             }
         }

@@ -994,21 +994,43 @@ class FrontendToolsTest {
     }
 
     @Test
-    void getConfiguredSetting_keyWithoutValue_isEmpty()
+    void getConfiguredSetting_keyWithoutScalarValue_isEmpty()
             throws CommandExecutionException {
         try (MockedStatic<FrontendUtils> frontendUtils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             // npm lists every key it knows, using null for the unconfigured
-            // ones, while pnpm lists only the configured ones
+            // ones and an array for some of the others, while pnpm lists only
+            // the configured ones
             frontendUtils
                     .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
                             Mockito.any()))
-                    .thenReturn("{\"min-release-age\": null}");
+                    .thenReturn("{\"min-release-age\": null, \"omit\": []}");
 
             assertEquals(Optional.empty(), tools.getConfiguredSetting(
                     List.of("npm"), new File(baseDir), "min-release-age"));
             assertEquals(Optional.empty(), tools.getConfiguredSetting(
                     List.of("npm"), new File(baseDir), "before"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "omit"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_outputIsNotJson_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // a tool answering in some other format is ignored rather than
+            // failing the build
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("minimum-release-age=4320\n");
+
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
         }
     }
 
