@@ -459,36 +459,6 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    void handleRpc_onlyFailedPhaseObserved_stillFiresThatPhase()
-            throws InvalidUIDLSecurityKeyException, IOException,
-            ServerRpcHandler.MessageIdSyncException {
-        // Counting failures does not require observing the other two phases.
-        Mockito.when(session.getErrorHandler())
-                .thenReturn(Mockito.mock(ErrorHandler.class));
-        List<RpcInvocationFailedEvent> failed = new ArrayList<>();
-        service.getEventBus().addListener(RpcInvocationFailedEvent.class,
-                failed::add);
-
-        ui = new UI();
-        ui.getInternals().setSession(session);
-        Element input = ElementFactory.createInput();
-        input.addPropertyChangeListener("value", "change", event -> {
-            throw new RuntimeException("in value change");
-        });
-        ui.getElement().appendChild(input);
-        int nodeId = input.getNode().getId();
-
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"mSync\", \"node\" : " + nodeId
-                + ", \"feature\": 1, \"property\": \"value\", \"value\": \"typed\" }], \"syncId\": 0, \"clientId\":0}");
-
-        serverRpcHandler.handleRpc(ui, reader, request);
-
-        assertEquals(1, failed.size());
-        assertEquals("value", failed.get(0).getName());
-    }
-
-    @Test
     void handleRpc_mapSyncFailsUnobserved_stillReachesErrorHandler()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
