@@ -3,7 +3,7 @@ import {
   ConnectionMessageType,
   isHigherPriorityThan,
   isMessage
-} from '../../../../main/frontend/internal/client/communication/ConnectionMessageType';
+} from '../../../../../main/frontend/internal/client/communication/ConnectionMessageType';
 
 describe('ConnectionMessageType', () => {
   it('classifies push and XHR as message transports, heartbeat as not', () => {

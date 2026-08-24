@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { PushConfiguration } from '../../../../main/frontend/internal/client/communication/PushConfiguration';
-import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { PushConfiguration } from '../../../../../main/frontend/internal/client/communication/PushConfiguration';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 
 function makeRegistry(values: Record<string, unknown>) {
   const setPushCalls: boolean[] = [];

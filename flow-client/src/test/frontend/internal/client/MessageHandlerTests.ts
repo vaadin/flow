@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { resetForTesting } from '../../../main/frontend/internal/client/EagerDependencyTracker';
+import { resetForTesting } from '../../../../main/frontend/internal/client/EagerDependencyTracker';
 import {
   calculateBootstrapTime,
   callAfterServerUpdates,
@@ -7,7 +7,7 @@ import {
   MessageHandler,
   parseJSONResponse,
   removeStylesheetByIdFromDom
-} from '../../../main/frontend/internal/client/communication/MessageHandler';
+} from '../../../../main/frontend/internal/client/communication/MessageHandler';
 
 function makeRegistry() {
   const log = {

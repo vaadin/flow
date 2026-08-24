@@ -22,7 +22,7 @@
 // the DOM config, assembles the TS engine via ApplicationConnection.create, and
 // starts it from the initial UIDL.
 
-import { ApplicationConfiguration } from './ApplicationConfiguration';
+import { ApplicationConfiguration } from '../ApplicationConfiguration';
 import {
   getAtmosphereVersion,
   getConfigBoolean,
@@ -32,9 +32,9 @@ import {
   getConfigValueMap,
   getVaadinVersion
 } from './JsoConfiguration';
-import { getScheduler } from './TrackingScheduler';
-import { getAbsoluteUrl } from './WidgetUtil';
-import { Console } from './Console';
+import { getScheduler } from '../TrackingScheduler';
+import { getAbsoluteUrl } from '../WidgetUtil';
+import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVICE_URL = 'serviceUrl';
@@ -147,7 +147,7 @@ export function doStartApplication(applicationId: string): void {
   // the rest of the modern-JS engine out of the registerInternals bundle, which
   // the HtmlUnit-based GwtTests also load and cannot run (no Array.from, etc.).
   // The engine is only needed once a real application starts.
-  void import('./ApplicationConnection').then(({ ApplicationConnection }) => {
+  void import('../ApplicationConnection').then(({ ApplicationConnection }) => {
     ApplicationConnection.create(conf).start(initialUidl ?? null);
   });
 }

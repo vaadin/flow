@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ServerRpcQueue } from '../../../../main/frontend/internal/client/communication/ServerRpcQueue';
+import { ServerRpcQueue } from '../../../../../main/frontend/internal/client/communication/ServerRpcQueue';
 
 function makeRegistry(running = true) {
   let sends = 0;

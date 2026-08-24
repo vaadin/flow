@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Heartbeat } from '../../../../main/frontend/internal/client/communication/Heartbeat';
+import { Heartbeat } from '../../../../../main/frontend/internal/client/communication/Heartbeat';
 
 function makeRegistry(heartbeatInterval: number) {
   const lifecycleHandlers: Array<(event: { getUiLifecycle(): { isTerminated(): boolean } }) => void> = [];

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { LoadingIndicatorStateHandler } from '../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
+import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 
 type Win = { Vaadin?: { connectionState?: unknown } };
 

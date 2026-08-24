@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { resendRequest } from '../../../main/frontend/internal/client/communication/XhrConnection';
+import { resendRequest } from '../../../../../main/frontend/internal/client/communication/XhrConnection';
 
 describe('XhrConnection', () => {
   it('resendRequest re-sends a request still in the OPENED state', () => {

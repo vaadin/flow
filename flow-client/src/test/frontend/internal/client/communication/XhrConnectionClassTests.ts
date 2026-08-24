@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { XhrConnection } from '../../../main/frontend/internal/client/communication/XhrConnection';
+import { XhrConnection } from '../../../../../main/frontend/internal/client/communication/XhrConnection';
 
 function makeRegistry() {
   const calls: string[] = [];
