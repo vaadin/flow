@@ -15,22 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +38,9 @@ import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -62,9 +49,21 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
-import tools.jackson.databind.node.StringNode;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Isolated
 class TaskUpdatePackagesNpmTest {
