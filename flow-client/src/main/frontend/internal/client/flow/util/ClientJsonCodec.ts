@@ -123,14 +123,17 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * Returns a native JS object that can store decoded values including DOM
  * elements.
  *
+ * Mirrors the Java, which writes each decoded value back into the incoming
+ * object and returns that same instance (see PORTING.md rule 14.7); a caller
+ * holding a reference to the input observes the decoded values in place.
+ *
  * Private in Java; covered through the public `decodeWithTypeInfo` surface.
  */
 function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
   for (const key of Object.keys(jsonObject)) {
-    result[key] = decodeWithTypeInfo(tree, jsonObject[key]);
+    jsonObject[key] = decodeWithTypeInfo(tree, jsonObject[key]);
   }
-  return result;
+  return jsonObject;
 }
 
 /**

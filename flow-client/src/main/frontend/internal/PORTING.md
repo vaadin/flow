@@ -318,5 +318,4 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 12 — slices outlived the port of the class they stood in for | `client/flow/nodefeature/MapProperty.ts` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner`, `getMap()`), `client/flow/nodefeature/NodeFeature.ts` (`NodeFeatureNode`, `getNode()`, `isStateNode`) | #24948 or the branch above it | open |
-| 14.7 — mutation and identity | `client/flow/util/ClientJsonCodec.ts` (`decodeObjectWithTypeInfo`) | #24948 or the branch above it | open |
+| 12 — slices outlived the port of the class they stood in for | `client/flow/nodefeature/MapProperty.ts` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner`, `getMap()`), `client/flow/nodefeature/NodeFeature.ts` (`NodeFeatureNode`, `getNode()`, `isStateNode`) | the branch above #24948 — collapsing the slices to the nominal `StateNode` / `StateTree` / `NodeMap` also rewrites the base-layer `MapPropertyTests` / `NodeMapTests` / `NodeListTests` object-literal mocks into real instances, which is out of this PR's additive scope | open |
