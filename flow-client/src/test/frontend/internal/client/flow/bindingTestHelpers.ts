@@ -6,6 +6,7 @@
 // fakes used by the unit-level binding tests.
 
 import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
@@ -19,6 +20,8 @@ export type ExistingElementRpcArg = StateNode | number | string | null;
 export interface CollectingTree {
   tree: StateTree;
   constantPool: ConstantPool;
+  // The map the binder consults for server-side-attached existing elements.
+  existingElementMap: ExistingElementMap;
   // sendEventToServer collected (node + data), mirrors collectedNodes/collectedEventData
   collectedNodes: StateNode[];
   collectedEventData: unknown[];
@@ -40,10 +43,7 @@ export interface CollectingTreeOptions {
 
 export function makeCollectingTree(options: CollectingTreeOptions = {}): CollectingTree {
   const constantPool = new ConstantPool();
-  const existingElementMap = {
-    getElement: (): Element | null => null,
-    remove: (): void => {}
-  };
+  const existingElementMap = new ExistingElementMap();
   const applicationConfiguration = {
     isWebComponentMode: (): boolean => options.webComponentMode ?? false,
     getServiceUrl: (): string => options.serviceUrl ?? ''
@@ -98,6 +98,7 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
   return {
     tree,
     constantPool,
+    existingElementMap,
     collectedNodes,
     collectedEventData,
     synchronizedProperties,

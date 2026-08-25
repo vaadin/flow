@@ -975,7 +975,7 @@ function createAndBindChild(context: BindingContext, childNode: StateNode): Node
  * Binds the node's children to the element, adopting existing elements where the
  * server requested attaching to one and appending the rest. Mirrors bindChildren.
  */
-export function bindChildren(context: BindingContext): EventRemover {
+function bindChildren(context: BindingContext): EventRemover {
   const children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
   if (children.hasBeenCleared()) {
     removeAllChildren(context.htmlNode);
