@@ -133,6 +133,16 @@ report.
 - Do not rebase or force-push unless the request says to. An earlier round
   silently lost a requested `@since` change that way, and nobody noticed for two
   rounds.
+- **A run that pushes commits updates the PR description in the same run.** The
+  description is a reviewed artifact (§6), but a review only checks it as of that
+  pass — so the run that changes the code owns the update: the test count when
+  suites changed, and the §8.4 declaration when a commit touched a file owned by a
+  lower PR. Before finishing, compare the PR's changed-file list (§0) against what
+  the description claims; if they disagree, the description is wrong, not the list.
+  (Regression this prevents: three retrofit commits landed after a review, leaving
+  the §8.4 list naming two base-layer files while five more had been modified, and
+  the "otherwise only this PR's own new files" sentence false — one commit after
+  the rule requiring that declaration was written.)
 
 ## 6. Report shape
 
@@ -150,7 +160,9 @@ re-derives them.
 
 **The PR description is one of the reviewed artifacts.** Its test count must match
 the suites, and any change to files owned by a lower PR must be declared per §8.4.
-A mismatch is a finding like any other, reported with the corrected numbers.
+A mismatch is a finding like any other, reported with the corrected numbers. §5
+puts the update itself on the run that pushes commits, so a review normally only
+confirms the description rather than repairing it.
 (Regression this prevents: a description claimed "42 tests" against 57 and "no
 edits to existing code" while two base-layer files carried retrofits, through three
 review rounds.)
