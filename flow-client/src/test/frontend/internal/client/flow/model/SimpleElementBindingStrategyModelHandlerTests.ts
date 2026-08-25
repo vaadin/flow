@@ -1,11 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { UpdatableModelProperties } from '../../../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
-import {
-  handleListItemPropertyChange,
-  handlePropertiesChanged,
-  handlePropertyChange,
-  InitialPropertyUpdate
-} from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
+import { setProperty } from '../../../../../../main/frontend/internal/client/PolymerUtils';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
   BindGuardStateNode,
@@ -17,114 +12,10 @@ import {
   makeCollectingTree
 } from '../bindingTestHelpers';
 
-const ELEMENT_PROPERTIES = 1;
-
-// A StateNode stand-in for the model handlers: node data keyed by class plus a
-// single ELEMENT_PROPERTIES map of scalar properties.
-function fakeModelNode(config: {
-  updatable?: UpdatableModelProperties | null;
-  initialUpdate?: InitialPropertyUpdate | null;
-  properties?: Record<string, { getValue(): unknown; syncToServer(value: unknown): void }>;
-}): any {
-  const properties = config.properties ?? {};
-  const map = {
-    hasPropertyValue: (name: string) => name in properties,
-    getProperty: (name: string) => properties[name]
-  };
-  return {
-    getNodeData: (clazz: unknown) => {
-      if (clazz === UpdatableModelProperties) {
-        return config.updatable ?? null;
-      }
-      if (clazz === InitialPropertyUpdate) {
-        return config.initialUpdate ?? null;
-      }
-      return null;
-    },
-    getMap: () => map
-  };
-}
-
-describe('SimpleElementBindingStrategy model handlers', () => {
-  it('InitialPropertyUpdate runs the command once and clears itself', () => {
-    const cleared: unknown[] = [];
-    const ran: string[] = [];
-    const update = new InitialPropertyUpdate({ clearNodeData: (o: object) => cleared.push(o) });
-    update.setCommand(() => ran.push('run'));
-    update.execute();
-    expect(ran).to.deep.equal(['run']);
-    expect(cleared).to.deep.equal([update]);
-  });
-
-  it('handleListItemPropertyChange syncs only when the node has element properties', () => {
-    const synced: unknown[] = [];
-    const host = document.createElement('div');
-    // The host must be an ancestor of the changed node, which is what the
-    // checkParent assertion in handleListItemPropertyChange verifies.
-    const node: any = {
-      hasFeature: (feature: number) => feature === ELEMENT_PROPERTIES,
-      getMap: () => ({ getProperty: () => ({ syncToServer: (v: unknown) => synced.push(v) }) }),
-      getParent: () => ({ getDomNode: () => host, getParent: () => null })
-    };
-    handleListItemPropertyChange(5, host, 'value', 'x', { getNode: (id: number) => (id === 5 ? node : null) } as any);
-    expect(synced).to.deep.equal(['x']);
-
-    // No ELEMENT_PROPERTIES feature => no sync.
-    handleListItemPropertyChange(6, host, 'value', 'y', { getNode: () => ({ hasFeature: () => false }) } as any);
-    expect(synced).to.deep.equal(['x']);
-  });
-
-  it('handlePropertyChange syncs an updatable scalar property', () => {
-    const synced: unknown[] = [];
-    const node = fakeModelNode({
-      updatable: new UpdatableModelProperties(['name']),
-      properties: { name: { getValue: () => 'old', syncToServer: (v) => synced.push(v) } }
-    });
-    handlePropertyChange('name', () => 'Bob', node);
-    expect(synced).to.deep.equal(['Bob']);
-  });
-
-  it('handlePropertyChange ignores non-updatable properties and missing data', () => {
-    const synced: unknown[] = [];
-    const property = { getValue: () => 'old', syncToServer: (v: unknown) => synced.push(v) };
-
-    handlePropertyChange(
-      'name',
-      () => 'Bob',
-      fakeModelNode({ updatable: new UpdatableModelProperties([]), properties: { name: property } })
-    );
-    handlePropertyChange('name', () => 'Bob', fakeModelNode({ updatable: null, properties: { name: property } }));
-    expect(synced).to.deep.equal([]);
-  });
-
-  it('handlePropertiesChanged runs immediately, or defers to the initial update', () => {
-    const synced: unknown[] = [];
-    const properties = { name: { getValue: () => 'old', syncToServer: (v: unknown) => synced.push(v) } };
-
-    // No pending initial update => runs now.
-    handlePropertiesChanged(
-      { name: 'Bob' },
-      fakeModelNode({ updatable: new UpdatableModelProperties(['name']), properties })
-    );
-    expect(synced).to.deep.equal(['Bob']);
-
-    // Pending initial update => deferred until execute().
-    synced.length = 0;
-    const initialUpdate = new InitialPropertyUpdate({ clearNodeData: () => {} });
-    handlePropertiesChanged(
-      { name: 'Jane' },
-      fakeModelNode({ updatable: new UpdatableModelProperties(['name']), initialUpdate, properties })
-    );
-    expect(synced).to.deep.equal([]);
-    initialUpdate.execute();
-    expect(synced).to.deep.equal(['Jane']);
-  });
-});
-
 // Full-state-tree Polymer model tests ported from GwtPolymerModelTest. They bind
 // a real StateNode to a Polymer-model element (mocked set/splice) via the real
 // Binder, and drive model-list changes through the TEMPLATE_MODELLIST feature.
-describe('SimpleElementBindingStrategy Polymer model (full tree)', () => {
+describe('SimpleElementBindingStrategy Polymer model', () => {
   const MODEL_PROPERTY_NAME = 'model';
   const LIST_PROPERTY_NAME = 'listProperty';
   const TEMPLATE_MODELLIST = NodeFeatures.TEMPLATE_MODELLIST;
@@ -219,6 +110,131 @@ describe('SimpleElementBindingStrategy Polymer model (full tree)', () => {
   });
 
   afterEach(() => Reactive.flush());
+
+  // addMockMethods: give the element a _propertiesChanged to wrap and a ready
+  // hook, and count the calls so the wrapping can be asserted.
+  function addMockMethods(): void {
+    element.propertiesChangedCallCount = 0;
+    element._propertiesChanged = (): void => {
+      element.propertiesChangedCallCount += 1;
+    };
+  }
+
+  // emulatePolymerPropertyChange: what Polymer calls when a property changed on
+  // the client side.
+  function emulatePolymerPropertyChange(propertyName: string, newValue: unknown): void {
+    element._propertiesChanged({}, { [propertyName]: newValue }, {});
+  }
+
+  it('syncs an updatable model property changed on the client', async () => {
+    // Ported from testInitialUpdateModelProperty_propertyIsUpdatable_propertyIsSynced.
+    addMockMethods();
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+    setModelProperty(node, propertyName, propertyValue, false);
+
+    node.setNodeData(new UpdatableModelProperties([propertyName]));
+
+    bind(node, element);
+    Reactive.flush();
+    expect(
+      element[propertyName],
+      `Expected to have property with name ${propertyName} defined after initial binding`
+    ).to.equal(propertyValue);
+
+    // Let the deferred initial update run, as the GWT test's CustomScheduler does.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    const newPropertyValue = 'bubblegum';
+    emulatePolymerPropertyChange(propertyName, newPropertyValue);
+    Reactive.flush();
+
+    expect(
+      element[propertyName],
+      `Expected to have property with name ${propertyName} updated from client side`
+    ).to.equal(newPropertyValue);
+    expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(propertyName).getValue()).to.equal(
+      newPropertyValue
+    );
+    expect(harness.synchronizedProperties.get(node)?.get(propertyName)).to.equal(newPropertyValue);
+  });
+
+  it('does not sync an updatable model property while the initial update is pending', () => {
+    // Ported from testInitialUpdateModelProperty_propertyIsUpdatableAndSchedulerIsNotExecuted_propertyIsNotSync.
+    // The deferred initial update is scheduled but never awaited here, which is
+    // what the GWT test achieves with a scheduler that drops deferred commands.
+    addMockMethods();
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+    setModelProperty(node, propertyName, propertyValue, false);
+
+    node.setNodeData(new UpdatableModelProperties([propertyName]));
+
+    bind(node, element);
+    Reactive.flush();
+    expect(element[propertyName]).to.equal(propertyValue);
+
+    emulatePolymerPropertyChange(propertyName, 'bubblegum');
+    Reactive.flush();
+
+    expect(element[propertyName]).to.equal(propertyValue);
+    expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(propertyName).getValue()).to.equal(propertyValue);
+    expect(harness.synchronizedProperties.has(node)).to.be.false;
+  });
+
+  it('syncs an updatable model sub-property changed on the client', async () => {
+    // Ported from testUpdateModelSubProperty_subpropertyIsUpdatableAndIsNotSetFromServer_subpropertyIsSync.
+    addMockMethods();
+    const subModelNode = createAndAttachModelNode('bar');
+
+    node.setNodeData(new UpdatableModelProperties(['bar.foo']));
+
+    bind(node, element);
+    Reactive.flush();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    const newSubPropertyValue = 'baz';
+    setProperty(element, 'bar.foo', newSubPropertyValue);
+    emulatePolymerPropertyChange('bar.foo', newSubPropertyValue);
+    Reactive.flush();
+
+    expect(
+      element.bar.foo,
+      "Expected to have an object 'bar' with a property named 'foo' updated from client side"
+    ).to.equal(newSubPropertyValue);
+    expect(subModelNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo').getValue()).to.equal(
+      newSubPropertyValue
+    );
+    expect(harness.synchronizedProperties.get(subModelNode)?.get('foo')).to.equal(newSubPropertyValue);
+  });
+
+  it('does not sync a model property that is not updatable', async () => {
+    // Ported from testUpdateModelProperty_propertyIsNotUpdatable_propertyIsNotSync.
+    addMockMethods();
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+    setModelProperty(node, propertyName, propertyValue, false);
+
+    bind(node, element);
+    Reactive.flush();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(element[propertyName]).to.equal(propertyValue);
+
+    emulatePolymerPropertyChange(propertyName, 'doesNotMatter');
+    Reactive.flush();
+
+    expect(
+      element[propertyName],
+      `Expected the property with name ${propertyName} not to be updated since it is not updatable`
+    ).to.equal(propertyValue);
+    expect(harness.synchronizedProperties.has(node)).to.be.false;
+  });
 
   it('binds a Polymer element that is defined only after the initial binding', async () => {
     // Ported from testLatePolymerInit.
@@ -353,6 +369,46 @@ describe('SimpleElementBindingStrategy Polymer model (full tree)', () => {
   // Ported from GwtMultipleBindingTest.testBindModelPropertiesDoubleBind: a
   // second bind of a Polymer element must not re-read the element-properties
   // feature.
+  // Beyond the Java suite: the GWT suite has no test that drives a property
+  // change of a dom-repeat item, so this covers the item-change bridge the
+  // strategy installs on the dom-repeat prototype.
+  describe('beyond the Java suite', () => {
+    it('syncs a changed dom-repeat item property to the server', () => {
+      // The item node is a child of the bound node, which is what the host
+      // check in the item-change handler verifies.
+      const itemNode = new StateNode(nextId++, harness.tree);
+      harness.tree.registerNode(itemNode);
+      itemNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('value').setValue('old');
+      itemNode.setParent(node);
+
+      // A minimal dom-repeat whose prototype the strategy replaces, with the
+      // __dataHost chain Polymer maintains from the dom-repeat to its template.
+      class FakeDomRepeat {
+        __dataHost: unknown = element;
+
+        _propertiesChanged(_currentProps: unknown, _changedProps: unknown, _oldProps: unknown): void {}
+      }
+      const domRepeat = new FakeDomRepeat();
+      element.root = { querySelector: (selector: string) => (selector === 'dom-repeat' ? domRepeat : null) };
+      element.ready = (): void => {};
+
+      bind(node, element);
+      Reactive.flush();
+
+      // Polymer calls ready() once the local DOM is ready; that is where the
+      // dom-repeat bridge is installed.
+      element.ready();
+
+      domRepeat._propertiesChanged(
+        { items: [{ nodeId: itemNode.getId(), value: 'new' }] },
+        { 'items.0.value': 'new' },
+        {}
+      );
+
+      expect(harness.synchronizedProperties.get(itemNode)?.get('value')).to.equal('new');
+    });
+  });
+
   it('binding twice does not re-read model properties', () => {
     const guarded = new BindGuardStateNode(50, harness.tree, (m) => expect.fail(m));
     harness.tree.registerNode(guarded);

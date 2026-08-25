@@ -781,7 +781,7 @@ export function bindMap(
  * (via execute) and then the holder removes itself from the node's data. Mirrors
  * the InitialPropertyUpdate inner class.
  */
-export class InitialPropertyUpdate {
+class InitialPropertyUpdate {
   #command: (() => void) | null = null;
 
   readonly #node: StateNode;
@@ -807,7 +807,7 @@ export class InitialPropertyUpdate {
  * handleListItemPropertyChange.
  */
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleListItemPropertyChange signature
-export function handleListItemPropertyChange(
+function handleListItemPropertyChange(
   nodeId: number,
   _host: unknown,
   property: string,
@@ -860,7 +860,7 @@ function checkParent(node: StateNode, supposedParent: unknown): boolean {
  * updates now or deferring them until the initial update if one is pending.
  * Mirrors handlePropertiesChanged.
  */
-export function handlePropertiesChanged(changedPropertyPathsToValues: object, node: StateNode): void {
+function handlePropertiesChanged(changedPropertyPathsToValues: object, node: StateNode): void {
   const keys = getKeys(changedPropertyPathsToValues);
 
   const runnable = (): void => {
@@ -886,7 +886,7 @@ export function handlePropertiesChanged(changedPropertyPathsToValues: object, no
  * if the property is in the node's updatable-properties "security feature" and
  * isn't a model/list node. Mirrors handlePropertyChange.
  */
-export function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: StateNode): void {
+function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: StateNode): void {
   const updatableProperties = node.getNodeData(UpdatableModelProperties);
   if (updatableProperties === null || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
     // not an updatable property/sub-property: do nothing
@@ -1217,7 +1217,7 @@ function scheduleDeferred(command: () => void): void {
  * dom-node-set event so initialization logic can run) and rebinding it. Mirrors
  * doBind.
  */
-export function doBind(node: StateNode, nodeFactory: BinderContext): void {
+function doBind(node: StateNode, nodeFactory: BinderContext): void {
   const domNode = node.getDomNode();
   // Re-fires the dom-node-set event, giving a chance to run logic that needs to
   // know when the element is completely initialized.
@@ -1231,7 +1231,7 @@ export function doBind(node: StateNode, nodeFactory: BinderContext): void {
  * on the node and, after the initial reactive flush, runs it (unless
  * handlePropertiesChanged already cleared it). Mirrors scheduleInitialExecution.
  */
-export function scheduleInitialExecution(stateNode: StateNode): void {
+function scheduleInitialExecution(stateNode: StateNode): void {
   const update = new InitialPropertyUpdate(stateNode);
   stateNode.setNodeData(update);
   // Run after all initial reactive work, so initial JS runs before this update.
@@ -1244,7 +1244,7 @@ export function scheduleInitialExecution(stateNode: StateNode): void {
 }
 
 /** Removes all bindings: stops computations and removes listeners. Mirrors remove. */
-export function remove(
+function remove(
   listeners: EventRemover[],
   context: BindingContext,
   computationsCollection: Array<Map<string, Computation>>
