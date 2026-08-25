@@ -482,7 +482,7 @@ export function isVisible(node: StateNode): boolean {
  * inline display into the visibility data, once. Mirrors
  * storeInitialHiddenAttribute.
  */
-export function storeInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
+function storeInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
   const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
   if (!initialVisibility.hasValue()) {
     initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
@@ -498,7 +498,7 @@ export function storeInitialHiddenAttribute(element: Element, visibilityData: No
  * Restores the element's captured initial hidden attribute and inline display.
  * Mirrors restoreInitialHiddenAttribute.
  */
-export function restoreInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
+function restoreInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
   storeInitialHiddenAttribute(element, visibilityData);
   const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
 
@@ -517,7 +517,7 @@ export function restoreInitialHiddenAttribute(element: Element, visibilityData: 
  * Hides the element: stores its initial state, sets `hidden`, and (in a shadow
  * root) sets display:none. Mirrors setElementInvisible.
  */
-export function setElementInvisible(element: Element, visibilityData: NodeMap): void {
+function setElementInvisible(element: Element, visibilityData: NodeMap): void {
   storeInitialHiddenAttribute(element, visibilityData);
   const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
   updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, true);
@@ -531,7 +531,7 @@ export function setElementInvisible(element: Element, visibilityData: NodeMap): 
  * invisible, preserving CSS selectors without exposing backend data. Mirrors
  * applyStructuralAttributes.
  */
-export function applyStructuralAttributes(stateNode: StateNode, element: Element): void {
+function applyStructuralAttributes(stateNode: StateNode, element: Element): void {
   if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
     const attributeMap = stateNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
     if (attributeMap.hasPropertyValue(NodeProperties.SLOT_ATTRIBUTE)) {
@@ -1494,7 +1494,7 @@ function updateVisibility(
  * Binds the node's visibility: records the current bound state, applies it, and
  * re-applies whenever the VISIBLE property changes. Mirrors bindVisibility.
  */
-export function bindVisibility(
+function bindVisibility(
   listeners: EventRemover[],
   context: BindingContext,
   computationsCollection: Array<Map<string, Computation>>,
