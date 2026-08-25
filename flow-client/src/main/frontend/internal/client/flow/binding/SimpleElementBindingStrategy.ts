@@ -49,7 +49,11 @@ import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
 import { bindPolymerModelProperties } from '../../../SimpleElementBindingStrategy';
 import { StateNode } from '../StateNode';
-import type { StateTree } from '../StateTree';
+import type { ApplicationConfiguration, StateTree } from '../StateTree';
+import type { MapProperty } from '../nodefeature/MapProperty';
+import type { NodeList } from '../nodefeature/NodeList';
+import type { NodeMap } from '../nodefeature/NodeMap';
+import type { ListSpliceEvent } from '../nodefeature/ListSpliceEvent';
 import {
   deleteJsProperty,
   equalsInJS,
@@ -194,30 +198,18 @@ export function resolveFilters(
 // expression to the nearest bound state node id (the MAP_STATE_NODE_EVENT_DATA
 // event data). DOM parents are walked with native parentNode/isSameNode.
 
-/** The slice of StateNode that the closest-node lookups read. */
-interface ClosestLookupNode {
-  getId(): number;
-  getDomNode(): Node | null;
-  getList(featureId: number): { forEach(callback: (child: unknown) => void): void };
-}
-
-/** The slice of StateTree that getClosestStateNodeIdToDomNode reads. */
-interface ClosestLookupTree {
-  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
-}
-
 /**
  * Finds the id of the state node closest to the event target: a breadth-first
  * search of the state-node tree for a direct DOM match, then a bottom-up DOM
  * walk from the target's parent. Returns -1 if none is found. Mirrors
  * getClosestStateNodeIdToEventTarget.
  */
-export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, target: EventTarget | null): number {
+export function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTarget | null): number {
   if (target === null) {
     return -1;
   }
   try {
-    const stack: ClosestLookupNode[] = [topNode];
+    const stack: StateNode[] = [topNode];
 
     // collect children and test eagerly for direct match; the stack grows as
     // children are pushed during iteration (breadth-first)
@@ -228,7 +220,7 @@ export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, t
         return stateNode.getId();
       }
       // NOTE: for now not looking at virtual children on purpose.
-      stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach((child) => stack.push(child as ClosestLookupNode));
+      stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach((child) => stack.push(child as StateNode));
     }
     // no direct match: bottom-up search from the target's parent
     return getStateNodeForElement(stack, (target as unknown as Node).parentNode);
@@ -247,7 +239,7 @@ export function getClosestStateNodeIdToEventTarget(topNode: ClosestLookupNode, t
  * Walks up the DOM from targetNode and returns the id of the first state node
  * in searchStack whose DOM node matches, or -1. Mirrors getStateNodeForElement.
  */
-export function getStateNodeForElement(searchStack: ClosestLookupNode[], targetNode: Node | null): number {
+export function getStateNodeForElement(searchStack: StateNode[], targetNode: Node | null): number {
   let current = targetNode;
   while (current !== null) {
     for (let i = searchStack.length - 1; i > -1; i--) {
@@ -267,7 +259,7 @@ export function getStateNodeForElement(searchStack: ClosestLookupNode[], targetN
  * or -1. Mirrors getClosestStateNodeIdToDomNode.
  */
 export function getClosestStateNodeIdToDomNode(
-  stateTree: ClosestLookupTree,
+  stateTree: StateTree,
   domNodeReference: unknown,
   eventDataExpression: string
 ): number {
@@ -300,37 +292,12 @@ export function getClosestStateNodeIdToDomNode(
 // (updateProperty/updateAttribute) wait on PolymerUtils.createModelTree and
 // WidgetUtil.updateAttribute, which are not ported yet.
 
-/** The slice of MapProperty that updateStyleProperty reads. */
-interface StyleMapProperty {
-  getName(): string;
-  hasValue(): boolean;
-  getValue(): unknown;
-}
-
-/** The splice-event slice that the class-list listener reads. */
-interface ClassListSpliceEvent {
-  getRemove(): unknown[];
-  getAdd(): unknown[];
-}
-
-/** The slice of NodeList that holds the class names. */
-interface ClassNodeList {
-  length(): number;
-  get(index: number): unknown;
-  addSpliceListener(listener: (event: ClassListSpliceEvent) => void): EventRemover;
-}
-
-/** The slice of StateNode that bindClassList reads. */
-interface ClassListNode {
-  getList(featureId: number): ClassNodeList;
-}
-
 /**
  * Updates a single inline style property of the element from a map property,
  * preserving an `!important` priority, or removes it when the property has no
  * value. Mirrors updateStyleProperty.
  */
-export function updateStyleProperty(mapProperty: StyleMapProperty, element: HTMLElement): void {
+export function updateStyleProperty(mapProperty: MapProperty, element: HTMLElement): void {
   const name = mapProperty.getName();
   const styleElement = element.style;
   if (mapProperty.hasValue()) {
@@ -359,7 +326,7 @@ export function updateStyleProperty(mapProperty: StyleMapProperty, element: HTML
  * applying the current classes and keeping them in sync as the list is spliced.
  * Mirrors bindClassList.
  */
-export function bindClassList(element: Element, node: ClassListNode): EventRemover {
+export function bindClassList(element: Element, node: StateNode): EventRemover {
   const classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
   for (let i = 0; i < classNodeList.length(); i++) {
@@ -379,23 +346,6 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
 // model object against the application configuration (web-component mode); the
 // underlying attribute set/remove goes through WidgetUtil.
 
-// TODO(flow-client-ts): replace this slice with a real import of
-// ApplicationConfiguration and a `{@link}` once that class is ported.
-/** The slice of ApplicationConfiguration that attribute binding reads. */
-interface AttributeConfiguration {
-  isWebComponentMode(): boolean;
-  getServiceUrl(): string;
-}
-
-/** The Registry → ApplicationConfiguration chain reached from a node's tree. */
-interface AttributeMapProperty {
-  getName(): string;
-  getValue(): unknown;
-  getMap(): {
-    getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
-  };
-}
-
 /**
  * Sets an element attribute from a map-property value. A plain string (or null)
  * is applied as-is; a "uri" model object is resolved against the application
@@ -403,7 +353,7 @@ interface AttributeMapProperty {
  * URIs); anything else is stringified. Mirrors updateAttributeValue.
  */
 export function updateAttributeValue(
-  configuration: AttributeConfiguration,
+  configuration: ApplicationConfiguration,
   element: Element,
   attribute: string,
   value: unknown
@@ -429,7 +379,7 @@ export function updateAttributeValue(
  * Updates the named element attribute from a map property, resolving the
  * application configuration from the property's node. Mirrors updateAttribute.
  */
-export function updateAttribute(mapProperty: AttributeMapProperty, element: Element): void {
+export function updateAttribute(mapProperty: MapProperty, element: Element): void {
   updateAttributeValue(
     mapProperty.getMap().getNode().getTree().getRegistry().getApplicationConfiguration(),
     element,
@@ -444,16 +394,7 @@ export function updateAttribute(mapProperty: AttributeMapProperty, element: Elem
 // rebind check. They are assembled into the BindingStrategy<Element> class once
 // bind() (and its DOM-structure/event machinery) is ported.
 
-/** The slice of StateNode that creation & identity read. */
-interface CreationNode {
-  getMap(featureId: number): { getProperty(name: string): { getValue(): unknown } };
-  hasFeature(featureId: number): boolean;
-  getParent(): CreationNode | null;
-  getDomNode(): Node | null;
-  getTree(): { getRootNode(): CreationNode; isVisible(node: CreationNode): boolean } | null;
-}
-
-function readElementData(node: CreationNode, property: string): unknown {
+function readElementData(node: StateNode, property: string): unknown {
   return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(property).getValue();
 }
 
@@ -463,12 +404,12 @@ function readElementData(node: CreationNode, property: string): unknown {
  * Java has a single implementation, PolymerUtils.getTag, which this strategy
  * calls; delegate to the ported one rather than reading ELEMENT_DATA again.
  */
-export function getTag(node: CreationNode): string | null {
+export function getTag(node: StateNode): string | null {
   return polymerGetTag(node as unknown as StateNode) ?? null;
 }
 
 /** The element namespace for the state node, if any; mirrors getNamespace. */
-export function getNamespace(node: CreationNode): string | null {
+export function getNamespace(node: StateNode): string | null {
   return (readElementData(node, NodeProperties.NAMESPACE) as string | null) ?? null;
 }
 
@@ -476,7 +417,7 @@ export function getNamespace(node: CreationNode): string | null {
  * Creates the DOM element for the state node, using the node's namespace, then
  * the parent element's namespace, then no namespace. Mirrors create.
  */
-export function create(node: CreationNode): Element {
+export function create(node: StateNode): Element {
   const tag = getTag(node);
   assert(tag !== null, 'New child must have a tag');
   const namespace = getNamespace(node);
@@ -494,7 +435,7 @@ export function create(node: CreationNode): Element {
 }
 
 /** Whether this strategy applies to the state node; mirrors isApplicable. */
-export function isApplicable(node: CreationNode): boolean {
+export function isApplicable(node: StateNode): boolean {
   if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
     return true;
   }
@@ -503,7 +444,7 @@ export function isApplicable(node: CreationNode): boolean {
 }
 
 /** Whether the element's tag matches the node's required tag; mirrors hasSameTag. */
-export function hasSameTag(node: CreationNode, element: Element): boolean {
+export function hasSameTag(node: StateNode, element: Element): boolean {
   const nsTag = getTag(node);
   return nsTag === null || element.tagName.toLowerCase() === nsTag.toLowerCase();
 }
@@ -518,12 +459,12 @@ export function hasSameTag(node: CreationNode, element: Element): boolean {
  * @param node - the node to check
  * @returns `true` if the node is not entirely bound and needs re-bind later on
  */
-export function needsRebind(node: CreationNode): boolean {
+export function needsRebind(node: StateNode): boolean {
   return readElementData(node, NodeProperties.VISIBILITY_BOUND_PROPERTY) === false;
 }
 
 /** Whether the node is visible; mirrors isVisible. */
-export function isVisible(node: CreationNode): boolean {
+export function isVisible(node: StateNode): boolean {
   const tree = node.getTree();
   return tree !== null && tree.isVisible(node);
 }
@@ -536,34 +477,12 @@ export function isVisible(node: CreationNode): boolean {
 // updateVisibility wiring (which needs BindingContext, remove and doBind) lands
 // with the bind() core.
 
-/** The slice of MapProperty the visibility helpers read and write. */
-interface VisibilityProperty {
-  hasValue(): boolean;
-  getValue(): unknown;
-  setValue(value: unknown): void;
-}
-
-/** The slice of the ELEMENT_DATA NodeMap the visibility helpers use. */
-interface VisibilityNodeMap {
-  getProperty(name: string): VisibilityProperty;
-  getNode(): { getTree(): { getRegistry(): { getApplicationConfiguration(): AttributeConfiguration } } };
-}
-
-/** The slice of StateNode applyStructuralAttributes reads. */
-interface StructuralAttributesNode {
-  hasFeature(featureId: number): boolean;
-  getMap(featureId: number): {
-    hasPropertyValue(name: string): boolean;
-    getProperty(name: string): AttributeMapProperty;
-  };
-}
-
 /**
  * Captures the element's initial `hidden` attribute and (in a shadow root) its
  * inline display into the visibility data, once. Mirrors
  * storeInitialHiddenAttribute.
  */
-export function storeInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+export function storeInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
   const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
   if (!initialVisibility.hasValue()) {
     initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
@@ -579,7 +498,7 @@ export function storeInitialHiddenAttribute(element: Element, visibilityData: Vi
  * Restores the element's captured initial hidden attribute and inline display.
  * Mirrors restoreInitialHiddenAttribute.
  */
-export function restoreInitialHiddenAttribute(element: Element, visibilityData: VisibilityNodeMap): void {
+export function restoreInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
   storeInitialHiddenAttribute(element, visibilityData);
   const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
 
@@ -598,7 +517,7 @@ export function restoreInitialHiddenAttribute(element: Element, visibilityData: 
  * Hides the element: stores its initial state, sets `hidden`, and (in a shadow
  * root) sets display:none. Mirrors setElementInvisible.
  */
-export function setElementInvisible(element: Element, visibilityData: VisibilityNodeMap): void {
+export function setElementInvisible(element: Element, visibilityData: NodeMap): void {
   storeInitialHiddenAttribute(element, visibilityData);
   const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
   updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, true);
@@ -612,7 +531,7 @@ export function setElementInvisible(element: Element, visibilityData: Visibility
  * invisible, preserving CSS selectors without exposing backend data. Mirrors
  * applyStructuralAttributes.
  */
-export function applyStructuralAttributes(stateNode: StructuralAttributesNode, element: Element): void {
+export function applyStructuralAttributes(stateNode: StateNode, element: Element): void {
   if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
     const attributeMap = stateNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
     if (attributeMap.hasPropertyValue(NodeProperties.SLOT_ATTRIBUTE)) {
@@ -627,90 +546,13 @@ export function applyStructuralAttributes(stateNode: StructuralAttributesNode, e
 // debounce resolution, the slice-2 closest-node lookups and the event-expression
 // cache. This is the first slice that needs the BindingContext.
 
-/** The slice of MapProperty the event/visibility clusters read. */
-interface EventMapProperty {
-  getName(): string;
-  hasValue(): boolean;
-  getValue(): unknown;
-  setValue(value: unknown): void;
-  addChangeListener(listener: () => void): EventRemover;
-  getSyncToServerCommand(newValue: unknown): () => void;
-  setPreviousDomValue(value: unknown): void;
-}
-
-/** The slice of NodeMap the event cluster reads. */
-interface EventNodeMap {
-  getProperty(name: string): EventMapProperty;
-  forEachProperty(callback: (property: EventMapProperty, name: string) => void): void;
-  addPropertyAddListener(listener: (event: { getProperty(): EventMapProperty }) => void): EventRemover;
-}
-
-/** The mapping of server node ids to existing elements (ExistingElementMap). */
-interface ExistingElementAccess {
-  getElement(id: number): Node | null;
-  remove(id: number): void;
-}
-
-// TODO(flow-client-ts): replace this slice with a real import of
-// InitialPropertiesHandler and a `{@link}` once that class is ported.
-/** The slice of InitialPropertiesHandler the attach machinery uses. */
-interface AttachInitialPropertiesHandler {
-  nodeRegistered(node: BindingStateNode): void;
-  flushPropertyUpdates(): void;
-}
-
-/** The slice of StateTree the event/children/attach clusters read. */
-interface EventTree {
-  getRegistry(): {
-    getConstantPool(): { has(key: string): boolean; get<T>(key: string): T };
-    getExistingElementMap(): ExistingElementAccess;
-    getInitialPropertiesHandler(): AttachInitialPropertiesHandler;
-  };
-  sendEventToServer(node: BindingStateNode, type: string, eventData: unknown): void;
-  sendExistingElementWithIdAttachToServer(
-    node: BindingStateNode,
-    requestedId: number,
-    assignedId: number,
-    id: string | null
-  ): void;
-  getStateNodeForDomNode(domNode: Node): { getId(): number } | null;
-}
-
-/** A list-splice event on the children list. */
-interface ChildListSpliceEvent {
-  isClear(): boolean;
-  getRemove(): unknown[];
-  getAdd(): unknown[];
-  getIndex(): number;
-}
-
-/** The slice of NodeList the children binding reads. */
-interface ChildNodeList {
-  length(): number;
-  get(index: number): unknown;
-  hasBeenCleared(): boolean;
-  forEach(callback: (child: unknown) => void): void;
-  addSpliceListener(listener: (event: ChildListSpliceEvent) => void): EventRemover;
-}
-
-/** The slice of StateNode the binding context exposes. */
-interface BindingStateNode {
-  getId(): number;
-  getDomNode(): Node | null;
-  setDomNode(node: Node | null): void;
-  hasFeature(featureId: number): boolean;
-  getMap(featureId: number): EventNodeMap;
-  getList(featureId: number): ChildNodeList;
-  getTree(): EventTree;
-}
-
 /**
  * Holds the data the binding operations pass around: the state node, its DOM
  * node, the binder context for child nodes, and the per-event-type listener
  * bookkeeping. Mirrors the BindingContext inner class.
  */
 export class BindingContext {
-  readonly node: BindingStateNode;
+  readonly node: StateNode;
 
   readonly htmlNode: Node;
 
@@ -720,14 +562,14 @@ export class BindingContext {
 
   readonly listenerRemovers = new Map<string, EventRemover>();
 
-  constructor(node: BindingStateNode, htmlNode: Node, binderContext: BinderContext) {
+  constructor(node: StateNode, htmlNode: Node, binderContext: BinderContext) {
     this.node = node;
     this.htmlNode = htmlNode;
     this.binderContext = binderContext;
   }
 }
 
-function getDomEventListenerMap(node: BindingStateNode): EventNodeMap {
+function getDomEventListenerMap(node: StateNode): NodeMap {
   return node.getMap(NodeFeatures.ELEMENT_LISTENERS);
 }
 
@@ -746,7 +588,7 @@ export function bindDomEventListeners(context: BindingContext): EventRemover {
   return elementListeners.addPropertyAddListener((event) => bindEventHandlerProperty(event.getProperty(), context));
 }
 
-function bindEventHandlerProperty(eventHandlerProperty: EventMapProperty, context: BindingContext): Computation {
+function bindEventHandlerProperty(eventHandlerProperty: MapProperty, context: BindingContext): Computation {
   const name = eventHandlerProperty.getName();
 
   const computation = Reactive.runWhenDependenciesChange(() => {
@@ -791,7 +633,7 @@ function getSyncPropertyCommand(propertyName: string, context: BindingContext): 
 }
 
 function sendEventToServer(
-  node: BindingStateNode,
+  node: StateNode,
   type: string,
   eventData: Record<string, unknown> | null,
   debouncePhase: string | null
@@ -883,22 +725,6 @@ export function handleDomEvent(event: Event, context: BindingContext): void {
 // updateAttribute/updateProperty). createComputations tracks the per-feature
 // computation maps so they can be torn down on rebind.
 
-/** A property-add event carrying the new property. */
-interface PropertyAddEvent<P> {
-  getProperty(): P;
-}
-
-/** The slice of NodeMap that bindMap iterates and observes. */
-interface BindableNodeMap<P> {
-  forEachProperty(callback: (property: P, name: string) => void): void;
-  addPropertyAddListener(listener: (event: PropertyAddEvent<P>) => void): EventRemover;
-}
-
-/** The slice of StateNode that bindMap reads. */
-interface BindMapNode<P> {
-  getMap(featureId: number): BindableNodeMap<P>;
-}
-
 /**
  * Creates a fresh per-feature computation map and tracks it in the collection
  * (used to stop the computations on rebind). Mirrors createComputations.
@@ -930,11 +756,11 @@ export function bindProperty<P extends { getName(): string }>(
  * Binds every property of the node's feature map to the user, applying current
  * properties eagerly and observing later additions. Mirrors bindMap.
  */
-export function bindMap<P extends { getName(): string }>(
+export function bindMap(
   featureId: number,
-  user: (property: P) => void,
+  user: (property: MapProperty) => void,
   bindings: Map<string, Computation>,
-  node: BindMapNode<P>
+  node: StateNode
 ): EventRemover {
   const map = node.getMap(featureId);
   // Run eagerly to apply initial property values.
@@ -950,11 +776,6 @@ export function bindMap<P extends { getName(): string }>(
 // in a dom-repeat (handleListItemPropertyChange). InitialPropertyUpdate defers
 // the very first property update until after the initial reactive flush.
 
-/** The slice of StateNode that InitialPropertyUpdate clears itself from. */
-interface NodeDataHolder {
-  clearNodeData(object: object): void;
-}
-
 /**
  * Holds the deferred initial property update for a node: the command is run once
  * (via execute) and then the holder removes itself from the node's data. Mirrors
@@ -963,9 +784,9 @@ interface NodeDataHolder {
 export class InitialPropertyUpdate {
   #command: (() => void) | null = null;
 
-  readonly #node: NodeDataHolder;
+  readonly #node: StateNode;
 
-  constructor(node: NodeDataHolder) {
+  constructor(node: StateNode) {
     this.#node = node;
   }
 
@@ -977,24 +798,6 @@ export class InitialPropertyUpdate {
     this.#command?.();
     this.#node.clearNodeData(this);
   }
-}
-
-/** The slice of MapProperty the model handlers read/sync. */
-interface ModelMapProperty {
-  getValue(): unknown;
-  syncToServer(value: unknown): void;
-}
-
-/** The slice of NodeMap the model handlers read. */
-interface ModelNodeMap {
-  hasPropertyValue(name: string): boolean;
-  getProperty(name: string): ModelMapProperty;
-}
-
-/** The slice of StateNode the model handlers walk. */
-interface ModelNode {
-  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
-  getMap(featureId: number): ModelNodeMap;
 }
 
 /**
@@ -1057,7 +860,7 @@ function checkParent(node: StateNode, supposedParent: unknown): boolean {
  * updates now or deferring them until the initial update if one is pending.
  * Mirrors handlePropertiesChanged.
  */
-export function handlePropertiesChanged(changedPropertyPathsToValues: object, node: ModelNode): void {
+export function handlePropertiesChanged(changedPropertyPathsToValues: object, node: StateNode): void {
   const keys = getKeys(changedPropertyPathsToValues);
 
   const runnable = (): void => {
@@ -1083,7 +886,7 @@ export function handlePropertiesChanged(changedPropertyPathsToValues: object, no
  * if the property is in the node's updatable-properties "security feature" and
  * isn't a model/list node. Mirrors handlePropertyChange.
  */
-export function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: ModelNode): void {
+export function handlePropertyChange(fullPropertyName: string, valueProvider: () => unknown, node: StateNode): void {
   const updatableProperties = node.getNodeData(UpdatableModelProperties);
   if (updatableProperties === null || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
     // not an updatable property/sub-property: do nothing
@@ -1092,8 +895,8 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
 
   // Walk the dot-separated path; this resolves the parent node of the property.
   const subProperties = fullPropertyName.split('.');
-  let model: ModelNode = node;
-  let mapProperty: ModelMapProperty | null = null;
+  let model: StateNode = node;
+  let mapProperty: MapProperty | null = null;
   const size = subProperties.length;
   let i = 0;
   for (const subProperty of subProperties) {
@@ -1105,7 +908,7 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
 
     mapProperty = elementProperties.getProperty(subProperty);
     if (mapProperty.getValue() instanceof StateNode) {
-      model = mapProperty.getValue() as unknown as ModelNode;
+      model = mapProperty.getValue() as unknown as StateNode;
     }
     i++;
   }
@@ -1127,20 +930,11 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
 // tree; the previous DOM value guards against clobbering a user edit made during
 // the server round-trip.
 
-/** The slice of MapProperty that updateProperty reads. */
-interface UpdatePropertyMapProperty {
-  getName(): string;
-  hasValue(): boolean;
-  getValue(): unknown;
-  getPreviousDomValue(): unknown;
-  clearPreviousDomValue(): void;
-}
-
 /**
  * Updates the element's JS property from the map property, or removes/clears it
  * when the property has no value. Mirrors updateProperty.
  */
-export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: Element): void {
+export function updateProperty(mapProperty: MapProperty, element: Element): void {
   const name = mapProperty.getName();
   const elementObject = element as unknown as Record<string, unknown>;
   if (mapProperty.hasValue()) {
@@ -1173,7 +967,7 @@ export function updateProperty(mapProperty: UpdatePropertyMapProperty, element: 
 // sync as the children list is spliced. Goes through the binder context to
 // create/bind child nodes and the native DOM for the DOM mutations.
 
-function createAndBindChild(context: BindingContext, childNode: BindingStateNode): Node {
+function createAndBindChild(context: BindingContext, childNode: StateNode): Node {
   return context.binderContext.createAndBind(childNode as unknown as StateNode);
 }
 
@@ -1188,7 +982,7 @@ export function bindChildren(context: BindingContext): EventRemover {
   }
 
   for (let i = 0; i < children.length(); i++) {
-    const childNode = children.get(i) as BindingStateNode;
+    const childNode = children.get(i) as StateNode;
 
     const existingElementMap = childNode.getTree().getRegistry().getExistingElementMap();
     const child = existingElementMap.getElement(childNode.getId());
@@ -1208,7 +1002,7 @@ export function bindChildren(context: BindingContext): EventRemover {
   });
 }
 
-function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingContext): void {
+function handleChildrenSplice(event: ListSpliceEvent, context: BindingContext): void {
   const htmlNode = context.htmlNode;
   if (event.isClear()) {
     /*
@@ -1235,7 +1029,7 @@ function handleChildrenSplice(event: ChildListSpliceEvent, context: BindingConte
     }
   } else {
     for (const removed of event.getRemove()) {
-      const childNode = removed as BindingStateNode;
+      const childNode = removed as StateNode;
       const child = childNode.getDomNode();
       // If the client-side element is not inside the parent the server expected
       // (client-only DOM changes), nothing is done here.
@@ -1307,10 +1101,10 @@ function addChildren(index: number, context: BindingContext, add: unknown[]): vo
   }
 
   for (const newChildObject of add) {
-    const newChild = newChildObject as BindingStateNode;
+    const newChild = newChildObject as StateNode;
 
     const existingElementMap = newChild.getTree().getRegistry().getExistingElementMap();
-    let childNode = existingElementMap.getElement(newChild.getId());
+    let childNode: Node | null = existingElementMap.getElement(newChild.getId());
     if (childNode !== null) {
       existingElementMap.remove(newChild.getId());
       newChild.setDomNode(childNode);
@@ -1324,7 +1118,7 @@ function addChildren(index: number, context: BindingContext, add: unknown[]): vo
   }
 }
 
-function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNode: Node): Node | null {
+function getFirstNodeMappedAsStateNode(mappedNodeChildren: NodeList, htmlNode: Node): Node | null {
   const mappedDomNodes = getMappedDomNodes(mappedNodeChildren);
 
   const clientList = htmlNode.childNodes;
@@ -1343,10 +1137,10 @@ function getFirstNodeMappedAsStateNode(mappedNodeChildren: ChildNodeList, htmlNo
  * currently in the DOM can be matched against them without scanning the state
  * node list for each of them.
  */
-function getMappedDomNodes(stateNodes: ChildNodeList): Set<Node> {
+function getMappedDomNodes(stateNodes: NodeList): Set<Node> {
   const domNodes = new Set<Node>();
   for (let i = 0; i < stateNodes.length(); i++) {
-    const domNode = (stateNodes.get(i) as BindingStateNode).getDomNode();
+    const domNode = (stateNodes.get(i) as StateNode).getDomNode();
     if (domNode !== null) {
       domNodes.add(domNode);
     }
@@ -1354,16 +1148,16 @@ function getMappedDomNodes(stateNodes: ChildNodeList): Set<Node> {
   return domNodes;
 }
 
-function getPreviousSibling(index: number, context: BindingContext): BindingStateNode | null {
+function getPreviousSibling(index: number, context: BindingContext): StateNode | null {
   const nodeChildren = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
 
   let count = 0;
-  let node: BindingStateNode | null = null;
+  let node: StateNode | null = null;
   for (let i = 0; i < nodeChildren.length(); i++) {
     if (count === index) {
       return node;
     }
-    const child = nodeChildren.get(i) as BindingStateNode;
+    const child = nodeChildren.get(i) as StateNode;
     if (child.getDomNode() !== null) {
       node = child;
       count++;
@@ -1379,7 +1173,7 @@ function getPreviousSibling(index: number, context: BindingContext): BindingStat
 
 function attachShadow(context: BindingContext): void {
   const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as StateNode | null;
   if (shadowRootNode !== null) {
     const element = context.htmlNode as Element;
     const shadowRoot = element.shadowRoot ?? element.attachShadow({ mode: 'open' });
@@ -1413,15 +1207,6 @@ export function bindShadowRoot(context: BindingContext): EventRemover {
 // static boundNodes JsWeakMap.
 const boundNodes = new WeakMap<object, boolean>();
 
-/** The slice of StateNode the lifecycle glue reads/writes. */
-interface LifecycleNode {
-  getDomNode(): Node | null;
-  setDomNode(node: Node | null): void;
-  setNodeData(object: object): void;
-  getNodeData<T>(clazz: abstract new (...args: never[]) => T): T | null;
-  clearNodeData(object: object): void;
-}
-
 // Mirrors GWT Scheduler.scheduleDeferred: run after the current task.
 function scheduleDeferred(command: () => void): void {
   setTimeout(command, 0);
@@ -1432,7 +1217,7 @@ function scheduleDeferred(command: () => void): void {
  * dom-node-set event so initialization logic can run) and rebinding it. Mirrors
  * doBind.
  */
-export function doBind(node: LifecycleNode, nodeFactory: BinderContext): void {
+export function doBind(node: StateNode, nodeFactory: BinderContext): void {
   const domNode = node.getDomNode();
   // Re-fires the dom-node-set event, giving a chance to run logic that needs to
   // know when the element is completely initialized.
@@ -1446,7 +1231,7 @@ export function doBind(node: LifecycleNode, nodeFactory: BinderContext): void {
  * on the node and, after the initial reactive flush, runs it (unless
  * handlePropertiesChanged already cleared it). Mirrors scheduleInitialExecution.
  */
-export function scheduleInitialExecution(stateNode: LifecycleNode): void {
+export function scheduleInitialExecution(stateNode: StateNode): void {
   const update = new InitialPropertyUpdate(stateNode);
   stateNode.setNodeData(update);
   // Run after all initial reactive work, so initial JS runs before this update.
@@ -1479,7 +1264,7 @@ export function remove(
 // children attach the state node to an existing DOM element found in the host's
 // (shadow) DOM, verifying the request and the element before binding.
 
-function getPayload(node: BindingStateNode): Record<string, unknown> {
+function getPayload(node: StateNode): Record<string, unknown> {
   return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.PAYLOAD).getValue() as Record<
     string,
     unknown
@@ -1494,20 +1279,20 @@ export function bindVirtualChildren(context: BindingContext): EventRemover {
   const children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
 
   for (let i = 0; i < children.length(); i++) {
-    appendVirtualChild(context, children.get(i) as BindingStateNode, true);
+    appendVirtualChild(context, children.get(i) as StateNode, true);
   }
 
   return children.addSpliceListener((e) => {
     // Handle lazily: the change giving a child its element tag may not be applied yet.
     Reactive.addFlushListener(() => {
       for (const added of e.getAdd()) {
-        appendVirtualChild(context, added as BindingStateNode, true);
+        appendVirtualChild(context, added as StateNode, true);
       }
     });
   });
 }
 
-function appendVirtualChild(context: BindingContext, node: BindingStateNode, reactivePhase: boolean): void {
+function appendVirtualChild(context: BindingContext, node: StateNode, reactivePhase: boolean): void {
   const object = getPayload(node);
   const type = object[NodeProperties.TYPE] as string;
 
@@ -1548,7 +1333,7 @@ function appendVirtualChild(context: BindingContext, node: BindingStateNode, rea
 
 function handleTemplateInTemplate(
   context: BindingContext,
-  node: BindingStateNode,
+  node: StateNode,
   object: Record<string, unknown>,
   reactivePhase: boolean
 ): void {
@@ -1560,7 +1345,7 @@ function handleTemplateInTemplate(
 
 function handleInjectId(
   context: BindingContext,
-  node: BindingStateNode,
+  node: StateNode,
   object: Record<string, unknown>,
   reactivePhase: boolean
 ): void {
@@ -1573,7 +1358,7 @@ function handleInjectId(
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java doAppendVirtualChild signature
 function doAppendVirtualChild(
   context: BindingContext,
-  node: BindingStateNode,
+  node: StateNode,
   reactivePhase: boolean,
   elementLookup: () => Element | null,
   id: string | null,
@@ -1598,17 +1383,12 @@ function doAppendVirtualChild(
   }
 }
 
-function verifyAttachRequest(
-  parent: BindingStateNode,
-  node: BindingStateNode,
-  id: string | null,
-  address: string
-): boolean {
+function verifyAttachRequest(parent: StateNode, node: StateNode, id: string | null, address: string): boolean {
   // The server should not send several attach requests for the same client-side
   // element; this verifies that assumption.
   const virtualChildren = parent.getList(NodeFeatures.VIRTUAL_CHILDREN);
   for (let i = 0; i < virtualChildren.length(); i++) {
-    const child = virtualChildren.get(i) as BindingStateNode;
+    const child = virtualChildren.get(i) as StateNode;
     if (child === node) {
       continue;
     }
@@ -1626,13 +1406,13 @@ function verifyAttachRequest(
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java verifyAttachedElement signature
 function verifyAttachedElement(
   element: Element | null,
-  attachNode: BindingStateNode,
+  attachNode: StateNode,
   id: string | null,
   address: string,
   context: BindingContext
 ): boolean {
   const node = context.node;
-  const tag = getTag(attachNode as unknown as CreationNode);
+  const tag = getTag(attachNode as unknown as StateNode);
 
   let failure = false;
   if (element === null) {
@@ -1654,7 +1434,7 @@ function verifyAttachedElement(
     return true;
   }
   const map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as BindingStateNode | null;
+  const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as StateNode | null;
   if (shadowRootNode === null) {
     return true;
   }
@@ -1662,7 +1442,7 @@ function verifyAttachedElement(
   const list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
   let existingId: number | null = null;
   for (let i = 0; i < list.length(); i++) {
-    const stateNode = list.get(i) as BindingStateNode;
+    const stateNode = list.get(i) as StateNode;
     if (stateNode.getDomNode() === element) {
       existingId = stateNode.getId();
       break;
@@ -1696,17 +1476,17 @@ function updateVisibility(
   const visibilityData = node.getMap(NodeFeatures.ELEMENT_DATA);
   const element = context.htmlNode as Element;
 
-  if (needsRebind(node as unknown as CreationNode) && isVisible(node as unknown as CreationNode)) {
+  if (needsRebind(node as unknown as StateNode) && isVisible(node as unknown as StateNode)) {
     remove(listeners, context, computationsCollection);
     Reactive.addFlushListener(() => {
-      restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
-      doBind(node as unknown as LifecycleNode, nodeFactory);
+      restoreInitialHiddenAttribute(element, visibilityData as unknown as NodeMap);
+      doBind(node as unknown as StateNode, nodeFactory);
     });
-  } else if (isVisible(node as unknown as CreationNode)) {
+  } else if (isVisible(node as unknown as StateNode)) {
     visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
-    restoreInitialHiddenAttribute(element, visibilityData as unknown as VisibilityNodeMap);
+    restoreInitialHiddenAttribute(element, visibilityData as unknown as NodeMap);
   } else {
-    setElementInvisible(element, visibilityData as unknown as VisibilityNodeMap);
+    setElementInvisible(element, visibilityData as unknown as NodeMap);
   }
 }
 
@@ -1724,7 +1504,7 @@ export function bindVisibility(
 
   visibilityData
     .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-    .setValue(isVisible(context.node as unknown as CreationNode));
+    .setValue(isVisible(context.node as unknown as StateNode));
   updateVisibility(listeners, context, computationsCollection, nodeFactory);
 
   return visibilityData
@@ -1758,26 +1538,26 @@ function bindPolymerEventHandlerNames(context: BindingContext): EventRemover {
 /** Binding strategy for a simple (non-template) Element; mirrors SimpleElementBindingStrategy. */
 export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
   create(node: StateNode): Element {
-    return create(node as unknown as CreationNode);
+    return create(node as unknown as StateNode);
   }
 
   isApplicable(node: StateNode): boolean {
-    return isApplicable(node as unknown as CreationNode);
+    return isApplicable(node as unknown as StateNode);
   }
 
   getTag(node: StateNode): string {
-    return getTag(node as unknown as CreationNode) as string;
+    return getTag(node as unknown as StateNode) as string;
   }
 
   bind(stateNode: StateNode, htmlNode: Element, nodeFactory: BinderContext): void {
-    const visible = isVisible(stateNode as unknown as CreationNode);
+    const visible = isVisible(stateNode as unknown as StateNode);
 
     if (boundNodes.has(stateNode)) {
       return;
     }
     boundNodes.set(stateNode, true);
 
-    const node = stateNode as unknown as BindingStateNode;
+    const node = stateNode as unknown as StateNode;
     const context = new BindingContext(node, htmlNode, nodeFactory);
 
     const computationsCollection: Array<Map<string, Computation>> = [];
@@ -1797,14 +1577,14 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       listeners.push(bindShadowRoot(context));
 
       // Styling.
-      listeners.push(bindClassList(htmlNode, node as unknown as ClassListNode));
+      listeners.push(bindClassList(htmlNode, node as unknown as StateNode));
       listeners.push(
         bindMap(
           NodeFeatures.ELEMENT_STYLE_PROPERTIES,
           (property: { getName(): string }) =>
-            updateStyleProperty(property as unknown as StyleMapProperty, htmlNode as HTMLElement),
+            updateStyleProperty(property as unknown as MapProperty, htmlNode as HTMLElement),
           createComputations(computationsCollection),
-          node as unknown as BindMapNode<{ getName(): string }>
+          node as unknown as StateNode
         )
       );
 
@@ -1812,24 +1592,23 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       listeners.push(
         bindMap(
           NodeFeatures.ELEMENT_ATTRIBUTES,
-          (property: { getName(): string }) => updateAttribute(property as unknown as AttributeMapProperty, htmlNode),
+          (property: { getName(): string }) => updateAttribute(property as unknown as MapProperty, htmlNode),
           createComputations(computationsCollection),
-          node as unknown as BindMapNode<{ getName(): string }>
+          node as unknown as StateNode
         )
       );
       listeners.push(
         bindMap(
           NodeFeatures.ELEMENT_PROPERTIES,
-          (property: { getName(): string }) =>
-            updateProperty(property as unknown as UpdatePropertyMapProperty, htmlNode),
+          (property: { getName(): string }) => updateProperty(property as unknown as MapProperty, htmlNode),
           createComputations(computationsCollection),
-          node as unknown as BindMapNode<{ getName(): string }>
+          node as unknown as StateNode
         )
       );
 
       bindPolymerModelProperties(htmlNode, {
         handlePropertiesChanged: (changedProps: unknown) =>
-          handlePropertiesChanged(changedProps as object, stateNode as unknown as ModelNode),
+          handlePropertiesChanged(changedProps as object, stateNode as unknown as StateNode),
         fireReadyEvent: (element: unknown) => fireReadyEvent(element as Element),
         handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) =>
           handleListItemPropertyChange(nodeId as number, host, propertyName, value, stateNode.getTree())
@@ -1838,10 +1617,10 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       // Prepare teardown.
       listeners.push(stateNode.addUnregisterListener(() => remove(listeners, context, computationsCollection)));
     } else {
-      applyStructuralAttributes(stateNode as unknown as StructuralAttributesNode, htmlNode);
+      applyStructuralAttributes(stateNode as unknown as StateNode, htmlNode);
     }
     listeners.push(bindVisibility(listeners, context, computationsCollection, nodeFactory));
 
-    scheduleInitialExecution(stateNode as unknown as LifecycleNode);
+    scheduleInitialExecution(stateNode as unknown as StateNode);
   }
 }

@@ -27,6 +27,8 @@ import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { StateNode } from './StateNode';
+import type { ConstantPool } from './ConstantPool';
+import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
 
 /** The slice of ServerConnector that StateTree uses. */
@@ -41,7 +43,12 @@ export interface ServerConnector {
     tagName: string,
     index: number
   ): void;
-  sendExistingElementWithIdAttachToServer(parent: StateNode, requestedId: number, assignedId: number, id: string): void;
+  sendExistingElementWithIdAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    id: string | null
+  ): void;
   sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void;
 }
 
@@ -52,10 +59,22 @@ export interface InitialPropertiesHandler {
   handlePropertyUpdate(property: MapProperty): boolean;
 }
 
-/** The slice of Registry that StateTree uses. */
+/**
+ * The slice of ApplicationConfiguration the binding layer reads; the class
+ * itself is not ported yet.
+ */
+export interface ApplicationConfiguration {
+  isWebComponentMode(): boolean;
+  getServiceUrl(): string;
+}
+
+/** The slice of Registry that StateTree and the binding layer use. */
 export interface Registry {
   getInitialPropertiesHandler(): InitialPropertiesHandler;
   getServerConnector(): ServerConnector;
+  getApplicationConfiguration(): ApplicationConfiguration;
+  getConstantPool(): ConstantPool;
+  getExistingElementMap(): ExistingElementMap;
 }
 
 /** Looks up a server event object attached to a DOM node; mirrors ServerEventObject.getIfPresent. */
@@ -378,7 +397,7 @@ export class StateTree {
     parent: StateNode,
     requestedId: number,
     assignedId: number,
-    id: string
+    id: string | null
   ): void {
     assert(this.#assertValidNode(parent), 'Invalid node');
     this.#registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
