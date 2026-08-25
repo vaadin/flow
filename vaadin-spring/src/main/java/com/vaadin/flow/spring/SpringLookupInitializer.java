@@ -43,6 +43,7 @@ import com.vaadin.flow.server.VaadinServletContext;
  *
  * @author Vaadin Ltd
  *
+ * @since 16.0
  */
 public class SpringLookupInitializer extends LookupInitializer {
 

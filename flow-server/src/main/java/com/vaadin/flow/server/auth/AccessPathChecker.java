@@ -32,6 +32,7 @@ import java.util.function.Predicate;
  * {@link RoutePathAccessChecker}.
  *
  * @see RoutePathAccessChecker
+ * @since 24.3
  */
 public interface AccessPathChecker extends Serializable {
 

@@ -33,7 +33,6 @@ import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -111,6 +110,7 @@ public class ExtendedClientDetails implements Serializable {
      *            the current color scheme
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
+     * @since 25.0
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -394,11 +394,34 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the raw platform string reported by the browser through
+     * {@code window.navigator.platform}, for example {@code "iPhone"},
+     * {@code "MacIntel"} or {@code "Linux x86_64"}.
+     * <p>
+     * The underlying browser API is deprecated and the values it reports are
+     * neither standardized nor reliable: browsers freeze, spoof or omit them,
+     * and the same platform string is reported for different devices (iPadOS
+     * reports {@code "MacIntel"}, the same value as a desktop Mac). Prefer
+     * feature detection over branching on this value.
+     *
+     * @return the platform reported by the browser, or {@code null} if the
+     *         browser did not report one
+     * @since 25.3
+     */
+    public String getNavigatorPlatform() {
+        return navigatorPlatform;
+    }
+
+    /**
      * Check if the browser is run on IPad.
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information from the browser is present
+     * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIPad() {
         return navigatorPlatform != null && (navigatorPlatform
                 .startsWith("iPad")
@@ -410,17 +433,22 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
+     * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIOS() {
-        return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
-                || (navigatorPlatform != null
-                        && navigatorPlatform.startsWith("iPod"));
+        return isIPad() || (navigatorPlatform != null
+                && (navigatorPlatform.startsWith("iPhone")
+                        || navigatorPlatform.startsWith("iPod")));
     }
 
     /**
      * Gets the color scheme.
      *
      * @return the color scheme, never {@code null}
+     * @since 25.0
      */
     public ColorScheme.Value getColorScheme() {
         return colorScheme;
@@ -441,6 +469,7 @@ public class ExtendedClientDetails implements Serializable {
      * orientation lock button) without subscribing to the signal first.
      *
      * @return {@code true} if the Screen Orientation API is available
+     * @since 25.2
      */
     public boolean isScreenOrientationSupported() {
         if (ui == null) {
@@ -457,6 +486,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the theme name (e.g., "lumo", "aura"), or empty string if not
      *         detected
+     * @since 25.0
      */
     public String getThemeName() {
         return themeName;
@@ -489,6 +519,7 @@ public class ExtendedClientDetails implements Serializable {
      * @return the parsed details
      * @throws RuntimeException
      *             if the JSON is not a valid object
+     * @since 25.2
      */
     public static ExtendedClientDetails updateFromJson(UI ui, JsonNode json) {
         Objects.requireNonNull(ui, "UI must not be null");
@@ -525,6 +556,7 @@ public class ExtendedClientDetails implements Serializable {
      *            resolves a browser-detail key to its raw string value, or
      *            {@code null} if not present
      * @return the parsed details
+     * @since 25.2.1
      */
     public static ExtendedClientDetails updateFromValues(UI ui,
             UnaryOperator<String> getStringElseNull) {
@@ -591,6 +623,7 @@ public class ExtendedClientDetails implements Serializable {
      * @param callback
      *            a callback that will be invoked with the updated
      *            ExtendedClientDetails when the refresh is complete
+     * @since 25.0
      */
     public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";

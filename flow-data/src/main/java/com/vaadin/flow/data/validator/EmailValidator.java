@@ -59,6 +59,7 @@ public class EmailValidator extends RegexpValidator {
      * @param allowEmpty
      *            if {@code true} then an empty string passes the validation,
      *            otherwise the validation fails
+     * @since 4.0
      */
     public EmailValidator(String errorMessage, boolean allowEmpty) {
         super(errorMessage, PATTERN, true);

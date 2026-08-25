@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Default i18n provider that will be initialized if custom {@link I18NProvider}
  * is not available.
+ * 
+ * @since 24.3
  */
 public class DefaultI18NProvider implements I18NProvider {
 
@@ -62,6 +64,7 @@ public class DefaultI18NProvider implements I18NProvider {
      *            locale.
      * @param classLoader
      *            ClassLoader to use for loading translation bundles.
+     * @since 24.3.9
      */
     public DefaultI18NProvider(List<Locale> providedLocales,
             ClassLoader classLoader) {

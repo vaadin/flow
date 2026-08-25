@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
@@ -34,6 +35,7 @@ import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
+import com.vaadin.flow.data.provider.DataFetchObserver;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
@@ -93,7 +95,7 @@ import com.vaadin.flow.internal.StateNode;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final Set<Object> expandedItemIds = new HashSet<>();
@@ -123,6 +125,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param uniqueKeyProviderSupplier
      *            Unique key provider for a row. If null, then using Grid's
      *            default key generator.
+     * @since 25.0
      */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater, StateNode stateNode,
@@ -190,6 +193,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Replaces the cached item with a new instance and schedules a client
      * update to re-render this item.
+     * 
+     * @since 25.0
      */
     @Override
     public void refresh(T item) {
@@ -202,6 +207,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * item's sub-hierarchy is cleared from the cache and scheduled to be
      * re-fetched from the data provider once visible.
      * <p>
+     * Passing a {@code null} item with {@code refreshChildren} set to
+     * {@code true} is treated as a request to refresh the whole hierarchy, and
+     * is equivalent to calling {@link #reset()}.
+     * <p>
      * WARNING: This method is only supported with data providers that use
      * {@link HierarchyFormat#NESTED} and may cause visible range shift if the
      * refreshed item contains <i>expanded</i> descendants. In such cases, they
@@ -211,15 +220,37 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *
      * @since 25.0
      * @param item
-     *            the item to refresh
+     *            the item to refresh, or {@code null} for the virtual root
+     *            (parent of root-level items)
      * @param refreshChildren
      *            whether or not to refresh child items
+     * @throws IllegalArgumentException
+     *             if {@code item} is {@code null} and {@code refreshChildren}
+     *             is {@code false}
      * @throws UnsupportedOperationException
-     *             if {@code refreshChildren} is true and the data provider's
-     *             hierarchy format is not {@link HierarchyFormat#NESTED}
+     *             if {@code refreshChildren} is {@code true} and the data
+     *             provider's hierarchy format is not
+     *             {@link HierarchyFormat#NESTED}
      */
     public void refresh(T item, boolean refreshChildren) {
-        Objects.requireNonNull(item, "Item cannot be null");
+        if (item == null) {
+            if (!refreshChildren) {
+                throw new IllegalArgumentException(
+                        """
+                                Refreshing a null item is only supported when the data provider \
+                                uses HierarchyFormat#NESTED and refreshChildren is set to true. \
+                                For other formats, use reset() instead.
+                                """);
+            }
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+                // Refreshing the virtual root's children means refreshing the
+                // whole hierarchy, which is equivalent to a full reset.
+                reset();
+                return;
+            }
+            // For non-nested formats refreshing children is not supported, so
+            // fall through to the format check below, which throws.
+        }
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
                 && refreshChildren) {
@@ -525,8 +556,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void preloadRange(Cache<T> cache, int start, int length) {
         var range = Range.withLength(start, length)
                 .restrictTo(Range.withLength(0, cache.getSize()));
-        var items = fetchDataProviderChildren(cache.getParentItem(), range);
-        cache.setItems(range.getStart(), items);
+        IntSupplier fetchChildren = () -> {
+            var items = fetchDataProviderChildren(cache.getParentItem(), range);
+            cache.setItems(range.getStart(), items);
+            return items.size();
+        };
+
+        DataFetchObserver.fetch(getUI(), getComponent(), range,
+                getFilter() != null, fetchChildren);
     }
 
     /**
@@ -704,6 +741,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * {@code dataGenerator} so that any associated client-side resources (for
      * example, DOM elements created by {@code ComponentRenderer}) can also be
      * released.
+     * 
+     * @since 25.0
      */
     @Override
     public void confirmUpdate(int updateId) {
@@ -772,6 +811,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param limit
      *            the maximum number of items to fetch
      * @return a hierarchical query for the specified range
+     * @since 25.0
      */
     @Override
     public HierarchicalQuery<T, Object> buildQuery(int offset, int limit) {
@@ -792,6 +832,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param limit
      *            the maximum number of items to fetch
      * @return a hierarchical query for the specified range and parent
+     * @since 25.0
      */
     public HierarchicalQuery<T, Object> buildQuery(T parent, int offset,
             int limit) {
@@ -823,16 +864,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @SuppressWarnings("unchecked")
     private int getDataProviderChildCount(T parent) {
-        var query = new HierarchicalQuery<>(getFilter(), getExpandedItemIds(),
-                parent);
+        IntSupplier countChildren = () -> {
+            var query = new HierarchicalQuery<>(getFilter(),
+                    getExpandedItemIds(), parent);
 
-        var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                .getChildCount(query);
-        if (count < 0) {
-            throw new IllegalStateException(
-                    "Data provider returned a negative child count. Negative values are not supported");
-        }
-        return count;
+            var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                    .getChildCount(query);
+            if (count < 0) {
+                throw new IllegalStateException(
+                        "Data provider returned a negative child count. Negative values are not supported");
+            }
+            return count;
+        };
+
+        return DataFetchObserver.count(getUI(), getComponent(),
+                getFilter() != null, countChildren);
     }
 
     private RootCache<T> ensureRootCache() {
@@ -919,6 +965,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimate(int itemCountEstimate) {
@@ -928,6 +976,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimate() {
@@ -937,6 +987,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
@@ -946,6 +998,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public int getItemCountEstimateIncrease() {
@@ -955,6 +1009,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Estimates are not supported in HierarchicalDataCommunicator
+     * 
+     * @since 24.5
      */
     @Override
     public void setDefinedSize(boolean definedSize) {
@@ -965,6 +1021,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Estimates are not supported in HierarchicalDataCommunicator. Therefore
      * this method will always return {@literal true}
+     * 
+     * @since 24.5
      */
     @Override
     public boolean isDefinedSize() {

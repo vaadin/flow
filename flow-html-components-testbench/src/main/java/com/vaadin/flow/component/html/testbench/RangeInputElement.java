@@ -22,7 +22,7 @@ import com.vaadin.testbench.elementsbase.Element;
  * A TestBench element representing an <code>&lt;input type='range'&gt;</code>
  * element.
  *
- * @since 1.0
+ * @since 24.3
  */
 @Element("input")
 public class RangeInputElement extends TestBenchElement {

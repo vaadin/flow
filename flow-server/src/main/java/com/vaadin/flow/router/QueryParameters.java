@@ -115,6 +115,7 @@ public class QueryParameters implements Serializable {
      * @param value
      *            the value
      * @return query parameters information
+     * @since 23.2
      */
     public static QueryParameters of(String key, String value) {
         return simple(Collections.singletonMap(key, value));
@@ -130,6 +131,7 @@ public class QueryParameters implements Serializable {
      * @param queryString
      *            the query string
      * @return query parameters information
+     * @since 7.0
      */
     public static QueryParameters fromString(String queryString) {
         if (queryString == null || queryString.isBlank()) {
@@ -203,6 +205,7 @@ public class QueryParameters implements Serializable {
      *            the key of query parameters to fetch
      * @return query parameters or an empty list if there are no parameters with
      *         the given key
+     * @since 24.2
      */
     public List<String> getParameters(String key) {
         return parameters.getOrDefault(key, Collections.emptyList());
@@ -218,6 +221,7 @@ public class QueryParameters implements Serializable {
      *            the key of query parameters to fetch
      * @return query parameter value or empty if there are no parameters with
      *         the given key
+     * @since 24.2
      */
     public Optional<String> getSingleParameter(String key) {
         return parameters.getOrDefault(key, Collections.emptyList()).stream()
@@ -247,6 +251,7 @@ public class QueryParameters implements Serializable {
      * @param keys
      *            Names of the parameters to be excluded
      * @return QueryParameters
+     * @since 24.2
      */
     public QueryParameters excluding(String... keys) {
         if (keys == null || keys.length == 0) {
@@ -263,6 +268,7 @@ public class QueryParameters implements Serializable {
      * @param keys
      *            Names of the parameters to be included
      * @return QueryParameters.
+     * @since 24.2
      */
     public QueryParameters including(String... keys) {
         if (keys == null || keys.length == 0) {
@@ -285,6 +291,7 @@ public class QueryParameters implements Serializable {
      * @param values
      *            Values for the parameter as Strings
      * @return QueryParameters.
+     * @since 24.2
      */
     public QueryParameters merging(String key, String... values) {
         if (key == null || key.isEmpty() || values == null
@@ -304,6 +311,7 @@ public class QueryParameters implements Serializable {
      * @param parameters
      *            Map of new parameters to be included
      * @return QueryParameters
+     * @since 24.2
      */
     public QueryParameters mergingAll(Map<String, List<String>> parameters) {
         Objects.requireNonNull(parameters);

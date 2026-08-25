@@ -31,6 +31,7 @@ import java.lang.annotation.Target;
  * function to build the menu.
  *
  * @see Route
+ * @since 24.4
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

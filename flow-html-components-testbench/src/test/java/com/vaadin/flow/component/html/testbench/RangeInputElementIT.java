@@ -35,7 +35,9 @@ public class RangeInputElementIT extends ChromeBrowserTest {
 
     @Test
     public void getSetValue() {
-        Assert.assertNull(input.getValue());
+        // The initial value is explicitly reflected to the DOM so the slider
+        // renders at 0 instead of the browser's midpoint default. See #20576.
+        Assert.assertEquals(0.0, (double) input.getValue(), 0.1);
         input.setValue(5.0);
         Assert.assertEquals(5.0, (double) input.getValue(), 0.1);
         Assert.assertEquals("Value is '5.0'", log.getText());

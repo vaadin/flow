@@ -211,6 +211,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      * @see #setModelValue(Object, boolean)
+     * @since 25.1
      */
     public SignalBinding<T> bindValue(Signal<T> valueSignal,
             SerializableConsumer<T> writeCallback) {

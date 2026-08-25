@@ -66,6 +66,7 @@ public class H1 extends HtmlContainer implements ClickNotifier<H1> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public H1(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -33,6 +33,7 @@ public class IdMapper
      *
      * @param template
      *            a template instance
+     * @since 4.0
      */
     public IdMapper(Component template) {
         super(template);

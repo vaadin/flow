@@ -3,13 +3,18 @@ name: Formatter
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    # spotless available in 25.x
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are checked too, not only those targeting main. Spotless
+    # is only configured in 25.x, which is all this copy of the workflow can
+    # ever run against: PRs against an older maintenance branch use that
+    # branch's own copy of this file.
   merge_group:
 
-# Cancel previous runs if a new one is triggered
+# Cancel previous runs if a new one is triggered. The merge group head sha comes
+# first because the merge queue reuses one branch name for every merge group built
+# from the same PR and base commit, see the same note in validation.yml.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -65,7 +70,7 @@ jobs:
 
       - name: Upload formatter diff
         if: steps.formatter.outputs.modified != '0'
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: formatter-diff
           path: formatter-diff.txt

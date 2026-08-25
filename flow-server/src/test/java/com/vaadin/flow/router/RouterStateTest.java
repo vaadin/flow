@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -94,5 +95,22 @@ class RouterStateTest {
                 RouteParameters.empty(), Collections.emptyList(), null);
 
         assertTrue(state.currentView().isEmpty());
+    }
+
+    @Test
+    void isNavigationPendingReturnsTrueBeforeFirstNavigation() {
+        RouterState state = new RouterState(new Location(""),
+                RouteParameters.empty(), Collections.emptyList(), null);
+
+        assertTrue(state.isNavigationPending());
+    }
+
+    @Test
+    void isNavigationPendingReturnsFalseWhenNavigationTargetIsSet() {
+        RouterState state = new RouterState(new Location("foo"),
+                RouteParameters.empty(), Collections.emptyList(),
+                TestView.class);
+
+        assertFalse(state.isNavigationPending());
     }
 }
