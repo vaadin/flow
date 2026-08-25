@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger.internal;
+package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
@@ -24,7 +24,7 @@ import java.io.Serializable;
  *            the width in pixels
  * @param height
  *            the height in pixels
- * @since 25.2
+ * @since 25.3
  */
 public record Size(int width, int height) implements Serializable {
 }
