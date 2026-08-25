@@ -1,49 +1,129 @@
 import { expect } from '@open-wc/testing';
-import { updateProperty } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from '../bindingTestHelpers';
+import {
+  BindGuardStateNode,
+  type CollectingTree,
+  NodeFeatures,
+  NodeProperties,
+  StateNode,
+  bind,
+  makeCollectingTree
+} from '../bindingTestHelpers';
 
-function fakeProperty(config: { name: string; hasValue: boolean; value?: unknown; previousDomValue?: unknown }) {
-  const cleared: boolean[] = [];
-  return {
-    cleared,
-    getName: () => config.name,
-    hasValue: () => config.hasValue,
-    getValue: () => config.value,
-    getPreviousDomValue: () => config.previousDomValue,
-    clearPreviousDomValue: () => cleared.push(true)
-  };
-}
-
+// Element property binding is exercised the way GwtBasicElementBinderTest does
+// it: bind a node to a real element, drive the ELEMENT_PROPERTIES map and read
+// the JavaScript property off the element.
 describe('SimpleElementBindingStrategy property binding', () => {
-  it('sets the element property from the tree value', () => {
-    const element = document.createElement('div');
-    const property = fakeProperty({ name: 'foo', hasValue: true, value: 'bar' });
-    updateProperty(property, element);
-    expect((element as any).foo).to.equal('bar');
-    expect(property.cleared).to.deep.equal([true]);
+  let harness: CollectingTree;
+  let node: StateNode;
+  let element: HTMLElement;
+  let properties: ReturnType<StateNode['getMap']>;
+
+  beforeEach(() => {
+    Reactive.reset();
+    harness = makeCollectingTree();
+    node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+    element = document.createElement('div');
+    node.setDomNode(element);
   });
 
-  it('does not overwrite when the previous DOM value already matches the tree value', () => {
-    const element = document.createElement('div');
-    const property = fakeProperty({ name: 'foo', hasValue: true, value: 'bar', previousDomValue: 'bar' });
-    updateProperty(property, element);
-    expect((element as any).foo).to.equal(undefined);
+  afterEach(() => Reactive.flush());
+
+  it('binds a property that already has a value', () => {
+    // Ported from testBindExistingProperty.
+    properties.getProperty('title').setValue('foo');
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    expect(element.title).to.equal('foo');
   });
 
-  it('deletes an own property when the value is removed', () => {
-    const element = document.createElement('div');
-    (element as any).foo = 'x';
-    const property = fakeProperty({ name: 'foo', hasValue: false });
-    updateProperty(property, element);
-    expect('foo' in element).to.be.false;
+  it('keeps the DOM value type when the tree value only differs in type', () => {
+    // Ported from testBindExistingPropertyWithDifferentType.
+    // Set a number as the property value of the DOM element.
+    const value = 42;
+    (element as unknown as Record<string, unknown>).bar = value;
+
+    // Set a string as the state tree property value.
+    properties.getProperty('bar').setValue(String(value));
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    // The type should not be changed.
+    expect(typeof (element as unknown as Record<string, unknown>).bar).to.equal('number');
   });
 
-  it('clears a non-own property to null when the value is removed', () => {
-    const element = document.createElement('div');
-    const property = fakeProperty({ name: 'customThing', hasValue: false });
-    updateProperty(property, element);
-    expect((element as any).customThing).to.equal(null);
+  it('binds a property whose value is set after binding', () => {
+    // Ported from testBindNewProperty.
+    bind(node, element);
+
+    properties.getProperty('lang').setValue('foo');
+
+    Reactive.flush();
+
+    expect(element.lang).to.equal('foo');
+  });
+
+  it('deletes an arbitrary property when its value is removed', () => {
+    // Ported from testRemoveArbitraryProperty.
+    const foo = properties.getProperty('foo');
+    foo.setValue('bar');
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    expect(Object.hasOwn(element, 'foo')).to.be.true;
+
+    foo.removeValue();
+
+    Reactive.flush();
+
+    expect(Object.hasOwn(element, 'foo')).to.be.false;
+  });
+
+  it('clears a built-in property when its value is removed', () => {
+    // Ported from testRemoveBuiltInProperty.
+    const titleProperty = properties.getProperty('title');
+    titleProperty.setValue('foo');
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    titleProperty.removeValue();
+
+    Reactive.flush();
+
+    // Properties inherited from e.g. Element can't be removed; assigning null
+    // to title produces "null".
+    expect(element.title).to.equal('null');
+  });
+
+  // Beyond the Java suite: the guard against overwriting a DOM value the user
+  // changed during a server round-trip has no GWT counterpart.
+  describe('beyond the Java suite', () => {
+    it('does not overwrite when the previous DOM value already matches the tree value', () => {
+      const property = properties.getProperty('foo');
+      property.setValue('bar');
+      // The value the DOM had before the round-trip equals the tree value, so
+      // the user-modified DOM value is kept.
+      property.setPreviousDomValue('bar');
+      (element as unknown as Record<string, unknown>).foo = 'user edit';
+
+      bind(node, element);
+
+      Reactive.flush();
+
+      expect((element as unknown as Record<string, unknown>).foo).to.equal('user edit');
+    });
   });
 
   // Ported from GwtMultipleBindingTest.testSetPropertyDoubleBind: a second bind

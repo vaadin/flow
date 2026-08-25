@@ -934,7 +934,7 @@ export function handlePropertyChange(fullPropertyName: string, valueProvider: ()
  * Updates the element's JS property from the map property, or removes/clears it
  * when the property has no value. Mirrors updateProperty.
  */
-export function updateProperty(mapProperty: MapProperty, element: Element): void {
+function updateProperty(mapProperty: MapProperty, element: Element): void {
   const name = mapProperty.getName();
   const elementObject = element as unknown as Record<string, unknown>;
   if (mapProperty.hasValue()) {
