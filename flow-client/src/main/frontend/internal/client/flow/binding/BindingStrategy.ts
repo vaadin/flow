@@ -69,5 +69,5 @@ export interface BindingStrategy<T extends Node> {
    * @param node - the state node
    * @returns tag of the `node`
    */
-  getTag?(node: StateNode): string;
+  getTag?(node: StateNode): string | null;
 }

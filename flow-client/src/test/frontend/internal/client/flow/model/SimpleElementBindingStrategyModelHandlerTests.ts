@@ -75,24 +75,74 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     return mNode;
   }
 
-  function fillNodeWithListItems(listNode: StateNode, listItems: string[]): void {
+  // Mirrors GwtPolymerModelTest's Function<Object, ?> converter: identity leaves
+  // the list item as a raw value, createBasicTypeWrapper wraps it in a
+  // BASIC_TYPE_VALUE node.
+  type ListItemConverter = (value: string) => unknown;
+
+  const identityConverter: ListItemConverter = (value) => value;
+
+  // Wraps a value in a state node carrying only the BASIC_TYPE_VALUE feature, the
+  // way the server represents a list of primitives. Mirrors createBasicTypeWrapper.
+  function createBasicTypeWrapper(value: string): StateNode {
+    const wrapper = new StateNode(nextId, harness.tree);
+    harness.tree.registerNode(wrapper);
+    nextId++;
+    wrapper.getMap(NodeFeatures.BASIC_TYPE_VALUE).getProperty(NodeProperties.VALUE).setValue(value);
+    return wrapper;
+  }
+
+  function fillNodeWithListItems(
+    listNode: StateNode,
+    listItems: string[],
+    converter: ListItemConverter = identityConverter
+  ): void {
     const nodeList = listNode.getList(TEMPLATE_MODELLIST);
     for (let i = 0; i < listItems.length; i++) {
-      nodeList.add(i, listItems[i]);
+      nodeList.add(i, converter(listItems[i]));
     }
   }
 
-  function createAndAttachNodeWithList(mNode: StateNode, listItems: string[]): StateNode {
+  function createAndAttachNodeWithList(
+    mNode: StateNode,
+    listItems: string[],
+    converter: ListItemConverter = identityConverter
+  ): StateNode {
     const nodeWithList = new StateNode(nextId, harness.tree);
     harness.tree.registerNode(nodeWithList);
     nextId++;
-    fillNodeWithListItems(nodeWithList, listItems);
+    fillNodeWithListItems(nodeWithList, listItems, converter);
     setModelProperty(mNode, LIST_PROPERTY_NAME, nodeWithList, false);
     return nodeWithList;
   }
 
   function getClientList(): string[] {
     return element[MODEL_PROPERTY_NAME][LIST_PROPERTY_NAME];
+  }
+
+  // Binds, then adds a fresh set of raw items and asserts each addition produced
+  // a separate splice(path, start, deleteCount, item) call. Mirrors
+  // assertUpdateListValues, shared by testUpdateList and testUpdateBasicTypeList.
+  function assertUpdateListValues(nodeWithList: StateNode): void {
+    bind(node, element);
+    Reactive.flush();
+
+    const newList = ['1', '2', '3'];
+    fillNodeWithListItems(nodeWithList, newList);
+    Reactive.flush();
+
+    // Since fillNodeWithListItems makes a separate add call for every element in
+    // newList, there are the same number of splice calls.
+    const argumentsArray: unknown[][] = element.argumentsArray;
+    expect(argumentsArray.length).to.equal(newList.length);
+    for (let i = 0; i < newList.length; i++) {
+      const args = argumentsArray[i];
+      expect(args.length).to.equal(4);
+      expect(args[0]).to.equal(`${MODEL_PROPERTY_NAME}.${LIST_PROPERTY_NAME}`);
+      expect(args[1]).to.equal(i);
+      expect(args[2]).to.equal(0);
+      expect(args[3]).to.equal(newList[i]);
+    }
   }
 
   beforeEach(() => {
@@ -125,6 +175,88 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
   function emulatePolymerPropertyChange(propertyName: string, newValue: unknown): void {
     element._propertiesChanged({}, { [propertyName]: newValue }, {});
   }
+
+  // Reads a sub-property from the client-side model object; mirrors the nested
+  // WidgetUtil.getJsProperty(getJsProperty(element, MODEL), subProperty) reads.
+  function getClientSubProperty(subProperty: string): unknown {
+    return element[MODEL_PROPERTY_NAME][subProperty];
+  }
+
+  it('adds a model property to the element', () => {
+    // Ported from testPropertyAdded.
+    bind(node, element);
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+
+    setModelProperty(node, propertyName, propertyValue, true);
+
+    expect(element[propertyName]).to.equal(propertyValue);
+  });
+
+  it('updates a model property on the element', () => {
+    // Ported from testPropertyUpdated.
+    bind(node, element);
+    const propertyName = 'black';
+    setModelProperty(node, propertyName, 'coffee', true);
+    const newValue = 'tea';
+
+    setModelProperty(node, propertyName, newValue, true);
+
+    expect(element[propertyName]).to.equal(newValue);
+  });
+
+  it('does not update a model property after the node is unregistered', () => {
+    // Ported from testUnregister.
+    bind(node, element);
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+    setModelProperty(node, propertyName, propertyValue, true);
+
+    harness.tree.unregisterNode(node);
+    setModelProperty(node, propertyName, 'bubblegum', true);
+
+    expect(element[propertyName]).to.equal(propertyValue);
+  });
+
+  it('sets a model sub-property on the element', () => {
+    // Ported from testSetSubProperty.
+    const subProperty = 'subProp';
+    const value = 'foo';
+    setModelProperty(modelNode, subProperty, value, false);
+
+    bind(node, element);
+    Reactive.flush();
+
+    expect(getClientSubProperty(subProperty)).to.equal(value);
+  });
+
+  it('updates a model sub-property on the element', () => {
+    // Ported from testUpdateSubProperty.
+    bind(node, element);
+
+    const subProperty = 'subProp';
+    setModelProperty(modelNode, subProperty, 'foo', true);
+
+    const newValue = 'bar';
+    setModelProperty(modelNode, subProperty, newValue, true);
+
+    expect(getClientSubProperty(subProperty)).to.equal(newValue);
+  });
+
+  it('does not update a model sub-property after the nodes are unregistered', () => {
+    // Ported from testSubPropertyUnregister.
+    bind(node, element);
+
+    const subProperty = 'subProp';
+    const value = 'foo';
+    setModelProperty(modelNode, subProperty, value, true);
+    harness.tree.unregisterNode(node);
+    harness.tree.unregisterNode(modelNode);
+
+    setModelProperty(modelNode, subProperty, 'bar', true);
+
+    expect(getClientSubProperty(subProperty)).to.equal(value);
+  });
 
   it('syncs an updatable model property changed on the client', async () => {
     // Ported from testInitialUpdateModelProperty_propertyIsUpdatable_propertyIsSynced.
@@ -310,6 +442,18 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     expect(getClientList()).to.deep.equal(serverList);
   });
 
+  it('adds a basic-type model list to the element', () => {
+    // Ported from testAddBasicTypeList: the list items are BASIC_TYPE_VALUE nodes
+    // rather than raw values, but the client list is the same.
+    const serverList = ['one', 'two'];
+    createAndAttachNodeWithList(modelNode, serverList, createBasicTypeWrapper);
+
+    bind(node, element);
+    Reactive.flush();
+
+    expect(getClientList()).to.deep.equal(serverList);
+  });
+
   it('replaces the model list when a new list node is set for the same property', () => {
     // Ported from testSetNewListForTheSameProperty.
     createAndAttachNodeWithList(modelNode, ['one', 'two']);
@@ -324,29 +468,18 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     expect(getClientList()).to.deep.equal(newServerList);
   });
 
-  it('pushes each list addition to the element via splice', () => {
-    // Ported from testUpdateList / assertUpdateListValues.
-    const nodeWithList = createAndAttachNodeWithList(modelNode, ['one', 'two']);
+  it('replaces the basic-type model list when a new list node is set for the same property', () => {
+    // Ported from testSetNewBasicTypeListForTheSameProperty.
+    createAndAttachNodeWithList(modelNode, ['one', 'two'], createBasicTypeWrapper);
 
     bind(node, element);
     Reactive.flush();
 
-    const newList = ['1', '2', '3'];
-    fillNodeWithListItems(nodeWithList, newList);
+    const newServerList = ['1', '2', '3'];
+    createAndAttachNodeWithList(modelNode, newServerList, createBasicTypeWrapper);
     Reactive.flush();
 
-    // Each add is a separate splice call, so there are as many splice calls as
-    // added items, each with [path, start, deleteCount, item].
-    const argumentsArray: unknown[][] = element.argumentsArray;
-    expect(argumentsArray.length).to.equal(newList.length);
-    for (let i = 0; i < newList.length; i++) {
-      const args = argumentsArray[i];
-      expect(args.length).to.equal(4);
-      expect(args[0]).to.equal(`${MODEL_PROPERTY_NAME}.${LIST_PROPERTY_NAME}`);
-      expect(args[1]).to.equal(i);
-      expect(args[2]).to.equal(0);
-      expect(args[3]).to.equal(newList[i]);
-    }
+    expect(getClientList()).to.deep.equal(newServerList);
   });
 
   it('ignores list updates after the nodes are unregistered', () => {
@@ -364,6 +497,21 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     Reactive.flush();
 
     expect(getClientList()).to.deep.equal(serverList);
+  });
+
+  it('pushes each list addition to the element via splice', () => {
+    // Ported from testUpdateList.
+    const nodeWithList = createAndAttachNodeWithList(modelNode, ['one', 'two']);
+
+    assertUpdateListValues(nodeWithList);
+  });
+
+  it('pushes each basic-type list addition to the element via splice', () => {
+    // Ported from testUpdateBasicTypeList: the initial list is built from
+    // BASIC_TYPE_VALUE nodes, but the splice updates behave the same.
+    const nodeWithList = createAndAttachNodeWithList(modelNode, ['one', 'two'], createBasicTypeWrapper);
+
+    assertUpdateListValues(nodeWithList);
   });
 
   // Beyond the Java suite: the GWT suite has no test that drives a property

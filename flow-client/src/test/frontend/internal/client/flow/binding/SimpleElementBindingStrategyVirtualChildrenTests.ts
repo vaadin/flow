@@ -76,6 +76,16 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     return child;
   }
 
+  // Mirrors createAndAttachShadowRootNode: creates the shadow-root state node and
+  // registers it as the host node's SHADOW_ROOT so its children are bound into the
+  // element's shadow root.
+  function createAndAttachShadowRootNode(): StateNode {
+    const shadowRootNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(shadowRootNode);
+    node.getMap(NodeFeatures.SHADOW_ROOT_DATA).getProperty(NodeProperties.SHADOW_ROOT).setValue(shadowRootNode);
+    return shadowRootNode;
+  }
+
   it('creates and binds an in-memory virtual child outside the element', () => {
     // Ported from testVirtualChild.
     bind(node, element);
@@ -187,6 +197,46 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     Reactive.flush();
 
     expect(harness.existingElementRpcArgs).to.deep.equal([node, sameAttachDataChild.getId(), childNode.getId(), null]);
+  });
+
+  it('reports a duplicate attach for an element already bound as a shadow-root child, addressed by id', () => {
+    // Ported from testBindVirtualChild_existingShadowRootChildren_searchById: the
+    // addressed element is already bound to a real shadow-root child node, so the
+    // attach is reported as an already-attached duplicate (assignedId = that
+    // child's node id).
+    shadowRoot = addShadowRootElement();
+    const id = '@id';
+    const childNode = createChildNode(id, element.tagName);
+    const virtualChild = createChildNode(id, element.tagName);
+
+    const shadowRootNode = createAndAttachShadowRootNode();
+    shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+    bind(node, element);
+    Reactive.flush();
+
+    addVirtualChild(virtualChild, NodeProperties.INJECT_BY_ID, id);
+    Reactive.flush();
+
+    expect(harness.existingElementRpcArgs).to.deep.equal([node, virtualChild.getId(), childNode.getId(), id]);
+  });
+
+  it('reports a duplicate attach for an element already bound as a shadow-root child, addressed by indices path', () => {
+    // Ported from testBindVirtualChild_existingShadowRootChildren_searchByIndicesPath.
+    shadowRoot = addShadowRootElement();
+    const childNode = createChildNode(null, element.tagName);
+    const virtualChild = createChildNode(null, element.tagName);
+
+    const shadowRootNode = createAndAttachShadowRootNode();
+    shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+    bind(node, element);
+    Reactive.flush();
+
+    addVirtualChild(virtualChild, NodeProperties.TEMPLATE_IN_TEMPLATE, [0]);
+    Reactive.flush();
+
+    expect(harness.existingElementRpcArgs).to.deep.equal([node, virtualChild.getId(), childNode.getId(), null]);
   });
 
   it('attaches and binds a corresponding element found by id', () => {

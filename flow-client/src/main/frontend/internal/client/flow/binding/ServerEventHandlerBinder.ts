@@ -21,25 +21,8 @@
 
 import type { EventRemover } from '../../../EventRemover';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
-import { defineMethod, get, removeMethod, type ServerEventNode, type ServerObject } from './ServerEventObject';
-
-/** The splice-event slice that the handler-name listener reads. */
-interface HandlerNamesSpliceEvent {
-  getRemove(): unknown[];
-  getAdd(): unknown[];
-}
-
-/** The slice of NodeList that holds the server event handler names. */
-interface HandlerNamesList {
-  length(): number;
-  get(index: number): unknown;
-  addSpliceListener(listener: (event: HandlerNamesSpliceEvent) => void): EventRemover;
-}
-
-/** The slice of StateNode that the binder uses (also satisfies defineMethod). */
-export interface ServerEventHandlerNode extends ServerEventNode {
-  getList(featureId: number): HandlerNamesList;
-}
+import type { StateNode } from '../StateNode';
+import { defineMethod, get, removeMethod, type ServerObject } from './ServerEventObject';
 
 /**
  * Registers all the server event handler names found in the
@@ -51,7 +34,7 @@ export interface ServerEventHandlerNode extends ServerEventNode {
  * @param node - the state node containing the feature
  * @returns a handle which can be used to remove the listener for the feature
  */
-export function bindServerEventHandlerNames(element: Element, node: ServerEventHandlerNode): EventRemover;
+export function bindServerEventHandlerNames(element: Element, node: StateNode): EventRemover;
 
 /**
  * Registers all the server event handler names found in the feature with
@@ -69,14 +52,14 @@ export function bindServerEventHandlerNames(element: Element, node: ServerEventH
  */
 export function bindServerEventHandlerNames(
   objectProvider: () => ServerObject,
-  node: ServerEventHandlerNode,
+  node: StateNode,
   featureId: number,
   returnValue: boolean
 ): EventRemover;
 
 export function bindServerEventHandlerNames(
   elementOrProvider: Element | (() => ServerObject),
-  node: ServerEventHandlerNode,
+  node: StateNode,
   featureId: number = NodeFeatures.CLIENT_DELEGATE_HANDLERS,
   returnValue: boolean = true
 ): EventRemover {

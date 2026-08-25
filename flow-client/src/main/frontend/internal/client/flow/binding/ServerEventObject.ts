@@ -30,6 +30,7 @@
 
 import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
+import type { StateNode } from '../StateNode';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).
@@ -43,40 +44,6 @@ const PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 const EVENT_PREFIX = 'event';
 
 const NODE_ID = 'nodeId';
-
-/** The slice of MapProperty that getEventData reads. */
-interface ServerEventProperty {
-  getValue(): unknown;
-}
-
-/** The slice of NodeMap that getEventData reads. */
-interface ServerEventMap {
-  hasPropertyValue(name: string): boolean;
-  getProperty(name: string): ServerEventProperty;
-}
-
-/** The slice of ConstantPool that getEventData reads. */
-interface ServerEventConstantPool {
-  get<T>(key: string): T;
-}
-
-/** The slice of Registry that exposes the constant pool. */
-interface ServerEventRegistry {
-  getConstantPool(): ServerEventConstantPool;
-}
-
-/** The slice of StateTree that defineMethod uses. */
-interface ServerEventTree {
-  getRegistry(): ServerEventRegistry;
-  sendTemplateEventToServer(node: ServerEventNode, methodName: string, args: unknown[], promiseId: number): void;
-}
-
-/** The slice of StateNode that the $server methods use. */
-export interface ServerEventNode {
-  getTree(): ServerEventTree;
-  getMap(featureId: number): ServerEventMap;
-  getDomNode(): Node | null;
-}
 
 // An event-data expression parsed via `new Function`. The second parameter is
 // named `element` (mirroring the Java contract) but receives the $server object.
@@ -232,7 +199,7 @@ export function getServerEventObjectForResync(node: Node): { rejectPromises(): v
 export function defineMethod(
   serverObject: ServerObject,
   methodName: string,
-  node: ServerEventNode,
+  node: StateNode,
   returnPromise: boolean
 ): void {
   serverObject[methodName] = function (this: ServerObject, eventParameter?: Event): unknown {
@@ -279,12 +246,7 @@ export function defineMethod(
  * @param node - Target node
  * @returns Array of extra event data
  */
-function getEventData(
-  serverObject: ServerObject,
-  event: Event,
-  methodName: string,
-  node: ServerEventNode
-): unknown[] | null {
+function getEventData(serverObject: ServerObject, event: Event, methodName: string, node: StateNode): unknown[] | null {
   const listeners = node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
   if (listeners.hasPropertyValue(methodName)) {
     const dataArray: unknown[] = [];
@@ -302,12 +264,7 @@ function getEventData(
   return null;
 }
 
-function getExpressionValue(
-  serverObject: ServerObject,
-  event: Event,
-  node: ServerEventNode,
-  expression: string
-): unknown {
+function getExpressionValue(serverObject: ServerObject, event: Event, node: StateNode, expression: string): unknown {
   if (serverExpectsNodeId(expression)) {
     return resolvePolymerPropertyObject(serverObject, event, node, expression);
   }
@@ -325,7 +282,7 @@ function serverExpectsNodeId(expression: string): boolean {
 function resolvePolymerPropertyObject(
   serverObject: ServerObject,
   event: Event,
-  node: ServerEventNode,
+  node: StateNode,
   expression: string
 ): { nodeId: unknown } | null {
   if (expression.startsWith(EVENT_PREFIX)) {
