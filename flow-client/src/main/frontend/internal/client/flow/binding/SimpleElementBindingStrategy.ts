@@ -39,6 +39,7 @@ import {
   fireReadyEvent,
   getCustomElement,
   getDomRoot,
+  getTag as polymerGetTag,
   isInShadowRoot,
   isReady
 } from '../../PolymerUtils';
@@ -48,6 +49,7 @@ import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
 import { bindPolymerModelProperties } from '../../../SimpleElementBindingStrategy';
 import { StateNode } from '../StateNode';
+import type { StateTree } from '../StateTree';
 import {
   deleteJsProperty,
   equalsInJS,
@@ -455,9 +457,14 @@ function readElementData(node: CreationNode, property: string): unknown {
   return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(property).getValue();
 }
 
-/** The element tag for the state node; mirrors PolymerUtils.getTag / getTag. */
+/**
+ * The element tag for the state node.
+ *
+ * Java has a single implementation, PolymerUtils.getTag, which this strategy
+ * calls; delegate to the ported one rather than reading ELEMENT_DATA again.
+ */
 export function getTag(node: CreationNode): string | null {
-  return (readElementData(node, NodeProperties.TAG) as string | null) ?? null;
+  return polymerGetTag(node as unknown as StateNode) ?? null;
 }
 
 /** The element namespace for the state node, if any; mirrors getNamespace. */
@@ -990,12 +997,6 @@ interface ModelNode {
   getMap(featureId: number): ModelNodeMap;
 }
 
-/** The slice of StateNode handleListItemPropertyChange uses. */
-interface ListItemNode {
-  hasFeature(featureId: number): boolean;
-  getMap(featureId: number): ModelNodeMap;
-}
-
 /**
  * Syncs a dom-repeat list-item property change to the server. The tree (a
  * singleton) is passed explicitly because this runs from a replaced prototype
@@ -1008,13 +1009,47 @@ export function handleListItemPropertyChange(
   _host: unknown,
   property: string,
   value: unknown,
-  tree: { getNode(id: number): ListItemNode | null }
+  tree: StateTree
 ): void {
   const node = tree.getNode(nodeId);
   if (node === null || !node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
     return;
   }
+
+  assert(
+    checkParent(node, _host),
+    'Host element is not a parent of the node whose property has changed. ' +
+      'This is an implementation error. ' +
+      'Most likely it means that there are several StateTrees on the same page ' +
+      '(might be possible with portlets) and the target StateTree should not be passed ' +
+      'into the method as an argument but somehow detected from the host element. ' +
+      'Another option is that host element is calculated incorrectly.'
+  );
+
+  // TODO: this code doesn't care about "security feature" which prevents sending
+  // data from the client side to the server side if property is not
+  // "updatable". See handlePropertyChange and UpdatableModelProperties.
+  // It should be aware of that. The current issue is that we don't know the full
+  // property path (dot separated) to the property which is a property for the
+  // host StateNode and not a property of its subproperty.
   node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(property).syncToServer(value);
+}
+
+/**
+ * Whether supposedParent is an ancestor of the node, walking the state-node
+ * parents; mirrors checkParent.
+ */
+function checkParent(node: StateNode, supposedParent: unknown): boolean {
+  let parent: StateNode | null = node;
+  for (;;) {
+    parent = parent.getParent();
+    if (parent === null) {
+      return false;
+    }
+    if (supposedParent === parent.getDomNode()) {
+      return true;
+    }
+  }
 }
 
 /**
@@ -1797,13 +1832,7 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
           handlePropertiesChanged(changedProps as object, stateNode as unknown as ModelNode),
         fireReadyEvent: (element: unknown) => fireReadyEvent(element as Element),
         handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) =>
-          handleListItemPropertyChange(
-            nodeId as number,
-            host,
-            propertyName,
-            value,
-            stateNode.getTree() as unknown as { getNode(id: number): ListItemNode | null }
-          )
+          handleListItemPropertyChange(nodeId as number, host, propertyName, value, stateNode.getTree())
       });
 
       // Prepare teardown.
