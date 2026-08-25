@@ -297,7 +297,7 @@ export function getClosestStateNodeIdToDomNode(
  * preserving an `!important` priority, or removes it when the property has no
  * value. Mirrors updateStyleProperty.
  */
-export function updateStyleProperty(mapProperty: MapProperty, element: HTMLElement): void {
+function updateStyleProperty(mapProperty: MapProperty, element: HTMLElement): void {
   const name = mapProperty.getName();
   const styleElement = element.style;
   if (mapProperty.hasValue()) {
@@ -326,7 +326,7 @@ export function updateStyleProperty(mapProperty: MapProperty, element: HTMLEleme
  * applying the current classes and keeping them in sync as the list is spliced.
  * Mirrors bindClassList.
  */
-export function bindClassList(element: Element, node: StateNode): EventRemover {
+function bindClassList(element: Element, node: StateNode): EventRemover {
   const classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
   for (let i = 0; i < classNodeList.length(); i++) {
