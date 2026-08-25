@@ -100,7 +100,7 @@ let expressionCache: Map<string, EventExpression> | null = null;
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
  */
-export function getOrCreateExpression(expressionString: string): EventExpression {
+function getOrCreateExpression(expressionString: string): EventExpression {
   if (expressionCache === null) {
     expressionCache = new Map();
   }
@@ -122,7 +122,7 @@ export function getOrCreateExpression(expressionString: string): EventExpression
  * resolveDebounces.
  */
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java resolveDebounces signature
-export function resolveDebounces(
+function resolveDebounces(
   element: Node,
   debouncerId: string,
   debounceList: unknown[][],
@@ -158,7 +158,7 @@ export function resolveDebounces(
  * resolveFilters.
  */
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java resolveFilters signature
-export function resolveFilters(
+function resolveFilters(
   element: Node,
   eventType: string,
   expressionSettings: Record<string, unknown>,
@@ -204,7 +204,7 @@ export function resolveFilters(
  * walk from the target's parent. Returns -1 if none is found. Mirrors
  * getClosestStateNodeIdToEventTarget.
  */
-export function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTarget | null): number {
+function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTarget | null): number {
   if (target === null) {
     return -1;
   }
@@ -239,7 +239,7 @@ export function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: E
  * Walks up the DOM from targetNode and returns the id of the first state node
  * in searchStack whose DOM node matches, or -1. Mirrors getStateNodeForElement.
  */
-export function getStateNodeForElement(searchStack: StateNode[], targetNode: Node | null): number {
+function getStateNodeForElement(searchStack: StateNode[], targetNode: Node | null): number {
   let current = targetNode;
   while (current !== null) {
     for (let i = searchStack.length - 1; i > -1; i--) {
@@ -258,7 +258,7 @@ export function getStateNodeForElement(searchStack: StateNode[], targetNode: Nod
  * expression) and returns the id of the first state node the tree maps it to,
  * or -1. Mirrors getClosestStateNodeIdToDomNode.
  */
-export function getClosestStateNodeIdToDomNode(
+function getClosestStateNodeIdToDomNode(
   stateTree: StateTree,
   domNodeReference: unknown,
   eventDataExpression: string
@@ -578,7 +578,7 @@ function getDomEventListenerMap(node: StateNode): NodeMap {
  * for the current handlers and tracking later additions. Mirrors
  * bindDomEventListeners.
  */
-export function bindDomEventListeners(context: BindingContext): EventRemover {
+function bindDomEventListeners(context: BindingContext): EventRemover {
   const elementListeners = getDomEventListenerMap(context.node);
   elementListeners.forEachProperty((property) => {
     // Run eagerly to add initial listeners before the element is attached.

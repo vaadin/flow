@@ -1,124 +1,135 @@
 import { expect } from '@open-wc/testing';
+import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
-  getClosestStateNodeIdToDomNode,
-  getClosestStateNodeIdToEventTarget,
-  getOrCreateExpression,
-  getStateNodeForElement,
-  resolveDebounces,
-  resolveFilters
-} from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
+  type CollectingTree,
+  NodeFeatures,
+  NodeProperties,
+  StateNode,
+  bind,
+  makeCollectingTree
+} from '../bindingTestHelpers';
 
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_CHILDREN
-const ELEMENT_CHILDREN = 2;
+// com.vaadin.flow.shared.JsonConstants.MAP_STATE_NODE_EVENT_DATA
+const MAP_STATE_NODE_EVENT_DATA = ']';
 
-// A StateNode stand-in for the closest-node lookups: an id, a DOM node, and an
-// ELEMENT_CHILDREN list of child fakes.
-function fakeNode(id: number, domNode: Node | null, children: any[] = []): any {
-  return {
-    getId: () => id,
-    getDomNode: () => domNode,
-    getList: (featureId: number) => ({
-      forEach: (cb: (child: unknown) => void) => (featureId === ELEMENT_CHILDREN ? children : []).forEach(cb)
-    })
-  };
-}
+// Event data collection is exercised through a bound element: the expressions
+// of a DOM listener are evaluated when the event is dispatched, and the
+// resulting data is what the tree sends to the server.
+//
+// Beyond the Java suite: the GWT suite covers plain data and filter expressions
+// (ported in SimpleElementBindingStrategyEventListenerTests) but has no case for
+// the debounce filters or the state-node mapping expressions below.
+describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () => {
+  let harness: CollectingTree;
+  let node: StateNode;
+  let element: HTMLElement;
+  let nextId: number;
 
-describe('SimpleElementBindingStrategy event-data helpers', () => {
-  it('getOrCreateExpression compiles and caches an (event, element) function', () => {
-    const expr = getOrCreateExpression('event.detail + element.tabIndex');
-    expect(expr({ detail: 5 } as any, { tabIndex: 2 } as any)).to.equal(7);
-    // Same string => same cached function instance.
-    expect(getOrCreateExpression('event.detail + element.tabIndex')).to.equal(expr);
+  beforeEach(() => {
+    Reactive.reset();
+    harness = makeCollectingTree();
+    node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    element = document.createElement('div');
+    node.setDomNode(element);
+    document.body.appendChild(element);
+    nextId = 10;
   });
 
-  it('resolveDebounces treats a zero timeout as eager', () => {
-    const element = document.createElement('div');
-    const eager = resolveDebounces(element, 'on-click:x', [[0]], () => {}, new Map());
-    expect(eager).to.be.true;
+  afterEach(() => {
+    element.remove();
+    Reactive.flush();
   });
 
-  it('resolveDebounces fires a leading debounce immediately but buffers a trailing one', () => {
-    const element = document.createElement('div');
-    // A leading phase with a fresh debouncer triggers now.
-    const eager = resolveDebounces(element, 'on-input:y', [[50, 'leading']], () => {}, new Map());
-    expect(eager).to.be.true;
-    // A trailing debounce buffers instead, so it is not eager.
-    const element2 = document.createElement('div');
-    const trailing = resolveDebounces(element2, 'on-input:y', [[50, 'trailing']], () => {}, new Map());
-    expect(trailing).to.be.false;
+  // Binds the node and registers a "click" listener with the given expressions.
+  function bindWithClickExpressions(expressions: Record<string, unknown>): void {
+    bind(node, element);
+    harness.constantPool.importFromJson({ expressionsKey: expressions });
+    node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue('expressionsKey');
+    Reactive.flush();
+  }
+
+  // Adds a bound child element, so that the DOM subtree has more than one node
+  // mapped to a state node.
+  function addChild(tag: string): { childElement: Element; childNode: StateNode } {
+    const childNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(childNode);
+    childNode.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue(tag);
+    node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+    Reactive.flush();
+    return { childElement: element.firstElementChild!, childNode };
+  }
+
+  it('sends the event immediately for a zero-timeout debounce filter', () => {
+    // A debounce list of [[0]] is eager, so the filter matches at once.
+    bindWithClickExpressions({ true: [[0]] });
+
+    element.click();
+
+    expect(harness.collectedNodes).to.have.length(1);
   });
 
-  it('resolveFilters returns true when there are no active filters', () => {
-    const element = document.createElement('div');
-    // All settings falsy => treated as no filters => send.
-    const result = resolveFilters(element, 'click', { a: false }, null, () => {}, new Map());
-    expect(result).to.be.true;
+  it('sends a leading-phase debounce immediately but buffers a trailing one', async () => {
+    bindWithClickExpressions({ true: [[30, 'leading']] });
+
+    element.click();
+    expect(harness.collectedNodes).to.have.length(1);
+
+    // Within the debounce period the event is swallowed.
+    element.click();
+    expect(harness.collectedNodes).to.have.length(1);
+
+    // Once the debounce period is over, the next event is eager again.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    element.click();
+    expect(harness.collectedNodes).to.have.length(2);
   });
 
-  it('resolveFilters matches a boolean filter only when the event data is truthy', () => {
-    const element = document.createElement('div');
-    const matched = resolveFilters(element, 'click', { needsCtrl: true }, { needsCtrl: true }, () => {}, new Map());
-    expect(matched).to.be.true;
+  it('maps the event target to the closest state node id', () => {
+    bindWithClickExpressions({ [MAP_STATE_NODE_EVENT_DATA]: false });
+    const { childElement, childNode } = addChild('span');
 
-    const notMatched = resolveFilters(element, 'click', { needsCtrl: true }, { needsCtrl: false }, () => {}, new Map());
-    expect(notMatched).to.be.false;
+    // The event bubbles up from the child, whose state node is the match.
+    childElement.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData[MAP_STATE_NODE_EVENT_DATA]).to.equal(childNode.getId());
   });
 
-  it('resolveFilters resolves a debounce filter via resolveDebounces', () => {
-    const element = document.createElement('div');
-    // The filter is present in eventData and its settings are a debounce list
-    // with an eager (zero-timeout) entry => sent now.
-    const result = resolveFilters(element, 'input', { typed: [[0]] }, { typed: true }, () => {}, new Map());
-    expect(result).to.be.true;
-  });
-});
-
-describe('SimpleElementBindingStrategy closest-state-node lookups', () => {
-  it('getClosestStateNodeIdToEventTarget returns the id on a direct DOM match', () => {
-    const dom = document.createElement('div');
-    const child = document.createElement('span');
-    dom.appendChild(child);
-    const childNode = fakeNode(2, child);
-    const topNode = fakeNode(1, dom, [childNode]);
-    // The target is the child element itself => direct match in the BFS.
-    expect(getClosestStateNodeIdToEventTarget(topNode, child)).to.equal(2);
-  });
-
-  it('getClosestStateNodeIdToEventTarget walks up the DOM when there is no direct match', () => {
-    const dom = document.createElement('div');
-    const child = document.createElement('span');
+  it('maps an event target without a state node to its closest bound ancestor', () => {
+    bindWithClickExpressions({ [MAP_STATE_NODE_EVENT_DATA]: false });
+    const { childElement, childNode } = addChild('span');
     const grandchild = document.createElement('b');
-    dom.appendChild(child);
-    child.appendChild(grandchild);
-    const childNode = fakeNode(2, child);
-    const topNode = fakeNode(1, dom, [childNode]);
-    // grandchild has no state node; the closest ancestor with one is the child.
-    expect(getClosestStateNodeIdToEventTarget(topNode, grandchild)).to.equal(2);
+    childElement.appendChild(grandchild);
+
+    grandchild.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    // The grandchild has no state node; the closest one is the child's.
+    expect(eventData[MAP_STATE_NODE_EVENT_DATA]).to.equal(childNode.getId());
   });
 
-  it('getClosestStateNodeIdToEventTarget returns -1 for a null target', () => {
-    expect(getClosestStateNodeIdToEventTarget(fakeNode(1, document.createElement('div')), null)).to.equal(-1);
+  it('maps an element returned by an expression to the closest state node id', () => {
+    const expression = `${MAP_STATE_NODE_EVENT_DATA}element.firstElementChild`;
+    bindWithClickExpressions({ [expression]: false });
+    const { childNode } = addChild('span');
+
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData[expression]).to.equal(childNode.getId());
   });
 
-  it('getStateNodeForElement finds the nearest ancestor in the search stack', () => {
-    const dom = document.createElement('div');
-    const child = document.createElement('span');
-    dom.appendChild(child);
-    const stack = [fakeNode(1, dom), fakeNode(2, child)];
-    expect(getStateNodeForElement(stack, child)).to.equal(2);
-    // An unrelated detached node has no ancestor in the stack.
-    expect(getStateNodeForElement(stack, document.createElement('p'))).to.equal(-1);
-  });
+  it('maps an element outside the state tree to -1', () => {
+    const expression = `${MAP_STATE_NODE_EVENT_DATA}document.head`;
+    bindWithClickExpressions({ [expression]: false });
 
-  it('getClosestStateNodeIdToDomNode walks up via the tree mapping', () => {
-    const dom = document.createElement('div');
-    const child = document.createElement('span');
-    dom.appendChild(child);
-    const tree = {
-      getStateNodeForDomNode: (node: Node) => (node.isSameNode(dom) ? { getId: () => 5 } : null)
-    };
-    // child has no mapping; its parent div does.
-    expect(getClosestStateNodeIdToDomNode(tree, child, 'event.target')).to.equal(5);
-    expect(getClosestStateNodeIdToDomNode(tree, null, 'event.target')).to.equal(-1);
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData[expression]).to.equal(-1);
   });
 });

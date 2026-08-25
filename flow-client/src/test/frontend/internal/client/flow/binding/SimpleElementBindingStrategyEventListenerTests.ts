@@ -1,129 +1,12 @@
 import { expect } from '@open-wc/testing';
-import {
-  BindingContext,
-  bindDomEventListeners
-} from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { Debouncer } from '../../../../../../main/frontend/internal/client/flow/binding/Debouncer';
 import { BindGuardStateNode, NodeFeatures, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
-const ELEMENT_LISTENERS = 4;
-
-// Builds a BindingContext over a real DOM node with a fake state node:
-//  - listeners: maps an event type to its constant-pool key
-//  - constants: maps a constant-pool key to its expression settings object
-//  - properties: ELEMENT_PROPERTIES property fakes keyed by name
-function makeContext(
-  htmlNode: Node,
-  config: { listeners: Record<string, string>; constants: Record<string, unknown>; properties?: Record<string, any> }
-) {
-  const sent: Array<{ type: string; data: unknown }> = [];
-
-  const listenerProps = Object.entries(config.listeners).map(([type, key]) => ({
-    getName: () => type,
-    hasValue: () => true,
-    getValue: () => key,
-    getSyncToServerCommand: () => () => {},
-    setPreviousDomValue: () => {}
-  }));
-  const listenersMap = {
-    getProperty: (type: string) => listenerProps.find((p) => p.getName() === type),
-    forEachProperty: (cb: (property: any, name: string) => void) => listenerProps.forEach((p) => cb(p, p.getName())),
-    addPropertyAddListener: () => ({ remove: () => {} })
-  };
-  const propertiesMap = {
-    getProperty: (name: string) => (config.properties ?? {})[name],
-    forEachProperty: () => {},
-    addPropertyAddListener: () => ({ remove: () => {} })
-  };
-  const tree = {
-    getRegistry: () => ({
-      getConstantPool: () => ({ has: (k: string) => k in config.constants, get: (k: string) => config.constants[k] })
-    }),
-    sendEventToServer: (_node: unknown, type: string, data: unknown) => sent.push({ type, data }),
-    getStateNodeForDomNode: () => null
-  };
-  const node: any = {
-    getId: () => 1,
-    getDomNode: () => htmlNode,
-    getMap: (feature: number) => (feature === ELEMENT_LISTENERS ? listenersMap : propertiesMap),
-    getList: () => ({ forEach: () => {} }),
-    getTree: () => tree
-  };
-  const binderContext: any = { createAndBind: () => htmlNode, bind: () => {}, getStrategies: () => [] };
-  return { context: new BindingContext(node, htmlNode, binderContext), sent };
-}
-
+// DOM event listener tests ported from GwtBasicElementBinderTest. They bind a
+// real StateNode to a real element attached to the document and drive the
+// listeners through the ELEMENT_LISTENERS map and the constant pool.
 describe('SimpleElementBindingStrategy DOM event listeners', () => {
-  it('dispatches the collected event data to the server', () => {
-    const element = document.createElement('div');
-    const { context, sent } = makeContext(element, {
-      listeners: { click: 'k1' },
-      constants: { k1: { 'event.detail': false } }
-    });
-    bindDomEventListeners(context);
-
-    element.dispatchEvent(new CustomEvent('click', { detail: 42 }));
-    expect(sent).to.deep.equal([{ type: 'click', data: { 'event.detail': 42 } }]);
-  });
-
-  it('does not send when a boolean filter does not match, sends when it does', () => {
-    const element = document.createElement('div');
-    const { context, sent } = makeContext(element, {
-      listeners: { click: 'k1' },
-      constants: { k1: { 'event.altKey': true } }
-    });
-    bindDomEventListeners(context);
-
-    element.dispatchEvent(new MouseEvent('click', { altKey: false }));
-    expect(sent).to.deep.equal([]);
-
-    element.dispatchEvent(new MouseEvent('click', { altKey: true }));
-    expect(sent).to.have.length(1);
-  });
-
-  it('synchronizes a property and runs its sync command before sending', () => {
-    const input = document.createElement('input');
-    input.value = 'x';
-    const setPrev: unknown[] = [];
-    const synced: unknown[] = [];
-    const valueProperty = {
-      setPreviousDomValue: (v: unknown) => setPrev.push(v),
-      getSyncToServerCommand: (v: unknown) => () => synced.push(v)
-    };
-    const { context, sent } = makeContext(input, {
-      listeners: { input: 'k1' },
-      constants: { k1: { '}value': false } },
-      properties: { value: valueProperty }
-    });
-    bindDomEventListeners(context);
-
-    input.dispatchEvent(new Event('input'));
-    expect(setPrev).to.deep.equal(['x']);
-    expect(synced).to.deep.equal(['x']);
-    expect(sent).to.deep.equal([{ type: 'input', data: {} }]);
-  });
-
-  it('adds a DOM listener for the bound handler property', () => {
-    const element = document.createElement('div');
-    const { context, sent } = makeContext(element, {
-      listeners: { click: 'k1' },
-      constants: { k1: {} }
-    });
-    bindDomEventListeners(context);
-    expect(context.listenerRemovers.has('click')).to.be.true;
-
-    // An event with no expression settings is still sent (no filters).
-    element.dispatchEvent(new MouseEvent('click'));
-    expect(sent).to.deep.equal([{ type: 'click', data: null }]);
-  });
-});
-
-// Full-state-tree DOM-event tests ported from GwtPropertyElementBinderTest and
-// GwtMultipleBindingTest. They bind a real StateNode to a real element attached
-// to the document, wire an ELEMENT_LISTENERS listener via the constant pool, and
-// dispatch a real DOM event.
-describe('SimpleElementBindingStrategy DOM event listeners (full tree)', () => {
   const SYNCHRONIZE_PROPERTY_TOKEN = '}';
   const EVENT_PHASE_TRAILING = 'trailing';
 
@@ -150,6 +33,100 @@ describe('SimpleElementBindingStrategy DOM event listeners (full tree)', () => {
     harness.constantPool.importFromJson({ [key]: expressions });
     node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('event1').setValue(key);
   }
+
+  // Adds a constant-pool entry for a "click" listener, mirroring the GWT
+  // addToConstantPool + ELEMENT_LISTENERS setup.
+  function addClickListenerConstant(key: string, expressions: Record<string, unknown>): void {
+    harness.constantPool.importFromJson({ [key]: expressions });
+    node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue(key);
+  }
+
+  it('sends the collected event and filter data to the server', () => {
+    // Ported from testEventFired.
+    bind(node, element);
+
+    // The user agent is "Mozilla/5.0...".
+    const booleanExpression = "window.navigator.userAgent[0] === 'M'";
+    const numberExpression = 'event.button';
+    const stringExpression = 'element.tagName';
+
+    const trueFilter = 'true';
+    const falseFilter = 'false';
+    const tagNameFilter = "element.tagName == 'DIV'";
+
+    addClickListenerConstant('expressionsKey', {
+      // Data expressions.
+      [booleanExpression]: false,
+      [numberExpression]: false,
+      [stringExpression]: false,
+      // Filter expressions.
+      [trueFilter]: true,
+      [falseFilter]: true,
+      [tagNameFilter]: true
+    });
+    Reactive.flush();
+
+    element.click();
+
+    expect(harness.collectedNodes).to.have.length(1);
+    expect(harness.collectedNodes[0]).to.equal(node);
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+
+    // 3 data expressions and 3 filter expressions.
+    expect(Object.keys(eventData)).to.have.length(6);
+
+    expect(typeof eventData[numberExpression]).to.equal('number');
+    expect(eventData[stringExpression]).to.equal('DIV');
+    expect(eventData[booleanExpression]).to.equal(true);
+
+    expect(eventData[tagNameFilter]).to.equal(true);
+    expect(eventData[trueFilter]).to.equal(true);
+    expect(eventData[falseFilter]).to.equal(false);
+  });
+
+  it('does not send the event when a filter does not match', () => {
+    // Ported from testFilterPreventsEvent.
+    bind(node, element);
+
+    addClickListenerConstant('expressionsKey', { false: true });
+    Reactive.flush();
+
+    element.click();
+
+    expect(harness.collectedNodes).to.have.length(0);
+  });
+
+  it('sends the event when the falsy expression is not used as a filter', () => {
+    // Ported from testEventFiredWithNoFilters.
+    bind(node, element);
+
+    // The expression is not used as a filter.
+    addClickListenerConstant('expressionsKey', { false: false });
+    Reactive.flush();
+
+    element.click();
+
+    expect(harness.collectedNodes).to.have.length(1);
+  });
+
+  it('does not send an event whose listener has been removed', () => {
+    // Ported from testRemovedEventNotFired.
+    bind(node, element);
+
+    const clickEvent = node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click');
+    clickEvent.setValue(1);
+
+    Reactive.flush();
+
+    clickEvent.removeValue();
+
+    Reactive.flush();
+
+    element.click();
+
+    expect(harness.collectedNodes).to.have.length(0);
+  });
 
   it('synchronizes only the event-specific property, not globally-marked ones', () => {
     // Ported from testDomListenerSynchronization.
