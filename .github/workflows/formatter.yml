@@ -10,9 +10,11 @@ on:
     # branch's own copy of this file.
   merge_group:
 
-# Cancel previous runs if a new one is triggered
+# Cancel previous runs if a new one is triggered. The merge group head sha comes
+# first because the merge queue reuses one branch name for every merge group built
+# from the same PR and base commit, see the same note in validation.yml.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
