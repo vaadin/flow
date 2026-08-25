@@ -42,10 +42,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeTrigger;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
@@ -65,6 +68,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -1661,6 +1665,43 @@ public class Element extends Node<Element> {
                                 .onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as reported
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on the first call and the same instance
+     * is returned for subsequent calls on the same element. The value is
+     * {@code Size(0, 0)} until the browser has reported the actual size, which
+     * happens shortly after the element has been attached. Sub-pixel sizes are
+     * rounded to whole pixels.
+     * <p>
+     * The browser observes the element as long as it is present in the DOM, and
+     * the signal is updated on every observed resize. The returned signal is
+     * read-only.
+     *
+     * @return a read-only signal with the current size of this element, never
+     *         <code>null</code>
+     */
+    public Signal<Size> sizeSignal() {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+        Signal<Size> existing = feature.getSignal(SignalBindingFeature.SIZE);
+        if (existing != null) {
+            return existing;
+        }
+
+        ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
+        Signal<Size> readonly = signal.asReadonly();
+        // Cached on the node so that repeated calls share one signal and one
+        // browser-side observer.
+        feature.setBinding(SignalBindingFeature.SIZE, readonly);
+
+        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
+                SizeTrigger.EventData.size));
+
+        return readonly;
     }
 
     @Override
