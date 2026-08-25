@@ -1,13 +1,10 @@
 import { expect } from '@open-wc/testing';
 import {
   create,
-  getNamespace,
-  getTag,
-  hasSameTag,
   isApplicable,
-  isVisible,
   needsRebind
 } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
+import { NodeFeatures, NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
 const ELEMENT_DATA = 0;
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -26,13 +23,6 @@ function fakeNode(
 }
 
 describe('SimpleElementBindingStrategy creation & identity', () => {
-  it('getTag and getNamespace read the element data', () => {
-    const node = fakeNode({ tag: 'div', namespace: SVG_NS });
-    expect(getTag(node)).to.equal('div');
-    expect(getNamespace(node)).to.equal(SVG_NS);
-    expect(getNamespace(fakeNode({ tag: 'div' }))).to.equal(null);
-  });
-
   it('create uses the node namespace when present', () => {
     const element = create(fakeNode({ tag: 'svg', namespace: SVG_NS }));
     expect(element.namespaceURI).to.equal(SVG_NS);
@@ -65,23 +55,30 @@ describe('SimpleElementBindingStrategy creation & identity', () => {
     expect(isApplicable(other)).to.be.false;
   });
 
-  it('hasSameTag compares case-insensitively and allows a null tag', () => {
+  it('binding an element with the wrong tag throws', () => {
+    // Ported from testBindWrongTagThrows.
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('span');
     const element = document.createElement('div');
-    expect(hasSameTag(fakeNode({ tag: 'DIV' }), element)).to.be.true;
-    expect(hasSameTag(fakeNode({ tag: 'span' }), element)).to.be.false;
-    expect(hasSameTag(fakeNode({}), element)).to.be.true;
+
+    expect(() => bind(node, element)).to.throw();
+  });
+
+  it('binds an element whose tag differs only in case', () => {
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('DIV');
+    const element = document.createElement('div');
+
+    expect(() => bind(node, element)).to.not.throw();
   });
 
   it('needsRebind is true only for an explicit false bound value', () => {
     expect(needsRebind(fakeNode({ bound: false }))).to.be.true;
     expect(needsRebind(fakeNode({ bound: true }))).to.be.false;
     expect(needsRebind(fakeNode({}))).to.be.false;
-  });
-
-  it('isVisible delegates to the tree', () => {
-    const node = fakeNode({}, { tree: { getRootNode: () => null, isVisible: () => true } });
-    expect(isVisible(node)).to.be.true;
-    const hidden = fakeNode({}, { tree: { getRootNode: () => null, isVisible: () => false } });
-    expect(isVisible(hidden)).to.be.false;
   });
 });

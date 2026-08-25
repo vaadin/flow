@@ -404,12 +404,12 @@ function readElementData(node: StateNode, property: string): unknown {
  * Java has a single implementation, PolymerUtils.getTag, which this strategy
  * calls; delegate to the ported one rather than reading ELEMENT_DATA again.
  */
-export function getTag(node: StateNode): string | null {
+function getTag(node: StateNode): string | null {
   return polymerGetTag(node as unknown as StateNode) ?? null;
 }
 
 /** The element namespace for the state node, if any; mirrors getNamespace. */
-export function getNamespace(node: StateNode): string | null {
+function getNamespace(node: StateNode): string | null {
   return (readElementData(node, NodeProperties.NAMESPACE) as string | null) ?? null;
 }
 
@@ -444,7 +444,7 @@ export function isApplicable(node: StateNode): boolean {
 }
 
 /** Whether the element's tag matches the node's required tag; mirrors hasSameTag. */
-export function hasSameTag(node: StateNode, element: Element): boolean {
+function hasSameTag(node: StateNode, element: Element): boolean {
   const nsTag = getTag(node);
   return nsTag === null || element.tagName.toLowerCase() === nsTag.toLowerCase();
 }
@@ -464,7 +464,7 @@ export function needsRebind(node: StateNode): boolean {
 }
 
 /** Whether the node is visible; mirrors isVisible. */
-export function isVisible(node: StateNode): boolean {
+function isVisible(node: StateNode): boolean {
   const tree = node.getTree();
   return tree !== null && tree.isVisible(node);
 }
@@ -1551,6 +1551,13 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
   bind(stateNode: StateNode, htmlNode: Element, nodeFactory: BinderContext): void {
     const visible = isVisible(stateNode as unknown as StateNode);
+
+    assert(
+      hasSameTag(stateNode as unknown as StateNode, htmlNode),
+      `Element tag name is '${htmlNode.tagName}', but the required tag name is ${getTag(
+        stateNode as unknown as StateNode
+      )}`
+    );
 
     if (boundNodes.has(stateNode)) {
       return;
