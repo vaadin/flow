@@ -110,7 +110,7 @@ export class Computation {
     while (this.#dependencies.length > 0) {
       // Mirror Java's non-null deref: dependencies.remove(0).remove() — the loop
       // guards a non-empty array, so use `!` rather than `?.` (which would silently
-      // skip the removal). See PORTING.md rule 14.6.
+      // skip the removal).
       const remover = this.#dependencies.shift();
       remover!.remove();
     }

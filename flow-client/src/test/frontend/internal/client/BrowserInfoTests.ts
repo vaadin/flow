@@ -9,8 +9,7 @@ import { BrowserInfo } from '../../../../main/frontend/internal/client/BrowserIn
 
 describe('BrowserInfo', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.BrowserInfo has no Java test,
-  // so there is nothing to port 1:1 and all coverage below is additional
-  // (PORTING.md rule 13.6).
+  // so there is nothing to port 1:1 and all coverage below is additional.
   it('get() returns a cached singleton', () => {
     expect(BrowserInfo.get()).to.equal(BrowserInfo.get());
   });

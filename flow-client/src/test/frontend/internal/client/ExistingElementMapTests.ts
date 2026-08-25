@@ -19,16 +19,14 @@ describe('ExistingElementMap', () => {
     expect(map.getId(element)).to.equal(null);
   });
 
-  // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java
-  // (PORTING.md rule 13.6).
+  // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java.
   it('returns null for unknown ids and elements', () => {
     const map = new ExistingElementMap();
     expect(map.getElement(0)).to.equal(null);
     expect(map.getId(document.createElement('span'))).to.equal(null);
   });
 
-  // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java
-  // (PORTING.md rule 13.6).
+  // Beyond the Java suite: no equivalent @Test in ExistingElementMapTest.java.
   it('is a no-op when removing an unknown id', () => {
     const map = new ExistingElementMap();
     expect(() => map.remove(99)).to.not.throw();

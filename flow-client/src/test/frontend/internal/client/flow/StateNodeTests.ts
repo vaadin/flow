@@ -62,8 +62,8 @@ describe('StateNode', () => {
     expect(anotherMap).to.equal(map);
   });
 
-  // Also the counterpart of GwtStateNodeTest.testNodeData_getNodeData_sameInstance
-  // (PORTING.md rule 13.9): set node data, then get the same instance back by type.
+  // Also the counterpart of GwtStateNodeTest.testNodeData_getNodeData_sameInstance:
+  // set node data, then get the same instance back by type.
   it('stores and retrieves node data by type', () => {
     const data = new TestData();
     node.setNodeData(data);

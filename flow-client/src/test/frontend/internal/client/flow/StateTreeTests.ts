@@ -145,8 +145,8 @@ describe('StateTree', () => {
   });
 
   // testUpdatingTree_triggeringBinder_causesAssertionError is intentionally not
-  // ported: it drives `Binder.bind`, and `Binder` is not yet ported (PORTING.md
-  // rule 11). Restore this case in the PR that ports `Binder`.
+  // ported: it drives `Binder.bind`, and `Binder` is not yet ported. Restore
+  // this case in the PR that ports `Binder`.
 
   describe('sendNodePropertySyncToServer', () => {
     it('sends a non-initial property of a valid node', () => {
@@ -183,7 +183,7 @@ describe('StateTree', () => {
   it('setUpdateInProgress flushes property updates', () => {
     // One Java @Test asserts the flush fires once after setUpdateInProgress(true)
     // and again (twice total) after setUpdateInProgress(false); kept as a single
-    // it() so the case maps 1:1 to the Java method (PORTING.md rule 13.4).
+    // it() so the case maps 1:1 to the Java method.
     const { tree, getFlushCount } = makeTree();
     expect(getFlushCount()).to.equal(0);
     tree.setUpdateInProgress(true);
@@ -278,8 +278,8 @@ describe('StateTree', () => {
     expect(tree.isResync()).to.equal(true);
   });
 
-  // Cases from the GWT-side counterpart GwtStateTreeTest (PORTING.md rule 13.9);
-  // its four test* methods run under GWTTestCase and are ported 1:1 here.
+  // Cases from the GWT-side counterpart GwtStateTreeTest; its four test* methods
+  // run under GWTTestCase and are ported 1:1 here.
   describe('GwtStateTreeTest', () => {
     it('delegates a template event to the server connector', () => {
       // testSendTemplateEventToServer_delegateToServerConnector
@@ -293,8 +293,8 @@ describe('StateTree', () => {
       expect(templateEvents.length).to.equal(1);
       expect(templateEvents[0].node).to.equal(node);
       expect(templateEvents[0].methodName).to.equal('foo');
-      // Java casts argsArray with crazyJsCast (erased in TS, rule 14.5), so the
-      // array is passed straight through to the connector.
+      // Java casts argsArray with crazyJsCast (erased in TS), so the array is
+      // passed straight through to the connector.
       expect(templateEvents[0].args).to.equal(args);
       expect(templateEvents[0].promiseId).to.equal(-1);
     });
@@ -344,7 +344,7 @@ describe('StateTree', () => {
       // testPrepareForResync_rejectsPendingPromise: the GWT test drives
       // ServerEventObject.get(element) and native promise mocks. ServerEventObject
       // is not yet ported, so the port exercises the same branch through the
-      // injected serverEventObjectAccess deviation (rule 12), which stands in for
+      // injected serverEventObjectAccess deviation, which stands in for
       // ServerEventObject.getIfPresent and whose rejectPromises() is invoked here.
       let rejected = false;
       const access: ServerEventObjectAccess = () => ({

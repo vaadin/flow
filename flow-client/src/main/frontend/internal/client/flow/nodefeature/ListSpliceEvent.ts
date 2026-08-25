@@ -42,8 +42,8 @@ export class ListSpliceEvent extends ReactiveValueChangeEvent {
    *   nodes of the given list, `false` otherwise
    */
   // The five positional parameters deliberately match the Java ListSpliceEvent
-  // constructor (see PORTING.md: match the Java parameter list, do not bundle
-  // positional parameters into an object), so max-params is disabled here.
+  // constructor (match the Java parameter list, do not bundle positional
+  // parameters into an object), so max-params is disabled here.
   // eslint-disable-next-line @typescript-eslint/max-params
   constructor(source: NodeList, index: number, remove: unknown[], add: unknown[], clear: boolean) {
     super(source);

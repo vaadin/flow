@@ -342,6 +342,23 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        `JsonObject` and returns it — observationally different for a caller that
        holds a reference to the input.)
 
+## Comments in ported code
+
+15. **Do not cite these porting conventions from ported code.** A comment in a
+    `.ts` module — production or test — explains what the code does and why on its
+    own terms; it must **not** reference `PORTING.md` or a rule number (`rule 14.6`,
+    `13.9`, `PORTING.md 13.6`, …). These conventions exist to govern the review of
+    the port while the migration series is in progress; once the port is finished
+    this document goes away, and a comment that points at "rule 13.6" becomes a
+    dangling reference to a file the reader no longer has. Keep the *substance* —
+    the reason a deviation exists, that a case has no Java equivalent, why a `!` is
+    used instead of `?.` — as a self-contained explanation, and drop the citation.
+    (A review still cites rule numbers; that lives in the PR discussion and the
+    review grid, not in the source tree.) _Introduced during #24948._ (Regression
+    this prevents: production and test modules across the stack carried
+    `// See PORTING.md rule 14.6` and `// beyond the Java suite (PORTING.md 13.6)`
+    comments that would outlive the review process.)
+
 ## Retrofit backlog
 
 Rules added mid-series that earlier ported code does not satisfy yet. A row is

@@ -348,8 +348,7 @@ export function getRelativeTimeMillis(): number {
 function logGwtEvent(name: string, type: string): void {
   // Mirror Java's non-null call: $wnd.__gwtStatsEvent(...) is unguarded (the
   // logger is installed by ensureLogger before any event fires), so use `!`
-  // rather than `?.` (which would silently drop the event). See PORTING.md
-  // rule 14.6.
+  // rather than `?.` (which would silently drop the event).
   gwtWindow().__gwtStatsEvent!({
     evtGroup: EVT_GROUP,
     moduleName: MODULE_NAME,

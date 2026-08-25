@@ -23,8 +23,7 @@ const win = window as unknown as Win;
 
 describe('Profiler', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.Profiler has no Java test,
-  // so there is nothing to port 1:1 and all coverage below is additional
-  // (PORTING.md rule 13.6).
+  // so there is nothing to port 1:1 and all coverage below is additional.
   // The result consumer is a module-level singleton that may only be set once
   // (setProfilerResultConsumer throws otherwise), so it is installed once and
   // captures into holders that each test resets.

@@ -28,7 +28,7 @@ function makeTree(): StateTree {
 
 // Change builders mirroring the private static helpers in
 // TreeChangeProcessorTest.java: every wire key and change-type value is taken
-// from JsonConstants by name rather than hard-coded (PORTING.md rule 9).
+// from JsonConstants by name rather than hard-coded.
 function baseChange(node: number, type: string): Change {
   return {
     [JsonConstants.CHANGE_TYPE]: type,
@@ -169,8 +169,8 @@ describe('TreeChangeProcessor', () => {
     expect(node).to.equal(tree.getRootNode());
   });
 
-  // Also the counterpart of GwtTreeChangeProcessorTest.testPrimitiveSplice
-  // (PORTING.md rule 13.9): a CHANGE_SPLICE_ADD of scalar values grows the list.
+  // Also the counterpart of GwtTreeChangeProcessorTest.testPrimitiveSplice:
+  // a CHANGE_SPLICE_ADD of scalar values grows the list.
   it('applies primitive splice changes to a list', () => {
     const tree = makeTree();
     const rootId = tree.getRootNode().getId();
@@ -337,7 +337,7 @@ describe('TreeChangeProcessor', () => {
 
   // Beyond the Java suite: no equivalent @Test in TreeChangeProcessorTest.java.
   // Exercises the attach change and the affected-node set returned by
-  // processChanges (PORTING.md rule 13.6).
+  // processChanges.
   it('attaches new nodes and returns the affected set', () => {
     const tree = makeTree();
     const nodes = processChanges(tree, [attachChange(2)]);

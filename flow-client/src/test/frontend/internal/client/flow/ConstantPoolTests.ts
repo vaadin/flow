@@ -1,11 +1,11 @@
 import { expect } from '@open-wc/testing';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 
-// Beyond the Java suite: ConstantPool has no counterpart in any of the four
-// locations rule 13.9 names — no JRE `ConstantPoolTest` or `JreConstantPoolTest`
-// under flow-client/src/test/java, no `GwtConstantPoolTest` under src/test-gwt,
-// and (being com.vaadin.client, not com.vaadin.flow) no flow-server test — so
-// every case here is new coverage rather than a 1:1 port (PORTING.md rule 13.6).
+// Beyond the Java suite: ConstantPool has no counterpart in any of the checked
+// locations — no JRE `ConstantPoolTest` or `JreConstantPoolTest` under
+// flow-client/src/test/java, no `GwtConstantPoolTest` under src/test-gwt, and
+// (being com.vaadin.client, not com.vaadin.flow) no flow-server test — so every
+// case here is new coverage rather than a 1:1 port.
 describe('ConstantPool', () => {
   it('imports constants from JSON and reads them back', () => {
     const pool = new ConstantPool();

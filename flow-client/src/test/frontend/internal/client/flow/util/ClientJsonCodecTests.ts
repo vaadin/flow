@@ -34,15 +34,15 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
   return new StateTree(registry);
 }
 
-// Counterpart set (PORTING.md rule 13.9): there is no JRE `ClientJsonCodecTest`
-// or `JreClientJsonCodecTest` under flow-client/src/test/java, and ClientJsonCodec
+// Counterpart set: there is no JRE `ClientJsonCodecTest` or
+// `JreClientJsonCodecTest` under flow-client/src/test/java, and ClientJsonCodec
 // lives in com.vaadin.client (not com.vaadin.flow), so there is no flow-server
 // test either. The only counterpart is `GwtClientJsonCodecTest` under
 // src/test-gwt, whose two GWTTestCase-runnable `test*` methods are ported in the
 // `GwtClientJsonCodecTest` block below; the remaining cases are extra coverage
-// beyond the Java suite (rule 13.6).
+// beyond the Java suite.
 describe('ClientJsonCodec', () => {
-  // Cases from the GWT-side counterpart GwtClientJsonCodecTest (rule 13.9).
+  // Cases from the GWT-side counterpart GwtClientJsonCodecTest.
   // decodeWithoutTypeInfo mirrors ClientJsonCodec's GWT.isScript() branch — a
   // no-op returning the JSON as-is. The Java cases carry @Test(expected=
   // IllegalArgumentException), but GWTTestCase (JUnit 3) ignores that annotation
@@ -115,11 +115,10 @@ describe('ClientJsonCodec', () => {
       expect(decodeWithTypeInfo(tree, [1, { '@v-node': 5 }])).to.deep.equal([1, domNode]);
     });
 
-    // Beyond the Java suite (PORTING.md rule 13.6): pins the identity half of
-    // rule 14.7. `ClientJsonCodec.java:306` writes the decoded values back into
-    // the incoming JsonObject and returns that same instance, so the port must
-    // mutate in place rather than build a copy — which `to.deep.equal` cannot
-    // tell apart.
+    // Beyond the Java suite: pins the mutate-in-place identity of the decode.
+    // `ClientJsonCodec.java:306` writes the decoded values back into the incoming
+    // JsonObject and returns that same instance, so the port must mutate in place
+    // rather than build a copy — which `to.deep.equal` cannot tell apart.
     it('decodes an object in place, returning the same instance', () => {
       const json = { a: 1, b: { '@v-node': 5 } };
 

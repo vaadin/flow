@@ -111,7 +111,7 @@ describe('SharedUtil', () => {
   // with the default locale set to Turkish, since capitalize must be
   // locale-independent; JavaScript upper-casing of ASCII already is, so the
   // locale switch has no analog. The assertions after those two go beyond the
-  // Java case (PORTING.md 13.6).
+  // Java case.
   it('capitalizes the first character', () => {
     expect(capitalize('integer')).to.equal('Integer');
     expect(capitalize('i')).to.equal('I');
@@ -169,38 +169,38 @@ describe('SharedUtil', () => {
     });
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('adds a parameter with ? to a bare URI', () => {
     expect(addGetParameter('/foo', 'v-r', 'uidl')).to.equal('/foo?v-r=uidl');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('adds a parameter with & when a query already exists', () => {
     expect(addGetParameter('/foo?a=1', 'b', '2')).to.equal('/foo?a=1&b=2');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('stringifies a numeric value', () => {
     expect(addGetParameter('/foo', 'v-uiId', 7)).to.equal('/foo?v-uiId=7');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('inserts the parameter before the fragment', () => {
     expect(addGetParameter('/foo#frag', 'a', '1')).to.equal('/foo?a=1#frag');
     expect(addGetParameter('/foo?x=1#frag', 'a', '1')).to.equal('/foo?x=1&a=1#frag');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('returns the URI unchanged for empty extra params', () => {
     expect(addGetParameters('/foo', '')).to.equal('/foo');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('returns the URI unchanged for null extra params', () => {
     expect(addGetParameters('/foo', null)).to.equal('/foo');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('lowercases the first character', () => {
     expect(firstToLower('Foo')).to.equal('foo');
     expect(firstToLower('A')).to.equal('a');
@@ -208,14 +208,14 @@ describe('SharedUtil', () => {
     expect(firstToLower(null)).to.equal(null);
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('converts a property id to a human friendly format', () => {
     expect(propertyIdToHumanFriendly('firstName')).to.equal('First Name');
     expect(propertyIdToHumanFriendly('address.streetName')).to.equal('Street Name');
     expect(propertyIdToHumanFriendly('')).to.equal('');
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('prefixes only relative urls without a protocol', () => {
     expect(prefixIfRelative('foo', '/prefix/')).to.equal('/prefix/foo');
     expect(prefixIfRelative('/foo', '/prefix/')).to.equal('/foo');

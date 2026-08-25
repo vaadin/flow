@@ -124,8 +124,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * elements.
  *
  * Mirrors the Java, which writes each decoded value back into the incoming
- * object and returns that same instance (see PORTING.md rule 14.7); a caller
- * holding a reference to the input observes the decoded values in place.
+ * object and returns that same instance; a caller holding a reference to the
+ * input observes the decoded values in place.
  *
  * Private in Java; covered through the public `decodeWithTypeInfo` surface.
  */
@@ -204,7 +204,7 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
       }
       // Mirror Java's non-null deref: tree.getNode(nodeId).getDomNode() throws
       // if the node is missing, so use `!` (a TypeError on null) rather than
-      // `?.` (which would silently yield undefined). See PORTING.md rule 14.6.
+      // `?.` (which would silently yield undefined).
       return tree.getNode(nodeIdValue)!.getDomNode();
     }
 
