@@ -1190,7 +1190,7 @@ function attachShadow(context: BindingContext): void {
  * Binds the element's shadow root: attaches it now and re-attaches whenever the
  * SHADOW_ROOT_DATA feature gains the shadow-root node. Mirrors bindShadowRoot.
  */
-export function bindShadowRoot(context: BindingContext): EventRemover {
+function bindShadowRoot(context: BindingContext): EventRemover {
   const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
   attachShadow(context);
   return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
@@ -1275,7 +1275,7 @@ function getPayload(node: StateNode): Record<string, unknown> {
  * Binds the node's virtual children, appending current ones and observing
  * additions. Mirrors bindVirtualChildren.
  */
-export function bindVirtualChildren(context: BindingContext): EventRemover {
+function bindVirtualChildren(context: BindingContext): EventRemover {
   const children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
 
   for (let i = 0; i < children.length(); i++) {

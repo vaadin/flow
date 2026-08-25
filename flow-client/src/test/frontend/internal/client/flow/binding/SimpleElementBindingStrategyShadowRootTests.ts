@@ -1,11 +1,8 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
-  bindShadowRoot,
-  BindingContext
-} from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
-import {
   BindGuardStateNode,
+  type CollectingTree,
   NodeFeatures,
   NodeProperties,
   StateNode,
@@ -13,79 +10,54 @@ import {
   makeCollectingTree
 } from '../bindingTestHelpers';
 
-const ELEMENT_CHILDREN = 2;
-const SHADOW_ROOT_DATA = 20;
-
-const noExistingMap = { getElement: () => null, remove: () => {} };
-
-function fakeChild(id: number): any {
-  let domNode: Node | null = null;
-  return {
-    getId: () => id,
-    getDomNode: () => domNode,
-    setDomNode: (n: Node | null) => {
-      domNode = n;
-    },
-    getTree: () => ({ getRegistry: () => ({ getExistingElementMap: () => noExistingMap }) })
-  };
-}
-
-// A node carrying a SHADOW_ROOT_DATA map and (for the shadow node) an
-// ELEMENT_CHILDREN list.
-function fakeNode(config: { shadowRootNode?: any; children?: any[] }): any {
-  const shadowProperty = { getValue: () => config.shadowRootNode ?? null };
-  const shadowMap = { getProperty: () => shadowProperty, addPropertyAddListener: () => ({ remove: () => {} }) };
-  const childList = {
-    length: () => (config.children ?? []).length,
-    get: (i: number) => (config.children ?? [])[i],
-    hasBeenCleared: () => false,
-    forEach: () => {},
-    addSpliceListener: () => ({ remove: () => {} })
-  };
-  let domNode: Node | null = null;
-  return {
-    getDomNode: () => domNode,
-    setDomNode: (n: Node | null) => {
-      domNode = n;
-    },
-    getMap: (feature: number) => (feature === SHADOW_ROOT_DATA ? shadowMap : {}),
-    getList: (feature: number) => (feature === ELEMENT_CHILDREN ? childList : childList)
-  };
-}
-
-function binderContext(): any {
-  return {
-    createAndBind: (child: any) => {
-      let el = child.getDomNode();
-      if (el === null) {
-        el = document.createElement('span');
-        child.setDomNode(el);
-      }
-      return el;
-    },
-    bind: () => {},
-    getStrategies: () => []
-  };
-}
-
+// Shadow root binding is exercised through a bound element: the SHADOW_ROOT_DATA
+// property carries the state node of the shadow root, whose children end up in
+// the element's real shadow root.
 describe('SimpleElementBindingStrategy shadow root binding', () => {
-  afterEach(() => Reactive.flush());
+  let harness: CollectingTree;
+  let node: StateNode;
+  let element: HTMLElement;
 
-  it('attaches an open shadow root and binds its children', () => {
-    const element = document.createElement('div');
-    const shadowRootNode = fakeNode({ children: [fakeChild(2)] });
-    const node = fakeNode({ shadowRootNode });
-    bindShadowRoot(new BindingContext(node, element, binderContext()));
-
-    expect(element.shadowRoot).to.not.equal(null);
-    expect(shadowRootNode.getDomNode()).to.equal(element.shadowRoot);
-    expect(element.shadowRoot!.children).to.have.length(1);
+  beforeEach(() => {
+    Reactive.reset();
+    harness = makeCollectingTree();
+    node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    element = document.createElement('div');
+    node.setDomNode(element);
   });
 
-  it('does nothing when there is no shadow root node', () => {
-    const element = document.createElement('div');
-    bindShadowRoot(new BindingContext(fakeNode({}), element, binderContext()));
-    expect(element.shadowRoot).to.equal(null);
+  afterEach(() => Reactive.flush());
+
+  // Beyond the Java suite: the GWT suite reaches the shadow root only through
+  // the virtual child and double-bind cases, and has no test for attaching it.
+  describe('beyond the Java suite', () => {
+    it('attaches an open shadow root and binds its children', () => {
+      const shadowRootNode = new StateNode(3, harness.tree);
+      harness.tree.registerNode(shadowRootNode);
+      const shadowChild = new StateNode(4, harness.tree);
+      harness.tree.registerNode(shadowChild);
+      shadowChild.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('span');
+      shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, shadowChild);
+
+      node.getMap(NodeFeatures.SHADOW_ROOT_DATA).getProperty(NodeProperties.SHADOW_ROOT).setValue(shadowRootNode);
+
+      bind(node, element);
+      Reactive.flush();
+
+      expect(element.shadowRoot).to.not.equal(null);
+      expect(shadowRootNode.getDomNode()).to.equal(element.shadowRoot);
+      expect(element.shadowRoot!.children).to.have.length(1);
+      expect(element.shadowRoot!.children[0].tagName).to.equal('SPAN');
+    });
+
+    it('attaches no shadow root when there is no shadow root node', () => {
+      bind(node, element);
+      Reactive.flush();
+
+      expect(element.shadowRoot).to.equal(null);
+    });
   });
 
   // Ported from GwtMultipleBindingTest.testBindShadowRootDoubleBind: a second
