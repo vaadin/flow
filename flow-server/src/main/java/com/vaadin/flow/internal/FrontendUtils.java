@@ -1159,7 +1159,7 @@ public class FrontendUtils {
      * external processes.
      * <p>
      * The message is printed as-is, wrapped with the given ANSI color escape
-     * sequence and {@link #ANSI_RESET}; it is never interpreted as a
+     * sequence and {@link AnsiColor#RESET}; it is never interpreted as a
      * {@link String#format(String, Object...)} format string.
      *
      * @param ansiColor
