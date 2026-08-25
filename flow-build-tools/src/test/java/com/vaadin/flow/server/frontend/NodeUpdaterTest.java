@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -424,7 +425,7 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+    void testGetPlatformPinnedDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
         Logger logger = Mockito.spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
@@ -434,19 +435,17 @@ class NodeUpdaterTest {
                     .thenReturn(logger);
 
             Mockito.when(
-                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                    .thenReturn(null);
-            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                    .thenReturn(null);
+                    finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                    .thenReturn(List.of());
 
             ObjectNode pinnedVersions = nodeUpdater
                     .getPlatformPinnedDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
             Mockito.verify(logger, Mockito.times(1)).info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+                    "Couldn't find any versions file in {} to pin dependency versions for platform components."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                    Constants.PLATFORM_VERSIONS_FOLDER);
         }
     }
 
@@ -464,10 +463,9 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
@@ -500,10 +498,9 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
@@ -594,10 +591,10 @@ class NodeUpdaterTest {
                 StandardCharsets.UTF_8);
         FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        vaadinVersionsFile.getParentFile().toURI().toURL()));
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         Mockito.doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
@@ -617,8 +614,6 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
 
         File vaadinVersionsFile = File.createTempFile("vaadin-versions",
                 ".json",
@@ -632,8 +627,10 @@ class NodeUpdaterTest {
 
         FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        vaadinVersionsFile.getParentFile().toURI().toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 

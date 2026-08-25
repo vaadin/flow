@@ -91,12 +91,14 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .withBuildDirectory(TARGET).withBundleBuild(true)
                 .withFrontendDependenciesScanner(getScanner(classFinder));
         packageCreator = new TaskGeneratePackageJson(options);
-        versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
                 .toFile();
+        versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageUpdater = new TaskUpdatePackages(options);
         packageJson = new File(baseDir, PACKAGE_JSON);

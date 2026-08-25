@@ -414,18 +414,14 @@ public final class Constants implements Serializable {
     public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
     /**
-     * The name of platform core components and tools versions file.
-     * 
-     * @since 23.1.3
+     * The path of the folder containing versions files, listing the npm
+     * packages and versions that the platform manages.
+     * <p>
+     * Every jar contributing platform managed npm packages ships one or more
+     * {@code .json} files in this folder and all of them are read and merged.
      */
-    public static final String VAADIN_CORE_VERSIONS_JSON = "vaadin-core-versions.json";
-
-    /**
-     * The name of platform commercial components and tools versions file.
-     * 
-     * @since 2.2
-     */
-    public static final String VAADIN_VERSIONS_JSON = "vaadin-versions.json";
+    public static final String PLATFORM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
+            + "versions/";
 
     /**
      * Default live reload port as defined in Spring Boot Dev Tools.

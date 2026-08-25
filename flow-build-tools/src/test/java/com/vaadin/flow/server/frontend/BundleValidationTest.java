@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -398,8 +399,9 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        File versions = new File(temporaryFolder,
-                Constants.VAADIN_CORE_VERSIONS_JSON);
+        File versionsFolder = new File(temporaryFolder, "versions");
+        versionsFolder.mkdirs();
+        File versions = new File(versionsFolder, "versions.json");
         versions.createNewFile();
         FileUtils.write(versions, """
                 {
@@ -414,8 +416,8 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -426,7 +428,7 @@ class BundleValidationTest {
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         assertFalse(needsBuild,
-                "vaadin-core-versions.json should have updated version to expected.");
+                "versions.json should have updated version to expected.");
     }
 
     @ParameterizedTest
@@ -2436,8 +2438,9 @@ class BundleValidationTest {
         Mockito.when(depScanner.getPackages()).thenReturn(
                 Collections.singletonMap("@vaadin/button", "2.0.0"));
 
-        File versions = new File(temporaryFolder,
-                Constants.VAADIN_CORE_VERSIONS_JSON);
+        File versionsFolder = new File(temporaryFolder, "versions");
+        versionsFolder.mkdirs();
+        File versions = new File(versionsFolder, "versions.json");
         versions.createNewFile();
         FileUtils.write(versions, """
                 {
@@ -2459,8 +2462,8 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))

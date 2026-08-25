@@ -681,10 +681,12 @@ class FrontendUtilsTest {
     void platformVersion_returnsExpectedVersion() throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
@@ -717,13 +719,9 @@ class FrontendUtilsTest {
     void noVersionsJson_getVersionsDoesntThrow() throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
-
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         Optional<String> vaadinVersion = FrontendBuildUtils
                 .getVaadinVersion(finder);
@@ -737,10 +735,12 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
@@ -786,10 +786,12 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
@@ -837,10 +839,12 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"

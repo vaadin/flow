@@ -17,9 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,13 +40,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.JS_VERSION;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_NAME;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_VERSION;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -472,71 +463,16 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all platform npm dependencies from vaadin-core-versions.json and
-     * vaadin-versions.json to use in overrides so that any component versions
-     * get locked even when they are transitive.
+     * Collect all platform npm dependencies from the platform versions files to
+     * use in overrides so that any component versions get locked even when they
+     * are transitive.
      *
      * @return json containing all npm keys and versions
      * @throws IOException
      *             thrown for exception reading stream
      */
     private ObjectNode getFullPlatformDependencies() throws IOException {
-        ObjectNode platformDependencies = JacksonUtils.createObjectNode();
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-        if (coreVersionsResource == null) {
-            return platformDependencies;
-        }
-
-        try (InputStream content = coreVersionsResource.openStream()) {
-            collectDependencies(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    platformDependencies);
-        }
-
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (vaadinVersionsResource == null) {
-            // vaadin is not on the classpath, only vaadin-core is present.
-            return platformDependencies;
-        }
-
-        try (InputStream content = vaadinVersionsResource.openStream()) {
-            collectDependencies(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    platformDependencies);
-        }
-
-        return platformDependencies;
-    }
-
-    private void collectDependencies(JsonNode obj, ObjectNode collection) {
-        for (String key : JacksonUtils.getKeys(obj)) {
-            JsonNode value = obj.get(key);
-            if (!(value instanceof ObjectNode)) {
-                continue;
-            }
-            if (value.has(NPM_NAME)) {
-                String npmName = value.get(NPM_NAME).asString();
-                if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
-                    return;
-                }
-                String version;
-                if (value.has(NPM_VERSION)) {
-                    version = value.get(NPM_VERSION).asString();
-                } else if (value.has(JS_VERSION)) {
-                    version = value.get(JS_VERSION).asString();
-                } else {
-                    log().debug(
-                            "dependency '{}' has no 'npmVersion'/'jsVersion'.",
-                            npmName);
-                    continue;
-                }
-                collection.put(npmName, version);
-            } else {
-                collectDependencies(value, collection);
-            }
-        }
+        return new PlatformVersions(finder).getAllDependencies();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {

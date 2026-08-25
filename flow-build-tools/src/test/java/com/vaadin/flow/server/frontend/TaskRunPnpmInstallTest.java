@@ -117,7 +117,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // Write package json file
         Files.writeString(packageJson.toPath(), "{}");
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // Platform defines a pinned version
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
@@ -177,7 +177,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
                 "{"
@@ -481,12 +481,19 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(updater, options);
     }
 
+    private File createVersionsFile() throws IOException {
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        return new File(versionsFolder, "versions.json");
+    }
+
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
         ObjectNode packageJson = JacksonUtils
                 .readTree(Files.readString(packageJsonFile.toPath()));
