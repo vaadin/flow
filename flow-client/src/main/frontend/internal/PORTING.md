@@ -98,7 +98,8 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      `eslint.config.mjs` lists each test subdirectory in
      `projectService.allowDefaultProject` (its globs do not support the `**`
      multi-level wildcard, so add one entry per level when introducing a new
-     test subdirectory).
+     test subdirectory). This mapping fixes where the suite **lives**; which Java
+     test classes it must cover is rule 13.9, and there is often more than one.
 
 ## Visibility parity
 
@@ -213,10 +214,10 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     cases, merged cases, under-asserting cases); the sub-rules below spell out
     what "1:1" means so the mismatches don't recur.
     1. **One Java `@Test` → at least one TypeScript `it()`.** Every `@Test`
-       method in the Java counterpart is accounted for by an `it()`. This is a
-       floor, not a ceiling: a module may carry *extra* cases beyond the Java
-       set (see 13.6). Verify before opening the PR that no Java case is
-       missing.
+       method in **every** Java counterpart (13.9) is accounted for by an
+       `it()`. This is a floor, not a ceiling: a module may carry *extra* cases
+       beyond the Java set (see 13.6). Verify before opening the PR that no Java
+       case is missing.
     2. **Never drop a case.** Port *every* `@Test`, including the intricate
        ones. A missing `it()` means "not in the Java test", never "skipped for
        brevity". (Regression this prevents: `MapPropertyTest.java`'s 9
@@ -265,6 +266,28 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        it from there, even across package directories. (Regression this
        prevents: `MapPropertyTests`, `NodeMapTests` and `NodeListTests` each
        carried their own `countingComputation` copy instead of the shared one.)
+    9. **A module can have more than one Java counterpart — find them all.**
+       Rule 2's path mirror says where a `*Tests.ts` *lives*; it does not say
+       where its Java counterpart lives. Before counting cases, inventory every
+       Java test class that exercises the ported class, across all source roots
+       and naming variants:
+       - `flow-client/src/test/java/**/XTest.java` — the JRE-side unit test;
+       - `flow-client/src/test-gwt/java/**/GwtXTest.java` — the GWT/browser test
+         (`GwtJsArrayTest` for `JsArray`, `GwtStateTreeTest` for `StateTree`);
+       - `flow-client/src/test/java/**/JreXTest.java` — the JRE-fallback test
+         (`JreArrayTest` for `JsArray`);
+       - `flow-server/src/test/java/**/XTest(s).java` — for a class ported from
+         `com.vaadin.flow.*` (`BrowserDetailsTest`, `SharedUtilTests`).
+
+       Rules 13.1–13.8 then apply to the **union** of their `@Test` methods, and
+       a suite that declares itself to have no Java counterpart must have checked
+       all four locations first. List the counterparts you found in the review, so
+       the next round does not have to re-derive the set. _Introduced during
+       #24948._ (Regression this prevents: eight `@Test` methods across
+       `GwtStateTreeTest`, `GwtStateNodeTest`, `GwtTreeChangeProcessorTest` and
+       `GwtClientJsonCodecTest` had no verdict in any grid, and
+       `ClientJsonCodecTests` stated that `ClientJsonCodec` "has no `*Test.java`
+       counterpart" while `GwtClientJsonCodecTest` existed with two cases.)
 
 ## Language mapping
 

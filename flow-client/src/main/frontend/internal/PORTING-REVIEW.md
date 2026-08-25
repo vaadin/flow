@@ -53,6 +53,14 @@ Derive each module's Java counterpart by reversing rule 2's path mapping
 (`internal/<rest>/X.ts` ↔ `com.vaadin.<rest>.X`; `…/XTests.ts` ↔ `…XTest`), so
 the pairing is mechanical rather than guessed.
 
+For a **test** suite that mapping gives the file location, not the counterpart
+set: enumerate the Java test classes per rule 13.9 — the JRE-side `XTest`, the
+`GwtXTest` under `src/test-gwt`, a `JreXTest` where one exists, and the
+`flow-server` test for a class ported from `com.vaadin.flow.*` — and compare
+against the **union** of their `@Test` methods. *Decision procedure:* the report
+lists the counterparts found per suite and the union's case count, so a suite that
+claims to have none has demonstrably looked.
+
 **Report evidence, not verdicts.** The grid may be summarised **per rule** — never
 per module — and each rule row carries what established it: the counts compared,
 or the members listed. *"Rule 6: `@param`/`@returns` per module 5/2, 4/2, 16/12/3,
