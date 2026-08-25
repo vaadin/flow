@@ -33,15 +33,20 @@ export interface CollectingTree {
 // strategy reaches for (getConstantPool / getExistingElementMap /
 // getApplicationConfiguration). The server-facing calls are collected so the
 // ported tests can assert on them.
-export function makeCollectingTree(): CollectingTree {
+export interface CollectingTreeOptions {
+  webComponentMode?: boolean;
+  serviceUrl?: string;
+}
+
+export function makeCollectingTree(options: CollectingTreeOptions = {}): CollectingTree {
   const constantPool = new ConstantPool();
   const existingElementMap = {
     getElement: (): Element | null => null,
     remove: (): void => {}
   };
   const applicationConfiguration = {
-    isWebComponentMode: (): boolean => false,
-    getServiceUrl: (): string => ''
+    isWebComponentMode: (): boolean => options.webComponentMode ?? false,
+    getServiceUrl: (): string => options.serviceUrl ?? ''
   };
 
   const collectedNodes: StateNode[] = [];

@@ -352,7 +352,7 @@ export function bindClassList(element: Element, node: StateNode): EventRemover {
  * configuration (prefixing the service URL in web-component mode for relative
  * URIs); anything else is stringified. Mirrors updateAttributeValue.
  */
-export function updateAttributeValue(
+function updateAttributeValue(
   configuration: ApplicationConfiguration,
   element: Element,
   attribute: string,
@@ -379,7 +379,7 @@ export function updateAttributeValue(
  * Updates the named element attribute from a map property, resolving the
  * application configuration from the property's node. Mirrors updateAttribute.
  */
-export function updateAttribute(mapProperty: MapProperty, element: Element): void {
+function updateAttribute(mapProperty: MapProperty, element: Element): void {
   updateAttributeValue(
     mapProperty.getMap().getNode().getTree().getRegistry().getApplicationConfiguration(),
     element,
