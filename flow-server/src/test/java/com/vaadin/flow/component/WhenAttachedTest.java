@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class WhileAttachedTest {
+class WhenAttachedTest {
 
     @Tag("div")
     private static class TestComponent extends Component {
@@ -46,7 +46,7 @@ class WhileAttachedTest {
     }
 
     private Registration logging(TestComponent component, String prefix) {
-        return component.whileAttached(ui -> {
+        return component.whenAttached(ui -> {
             log.add(prefix + "attach");
             return () -> log.add(prefix + "detach");
         });
@@ -102,7 +102,7 @@ class WhileAttachedTest {
         ui.add(component);
 
         List<UI> seen = new ArrayList<>();
-        component.whileAttached(handlerUi -> {
+        component.whenAttached(handlerUi -> {
             seen.add(handlerUi);
             return null;
         });
@@ -116,7 +116,7 @@ class WhileAttachedTest {
         TestComponent component = new TestComponent();
         MockUI ui = new MockUI();
         ui.add(component);
-        component.whileAttached(ignored -> null);
+        component.whenAttached(ignored -> null);
 
         ui.remove(component);
         ui.add(component);
@@ -197,7 +197,7 @@ class WhileAttachedTest {
     void elementLevelApi_handlerRunOnAttachAndDetach() {
         Element element = new Element("div");
         MockUI ui = new MockUI();
-        element.whileAttached(handlerUi -> {
+        element.whenAttached(handlerUi -> {
             log.add("attach");
             return () -> log.add("detach");
         });
@@ -222,7 +222,7 @@ class WhileAttachedTest {
         MockUI ui = new MockUI(session);
         ui.add(component);
 
-        component.whileAttached(ignored -> () -> {
+        component.whenAttached(ignored -> () -> {
             throw new IllegalStateException("cleanup failed");
         });
         logging(component);
@@ -239,6 +239,6 @@ class WhileAttachedTest {
     void nullHandler_throws() {
         TestComponent component = new TestComponent();
         assertThrows(NullPointerException.class,
-                () -> component.whileAttached(null));
+                () -> component.whenAttached(null));
     }
 }

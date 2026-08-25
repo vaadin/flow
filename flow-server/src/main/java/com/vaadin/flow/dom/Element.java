@@ -1676,7 +1676,7 @@ public class Element extends Node<Element> {
      * to the matching detach without keeping it in a field:
      *
      * <pre>
-     * element.whileAttached(ui -&gt; registerForPush(element, ui));
+     * element.whenAttached(ui -&gt; registerForPush(element, ui));
      * </pre>
      * <p>
      * Removing the returned registration removes the handler and also runs any
@@ -1695,7 +1695,7 @@ public class Element extends Node<Element> {
      *         cleanup, not <code>null</code>
      * @since 25.3
      */
-    public Registration whileAttached(
+    public Registration whenAttached(
             SerializableFunction<UI, Registration> attachHandler) {
         return new AttachScope(this, attachHandler);
     }

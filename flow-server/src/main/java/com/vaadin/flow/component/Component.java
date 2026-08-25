@@ -496,14 +496,14 @@ public abstract class Component
      * is detached again. The handler is run immediately if the component is
      * already attached.
      * <p>
-     * This keeps logic that is active only while the component is attached in
-     * one place, instead of spreading it over {@link #onAttach(AttachEvent)},
+     * This keeps the setup and the matching teardown in one place, instead of
+     * spreading them over {@link #onAttach(AttachEvent)},
      * {@link #onDetach(DetachEvent)} and a field for carrying the state from
      * one to the other:
      *
      * <pre>
      * public MyComponent() {
-     *     whileAttached(ui -&gt; registerForPush(this, ui));
+     *     whenAttached(ui -&gt; registerForPush(this, ui));
      * }
      * </pre>
      * <p>
@@ -511,7 +511,7 @@ public abstract class Component
      * life-cycle of another component:
      *
      * <pre>
-     * avatarGroup.whileAttached(ui -&gt; {
+     * avatarGroup.whenAttached(ui -&gt; {
      *     presence.put(userId, user);
      *     return () -&gt; presence.remove(userId);
      * });
@@ -520,7 +520,7 @@ public abstract class Component
      * Removing the returned registration removes the handler and also runs any
      * cleanup that is pending from the latest attach.
      *
-     * @see Element#whileAttached(SerializableFunction)
+     * @see Element#whenAttached(SerializableFunction)
      *
      * @param attachHandler
      *            the handler to run on attach, returning the cleanup to run on
@@ -530,9 +530,9 @@ public abstract class Component
      *         cleanup, not <code>null</code>
      * @since 25.3
      */
-    public Registration whileAttached(
+    public Registration whenAttached(
             SerializableFunction<UI, Registration> attachHandler) {
-        return getElement().whileAttached(attachHandler);
+        return getElement().whenAttached(attachHandler);
     }
 
     /**

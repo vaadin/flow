@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
  * element is attached, and runs the matching cleanup when the element is
  * detached again.
  *
- * @see Element#whileAttached(SerializableFunction)
+ * @see Element#whenAttached(SerializableFunction)
  */
 class AttachScope implements Registration {
 
