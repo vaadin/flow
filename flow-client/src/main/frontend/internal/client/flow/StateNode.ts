@@ -20,7 +20,7 @@
 
 import { assert } from '../../assert';
 import type { EventRemover } from '../../EventRemover';
-import type { JsonValue, NodeFeature, NodeFeatureNode } from './nodefeature/NodeFeature';
+import type { JsonValue, NodeFeature } from './nodefeature/NodeFeature';
 import { NodeList } from './nodefeature/NodeList';
 import { NodeMap } from './nodefeature/NodeMap';
 import { NodeUnregisterEvent } from './NodeUnregisterEvent';
@@ -33,7 +33,7 @@ type Constructor<T> = abstract new (...args: never[]) => T;
 /**
  * A client-side representation of a server-side state node.
  */
-export class StateNode implements NodeFeatureNode {
+export class StateNode {
   readonly #tree: StateTree;
 
   readonly #id: number;

@@ -185,17 +185,26 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     that ports the referenced class.
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
-    future ported class will satisfy at cutover — see `MapPropertyTree` /
-    `MapPropertyNode` / `MapPropertyOwner` in `MapProperty.ts`. A slice is only
-    for a class that is **not yet ported**, never a permanent decoupling from one
-    that is: once the referenced class lands, replace the slice with a real
-    `import` of the ported type and delete the interface. (E.g. `StateNode` and
-    `ClientJsonCodec` import the real `StateTree` rather than re-declaring a
-    `getNode` / `getRegistry` slice, and where a real consumer needs a member the
-    slice omitted — such as `ServerConnector.sendReturnChannelMessage` — extend
-    the still-unported slice to cover it.) If the PR that ports the class cannot
-    collapse a slice in the same change, it files a retrofit-backlog row naming
-    the slice: a slice never outlives its port silently.
+    future ported class will satisfy at cutover — see `Registry` /
+    `ServerConnector` / `InitialPropertiesHandler` in `StateTree.ts`, standing in
+    for the not-yet-ported `com.vaadin.client.Registry` and its
+    server-communication layer. A slice is only for a class that is **not yet
+    ported**, never a permanent decoupling from one that is: once the referenced
+    class lands, replace the slice with a real `import` of the ported type and
+    delete the interface. (E.g. `StateNode` and `ClientJsonCodec` import the real
+    `StateTree` rather than re-declaring a `getNode` / `getRegistry` slice; and
+    once `StateTree`/`StateNode`/`NodeMap` landed in #24948, `MapProperty` and
+    `NodeFeature` dropped their `MapPropertyTree` / `MapPropertyNode` /
+    `MapPropertyOwner` / `NodeFeatureNode` slices for the real types. Where the
+    real class would create a runtime import cycle — `NodeFeature` is the base
+    class of `NodeList`/`NodeMap`, so a *value* import of `StateNode` for an
+    `instanceof` would form a circular `extends` — import the type with
+    `import type` and keep a structural runtime check, documented at the site.
+    Where a real consumer needs a member the slice omitted — such as
+    `ServerConnector.sendReturnChannelMessage` — extend the still-unported slice
+    to cover it.) If the PR that ports the class cannot collapse a slice in the
+    same change, it files a retrofit-backlog row naming the slice: a slice never
+    outlives its port silently.
 
 ## Tests
 
@@ -318,4 +327,9 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 12 — slices outlived the port of the class they stood in for | `client/flow/nodefeature/MapProperty.ts` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner`, `getMap()`), `client/flow/nodefeature/NodeFeature.ts` (`NodeFeatureNode`, `getNode()`, `isStateNode`) | the branch above #24948 — collapsing the slices to the nominal `StateNode` / `StateTree` / `NodeMap` also rewrites the base-layer `MapPropertyTests` / `NodeMapTests` / `NodeListTests` object-literal mocks into real instances, which is out of this PR's additive scope | open |
+
+_No open rows: the rule-12 slices that stood in for `StateNode` / `StateTree` /
+`NodeMap` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
+`MapProperty.ts`, `NodeFeatureNode` in `NodeFeature.ts`) were collapsed to the
+real types in #24948, which also rewrote the base-layer `MapPropertyTests` /
+`NodeMapTests` / `NodeListTests` mocks into real instances._

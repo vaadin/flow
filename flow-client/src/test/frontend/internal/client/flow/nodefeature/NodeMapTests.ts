@@ -5,16 +5,22 @@ import type { MapProperty } from '../../../../../../main/frontend/internal/clien
 import type { MapPropertyChangeEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyChangeEvent';
 import { NodeMap } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeMap';
 import type { MapPropertyAddEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyAddEvent';
-import type { NodeFeatureNode } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
-// Minimal StateNode stand-in; node-feature tests do not reach into the tree.
-const node: NodeFeatureNode = {
-  getTree: () => {
-    throw new Error('tree not available in this test');
-  },
-  getDebugJson: () => null
-};
+// A real state node; node-feature tests do not reach into the tree.
+const node = new StateNode(
+  0,
+  new StateTree({
+    getInitialPropertiesHandler: () => {
+      throw new Error('registry not available in this test');
+    },
+    getServerConnector: () => {
+      throw new Error('registry not available in this test');
+    }
+  })
+);
 
 describe('NodeMap', () => {
   let map: NodeMap;

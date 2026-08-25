@@ -21,7 +21,7 @@ import type { EventRemover } from '../../../EventRemover';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';
 import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
-import { MapProperty, type MapPropertyOwner } from './MapProperty';
+import { MapProperty } from './MapProperty';
 import { MapPropertyAddEvent } from './MapPropertyAddEvent';
 import type { MapPropertyAddListener } from './MapPropertyAddListener';
 import { NodeFeature, type JsonValue } from './NodeFeature';
@@ -37,7 +37,7 @@ import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
  * added (properties are never removed). It is not invalidated when the value of
  * a property changes since the property is a reactive values of its own.
  */
-export class NodeMap extends NodeFeature implements ReactiveValue, MapPropertyOwner {
+export class NodeMap extends NodeFeature implements ReactiveValue {
   readonly #properties = new Map<string, MapProperty>();
 
   readonly #eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
