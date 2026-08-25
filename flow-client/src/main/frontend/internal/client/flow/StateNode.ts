@@ -26,6 +26,7 @@ import { NodeMap } from './nodefeature/NodeMap';
 import { NodeUnregisterEvent } from './NodeUnregisterEvent';
 import type { NodeUnregisterListener } from './NodeUnregisterListener';
 import type { StateTree } from './StateTree';
+import { createJsonObjectWithoutPrototype } from '../WidgetUtil';
 
 type Constructor<T> = abstract new (...args: never[]) => T;
 
@@ -144,7 +145,7 @@ export class StateNode implements NodeFeatureNode {
    * @returns a JSON representation
    */
   getDebugJson(): JsonValue {
-    const object: Record<string, JsonValue> = {};
+    const object = createJsonObjectWithoutPrototype() as Record<string, JsonValue>;
 
     this.forEachFeature((feature, featureId) => {
       const json = feature.getDebugJson();
