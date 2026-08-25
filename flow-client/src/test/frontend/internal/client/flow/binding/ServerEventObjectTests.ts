@@ -2,12 +2,8 @@ import { expect } from '@open-wc/testing';
 import {
   defineMethod,
   get,
-  getEventData,
   getIfPresent,
   getMethods,
-  getOrCreateExpression,
-  getPolymerPropertyObject,
-  initPromiseHandler,
   rejectPromises,
   removeMethod
 } from '../../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
@@ -45,18 +41,8 @@ function fakeNode(
 }
 
 describe('ServerEventObject', () => {
-  it('initPromiseHandler installs a non-enumerable promise callback with an empty promise list', () => {
-    const server: Record<string, any> = {};
-    initPromiseHandler(server as any, NAME);
-    expect(typeof server[NAME]).to.equal('function');
-    expect(server[NAME].promises).to.deep.equal([]);
-    // Non-enumerable so it is not reported as a server method.
-    expect(Object.keys(server)).to.deep.equal([]);
-  });
-
   it('the promise callback resolves or rejects the stored promise and clears it', () => {
-    const server: Record<string, any> = {};
-    initPromiseHandler(server as any, NAME);
+    const server: Record<string, any> = get({} as any);
     const resolved: unknown[] = [];
     const rejected: unknown[] = [];
     server[NAME].promises[0] = [(v: unknown) => resolved.push(v), (e: unknown) => rejected.push(e)];
@@ -81,16 +67,14 @@ describe('ServerEventObject', () => {
   });
 
   it('getMethods returns the own enumerable keys', () => {
-    const server: Record<string, any> = {};
-    initPromiseHandler(server as any, NAME);
+    const server: Record<string, any> = get({} as any);
     server.foo = () => {};
     server.bar = () => {};
     expect(getMethods(server as any)).to.deep.equal(['foo', 'bar']);
   });
 
   it('rejectPromises rejects every pending promise', () => {
-    const server: Record<string, any> = {};
-    initPromiseHandler(server as any, NAME);
+    const server: Record<string, any> = get({} as any);
     const rejected: string[] = [];
     server[NAME].promises[0] = [() => {}, (e: Error) => rejected.push(e.message)];
     server[NAME].promises[1] = [() => {}, (e: Error) => rejected.push(e.message)];
@@ -98,15 +82,23 @@ describe('ServerEventObject', () => {
     expect(rejected).to.deep.equal(['Client is resynchronizing', 'Client is resynchronizing']);
   });
 
-  it('getPolymerPropertyObject wraps a model object carrying a nodeId, else null', () => {
-    const withNodeId = { get: (path: string) => (path === 'item' ? { nodeId: 7, foo: 'x' } : null) };
-    expect(getPolymerPropertyObject(withNodeId, 'item')).to.deep.equal({ nodeId: 7 });
+  it('sends only the node id of a model object, and null when it has none', () => {
+    // The DOM node exposes the model object via its Polymer get(path).
+    const withNodeId = { get: (path: string) => (path === 'foo' ? { nodeId: 7, bar: 'x' } : null) };
+    const node = fakeNode({ doIt: { value: 'key' } }, { key: ['foo'] }, withNodeId);
+    const server: Record<string, any> = {};
+    defineMethod(server, 'doIt', node, false);
 
-    const noNodeId = { get: () => ({ foo: 'x' }) };
-    expect(getPolymerPropertyObject(noNodeId, 'item')).to.equal(null);
+    server.doIt({});
+    expect(node.sent[0].args).to.deep.equal([{ nodeId: 7 }]);
 
-    // No get method => null.
-    expect(getPolymerPropertyObject({}, 'item')).to.equal(null);
+    // A model object without a node id is sent as null.
+    const noNodeId = fakeNode({ doIt: { value: 'key' } }, { key: ['foo'] }, { get: () => ({ bar: 'x' }) });
+    const other: Record<string, any> = {};
+    defineMethod(other, 'doIt', noNodeId, false);
+
+    other.doIt({});
+    expect(noNodeId.sent[0].args).to.deep.equal([null]);
   });
 
   it('getIfPresent returns the $server object or null', () => {
@@ -125,13 +117,6 @@ describe('ServerEventObject', () => {
     expect(getMethods(server)).to.deep.equal([]);
     // A second call returns the same object.
     expect(get(element)).to.equal(server);
-  });
-
-  it('getOrCreateExpression compiles and caches an (event, element) function', () => {
-    const expr = getOrCreateExpression('event.detail + element.offset');
-    expect(expr({ detail: 5 } as any, { offset: 3 })).to.equal(8);
-    // Same string => same cached function instance.
-    expect(getOrCreateExpression('event.detail + element.offset')).to.equal(expr);
   });
 
   it('defineMethod with no server-defined data sends all call arguments and no promise', () => {
@@ -156,8 +141,7 @@ describe('ServerEventObject', () => {
 
   it('defineMethod with returnPromise returns a promise the server callback settles', async () => {
     const node = fakeNode();
-    const server: Record<string, any> = {};
-    initPromiseHandler(server, NAME);
+    const server: Record<string, any> = get({} as any);
     defineMethod(server, 'doIt', node, true);
 
     const promise = server.doIt() as Promise<unknown>;
@@ -178,13 +162,14 @@ describe('ServerEventObject', () => {
     expect(node.sent[0].args).to.deep.equal([42, { nodeId: 9 }]);
   });
 
-  it('getEventData returns null when no listener is defined for the method', () => {
-    expect(getEventData({}, {} as any, 'missing', fakeNode())).to.equal(null);
-  });
+  it('evaluates an event expression against the event and the server object', () => {
+    // An event expression is compiled to an (event, element) function, where
+    // the element is the object the method is defined on.
+    const node = fakeNode({ doIt: { value: 'key' } }, { key: ['event.detail + element.offset'] });
+    const server: Record<string, any> = { offset: 3 };
+    defineMethod(server, 'doIt', node, false);
 
-  it('getEventData reads a non-event expression as a Polymer property from the DOM node', () => {
-    const domNode = { get: (path: string) => (path === 'foo' ? { nodeId: 3 } : null) };
-    const node = fakeNode({ doIt: { value: 'key' } }, { key: ['foo'] }, domNode);
-    expect(getEventData({}, {} as any, 'doIt', node)).to.deep.equal([{ nodeId: 3 }]);
+    server.doIt({ detail: 5 });
+    expect(node.sent[0].args).to.deep.equal([8]);
   });
 });

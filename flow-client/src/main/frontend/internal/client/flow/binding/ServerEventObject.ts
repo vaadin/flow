@@ -89,7 +89,7 @@ const expressionCache = new Map<string, ServerEventDataExpression>();
  * The server calls it (by the promiseCallbackName key) to settle a pending
  * promise created by a returnPromise method, identified by promiseId.
  */
-export function initPromiseHandler(serverObject: ServerObject, promiseCallbackName: string): void {
+function initPromiseHandler(serverObject: ServerObject, promiseCallbackName: string): void {
   Object.defineProperty(serverObject, promiseCallbackName, {
     value: function (promiseId: number, success: boolean, value: unknown): void {
       const promise = serverObject[promiseCallbackName].promises[promiseId];
@@ -154,7 +154,7 @@ export function rejectPromises(serverObject: ServerObject, promiseCallbackName: 
  * a model object carrying a nodeId, returns a `{ nodeId }` wrapper; otherwise
  * null.
  */
-export function getPolymerPropertyObject(node: unknown, propertyName: string): { nodeId: unknown } | null {
+function getPolymerPropertyObject(node: unknown, propertyName: string): { nodeId: unknown } | null {
   const polymerNode = node as { get?: (path: string) => unknown };
   if (typeof polymerNode.get === 'function') {
     const polymerProperty = polymerNode.get(propertyName) as Record<string, unknown> | null;
@@ -279,7 +279,7 @@ export function defineMethod(
  * @param node - Target node
  * @returns Array of extra event data
  */
-export function getEventData(
+function getEventData(
   serverObject: ServerObject,
   event: Event,
   methodName: string,
@@ -350,7 +350,7 @@ function createPolymerPropertyObject(
  * caching the result per expression string; mirrors getOrCreateExpression. The
  * `element` parameter receives the $server object, matching the Java contract.
  */
-export function getOrCreateExpression(expressionString: string): ServerEventDataExpression {
+function getOrCreateExpression(expressionString: string): ServerEventDataExpression {
   let expression = expressionCache.get(expressionString);
 
   if (expression === undefined) {
