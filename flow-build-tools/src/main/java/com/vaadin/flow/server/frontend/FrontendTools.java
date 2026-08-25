@@ -337,6 +337,7 @@ public class FrontendTools {
      *            the task options to read the frontend tools configuration
      *            from, not {@code null}
      * @return a new {@link FrontendTools} instance
+     * @since 25.2.5
      */
     public static FrontendTools fromOptions(Options options) {
         FrontendToolsSettings settings = new FrontendToolsSettings(
@@ -370,6 +371,7 @@ public class FrontendTools {
      *
      * @return the path to an already available node executable, or {@code null}
      *         if none is available without installation
+     * @since 25.3
      */
     public String getExistingNodeExecutable() {
         NodeResolver.ActiveNodeInstallation active = activeNodeInstallation;

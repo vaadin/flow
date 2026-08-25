@@ -22,6 +22,7 @@ package com.vaadin.flow.server;
  * listener added first is notified of the release last.
  *
  * @see AbstractSessionLockEvent
+ * @since 25.3
  */
 public class SessionLockReleasedEvent extends AbstractSessionLockEvent {
 

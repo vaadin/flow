@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
  * The check only runs under {@code -ea} (assertions), so it costs nothing in
  * production but turns a latent, timing-dependent ABBA into a deterministic
  * failure on any thread that violates the ordering.
+ * 
+ * @since 25.3
  */
 public class LeafLock implements Serializable {
 
