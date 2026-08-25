@@ -16,14 +16,22 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -58,8 +66,49 @@ import com.vaadin.flow.signals.impl.UsageTracker;
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
+    /**
+     * System property that can be set to {@code false} to disable the warning
+     * that is logged when the same owner accumulates several active effects
+     * with an equivalent callback. Provided as an opt-out in case the
+     * best-effort duplicate detection produces false positives, e.g. when a
+     * callback captures values with an unexpectedly broad equality definition.
+     */
+    static final String DUPLICATE_EFFECT_WARNING_PROPERTY = "vaadin.signals.duplicateEffectWarning";
+
+    private static final String DUPLICATE_EFFECT_WARNING = """
+            A signal effect is being created for a component that already has \
+            an active effect with an equivalent callback. This typically \
+            happens when Signal.effect(...) (or a similar binding) is set up in \
+            onAttach without releasing the previously created effect, causing \
+            effects to accumulate every time the component is detached and \
+            re-attached. Either set up the effect only once, e.g. in the \
+            component's constructor, or capture the returned Registration and \
+            remove it in onDetach. Set the system property '%s' to 'false' to \
+            disable this warning."""
+            .formatted(DUPLICATE_EFFECT_WARNING_PROPERTY);
+
+    /**
+     * Tracks the currently active effects per owner element so that duplicates
+     * with an equivalent callback can be detected. Entries are removed
+     * deterministically when effects are disabled or closed; the weak keys are
+     * only a safety net for owners that become unreachable without a matching
+     * detach.
+     */
+    private static final Map<Element, Map<EffectIdentity, Integer>> activeEffects = Collections
+            .synchronizedMap(new WeakHashMap<>());
+
     private final ContextualEffectAction effectFunction;
     private final Element owner;
+    /**
+     * The original callback passed by the caller, used to derive an
+     * {@link EffectIdentity} for duplicate detection. For the
+     * {@link EffectAction} entry point this is the original action rather than
+     * the {@link ContextualEffectAction} wrapper, so that two effects created
+     * from the same lambda are recognized as equivalent.
+     */
+    private final Serializable identitySource;
+    private @Nullable EffectIdentity activeIdentity = null;
+    private boolean registeredAsActive = false;
     private Effect effect = null;
     private Registration attachRegistration;
     private Registration detachRegistration;
@@ -70,14 +119,21 @@ public final class ElementEffect implements Serializable {
     private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
-        this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
+        this(owner, (ContextualEffectAction) ctx -> effectFunction.execute(),
+                effectFunction);
     }
 
     public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
+        this(owner, effectFunction, effectFunction);
+    }
+
+    private ElementEffect(Element owner, ContextualEffectAction effectFunction,
+            Serializable identitySource) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
+        this.identitySource = identitySource;
         this.owner = owner;
 
         if (owner.getNode().isAttached()) {
@@ -347,15 +403,19 @@ public final class ElementEffect implements Serializable {
             effect.activate();
         }
         effect.setOwnerUI(ui);
+
+        registerAsActive();
     }
 
     private void disableEffect() {
         if (effect != null) {
             effect.passivate();
         }
+        unregisterAsActive();
     }
 
     public void close() {
+        unregisterAsActive();
         if (effect != null) {
             effect.dispose();
             effect = null;
@@ -368,6 +428,124 @@ public final class ElementEffect implements Serializable {
             detachRegistration.remove();
             detachRegistration = null;
         }
+    }
+
+    /**
+     * Records this effect as active for its owner and logs a warning if the
+     * owner already has another active effect with an equivalent callback.
+     * <p>
+     * The check is a best-effort development aid: if the callback identity
+     * cannot be determined (e.g. because the captured lambda fields are not
+     * reflectively accessible) or the captured values misbehave when compared,
+     * the tracking is silently skipped so that it never interferes with the
+     * effect itself.
+     */
+    private void registerAsActive() {
+        if (registeredAsActive || identitySource == null) {
+            return;
+        }
+        try {
+            EffectIdentity identity = computeIdentity(identitySource);
+            boolean duplicate;
+            synchronized (activeEffects) {
+                Map<EffectIdentity, Integer> counts = activeEffects
+                        .computeIfAbsent(owner, key -> new HashMap<>());
+                Integer previous = counts.get(identity);
+                duplicate = previous != null && previous > 0;
+                counts.put(identity, previous == null ? 1 : previous + 1);
+            }
+            activeIdentity = identity;
+            registeredAsActive = true;
+            if (duplicate && isDuplicateWarningEnabled()) {
+                getLogger().warn(DUPLICATE_EFFECT_WARNING);
+            }
+        } catch (RuntimeException | ReflectiveOperationException e) {
+            getLogger().debug(
+                    "Could not track signal effect for duplicate detection", e);
+        }
+    }
+
+    /**
+     * Removes this effect from the active tracking for its owner. Balances a
+     * previous {@link #registerAsActive()} call.
+     */
+    private void unregisterAsActive() {
+        if (!registeredAsActive) {
+            return;
+        }
+        registeredAsActive = false;
+        EffectIdentity identity = activeIdentity;
+        activeIdentity = null;
+        if (identity == null) {
+            return;
+        }
+        try {
+            synchronized (activeEffects) {
+                Map<EffectIdentity, Integer> counts = activeEffects.get(owner);
+                if (counts == null) {
+                    return;
+                }
+                Integer previous = counts.get(identity);
+                if (previous == null) {
+                    return;
+                }
+                if (previous <= 1) {
+                    counts.remove(identity);
+                    if (counts.isEmpty()) {
+                        activeEffects.remove(owner);
+                    }
+                } else {
+                    counts.put(identity, previous - 1);
+                }
+            }
+        } catch (RuntimeException e) {
+            getLogger().debug(
+                    "Could not update signal effect duplicate tracking", e);
+        }
+    }
+
+    /**
+     * Derives an identity for a callback based on its concrete class and the
+     * values captured in its closure. Two callbacks are considered equivalent
+     * when they have the same class and equal captured values. This relies on
+     * the assumption that effect callbacks are idempotent and that captured
+     * values have a reasonable equality definition.
+     */
+    private static EffectIdentity computeIdentity(Serializable callback)
+            throws ReflectiveOperationException {
+        Class<?> callbackClass = callback.getClass();
+        Field[] fields = callbackClass.getDeclaredFields();
+        List<Object> capturedValues = new ArrayList<>(fields.length);
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            field.setAccessible(true);
+            capturedValues.add(field.get(callback));
+        }
+        return new EffectIdentity(callbackClass, capturedValues);
+    }
+
+    private static boolean isDuplicateWarningEnabled() {
+        return !"false".equalsIgnoreCase(
+                System.getProperty(DUPLICATE_EFFECT_WARNING_PROPERTY));
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ElementEffect.class);
+    }
+
+    /**
+     * Identity of an effect callback based on its class and captured closure
+     * values, used to detect duplicate effects with an equivalent callback.
+     *
+     * @param callbackClass
+     *            the concrete class of the callback
+     * @param capturedValues
+     *            the values captured in the callback's closure
+     */
+    private record EffectIdentity(Class<?> callbackClass,
+            List<Object> capturedValues) implements Serializable {
     }
 
     /**

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -1672,6 +1674,91 @@ class ElementEffectTest {
         session.setErrorHandler(events::add);
 
         return events;
+    }
+
+    @Test
+    void effect_duplicateEffectAccumulatesOnReattach_logsWarning() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        // Reproduces the reported foot-gun: an effect is set up in an attach
+        // listener without releasing it, so an equivalent effect accumulates on
+        // every attach/detach cycle.
+        component.getElement().addAttachListener(
+                event -> Signal.effect(component, () -> signal.get()));
+
+        MockUI ui = new MockUI();
+        String captured = captureSystemErr(() -> {
+            ui.add(component); // first attach: single effect, no warning
+            ui.remove(component); // detach: effect deactivated, not closed
+            ui.add(component); // reattach: a second equivalent effect -> warn
+        });
+
+        assertTrue(
+                captured.contains("active effect with an equivalent callback"),
+                "A warning should be logged when an equivalent effect accumulates on the same owner");
+    }
+
+    @Test
+    void effect_singleEffectReattached_noWarning() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        // Proper usage: the effect is created once, so re-attaching the
+        // component only re-enables the same effect and must not warn.
+        Signal.effect(component, () -> signal.get());
+
+        MockUI ui = new MockUI();
+        String captured = captureSystemErr(() -> {
+            ui.add(component);
+            ui.remove(component);
+            ui.add(component);
+        });
+
+        assertFalse(
+                captured.contains("active effect with an equivalent callback"),
+                "No warning should be logged for a single, properly managed effect");
+    }
+
+    @Test
+    void effect_duplicateWarningDisabledViaProperty_noWarning() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        component.getElement().addAttachListener(
+                event -> Signal.effect(component, () -> signal.get()));
+
+        MockUI ui = new MockUI();
+        System.setProperty(ElementEffect.DUPLICATE_EFFECT_WARNING_PROPERTY,
+                "false");
+        try {
+            String captured = captureSystemErr(() -> {
+                ui.add(component);
+                ui.remove(component);
+                ui.add(component);
+            });
+            assertFalse(
+                    captured.contains(
+                            "active effect with an equivalent callback"),
+                    "No warning should be logged when duplicate detection is disabled");
+        } finally {
+            System.clearProperty(
+                    ElementEffect.DUPLICATE_EFFECT_WARNING_PROPERTY);
+        }
+    }
+
+    private static String captureSystemErr(Runnable action) {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(buffer, true));
+        try {
+            action.run();
+        } finally {
+            System.setErr(originalErr);
+        }
+        return buffer.toString();
     }
 
     @Tag("div")
