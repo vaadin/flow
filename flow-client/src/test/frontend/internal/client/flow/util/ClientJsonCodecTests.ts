@@ -1,7 +1,8 @@
 import { expect } from '@open-wc/testing';
 import {
   decodeStateNode,
-  decodeWithTypeInfo
+  decodeWithTypeInfo,
+  decodeWithoutTypeInfo
 } from '../../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree, type Registry } from '../../../../../../main/frontend/internal/client/flow/StateTree';
@@ -33,9 +34,34 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
   return new StateTree(registry);
 }
 
-// Beyond the Java suite: ClientJsonCodec has no *Test.java counterpart, so every
-// case here is new coverage rather than a 1:1 port (PORTING.md rule 13.6).
+// Counterpart set (PORTING.md rule 13.9): there is no JRE `ClientJsonCodecTest`
+// or `JreClientJsonCodecTest` under flow-client/src/test/java, and ClientJsonCodec
+// lives in com.vaadin.client (not com.vaadin.flow), so there is no flow-server
+// test either. The only counterpart is `GwtClientJsonCodecTest` under
+// src/test-gwt, whose two GWTTestCase-runnable `test*` methods are ported in the
+// `GwtClientJsonCodecTest` block below; the remaining cases are extra coverage
+// beyond the Java suite (rule 13.6).
 describe('ClientJsonCodec', () => {
+  // Cases from the GWT-side counterpart GwtClientJsonCodecTest (rule 13.9).
+  // decodeWithoutTypeInfo mirrors ClientJsonCodec's GWT.isScript() branch — a
+  // no-op returning the JSON as-is. The Java cases carry @Test(expected=
+  // IllegalArgumentException), but GWTTestCase (JUnit 3) ignores that annotation
+  // and runs in compiled-JS mode, so an array/object is returned unchanged rather
+  // than rejected; the JRE-only rejection is test scaffolding with no port.
+  describe('decodeWithoutTypeInfo', () => {
+    it('returns an array unchanged', () => {
+      // testDecodeWithoutTypeInfo_arrayUnsupported
+      const array = ['string', true];
+      expect(decodeWithoutTypeInfo(array)).to.equal(array);
+    });
+
+    it('returns an object unchanged', () => {
+      // testDecodeWithoutTypeInfo_objectUnsupported
+      const object = { key: 'value' };
+      expect(decodeWithoutTypeInfo(object)).to.equal(object);
+    });
+  });
+
   describe('decodeStateNode', () => {
     let tree: StateTree;
     let node: StateNode;

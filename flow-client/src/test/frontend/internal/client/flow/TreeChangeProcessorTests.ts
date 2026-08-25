@@ -169,6 +169,8 @@ describe('TreeChangeProcessor', () => {
     expect(node).to.equal(tree.getRootNode());
   });
 
+  // Also the counterpart of GwtTreeChangeProcessorTest.testPrimitiveSplice
+  // (PORTING.md rule 13.9): a CHANGE_SPLICE_ADD of scalar values grows the list.
   it('applies primitive splice changes to a list', () => {
     const tree = makeTree();
     const rootId = tree.getRootNode().getId();

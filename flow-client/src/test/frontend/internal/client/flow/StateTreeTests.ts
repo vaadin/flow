@@ -1,7 +1,12 @@
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
-import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import {
+  StateTree,
+  type Registry,
+  type ServerEventObjectAccess
+} from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 
@@ -12,13 +17,25 @@ interface Sync {
   value: unknown;
 }
 
-function makeTree(handlePropertyUpdateResult = false): {
+interface TemplateEvent {
+  node: StateNode;
+  methodName: string;
+  args: unknown[];
+  promiseId: number;
+}
+
+function makeTree(
+  handlePropertyUpdateResult = false,
+  serverEventObjectAccess?: ServerEventObjectAccess
+): {
   tree: StateTree;
   syncs: Sync[];
+  templateEvents: TemplateEvent[];
   getFlushCount: () => number;
   getRegisteredNodes: () => StateNode[];
 } {
   const syncs: Sync[] = [];
+  const templateEvents: TemplateEvent[] = [];
   let flushCount = 0;
   const registeredNodes: StateNode[] = [];
   const registry: Registry = {
@@ -34,15 +51,17 @@ function makeTree(handlePropertyUpdateResult = false): {
     getServerConnector: () => ({
       sendEventMessage: () => {},
       sendNodeSyncMessage: (node, mapId, name, value) => syncs.push({ node, mapId, name, value }),
-      sendTemplateEventMessage: () => {},
+      sendTemplateEventMessage: (node, methodName, args, promiseId) =>
+        templateEvents.push({ node, methodName, args, promiseId }),
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
     })
   };
   return {
-    tree: new StateTree(registry),
+    tree: serverEventObjectAccess ? new StateTree(registry, serverEventObjectAccess) : new StateTree(registry),
     syncs,
+    templateEvents,
     getFlushCount: () => flushCount,
     getRegisteredNodes: () => registeredNodes
   };
@@ -257,5 +276,94 @@ describe('StateTree', () => {
     expect(tree.getRootNode().isUnregistered()).to.equal(false);
     expect(node.isUnregistered()).to.equal(true);
     expect(tree.isResync()).to.equal(true);
+  });
+
+  // Cases from the GWT-side counterpart GwtStateTreeTest (PORTING.md rule 13.9);
+  // its four test* methods run under GWTTestCase and are ported 1:1 here.
+  describe('GwtStateTreeTest', () => {
+    it('delegates a template event to the server connector', () => {
+      // testSendTemplateEventToServer_delegateToServerConnector
+      const { tree, templateEvents } = makeTree();
+      const node = new StateNode(2, tree);
+      tree.registerNode(node);
+      const args = [true, 'bar', 46.2];
+
+      tree.sendTemplateEventToServer(node, 'foo', args, -1);
+
+      expect(templateEvents.length).to.equal(1);
+      expect(templateEvents[0].node).to.equal(node);
+      expect(templateEvents[0].methodName).to.equal('foo');
+      // Java casts argsArray with crazyJsCast (erased in TS, rule 14.5), so the
+      // array is passed straight through to the connector.
+      expect(templateEvents[0].args).to.equal(args);
+      expect(templateEvents[0].promiseId).to.equal(-1);
+    });
+
+    it('ignores a deferred template event once the node is unregistered', () => {
+      // testDeferredTemplateMessage_isIgnored
+      const { tree, templateEvents } = makeTree();
+      const node = new StateNode(2, tree);
+      tree.registerNode(node);
+
+      Reactive.addPostFlushListener(() => {
+        tree.sendTemplateEventToServer(node, 'click', [], -1);
+        expect(templateEvents.length, 'message should not have been sent').to.equal(0);
+      });
+
+      tree.unregisterNode(node);
+      Reactive.flush();
+
+      expect(templateEvents.length).to.equal(0);
+    });
+
+    it('unregisters descendants and clears the root child lists on resync', () => {
+      // testPrepareForResync_unregistersDescendantsAndClearsRootChildren
+      const { tree } = makeTree();
+      const root = tree.getRootNode();
+
+      const child = new StateNode(2, tree);
+      child.setParent(root);
+      tree.registerNode(child);
+      root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0, child);
+
+      const grandChild = new StateNode(3, tree);
+      grandChild.setParent(child);
+      tree.registerNode(grandChild);
+      child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, grandChild);
+
+      tree.prepareForResync();
+
+      expect(root.isUnregistered()).to.equal(false);
+      expect(root.getList(NodeFeatures.VIRTUAL_CHILDREN).length()).to.equal(0);
+      expect(child.isUnregistered()).to.equal(true);
+      expect(child.getList(NodeFeatures.ELEMENT_CHILDREN).length()).to.equal(0);
+      expect(grandChild.isUnregistered()).to.equal(true);
+    });
+
+    it('rejects a pending promise on a descendant during resync', () => {
+      // testPrepareForResync_rejectsPendingPromise: the GWT test drives
+      // ServerEventObject.get(element) and native promise mocks. ServerEventObject
+      // is not yet ported, so the port exercises the same branch through the
+      // injected serverEventObjectAccess deviation (rule 12), which stands in for
+      // ServerEventObject.getIfPresent and whose rejectPromises() is invoked here.
+      let rejected = false;
+      const access: ServerEventObjectAccess = () => ({
+        rejectPromises: () => {
+          rejected = true;
+        }
+      });
+      const { tree } = makeTree(false, access);
+      const root = tree.getRootNode();
+
+      const child = new StateNode(2, tree);
+      child.setParent(root);
+      tree.registerNode(child);
+      root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0, child);
+      child.setDomNode(document.createElement('div'));
+
+      tree.prepareForResync();
+
+      expect(rejected).to.equal(true);
+    });
   });
 });
