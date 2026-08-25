@@ -220,6 +220,69 @@ describe('SimpleElementBindingStrategy Polymer model (full tree)', () => {
 
   afterEach(() => Reactive.flush());
 
+  it('binds a Polymer element that is defined only after the initial binding', async () => {
+    // Ported from testLatePolymerInit.
+    const propertyName = 'black';
+    const propertyValue = 'coffee';
+
+    // emulatePolymerNotLoaded: the element must not look like a Polymer element
+    // when bind() runs, so the strategy takes the customElements.whenDefined path.
+    const oldPolymer = (window as any).Polymer;
+    (window as any).Polymer = null;
+    Object.defineProperty(element, 'constructor', { value: {}, configurable: true });
+
+    // addMockMethods: count _propertiesChanged calls, and resolve whenDefined
+    // once, turning the element into a Polymer element as Polymer would.
+    element.propertiesChangedCallCount = 0;
+    element._propertiesChanged = (): void => {
+      element.propertiesChangedCallCount += 1;
+    };
+    element.callbackCallCount = 0;
+    const originalWhenDefined = window.customElements.whenDefined.bind(window.customElements);
+    (window.customElements as any).whenDefined = () =>
+      new Promise<void>((resolve) => {
+        (window as any).Polymer = oldPolymer;
+        Object.defineProperty(element, 'constructor', {
+          value: { polymerElementVersion: '2.0.1' },
+          configurable: true
+        });
+        element.callbackCallCount += 1;
+        resolve();
+      });
+
+    try {
+      setModelProperty(node, propertyName, propertyValue, false);
+      node.setNodeData(new UpdatableModelProperties([propertyName]));
+
+      bind(node, element);
+      Reactive.flush();
+      // let the whenDefined promise race settle so the late hook-up runs
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      Reactive.flush();
+
+      expect(element[propertyName]).to.equal(propertyValue);
+
+      const newPropertyValue = 'bubblegum';
+      // emulatePolymerPropertyChange
+      element._propertiesChanged({}, { [propertyName]: newPropertyValue }, {});
+      Reactive.flush();
+
+      expect(element[propertyName]).to.equal(newPropertyValue);
+      expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(propertyName).getValue()).to.equal(
+        newPropertyValue
+      );
+      expect(harness.synchronizedProperties.get(node)?.get(propertyName)).to.equal(newPropertyValue);
+      expect(element.propertiesChangedCallCount, '_propertiesChanged should be triggered exactly once').to.equal(1);
+      expect(
+        element.callbackCallCount,
+        'exactly one whenDefined.then callback should run after the element was initialized'
+      ).to.equal(1);
+    } finally {
+      (window.customElements as any).whenDefined = originalWhenDefined;
+      (window as any).Polymer = oldPolymer;
+    }
+  });
+
   it('adds a model list to the element', () => {
     // Ported from testAddList.
     const serverList = ['one', 'two'];
