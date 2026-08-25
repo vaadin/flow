@@ -202,7 +202,6 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
       // Mirror Java's non-null deref: tree.getNode(nodeId).getDomNode() throws
       // if the node is missing, so use `!` (a TypeError on null) rather than
       // `?.` (which would silently yield undefined). See PORTING.md rule 14.6.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return tree.getNode(nodeIdValue)!.getDomNode();
     }
 
