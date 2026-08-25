@@ -124,7 +124,12 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    ports only the keys the ported client needs) must say so in the module
    Javadoc, and missing entries are added as later ports require them.
 5. **Member order follows the Java declaration order**, including for constant
-   registries.
+   registries. In a module of exported functions this covers the **export order**
+   too: the sequence of `export function` declarations follows the order of the
+   Java methods they port. (Regression this prevents: `TreeChangeProcessor.ts`
+   exported `processChange` before `processChanges` while
+   `TreeChangeProcessor.java` declares `processChanges` first, and a review that
+   checked class members marked the module `pass` on every rule.)
 
 ## Javadoc / TSDoc
 
@@ -134,6 +139,12 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    source keeps its `@param` in the port; a constructor is not exempt. Preserve
    the source wording (including typos); do not silently reword. Convert `<p>` →
    blank lines and `<code>`/`{@code}` → backticks.
+   - Tags belong to the members that are **ported**. An unported private Java
+     helper's `@param`/`@return` are out of scope — `TreeChangeProcessor`'s
+     `jsonArrayAsJsArray` has no TypeScript counterpart, so its tags are not
+     missing — and a parameter that exists only in the port gets its own `@param`,
+     such as `StateTree`'s injected `serverEventObjectAccess`. A tag count that
+     differs from Java for one of those two reasons is not a finding.
 7. **Do not carry `@since` or `@author`.**
 8. **Match the Java API — including constructor signatures.** Do **not** deviate
    from the Java parameter list; in particular, do not bundle several positional
@@ -182,7 +193,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     `ClientJsonCodec` import the real `StateTree` rather than re-declaring a
     `getNode` / `getRegistry` slice, and where a real consumer needs a member the
     slice omitted — such as `ServerConnector.sendReturnChannelMessage` — extend
-    the still-unported slice to cover it.)
+    the still-unported slice to cover it.) If the PR that ports the class cannot
+    collapse a slice in the same change, it files a retrofit-backlog row naming
+    the slice: a slice never outlives its port silently.
 
 ## Tests
 
@@ -288,6 +301,14 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        `eslint-config-vaadin`'s `@typescript-eslint/no-non-null-assertion` fires
        on the `!`, disable it at that line with a note (as rule 8 does for
        `max-params`) rather than reshaping the access into a silent `?.`.
+    7. **Side effects and identity are part of the port.** Mirror what the Java
+       method mutates and what it returns, not just the shape of the result: a
+       helper that mutates its argument in place and returns that same instance is
+       ported the same way, not as build-a-copy-and-return. (Deviation this names:
+       `ClientJsonCodec.decodeObjectWithTypeInfo` builds a new object, where
+       `ClientJsonCodec.java:306` writes the decoded values back into the incoming
+       `JsonObject` and returns it — observationally different for a caller that
+       holds a reference to the input.)
 
 ## Retrofit backlog
 
@@ -297,4 +318,5 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| — | — | — | none open |
+| 12 — slices outlived the port of the class they stood in for | `client/flow/nodefeature/MapProperty.ts` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner`, `getMap()`), `client/flow/nodefeature/NodeFeature.ts` (`NodeFeatureNode`, `getNode()`, `isStateNode`) | #24948 or the branch above it | open |
+| 14.7 — mutation and identity | `client/flow/util/ClientJsonCodec.ts` (`decodeObjectWithTypeInfo`) | #24948 or the branch above it | open |

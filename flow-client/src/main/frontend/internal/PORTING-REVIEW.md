@@ -38,19 +38,34 @@ stop. Do not review the default branch and call it a review of the PR.
 
 ## 1. Enumerate; never sample
 
-Build the grid: **every ported module in this PR × every rule in `PORTING.md`**,
-one verdict per cell — `pass`, `fail`, or `waived` (naming the waiver).
+Build the grid: **every module in scope × every rule in `PORTING.md`**, one
+verdict per cell — `pass`, `fail`, or `waived` (naming the waiver).
+
+**Rows** are the modules this PR adds or changes, **plus every module elsewhere in
+the ported tree that holds an obligation this PR discharges.** Concretely: for
+each class first ported in this PR, search the ported tree for the rule-12
+placeholder slices that stood in for it — their doc says "the slice of X that …"
+or calls itself a port deviation. Every hit is a row, because rule 12 requires the
+slice to disappear once the real class lands. *Decision procedure:* placeholder
+contracts naming a class ported in this PR = 0, or one retrofit-backlog row each.
 
 Derive each module's Java counterpart by reversing rule 2's path mapping
 (`internal/<rest>/X.ts` ↔ `com.vaadin.<rest>.X`; `…/XTests.ts` ↔ `…XTest`), so
 the pairing is mechanical rather than guessed.
 
-A missing cell is an incomplete review, not an implicit pass. A summary verdict
-such as "the port is faithful" without the grid is not a review.
+**Report evidence, not verdicts.** The grid may be summarised **per rule** — never
+per module — and each rule row carries what established it: the counts compared,
+or the members listed. *"Rule 6: `@param`/`@returns` per module 5/2, 4/2, 16/12/3,
+30/11, 4/2, 6/4 — each equal to its Java original"* is a row. *"Every other cell
+`pass`"* is not; it counts as an empty cell, and a missing cell is an incomplete
+review rather than an implicit pass. A summary verdict such as "the port is
+faithful" without the grid is not a review at all.
 
-> Regression this prevents: `@param`/`@returns` were missing from all seven
+> Regressions this prevents: `@param`/`@returns` were missing from all seven
 > state-tree modules while the review reported the production code as faithful —
-> the modules that happened to be spot-checked were the ones that were fine.
+> the modules that happened to be spot-checked were the ones that were fine. Later,
+> `MapProperty`'s rule-12 slices survived a review that marked every module `pass`,
+> because they live in the PR below and were outside the rows.
 
 ## 2. Cite both sides, or it is not a finding
 
@@ -80,17 +95,20 @@ trade-off instead of inventing a threshold.
 
 ## 4. Verify with the commands that exist
 
-Runnable here, from `flow-client/`:
+From `flow-client/`:
 
-| Command | Covers |
-| --- | --- |
-| `npm ci` | install (required first in a clean checkout) |
-| `npm run lint` | eslint, including `tsdoc/syntax` and `no-console` |
-| `npm run compile` | builds, type-checks with `tsc`, then lints |
-| `npm test` | web-test-runner suites |
+| Command | Runs in a clean checkout? | Covers |
+| --- | --- | --- |
+| `npm ci` | yes | install — run it first |
+| `npm run lint` | yes | eslint, including `tsdoc/syntax` and `no-console`. **Not** a type-check |
+| `npm test` | yes | the ported suites. `FlowTests.ts` **fails without a Maven build** — it imports the GWT-built `FlowClient.js`. Expected noise, not a regression |
+| `npm run compile`, `npm run build` | **no** | both run `scripts/client.js`, which reads the GWT output under `target/classes/META-INF/resources/VAADIN/static/client/` and fails with `ENOENT` until Maven has built it |
+| `mvn -pl flow-client install` | yes, slow | the real type-check: GWT compile, then `tsc`, then lint |
 
-`npx tsc --noEmit` is **not** available — use `npm run compile` for the
-type-check.
+`npx tsc --noEmit` is not available either. So lint and the suites are cheap and
+always available, while a type-check costs a full `mvn -pl flow-client install`.
+If you did not run one, write that the type-check is **unverified** and leave it to
+CI — "lint passed" is not "types check".
 
 Paste the real output of what you ran. If a command could not run, write that the
 work is **unverified** and why. There is no third state, and "should be clean" is
@@ -104,6 +122,12 @@ report.
 - After fixing, re-derive each affected verdict **from the files**, not from your
   own earlier report. A run that fixes something does not get to certify it from
   memory.
+- **A finding that is a class, not an instance, is swept in the same run.** When a
+  deviation could exist elsewhere — or you add a rule — inventory the whole ported
+  tree for it before reporting, and include the inventory: site, Java original,
+  verdict. Fix per §8.3; anything deferred gets a retrofit-backlog row. (Regression
+  this prevents: the `?.` → `!` sweep of the base layer happened only because a
+  maintainer asked for it after the PR-local fix.)
 - One rule-class per commit, so each commit has a single decision procedure and
   can be reviewed or reverted on its own.
 - Do not rebase or force-push unless the request says to. An earlier round
@@ -123,6 +147,13 @@ One comment containing, in order:
 Open one inline review thread per `judgement` finding, so it carries its own
 resolvable state. Mechanical findings stay in the grid, where the next run
 re-derives them.
+
+**The PR description is one of the reviewed artifacts.** Its test count must match
+the suites, and any change to files owned by a lower PR must be declared per §8.4.
+A mismatch is a finding like any other, reported with the corrected numbers.
+(Regression this prevents: a description claimed "42 tests" against 57 and "no
+edits to existing code" while two base-layer files carried retrofits, through three
+review rounds.)
 
 ## 7. Do not reopen settled decisions
 
