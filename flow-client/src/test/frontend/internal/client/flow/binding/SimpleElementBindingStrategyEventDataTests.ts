@@ -70,7 +70,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedNodes).to.have.length(1);
   });
 
-  it('sends a leading-phase debounce immediately but buffers a trailing one', async () => {
+  it('sends a leading-phase debounce immediately and swallows the events within the period', async () => {
     bindWithClickExpressions({ true: [[30, 'leading']] });
 
     element.click();
@@ -86,6 +86,19 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     });
     element.click();
     expect(harness.collectedNodes).to.have.length(2);
+  });
+
+  it('sends a trailing-phase debounce only once the period is over', async () => {
+    bindWithClickExpressions({ true: [[30, 'trailing']] });
+
+    element.click();
+    // A trailing debounce is not eager, so nothing is sent yet.
+    expect(harness.collectedNodes).to.have.length(0);
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(harness.collectedNodes).to.have.length(1);
   });
 
   it('maps the event target to the closest state node id', () => {

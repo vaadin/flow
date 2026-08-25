@@ -98,11 +98,6 @@ describe('StateTree', () => {
     expect(() => tree.registerNode(null as unknown as StateNode)).to.throw();
   });
 
-  it('throws when unregistering a node that was never registered', () => {
-    const { tree } = makeTree();
-    expect(() => tree.registerNode(null as unknown as StateNode)).to.throw();
-  });
-
   it('fires the unregister event exactly once with the right node', () => {
     const { tree } = makeTree();
     const node = new StateNode(5, tree);

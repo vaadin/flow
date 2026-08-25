@@ -366,9 +366,6 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     expect(getClientList()).to.deep.equal(serverList);
   });
 
-  // Ported from GwtMultipleBindingTest.testBindModelPropertiesDoubleBind: a
-  // second bind of a Polymer element must not re-read the element-properties
-  // feature.
   // Beyond the Java suite: the GWT suite has no test that drives a property
   // change of a dom-repeat item, so this covers the item-change bridge the
   // strategy installs on the dom-repeat prototype.
@@ -409,6 +406,9 @@ describe('SimpleElementBindingStrategy Polymer model', () => {
     });
   });
 
+  // Ported from GwtMultipleBindingTest.testBindModelPropertiesDoubleBind: a
+  // second bind of a Polymer element must not re-read the element-properties
+  // feature.
   it('binding twice does not re-read model properties', () => {
     const guarded = new BindGuardStateNode(50, harness.tree, (m) => expect.fail(m));
     harness.tree.registerNode(guarded);
