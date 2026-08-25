@@ -1,7 +1,6 @@
 import { expect } from '@open-wc/testing';
 import {
-  create,
-  isApplicable,
+  SimpleElementBindingStrategy,
   needsRebind
 } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { NodeFeatures, NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
@@ -23,6 +22,12 @@ function fakeNode(
 }
 
 describe('SimpleElementBindingStrategy creation & identity', () => {
+  // create and isApplicable are public methods of the strategy, so they are
+  // exercised through an instance of it.
+  const strategy = new SimpleElementBindingStrategy();
+  const create = (node: any): Element => strategy.create(node);
+  const isApplicable = (node: any): boolean => strategy.isApplicable(node);
+
   it('create uses the node namespace when present', () => {
     const element = create(fakeNode({ tag: 'svg', namespace: SVG_NS }));
     expect(element.namespaceURI).to.equal(SVG_NS);

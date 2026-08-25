@@ -417,7 +417,7 @@ function getNamespace(node: StateNode): string | null {
  * Creates the DOM element for the state node, using the node's namespace, then
  * the parent element's namespace, then no namespace. Mirrors create.
  */
-export function create(node: StateNode): Element {
+function create(node: StateNode): Element {
   const tag = getTag(node);
   assert(tag !== null, 'New child must have a tag');
   const namespace = getNamespace(node);
@@ -435,7 +435,7 @@ export function create(node: StateNode): Element {
 }
 
 /** Whether this strategy applies to the state node; mirrors isApplicable. */
-export function isApplicable(node: StateNode): boolean {
+function isApplicable(node: StateNode): boolean {
   if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
     return true;
   }
@@ -551,7 +551,7 @@ function applyStructuralAttributes(stateNode: StateNode, element: Element): void
  * node, the binder context for child nodes, and the per-event-type listener
  * bookkeeping. Mirrors the BindingContext inner class.
  */
-export class BindingContext {
+class BindingContext {
   readonly node: StateNode;
 
   readonly htmlNode: Node;
@@ -658,7 +658,7 @@ function sendEventToServer(
  * event filters/debounces, and sends the event to the server. Mirrors
  * handleDomEvent.
  */
-export function handleDomEvent(event: Event, context: BindingContext): void {
+function handleDomEvent(event: Event, context: BindingContext): void {
   const element = context.htmlNode as Element;
   const node = context.node;
   const type = event.type;
@@ -729,7 +729,7 @@ export function handleDomEvent(event: Event, context: BindingContext): void {
  * Creates a fresh per-feature computation map and tracks it in the collection
  * (used to stop the computations on rebind). Mirrors createComputations.
  */
-export function createComputations(computationsCollection: Array<Map<string, Computation>>): Map<string, Computation> {
+function createComputations(computationsCollection: Array<Map<string, Computation>>): Map<string, Computation> {
   const computations = new Map<string, Computation>();
   computationsCollection.push(computations);
   return computations;
@@ -740,7 +740,7 @@ export function createComputations(computationsCollection: Array<Map<string, Com
  * dependencies change, tracking the computation by property name. Mirrors
  * bindProperty.
  */
-export function bindProperty<P extends { getName(): string }>(
+function bindProperty<P extends { getName(): string }>(
   user: (property: P) => void,
   property: P,
   bindings: Map<string, Computation>
@@ -756,7 +756,7 @@ export function bindProperty<P extends { getName(): string }>(
  * Binds every property of the node's feature map to the user, applying current
  * properties eagerly and observing later additions. Mirrors bindMap.
  */
-export function bindMap(
+function bindMap(
   featureId: number,
   user: (property: MapProperty) => void,
   bindings: Map<string, Computation>,
