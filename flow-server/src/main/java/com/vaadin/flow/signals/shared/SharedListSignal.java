@@ -295,6 +295,10 @@ public class SharedListSignal<T extends @Nullable Object>
 
     /**
      * Inserts a value as the first entry in this list.
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #insertAllFirst(Collection)} for
+     * bulk operations.
      *
      * @param value
      *            the value to insert
@@ -324,6 +328,10 @@ public class SharedListSignal<T extends @Nullable Object>
 
     /**
      * Inserts a value as the last entry in this list.
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #insertAllLast(Collection)} for
+     * bulk operations.
      *
      * @param value
      *            the value to insert
@@ -337,7 +345,11 @@ public class SharedListSignal<T extends @Nullable Object>
     /**
      * Inserts a value at the given position in this list. The operation fails
      * if the position is not valid at the time when the operation is processed.
-     *
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use
+     * {@link #insertAllAt(Collection, ListPosition)} for bulk operations.
+     * 
      * @param value
      *            the value to insert
      * @param at
@@ -463,7 +475,12 @@ public class SharedListSignal<T extends @Nullable Object>
     /**
      * Removes the given child from this list. The operation fails if the child
      * is not a child of this list at the time when the operation is processed.
-     *
+     * <p>
+     * Note that each remove operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #clear()} or wrap bulk updates
+     * inside {@link Signal#runInTransaction(TransactionTask)} to notify
+     * subscribers only once.
+     * 
      * @param child
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result
