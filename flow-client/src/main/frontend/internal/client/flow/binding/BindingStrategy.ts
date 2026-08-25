@@ -14,37 +14,60 @@
  * the License.
  */
 
-// TypeScript port of the binding-layer contracts
-// com.vaadin.client.flow.binding.BindingStrategy and BinderContext, built
-// alongside the Java versions. They reference each other, so they live in one
-// module. The Java BindingStrategy.getTag default routes through PolymerUtils
-// (not ported yet), so it is optional here and wired at cutover.
+// TypeScript port of com.vaadin.client.flow.binding.BindingStrategy, built
+// alongside the Java version.
+//
+// The Java `getTag` default method delegates to the (now ported)
+// PolymerUtils.getTag. A TypeScript interface cannot carry a method body, so
+// `getTag` is declared optional here and the delegation is done by the
+// implementing strategy (see SimpleElementBindingStrategy).
 
 import type { StateNode } from '../StateNode';
+import type { BinderContext } from './BinderContext';
 
-/** Binds a state node to a DOM node of type T; mirrors BindingStrategy.java. */
+/**
+ * Binding strategy/factory for {@link StateNode}s.
+ *
+ * Only one strategy may be applicable for the given {@link StateNode} instance.
+ * Once the applicable strategy is identified it's used to produce a `Node` based
+ * on the {@link StateNode} instance and bind it.
+ *
+ * @typeParam T - a DOM node type which strategy is applicable for
+ */
 export interface BindingStrategy<T extends Node> {
-  /** Creates a new DOM node for the given state node. */
+  /**
+   * Creates a DOM node for the `node`.
+   *
+   * @param node - the state node for which to create a DOM node, not `null`
+   * @returns the DOM node, not `null`
+   */
   create(node: StateNode): T;
 
-  /** Whether this strategy can be applied to the given state node. */
+  /**
+   * Returns `true` is the strategy is applicable to the `node`.
+   *
+   * @param node - the state node to check against of
+   * @returns `true` if the strategy is applicable to the node
+   */
   isApplicable(node: StateNode): boolean;
 
-  /** Binds the state node to the DOM node, using the given context for children. */
+  /**
+   * Binds a DOM node to the `stateNode` using `context` to create and bind
+   * nodes of other types.
+   *
+   * @param stateNode - the state node to bind, not `null`
+   * @param domNode - the DOM node, not `null`
+   * @param context - binder context to create and construct HTML nodes of other
+   *            types
+   */
   bind(stateNode: StateNode, domNode: T, context: BinderContext): void;
 
-  /** The element tag for the given state node (defaults via PolymerUtils in Java). */
+  /**
+   * Gets the tag value from the {@link NodeFeatures.ELEMENT_DATA} feature for
+   * the `node`.
+   *
+   * @param node - the state node
+   * @returns tag of the `node`
+   */
   getTag?(node: StateNode): string;
-}
-
-/** Context passed to binding strategies for binding child nodes; mirrors BinderContext.java. */
-export interface BinderContext {
-  /** Creates a DOM node for the given state node and binds it. */
-  createAndBind(node: StateNode): Node;
-
-  /** Binds an already-created DOM node to the given state node. */
-  bind(stateNode: StateNode, node: Node): void;
-
-  /** Gets the registered binding strategies matching the given predicate. */
-  getStrategies<T extends BindingStrategy<Node>>(predicate: (strategy: BindingStrategy<Node>) => boolean): T[];
 }

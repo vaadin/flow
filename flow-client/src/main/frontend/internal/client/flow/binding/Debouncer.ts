@@ -18,12 +18,14 @@
 // the Java version. The GWT elemental Timer is mapped to setTimeout (one-shot,
 // schedule) / setInterval (scheduleRepeating).
 
+import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { MapProperty } from '../nodefeature/MapProperty';
 
-// com.vaadin.flow.shared.JsonConstants event phases.
-const EVENT_PHASE_LEADING = 'leading';
-const EVENT_PHASE_INTERMEDIATE = 'intermediate';
-const EVENT_PHASE_TRAILING = 'trailing';
+// com.vaadin.flow.shared.JsonConstants event phases, referenced by name rather
+// than re-declaring their literal values.
+const EVENT_PHASE_LEADING = JsonConstants.EVENT_PHASE_LEADING;
+const EVENT_PHASE_INTERMEDIATE = JsonConstants.EVENT_PHASE_INTERMEDIATE;
+const EVENT_PHASE_TRAILING = JsonConstants.EVENT_PHASE_TRAILING;
 
 type SendCommand = (phase: string) => void;
 type Command = () => void;
@@ -69,8 +71,8 @@ class Timer {
 }
 
 /**
- * Manages debouncing of events; mirrors Debouncer.java. Use
- * {@link Debouncer.getOrCreate} to create or look up an instance tracking a
+ * Manages debouncing of events. Use {@link Debouncer.getOrCreate} to either
+ * create a new instance or get an existing instance that currently tracks a
  * sequence of similar events.
  */
 export class Debouncer {
@@ -103,8 +105,17 @@ export class Debouncer {
   }
 
   /**
-   * Informs this debouncer that an event has occurred. Returns <code>true</code>
-   * if the event should be processed as-is without delaying.
+   * Informs this debouncer that an event has occurred.
+   *
+   * @param phases - a set of strings identifying the phases for which the
+   *            triggered event should be considered.
+   * @param command - a consumer that will may be asynchronously invoked with a
+   *            phase code if an associated phase is triggered
+   * @param commands - individual commands executed just before the given send
+   *            command
+   *
+   * @returns `true` if the event should be processed as-is without
+   *         delaying
    */
   trigger(phases: Set<string>, command: SendCommand, commands: Map<string, Command>): boolean {
     // If "leading" events are requested and no timers created yet, this is the
@@ -231,6 +242,12 @@ export class Debouncer {
   /**
    * Gets an existing debouncer or creates a new one associated with the given
    * DOM node, identifier and debounce timeout.
+   *
+   * @param element - the DOM node to which this debouncer is bound
+   * @param identifier - a unique identifier string in the scope of the provided
+   *            element
+   * @param debounce - the debounce timeout
+   * @returns a debouncer instance
    */
   static getOrCreate(element: Node, identifier: string, debounce: number): Debouncer {
     let elementMap = Debouncer.#debouncers.get(element);
@@ -252,8 +269,11 @@ export class Debouncer {
   }
 
   /**
-   * Flushes all pending changes, rescheduling idle timers afterwards. Returns
-   * the send commands executed during the flush.
+   * Flushes all pending changes.
+   *
+   * After command execution, Debouncer idle timers are rescheduled.
+   *
+   * @returns the list command executed during flush operation.
    */
   static flushAll(): SendCommand[] {
     const executedCommands: SendCommand[] = [];

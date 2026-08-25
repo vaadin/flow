@@ -28,15 +28,15 @@
 // as a plain function and exceptions surface through the browser. The handler
 // reads `this`/`arguments`, so it must stay a regular `function`, not an arrow.
 
+import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).
 export type ServerObject = Record<string, any>;
 
-// com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME -- the
-// (non-enumerable) key under which the promise-callback function is stored.
-const PROMISE_CALLBACK_NAME = '}p';
+// The (non-enumerable) key under which the promise-callback function is stored.
+const PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 
 // Expressions starting with this prefix are evaluated against the DOM event;
 // other expressions describe a Polymer model property and resolve to a node id.
@@ -110,21 +110,35 @@ export function initPromiseHandler(serverObject: ServerObject, promiseCallbackNa
   serverObject[promiseCallbackName].promises = [];
 }
 
-/** Removes a previously defined server method from the $server object. */
+/**
+ * Removes a method with the given name.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param methodName - the name of the method to remove
+ */
 export function removeMethod(serverObject: ServerObject, methodName: string): void {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removing a dynamically named server method
   delete serverObject[methodName];
 }
 
-/** The names of the methods (and other own keys) defined on the $server object. */
+/**
+ * Gets the defined methods.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @returns an array of defined method names
+ */
 export function getMethods(serverObject: ServerObject): string[] {
   return Object.keys(serverObject);
 }
 
 /**
- * Rejects all promises still pending on the $server object. Called during
- * client resynchronization to free consumers of promises the server will never
- * deliver.
+ * Reject all promises pending on this server object. Called during client
+ * resynchronization to free consumers of promises that are never delivered by
+ * the server.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param promiseCallbackName - the key under which the promise-callback
+ *            function is stored
  */
 export function rejectPromises(serverObject: ServerObject, promiseCallbackName: string): void {
   const promises = serverObject[promiseCallbackName]?.promises;
@@ -144,6 +158,10 @@ export function getPolymerPropertyObject(node: unknown, propertyName: string): {
   const polymerNode = node as { get?: (path: string) => unknown };
   if (typeof polymerNode.get === 'function') {
     const polymerProperty = polymerNode.get(propertyName) as Record<string, unknown> | null;
+    // Deviation from ServerEventObject.java: the extra `!== null` guard. Java
+    // only checks `typeof(polymerProperty) === 'object'` and then dereferences
+    // it, which would TypeError when node.get returns null (typeof null is
+    // 'object'); guarding returns null instead.
     if (
       typeof polymerProperty === 'object' &&
       polymerProperty !== null &&
@@ -156,8 +174,10 @@ export function getPolymerPropertyObject(node: unknown, propertyName: string): {
 }
 
 /**
- * Gets or creates the `element.$server` object, initializing its promise
- * handler on creation; mirrors ServerEventObject.get.
+ * Gets or creates `element.$server` for the given element.
+ *
+ * @param element - the element to use
+ * @returns a reference to the `$server` object in the element
  */
 export function get(element: Element): ServerObject {
   let serverObject = getIfPresent(element);
@@ -170,8 +190,11 @@ export function get(element: Element): ServerObject {
 }
 
 /**
- * Returns the `node.$server` object if one is present, otherwise null; mirrors
- * ServerEventObject.getIfPresent.
+ * Gets or creates `element.$server` for the given element, if present.
+ *
+ * @param node - the element to use
+ * @returns a reference to the `$server` object in the element, or `null` if
+ *         note present.
  */
 export function getIfPresent(node: Node): ServerObject | null {
   const serverObject = (node as any).$server;
@@ -192,11 +215,19 @@ export function getServerEventObjectForResync(node: Node): { rejectPromises(): v
 }
 
 /**
- * Defines a method with the given name on the $server object that, when called,
- * collects the server-requested event data and sends a template event to the
- * server. If returnPromise is true the method returns a promise that the server
- * later settles via the promise-callback installed by initPromiseHandler.
- * Mirrors ServerEventObject.defineMethod.
+ * Defines a method with the given name to be a callback to the server for the
+ * given state node.
+ *
+ * Note! If the Polymer.Element contains an implementation for `methodName` it
+ * will be run before the server-side method.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param methodName - the name of the method to add
+ * @param node - the node to use as an identifier when sending an event to the
+ *            server
+ * @param returnPromise - `true` if the handler should return a promise that
+ *            will reflect the server-side result; `false` to not return any
+ *            value
  */
 export function defineMethod(
   serverObject: ServerObject,
@@ -238,9 +269,15 @@ export function defineMethod(
 }
 
 /**
- * Collects the extra event data the server requested for a method, in the order
- * the server defined it, or null if no data was requested. Mirrors
- * ServerEventObject.getEventData.
+ * Collect extra data for element event if any has been sent from the server.
+ * Note! Data is sent in the array in the same order as defined on the server
+ * side.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param event - The fired Event
+ * @param methodName - Method name that is called
+ * @param node - Target node
+ * @returns Array of extra event data
  */
 export function getEventData(
   serverObject: ServerObject,
@@ -303,7 +340,9 @@ function createPolymerPropertyObject(
   expression: string
 ): { nodeId: unknown } {
   const expressionValue = getOrCreateExpression(expression)(event, serverObject) as Record<string, unknown>;
-  return { nodeId: expressionValue[NODE_ID] };
+  // Java reads the value through JsonObject.getNumber(NODE_ID), coercing it to a
+  // number before it is sent to the server.
+  return { nodeId: Number(expressionValue[NODE_ID]) };
 }
 
 /**

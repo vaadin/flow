@@ -204,6 +204,12 @@ export const JsonConstants = {
   RPC_TEMPLATE_EVENT_PROMISE: 'promise',
 
   /**
+   * Name of the $server property that is used to track pending promises. The
+   * name is chosen to avoid conflicts with genuine $server method names.
+   */
+  RPC_PROMISE_CALLBACK_NAME: '}p',
+
+  /**
    * Type value for attach existing element server callback.
    *
    * @see {@link RPC_ATTACH_ASSIGNED_ID}
@@ -250,6 +256,51 @@ export const JsonConstants = {
    * Key used to hold id of the element for attach existing element request.
    */
   RPC_ATTACH_ID: 'attachId',
+
+  // "for" is a reserved keyword, which means that this cannot be a valid JS
+  // expression, thus eliminating the risk for an accidental collision with a
+  // genuine data expression
+  /**
+   * Key holding the debounce phase for an event data map from the client.
+   */
+  EVENT_DATA_PHASE: 'for',
+
+  // TODO(flow-client-ts): restore the `{@link DebouncePhase}` links below once
+  // com.vaadin.flow.shared.communication.PushMode's DebouncePhase is ported.
+  /**
+   * Character used for representing `DebouncePhase.LEADING`.
+   */
+  EVENT_PHASE_LEADING: 'leading',
+
+  /**
+   * Character used for representing `DebouncePhase.INTERMEDIATE`.
+   */
+  EVENT_PHASE_INTERMEDIATE: 'intermediate',
+
+  /**
+   * Character used for representing `DebouncePhase.TRAILING`.
+   */
+  EVENT_PHASE_TRAILING: 'trailing',
+
+  /**
+   * Token used as an event data expression to represent that properties
+   * should be synchronized. The token is chosen to avoid collisions with
+   * regular event data expressions by using a character that cannot be the
+   * start of a valid JS expression.
+   */
+  SYNCHRONIZE_PROPERTY_TOKEN: '}',
+
+  /**
+   * Token used as an event data expression or prefix to an event data
+   * expression to represent that the state node ID should be fetched for the
+   * element, or its closest parent, that corresponds to `event.target` or the
+   * element returned by the evaluated expression.
+   *
+   * The token is chosen to avoid collisions with regular event data
+   * expressions by using a character that cannot be the start of a valid JS
+   * expression.
+   */
+  MAP_STATE_NODE_EVENT_DATA: ']',
 
   /**
    * RPC type value used for return channel messages.

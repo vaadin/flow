@@ -23,7 +23,8 @@ import { Reactive } from '../reactive/Reactive';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../flow/internal/nodefeature/NodeProperties';
 import type { StateNode } from '../StateNode';
-import type { BinderContext, BindingStrategy } from './BindingStrategy';
+import type { BinderContext } from './BinderContext';
+import type { BindingStrategy } from './BindingStrategy';
 
 /** Binding strategy for simple (non-template) text nodes; mirrors TextBindingStrategy.java. */
 export class TextBindingStrategy implements BindingStrategy<Text> {

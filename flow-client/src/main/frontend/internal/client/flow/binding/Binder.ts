@@ -21,7 +21,8 @@
 
 import { assert } from '../../../assert';
 import type { StateNode } from '../StateNode';
-import type { BinderContext, BindingStrategy } from './BindingStrategy';
+import type { BinderContext } from './BinderContext';
+import type { BindingStrategy } from './BindingStrategy';
 import { SimpleElementBindingStrategy } from './SimpleElementBindingStrategy';
 import { TextBindingStrategy } from './TextBindingStrategy';
 
@@ -48,10 +49,14 @@ function getApplicableStrategy(node: StateNode): BindingStrategy<Node> {
 }
 
 /**
- * Binds the DOM node to the state node using the applicable strategy. Mirrors
- * Binder.bind.
+ * Bind the `domNode` to the `stateNode`.
+ *
+ * @param stateNode - the state node
+ * @param domNode - the DOM node to bind, not `null`
  */
 export function bind(stateNode: StateNode, domNode: Node): void {
+  assert(!stateNode.getTree().isUpdateInProgress(), 'Binding state node while processing state tree changes');
+
   getApplicableStrategy(stateNode).bind(stateNode, domNode, CONTEXT);
 }
 
@@ -62,6 +67,7 @@ class BinderContextImpl implements BinderContext {
     let node = stateNode.getDomNode();
     if (node === null) {
       node = strategy.create(stateNode);
+      assert(node !== null, 'Binding strategy created a null DOM node');
       stateNode.setDomNode(node);
     }
     bind(stateNode, node);

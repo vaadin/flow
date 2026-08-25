@@ -30,6 +30,7 @@ import { assert } from '../../../assert';
 import { getElementById, getElementByName, hasTag } from '../../ElementUtil';
 import { isLitElement, whenRendered } from '../../LitUtils';
 import { UpdatableModelProperties } from '../model/UpdatableModelProperties';
+import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../flow/internal/nodefeature/NodeProperties';
 import { createModelTree } from '../../PolymerModelTree';
@@ -58,7 +59,8 @@ import {
   setJsProperty,
   updateAttribute as setElementAttribute
 } from '../../WidgetUtil';
-import type { BinderContext, BindingStrategy } from './BindingStrategy';
+import type { BinderContext } from './BinderContext';
+import type { BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames, type ServerEventHandlerNode } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
@@ -69,10 +71,11 @@ const HIDDEN_ATTRIBUTE = 'hidden';
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.ELEMENT_ATTACH_ERROR_PREFIX
 const ELEMENT_ATTACH_ERROR_PREFIX = 'Element addressed by the ';
 
-// com.vaadin.flow.shared.JsonConstants tokens used by handleDomEvent.
-const EVENT_DATA_PHASE = 'for';
-const SYNCHRONIZE_PROPERTY_TOKEN = '}';
-const MAP_STATE_NODE_EVENT_DATA = ']';
+// com.vaadin.flow.shared.JsonConstants tokens used by handleDomEvent, referenced
+// by name rather than re-declaring their literal values.
+const EVENT_DATA_PHASE = JsonConstants.EVENT_DATA_PHASE;
+const SYNCHRONIZE_PROPERTY_TOKEN = JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN;
+const MAP_STATE_NODE_EVENT_DATA = JsonConstants.MAP_STATE_NODE_EVENT_DATA;
 
 // The callback sending an event to the server for a given debounce phase (null
 // when sent outside any debounce). Compatible with Debouncer's send command.
@@ -374,6 +377,8 @@ export function bindClassList(element: Element, node: ClassListNode): EventRemov
 // model object against the application configuration (web-component mode); the
 // underlying attribute set/remove goes through WidgetUtil.
 
+// TODO(flow-client-ts): replace this slice with a real import of
+// ApplicationConfiguration and a `{@link}` once that class is ported.
 /** The slice of ApplicationConfiguration that attribute binding reads. */
 interface AttributeConfiguration {
   isWebComponentMode(): boolean;
@@ -497,8 +502,14 @@ export function hasSameTag(node: CreationNode, element: Element): boolean {
 }
 
 /**
- * Whether the node needs a re-bind. Absence of value or "true" means no
- * re-bind; only an explicit false means a re-bind is needed. Mirrors needsRebind.
+ * Checks whether the `node` needs re-bind.
+ *
+ * The node needs re-bind if it was initially invisible. As a consequence such
+ * node has not be bound. It has been bound in respect to visibility feature only
+ * (partially bound). Such node needs re-bind once it becomes visible.
+ *
+ * @param node - the node to check
+ * @returns `true` if the node is not entirely bound and needs re-bind later on
  */
 export function needsRebind(node: CreationNode): boolean {
   return readElementData(node, NodeProperties.VISIBILITY_BOUND_PROPERTY) === false;
@@ -633,6 +644,8 @@ interface ExistingElementAccess {
   remove(id: number): void;
 }
 
+// TODO(flow-client-ts): replace this slice with a real import of
+// InitialPropertiesHandler and a `{@link}` once that class is ported.
 /** The slice of InitialPropertiesHandler the attach machinery uses. */
 interface AttachInitialPropertiesHandler {
   nodeRegistered(node: BindingStateNode): void;

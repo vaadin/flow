@@ -4,10 +4,8 @@ import { StateNode, type StateTree } from '../../../../main/frontend/internal/cl
 import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { TextBindingStrategy } from '../../../../main/frontend/internal/client/flow/binding/TextBindingStrategy';
-import type {
-  BinderContext,
-  BindingStrategy
-} from '../../../../main/frontend/internal/client/flow/binding/BindingStrategy';
+import type { BinderContext } from '../../../../main/frontend/internal/client/flow/binding/BinderContext';
+import type { BindingStrategy } from '../../../../main/frontend/internal/client/flow/binding/BindingStrategy';
 import { BindGuardStateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
 const tree: StateTree = {

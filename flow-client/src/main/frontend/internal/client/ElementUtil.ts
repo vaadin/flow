@@ -20,14 +20,25 @@
  * are registered on `window.Vaadin.Flow.internal.ElementUtil`.
  */
 
-/** Checks whether the `node` has the required `tag`. */
+/**
+ * Checks whether the `node` has required `tag`.
+ *
+ * @param node - the node to check
+ * @param tag - the required tag name
+ * @returns `true` if the node has required tag name
+ */
 export function hasTag(node: Node, tag: string): boolean {
   return node instanceof Element && node.tagName.toLowerCase() === tag.toLowerCase();
 }
 
 /**
- * Searches the shadow root of the given context element for the given id, or the
- * light DOM if the element has no shadow root.
+ * Searches the shadow root of the given context element for the given id or
+ * searches the light DOM if the element has no shadow root.
+ *
+ * @param context - the container element to search through
+ * @param id - the identifier of the element to search for
+ * @returns the element with the given `id` if found, otherwise
+ *          `null`
  */
 export function getElementById(context: Node, id: string): Element | null {
   const bodyExports = (document.body as any).$;

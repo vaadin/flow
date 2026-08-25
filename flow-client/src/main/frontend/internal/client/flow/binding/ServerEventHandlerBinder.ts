@@ -43,17 +43,29 @@ export interface ServerEventHandlerNode extends ServerEventNode {
 
 /**
  * Registers all the server event handler names found in the
- * CLIENT_DELEGATE_HANDLERS feature of the state node as
- * `serverObject.<methodName>`, and listens for changes to keep `$server` in
- * sync. Mirrors the (element, node) overload of bindServerEventHandlerNames.
+ * {@link NodeFeatures.CLIENT_DELEGATE_HANDLERS} feature in the state node
+ * as `serverObject.<methodName>`. Additionally listens to
+ * changes in the feature and updates `$server` accordingly.
+ *
+ * @param element - the element to update
+ * @param node - the state node containing the feature
+ * @returns a handle which can be used to remove the listener for the feature
  */
 export function bindServerEventHandlerNames(element: Element, node: ServerEventHandlerNode): EventRemover;
 
 /**
- * Registers all the server event handler names found in the given feature in
- * the $server object supplied by objectProvider, and listens for changes to
- * keep it in sync. Mirrors the (objectProvider, node, featureId, returnValue)
- * overload of bindServerEventHandlerNames.
+ * Registers all the server event handler names found in the feature with
+ * the `featureId` in the {@link ServerEventObject} `object`.
+ * Additionally listens to changes in the feature and updates server event
+ * object accordingly.
+ *
+ * @param objectProvider - the provider of the event object to update
+ * @param node - the state node containing the feature
+ * @param featureId - the feature id which contains event handler methods
+ * @param returnValue - `true` if the handler should return a promise that
+ *   will reflect the server-side result; `false` to not
+ *   return any value
+ * @returns a handle which can be used to remove the listener for the feature
  */
 export function bindServerEventHandlerNames(
   objectProvider: () => ServerObject,

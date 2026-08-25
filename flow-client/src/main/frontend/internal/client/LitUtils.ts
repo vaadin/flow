@@ -16,7 +16,13 @@
 
 // Implementations migrated from LitUtils.java.
 
-/** Checks whether the given element is a LitElement (duck-typed). */
+/**
+ * Checks if the given element is a LitElement.
+ *
+ * @param element - the custom element
+ * @returns `true` if the element is a Lit element, `false`
+ *         otherwise
+ */
 export function isLitElement(element: Node): boolean {
   const el = element as unknown as Record<string, unknown>;
   return (
@@ -28,7 +34,11 @@ export function isLitElement(element: Node): boolean {
 }
 
 /**
- * Invokes the callback once the given Lit element has rendered at least once.
+ * Invokes the `runnable` when the given Lit element has been rendered
+ * at least once.
+ *
+ * @param element - the Lit element
+ * @param runnable - the command to run
  */
 export function whenRendered(element: Element, callback: () => void): void {
   const el = element as unknown as { updateComplete: Promise<unknown> };

@@ -17,8 +17,12 @@
 // Implementations migrated from ReactUtils.java.
 
 /**
- * Adds a callback to the React component that is invoked once it is ready for
- * Flow binding. No-op if the element exposes no addReadyCallback.
+ * Add a callback to the react component that is called when the component
+ * initialization is ready for binding flow.
+ *
+ * @param element - react component element
+ * @param name - name of container to bind to
+ * @param runnable - callback function runnable
  */
 export function addReadyCallback(element: Element, name: string, callback: () => void): void {
   const el = element as unknown as {
@@ -30,8 +34,12 @@ export function addReadyCallback(element: Element, name: string, callback: () =>
 }
 
 /**
- * Whether the element looked up by the given supplier already exists. Mirrors
- * ReactUtils.isInitialized.
+ * Check if the react element is initialized and functional.
+ *
+ * @param elementLookup - react element lookup supplier
+ * @returns `true` if Flow binding can already be done
+ *
+ * Mirrors ReactUtils.isInitialized.
  */
 export function isInitialized(elementLookup: () => Element | null): boolean {
   return elementLookup() !== null;

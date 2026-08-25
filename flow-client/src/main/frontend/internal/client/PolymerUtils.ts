@@ -15,6 +15,9 @@
  */
 
 import { Console } from './Console';
+import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
+import type { StateNode } from './flow/StateNode';
 
 // DOM/Polymer probes and model-data writers migrated from PolymerUtils.java. The
 // StateNode-coupled model-tree building (createModelTree and the change handlers)
@@ -23,6 +26,10 @@ import { Console } from './Console';
 // The ready-listener registry and custom-element-by-path lookup
 // (addReadyListener/fireReadyEvent/getCustomElement) are used by the
 // SimpleElementBindingStrategy attach machinery.
+//
+// The deprecated PolymerUtils.hasTag(Node, String) is intentionally omitted; its
+// Javadoc directs callers to the generic ElementUtil.hasTag, which is ported in
+// ElementUtil.ts.
 
 // A node exposing the Polymer model-data API (set/get/splice).
 interface PolymerModelNode {
@@ -31,7 +38,12 @@ interface PolymerModelNode {
   splice(...args: unknown[]): unknown;
 }
 
-/** Whether the element is a Polymer 2 or Polymer 3 element. */
+/**
+ * Checks whether the `htmlNode` is a polymer 2 element.
+ *
+ * @param htmlNode - HTML element to check
+ * @returns `true` if the `htmlNode` is a polymer element
+ */
 export function isPolymerElement(htmlNode: Element): boolean {
   const polymer = (window as unknown as { Polymer?: unknown }).Polymer as
     | (((...args: unknown[]) => unknown) & { Element?: new (...args: unknown[]) => unknown })
@@ -44,7 +56,13 @@ export function isPolymerElement(htmlNode: Element): boolean {
 }
 
 /**
- * Whether the element could be a custom (and thus possibly Polymer) element.
+ * Checks whether the `htmlNode` can turn into polymer 2 element later.
+ *
+ * Lazy loaded dependencies can load Polymer later than the element itself gets
+ * processed by the Flow. This method helps to determine such elements.
+ *
+ * @param htmlNode - HTML element to check
+ * @returns `true` if the `htmlNode` can become a polymer 2 element
  *
  * @deprecated This is not in use anywhere and can be removed
  */
@@ -52,7 +70,12 @@ export function mayBePolymerElement(htmlNode: Element): boolean {
   return !!(window as unknown as { customElements?: unknown }).customElements && htmlNode.localName.includes('-');
 }
 
-/** Whether the element is inside a shadow root. */
+/**
+ * Returns true if and only if the element has a shadow root ancestor.
+ *
+ * @param element - the element to test
+ * @returns whether the element is in a shadow root
+ */
 export function isInShadowRoot(element: Element): boolean {
   let node: Node | null = element.parentNode;
   while (node) {
@@ -64,28 +87,50 @@ export function isInShadowRoot(element: Element): boolean {
   return false;
 }
 
-/** Whether the Polymer local-DOM ($) of the node is ready. */
+/**
+ * Returns `true` if the DOM structure of the polymer custom element
+ * `shadowRootParent` is ready (meaning that it has shadow root and its shadow
+ * root may be queried for children referenced by id).
+ *
+ * @param shadowRootParent - the polymer custom element
+ * @returns `true` if the `shadowRootParent` element is ready
+ */
 export function isReady(shadowRootParent: Node): boolean {
   return typeof (shadowRootParent as unknown as { $?: unknown }).$ !== 'undefined';
 }
 
-/** The Polymer dom root of a template element, or null. */
+/**
+ * Returns the shadow root of the `templateElement`.
+ *
+ * @param templateElement - the owner of the shadow root
+ * @returns the shadow root of the element
+ */
 export function getDomRoot(templateElement: Node): Element | null {
   return (templateElement as unknown as { root?: Element }).root ?? null;
 }
 
 /**
- * The element with the given id from the Polymer local-DOM ($) map, or null.
+ * Find the DOM element inside shadow root of the `shadowRootParent`.
  *
- * @deprecated This is Polymer specific. Use {@link getElementById} from
- *             ElementUtil for the generic version
+ * @param shadowRootParent - the parent whose shadow root contains the element
+ *            with the `id`
+ * @param id - the identifier of the element to search for
+ * @returns the element with the given `id` inside the shadow root of the parent
+ * @deprecated This is Polymer specific. Use `ElementUtil.getElementById` for
+ *             the generic version
  */
 export function getDomElementById(shadowRootParent: Node, id: string): Element | null {
   return (shadowRootParent as unknown as { $: Record<string, Element> }).$[id] ?? null;
 }
 
 /**
- * Finds the first element matching the CSS query inside the shadow root.
+ * Get first element by css query in the shadow root provided.
+ *
+ * @param shadowRoot - shadow root element
+ * @param cssQuery - css query
+ * @returns first element matching the query or `null` for no matches
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM
  *
  * @deprecated This is not in use anywhere and can be removed
  */
@@ -94,7 +139,13 @@ export function searchForElementInShadowRoot(shadowRoot: ShadowRoot, cssQuery: s
 }
 
 /**
- * Finds the element with the given id inside the shadow root.
+ * Get the element by id from the shadow root provided.
+ *
+ * @param shadowRoot - shadow root element
+ * @param id - element id
+ * @returns the element with id provided or `null` for no matches
+ *
+ * @see http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html
  *
  * @deprecated This is not in use anywhere and can be removed
  */
@@ -102,33 +153,54 @@ export function getElementInShadowRootById(shadowRoot: ShadowRoot, id: string): 
   return shadowRoot.getElementById(id);
 }
 
-/** Runs the callback once a custom element with the given tag name is defined. */
+/**
+ * Invokes the `runnable` when the custom element with the given `tagName` is
+ * initialized (its DOM structure becomes available).
+ *
+ * @param tagName - the name of the custom element
+ * @param runnable - the command to run when the element if initialized
+ */
 export function invokeWhenDefined(tagName: string, callback: () => void): void {
   void window.customElements.whenDefined(tagName).then(callback);
 }
 
-// NodeFeatures.ELEMENT_DATA / NodeProperties.TAG
-const ELEMENT_DATA = 0;
-const TAG_PROPERTY = 'tag';
-
-/** The slice of StateNode getTag reads. */
-interface TagNode {
-  getMap(featureId: number): { getProperty(name: string): { getValue(): unknown } };
+/**
+ * Gets the tag name of the `node`.
+ *
+ * @param node - the node to get the tag name from
+ * @returns the tag name of the node
+ */
+export function getTag(node: StateNode): string {
+  return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).getValue() as string;
 }
 
-/** The element tag name stored in the node's element data. Mirrors PolymerUtils.getTag. */
-export function getTag(node: TagNode): string {
-  return node.getMap(ELEMENT_DATA).getProperty(TAG_PROPERTY).getValue() as string;
-}
-
-/** Sets a single list element via the Polymer set method (path + "." + index). */
+/**
+ * Sets new value for list element for specified `htmlNode`.
+ *
+ * @param htmlNode - node to call set method on
+ * @param path - polymer model path to property
+ * @param listIndex - list index to set element into
+ * @param newValue - new value to be set at desired index
+ *
+ * @see Polymer docs: https://www.polymer-project.org/2.0/docs/devguide/model-data
+ */
 export function setListValueByIndex(htmlNode: Element, path: string, listIndex: number, newValue: unknown): void {
   (htmlNode as unknown as PolymerModelNode).set(`${path}.${listIndex}`, newValue);
 }
 
 /**
- * Calls the Polymer splice method via apply so that itemsToAdd is spread into
- * separate arguments rather than passed as a single array.
+ * Calls Polymer `splice` method on specified `htmlNode`.
+ *
+ * Splice call is made via `apply` method in order to force the method to treat
+ * `itemsToAdd` as numerous parameters, not a single one.
+ *
+ * @param htmlNode - node to call splice method on
+ * @param path - polymer model path to property
+ * @param startIndex - start index of a list for splice operation
+ * @param deleteCount - number of elements to delete from the list after startIndex
+ * @param itemsToAdd - elements to add after startIndex
+ *
+ * @see Polymer docs: https://www.polymer-project.org/2.0/docs/devguide/model-data
  */
 // eslint-disable-next-line @typescript-eslint/max-params -- positional JSNI delegation mirrors the Java signature
 export function splice(
@@ -142,7 +214,13 @@ export function splice(
   node.splice.apply(node, ([path, startIndex, deleteCount] as unknown[]).concat(itemsToAdd));
 }
 
-/** Stores the StateNode id under the 'nodeId' key of the Polymer model object at path. */
+/**
+ * Store the StateNode.id into the polymer property under 'nodeId'
+ *
+ * @param domNode - polymer dom node
+ * @param id - id of a state node
+ * @param path - polymer model path to property
+ */
 export function storeNodeId(domNode: Node, id: number, path: string): void {
   const node = domNode as unknown as PolymerModelNode;
   if (typeof node.get !== 'undefined') {
@@ -153,7 +231,13 @@ export function storeNodeId(domNode: Node, id: number, path: string): void {
   }
 }
 
-/** Sets a property on an element via the Polymer set method. */
+/**
+ * Sets a property to an element by using the Polymer `set` method.
+ *
+ * @param element - the element to set the property to
+ * @param path - the path of the property
+ * @param value - the value
+ */
 export function setProperty(element: Element, path: string, value: unknown): void {
   (element as unknown as PolymerModelNode).set(path, value);
 }
@@ -162,7 +246,17 @@ export function setProperty(element: Element, path: string, value: unknown): voi
 // readyListeners JsWeakMap.
 const readyListeners = new WeakMap<Element, Set<() => void>>();
 
-/** Registers a listener invoked when the polymer element fires its ready event. */
+/**
+ * Adds the `listener` which will be invoked when the `polymerElement` becomes
+ * "ready" meaning that it's method `ready` is called.
+ *
+ * The listener won't be called if the element is already "ready" and the
+ * listener will be removed immediately once it's executed.
+ *
+ * @param polymerElement - the custom (polymer) element to listen its readiness
+ *            state
+ * @param listener - the callback to execute once the element becomes ready
+ */
 export function addReadyListener(polymerElement: Element, listener: () => void): void {
   let set = readyListeners.get(polymerElement);
   if (set === undefined) {
@@ -172,7 +266,11 @@ export function addReadyListener(polymerElement: Element, listener: () => void):
   set.add(listener);
 }
 
-/** Fires the ready event for the element, running and clearing its listeners. */
+/**
+ * Fires the ready event for the `polymerElement`.
+ *
+ * @param polymerElement - the custom (polymer) element whose state is "ready"
+ */
 export function fireReadyEvent(polymerElement: Element): void {
   const listeners = readyListeners.get(polymerElement);
   if (listeners !== undefined) {
@@ -199,8 +297,11 @@ function getChildIgnoringStyles(parent: Node, index: number): Node | null {
 }
 
 /**
- * Resolves the custom element addressed by a path of child indices (ignoring
- * style children) from the given root. Mirrors PolymerUtils.getCustomElement.
+ * Gets the custom element using `path` of indices starting from the `root`.
+ *
+ * @param root - the root element to start from
+ * @param path - the indices path identifying the custom element.
+ * @returns the element inside the `root` by the path of indices
  */
 export function getCustomElement(root: Node | null, path: unknown[]): Element | null {
   let current: Node | null = root;
