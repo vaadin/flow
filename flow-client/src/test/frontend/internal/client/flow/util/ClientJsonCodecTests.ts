@@ -115,6 +115,18 @@ describe('ClientJsonCodec', () => {
       expect(decodeWithTypeInfo(tree, [1, { '@v-node': 5 }])).to.deep.equal([1, domNode]);
     });
 
+    // Beyond the Java suite (PORTING.md rule 13.6): pins the identity half of
+    // rule 14.7. `ClientJsonCodec.java:306` writes the decoded values back into
+    // the incoming JsonObject and returns that same instance, so the port must
+    // mutate in place rather than build a copy — which `to.deep.equal` cannot
+    // tell apart.
+    it('decodes an object in place, returning the same instance', () => {
+      const json = { a: 1, b: { '@v-node': 5 } };
+
+      expect(decodeWithTypeInfo(tree, json)).to.equal(json);
+      expect(json.b).to.equal(domNode);
+    });
+
     it('builds a return-channel callback that messages the server', () => {
       const callback = decodeWithTypeInfo(tree, { '@v-return': [5, 2] }) as (...args: unknown[]) => void;
       callback('x', 7);
