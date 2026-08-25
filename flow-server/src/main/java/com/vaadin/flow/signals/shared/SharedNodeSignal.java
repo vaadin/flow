@@ -106,7 +106,7 @@ public class SharedNodeSignal
          * @return the value, or <code>null</code> if there is no value
          */
         public <T> @Nullable T value(Class<T> valueType) {
-            return fromJson(value, valueType);
+            return fromJson(value, constructType(valueType));
         }
 
         /**
@@ -216,7 +216,8 @@ public class SharedNodeSignal
      * @return this signal as a value signal, not <code>null</code>
      */
     public <T> SharedValueSignal<T> asValue(Class<T> valueType) {
-        return new SharedValueSignal<>(tree(), id(), validator(), valueType);
+        return new SharedValueSignal<>(tree(), id(), validator(),
+                constructType(valueType));
     }
 
     /**
@@ -265,7 +266,8 @@ public class SharedNodeSignal
      * @return this signal as a list signal, not <code>null</code>
      */
     public <T> SharedListSignal<T> asList(Class<T> elementType) {
-        return new SharedListSignal<>(tree(), id(), validator(), elementType);
+        return new SharedListSignal<>(tree(), id(), validator(),
+                constructType(elementType));
     }
 
     /**
@@ -301,7 +303,8 @@ public class SharedNodeSignal
      * @return this signal as a map signal, not <code>null</code>
      */
     public <T> SharedMapSignal<T> asMap(Class<T> elementType) {
-        return new SharedMapSignal<>(tree(), id(), validator(), elementType);
+        return new SharedMapSignal<>(tree(), id(), validator(),
+                constructType(elementType));
     }
 
     /**

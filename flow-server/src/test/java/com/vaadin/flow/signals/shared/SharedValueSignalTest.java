@@ -750,6 +750,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertNotEquals(idSet,
                 idSet.asNode().asValue(new TypeReference<Set<String>>() {
                 }));
+        assertNotEquals(idSet, idSet.asNode().asValue(Set.class));
     }
 
     @Test

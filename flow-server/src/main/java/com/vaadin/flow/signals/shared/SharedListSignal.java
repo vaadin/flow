@@ -202,7 +202,13 @@ public class SharedListSignal<T extends @Nullable Object>
      *            not <code>null</code>
      * @param elementType
      *            the element type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedListSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized element type such as
+     *             <code>Set&lt;String&gt;</code>
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected SharedListSignal(SignalTree tree, Id id,
             CommandValidator validator, Class<@NonNull T> elementType) {
         this(tree, id, validator, constructType(elementType));
@@ -210,10 +216,9 @@ public class SharedListSignal<T extends @Nullable Object>
 
     /**
      * Creates a new list signal instance with the given id and validator for
-     * the given signal tree with the given element type. In contrast to
-     * {@link #SharedListSignal(SignalTree, Id, CommandValidator, Class)}, the
-     * type arguments of a parameterized element type such as
-     * <code>Set&lt;String&gt;</code> are retained.
+     * the given signal tree with the given element type. The type arguments of
+     * a parameterized element type such as <code>Set&lt;String&gt;</code> are
+     * retained.
      *
      * @param tree
      *            the signal tree that contains the value for this signal, not

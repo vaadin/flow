@@ -138,7 +138,13 @@ public class SharedValueSignal<T extends @Nullable Object>
      *            not <code>null</code>
      * @param valueType
      *            the value type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedValueSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized value type such as
+     *             <code>Set&lt;String&gt;</code>
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected SharedValueSignal(SignalTree tree, Id id,
             CommandValidator validator, Class<@NonNull T> valueType) {
         this(tree, id, validator, constructType(valueType));
@@ -146,10 +152,9 @@ public class SharedValueSignal<T extends @Nullable Object>
 
     /**
      * Creates a new value signal instance with the given id and validator for
-     * the given signal tree with the given value type. In contrast to
-     * {@link #SharedValueSignal(SignalTree, Id, CommandValidator, Class)}, the
-     * type arguments of a parameterized value type such as
-     * <code>Set&lt;String&gt;</code> are retained.
+     * the given signal tree with the given value type. The type arguments of a
+     * parameterized value type such as <code>Set&lt;String&gt;</code> are
+     * retained.
      *
      * @param tree
      *            the signal tree that contains the value for this signal, not
