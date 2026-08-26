@@ -16,13 +16,19 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.Component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NativeTableRowTest extends ComponentTest {
     // Actual test methods in super class
@@ -54,14 +60,24 @@ public class NativeTableRowTest extends ComponentTest {
         assertEquals(2, row.getChildren().count());
     }
 
-    @Test
-    void addCells_wrapsOnlyNonCellComponents() {
-        NativeTableRow row = new NativeTableRow();
+    static Stream<Named<Function<Component[], NativeTableRow>>> rowBuilders() {
+        return Stream.of(Named.of("constructor", NativeTableRow::new),
+                Named.of("addCells", components -> {
+                    NativeTableRow row = new NativeTableRow();
+                    row.addCells(components);
+                    return row;
+                }));
+    }
+
+    @ParameterizedTest
+    @MethodSource("rowBuilders")
+    void cellsKeptAsIs_otherComponentsWrappedInDataCell(
+            Function<Component[], NativeTableRow> builder) {
         NativeTableHeaderCell th = new NativeTableHeaderCell("header");
         NativeTableCell td = new NativeTableCell("data");
         Span span = new Span("wrapped");
 
-        row.addCells(th, td, span);
+        NativeTableRow row = builder.apply(new Component[] { th, td, span });
 
         List<Component> children = row.getChildren().toList();
         assertEquals(th, children.get(0));
@@ -69,6 +85,52 @@ public class NativeTableRowTest extends ComponentTest {
         NativeTableCell wrapper = assertInstanceOf(NativeTableCell.class,
                 children.get(2));
         assertEquals(span, wrapper.getChildren().findFirst().orElseThrow());
+    }
+
+    @Test
+    void addEmptyCells_appendThemInCallOrder() {
+        NativeTableRow row = new NativeTableRow();
+
+        NativeTableHeaderCell th = row.addHeaderCell();
+        NativeTableCell td = row.addDataCell();
+
+        assertEquals(List.of(th, td), row.getCells());
+        assertEquals("", th.getText());
+        assertEquals("", td.getText());
+    }
+
+    @Test
+    void insertCells_placeThemAtTheGivenPosition() {
+        NativeTableRow row = new NativeTableRow();
+        NativeTableCell first = row.addDataCell("first");
+        NativeTableCell last = row.addDataCell("last");
+
+        NativeTableHeaderCell header = row.insertHeaderCell(1);
+        NativeTableCell middle = row.insertDataCell(2);
+
+        assertEquals(List.of(first, header, middle, last), row.getCells());
+    }
+
+    @Test
+    void getCells_returnsHeaderAndDataCellsInDocumentOrder() {
+        NativeTableRow row = new NativeTableRow();
+        NativeTableHeaderCell th = row.addHeaderCell("header");
+        NativeTableCell td = row.addDataCell("data");
+        row.add(new Span("not a cell"));
+
+        assertEquals(List.of(th, td), row.getCells());
+    }
+
+    @Test
+    void removeCell_detachesCellFromRow() {
+        NativeTableRow row = new NativeTableRow();
+        NativeTableHeaderCell th = row.addHeaderCell("header");
+        NativeTableCell td = row.addDataCell("data");
+
+        row.removeCell(th);
+
+        assertEquals(List.of(td), row.getCells());
+        assertTrue(th.getParent().isEmpty());
     }
 
     @Test

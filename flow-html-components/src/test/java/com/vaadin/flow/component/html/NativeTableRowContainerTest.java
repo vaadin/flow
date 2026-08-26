@@ -15,8 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -117,6 +124,24 @@ class NativeTableRowContainerTest {
         assertEquals(3, container.getChildren().count());
         AssertUtils.assertEquals(newRow, container.getRows().get(1),
                 "Row must be replaced with new row");
+    }
+
+    static Stream<Named<Function<NativeTableRow[], NativeTableRowContainer>>> sectionConstructors() {
+        return Stream.of(Named.of("thead", NativeTableHeader::new),
+                Named.of("tbody", NativeTableBody::new),
+                Named.of("tfoot", NativeTableFooter::new));
+    }
+
+    @ParameterizedTest
+    @MethodSource("sectionConstructors")
+    void varargsConstructor_addsGivenRows(
+            Function<NativeTableRow[], NativeTableRowContainer> constructor) {
+        var row0 = new NativeTableRow();
+        var row1 = new NativeTableRow();
+
+        var section = constructor.apply(new NativeTableRow[] { row0, row1 });
+
+        assertEquals(List.of(row0, row1), section.getRows());
     }
 
     @Tag(Tag.TR)
