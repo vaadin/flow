@@ -1,3 +1,8 @@
+// Beyond the Java suite: This module is a TypeScript-only split of the JSNI parts of
+// SimpleElementBindingStrategy; GwtPolymerModelTest exercises them through the strategy
+// (ported in SimpleElementBindingStrategyModelHandlerTests), so every case here is beyond
+// the Java suite.
+
 import { expect } from '@open-wc/testing';
 import { bindPolymerModelProperties } from '../../../../../../main/frontend/internal/client/flow/binding/PolymerModelBinding';
 

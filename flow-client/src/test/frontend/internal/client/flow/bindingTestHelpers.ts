@@ -17,6 +17,14 @@ import { NodeProperties } from '../../../../../main/frontend/internal/flow/inter
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.
 export type ExistingElementRpcArg = StateNode | number | string | null;
 
+/** A client-callable invocation forwarded to the server. */
+export interface TemplateEvent {
+  node: StateNode;
+  methodName: string;
+  args: unknown[];
+  promiseId: number;
+}
+
 export interface CollectingTree {
   tree: StateTree;
   constantPool: ConstantPool;
@@ -28,6 +36,9 @@ export interface CollectingTree {
   // sendNodePropertySyncToServer collected per node -> name -> value
   synchronizedProperties: Map<StateNode, Map<string, unknown>>;
   existingElementRpcArgs: ExistingElementRpcArg[];
+  // sendTemplateEventToServer collected, mirrors serverMethods/serverRpcNodes/
+  // serverPromiseIds in GwtEventHandlerTest.
+  templateEvents: TemplateEvent[];
   clearSynchronizedProperties(): void;
 }
 
@@ -53,6 +64,7 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
   const collectedEventData: unknown[] = [];
   const synchronizedProperties = new Map<StateNode, Map<string, unknown>>();
   const existingElementRpcArgs: ExistingElementRpcArg[] = [];
+  const templateEvents: TemplateEvent[] = [];
 
   const initialPropertiesHandler = {
     flushPropertyUpdates: (): void => {},
@@ -73,7 +85,9 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
       }
       nodeMap.set(name, value);
     },
-    sendTemplateEventMessage: (): void => {},
+    sendTemplateEventMessage: (node: StateNode, methodName: string, args: unknown[], promiseId: number): void => {
+      templateEvents.push({ node, methodName, args, promiseId });
+    },
     sendExistingElementAttachToServer: (): void => {},
     sendExistingElementWithIdAttachToServer: (
       parent: StateNode,
@@ -103,6 +117,7 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
     collectedEventData,
     synchronizedProperties,
     existingElementRpcArgs,
+    templateEvents,
     clearSynchronizedProperties: () => synchronizedProperties.clear()
   };
 }

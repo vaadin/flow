@@ -389,9 +389,17 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
+| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()` | the PR that ports `InitialPropertiesHandler` | open |
 
-_No open rows: the rule-12 slices that stood in for `StateNode` / `StateTree` /
-`NodeMap` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
+The virtual-child rows are blocked rather than overlooked: both cases assert
+that `InitialPropertiesHandler` reverts a deferred element's properties on
+flush, and that class is not ported yet, so the assertion has nothing to bind
+to. The suite records the deferral at its head.
+
+The rule-12 slices that stood in for `StateNode` / `StateTree` / `NodeMap`
+(`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
 `MapProperty.ts`, `NodeFeatureNode` in `NodeFeature.ts`) were collapsed to the
 real types in #24948, which also rewrote the base-layer `MapPropertyTests` /
-`NodeMapTests` / `NodeListTests` mocks into real instances._
+`NodeMapTests` / `NodeListTests` mocks into real instances. The
+`serverEventObjectAccess` slice in `StateTree` was collapsed in #24949 when
+`ServerEventObject` landed.

@@ -1,3 +1,8 @@
+// Beyond the Java suite: ServerEventObject has no Java test class; GwtEventHandlerTest exercises
+// it through the binder and is ported in ServerEventHandlerBinderTests. Every case here is beyond
+// the Java suite.
+
+import { JsonConstants } from '../../../../../../main/frontend/internal/flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import {
@@ -9,8 +14,7 @@ import {
   removeMethod
 } from '../../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 
-// com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME
-const NAME = '}p';
+const NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 
 // A minimal StateNode/StateTree stand-in for the defineMethod/getEventData
 // contracts: a single feature map keyed by feature id, a constant pool, and a

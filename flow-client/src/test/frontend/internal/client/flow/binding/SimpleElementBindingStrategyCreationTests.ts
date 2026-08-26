@@ -28,36 +28,40 @@ describe('SimpleElementBindingStrategy creation & identity', () => {
   const create = (node: any): Element => strategy.create(node);
   const isApplicable = (node: any): boolean => strategy.isApplicable(node);
 
-  it('create uses the node namespace when present', () => {
-    const element = create(fakeNode({ tag: 'svg', namespace: SVG_NS }));
-    expect(element.namespaceURI).to.equal(SVG_NS);
-    expect(element.tagName.toLowerCase()).to.equal('svg');
-  });
+  // Beyond the Java suite: the GWT suite has no case for create or
+  // isApplicable, which it only reaches indirectly through Binder.bind.
+  describe('beyond the Java suite', () => {
+    it('create uses the node namespace when present', () => {
+      const element = create(fakeNode({ tag: 'svg', namespace: SVG_NS }));
+      expect(element.namespaceURI).to.equal(SVG_NS);
+      expect(element.tagName.toLowerCase()).to.equal('svg');
+    });
 
-  it('create inherits the parent element namespace', () => {
-    const parentDom = document.createElementNS(SVG_NS, 'svg');
-    const element = create(fakeNode({ tag: 'rect' }, { parent: fakeNode({}, { domNode: parentDom }) }));
-    expect(element.namespaceURI).to.equal(SVG_NS);
-  });
+    it('create inherits the parent element namespace', () => {
+      const parentDom = document.createElementNS(SVG_NS, 'svg');
+      const element = create(fakeNode({ tag: 'rect' }, { parent: fakeNode({}, { domNode: parentDom }) }));
+      expect(element.namespaceURI).to.equal(SVG_NS);
+    });
 
-  it('create falls back to a plain HTML element', () => {
-    const element = create(fakeNode({ tag: 'div' }));
-    expect(element.namespaceURI).to.equal('http://www.w3.org/1999/xhtml');
-    expect(element.tagName.toLowerCase()).to.equal('div');
-  });
+    it('create falls back to a plain HTML element', () => {
+      const element = create(fakeNode({ tag: 'div' }));
+      expect(element.namespaceURI).to.equal('http://www.w3.org/1999/xhtml');
+      expect(element.tagName.toLowerCase()).to.equal('div');
+    });
 
-  it('isApplicable is true with element data, or for the root node', () => {
-    expect(isApplicable(fakeNode({}, { hasElementData: true }))).to.be.true;
+    it('isApplicable is true with element data, or for the root node', () => {
+      expect(isApplicable(fakeNode({}, { hasElementData: true }))).to.be.true;
 
-    const root = fakeNode({}, { hasElementData: false });
-    (root as any).getTree = () => ({ getRootNode: () => root, isVisible: () => true });
-    expect(isApplicable(root)).to.be.true;
+      const root = fakeNode({}, { hasElementData: false });
+      (root as any).getTree = () => ({ getRootNode: () => root, isVisible: () => true });
+      expect(isApplicable(root)).to.be.true;
 
-    const other = fakeNode(
-      {},
-      { hasElementData: false, tree: { getRootNode: () => fakeNode({}), isVisible: () => true } }
-    );
-    expect(isApplicable(other)).to.be.false;
+      const other = fakeNode(
+        {},
+        { hasElementData: false, tree: { getRootNode: () => fakeNode({}), isVisible: () => true } }
+      );
+      expect(isApplicable(other)).to.be.false;
+    });
   });
 
   it('binding an element with the wrong tag throws', () => {
@@ -71,11 +75,12 @@ describe('SimpleElementBindingStrategy creation & identity', () => {
     expect(() => bind(node, element)).to.throw();
   });
 
-  it('binds an element whose tag differs only in case', () => {
+  it('binds an element whose tag matches', () => {
+    // Ported from testBindRightTagOk.
     const harness = makeCollectingTree();
     const node = new StateNode(2, harness.tree);
     harness.tree.registerNode(node);
-    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('DIV');
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('div');
     const element = document.createElement('div');
 
     expect(() => bind(node, element)).to.not.throw();

@@ -4,6 +4,7 @@ import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
 import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { get as getServerEventObject } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
@@ -144,9 +145,15 @@ describe('StateTree', () => {
     expect(() => tree.unregisterNode(node)).to.throw();
   });
 
-  // testUpdatingTree_triggeringBinder_causesAssertionError is intentionally not
-  // ported: it drives `Binder.bind`, and `Binder` is not yet ported. Restore
-  // this case in the PR that ports `Binder`.
+  it('throws when the binder runs while a tree update is in progress', () => {
+    // Ported from testUpdatingTree_triggeringBinder_causesAssertionError.
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    tree.setUpdateInProgress(true);
+
+    expect(() => bind(node, null as unknown as Node)).to.throw();
+  });
 
   describe('sendNodePropertySyncToServer', () => {
     it('sends a non-initial property of a valid node', () => {

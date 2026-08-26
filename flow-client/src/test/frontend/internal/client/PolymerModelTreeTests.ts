@@ -1,3 +1,7 @@
+// Beyond the Java suite: The model-tree building this module was split from lives in
+// PolymerUtils.java, which has no Java test class, so every case here is beyond the Java
+// suite.
+
 import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import { createModelTree } from '../../../../main/frontend/internal/client/PolymerModelTree';

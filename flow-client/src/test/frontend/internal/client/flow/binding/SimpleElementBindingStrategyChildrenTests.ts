@@ -96,6 +96,33 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(element.children[1].tagName).to.equal('A');
     expect(element.children[1].id).to.equal('second');
     expect(element.children[2].id).to.equal('first');
+
+    // A second client-side element, inserted between the existing children.
+    const existingChild2 = document.createElement('div');
+    element.insertBefore(existingChild2, element.children[1]);
+
+    // Insert at the second position.
+    children.add(1, createChildNode('third', 'h1'));
+
+    // <div/><div/><a id="second"/><h1 id="third"/><span id="first"/>
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(5);
+    expect(element.children[1].tagName).to.equal('DIV');
+    expect(element.children[3].tagName).to.equal('H1');
+    expect(element.children[3].id).to.equal('third');
+
+    // Insert after the last bound node.
+    children.add(3, createChildNode('fourth', 'br'));
+
+    // <div/><div/><a id="second"/><h1 id="third"/><span id="first"/><br id="fourth"/>
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(6);
+    // The element should be before the client side element and after the bound
+    // node.
+    expect(element.children[5].tagName).to.equal('BR');
+    expect(element.children[5].id).to.equal('fourth');
   });
 
   it('removes the DOM child of a spliced-out child node', () => {

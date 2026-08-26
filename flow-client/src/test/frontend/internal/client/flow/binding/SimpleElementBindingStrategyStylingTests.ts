@@ -153,6 +153,23 @@ describe('SimpleElementBindingStrategy styling binding', () => {
     expect(element.className).to.equal('foo');
   });
 
+  // Ported from GwtMultipleBindingTest.testAddClassListDoubleBind: a second bind
+  // must not re-read the class-list feature.
+  it('binding twice does not re-read the class-list feature', () => {
+    const { tree } = makeCollectingTree();
+    const node = new BindGuardStateNode(2, tree, (m) => expect.fail(m));
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+    node.getList(NodeFeatures.CLASS_LIST).add(0, 'foo');
+    const guardedElement = document.createElement('div');
+
+    bind(node, guardedElement);
+    Reactive.flush();
+
+    node.setBound();
+    bind(node, guardedElement);
+    Reactive.flush();
+  });
+
   // Ported from GwtMultipleBindingTest.testAddStylesDoubleBind: binding the same
   // node a second time must be a no-op that never re-reads the style feature.
   it('binding twice does not re-read the style-properties feature', () => {

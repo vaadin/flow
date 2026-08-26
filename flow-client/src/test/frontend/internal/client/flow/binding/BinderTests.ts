@@ -1,3 +1,8 @@
+// Beyond the Java suite: Binder has no Java test class of its own:
+// GwtBasicElementBinderTest and GwtPropertyElementBinderTest drive it through the binding
+// strategies and are ported in the SimpleElementBindingStrategy suites. Every case here is
+// beyond the Java suite.
+
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
@@ -35,7 +40,7 @@ describe('Binder', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
     node.getMap(NodeFeatures.ELEMENT_DATA).getProperty('tag').setValue('div');
-    node.getMap(1).getProperty('title').setValue('hi'); // ELEMENT_PROPERTIES
+    node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('title').setValue('hi');
 
     const element = document.createElement('div');
     node.setDomNode(element);
