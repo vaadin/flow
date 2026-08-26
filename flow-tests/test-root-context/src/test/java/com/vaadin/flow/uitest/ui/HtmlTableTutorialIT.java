@@ -24,6 +24,7 @@ import com.vaadin.flow.component.html.testbench.NativeTableCellElement;
 import com.vaadin.flow.component.html.testbench.NativeTableColumnElement;
 import com.vaadin.flow.component.html.testbench.NativeTableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.NativeTableElement;
+import com.vaadin.flow.component.html.testbench.NativeTableHeaderCellElement;
 import com.vaadin.flow.component.html.testbench.NativeTableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -64,6 +65,24 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
                 .id("basic-table");
         Assert.assertEquals("tbody",
                 table.getPropertyElement("firstElementChild").getTagName());
+    }
+
+    @Test
+    public void dogsTableHasColumnAndRowScopedHeaders() {
+        NativeTableElement table = $(NativeTableElement.class).id("dogs-table");
+        List<NativeTableRowElement> rows = table.$(NativeTableRowElement.class)
+                .all();
+
+        List<NativeTableHeaderCellElement> columnHeaders = rows.get(0)
+                .$(NativeTableHeaderCellElement.class).all();
+        Assert.assertEquals(4, columnHeaders.size());
+        columnHeaders.forEach(header -> Assert.assertEquals("col",
+                header.getDomAttribute("scope")));
+
+        NativeTableHeaderCellElement rowHeader = rows.get(1)
+                .$(NativeTableHeaderCellElement.class).first();
+        Assert.assertEquals("row", rowHeader.getDomAttribute("scope"));
+        Assert.assertEquals("Breed", rowHeader.getText());
     }
 
     @Test

@@ -15,6 +15,44 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.component.html.NativeTableHeaderCell.Scope;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class NativeTableHeaderCellTest extends ComponentTest {
     // Actual test methods in super class
+
+    @Test
+    void setScope_writesTheAttributeAndReadsBack() {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell();
+        assertEquals(Optional.empty(), cell.getScope());
+
+        cell.setScope(Scope.ROWGROUP);
+
+        assertEquals("rowgroup", cell.getElement().getAttribute("scope"));
+        assertEquals(Optional.of(Scope.ROWGROUP), cell.getScope());
+    }
+
+    @Test
+    void setScope_null_removesTheAttribute() {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell();
+        cell.setScope(Scope.COL);
+
+        cell.setScope(null);
+
+        assertEquals(null, cell.getElement().getAttribute("scope"));
+        assertEquals(Optional.empty(), cell.getScope());
+    }
+
+    @Test
+    void getScope_unrecognizedAttributeValue_isEmpty() {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell();
+        cell.getElement().setAttribute("scope", "nonsense");
+
+        assertEquals(Optional.empty(), cell.getScope());
+    }
 }
