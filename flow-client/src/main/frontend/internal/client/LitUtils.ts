@@ -14,7 +14,12 @@
  * the License.
  */
 
-// Implementations migrated from LitUtils.java.
+/**
+ * Utils class, intended to ease working with LitElement related code on client
+ * side.
+ *
+ * Implementations migrated from LitUtils.java.
+ */
 
 /**
  * Checks if the given element is a LitElement.

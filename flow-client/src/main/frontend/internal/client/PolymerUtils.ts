@@ -14,10 +14,16 @@
  * the License.
  */
 
+import type * as ElementUtil from './ElementUtil';
 import { Console } from './Console';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import type { StateNode } from './flow/StateNode';
+
+/**
+ * Utils class, intended to ease working with Polymer related code on a client
+ * side.
+ */
 
 // DOM/Polymer probes and model-data writers migrated from PolymerUtils.java. The
 // StateNode-coupled model-tree building (createModelTree and the change handlers)
@@ -122,8 +128,8 @@ export function getDomRoot(templateElement: Node): Element | null {
  *            with the `id`
  * @param id - the identifier of the element to search for
  * @returns the element with the given `id` inside the shadow root of the parent
- * @deprecated This is Polymer specific. Use `ElementUtil.getElementById` for
- *             the generic version
+ * @deprecated This is Polymer specific. Use {@link ElementUtil.getElementById}
+ *             for the generic version
  */
 export function getDomElementById(shadowRootParent: Node, id: string): Element | null {
   return (shadowRootParent as unknown as { $: Record<string, Element> }).$[id] ?? null;
@@ -321,7 +327,7 @@ export function getCustomElement(root: Node | null, path: unknown[]): Element | 
     // Java calls getChildIgnoringStyles unconditionally (PolymerUtils.java:513-515); once a
     // prior index is out of range it returns null and the next iteration NPEs. Mirror that
     // unguarded deref rather than silently propagating null.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- mirror Java's unguarded deref
+
     current = getChildIgnoringStyles(current!, value as number);
   }
   if (current instanceof Element) {

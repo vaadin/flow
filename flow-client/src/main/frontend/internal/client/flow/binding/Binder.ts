@@ -38,23 +38,6 @@ import { TextBindingStrategy } from './TextBindingStrategy';
 // syntax (bivariant parameters), matching the Java raw-typed STRATEGIES array.
 const STRATEGIES: Array<BindingStrategy<Node>> = [new SimpleElementBindingStrategy(), new TextBindingStrategy()];
 
-function getApplicableStrategy(node: StateNode): BindingStrategy<Node> {
-  let applicable: BindingStrategy<Node> | null = null;
-  for (const strategy of STRATEGIES) {
-    if (strategy.isApplicable(node)) {
-      // Java's message names the two conflicting strategy classes via getClass();
-      // the message is built eagerly here, so it stays generic rather than
-      // dereferencing the (possibly null) previous strategy to name it.
-      assert(applicable === null, 'Found multiple applicable binding strategies for the same node');
-      applicable = strategy;
-    }
-  }
-  if (applicable === null) {
-    throw new Error('State node has no suitable binder strategy');
-  }
-  return applicable;
-}
-
 /**
  * Bind the `domNode` to the `stateNode`.
  *
@@ -103,3 +86,20 @@ class BinderContextImpl implements BinderContext {
 }
 
 const CONTEXT: BinderContext = new BinderContextImpl();
+
+function getApplicableStrategy(node: StateNode): BindingStrategy<Node> {
+  let applicable: BindingStrategy<Node> | null = null;
+  for (const strategy of STRATEGIES) {
+    if (strategy.isApplicable(node)) {
+      // Java's message names the two conflicting strategy classes via getClass();
+      // the message is built eagerly here, so it stays generic rather than
+      // dereferencing the (possibly null) previous strategy to name it.
+      assert(applicable === null, 'Found multiple applicable binding strategies for the same node');
+      applicable = strategy;
+    }
+  }
+  if (applicable === null) {
+    throw new Error('State node has no suitable binder strategy');
+  }
+  return applicable;
+}

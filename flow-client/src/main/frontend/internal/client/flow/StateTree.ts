@@ -30,6 +30,7 @@ import { StateNode } from './StateNode';
 import type { ConstantPool } from './ConstantPool';
 import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
+import { getServerEventObjectForResync } from './binding/ServerEventObject';
 
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
@@ -77,9 +78,6 @@ export interface Registry {
   getExistingElementMap(): ExistingElementMap;
 }
 
-/** Looks up a server event object attached to a DOM node; mirrors ServerEventObject.getIfPresent. */
-export type ServerEventObjectAccess = (dom: Node) => { rejectPromises(): void } | null;
-
 /**
  * A client-side representation of a server-side state tree.
  */
@@ -87,8 +85,6 @@ export class StateTree {
   readonly #idToNode = new Map<number, StateNode>();
 
   readonly #registry: Registry;
-
-  readonly #serverEventObjectAccess: ServerEventObjectAccess;
 
   readonly #rootNode: StateNode;
 
@@ -102,13 +98,9 @@ export class StateTree {
    * Creates a new instance connected to the given registry.
    *
    * @param registry - the global registry
-   * @param serverEventObjectAccess - looks up a server event object attached to
-   *          a DOM node during resync; port deviation for the not-yet-ported
-   *          ServerEventObject, defaulting to "no server event object"
    */
-  constructor(registry: Registry, serverEventObjectAccess: ServerEventObjectAccess = () => null) {
+  constructor(registry: Registry) {
     this.#registry = registry;
-    this.#serverEventObjectAccess = serverEventObjectAccess;
     this.#rootNode = new StateNode(1, this);
     this.registerNode(this.#rootNode);
   }
@@ -182,7 +174,7 @@ export class StateTree {
       if (node !== this.#rootNode) {
         const dom = node.getDomNode();
         if (dom !== null) {
-          const serverEventObject = this.#serverEventObjectAccess(dom);
+          const serverEventObject = getServerEventObjectForResync(dom);
           if (serverEventObject !== null) {
             // reject any promise waiting on this node
             serverEventObject.rejectPromises();

@@ -19,12 +19,14 @@
 // SimpleElementBindingStrategy uses it to decide whether a Polymer
 // model-property update should be sent to the server.
 
+import type { StateNode } from '../StateNode';
+
 /**
  * The storage class for set of updatable model properties.
  *
- * This class is stored inside a `StateNode` via
- * `StateNode.setNodeData` if there is any data to store at all.
- * Once it's stored in the `StateNode` the code which sends updates to the
+ * This class is stored inside a {@link StateNode} via
+ * {@link StateNode.setNodeData} if there is any data to store at all.
+ * Once it's stored in the {@link StateNode} the code which sends updates to the
  * server side when a polymer property is updated uses this data to detect
  * whether server expects the update to be sent(see
  * `SimpleElementBindingStrategy`).

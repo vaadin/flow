@@ -132,8 +132,10 @@ describe('SimpleElementBindingStrategy DOM event listeners', () => {
     // Ported from testDomListenerSynchronization.
     bind(node, element);
 
-    // Only offsetWidth is requested by the event's expression; offsetHeight is
-    // not part of any event synchronization, so it must not be synced.
+    // Only offsetWidth is requested by the event's expression, so only it is
+    // synchronized. The Java test additionally marks offsetHeight through
+    // setSyncProperties, but that writes a standalone NodeList the strategy
+    // never reads, so the setup is inert there and is not ported.
     addListenerConstant('expressionsKey', { [`${SYNCHRONIZE_PROPERTY_TOKEN}offsetWidth`]: false });
     Reactive.flush();
 

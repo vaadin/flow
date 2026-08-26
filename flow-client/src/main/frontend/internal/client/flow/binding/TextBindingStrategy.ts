@@ -28,7 +28,10 @@ import type { BindingStrategy } from './BindingStrategy';
 
 /** Binding strategy for simple (not template) text `Node`. */
 export class TextBindingStrategy implements BindingStrategy<Text> {
-  // Used as a weak set: only keys matter, so state nodes are weakly referenced.
+  /**
+   * This is used as a weak set. Only keys are important so that they are weakly
+   * referenced
+   */
   static readonly #bound = new WeakMap<StateNode, boolean>();
 
   create(_node: StateNode): Text {

@@ -79,110 +79,6 @@ function initPromiseHandler(serverObject: ServerObject, promiseCallbackName: str
 }
 
 /**
- * Removes a method with the given name.
- *
- * @param serverObject - the $server object the method is defined on
- * @param methodName - the name of the method to remove
- */
-export function removeMethod(serverObject: ServerObject, methodName: string): void {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removing a dynamically named server method
-  delete serverObject[methodName];
-}
-
-/**
- * Gets the defined methods.
- *
- * @param serverObject - the $server object the method is defined on
- * @returns an array of defined method names
- */
-export function getMethods(serverObject: ServerObject): string[] {
-  return Object.keys(serverObject);
-}
-
-/**
- * Reject all promises pending on this server object. Called during client
- * resynchronization to free consumers of promises that are never delivered by
- * the server.
- *
- * @param serverObject - the $server object the method is defined on
- * @param promiseCallbackName - the key under which the promise-callback
- *            function is stored
- */
-export function rejectPromises(serverObject: ServerObject, promiseCallbackName: string): void {
-  const promises = serverObject[promiseCallbackName].promises;
-  if (promises !== undefined) {
-    promises.forEach(function (item: [unknown, (reason: unknown) => void]) {
-      item[1](Error('Client is resynchronizing'));
-    });
-  }
-}
-
-/**
- * Reads the Polymer model value at the given path from the node and, when it is
- * a model object carrying a nodeId, returns a `{ nodeId }` wrapper; otherwise
- * null.
- */
-function getPolymerPropertyObject(node: unknown, propertyName: string): { nodeId: unknown } | null {
-  const polymerNode = node as { get?: (path: string) => unknown };
-  if (typeof polymerNode.get === 'function') {
-    const polymerProperty = polymerNode.get(propertyName) as Record<string, unknown> | null;
-    // Deviation from ServerEventObject.java: the extra `!== null` guard. Java
-    // only checks `typeof(polymerProperty) === 'object'` and then dereferences
-    // it, which would TypeError when node.get returns null (typeof null is
-    // 'object'); guarding returns null instead.
-    if (
-      typeof polymerProperty === 'object' &&
-      polymerProperty !== null &&
-      typeof polymerProperty.nodeId !== 'undefined'
-    ) {
-      return { nodeId: polymerProperty.nodeId };
-    }
-  }
-  return null;
-}
-
-/**
- * Gets or creates `element.$server` for the given element.
- *
- * @param element - the element to use
- * @returns a reference to the `$server` object in the element
- */
-export function get(element: Element): ServerObject {
-  let serverObject = getIfPresent(element);
-  if (serverObject === null) {
-    serverObject = {};
-    initPromiseHandler(serverObject, PROMISE_CALLBACK_NAME);
-    setJsProperty(element as unknown as Record<string, unknown>, '$server', serverObject);
-  }
-  return serverObject;
-}
-
-/**
- * Gets or creates `element.$server` for the given element, if present.
- *
- * @param node - the element to use
- * @returns a reference to the `$server` object in the element, or `null` if
- *         note present.
- */
-export function getIfPresent(node: Node): ServerObject | null {
-  const serverObject = getJsProperty(node as unknown as Record<string, unknown>, '$server') as ServerObject | undefined;
-  return serverObject === undefined ? null : serverObject;
-}
-
-/**
- * Returns a handle that rejects the pending promises of the node's $server
- * object, or null when the node has none. Used by StateTree.prepareForResync to
- * reject promises waiting on nodes that a resynchronization discards.
- */
-export function getServerEventObjectForResync(node: Node): { rejectPromises(): void } | null {
-  const serverObject = getIfPresent(node);
-  if (serverObject === null) {
-    return null;
-  }
-  return { rejectPromises: () => rejectPromises(serverObject, PROMISE_CALLBACK_NAME) };
-}
-
-/**
  * Defines a method with the given name to be a callback to the server for the
  * given state node.
  *
@@ -304,6 +200,92 @@ function createPolymerPropertyObject(
 }
 
 /**
+ * Reads the Polymer model value at the given path from the node and, when it is
+ * a model object carrying a nodeId, returns a `{ nodeId }` wrapper; otherwise
+ * null.
+ */
+function getPolymerPropertyObject(node: unknown, propertyName: string): { nodeId: unknown } | null {
+  const polymerNode = node as { get?: (path: string) => unknown };
+  if (typeof polymerNode.get === 'function') {
+    const polymerProperty = polymerNode.get(propertyName) as Record<string, unknown> | null;
+    // Deviation from ServerEventObject.java: the extra `!== null` guard. Java
+    // only checks `typeof(polymerProperty) === 'object'` and then dereferences
+    // it, which would TypeError when node.get returns null (typeof null is
+    // 'object'); guarding returns null instead.
+    if (
+      typeof polymerProperty === 'object' &&
+      polymerProperty !== null &&
+      typeof polymerProperty.nodeId !== 'undefined'
+    ) {
+      return { nodeId: polymerProperty.nodeId };
+    }
+  }
+  return null;
+}
+
+/**
+ * Removes a method with the given name.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param methodName - the name of the method to remove
+ */
+export function removeMethod(serverObject: ServerObject, methodName: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removing a dynamically named server method
+  delete serverObject[methodName];
+}
+
+/**
+ * Gets the defined methods.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @returns an array of defined method names
+ */
+export function getMethods(serverObject: ServerObject): string[] {
+  return Object.keys(serverObject);
+}
+
+/**
+ * Gets or creates `element.$server` for the given element.
+ *
+ * @param element - the element to use
+ * @returns a reference to the `$server` object in the element
+ */
+export function get(element: Element): ServerObject {
+  let serverObject = getIfPresent(element);
+  if (serverObject === null) {
+    serverObject = {};
+    initPromiseHandler(serverObject, PROMISE_CALLBACK_NAME);
+    setJsProperty(element as unknown as Record<string, unknown>, '$server', serverObject);
+  }
+  return serverObject;
+}
+
+/**
+ * Gets or creates `element.$server` for the given element, if present.
+ *
+ * @param node - the element to use
+ * @returns a reference to the `$server` object in the element, or `null` if
+ *         note present.
+ */
+export function getIfPresent(node: Node): ServerObject | null {
+  const serverObject = getJsProperty(node as unknown as Record<string, unknown>, '$server') as ServerObject | undefined;
+  return serverObject === undefined ? null : serverObject;
+}
+
+/**
+ * Returns a handle that rejects the pending promises of the node's $server
+ * object, or null when the node has none. Used by StateTree.prepareForResync to
+ * reject promises waiting on nodes that a resynchronization discards.
+ */
+export function getServerEventObjectForResync(node: Node): { rejectPromises(): void } | null {
+  const serverObject = getIfPresent(node);
+  if (serverObject === null) {
+    return null;
+  }
+  return { rejectPromises: () => rejectPromises(serverObject, PROMISE_CALLBACK_NAME) };
+}
+
+/**
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression. The
  * `element` parameter receives the $server object, matching the Java contract.
@@ -324,4 +306,22 @@ function getOrCreateExpression(expressionString: string): ServerEventDataExpress
   }
 
   return expression;
+}
+
+/**
+ * Reject all promises pending on this server object. Called during client
+ * resynchronization to free consumers of promises that are never delivered by
+ * the server.
+ *
+ * @param serverObject - the $server object the method is defined on
+ * @param promiseCallbackName - the key under which the promise-callback
+ *            function is stored
+ */
+export function rejectPromises(serverObject: ServerObject, promiseCallbackName: string): void {
+  const promises = serverObject[promiseCallbackName].promises;
+  if (promises !== undefined) {
+    promises.forEach(function (item: [unknown, (reason: unknown) => void]) {
+      item[1](Error('Client is resynchronizing'));
+    });
+  }
 }

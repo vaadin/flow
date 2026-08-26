@@ -14,7 +14,12 @@
  * the License.
  */
 
-// Implementations migrated from ReactUtils.java.
+/**
+ * Utils class, intended to ease working with React component related code on
+ * the client side.
+ *
+ * Implementations migrated from ReactUtils.java.
+ */
 
 /**
  * Add a callback to the react component that is called when the component

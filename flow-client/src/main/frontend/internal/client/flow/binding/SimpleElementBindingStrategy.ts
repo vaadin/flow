@@ -360,7 +360,11 @@ function updateAttributeValue(
   if (value === null || value === undefined || typeof value === 'string') {
     setElementAttribute(element, attribute, (value ?? null) as string | null);
   } else if (typeof value === 'object' && !Array.isArray(value)) {
-    assert(NodeProperties.URI_ATTRIBUTE in value, 'A URI attribute value must contain the uri property');
+    assert(
+      NodeProperties.URI_ATTRIBUTE in value,
+      // The "recieved" typo is carried over from the Java assert message.
+      `Implementation error: JsonObject is recieved as an attribute value for '${attribute}' but it has no ${NodeProperties.URI_ATTRIBUTE} key`
+    );
     const uri = (value as Record<string, unknown>)[NodeProperties.URI_ATTRIBUTE] as string;
     if (configuration.isWebComponentMode() && !isAbsoluteUrl(uri)) {
       let baseUri = configuration.getServiceUrl();
@@ -748,9 +752,9 @@ function createComputations(computationsCollection: Array<Map<string, Computatio
  * dependencies change, tracking the computation by property name. Mirrors
  * bindProperty.
  */
-function bindProperty<P extends { getName(): string }>(
-  user: (property: P) => void,
-  property: P,
+function bindProperty(
+  user: (property: MapProperty) => void,
+  property: MapProperty,
   bindings: Map<string, Computation>
 ): Computation {
   const name = property.getName();
@@ -824,7 +828,7 @@ function handleListItemPropertyChange(
 ): void {
   // Java dereferences tree.getNode(nodeId) unguarded (SimpleElementBindingStrategy.java:434-436);
   // a missing node throws there, so the port asserts non-null rather than silently returning.
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- mirror Java's unguarded node deref
+
   const node = tree.getNode(nodeId)!;
   if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
     return;
@@ -1466,7 +1470,11 @@ function verifyAttachedElement(
   let existingId: number | null = null;
   for (let i = 0; i < list.length(); i++) {
     const stateNode = list.get(i) as StateNode;
-    if (stateNode.getDomNode() === element) {
+    const domNode = stateNode.getDomNode();
+    // Java calls domNode.equals(element) unguarded, so a shadow root child
+    // without a DOM node throws there; mirror the deref (rule 14.6) rather than
+    // comparing false.
+    if (domNode!.isSameNode(element)) {
       existingId = stateNode.getId();
       break;
     }

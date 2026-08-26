@@ -143,9 +143,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    - Tags belong to the members that are **ported**. An unported private Java
      helper's `@param`/`@return` are out of scope — `TreeChangeProcessor`'s
      `jsonArrayAsJsArray` has no TypeScript counterpart, so its tags are not
-     missing — and a parameter that exists only in the port gets its own `@param`,
-     such as `StateTree`'s injected `serverEventObjectAccess`. A tag count that
-     differs from Java for one of those two reasons is not a finding.
+     missing — and a parameter that exists only in the port gets its own `@param`.
+     A tag count that differs from Java for one of those two reasons is not a
+     finding.
 7. **Do not carry `@since` or `@author`.**
 8. **Match the Java API — including constructor signatures.** Do **not** deviate
    from the Java parameter list; in particular, do not bundle several positional
@@ -175,7 +175,13 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    too (mirror the Java test: hard-coded where the Java test hard-codes,
    `NodeFeatures.X` where the Java test uses the constant).
 10. Cross-link intra-module references with a real `{@link …}` to the ported
-    symbol (e.g. `{@link NodeProperties.VISIBLE}`).
+    symbol (e.g. `{@link NodeProperties.VISIBLE}`). A cross-*module* reference
+    needs the symbol in scope for the link to resolve, so add a doc-only
+    `import type { X } from '…'` (or `import type * as X` for a module of
+    functions) alongside it. Such an import does **not** trip `noUnusedLocals`:
+    TypeScript counts a `{@link}` reference as a use, so the link and the import
+    keep each other alive. Do not settle for a plain code span — that was the
+    earlier workaround and it loses the link.
 
 ## References to not-yet-ported symbols
 
