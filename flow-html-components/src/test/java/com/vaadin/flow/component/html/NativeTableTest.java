@@ -249,4 +249,52 @@ class NativeTableTest extends ComponentTest {
         assertTrue(body2.getParent().isPresent());
     }
 
+    @Test
+    void childrenGivenToConstructor_areFoundByAccessors() {
+        var head = new NativeTableHeader();
+        var body = new NativeTableBody();
+        var table = new NativeTable(head, body);
+
+        assertEquals(head, table.getHead(), "Head given to the constructor "
+                + "should be returned instead of a new one being created");
+        assertEquals(List.of(body), table.getBodies());
+        assertEquals(2, table.getChildren().count(),
+                "No extra section should have been created");
+    }
+
+    @Test
+    void sectionAddedWithAdd_isFoundByAccessors() {
+        var component = (NativeTable) getComponent();
+        var body = new NativeTableBody();
+        component.add(body);
+
+        assertEquals(List.of(body), component.getBodies());
+        assertEquals(body, component.getBody());
+        assertEquals(1, component.getChildren().count(),
+                "No extra body should have been created");
+    }
+
+    @Test
+    void removeAll_thenGetHead_returnsAnAttachedHead() {
+        var component = (NativeTable) getComponent();
+        component.getHead();
+        component.removeAll();
+
+        var head = component.getHead();
+        assertTrue(head.getParent().isPresent(),
+                "Head returned after removeAll must be attached to the table");
+        assertEquals(1, component.getChildren().count());
+    }
+
+    @Test
+    void sectionRemovedWithRemove_thenGetFoot_returnsAnAttachedFoot() {
+        var component = (NativeTable) getComponent();
+        component.remove(component.getFoot());
+
+        var foot = component.getFoot();
+        assertTrue(foot.getParent().isPresent(),
+                "Foot returned after remove must be attached to the table");
+        assertEquals(1, component.getChildren().count());
+    }
+
 }

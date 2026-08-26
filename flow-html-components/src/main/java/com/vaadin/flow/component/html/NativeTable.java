@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
@@ -32,26 +33,6 @@ import com.vaadin.flow.component.Tag;
 @Tag(Tag.TABLE)
 public class NativeTable extends HtmlContainer
         implements ClickNotifier<NativeTable> {
-
-    /**
-     * The table's caption.
-     */
-    private NativeTableCaption caption;
-
-    /**
-     * The {@code <thead>} element of this table.
-     */
-    private NativeTableHeader head;
-
-    /**
-     * The list of {@code <tbody>} elements of the table.
-     */
-    private final List<NativeTableBody> bodies = new LinkedList<>();
-
-    /**
-     * The {@code <tfoot>} element of this table.
-     */
-    private NativeTableFooter foot;
 
     /**
      * Creates a new empty table.
@@ -77,11 +58,11 @@ public class NativeTable extends HtmlContainer
      * @return the table's caption.
      */
     public NativeTableCaption getCaption() {
-        if (caption == null) {
-            caption = new NativeTableCaption();
+        return findCaption().orElseGet(() -> {
+            NativeTableCaption caption = new NativeTableCaption();
             addComponentAsFirst(caption);
-        }
-        return caption;
+            return caption;
+        });
     }
 
     /**
@@ -107,10 +88,7 @@ public class NativeTable extends HtmlContainer
      * Remove the caption from this table.
      */
     public void removeCaption() {
-        if (caption != null) {
-            remove(caption);
-            caption = null;
-        }
+        findCaption().ifPresent(this::remove);
     }
 
     /**
@@ -120,22 +98,18 @@ public class NativeTable extends HtmlContainer
      *         element was present.
      */
     public NativeTableHeader getHead() {
-        if (head == null) {
-            head = new NativeTableHeader();
-            int index = caption == null ? 0 : 1;
-            addComponentAtIndex(index, head);
-        }
-        return head;
+        return findHead().orElseGet(() -> {
+            NativeTableHeader head = new NativeTableHeader();
+            addComponentAtIndex(findCaption().isPresent() ? 1 : 0, head);
+            return head;
+        });
     }
 
     /**
      * Remove the head from this table, if present.
      */
     public void removeHead() {
-        if (head != null) {
-            remove(head);
-            head = null;
-        }
+        findHead().ifPresent(this::remove);
     }
 
     /**
@@ -145,21 +119,18 @@ public class NativeTable extends HtmlContainer
      *         none was present.
      */
     public NativeTableFooter getFoot() {
-        if (foot == null) {
-            foot = new NativeTableFooter();
+        return findFoot().orElseGet(() -> {
+            NativeTableFooter foot = new NativeTableFooter();
             add(foot);
-        }
-        return foot;
+            return foot;
+        });
     }
 
     /**
      * Removes the foot from this table, if present.
      */
     public void removeFoot() {
-        if (foot != null) {
-            remove(foot);
-            foot = null;
-        }
+        findFoot().ifPresent(this::remove);
     }
 
     /**
@@ -168,7 +139,8 @@ public class NativeTable extends HtmlContainer
      * @return the list of table body elements of this table.
      */
     public List<NativeTableBody> getBodies() {
-        return new ArrayList<>(bodies);
+        return ComponentUtil.getChildrenOfType(this, NativeTableBody.class)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -179,10 +151,8 @@ public class NativeTable extends HtmlContainer
      *         there's none.
      */
     public NativeTableBody getBody() {
-        if (bodies.isEmpty()) {
-            return addBody();
-        }
-        return bodies.get(0);
+        return ComponentUtil.getFirstChildOfType(this, NativeTableBody.class)
+                .orElseGet(this::addBody);
     }
 
     /**
@@ -200,7 +170,7 @@ public class NativeTable extends HtmlContainer
         if (index == 0) {
             return getBody();
         }
-        return bodies.get(index);
+        return getBodies().get(index);
     }
 
     /**
@@ -210,15 +180,14 @@ public class NativeTable extends HtmlContainer
      */
     public NativeTableBody addBody() {
         NativeTableBody body = new NativeTableBody();
-        int index = bodies.size();
-        if (caption != null) {
+        int index = getBodies().size();
+        if (findCaption().isPresent()) {
             index++;
         }
-        if (head != null) {
+        if (findHead().isPresent()) {
             index++;
         }
         addComponentAtIndex(index, body);
-        bodies.add(body);
         return body;
     }
 
@@ -230,7 +199,6 @@ public class NativeTable extends HtmlContainer
      */
     public void removeBody(NativeTableBody body) {
         remove(body);
-        bodies.remove(body);
     }
 
     /**
@@ -249,6 +217,19 @@ public class NativeTable extends HtmlContainer
      */
     public void removeBody() {
         removeBody(0);
+    }
+
+    private Optional<NativeTableCaption> findCaption() {
+        return ComponentUtil.getFirstChildOfType(this,
+                NativeTableCaption.class);
+    }
+
+    private Optional<NativeTableHeader> findHead() {
+        return ComponentUtil.getFirstChildOfType(this, NativeTableHeader.class);
+    }
+
+    private Optional<NativeTableFooter> findFoot() {
+        return ComponentUtil.getFirstChildOfType(this, NativeTableFooter.class);
     }
 
 }
