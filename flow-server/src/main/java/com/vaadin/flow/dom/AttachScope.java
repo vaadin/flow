@@ -72,10 +72,10 @@ class AttachScope implements Registration {
 
     private void handleAttach() {
         /*
-         * An element can be re-attached without a detach event in between, e.g.
-         * through StateNode.removeFromTree(false) as used by
-         * UIInternals.moveToNewUI for @PreserveOnRefresh. Clean up defensively
-         * so that a scope never has two live cleanups at the same time.
+         * A node can be reset and re-attached without a detach event reaching
+         * its listeners, e.g. through StateNode.removeFromTree(false). Clean up
+         * defensively so that a scope never has two live cleanups at the same
+         * time.
          */
         runCleanup();
 

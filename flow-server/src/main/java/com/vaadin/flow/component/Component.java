@@ -519,6 +519,11 @@ public abstract class Component
      * <p>
      * Removing the returned registration removes the handler and also runs any
      * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
      *
      * @see Element#whenAttached(SerializableFunction)
      *

@@ -90,8 +90,8 @@ public final class ElementEffect implements Serializable {
         }
 
         // Enables the effect on attach and passivates it on detach, also when
-        // the element is re-attached without an intervening detach event as
-        // done by UIInternals.moveToNewUI for @PreserveOnRefresh.
+        // the element is re-attached without an intervening detach event
+        // reaching its listeners.
         attachedScope = owner.whenAttached(ui -> {
             enableEffect(ui);
             return this::disableEffect;
