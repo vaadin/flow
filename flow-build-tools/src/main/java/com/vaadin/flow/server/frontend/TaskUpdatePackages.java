@@ -314,7 +314,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     /**
      * Builds the overrides Vaadin wants to enforce: a dependency reference
-     * ({@code $dependency}) when the package is declared directly, the locked
+     * ({@code $dependency}) when the package is declared directly, the pinned
      * version otherwise.
      */
     private ObjectNode computeVaadinOverrides(
@@ -328,16 +328,16 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion lockedVersion = parseLockableVersion(
+            final FrontendVersion pinnedVersion = parseLockableVersion(
                     pinnedEntry.getValue());
-            if (lockedVersion == null) {
+            if (pinnedVersion == null) {
                 continue;
             }
             final String directVersion = directDependencyVersion(dependencies,
                     devDependencies, dependency);
             if (directVersion == null) {
-                // Not declared directly, pin to the locked version.
-                vaadinOverrides.put(dependency, lockedVersion.getFullVersion());
+                // Not declared directly, pin to the pinned version.
+                vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
             } else if (isNumericVersion(directVersion)) {
                 // Locked by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
@@ -350,7 +350,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Parses a locked version, returning {@code null} for build-folder,
+     * Parses a pinned version, returning {@code null} for build-folder,
      * SNAPSHOT or otherwise non-numeric versions that should not be locked.
      */
     private FrontendVersion parseLockableVersion(String version) {
@@ -369,7 +369,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Top-level override keys Vaadin manages: the locked npm packages and the
+     * Top-level override keys Vaadin manages: the pinned npm packages and the
      * default overrides Vaadin may add (e.g. workbox).
      */
     private Set<String> managedOverrideKeys(
@@ -611,7 +611,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // dependency since add-ons should be able to downgrade
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
-                    && pinPlatformDependency(packageJson, pinnedNpmDependencies,
+                    && pinNpmDependency(packageJson, pinnedNpmDependencies,
                             key)) {
                 added++;
             }
@@ -690,12 +690,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
-    protected static boolean pinPlatformDependency(JsonNode packageJson,
-            JsonNode platformPinnedVersions, String pkg) {
-        final FrontendVersion platformPinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(platformPinnedVersions, pkg,
+    protected static boolean pinNpmDependency(JsonNode packageJson,
+            JsonNode pinnedNpmVersions, String pkg) {
+        final FrontendVersion pinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
                         "vaadin_dependencies.json");
-        if (platformPinnedVersion == null) {
+        if (pinnedVersion == null) {
             return false;
         }
 
@@ -733,13 +733,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             return false;
         }
 
-        if (platformPinnedVersion.equals(packageJsonVersion)
-                && platformPinnedVersion.equals(vaadinDepsVersion)) {
+        if (pinnedVersion.equals(packageJsonVersion)
+                && pinnedVersion.equals(vaadinDepsVersion)) {
             return false;
         }
 
-        packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
-        vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
+        vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
         return true;
     }
 
