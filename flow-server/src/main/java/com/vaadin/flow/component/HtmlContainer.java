@@ -18,6 +18,21 @@ package com.vaadin.flow.component;
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
  * element that can contain child components or text.
+ * <p>
+ * This base class is meant for elements whose HTML content model accepts any
+ * kind of content, such as <code>&lt;div&gt;</code>, <code>&lt;span&gt;</code>
+ * or <code>&lt;section&gt;</code>. It implements {@link HasComponents}, so any
+ * {@link Component} can be added as a child and the API cannot prevent a child
+ * that the element isn't allowed to contain.
+ * <p>
+ * Elements with a restricted content model are a poor fit. A
+ * <code>&lt;table&gt;</code>, for example, only accepts
+ * <code>&lt;caption&gt;</code>, <code>&lt;colgroup&gt;</code>,
+ * <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code>,
+ * <code>&lt;tfoot&gt;</code> and <code>&lt;tr&gt;</code> children. Such a
+ * component should instead extend {@link HtmlComponent} and implement
+ * {@link HasComponentsOfType} with the type of child component that the element
+ * accepts, so that invalid content is rejected already at compile time.
  *
  * @author Vaadin Ltd
  * @since 1.0
