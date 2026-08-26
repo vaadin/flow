@@ -23,8 +23,8 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 /**
  * Listener that is notified around the server-side handling of individual
  * client-to-server RPC invocations, enabling per-invocation observation (for
- * example to emit a tracing span showing which DOM event or
- * {@code @ClientCallable} method is consuming the time spent holding the
+ * example to emit a tracing span showing which DOM event, synchronized property
+ * or {@code @ClientCallable} method is consuming the time spent holding the
  * session lock while processing a request).
  * <p>
  * A single client request typically carries several invocations; the listener
@@ -33,7 +33,9 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * {@link #invocationEnded} for one invocation are delivered on the same thread,
  * in that order, with {@code invocationEnded} always delivered after
  * {@code invocationStarted} regardless of outcome, so a listener may keep
- * timing state in a {@link ThreadLocal}.
+ * timing state in a {@link ThreadLocal}. See {@link AbstractRpcInvocationEvent}
+ * for which invocations are reported, what a synchronized property update
+ * reports, and how the notifications of concurrent requests relate.
  * <p>
  * Implementations must be fast and non-blocking: callbacks run on the request
  * thread directly around invocation handling. Exceptions thrown from a callback
@@ -46,7 +48,16 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * @see VaadinService#addRpcInvocationListener(RpcInvocationListener)
  * @see RpcInvocationEvent
  * @since 25.2
+ * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+ *             {@link RpcInvocationFailedEvent} and
+ *             {@link RpcInvocationEndedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead.
+ *             The callbacks of this listener are served by those events, one
+ *             instance each, so an implementation that correlates the callbacks
+ *             of an invocation has to do so through the thread they are
+ *             delivered on rather than through the identity of the event
  */
+@Deprecated(since = "25.3", forRemoval = true)
 public interface RpcInvocationListener extends Serializable {
 
     /**

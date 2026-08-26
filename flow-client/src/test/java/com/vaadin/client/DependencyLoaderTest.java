@@ -49,14 +49,6 @@ public class DependencyLoaderTest {
 
         List<String> loadingStyles = new ArrayList<>();
         List<String> loadingScripts = new ArrayList<>();
-        List<String> loadingHtml = new ArrayList<>();
-
-        @Override
-        public void loadHtml(String htmlUrl,
-                ResourceLoadListener resourceLoadListener, boolean async) {
-            loadingHtml.add(htmlUrl);
-            resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlUrl));
-        }
 
         @Override
         public void loadScript(String scriptUrl,
@@ -79,14 +71,6 @@ public class DependencyLoaderTest {
             loadingStyles.add(stylesheetUrl);
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
-        }
-
-        @Override
-        public void inlineHtml(String htmlContents,
-                ResourceLoadListener resourceLoadListener) {
-            loadingHtml.add(htmlContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, htmlContents));
         }
 
         @Override

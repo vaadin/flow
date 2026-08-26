@@ -84,6 +84,7 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskCopyNpmAssetsFiles.class,
+            TaskGenerateJarResourcesTsConfig.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -329,6 +330,10 @@ public class NodeTasks implements FallibleCommand {
                 options);
         commands.add(taskGenerateTsDefinitions);
 
+        // Ordered after the tasks that empty the folder the add-on sources are
+        // copied to, see TaskGenerateJarResourcesTsConfig
+        commands.add(new TaskGenerateJarResourcesTsConfig(options));
+
     }
 
     private void addGenerateServiceWorkerTask(Options options,
@@ -410,7 +415,7 @@ public class NodeTasks implements FallibleCommand {
                     Thread.sleep(500);
                 } else {
                     // The process has died without removing the lock file
-                    lockFile.toFile().delete();
+                    FileIOUtils.deleteQuietly(lockFile);
                 }
             } catch (InterruptedException e) {
                 // Restore interrupted state
@@ -451,7 +456,7 @@ public class NodeTasks implements FallibleCommand {
                         pid, lockFile.toFile().getAbsolutePath());
                 return;
             }
-            lockFile.toFile().delete();
+            FileIOUtils.deleteQuietly(lockFile);
         } catch (Exception e) {
             getLogger().error("Error releasing lock file ({})",
                     lockFile.toFile().getAbsolutePath());

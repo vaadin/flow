@@ -71,7 +71,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
- * @since 24.3.22
+ * @since 9.0
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 
@@ -312,6 +312,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @param tools
      *            the frontend tools object
      * @return the list of commands to start the dev server
+     * @since 23.0
      */
     protected abstract List<String> getServerStartupCommand(
             FrontendTools tools);
@@ -323,6 +324,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *            frontend tools metadata
      * @param environment
      *            the environment variables to use
+     * @since 9.0.3
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
@@ -364,6 +366,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarting pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartingPattern() {
         return null;
@@ -381,6 +384,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarted pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartedPattern() {
         return null;
@@ -398,7 +402,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         List<String> command = getServerStartupCommand(frontendTools);
 
-        FrontendUtils.console(FrontendUtils.GREEN, START);
+        FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, START);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(FrontendUtils.commandToString(
                     getProjectRoot().getAbsolutePath(), command));
@@ -470,10 +474,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void onDevServerCompilation(Result result) {
         if (result.isSuccess()) {
-            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, SUCCEED_MSG);
             failedOutput = null;
         } else {
-            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.RED, FAILED_MSG);
             failedOutput = result.getOutput();
         }
     }
@@ -545,11 +549,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     private void removeRunningDevServerPort() {
-        try {
-            FileIOUtils.delete(devServerPortFile);
-        } catch (IOException e) {
-            // ignore
-        }
+        FileIOUtils.deleteQuietly(devServerPortFile);
     }
 
     @Override

@@ -39,7 +39,7 @@ jobs:
           cache: maven
 
       - id: since
-        uses: vaadin/github-actions/reconcile-since-tags@8743430abc47b783add936899c41a10f1d6d9987
+        uses: vaadin/github-actions/reconcile-since-tags@2a6fabc668c09424c29ca789789e9bf0720de8ee
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -70,7 +70,7 @@ jobs:
       # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
       # of the framework. An isolated index-dir keeps vaadin-spring's versions off
       # the shared axis (a separate load + axis per invocation).
-      - uses: vaadin/github-actions/reconcile-since-tags@8743430abc47b783add936899c41a10f1d6d9987
+      - uses: vaadin/github-actions/reconcile-since-tags@2a6fabc668c09424c29ca789789e9bf0720de8ee
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
