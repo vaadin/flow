@@ -532,6 +532,53 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_menuParent_overridesRouteHierarchy() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeSettings.class, TreeMoved.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // TreeMoved is a route child of Dashboard, but @Menu(parent) puts it
+        // under Settings in the menu.
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals(List.of("/settings"), routesOf(dashboard.children()));
+        AvailableViewInfo settings = dashboard.children().get(0);
+        assertEquals(List.of("/moved"), routesOf(settings.children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_menuParentNotInMenu_attachesToItsNearestIncludedAncestor() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeHidden.class, TreeAttached.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // TreeAttached names TreeHidden as its menu parent, which has no @Menu
+        // of its own, so the walk continues to Hidden's parent Dashboard.
+        assertEquals(1, tree.size());
+        assertEquals(List.of("/attached"), routesOf(tree.get(0).children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_menuParentCycle_viewsAreRoots() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeCycleA.class, TreeCycleB.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Two views naming each other as menu parent: the cycle is broken at
+        // the entry that would close it, and no entry is dropped.
+        assertEquals(List.of("/cycle_b"), routesOf(tree));
+        assertEquals(List.of("/cycle_a"), routesOf(tree.get(0).children()));
+    }
+
+    @Test
     void collectMenuItemsTree_clientViews_areRootsWithoutChildren()
             throws IOException {
         Mockito.when(request.getUserPrincipal())
@@ -853,6 +900,32 @@ class MenuRegistryTest {
     @RouteParent(TreeSettings.class)
     @Menu(title = "Billing")
     public static class TreeBilling extends Component {
+    }
+
+    // Route child of Dashboard, but nested under Settings in the menu.
+    @Tag("div")
+    @Route("moved")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Moved", parent = TreeSettings.class)
+    public static class TreeMoved extends Component {
+    }
+
+    @Tag("div")
+    @Route("attached")
+    @Menu(title = "Attached", parent = TreeHidden.class)
+    public static class TreeAttached extends Component {
+    }
+
+    @Tag("div")
+    @Route("cycle_a")
+    @Menu(title = "Cycle A", parent = TreeCycleB.class)
+    public static class TreeCycleA extends Component {
+    }
+
+    @Tag("div")
+    @Route("cycle_b")
+    @Menu(title = "Cycle B", parent = TreeCycleA.class)
+    public static class TreeCycleB extends Component {
     }
 
     // No @Menu: part of the route hierarchy but not of the menu.

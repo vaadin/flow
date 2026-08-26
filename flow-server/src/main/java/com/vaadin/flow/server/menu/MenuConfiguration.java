@@ -73,7 +73,9 @@ public final class MenuConfiguration {
      * according to the route hierarchy.
      * <p>
      * The same views as {@link #getMenuEntries()} are returned, but as a tree:
-     * server views are nested according to
+     * server views are nested under
+     * {@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when it is
+     * defined, and otherwise according to
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
      * walking as fallback). Only root entries are returned; the descendants are
      * reachable via {@link MenuEntry#children()}.
