@@ -170,29 +170,24 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(childElement.parentElement).to.equal(null);
   });
 
-  it('adopts an element registered as an existing element instead of creating one', () => {
-    // Ported from testAttachExistingElement.
+  it('inserts a bound child after pre-existing client-side children', () => {
+    // Ported from testInsertChildAfterExistingChildren.
+    const existingChild1 = document.createElement('span');
+    const existingChild2 = document.createElement('span');
+    element.appendChild(existingChild1);
+    element.appendChild(existingChild2);
+
     bind(node, element);
+    Reactive.flush();
+    expect(element.childElementCount).to.equal(2);
 
-    const childNode = createChildNode('child');
-    const tag = childNode.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).getValue() as string;
-
-    // Create and add an existing element.
-    const span = document.createElement(tag);
-    element.appendChild(span);
-    harness.existingElementMap.add(childNode.getId(), span);
-
-    children.add(0, childNode);
-
+    children.add(0, createChildNode('first', 'div'));
     Reactive.flush();
 
-    // Nothing has changed: no new child.
-    expect(element.childElementCount, 'No new child should appear in the element').to.equal(1);
-    const childElement = element.firstElementChild!;
-    expect(childElement.tagName.toLowerCase()).to.equal(tag);
-    expect(childElement).to.equal(span);
-    expect(childElement.id).to.equal('child');
-    expect(harness.existingElementMap.getElement(childNode.getId())).to.equal(null);
+    expect(element.childElementCount).to.equal(3);
+    expect(element.children[0].tagName).to.equal('SPAN');
+    expect(element.children[1].tagName).to.equal('SPAN');
+    expect(element.children[2].tagName).to.equal('DIV');
   });
 
   it('recalculates the insertion index across not-yet-bound nodes and a client-side child', () => {
@@ -214,48 +209,6 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(element.children[1].id).to.equal('third');
     expect(element.children[2].id).to.equal('first');
     expect(element.children[3].id).to.equal('second');
-  });
-
-  it('removes a child at the right position despite an unofficial extra child', () => {
-    // Ported from testRemoveChildPosition.
-    bind(node, element);
-
-    const childNode = createChildNode('child');
-    children.add(0, childNode);
-    Reactive.flush();
-
-    const firstChildElement = element.firstElementChild!;
-
-    // Add an "unofficial" (client-side) child to mess with index computations.
-    const extraChild = document.createElement('img');
-    element.insertBefore(extraChild, firstChildElement);
-
-    children.splice(0, 1);
-    Reactive.flush();
-
-    expect(element.childNodes.length).to.equal(1);
-    expect(element.childNodes[0]).to.equal(extraChild);
-    expect(firstChildElement.parentElement).to.equal(null);
-  });
-
-  it('inserts a bound child after pre-existing client-side children', () => {
-    // Ported from testInsertChildAfterExistingChildren.
-    const existingChild1 = document.createElement('span');
-    const existingChild2 = document.createElement('span');
-    element.appendChild(existingChild1);
-    element.appendChild(existingChild2);
-
-    bind(node, element);
-    Reactive.flush();
-    expect(element.childElementCount).to.equal(2);
-
-    children.add(0, createChildNode('first', 'div'));
-    Reactive.flush();
-
-    expect(element.childElementCount).to.equal(3);
-    expect(element.children[0].tagName).to.equal('SPAN');
-    expect(element.children[1].tagName).to.equal('SPAN');
-    expect(element.children[2].tagName).to.equal('DIV');
   });
 
   it('re-adds a removed node reusing its existing DOM node', () => {
@@ -353,6 +306,28 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(containerElement.firstElementChild).to.equal(childElement);
   });
 
+  it('removes a child at the right position despite an unofficial extra child', () => {
+    // Ported from testRemoveChildPosition.
+    bind(node, element);
+
+    const childNode = createChildNode('child');
+    children.add(0, childNode);
+    Reactive.flush();
+
+    const firstChildElement = element.firstElementChild!;
+
+    // Add an "unofficial" (client-side) child to mess with index computations.
+    const extraChild = document.createElement('img');
+    element.insertBefore(extraChild, firstChildElement);
+
+    children.splice(0, 1);
+    Reactive.flush();
+
+    expect(element.childNodes.length).to.equal(1);
+    expect(element.childNodes[0]).to.equal(extraChild);
+    expect(firstChildElement.parentElement).to.equal(null);
+  });
+
   it('adds several children and removes an interior range in one splice', () => {
     // Ported from testAddRemoveMultiple.
     bind(node, element);
@@ -380,6 +355,31 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(element.childElementCount).to.equal(2);
     expect(element.childNodes[0]).to.equal(child1);
     expect(element.childNodes[1]).to.equal(child4);
+  });
+
+  it('adopts an element registered as an existing element instead of creating one', () => {
+    // Ported from testAttachExistingElement.
+    bind(node, element);
+
+    const childNode = createChildNode('child');
+    const tag = childNode.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).getValue() as string;
+
+    // Create and add an existing element.
+    const span = document.createElement(tag);
+    element.appendChild(span);
+    harness.existingElementMap.add(childNode.getId(), span);
+
+    children.add(0, childNode);
+
+    Reactive.flush();
+
+    // Nothing has changed: no new child.
+    expect(element.childElementCount, 'No new child should appear in the element').to.equal(1);
+    const childElement = element.firstElementChild!;
+    expect(childElement.tagName.toLowerCase()).to.equal(tag);
+    expect(childElement).to.equal(span);
+    expect(childElement.id).to.equal('child');
+    expect(harness.existingElementMap.getElement(childNode.getId())).to.equal(null);
   });
 
   it('binds a child that is added before its tag is set', () => {
