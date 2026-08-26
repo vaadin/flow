@@ -18,13 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -157,67 +160,82 @@ class PinnedNpmVersionsTest {
 
     @Test
     void versionsFilesInsideAJarAreRead() throws IOException {
-        // No folder entries in the jar, as not all jars have them
         File jar = new File(temporaryFolder, "components.jar");
-        try (JarOutputStream jarStream = new JarOutputStream(
-                new FileOutputStream(jar))) {
-            writeJarEntry(jarStream,
-                    Constants.PINNED_NPM_VERSIONS_FOLDER + "button.json", """
-                            {
-                              "core": {
-                                "button": {
-                                  "npmName": "@vaadin/button",
-                                  "jsVersion": "25.1.0"
-                                }
-                              }
+        writeJar(jar, Map.of(
+                Constants.PINNED_NPM_VERSIONS_FOLDER + "button.json", """
+                        {
+                          "core": {
+                            "button": {
+                              "npmName": "@vaadin/button",
+                              "jsVersion": "25.1.0"
                             }
-                            """);
-            writeJarEntry(jarStream,
-                    Constants.PINNED_NPM_VERSIONS_FOLDER + "grid.json", """
-                            {
-                              "core": {
-                                "grid": {
-                                  "npmName": "@vaadin/grid",
-                                  "jsVersion": "25.1.0"
-                                }
-                              }
+                          }
+                        }
+                        """, Constants.PINNED_NPM_VERSIONS_FOLDER + "grid.json",
+                """
+                        {
+                          "core": {
+                            "grid": {
+                              "npmName": "@vaadin/grid",
+                              "jsVersion": "25.1.0"
                             }
-                            """);
-            // Only the files directly in the folder are versions files
-            writeJarEntry(jarStream,
-                    Constants.PINNED_NPM_VERSIONS_FOLDER + "nested/other.json",
-                    """
-                            {
-                              "core": {
-                                "dialog": {
-                                  "npmName": "@vaadin/dialog",
-                                  "jsVersion": "25.1.0"
-                                }
-                              }
+                          }
+                        }
+                        """,
+                // Only the files directly in the folder are versions files
+                Constants.PINNED_NPM_VERSIONS_FOLDER + "nested/other.json", """
+                        {
+                          "core": {
+                            "dialog": {
+                              "npmName": "@vaadin/dialog",
+                              "jsVersion": "25.1.0"
                             }
-                            """);
+                          }
+                        }
+                        """));
+
+        // Looked up through a real class loader, the way the versions files
+        // are found when the build runs
+        ObjectNode dependencies;
+        try (URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { jar.toURI().toURL() }, null)) {
+            ClassFinder finder = new ClassFinder.DefaultClassFinder(
+                    classLoader);
+            dependencies = new PinnedNpmVersions(finder).getDependencies(false,
+                    false);
         }
-
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
-                .thenReturn(List.of(URI
-                        .create("jar:" + jar.toURI() + "!/"
-                                + Constants.PINNED_NPM_VERSIONS_FOLDER)
-                        .toURL()));
-
-        ObjectNode dependencies = new PinnedNpmVersions(finder)
-                .getDependencies(false, false);
 
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
         assertFalse(dependencies.has("@vaadin/dialog"));
     }
 
-    private static void writeJarEntry(JarOutputStream jarStream, String name,
-            String content) throws IOException {
-        jarStream.putNextEntry(new JarEntry(name));
-        jarStream.write(content.getBytes(StandardCharsets.UTF_8));
-        jarStream.closeEntry();
+    /**
+     * Writes a jar with the given entries, including the folder entries a class
+     * loader needs to find a folder inside a jar.
+     */
+    private static void writeJar(File jar, Map<String, String> entries)
+            throws IOException {
+        Set<String> folders = new LinkedHashSet<>();
+        entries.keySet().forEach(name -> {
+            for (int slash = name.indexOf('/'); slash != -1; slash = name
+                    .indexOf('/', slash + 1)) {
+                folders.add(name.substring(0, slash + 1));
+            }
+        });
+        try (JarOutputStream jarStream = new JarOutputStream(
+                new FileOutputStream(jar))) {
+            for (String folder : folders) {
+                jarStream.putNextEntry(new JarEntry(folder));
+                jarStream.closeEntry();
+            }
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
+                jarStream.putNextEntry(new JarEntry(entry.getKey()));
+                jarStream.write(
+                        entry.getValue().getBytes(StandardCharsets.UTF_8));
+                jarStream.closeEntry();
+            }
+        }
     }
 
     /**

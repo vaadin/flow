@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -100,6 +99,9 @@ class PinnedNpmVersions {
     /**
      * Reads the versions files from one folder on the classpath, which is
      * either a folder in a jar or a folder on the file system.
+     * <p>
+     * The folder itself has no content to read, so the json files it contains
+     * are listed instead, which depends on where the folder lives.
      */
     private static void readVersionsFiles(URL folder,
             Map<String, VersionsFile> versionsFiles) throws IOException {
@@ -142,15 +144,10 @@ class PinnedNpmVersions {
                     folder);
             return;
         }
-        // Open the jar itself rather than the folder entry, which is not
-        // guaranteed to be an entry of its own in the jar
-        String jarUrl = jarConnection.getJarFileURL().toExternalForm();
-        URLConnection jarRootConnection = URI.create("jar:" + jarUrl + "!/")
-                .toURL().openConnection();
         // The jar is opened for this read only, so it must not be cached
-        jarRootConnection.setUseCaches(false);
-        try (JarFile jarFile = ((JarURLConnection) jarRootConnection)
-                .getJarFile()) {
+        jarConnection.setUseCaches(false);
+        String jarUrl = jarConnection.getJarFileURL().toExternalForm();
+        try (JarFile jarFile = jarConnection.getJarFile()) {
             for (JarEntry entry : jarFile.stream()
                     .filter(entry -> isVersionsFile(entry.getName()))
                     .toList()) {
