@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { countingComputation } from './reactive/CountingComputation';
+import { countingComputation } from '../reactive/CountingComputation';
 import { NodeList } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
 import type { ListSpliceEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';

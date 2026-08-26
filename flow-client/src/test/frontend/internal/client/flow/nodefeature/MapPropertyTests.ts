@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { countingComputation } from './reactive/CountingComputation';
+import { countingComputation } from '../reactive/CountingComputation';
 import { MapProperty } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
 import type { MapPropertyChangeEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyChangeEvent';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
