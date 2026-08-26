@@ -1,3 +1,4 @@
+import { unavailableRegistry } from '../stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { countingComputation } from '../reactive/CountingComputation';
@@ -10,17 +11,7 @@ import { StateNode } from '../../../../../../main/frontend/internal/client/flow/
 import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
 // A real state node; node-feature tests do not reach into the tree.
-const node = new StateNode(
-  0,
-  new StateTree({
-    getInitialPropertiesHandler: () => {
-      throw new Error('registry not available in this test');
-    },
-    getServerConnector: () => {
-      throw new Error('registry not available in this test');
-    }
-  })
-);
+const node = new StateNode(0, new StateTree(unavailableRegistry()));
 
 describe('NodeMap', () => {
   let map: NodeMap;

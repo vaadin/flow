@@ -76,7 +76,7 @@ describe('ServerEventObject', () => {
     const rejected: string[] = [];
     server[NAME].promises[0] = [() => {}, (e: Error) => rejected.push(e.message)];
     server[NAME].promises[1] = [() => {}, (e: Error) => rejected.push(e.message)];
-    rejectPromises(server as any, NAME);
+    rejectPromises(server as any);
     expect(rejected).to.deep.equal(['Client is resynchronizing', 'Client is resynchronizing']);
   });
 

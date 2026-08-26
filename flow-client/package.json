@@ -13,7 +13,8 @@
     "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
-    "compile": "npm run build && npm run lint",
+    "typecheck-tests": "tsc -p tsconfig.test.json",
+    "compile": "npm run build && npm run typecheck-tests && npm run lint",
     "install-deps": "node node_modules/esbuild/install.js && playwright install",
     "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
     "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch"

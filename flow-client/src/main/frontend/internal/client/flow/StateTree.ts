@@ -30,7 +30,7 @@ import { StateNode } from './StateNode';
 import type { ConstantPool } from './ConstantPool';
 import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
-import { getServerEventObjectForResync } from './binding/ServerEventObject';
+import { getIfPresent, rejectPromises } from './binding/ServerEventObject';
 
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
@@ -173,12 +173,9 @@ export class StateTree {
     this.#idToNode.forEach((node) => {
       if (node !== this.#rootNode) {
         const dom = node.getDomNode();
-        if (dom !== null) {
-          const serverEventObject = getServerEventObjectForResync(dom);
-          if (serverEventObject !== null) {
-            // reject any promise waiting on this node
-            serverEventObject.rejectPromises();
-          }
+        if (dom !== null && getIfPresent(dom) !== null) {
+          // reject any promise waiting on this node
+          rejectPromises(getIfPresent(dom)!);
         }
         this.unregisterNode(node);
         node.setParent(null);

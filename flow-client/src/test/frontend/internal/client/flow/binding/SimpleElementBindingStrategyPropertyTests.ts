@@ -4,7 +4,6 @@ import {
   BindGuardStateNode,
   type CollectingTree,
   NodeFeatures,
-  NodeProperties,
   StateNode,
   bind,
   makeCollectingTree

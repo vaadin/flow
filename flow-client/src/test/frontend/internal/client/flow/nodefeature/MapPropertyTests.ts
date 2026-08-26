@@ -1,3 +1,4 @@
+import { unavailableRegistry } from '../stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { countingComputation } from '../reactive/CountingComputation';
@@ -14,14 +15,7 @@ class TestTree extends StateTree {
   readonly #synced: MapProperty[];
 
   constructor(active: boolean, synced: MapProperty[]) {
-    super({
-      getInitialPropertiesHandler: () => {
-        throw new Error('registry not available in this test');
-      },
-      getServerConnector: () => {
-        throw new Error('registry not available in this test');
-      }
-    });
+    super(unavailableRegistry());
     this.#active = active;
     this.#synced = synced;
   }
@@ -79,7 +73,7 @@ describe('MapProperty', () => {
 
     lastEvent.value = null;
     property.removeValue();
-    const removeEvent = lastEvent.value;
+    const removeEvent: MapPropertyChangeEvent | null = lastEvent.value;
     expect(removeEvent!.getNewValue()).to.equal(null);
 
     property.removeValue();
@@ -87,7 +81,7 @@ describe('MapProperty', () => {
 
     lastEvent.value = null;
     property.setValue(null);
-    const addBackEvent = lastEvent.value;
+    const addBackEvent: MapPropertyChangeEvent | null = lastEvent.value;
     expect(addBackEvent!.getOldValue()).to.equal(null);
 
     remover.remove();

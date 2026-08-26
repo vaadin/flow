@@ -1472,8 +1472,8 @@ function verifyAttachedElement(
     const stateNode = list.get(i) as StateNode;
     const domNode = stateNode.getDomNode();
     // Java calls domNode.equals(element) unguarded, so a shadow root child
-    // without a DOM node throws there; mirror the deref (rule 14.6) rather than
-    // comparing false.
+    // without a DOM node throws there; mirror that deref rather than comparing
+    // false, which would silently accept the input Java rejects.
     if (domNode!.isSameNode(element)) {
       existingId = stateNode.getId();
       break;

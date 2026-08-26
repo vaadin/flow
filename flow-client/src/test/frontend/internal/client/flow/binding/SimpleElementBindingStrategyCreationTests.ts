@@ -4,7 +4,7 @@ import {
   SimpleElementBindingStrategy,
   needsRebind
 } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
-import { NodeFeatures, NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 

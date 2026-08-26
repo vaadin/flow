@@ -20,7 +20,7 @@ function fakeList(items: string[]) {
 }
 
 // A StateNode stand-in: a feature list plus the slice defineMethod needs.
-function fakeNode(list: ReturnType<typeof fakeList>, featureId = NodeFeatures.CLIENT_DELEGATE_HANDLERS): any {
+function fakeNode(list: ReturnType<typeof fakeList>, featureId: number = NodeFeatures.CLIENT_DELEGATE_HANDLERS): any {
   const sent: Array<{ methodName: string; promiseId: number }> = [];
   return {
     sent,

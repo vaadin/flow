@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { StateNode, type StateTree } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import type { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { TextBindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/TextBindingStrategy';
@@ -8,12 +9,14 @@ import type { BinderContext } from '../../../../../../main/frontend/internal/cli
 import type { BindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/BindingStrategy';
 import { BindGuardStateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
-const tree: StateTree = {
+// Only the members StateNode reaches for; cast because StateTree is a class
+// with private state that a literal cannot satisfy.
+const tree = {
   getNode: () => null,
-  getFeatureDebugName: (id) => String(id),
+  getFeatureDebugName: (id: number) => String(id),
   isActive: () => true,
   sendNodePropertySyncToServer: () => {}
-};
+} as unknown as StateTree;
 
 const context: BinderContext = {
   createAndBind: () => document.createTextNode(''),

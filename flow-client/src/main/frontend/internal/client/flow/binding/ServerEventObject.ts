@@ -14,6 +14,10 @@
  * the License.
  */
 
+/**
+ * A representation of a server object able to send notifications to the server.
+ */
+
 // TypeScript port of com.vaadin.client.flow.binding.ServerEventObject -- the
 // element.$server RPC object that sends event notifications to the server.
 //
@@ -37,17 +41,25 @@ import { getJsProperty, setJsProperty } from '../../WidgetUtil';
 // promise-callback slot).
 export type ServerObject = Record<string, any>;
 
-// The (non-enumerable) key under which the promise-callback function is stored.
-const PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
+const NODE_ID = 'nodeId';
 
 // Expressions starting with this prefix are evaluated against the DOM event;
 // other expressions describe a Polymer model property and resolve to a node id.
 const EVENT_PREFIX = 'event';
 
-const NODE_ID = 'nodeId';
+// The (non-enumerable) key under which the promise-callback function is stored.
+const PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 
-// An event-data expression parsed via `new Function`. The second parameter is
-// named `element` (mirroring the Java contract) but receives the $server object.
+/**
+ * Callback interface for an event data expression parsed using new Function() in
+ * JavaScript.
+ *
+ * @param event - Event to expand
+ * @param element - target server event handler object; the parameter is named
+ *            `element` because that is the name the parsed expression uses,
+ *            where Java names it `serverEventObject`
+ * @returns Result of evaluated function
+ */
 type ServerEventDataExpression = (event: Event, element: ServerObject) => unknown;
 
 const expressionCache = new Map<string, ServerEventDataExpression>();
@@ -57,7 +69,8 @@ const expressionCache = new Map<string, ServerEventDataExpression>();
  * The server calls it (by the promiseCallbackName key) to settle a pending
  * promise created by a returnPromise method, identified by promiseId.
  */
-function initPromiseHandler(serverObject: ServerObject, promiseCallbackName: string): void {
+function initPromiseHandler(serverObject: ServerObject): void {
+  const promiseCallbackName = PROMISE_CALLBACK_NAME;
   Object.defineProperty(serverObject, promiseCallbackName, {
     value: function (promiseId: number, success: boolean, value: unknown): void {
       const promise = serverObject[promiseCallbackName].promises[promiseId];
@@ -254,7 +267,7 @@ export function get(element: Element): ServerObject {
   let serverObject = getIfPresent(element);
   if (serverObject === null) {
     serverObject = {};
-    initPromiseHandler(serverObject, PROMISE_CALLBACK_NAME);
+    initPromiseHandler(serverObject);
     setJsProperty(element as unknown as Record<string, unknown>, '$server', serverObject);
   }
   return serverObject;
@@ -270,19 +283,6 @@ export function get(element: Element): ServerObject {
 export function getIfPresent(node: Node): ServerObject | null {
   const serverObject = getJsProperty(node as unknown as Record<string, unknown>, '$server') as ServerObject | undefined;
   return serverObject === undefined ? null : serverObject;
-}
-
-/**
- * Returns a handle that rejects the pending promises of the node's $server
- * object, or null when the node has none. Used by StateTree.prepareForResync to
- * reject promises waiting on nodes that a resynchronization discards.
- */
-export function getServerEventObjectForResync(node: Node): { rejectPromises(): void } | null {
-  const serverObject = getIfPresent(node);
-  if (serverObject === null) {
-    return null;
-  }
-  return { rejectPromises: () => rejectPromises(serverObject, PROMISE_CALLBACK_NAME) };
 }
 
 /**
@@ -317,8 +317,8 @@ function getOrCreateExpression(expressionString: string): ServerEventDataExpress
  * @param promiseCallbackName - the key under which the promise-callback
  *            function is stored
  */
-export function rejectPromises(serverObject: ServerObject, promiseCallbackName: string): void {
-  const promises = serverObject[promiseCallbackName].promises;
+export function rejectPromises(serverObject: ServerObject): void {
+  const promises = serverObject[PROMISE_CALLBACK_NAME].promises;
   if (promises !== undefined) {
     promises.forEach(function (item: [unknown, (reason: unknown) => void]) {
       item[1](Error('Client is resynchronizing'));

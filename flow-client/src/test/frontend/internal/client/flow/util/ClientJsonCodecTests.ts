@@ -1,3 +1,5 @@
+import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ExistingElementMap } from '../../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
 import {
   decodeStateNode,
@@ -29,7 +31,10 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: (nodeId, channelId, args) => sent.push({ nodeId, channelId, args })
-    })
+    }),
+    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getConstantPool: () => new ConstantPool(),
+    getExistingElementMap: () => new ExistingElementMap()
   };
   return new StateTree(registry);
 }

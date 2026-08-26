@@ -1,3 +1,5 @@
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
@@ -51,7 +53,10 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
-    })
+    }),
+    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getConstantPool: () => new ConstantPool(),
+    getExistingElementMap: () => new ExistingElementMap()
   };
   return {
     tree: new StateTree(registry),

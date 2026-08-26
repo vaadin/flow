@@ -4,7 +4,7 @@ import { Reactive } from '../../../../../../main/frontend/internal/client/flow/r
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
 import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { SimpleElementBindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
-import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { BindGuardStateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
 const TAG = 'tag';
 
