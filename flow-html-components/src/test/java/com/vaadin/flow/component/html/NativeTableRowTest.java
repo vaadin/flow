@@ -115,10 +115,11 @@ public class NativeTableRowTest extends ComponentTest {
 
         NativeTableHeaderCell header = row.insertHeaderCell(1);
         NativeTableCell middle = row.insertDataCell(2);
-        NativeTableHeaderCell leading = row.insertHeaderCell(0);
+        NativeTableHeaderCell leadingHeader = row.insertHeaderCell(0);
+        NativeTableCell leadingData = row.insertDataCell(0);
 
-        assertEquals(List.of(leading, first, header, middle, last),
-                row.getCells());
+        assertEquals(List.of(leadingData, leadingHeader, first, header, middle,
+                last), row.getCells());
     }
 
     @Test
