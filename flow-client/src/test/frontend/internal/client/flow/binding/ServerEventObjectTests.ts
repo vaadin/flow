@@ -1,3 +1,4 @@
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import {
   defineMethod,
@@ -10,9 +11,6 @@ import {
 
 // com.vaadin.flow.shared.JsonConstants.RPC_PROMISE_CALLBACK_NAME
 const NAME = '}p';
-
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.POLYMER_EVENT_LISTENERS
-const POLYMER_EVENT_LISTENERS = 18;
 
 // A minimal StateNode/StateTree stand-in for the defineMethod/getEventData
 // contracts: a single feature map keyed by feature id, a constant pool, and a
@@ -30,7 +28,7 @@ function fakeNode(
   const node: any = {
     sent,
     getDomNode: () => domNode,
-    getMap: (id: number) => (id === POLYMER_EVENT_LISTENERS ? map : { hasPropertyValue: () => false }),
+    getMap: (id: number) => (id === NodeFeatures.POLYMER_EVENT_LISTENERS ? map : { hasPropertyValue: () => false }),
     getTree: () => ({
       getRegistry: () => ({ getConstantPool: () => ({ get: (key: string) => constants[key] }) }),
       sendTemplateEventToServer: (_n: unknown, methodName: string, args: unknown[], promiseId: number) =>

@@ -1,8 +1,6 @@
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import { bindServerEventHandlerNames } from '../../../../../../main/frontend/internal/client/flow/binding/ServerEventHandlerBinder';
-
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.CLIENT_DELEGATE_HANDLERS
-const CLIENT_DELEGATE_HANDLERS = 19;
 
 // A NodeList stand-in holding handler names, with a hook to fire a splice event.
 function fakeList(items: string[]) {
@@ -22,7 +20,7 @@ function fakeList(items: string[]) {
 }
 
 // A StateNode stand-in: a feature list plus the slice defineMethod needs.
-function fakeNode(list: ReturnType<typeof fakeList>, featureId = CLIENT_DELEGATE_HANDLERS): any {
+function fakeNode(list: ReturnType<typeof fakeList>, featureId = NodeFeatures.CLIENT_DELEGATE_HANDLERS): any {
   const sent: Array<{ methodName: string; promiseId: number }> = [];
   return {
     sent,

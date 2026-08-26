@@ -1,3 +1,4 @@
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import {
   SimpleElementBindingStrategy,
@@ -5,7 +6,6 @@ import {
 } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
 import { NodeFeatures, NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
 
-const ELEMENT_DATA = 0;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function fakeNode(
@@ -14,7 +14,7 @@ function fakeNode(
 ): any {
   return {
     getMap: (_feature: number) => ({ getProperty: (name: string) => ({ getValue: () => data[name] }) }),
-    hasFeature: (feature: number) => feature === ELEMENT_DATA && (opts.hasElementData ?? true),
+    hasFeature: (feature: number) => feature === NodeFeatures.ELEMENT_DATA && (opts.hasElementData ?? true),
     getParent: () => opts.parent ?? null,
     getDomNode: () => opts.domNode ?? null,
     getTree: () => opts.tree ?? null

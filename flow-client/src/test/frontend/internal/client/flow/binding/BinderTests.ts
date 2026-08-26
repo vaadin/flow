@@ -1,11 +1,9 @@
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
-import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
-import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
-import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-
-const ELEMENT_DATA = 0;
-const TEXT_NODE = 7;
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
 
 function makeTree(): any {
   const constantPool = new ConstantPool();
@@ -36,7 +34,7 @@ describe('Binder', () => {
   it('binds an element node via the simple-element strategy', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
-    node.getMap(ELEMENT_DATA).getProperty('tag').setValue('div');
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty('tag').setValue('div');
     node.getMap(1).getProperty('title').setValue('hi'); // ELEMENT_PROPERTIES
 
     const element = document.createElement('div');
@@ -49,7 +47,7 @@ describe('Binder', () => {
   it('binds a text node via the text strategy', () => {
     const tree = makeTree();
     const node = new StateNode(3, tree);
-    node.getMap(TEXT_NODE).getProperty('text').setValue('hello');
+    node.getMap(NodeFeatures.TEXT_NODE).getProperty('text').setValue('hello');
 
     const textNode = document.createTextNode('');
     node.setDomNode(textNode);

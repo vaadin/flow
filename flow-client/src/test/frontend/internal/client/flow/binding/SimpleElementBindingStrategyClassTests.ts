@@ -1,11 +1,11 @@
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
-import { SimpleElementBindingStrategy } from '../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
-import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from './bindingTestHelpers';
+import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { SimpleElementBindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/SimpleElementBindingStrategy';
+import { BindGuardStateNode, NodeFeatures, bind, makeCollectingTree } from '../bindingTestHelpers';
 
-const ELEMENT_DATA = 0;
 const TAG = 'tag';
 
 // A StateTree stub rich enough for create/isApplicable/bind of a simple element.
@@ -57,7 +57,7 @@ describe('SimpleElementBindingStrategy class', () => {
   it('create builds the element for the node tag', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
-    node.getMap(ELEMENT_DATA).getProperty(TAG).setValue('span');
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(TAG).setValue('span');
     const strategy = new SimpleElementBindingStrategy();
     const element = strategy.create(node);
     expect(element.tagName.toLowerCase()).to.equal('span');
@@ -66,14 +66,14 @@ describe('SimpleElementBindingStrategy class', () => {
   it('isApplicable is true for a node with element data', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
-    node.getMap(ELEMENT_DATA).getProperty(TAG).setValue('div');
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(TAG).setValue('div');
     expect(new SimpleElementBindingStrategy().isApplicable(node)).to.be.true;
   });
 
   it('bind wires properties, attributes and children of a visible element', () => {
     const tree = makeTree();
     const node = new StateNode(2, tree);
-    node.getMap(ELEMENT_DATA).getProperty(TAG).setValue('div');
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(TAG).setValue('div');
     // An element property and an attribute.
     node.getMap(1).getProperty('title').setValue('hi'); // ELEMENT_PROPERTIES
     node.getMap(3).getProperty('data-x').setValue('y'); // ELEMENT_ATTRIBUTES
@@ -95,9 +95,9 @@ describe('SimpleElementBindingStrategy class', () => {
   it('bind appends a child element', () => {
     const tree = makeTree();
     const parent = new StateNode(2, tree);
-    parent.getMap(ELEMENT_DATA).getProperty(TAG).setValue('div');
+    parent.getMap(NodeFeatures.ELEMENT_DATA).getProperty(TAG).setValue('div');
     const child = new StateNode(3, tree);
-    child.getMap(ELEMENT_DATA).getProperty(TAG).setValue('span');
+    child.getMap(NodeFeatures.ELEMENT_DATA).getProperty(TAG).setValue('span');
     child.setParent(parent);
     parent.getList(2).add(0, child); // ELEMENT_CHILDREN
 

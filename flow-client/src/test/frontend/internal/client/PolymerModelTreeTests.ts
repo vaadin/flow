@@ -1,10 +1,8 @@
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import { createModelTree } from '../../../../main/frontend/internal/client/PolymerModelTree';
 import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
-
-const ELEMENT_PROPERTIES = 1;
-const TEMPLATE_MODELLIST = 16;
 
 // A minimal StateTree stub sufficient to construct StateNodes.
 const treeStub: any = {
@@ -24,15 +22,15 @@ describe('PolymerModelTree.createModelTree', () => {
 
   it('wraps a map property as a single-key object', () => {
     const node = new StateNode(3, treeStub);
-    const property = node.getMap(ELEMENT_PROPERTIES).getProperty('x');
+    const property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('x');
     property.setValue('v');
     expect(createModelTree(property)).to.deep.equal({ x: 'v' });
   });
 
   it('converts a state node with element properties and tags it with the node id', () => {
     const node = new StateNode(7, treeStub);
-    node.getMap(ELEMENT_PROPERTIES).getProperty('label').setValue('Hi');
-    node.getMap(ELEMENT_PROPERTIES).getProperty('count').setValue(2);
+    node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('label').setValue('Hi');
+    node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('count').setValue(2);
     expect(createModelTree(node)).to.deep.equal({ label: 'Hi', count: 2, nodeId: 7 });
   });
 
@@ -41,8 +39,8 @@ describe('PolymerModelTree.createModelTree', () => {
   // nodeId is stored as a non-index property so it never appears as a list item.
   it('tags a model-list node with a nodeId that is not a serialized list item', () => {
     const node = new StateNode(98, treeStub);
-    node.getList(TEMPLATE_MODELLIST).add(0, 'one');
-    node.getList(TEMPLATE_MODELLIST).add(1, 'two');
+    node.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, 'one');
+    node.getList(NodeFeatures.TEMPLATE_MODELLIST).add(1, 'two');
 
     const modelTree = createModelTree(node);
 
