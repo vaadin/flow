@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -23,6 +24,8 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.WARNING_THRESHOLD;
@@ -38,24 +41,14 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void warningLoggedOncePerUI_evenIfTheCountKeepsCrossingTheThreshold() {
-        UIInternals internals = new MockUI().getInternals();
-
-        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
-                "the warning should be logged when the threshold is first exceeded");
-        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
-                "the warning should not be logged again for the same UI");
-    }
-
-    @Test
     void invocationsBelowTheThreshold_noWarningLogged() {
         MockUI ui = new MockUI();
         UIInternals internals = ui.getInternals();
         StateNode node = attachedNode(ui);
 
-        for (int i = 0; i < WARNING_THRESHOLD - 1; i++) {
-            createInvocation(node);
-        }
+        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 2);
+
+        createInvocation(node);
 
         assertEquals(WARNING_THRESHOLD - 1,
                 internals.addUndeliveredJsInvocations(0));
@@ -69,9 +62,9 @@ class PendingJavaScriptInvocationUtilTest {
         UIInternals internals = ui.getInternals();
         StateNode node = attachedNode(ui);
 
-        for (int i = 0; i < WARNING_THRESHOLD; i++) {
-            createInvocation(node);
-        }
+        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 1);
+
+        createInvocation(node);
 
         assertEquals(WARNING_THRESHOLD,
                 internals.addUndeliveredJsInvocations(0));
@@ -89,12 +82,14 @@ class PendingJavaScriptInvocationUtilTest {
         assertEquals(1, internals.addUndeliveredJsInvocations(0),
                 "a scheduled invocation should be counted");
 
-        createInvocation(node);
-        assertEquals(2, internals.addUndeliveredJsInvocations(0));
-
         invocation.setSentToBrowser();
-        assertEquals(1, internals.addUndeliveredJsInvocations(0),
+        assertEquals(0, internals.addUndeliveredJsInvocations(0),
                 "a sent invocation should no longer be counted");
+
+        assertFalse(invocation.cancelExecution(),
+                "a sent invocation cannot be canceled");
+        assertEquals(0, internals.addUndeliveredJsInvocations(0),
+                "canceling a sent invocation should not change the count");
     }
 
     @Test
@@ -126,11 +121,14 @@ class PendingJavaScriptInvocationUtilTest {
 
     @Test
     void scheduleInvocationWithoutAnyUI_notCounted() {
-        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
         StateNode detachedNode = new StateNode(ElementData.class);
+        CurrentInstance.clearAll();
 
         PendingJavaScriptInvocation invocation = createInvocation(detachedNode);
 
+        assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
+                "an invocation scheduled without any UI should not be counted");
         assertTrue(invocation.cancelExecution(),
                 "an uncounted invocation should still be cancelable");
     }
@@ -185,10 +183,40 @@ class PendingJavaScriptInvocationUtilTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
+        String message = buildWarningMessage(
+                createInvocation(component.getElement().getNode()), 1000);
+
+        assertTrue(message.contains("no open push connection"), message);
+    }
+
+    @Test
+    void warningMessage_openPushConnection_noMissingConnectionClaimed() {
+        MockUI ui = new MockUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        PushConnection pushConnection = Mockito.mock(PushConnection.class);
+        Mockito.when(pushConnection.isConnected()).thenReturn(true);
+        ui.getInternals().setPushConnection(pushConnection);
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        String message = buildWarningMessage(
+                createInvocation(component.getElement().getNode()), 1000);
+
+        assertFalse(message.contains("no open push connection"),
+                "the message should not claim that the connection is missing: "
+                        + message);
+        assertTrue(message.contains("has an open push connection"), message);
+    }
+
+    @Test
+    void warningMessage_identifiesTheOwnerComponent() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
         StateNode node = component.getElement().getNode();
         String message = buildWarningMessage(createInvocation(node), 1000);
 
-        assertTrue(message.contains("no open push connection"), message);
         assertTrue(
                 message.contains(TestComponent.class.getName())
                         && message.contains("node id=" + node.getId()),

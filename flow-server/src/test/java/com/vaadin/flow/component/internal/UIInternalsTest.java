@@ -648,6 +648,14 @@ class UIInternalsTest {
     }
 
     @Test
+    void markUndeliveredJsInvocationsWarningLogged_onlyTheFirstCallReturnsTrue() {
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should be logged when the threshold is first exceeded");
+        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should not be logged again for the same UI");
+    }
+
+    @Test
     void lastUpdateSentTimestamp_initializedOnCreation() {
         Instant before = Instant.now();
         UIInternals freshInternals = new UIInternals(ui);
