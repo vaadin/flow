@@ -302,7 +302,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collects the versions of all platform-managed packages. When no platform
+     * Collects the versions the npm packages are pinned to. When no pinned
      * versions are available, {@code versionsJson} falls back to the versions
      * declared in package.json so that those get locked as well.
      */
@@ -323,7 +323,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     /**
      * Builds the overrides Vaadin wants to enforce: a dependency reference
-     * ({@code $dependency}) when the package is declared directly, the platform
+     * ({@code $dependency}) when the package is declared directly, the pinned
      * version otherwise.
      */
     private ObjectNode computeVaadinOverrides(
@@ -337,17 +337,16 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion platformVersion = parseLockableVersion(
+            final FrontendVersion pinnedVersion = parseLockableVersion(
                     pinnedEntry.getValue());
-            if (platformVersion == null) {
+            if (pinnedVersion == null) {
                 continue;
             }
             final String directVersion = directDependencyVersion(dependencies,
                     devDependencies, dependency);
             if (directVersion == null) {
-                // Not declared directly, pin to the platform version.
-                vaadinOverrides.put(dependency,
-                        platformVersion.getFullVersion());
+                // Not declared directly, pin to the pinned version.
+                vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
             } else if (isNumericVersion(directVersion)) {
                 // Locked by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
@@ -360,7 +359,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Parses a platform version, returning {@code null} for build-folder,
+     * Parses a pinned version, returning {@code null} for build-folder,
      * SNAPSHOT or otherwise non-numeric versions that should not be locked.
      */
     private FrontendVersion parseLockableVersion(String version) {
@@ -379,8 +378,8 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Top-level override keys Vaadin manages: platform packages and the default
-     * overrides Vaadin may add (e.g. workbox).
+     * Top-level override keys Vaadin manages: the pinned npm packages and the
+     * default overrides Vaadin may add (e.g. workbox).
      */
     private Set<String> managedOverrideKeys(
             Map<String, String> pinnedNpmVersions) {
@@ -473,7 +472,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all platform npm dependencies from vaadin-core-versions.json and
+     * Collect all pinned npm dependencies from vaadin-core-versions.json and
      * vaadin-versions.json to use in overrides so that any component versions
      * get locked even when they are transitive.
      *
@@ -667,7 +666,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         /*
-         * #10572 lock all platform internal versions
+         * #10572 lock all internal pinned versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
         final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();
@@ -680,7 +679,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                             key)) {
                 added++;
             }
-            // make sure platform pinned dependency is not cleared
+            // make sure pinned npm dependency is not cleared
             pinnedNpmDependencyNames.add(key);
         }
 

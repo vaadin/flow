@@ -122,7 +122,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Gets the platform pinned versions that are not overridden by the user in
+     * Gets the pinned npm versions that are not overridden by the user in
      * package.json.
      *
      * @return {@code JsonNode} with the dependencies or empty {@code JsonNode}
@@ -642,9 +642,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions for
-     * defined packages.
+     * If we do not have the pinned npm versions we should lock any versions in
+     * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json
      */
