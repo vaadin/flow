@@ -314,8 +314,6 @@ function getOrCreateExpression(expressionString: string): ServerEventDataExpress
  * the server.
  *
  * @param serverObject - the $server object the method is defined on
- * @param promiseCallbackName - the key under which the promise-callback
- *            function is stored
  */
 export function rejectPromises(serverObject: ServerObject): void {
   const promises = serverObject[PROMISE_CALLBACK_NAME].promises;

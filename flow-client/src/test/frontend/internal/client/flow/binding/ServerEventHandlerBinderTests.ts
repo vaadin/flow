@@ -183,5 +183,21 @@ describe('ServerEventHandlerBinder', () => {
       // returnValue=false => no promise id reservation, just -1.
       expect(providerNode.sent).to.deep.equal([{ methodName: 'foo', promiseId: -1 }]);
     });
+
+    it('returns an EventRemover that detaches the splice listener', () => {
+      // This remover is what SimpleElementBindingStrategy.remove relies on to
+      // stop republishing $server methods once the node is unbound.
+      const list = fakeList(['foo']);
+      const providerNode = fakeNode(list, 7);
+      const server: Record<string, any> = {};
+      const remover = bindServerEventHandlerNames(() => server, providerNode, 7, false);
+      expect(typeof server.foo).to.equal('function');
+
+      remover.remove();
+
+      // With the listener detached, a later addition is no longer published.
+      list.fireSplice([], ['bar']);
+      expect(server.bar).to.equal(undefined);
+    });
   });
 });

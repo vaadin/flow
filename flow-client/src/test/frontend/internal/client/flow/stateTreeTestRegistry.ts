@@ -8,6 +8,11 @@ import { ExistingElementMap } from '../../../../../main/frontend/internal/client
 
 /** A registry whose members are all present but inert. */
 export function inertRegistry(): Registry {
+  // One instance each per registry: the binding path reads these through
+  // several calls, so handing out a fresh one per call would hide anything
+  // written through an earlier call.
+  const constantPool = new ConstantPool();
+  const existingElementMap = new ExistingElementMap();
   return {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {},
@@ -26,8 +31,8 @@ export function inertRegistry(): Registry {
       isWebComponentMode: () => false,
       getServiceUrl: () => ''
     }),
-    getConstantPool: () => new ConstantPool(),
-    getExistingElementMap: () => new ExistingElementMap()
+    getConstantPool: () => constantPool,
+    getExistingElementMap: () => existingElementMap
   };
 }
 

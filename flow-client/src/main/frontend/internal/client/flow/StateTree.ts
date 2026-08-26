@@ -172,6 +172,8 @@ export class StateTree {
     this.#idToNode.forEach((node) => {
       if (node !== this.#rootNode) {
         const dom = node.getDomNode();
+        // Java looks the server object up twice here as well; the second call
+        // cannot return null after the guard, hence the assertion.
         if (dom !== null && getIfPresent(dom) !== null) {
           // reject any promise waiting on this node
           rejectPromises(getIfPresent(dom)!);

@@ -36,6 +36,10 @@ function makeTree(handlePropertyUpdateResult = false): {
   const templateEvents: TemplateEvent[] = [];
   let flushCount = 0;
   const registeredNodes: StateNode[] = [];
+  // One instance each: the code under test reads these through several calls,
+  // so a fresh instance per call would hide anything written by an earlier one.
+  const constantPool = new ConstantPool();
+  const existingElementMap = new ExistingElementMap();
   const registry: Registry = {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {
@@ -56,8 +60,8 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendReturnChannelMessage: () => {}
     }),
     getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
-    getConstantPool: () => new ConstantPool(),
-    getExistingElementMap: () => new ExistingElementMap()
+    getConstantPool: () => constantPool,
+    getExistingElementMap: () => existingElementMap
   };
   return {
     tree: new StateTree(registry),
@@ -152,7 +156,12 @@ describe('StateTree', () => {
     tree.registerNode(node);
     tree.setUpdateInProgress(true);
 
-    expect(() => bind(node, null as unknown as Node)).to.throw();
+    // Asserting on the message matters here: a bare node has no applicable
+    // binding strategy either, so a bare throw() would pass even if the
+    // update-in-progress assert were gone.
+    expect(() => bind(node, null as unknown as Node)).to.throw(
+      'Binding state node while processing state tree changes'
+    );
   });
 
   describe('sendNodePropertySyncToServer', () => {

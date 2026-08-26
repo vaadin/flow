@@ -18,6 +18,10 @@ interface ReturnMessage {
 // Builds a real StateTree from a minimal registry so the codec is exercised
 // through the ported StateTree/StateNode rather than a hand-rolled stand-in.
 function makeTree(sent: ReturnMessage[] = []): StateTree {
+  // One instance each: the code under test reads these through several calls,
+  // so a fresh instance per call would hide anything written by an earlier one.
+  const constantPool = new ConstantPool();
+  const existingElementMap = new ExistingElementMap();
   const registry: Registry = {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {},
@@ -33,8 +37,8 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
       sendReturnChannelMessage: (nodeId, channelId, args) => sent.push({ nodeId, channelId, args })
     }),
     getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
-    getConstantPool: () => new ConstantPool(),
-    getExistingElementMap: () => new ExistingElementMap()
+    getConstantPool: () => constantPool,
+    getExistingElementMap: () => existingElementMap
   };
   return new StateTree(registry);
 }
