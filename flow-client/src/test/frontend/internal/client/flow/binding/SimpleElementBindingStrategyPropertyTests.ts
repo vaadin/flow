@@ -107,6 +107,86 @@ describe('SimpleElementBindingStrategy property binding', () => {
     expect(element.title).to.equal('null');
   });
 
+  it('applies an existing property eagerly at bind time, before any flush', () => {
+    // Ported from testBindBeforeFlush. Binding eagerly applies property values
+    // that already exist, so the value is visible without a Reactive.flush().
+    properties.getProperty('title').setValue('foo');
+
+    bind(node, element);
+
+    expect(element.title).to.equal('foo');
+  });
+
+  it('does not apply a property set after bind until the next flush', () => {
+    // Ported from testSetBeforeFlush. A value set after binding is only
+    // scheduled; it stays unapplied until flush. Java asserts the GWT elemental
+    // default "null"; a real DOM element reports the empty-string default here.
+    bind(node, element);
+
+    properties.getProperty('title').setValue('foo');
+
+    expect(element.title).to.equal('');
+  });
+
+  it('applies nothing when the node is unregistered before the first flush', () => {
+    // Ported from testUnbindBeforeFlush. Mirrors the GWT harness, whose root node
+    // is created but never registered with the tree, so it can be unregistered.
+    const unboundNode = new StateNode(0, harness.tree);
+    const unboundElement = document.createElement('div');
+    unboundNode.setDomNode(unboundElement);
+    unboundNode.getMap(NodeFeatures.ELEMENT_DATA);
+    const unboundProperties = unboundNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+    const attributes = unboundNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+
+    bind(unboundNode, unboundElement);
+
+    unboundProperties.getProperty('title').setValue('foo');
+    attributes.getProperty('id').setValue('foo');
+
+    unboundNode.unregister();
+
+    unboundProperties.getProperty('title').setValue('bar');
+    attributes.getProperty('id').setValue('bar');
+    attributes.getProperty('lang').setValue('newValue');
+
+    Reactive.flush();
+
+    // Java asserts the GWT elemental "null" default for the untouched title.
+    expect(unboundElement.title).to.equal('');
+    expect(unboundElement.id).to.equal('');
+    expect(unboundElement.lang).to.equal('');
+  });
+
+  it('keeps the flushed values and ignores updates made after unregister', () => {
+    // Ported from testUnbindAfterFlush. The root node is created but not
+    // registered with the tree, matching the GWT harness, so it can unregister.
+    const unboundNode = new StateNode(0, harness.tree);
+    const unboundElement = document.createElement('div');
+    unboundNode.setDomNode(unboundElement);
+    unboundNode.getMap(NodeFeatures.ELEMENT_DATA);
+    const unboundProperties = unboundNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+    const attributes = unboundNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+
+    bind(unboundNode, unboundElement);
+
+    unboundProperties.getProperty('title').setValue('foo');
+    attributes.getProperty('id').setValue('foo');
+
+    Reactive.flush();
+
+    unboundNode.unregister();
+
+    unboundProperties.getProperty('title').setValue('bar');
+    attributes.getProperty('id').setValue('bar');
+    attributes.getProperty('lang').setValue('newValue');
+
+    Reactive.flush();
+
+    expect(unboundElement.title).to.equal('foo');
+    expect(unboundElement.id).to.equal('foo');
+    expect(unboundElement.lang).to.equal('');
+  });
+
   // Beyond the Java suite: the guard against overwriting a DOM value the user
   // changed during a server round-trip has no GWT counterpart.
   describe('beyond the Java suite', () => {

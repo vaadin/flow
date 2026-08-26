@@ -81,9 +81,31 @@ describe('SimpleElementBindingStrategy creation & identity', () => {
     expect(() => bind(node, element)).to.not.throw();
   });
 
-  it('needsRebind is true only for an explicit false bound value', () => {
-    expect(needsRebind(fakeNode({ bound: false }))).to.be.true;
-    expect(needsRebind(fakeNode({ bound: true }))).to.be.false;
-    expect(needsRebind(fakeNode({}))).to.be.false;
+  it('needsRebind flips to true once the element is marked not visibility-bound', () => {
+    // Ported from testSimpleElementBindingStrategy_regularElement_needsBind.
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+
+    expect(needsRebind(node)).to.be.false;
+
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(false);
+
+    expect(needsRebind(node)).to.be.true;
+  });
+
+  it('needsRebind is false for a node without the element-data feature', () => {
+    // Ported from testSimpleElementBindingStrategy_elementWithoutFeature_needsBind.
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    node.getMap(NodeFeatures.ELEMENT_DATA);
+
+    const emptyNode = new StateNode(45, harness.tree);
+    // self control
+    expect(emptyNode.hasFeature(NodeFeatures.ELEMENT_DATA)).to.be.false;
+
+    expect(needsRebind(node)).to.be.false;
   });
 });

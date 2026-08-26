@@ -67,6 +67,36 @@ describe('SimpleElementBindingStrategy attribute binding', () => {
     expect(element.getAttribute('id')).to.equal(null);
   });
 
+  it('applies an existing attribute eagerly at bind time, before any flush', () => {
+    // Ported from testBindAttributeWithoutFlush.
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    const element = document.createElement('div');
+    node.setDomNode(element);
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('div');
+    node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty('id').setValue('foo');
+
+    bind(node, element);
+
+    expect(element.id).to.equal('foo');
+  });
+
+  it('does not apply an attribute set after bind until the next flush', () => {
+    // Ported from testSetAttributeWithoutFlush.
+    const harness = makeCollectingTree();
+    const node = new StateNode(2, harness.tree);
+    harness.tree.registerNode(node);
+    const element = document.createElement('div');
+    node.setDomNode(element);
+    node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('div');
+
+    bind(node, element);
+    node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty('id').setValue('foo');
+
+    expect(element.id).to.equal('');
+  });
+
   // Beyond the Java suite: GwtBasicElementBinderTest only covers plain string
   // attributes, so the value coercion and the URI handling of the private
   // updateAttributeValue have no Java counterpart.

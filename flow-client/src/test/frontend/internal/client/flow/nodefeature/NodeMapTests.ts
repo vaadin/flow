@@ -109,6 +109,16 @@ describe('NodeMap', () => {
     expect(map.hasPropertyValue('foo')).to.equal(false);
   });
 
+  it('keeps the prototype methods of an object stored as a property value', () => {
+    // Ported from GwtBasicElementBinderTest.testPropertyValueHasPrototypeMethods:
+    // an object stored as a property value is a real object, so it still carries
+    // its prototype methods (e.g. toString).
+    const object = { name: 'bar' };
+    map.getProperty('foo').setValue(object);
+    expect(map.hasPropertyValue('foo')).to.equal(true);
+    expect(String(map.getProperty('foo').getValue())).to.equal('[object Object]');
+  });
+
   it('innerHTML on the element-properties map always updates the value', () => {
     const elementProperties = new NodeMap(NodeFeatures.ELEMENT_PROPERTIES, node);
     const property = elementProperties.getProperty('innerHTML');

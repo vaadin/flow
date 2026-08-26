@@ -326,6 +326,93 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(containerElement.firstElementChild).to.equal(childElement);
   });
 
+  it('adds several children and removes an interior range in one splice', () => {
+    // Ported from testAddRemoveMultiple.
+    bind(node, element);
+
+    children.splice(0, 0, [createChildNode('1'), createChildNode('2'), createChildNode('3'), createChildNode('4')]);
+
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(4);
+
+    const child1 = element.children[0];
+    const child2 = element.children[1];
+    const child3 = element.children[2];
+    const child4 = element.children[3];
+
+    expect(child1.id).to.equal('1');
+    expect(child2.id).to.equal('2');
+    expect(child3.id).to.equal('3');
+    expect(child4.id).to.equal('4');
+
+    children.splice(1, 2);
+
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(2);
+    expect(element.childNodes[0]).to.equal(child1);
+    expect(element.childNodes[1]).to.equal(child4);
+  });
+
+  it('binds a child that is added before its tag is set', () => {
+    // Ported from testAddBeforeSetTag.
+    bind(node, element);
+
+    const childNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(childNode);
+
+    children.add(0, childNode);
+
+    childNode.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('span');
+
+    // Should not throw.
+    Reactive.flush();
+
+    expect(element.childElementCount).to.equal(1);
+  });
+
+  it('adds a text-node child and applies later text only on the next flush', () => {
+    // Ported from testAddTextNode.
+    bind(node, element);
+
+    const textNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(textNode);
+    const textProperty = textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT);
+    textProperty.setValue('foo');
+
+    children.add(0, textNode);
+    Reactive.flush();
+
+    expect(element.textContent).to.equal('foo');
+
+    // A later text change stays unapplied until the next flush.
+    textProperty.setValue('bar');
+    expect(element.textContent).to.equal('foo');
+
+    Reactive.flush();
+    expect(element.textContent).to.equal('bar');
+  });
+
+  it('removes a text-node child that is spliced out', () => {
+    // Ported from testRemoveTextNode.
+    bind(node, element);
+
+    const textNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(textNode);
+    textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT).setValue('foo');
+
+    children.add(0, textNode);
+    Reactive.flush();
+
+    expect(element.childNodes.length).to.equal(1);
+
+    children.splice(0, 1);
+    Reactive.flush();
+
+    expect(element.childNodes.length).to.equal(0);
+  });
+
   // Ported from GwtMultipleBindingTest.testAddChildDoubleBind: a second bind must
   // not re-read the element-children feature.
   it('binding twice does not re-read the element-children feature', () => {
