@@ -129,22 +129,22 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when versions file could not be read
      */
     ObjectNode getPinnedNpmDependencies() throws IOException {
-        NpmVersions npmVersions = new NpmVersions(finder);
-        if (npmVersions.isEmpty()) {
+        PinnedNpmVersions pinnedNpmVersions = new PinnedNpmVersions(finder);
+        if (pinnedNpmVersions.isEmpty()) {
             log().info(
                     "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.NPM_VERSIONS_FOLDER);
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
             return JacksonUtils.createObjectNode();
         }
 
-        ObjectNode versionsJson = npmVersions.getDependencies(
+        ObjectNode versionsJson = pinnedNpmVersions.getDependencies(
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents());
         return new VersionsJsonFilter(getPackageJson(), DEPENDENCIES)
                 .getFilteredVersions(versionsJson,
-                        Constants.NPM_VERSIONS_FOLDER);
+                        Constants.PINNED_NPM_VERSIONS_FOLDER);
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
@@ -611,7 +611,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the npm versions to lock we should lock any versions in
+     * If we do not have the pinned npm versions we should lock any versions in
      * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json

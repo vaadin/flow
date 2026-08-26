@@ -434,7 +434,8 @@ class NodeUpdaterTest {
                     .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
                     .thenReturn(logger);
 
-            Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+            Mockito.when(
+                    finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                     .thenReturn(List.of());
 
             ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
@@ -443,7 +444,7 @@ class NodeUpdaterTest {
             Mockito.verify(logger, Mockito.times(1)).info(
                     "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.NPM_VERSIONS_FOLDER);
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
         }
     }
 
@@ -461,7 +462,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List
                         .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
@@ -496,7 +497,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List
                         .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
@@ -589,7 +590,7 @@ class NodeUpdaterTest {
                 StandardCharsets.UTF_8);
         FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(
                         coreVersionsFile.getParentFile().toURI().toURL(),
                         vaadinVersionsFile.getParentFile().toURI().toURL()));
@@ -625,7 +626,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(
                         coreVersionsFile.getParentFile().toURI().toURL(),
                         vaadinVersionsFile.getParentFile().toURI().toURL()));

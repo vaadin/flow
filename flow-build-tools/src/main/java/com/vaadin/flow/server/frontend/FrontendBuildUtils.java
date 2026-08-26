@@ -188,7 +188,7 @@ public class FrontendBuildUtils {
      */
     protected static Optional<String> getVaadinVersion(ClassFinder finder) {
         try {
-            return new NpmVersions(finder).getPlatformVersion();
+            return new PinnedNpmVersions(finder).getPlatformVersion();
         } catch (Exception e) {
             LoggerFactory.getLogger(Platform.class)
                     .error("Unable to determine version information", e);

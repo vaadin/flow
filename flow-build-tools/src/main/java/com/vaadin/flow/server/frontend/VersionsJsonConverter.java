@@ -83,14 +83,14 @@ class VersionsJsonConverter {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
 
-    VersionsJsonConverter(JsonNode npmVersions, boolean reactEnabled,
+    VersionsJsonConverter(JsonNode pinnedNpmVersions, boolean reactEnabled,
             boolean excludeWebComponents) {
         this.reactEnabled = reactEnabled;
         this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
         convertedObject = JacksonUtils.createObjectNode();
 
-        collectDependencies(npmVersions);
+        collectDependencies(pinnedNpmVersions);
         excludeDependencies();
     }
 

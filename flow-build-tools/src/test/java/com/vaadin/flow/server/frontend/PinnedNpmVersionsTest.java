@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class NpmVersionsTest {
+class PinnedNpmVersionsTest {
 
     @TempDir
     File temporaryFolder;
@@ -49,7 +49,7 @@ class NpmVersionsTest {
 
     @Test
     void dependenciesFromAllVersionsFilesAreMerged() throws IOException {
-        NpmVersions npmVersions = createNpmVersions("""
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -69,7 +69,8 @@ class NpmVersionsTest {
                 }
                 """);
 
-        ObjectNode dependencies = npmVersions.getDependencies(false, false);
+        ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
+                false);
 
         assertEquals("25.1.0", dependencies.get("@vaadin/button").asString());
         assertEquals("25.1.0", dependencies.get("@vaadin/grid").asString());
@@ -77,7 +78,7 @@ class NpmVersionsTest {
 
     @Test
     void samePackageInMultipleFiles_newestVersionIsUsed() throws IOException {
-        NpmVersions npmVersions = createNpmVersions("""
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -97,15 +98,15 @@ class NpmVersionsTest {
                 }
                 """);
 
-        assertEquals("25.1.2", npmVersions.getDependencies(false, false)
+        assertEquals("25.1.2", pinnedNpmVersions.getDependencies(false, false)
                 .get("@vaadin/button").asString());
-        assertEquals("25.1.2", npmVersions.getAllDependencies()
+        assertEquals("25.1.2", pinnedNpmVersions.getAllDependencies()
                 .get("@vaadin/button").asString());
     }
 
     @Test
     void packageExcludedInOneFile_isExcludedFromAllFiles() throws IOException {
-        NpmVersions npmVersions = createNpmVersions("""
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -126,7 +127,8 @@ class NpmVersionsTest {
                 }
                 """);
 
-        ObjectNode dependencies = npmVersions.getDependencies(false, false);
+        ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
+                false);
 
         assertFalse(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
@@ -134,7 +136,7 @@ class NpmVersionsTest {
 
     @Test
     void platformVersionIsReadFromTheFileDeclaringIt() throws IOException {
-        NpmVersions npmVersions = createNpmVersions("""
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "components": {
                     "grid": {
@@ -149,7 +151,8 @@ class NpmVersionsTest {
                 }
                 """);
 
-        assertEquals(Optional.of("25.1.0"), npmVersions.getPlatformVersion());
+        assertEquals(Optional.of("25.1.0"),
+                pinnedNpmVersions.getPlatformVersion());
     }
 
     @Test
@@ -159,7 +162,7 @@ class NpmVersionsTest {
         try (JarOutputStream jarStream = new JarOutputStream(
                 new FileOutputStream(jar))) {
             writeJarEntry(jarStream,
-                    Constants.NPM_VERSIONS_FOLDER + "button.json", """
+                    Constants.PINNED_NPM_VERSIONS_FOLDER + "button.json", """
                             {
                               "core": {
                                 "button": {
@@ -170,7 +173,7 @@ class NpmVersionsTest {
                             }
                             """);
             writeJarEntry(jarStream,
-                    Constants.NPM_VERSIONS_FOLDER + "grid.json", """
+                    Constants.PINNED_NPM_VERSIONS_FOLDER + "grid.json", """
                             {
                               "core": {
                                 "grid": {
@@ -182,7 +185,8 @@ class NpmVersionsTest {
                             """);
             // Only the files directly in the folder are versions files
             writeJarEntry(jarStream,
-                    Constants.NPM_VERSIONS_FOLDER + "nested/other.json", """
+                    Constants.PINNED_NPM_VERSIONS_FOLDER + "nested/other.json",
+                    """
                             {
                               "core": {
                                 "dialog": {
@@ -195,15 +199,14 @@ class NpmVersionsTest {
         }
 
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
-                .thenReturn(
-                        List.of(URI
-                                .create("jar:" + jar.toURI() + "!/"
-                                        + Constants.NPM_VERSIONS_FOLDER)
-                                .toURL()));
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(URI
+                        .create("jar:" + jar.toURI() + "!/"
+                                + Constants.PINNED_NPM_VERSIONS_FOLDER)
+                        .toURL()));
 
-        ObjectNode dependencies = new NpmVersions(finder).getDependencies(false,
-                false);
+        ObjectNode dependencies = new PinnedNpmVersions(finder)
+                .getDependencies(false, false);
 
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
@@ -221,7 +224,7 @@ class NpmVersionsTest {
      * Writes each versions file content into its own folder, as if each came
      * from a different jar.
      */
-    private NpmVersions createNpmVersions(String... versionsFiles)
+    private PinnedNpmVersions createPinnedNpmVersions(String... versionsFiles)
             throws IOException {
         List<URL> folders = new ArrayList<>();
         for (String content : versionsFiles) {
@@ -232,8 +235,8 @@ class NpmVersionsTest {
             folders.add(folder.toURI().toURL());
         }
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(folders);
-        return new NpmVersions(finder);
+        return new PinnedNpmVersions(finder);
     }
 }

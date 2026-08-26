@@ -124,9 +124,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
 
-        final Map<String, String> npmVersions = collectNpmVersions();
-        final ObjectNode vaadinOverrides = computeVaadinOverrides(npmVersions,
-                dependencies, devDependencies);
+        final Map<String, String> pinnedNpmVersions = collectPinnedNpmVersions();
+        final ObjectNode vaadinOverrides = computeVaadinOverrides(
+                pinnedNpmVersions, dependencies, devDependencies);
 
         // Overrides are managed identically for npm and pnpm; only where they
         // are loaded from and saved to differs, which the store abstracts away.
@@ -137,8 +137,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         final Map<String, String> overridesBefore = new LinkedHashMap<>(
                 overrides);
 
-        removeManagedOverrides(overrides, managedOverrideKeys(npmVersions),
-                dependencies, devDependencies);
+        removeManagedOverrides(overrides,
+                managedOverrideKeys(pinnedNpmVersions), dependencies,
+                devDependencies);
         overrides.putAll(flattenOverrides(vaadinOverrides));
 
         boolean updated = store.save(overrides) || store.migrated()
@@ -292,22 +293,23 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collects the versions the npm packages are locked to. When no npm
+     * Collects the versions the npm packages are pinned to. When no pinned
      * versions are available, {@code versionsJson} falls back to the versions
      * declared in package.json so that those get locked as well.
      */
-    private Map<String, String> collectNpmVersions() throws IOException {
-        final Map<String, String> npmVersions = new HashMap<>();
-        final ObjectNode allNpmDependencies = getAllNpmDependencies();
-        for (String dependency : JacksonUtils.getKeys(allNpmDependencies)) {
-            npmVersions.put(dependency,
-                    allNpmDependencies.get(dependency).asString());
+    private Map<String, String> collectPinnedNpmVersions() throws IOException {
+        final Map<String, String> pinnedNpmVersions = new HashMap<>();
+        final ObjectNode allPinnedNpmDependencies = getAllPinnedNpmDependencies();
+        for (String dependency : JacksonUtils
+                .getKeys(allPinnedNpmDependencies)) {
+            pinnedNpmVersions.put(dependency,
+                    allPinnedNpmDependencies.get(dependency).asString());
         }
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
-            npmVersions.putIfAbsent(dependency,
+            pinnedNpmVersions.putIfAbsent(dependency,
                     versionsJson.get(dependency).asString());
         }
-        return npmVersions;
+        return pinnedNpmVersions;
     }
 
     /**
@@ -315,17 +317,19 @@ public class TaskUpdatePackages extends NodeUpdater {
      * ({@code $dependency}) when the package is declared directly, the locked
      * version otherwise.
      */
-    private ObjectNode computeVaadinOverrides(Map<String, String> npmVersions,
-            JsonNode dependencies, JsonNode devDependencies) {
+    private ObjectNode computeVaadinOverrides(
+            Map<String, String> pinnedNpmVersions, JsonNode dependencies,
+            JsonNode devDependencies) {
         final ObjectNode vaadinOverrides = getDefaultOverrides();
-        for (Map.Entry<String, String> npmEntry : npmVersions.entrySet()) {
-            final String dependency = npmEntry.getKey();
+        for (Map.Entry<String, String> pinnedEntry : pinnedNpmVersions
+                .entrySet()) {
+            final String dependency = pinnedEntry.getKey();
             if (vaadinOverrides.has(dependency)) {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
             final FrontendVersion lockedVersion = parseLockableVersion(
-                    npmEntry.getValue());
+                    pinnedEntry.getValue());
             if (lockedVersion == null) {
                 continue;
             }
@@ -368,8 +372,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      * Top-level override keys Vaadin manages: the locked npm packages and the
      * default overrides Vaadin may add (e.g. workbox).
      */
-    private Set<String> managedOverrideKeys(Map<String, String> npmVersions) {
-        final Set<String> managedKeys = new HashSet<>(npmVersions.keySet());
+    private Set<String> managedOverrideKeys(
+            Map<String, String> pinnedNpmVersions) {
+        final Set<String> managedKeys = new HashSet<>(
+                pinnedNpmVersions.keySet());
         managedKeys.addAll(JacksonUtils.getKeys(getManagedDefaultOverrides()));
         return managedKeys;
     }
@@ -457,7 +463,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all npm dependencies from the npm versions files to use in
+     * Collect all npm dependencies from the pinned npm versions files to use in
      * overrides so that any component versions get locked even when they are
      * transitive.
      *
@@ -465,8 +471,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @throws IOException
      *             thrown for exception reading stream
      */
-    private ObjectNode getAllNpmDependencies() throws IOException {
-        return new NpmVersions(finder).getAllDependencies();
+    private ObjectNode getAllPinnedNpmDependencies() throws IOException {
+        return new PinnedNpmVersions(finder).getAllDependencies();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -596,7 +602,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         /*
-         * #10572 lock all internal npm versions
+         * #10572 lock all internal pinned npm versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
         final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();

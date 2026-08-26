@@ -96,7 +96,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .toFile();
         versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(classFinder.getResources(Constants.NPM_VERSIONS_FOLDER))
+        Mockito.when(
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageUpdater = new TaskUpdatePackages(options);

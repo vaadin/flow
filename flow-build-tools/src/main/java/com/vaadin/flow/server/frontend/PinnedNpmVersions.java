@@ -54,10 +54,11 @@ import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_VERSION;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 /**
- * The npm packages and the versions they are locked to, collected from all the
- * {@value Constants#NPM_VERSIONS_FOLDER} folders on the classpath.
+ * The npm packages whose versions are pinned and the versions to pin them to,
+ * collected from all the {@value Constants#PINNED_NPM_VERSIONS_FOLDER} folders
+ * on the classpath.
  * <p>
- * Each jar locking npm package versions, such as the platform itself and the
+ * Each jar pinning npm package versions, such as the platform itself and the
  * component integrations, ships one or more json files in that folder. All of
  * them are read and merged into one set of packages. A package defined in
  * several files is expected to have the same version everywhere; if it does
@@ -65,7 +66,7 @@ import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class NpmVersions {
+class PinnedNpmVersions {
 
     private static final String JSON_SUFFIX = ".json";
 
@@ -85,11 +86,12 @@ class NpmVersions {
      * @throws IOException
      *             if a versions file cannot be read
      */
-    NpmVersions(ClassFinder finder) throws IOException {
+    PinnedNpmVersions(ClassFinder finder) throws IOException {
         // Sorted by origin for a deterministic order and to skip the
         // duplicates a class loader hierarchy may report for the same folder
         Map<String, VersionsFile> versionsFiles = new TreeMap<>();
-        for (URL folder : finder.getResources(Constants.NPM_VERSIONS_FOLDER)) {
+        for (URL folder : finder
+                .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER)) {
             readVersionsFiles(folder, versionsFiles);
         }
         files = List.copyOf(versionsFiles.values());
@@ -105,7 +107,7 @@ class NpmVersions {
         case "file" -> readVersionsFilesFromFolder(folder, versionsFiles);
         case "jar" -> readVersionsFilesFromJar(folder, versionsFiles);
         default -> log().warn(
-                "Unable to read npm versions from '{}' as the '{}' protocol is not supported."
+                "Unable to read pinned npm versions from '{}' as the '{}' protocol is not supported."
                         + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                 folder, folder.getProtocol());
         }
@@ -117,8 +119,8 @@ class NpmVersions {
         try {
             path = Path.of(folder.toURI());
         } catch (URISyntaxException e) {
-            throw new IOException("Unable to read npm versions from " + folder
-                    + " as it is not a valid file URL", e);
+            throw new IOException("Unable to read pinned npm versions from "
+                    + folder + " as it is not a valid file URL", e);
         }
         try (Stream<Path> jsonFiles = Files.list(path)) {
             for (Path jsonFile : jsonFiles.filter(
@@ -135,7 +137,7 @@ class NpmVersions {
             Map<String, VersionsFile> versionsFiles) throws IOException {
         URLConnection connection = folder.openConnection();
         if (!(connection instanceof JarURLConnection jarConnection)) {
-            log().warn("Unable to read npm versions from '{}'."
+            log().warn("Unable to read pinned npm versions from '{}'."
                     + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                     folder);
             return;
@@ -166,9 +168,9 @@ class NpmVersions {
      * Checks that the jar entry is a json file directly in the versions folder.
      */
     private static boolean isVersionsFile(String entryName) {
-        return entryName.startsWith(Constants.NPM_VERSIONS_FOLDER)
+        return entryName.startsWith(Constants.PINNED_NPM_VERSIONS_FOLDER)
                 && entryName.endsWith(JSON_SUFFIX) && entryName.indexOf('/',
-                        Constants.NPM_VERSIONS_FOLDER.length()) == -1;
+                        Constants.PINNED_NPM_VERSIONS_FOLDER.length()) == -1;
     }
 
     /**
@@ -348,6 +350,6 @@ class NpmVersions {
     }
 
     private static Logger log() {
-        return LoggerFactory.getLogger(NpmVersions.class);
+        return LoggerFactory.getLogger(PinnedNpmVersions.class);
     }
 }
