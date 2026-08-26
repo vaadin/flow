@@ -481,33 +481,33 @@ public class TaskUpdatePackages extends NodeUpdater {
      *             thrown for exception reading stream
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        ObjectNode platformDependencies = JacksonUtils.createObjectNode();
+        ObjectNode pinnedNpmDependencies = JacksonUtils.createObjectNode();
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
         if (coreVersionsResource == null) {
-            return platformDependencies;
+            return pinnedNpmDependencies;
         }
 
         try (InputStream content = coreVersionsResource.openStream()) {
             collectDependencies(
                     JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    platformDependencies);
+                    pinnedNpmDependencies);
         }
 
         URL vaadinVersionsResource = finder
                 .getResource(Constants.VAADIN_VERSIONS_JSON);
         if (vaadinVersionsResource == null) {
             // vaadin is not on the classpath, only vaadin-core is present.
-            return platformDependencies;
+            return pinnedNpmDependencies;
         }
 
         try (InputStream content = vaadinVersionsResource.openStream()) {
             collectDependencies(
                     JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    platformDependencies);
+                    pinnedNpmDependencies);
         }
 
-        return platformDependencies;
+        return pinnedNpmDependencies;
     }
 
     private void collectDependencies(JsonNode obj, ObjectNode collection) {

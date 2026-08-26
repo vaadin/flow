@@ -68,7 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Isolated
 class TaskUpdatePackagesNpmTest {
 
-    private static final String PLATFORM_DIALOG_VERSION = "2.5.2";
+    private static final String PINNED_DIALOG_VERSION = "2.5.2";
     private static final String USER_SPECIFIED_MIXIN_VERSION = "2.4.1";
     private static final String VAADIN_ELEMENT_MIXIN = "@vaadin/vaadin-element-mixin";
     private static final String VAADIN_DIALOG = "@vaadin/vaadin-dialog";
@@ -76,8 +76,8 @@ class TaskUpdatePackagesNpmTest {
 
     private static final String REACT_COMPONENTS = "@vaadin/react-components";
 
-    private static final String PLATFORM_ELEMENT_MIXIN_VERSION = "2.4.2";
-    private static final String PLATFORM_OVERLAY_VERSION = "3.5.1";
+    private static final String PINNED_ELEMENT_MIXIN_VERSION = "2.4.2";
+    private static final String PINNED_OVERLAY_VERSION = "3.5.1";
 
     @TempDir
     File temporaryFolder;
@@ -109,7 +109,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned()
+    void npmIsInUse_versionsJsonHasPinnedVersions_versionsArePinned()
             throws IOException {
         runTestWithoutPreexistingPackageJson();
     }
@@ -120,13 +120,13 @@ class TaskUpdatePackagesNpmTest {
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates we're not written");
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
-    void npmIsInUse_userHasPinnedPlatformProvidedVersionInPackageJson_userPinnedVersionUsed()
+    void npmIsInUse_userHasPinnedTheProvidedVersionInPackageJson_userPinnedVersionUsed()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -146,12 +146,12 @@ class TaskUpdatePackagesNpmTest {
                 "User's updates in package.json should have been noticed.");
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
     }
 
     @Test
-    void npmIsInUse_applicationHasPinnedPlatformProvidedVersionInAddon_applicationPinnedVersionIsUsed()
+    void npmIsInUse_applicationHasPinnedTheProvidedVersionInAddon_applicationPinnedVersionIsUsed()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -167,12 +167,12 @@ class TaskUpdatePackagesNpmTest {
                 "User's added application dependency updates should have been noticed");
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
     }
 
     @Test
-    void npmIsInUse_platformVersionIsBumped_versionsAreUpdated()
+    void npmIsInUse_pinnedVersionIsBumped_versionsAreUpdated()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -191,8 +191,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
-            throws IOException {
+    void npmIsInUse_noVersionsJsonPresent_noFailure() throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         final TaskUpdatePackages task = createTask(
@@ -203,13 +202,12 @@ class TaskUpdatePackagesNpmTest {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         JsonNode dependencies = getOrCreatePackageJson().get(DEPENDENCIES);
-        assertEquals(PLATFORM_DIALOG_VERSION,
+        assertEquals(PINNED_DIALOG_VERSION,
                 dependencies.get(VAADIN_DIALOG).asString());
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
-            throws IOException {
+    void npmIsInUse_versionsJsonAdded_versionsPinned() throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         createTask(createApplicationDependencies()).execute();
@@ -230,7 +228,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void overridesContainPinnedVersion_platformVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
+    void overridesContainPinnedVersion_pinnedVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
             throws IOException {
 
         ObjectNode packageJson = getOrCreatePackageJson();
@@ -279,29 +277,27 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
-        verifyPlatformDependenciesAreAdded(true);
+    void pnpmIsInUse_versionsJsonAdded_dependenciesAdded() throws IOException {
+        verifyPinnedDependenciesAreAdded(true);
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
-        verifyPlatformDependenciesAreAdded(false);
+    void npmIsInUse_versionsJsonAdded_dependenciesAdded() throws IOException {
+        verifyPinnedDependenciesAreAdded(false);
     }
 
     @Test
     void npmIsInUse_versionJsonHasBadVersion_noFailureNothingAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
 
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
     }
@@ -309,20 +305,20 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_executionAfterDependencyRemoved_overlayIsCleanedOfDependency()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the lock for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -343,20 +339,20 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_dependencyMovedToDevDependencies_overrideNotRemoved()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the lock for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -366,7 +362,7 @@ class TaskUpdatePackagesNpmTest {
         // Move element-mixin to devDependencies
         ObjectNode packageJson = getOrCreatePackageJson();
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
-                .put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+                .put(VAADIN_ELEMENT_MIXIN, PINNED_ELEMENT_MIXIN_VERSION);
         // Remove VAADIN_ELEMENT_MIXIN override from Vaadin overrides
         JacksonUtils.removeNestedKey(packageJson,
                 List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_ELEMENT_MIXIN));
@@ -388,17 +384,17 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_emptyVaadinOverrides_obsoleteOverride_overrideRemoved()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the lock for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -428,15 +424,15 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
 
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
     }
@@ -458,8 +454,8 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar",
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, "file:../foobar",
+                PINNED_OVERLAY_VERSION);
         verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
@@ -516,7 +512,7 @@ class TaskUpdatePackagesNpmTest {
         packageJson.set(VAADIN_DEP_KEY, vaadinSection);
         vaadinSection.set(DEPENDENCIES, vaadinDependencies);
         vaadinDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
 
@@ -529,7 +525,7 @@ class TaskUpdatePackagesNpmTest {
         JsonNode newVaadinDeps = getOrCreatePackageJson().get(VAADIN_DEP_KEY)
                 .get(DEPENDENCIES);
 
-        assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION,
+        assertEquals(PINNED_ELEMENT_MIXIN_VERSION,
                 newVaadinDeps.get(VAADIN_ELEMENT_MIXIN).asString());
     }
 
@@ -559,7 +555,7 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
+        verifyVersions(PINNED_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
         final ObjectNode packageJson = getOrCreatePackageJson();
@@ -680,7 +676,7 @@ class TaskUpdatePackagesNpmTest {
         //@formatter:off
                           "{ \"core\": {"
                         + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
+                        + "    \"jsVersion\": \"" + PINNED_DIALOG_VERSION + "\",\n"
                         + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
                         + "}\n"
                         + "}}\n";
@@ -727,9 +723,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -738,8 +734,8 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
@@ -749,9 +745,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -761,8 +757,8 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
         verifyVersionLockingWithPnpmOverrides(true, true, true);
     }
 
@@ -772,9 +768,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         String CUSTOM_COMPONENT = "@custom/component";
 
@@ -803,8 +799,8 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
         verifyVersionLockingWithPnpmOverrides(true, true, true);
 
         Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
@@ -818,8 +814,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -850,8 +846,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void reactEnabled_scannerDependenciesAndExclusions_excludedDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG, VAADIN_OVERLAY));
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
@@ -883,8 +879,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void reactEnabled_noScannerDependencies_coreDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -914,8 +910,8 @@ class TaskUpdatePackagesNpmTest {
 
     @Test
     void reactDisabled_coreDependenciesAdded() throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -947,8 +943,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactDisabled_noExclusionsInVersions()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(false)
@@ -979,8 +975,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactDisabled_exclusionsInVersions_noWebComponentsIncluded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG));
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
@@ -1013,8 +1009,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactEnabled_noExclusionsInVersions()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true)
@@ -1046,8 +1042,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactEnabled_exclusionsInVersions_noWebComponentsIncluded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG));
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
@@ -1103,8 +1099,8 @@ class TaskUpdatePackagesNpmTest {
     }
 
     private void createBasicVaadinVersionsJson() {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
     }
 
     private void createVaadinVersionsJson(String dialogVersion,
@@ -1159,7 +1155,7 @@ class TaskUpdatePackagesNpmTest {
     private Map<String, String> createApplicationDependencies() {
         Map<String, String> applicationScannedDependencies = new HashMap<>();
         applicationScannedDependencies.put(VAADIN_DIALOG,
-                PLATFORM_DIALOG_VERSION);
+                PINNED_DIALOG_VERSION);
         return applicationScannedDependencies;
     }
 
@@ -1290,7 +1286,7 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
+    private void verifyPinnedDependenciesAreAdded(boolean enablePnpm)
             throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
@@ -1367,20 +1363,20 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_staleOverridesAndTrackingSection_healedToPlatformVersionsOnBump()
+    void npmIsInUse_staleOverridesAndTrackingSection_healedToPinnedVersionsOnBump()
             throws IOException {
         // Reproduces the upgrade scenario from #24702: a project carried over
         // from an earlier Vaadin version where the "overrides" section and the
         // obsolete "vaadin.overrides" tracking section have drifted out of sync
-        // and lock platform packages to an older version. On the next run with
-        // newer platform versions, all locks must heal to the new versions and
+        // and lock the packages to an older version. On the next run with
+        // newer pinned versions, all locks must heal to the new versions and
         // the tracking section must be dropped, without needing clean-frontend.
         final String oldVersion = "1.0.0";
         final String newVersion = "2.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
         ObjectNode pkgJson = getOrCreatePackageJson();
         // Dialog is a direct dependency pinned to the old version; overlay is a
-        // transitive platform package locked to the old version directly.
+        // transitive pinned package locked to the old version directly.
         ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
         ObjectNode overrides = JacksonUtils.createObjectNode();
         overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
@@ -1407,7 +1403,7 @@ class TaskUpdatePackagesNpmTest {
                 pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
         assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
         // The overlay lock was frozen at the old version by the drifted
-        // tracking section; it now heals to the bumped platform version. The
+        // tracking section; it now heals to the bumped pinned version. The
         // old diff logic would have left it stuck at oldVersion.
         assertEquals(newVersion,
                 pkgJson.get(DEPENDENCIES).get(VAADIN_OVERLAY).asString());
