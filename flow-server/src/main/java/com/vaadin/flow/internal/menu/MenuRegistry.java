@@ -160,6 +160,7 @@ public class MenuRegistry {
      * {@link #collectMenuItemsList()}.
      *
      * @return ordered root view infos, each with its nested children populated
+     * @since 25.3
      */
     public static List<AvailableViewInfo> collectMenuItemsTree() {
         // en-US is used by default here to match with Hilla's
@@ -182,10 +183,18 @@ public class MenuRegistry {
      * A view is attached to its nearest <em>included</em> ancestor; if none of
      * its ancestors are part of the menu, it becomes a root entry. The children
      * of each entry are ordered with the same comparator as the flat list.
+     * <p>
+     * Only server views take part in the nesting, i.e. views that carry a
+     * {@link com.vaadin.flow.router.Menu @Menu} annotated class. Client views
+     * have no server-side route hierarchy, so they are returned as root entries
+     * with no children &mdash; note that the nesting they carry in
+     * {@code file-routes.json} is <em>not</em> reproduced here; as in the flat
+     * list, every client view is a separate entry.
      *
      * @param locale
      *            locale to use for ordering. null for default locale.
      * @return ordered root view infos, each with its nested children populated
+     * @since 25.3
      */
     public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -263,6 +272,9 @@ public class MenuRegistry {
                 : null;
         // Rebuild with the resolved children (null when none) so that any
         // original child list is replaced uniformly by the resolved hierarchy.
+        // In particular a client view, whose children in file-routes.json were
+        // already flattened into separate entries by collectMenuItemsList, does
+        // not keep them here as that would list those views twice.
         List<AvailableViewInfo> nested = (children == null) ? null
                 : children.stream()
                         .map(child -> attachChildren(child, childrenByParent))

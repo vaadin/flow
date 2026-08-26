@@ -75,12 +75,15 @@ public final class MenuConfiguration {
      * The same views as {@link #getMenuEntries()} are returned, but as a tree:
      * server views are nested according to
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
-     * walking as fallback), and client views according to their file-system
-     * route nesting. Only root entries are returned; the descendants are
+     * walking as fallback). Only root entries are returned; the descendants are
      * reachable via {@link MenuEntry#children()}.
+     * <p>
+     * Hilla/TypeScript client views have no server-side route hierarchy and are
+     * always returned as root entries without children.
      *
      * @return ordered list of root {@link MenuEntry} instances with nested
      *         children
+     * @since 25.3
      */
     public static List<MenuEntry> getMenuEntriesTree() {
         UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
@@ -97,6 +100,7 @@ public final class MenuConfiguration {
      * @return ordered list of root {@link MenuEntry} instances with nested
      *         children
      * @see #getMenuEntriesTree()
+     * @since 25.3
      */
     public static List<MenuEntry> getMenuEntriesTree(Locale locale) {
         UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);

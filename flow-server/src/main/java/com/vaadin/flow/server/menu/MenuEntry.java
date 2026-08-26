@@ -44,10 +44,10 @@ import com.vaadin.flow.component.Component;
  *            the source class with {@link com.vaadin.flow.router.Menu}
  *            annotation or null if not available. Always null for
  *            Hilla/TypeScript client views.
- * @since 24.5
  * @param children
  *            the entries nested under this entry, never {@code null} but empty
- *            for a flat (non-hierarchical) entry
+ *            for a flat (non-hierarchical) entry. Available since 25.3
+ * @since 24.5
  */
 public record MenuEntry(String path, String title, Double order, String icon,
         Class<? extends Component> menuClass,
@@ -66,6 +66,7 @@ public record MenuEntry(String path, String title, Double order, String icon,
      *            the icon to use in the menu or null for no icon
      * @param menuClass
      *            the source {@code @Menu} class or null if not available
+     * @since 25.3
      */
     public MenuEntry(String path, String title, Double order, String icon,
             Class<? extends Component> menuClass) {

@@ -501,26 +501,60 @@ class MenuRegistryTest {
     }
 
     @Test
-    void getMenuEntriesTree_exposesNestedEntries() {
+    void collectMenuItemsTree_ancestorNotInMenu_attachesToNearestIncludedAncestor() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
-        Arrays.asList(TreeDashboard.class, TreeSettings.class,
-                TreeBilling.class)
+        Arrays.asList(TreeDashboard.class, TreeHidden.class, TreeAudit.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        List<MenuEntry> tree = MenuConfiguration.getMenuEntriesTree();
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
+        // TreeHidden has no @Menu, so it is not an entry of its own and Audit
+        // skips it and attaches to Dashboard instead.
         assertEquals(1, tree.size());
-        MenuEntry dashboard = tree.get(0);
-        assertEquals("Dashboard", dashboard.title());
-        assertEquals("/", dashboard.path());
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals("/", dashboard.route());
+        assertEquals(List.of("/hidden/audit"), routesOf(dashboard.children()));
+    }
 
-        MenuEntry settings = dashboard.children().get(0);
-        assertEquals("/settings", settings.path());
+    @Test
+    void collectMenuItemsTree_noAncestorInMenu_viewIsRoot() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeHidden.class, TreeAudit.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
 
-        MenuEntry billing = settings.children().get(0);
-        assertEquals("Billing", billing.title());
-        assertEquals("/billing", billing.path());
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Without Dashboard none of Audit's ancestors is in the menu.
+        assertEquals(List.of("/hidden/audit"), routesOf(tree));
+        assertNull(tree.get(0).children());
+    }
+
+    @Test
+    void collectMenuItemsTree_clientViews_areRootsWithoutChildren()
+            throws IOException {
+        Mockito.when(request.getUserPrincipal())
+                .thenReturn(Mockito.mock(Principal.class));
+        Mockito.when(request.isUserInRole(Mockito.anyString()))
+                .thenReturn(true);
+
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Client views have no server-side route hierarchy: /hilla/sub is a
+        // root of its own instead of a child of /hilla, and no client entry
+        // keeps the children it has in file-routes.json.
+        assertTrue(routesOf(tree).containsAll(List.of("/hilla", "/hilla/sub")),
+                "Both client views are expected as roots, got "
+                        + routesOf(tree));
+        tree.forEach(view -> assertNull(view.children(),
+                "Client view " + view.route() + " is not expected to have "
+                        + "children in the tree"));
     }
 
     private static List<String> routesOf(List<AvailableViewInfo> infos) {
@@ -819,6 +853,20 @@ class MenuRegistryTest {
     @RouteParent(TreeSettings.class)
     @Menu(title = "Billing")
     public static class TreeBilling extends Component {
+    }
+
+    // No @Menu: part of the route hierarchy but not of the menu.
+    @Tag("div")
+    @Route("hidden")
+    @RouteParent(TreeDashboard.class)
+    public static class TreeHidden extends Component {
+    }
+
+    @Tag("div")
+    @Route("hidden/audit")
+    @RouteParent(TreeHidden.class)
+    @Menu(title = "Audit")
+    public static class TreeAudit extends Component {
     }
 
     @Tag("div")
