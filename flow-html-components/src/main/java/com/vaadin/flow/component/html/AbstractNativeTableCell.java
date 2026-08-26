@@ -143,7 +143,9 @@ public abstract class AbstractNativeTableCell extends HtmlContainer {
      * {@link NativeTableHeaderCell#setScope(NativeTableHeaderCell.Scope) scope}
      * alone isn't enough to disambiguate.
      * <p>
-     * Passing no arguments (or an empty array) removes the attribute.
+     * An empty array removes the attribute; call {@link #resetHeaders()} to do
+     * the same without an argument, as an empty call would be ambiguous between
+     * this overload and {@link #setHeaders(NativeTableHeaderCell...)}.
      *
      * @param ids
      *            the ids of the header cells, in any order.
