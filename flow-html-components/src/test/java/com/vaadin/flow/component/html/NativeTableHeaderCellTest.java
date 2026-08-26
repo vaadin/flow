@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,16 @@ public class NativeTableHeaderCellTest extends ComponentTest {
     protected void addProperties() {
         addProperty("colspan", int.class, 1, 2, false, false);
         addProperty("rowspan", int.class, 1, 2, false, false);
+    }
+
+    @Test
+    void listConstructor_addsGivenChildren() {
+        var span = new Span("a");
+        var paragraph = new Paragraph("b");
+
+        var cell = new NativeTableHeaderCell(List.of(span, paragraph));
+
+        assertEquals(List.of(span, paragraph), cell.getChildren().toList());
     }
 
     @Test

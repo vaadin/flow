@@ -60,9 +60,17 @@ public class NativeTableRowTest extends ComponentTest {
         assertEquals(2, row.getChildren().count());
     }
 
-    static Stream<Named<Function<Component[], NativeTableRow>>> rowBuilders() {
-        return Stream.of(Named.of("constructor", NativeTableRow::new),
-                Named.of("addCells", components -> {
+    static Stream<Named<Function<List<Component>, NativeTableRow>>> rowBuilders() {
+        return Stream.of(
+                Named.of("varargs constructor",
+                        components -> new NativeTableRow(
+                                components.toArray(Component[]::new))),
+                Named.of("list constructor", NativeTableRow::new),
+                Named.of("varargs addCells", components -> {
+                    NativeTableRow row = new NativeTableRow();
+                    row.addCells(components.toArray(Component[]::new));
+                    return row;
+                }), Named.of("list addCells", components -> {
                     NativeTableRow row = new NativeTableRow();
                     row.addCells(components);
                     return row;
@@ -72,12 +80,12 @@ public class NativeTableRowTest extends ComponentTest {
     @ParameterizedTest
     @MethodSource("rowBuilders")
     void cellsKeptAsIs_otherComponentsWrappedInDataCell(
-            Function<Component[], NativeTableRow> builder) {
+            Function<List<Component>, NativeTableRow> builder) {
         NativeTableHeaderCell th = new NativeTableHeaderCell("header");
         NativeTableCell td = new NativeTableCell("data");
         Span span = new Span("wrapped");
 
-        NativeTableRow row = builder.apply(new Component[] { th, td, span });
+        NativeTableRow row = builder.apply(List.of(th, td, span));
 
         List<Component> children = row.getChildren().toList();
         assertEquals(th, children.get(0));

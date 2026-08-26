@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import static com.vaadin.flow.component.html.AssertUtils.assertEquals;
@@ -32,6 +34,17 @@ class NativeTableCellTest extends ComponentTest {
         addProperty("rowspan", int.class, 1, 2, false, false);
         addProperty("headers", String[].class, null, new String[] { "a", "b" },
                 true, true);
+    }
+
+    @Test
+    void listConstructor_addsGivenChildren() {
+        var span = new Span("a");
+        var paragraph = new Paragraph("b");
+
+        var cell = new NativeTableCell(List.of(span, paragraph));
+
+        assertEquals(List.of(span, paragraph), cell.getChildren().toList(),
+                "Children given to the constructor should be added");
     }
 
     @Test

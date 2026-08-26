@@ -126,22 +126,44 @@ class NativeTableRowContainerTest {
                 "Row must be replaced with new row");
     }
 
-    static Stream<Named<Function<NativeTableRow[], NativeTableRowContainer>>> sectionConstructors() {
-        return Stream.of(Named.of("thead", NativeTableHeader::new),
-                Named.of("tbody", NativeTableBody::new),
-                Named.of("tfoot", NativeTableFooter::new));
+    static Stream<Named<Function<List<NativeTableRow>, NativeTableRowContainer>>> sectionConstructors() {
+        return Stream.of(
+                Named.of("thead varargs",
+                        rows -> new NativeTableHeader(
+                                rows.toArray(NativeTableRow[]::new))),
+                Named.of("thead list", NativeTableHeader::new),
+                Named.of("tbody varargs",
+                        rows -> new NativeTableBody(
+                                rows.toArray(NativeTableRow[]::new))),
+                Named.of("tbody list", NativeTableBody::new),
+                Named.of("tfoot varargs",
+                        rows -> new NativeTableFooter(
+                                rows.toArray(NativeTableRow[]::new))),
+                Named.of("tfoot list", NativeTableFooter::new));
     }
 
     @ParameterizedTest
     @MethodSource("sectionConstructors")
-    void varargsConstructor_addsGivenRows(
-            Function<NativeTableRow[], NativeTableRowContainer> constructor) {
+    void constructor_addsGivenRows(
+            Function<List<NativeTableRow>, NativeTableRowContainer> constructor) {
         var row0 = new NativeTableRow();
         var row1 = new NativeTableRow();
 
-        var section = constructor.apply(new NativeTableRow[] { row0, row1 });
+        var section = constructor.apply(List.of(row0, row1));
 
         assertEquals(List.of(row0, row1), section.getRows());
+    }
+
+    @Test
+    void addAndRemoveRowsWithLists() {
+        var row0 = new NativeTableRow();
+        var row1 = new NativeTableRow();
+        var row2 = new NativeTableRow();
+        container.addRows(List.of(row0, row1, row2));
+        assertEquals(List.of(row0, row1, row2), container.getRows());
+
+        container.removeRows(List.of(row0, row2));
+        assertEquals(List.of(row1), container.getRows());
     }
 
     @Tag(Tag.TR)

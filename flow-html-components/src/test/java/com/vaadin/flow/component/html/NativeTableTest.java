@@ -18,9 +18,16 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.vaadin.flow.component.Component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -213,11 +220,21 @@ class NativeTableTest extends ComponentTest {
         assertTrue(body2.getParent().isPresent());
     }
 
-    @Test
-    void childrenGivenToConstructor_areFoundByAccessors() {
+    static Stream<Named<Function<List<Component>, NativeTable>>> tableConstructors() {
+        return Stream.of(
+                Named.of("varargs",
+                        children -> new NativeTable(
+                                children.toArray(Component[]::new))),
+                Named.of("list", NativeTable::new));
+    }
+
+    @ParameterizedTest
+    @MethodSource("tableConstructors")
+    void childrenGivenToConstructor_areFoundByAccessors(
+            Function<List<Component>, NativeTable> constructor) {
         var head = new NativeTableHeader();
         var body = new NativeTableBody();
-        var table = new NativeTable(head, body);
+        var table = constructor.apply(List.of(head, body));
 
         assertEquals(head, table.getHead(), "Head given to the constructor "
                 + "should be returned instead of a new one being created");
@@ -362,6 +379,31 @@ class NativeTableTest extends ComponentTest {
         assertEquals(List.of(row), table.getFoot().getRows());
         assertEquals(List.of("a", "b"), row.getDataCells().stream()
                 .map(NativeTableCell::getText).toList());
+    }
+
+    @Test
+    void addRows_listOverloadsAppendLikeTheVarargsOnes() {
+        var table = (NativeTable) getComponent();
+        var headRow = new NativeTableRow();
+        var headRowFromList = new NativeTableRow();
+        var bodyRow = new NativeTableRow();
+        var bodyRowFromList = new NativeTableRow();
+        var footRow = new NativeTableRow();
+        var footRowFromList = new NativeTableRow();
+
+        table.addHeaderRows(headRow);
+        table.addHeaderRows(List.of(headRowFromList));
+        table.addRows(bodyRow);
+        table.addRows(List.of(bodyRowFromList));
+        table.addFooterRows(footRow);
+        table.addFooterRows(List.of(footRowFromList));
+
+        assertEquals(List.of(headRow, headRowFromList),
+                table.getHead().getRows());
+        assertEquals(List.of(bodyRow, bodyRowFromList),
+                table.getBody().getRows());
+        assertEquals(List.of(footRow, footRowFromList),
+                table.getFoot().getRows());
     }
 
     @Test
