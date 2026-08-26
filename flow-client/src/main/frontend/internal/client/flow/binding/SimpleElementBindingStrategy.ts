@@ -552,8 +552,10 @@ function storeInitialHiddenAttribute(element: Element, visibilityData: NodeMap):
   }
 
   const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
-  const style = (element as HTMLElement).style as CSSStyleDeclaration | null;
-  if (isInShadowRoot(element) && !initialDisplay.hasValue() && style !== null) {
+  // Java guards on element.getStyle() != null: a node that is not an HTML
+  // element carries no style object.
+  const style = (element as Partial<HTMLElement>).style;
+  if (isInShadowRoot(element) && !initialDisplay.hasValue() && style !== undefined) {
     initialDisplay.setValue(style.display);
   }
 }
