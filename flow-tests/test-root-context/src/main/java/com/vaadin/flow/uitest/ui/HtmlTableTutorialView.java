@@ -19,10 +19,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.NativeTable;
-import com.vaadin.flow.component.html.NativeTableCell;
 import com.vaadin.flow.component.html.NativeTableColumn;
 import com.vaadin.flow.component.html.NativeTableColumnGroup;
-import com.vaadin.flow.component.html.NativeTableHeaderCell;
 import com.vaadin.flow.component.html.NativeTableRow;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -32,8 +30,9 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Replicates the examples from the MDN "HTML table basics" tutorial:
  * https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_table_basics
  * <p>
- * Only the {@code <colgroup>}/{@code <col>} example is present so far; the
- * remaining examples need table API that does not exist yet.
+ * The examples are added as the table API they need becomes available; the ones
+ * still missing need {@code scope}, {@code colspan} on <code>&lt;th&gt;</code>
+ * and caption content API.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.HtmlTableTutorialView", layout = ViewTestLayout.class)
 public class HtmlTableTutorialView extends Div {
@@ -74,10 +73,24 @@ public class HtmlTableTutorialView extends Div {
 
         add(new H2("HTML table basics — examples from MDN"));
 
+        add(new H3("1. Basic table with rows and cells"));
+        BasicTable basic = new BasicTable();
+        basic.setId("basic-table");
+        add(basic);
+
         add(new H3("5. School timetable styled with <colgroup>/<col>"));
         SchoolTimetable timetable = new SchoolTimetable();
         timetable.setId("school-timetable");
         add(timetable);
+    }
+
+    /** Example 1: minimal 2-row, 4-column table — no header. */
+    static class BasicTable extends NativeTable {
+        {
+            addRow("Hi, I'm your first cell.", "I'm your second cell.",
+                    "I'm your third cell.", "I'm your fourth cell.");
+            addRow("Second row, first cell.", "Cell 2.", "Cell 3.", "Cell 4.");
+        }
     }
 
     /**
@@ -99,7 +112,7 @@ public class HtmlTableTutorialView extends Div {
 
             NativeTableRow header = addRow();
             header.addDataCell();
-            addHeaderCells(header, "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat",
+            header.addHeaderCells("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat",
                     "Sun");
 
             addPeriodRow("1st period", "English", "", "", "German", "Dutch", "",
@@ -114,42 +127,10 @@ public class HtmlTableTutorialView extends Div {
 
         private void addPeriodRow(String period, String... days) {
             NativeTableRow row = addRow();
-            addHeaderCells(row, period);
-            addDataCells(row, days);
-        }
-
-        /**
-         * Appends a row to the table body.
-         * <p>
-         * Stands in for {@code NativeTable.addRow()}.
-         */
-        private NativeTableRow addRow() {
-            return getBody().addRow();
-        }
-
-        /**
-         * Appends a header cell per text.
-         * <p>
-         * Stands in for {@code NativeTableRow.addHeaderCells(String...)}. The
-         * MDN example also gives these cells a {@code scope}, which needs
-         * {@code NativeTableHeaderCell.setScope}.
-         */
-        private static void addHeaderCells(NativeTableRow row,
-                String... texts) {
-            for (String text : texts) {
-                row.add(new NativeTableHeaderCell(text));
-            }
-        }
-
-        /**
-         * Appends a data cell per text.
-         * <p>
-         * Stands in for {@code NativeTableRow.addDataCells(String...)}.
-         */
-        private static void addDataCells(NativeTableRow row, String... texts) {
-            for (String text : texts) {
-                row.add(new NativeTableCell(text));
-            }
+            // The MDN example also gives this cell scope="row", which needs
+            // NativeTableHeaderCell.setScope.
+            row.addHeaderCell(period);
+            row.addDataCells(days);
         }
     }
 }

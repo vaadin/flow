@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -281,6 +283,175 @@ public class NativeTable extends HtmlContainer
      */
     public void removeBody() {
         removeBody(0);
+    }
+
+    /**
+     * Returns every {@link NativeTableRow} in this table — the head's rows,
+     * then the rows of each body in order, then the foot's rows — matching the
+     * document order exposed by the browser DOM's
+     * {@code HTMLTableElement.rows}. Useful for "iterate all rows" or "count
+     * rows" cases; for structural work go through {@link #getHead()},
+     * {@link #getBody()} or {@link #getFoot()} directly.
+     *
+     * @return an unmodifiable list of all rows in the table.
+     */
+    public List<NativeTableRow> getRows() {
+        List<NativeTableRow> all = new ArrayList<>();
+        findHead().ifPresent(head -> all.addAll(head.getRows()));
+        getBodies().forEach(body -> all.addAll(body.getRows()));
+        findFoot().ifPresent(foot -> all.addAll(foot.getRows()));
+        return Collections.unmodifiableList(all);
+    }
+
+    /**
+     * Removes every row from this table's head, bodies and foot. The section
+     * elements themselves ({@code <thead>}, {@code <tbody>}, {@code <tfoot>})
+     * and any column groups are kept; use {@link #removeHead()},
+     * {@link #removeBody(NativeTableBody)} or {@link #removeFoot()} to drop
+     * those.
+     */
+    public void removeAllRows() {
+        findHead().ifPresent(NativeTableHeader::removeAllRows);
+        getBodies().forEach(NativeTableBody::removeAllRows);
+        findFoot().ifPresent(NativeTableFooter::removeAllRows);
+    }
+
+    /**
+     * Appends a new empty row to this table's body, creating an implicit
+     * {@code <tbody>} if none exists yet. Mirrors the HTML pattern of placing
+     * <code>&lt;tr&gt;</code> elements directly inside a
+     * <code>&lt;table&gt;</code> (the browser auto-wraps them in
+     * {@code <tbody>}).
+     *
+     * @return the newly created row.
+     */
+    public NativeTableRow addRow() {
+        return getBody().addRow();
+    }
+
+    /**
+     * Appends a new row containing the given texts as data cells
+     * (<code>&lt;td&gt;</code>) to this table's body, creating an implicit
+     * {@code <tbody>} if none exists yet.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addRow(String... cellTexts) {
+        return addRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addRow(List<String> cellTexts) {
+        return getBody().addRow().addDataCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's body, creating an implicit
+     * {@code <tbody>} if none exists yet.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addRows(NativeTableRow... rows) {
+        getBody().addRows(rows);
+    }
+
+    /**
+     * Appends a new empty row to this table's {@code <thead>}, creating it if
+     * none exists yet.
+     *
+     * @return the newly created row.
+     */
+    public NativeTableRow addHeaderRow() {
+        return getHead().addRow();
+    }
+
+    /**
+     * Appends a new row containing the given texts as header cells
+     * (<code>&lt;th&gt;</code>) to this table's {@code <thead>}, creating it if
+     * none exists yet.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addHeaderRow(String... cellTexts) {
+        return addHeaderRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addHeaderRow(List<String> cellTexts) {
+        return getHead().addRow().addHeaderCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's {@code <thead>}, creating it if
+     * none exists yet.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addHeaderRows(NativeTableRow... rows) {
+        getHead().addRows(rows);
+    }
+
+    /**
+     * Appends a new empty row to this table's {@code <tfoot>}, creating it if
+     * none exists yet.
+     *
+     * @return the newly created row.
+     */
+    public NativeTableRow addFooterRow() {
+        return getFoot().addRow();
+    }
+
+    /**
+     * Appends a new row containing the given texts as data cells
+     * (<code>&lt;td&gt;</code>) to this table's {@code <tfoot>}, creating it if
+     * none exists yet.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addFooterRow(String... cellTexts) {
+        return addFooterRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the newly created row.
+     */
+    public NativeTableRow addFooterRow(List<String> cellTexts) {
+        return getFoot().addRow().addDataCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's {@code <tfoot>}, creating it if
+     * none exists yet.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addFooterRows(NativeTableRow... rows) {
+        getFoot().addRows(rows);
     }
 
     /**

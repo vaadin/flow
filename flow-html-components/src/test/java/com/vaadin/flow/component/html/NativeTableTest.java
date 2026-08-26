@@ -370,4 +370,61 @@ class NativeTableTest extends ComponentTest {
         assertEquals(foot, children.get(1));
     }
 
+    @Test
+    void addRow_withTexts_addsDataCellRowToBody() {
+        var table = (NativeTable) getComponent();
+        var row = table.addRow("a", "b");
+
+        assertEquals(List.of(row), table.getBody().getRows());
+        assertEquals(List.of("a", "b"), row.getDataCells().stream()
+                .map(NativeTableCell::getText).toList());
+    }
+
+    @Test
+    void addHeaderRow_withTexts_addsHeaderCellRowToHead() {
+        var table = (NativeTable) getComponent();
+        var row = table.addHeaderRow("a", "b");
+
+        assertEquals(List.of(row), table.getHead().getRows());
+        assertEquals(List.of("a", "b"), row.getHeaderCells().stream()
+                .map(NativeTableHeaderCell::getText).toList());
+    }
+
+    @Test
+    void addFooterRow_withTexts_addsDataCellRowToFoot() {
+        var table = (NativeTable) getComponent();
+        var row = table.addFooterRow("a", "b");
+
+        assertEquals(List.of(row), table.getFoot().getRows());
+        assertEquals(List.of("a", "b"), row.getDataCells().stream()
+                .map(NativeTableCell::getText).toList());
+    }
+
+    @Test
+    void getRows_returnsHeadThenBodiesThenFootRows() {
+        var table = (NativeTable) getComponent();
+        // Added out of document order to show the result follows the table,
+        // not the calls.
+        var footRow = table.addFooterRow();
+        var bodyRow = table.addRow();
+        var headRow = table.addHeaderRow();
+        var secondBodyRow = table.addBody().addRow();
+
+        assertEquals(List.of(headRow, bodyRow, secondBodyRow, footRow),
+                table.getRows());
+    }
+
+    @Test
+    void removeAllRows_keepsTheSections() {
+        var table = (NativeTable) getComponent();
+        table.addHeaderRow();
+        table.addRow();
+        table.addFooterRow();
+
+        table.removeAllRows();
+
+        assertTrue(table.getRows().isEmpty());
+        assertEquals(3, table.getChildren().count());
+    }
+
 }

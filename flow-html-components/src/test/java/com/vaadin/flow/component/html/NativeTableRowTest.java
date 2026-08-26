@@ -15,6 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.component.Component;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 public class NativeTableRowTest extends ComponentTest {
     // Actual test methods in super class
 
@@ -22,4 +31,44 @@ public class NativeTableRowTest extends ComponentTest {
     protected void addProperties() {
         // Component defines no new properties
     }
+
+    @Test
+    void addDataCells_appendsOneTdPerText() {
+        NativeTableRow row = new NativeTableRow();
+        assertEquals(row, row.addDataCells("a", "b"));
+
+        List<NativeTableCell> cells = row.getDataCells();
+        assertEquals(List.of("a", "b"),
+                cells.stream().map(NativeTableCell::getText).toList());
+        assertEquals(2, row.getChildren().count());
+    }
+
+    @Test
+    void addHeaderCells_appendsOneThPerText() {
+        NativeTableRow row = new NativeTableRow();
+        assertEquals(row, row.addHeaderCells("a", "b"));
+
+        List<NativeTableHeaderCell> cells = row.getHeaderCells();
+        assertEquals(List.of("a", "b"),
+                cells.stream().map(NativeTableHeaderCell::getText).toList());
+        assertEquals(2, row.getChildren().count());
+    }
+
+    @Test
+    void addCells_wrapsOnlyNonCellComponents() {
+        NativeTableRow row = new NativeTableRow();
+        NativeTableHeaderCell th = new NativeTableHeaderCell("header");
+        NativeTableCell td = new NativeTableCell("data");
+        Span span = new Span("wrapped");
+
+        row.addCells(th, td, span);
+
+        List<Component> children = row.getChildren().toList();
+        assertEquals(th, children.get(0));
+        assertEquals(td, children.get(1));
+        NativeTableCell wrapper = assertInstanceOf(NativeTableCell.class,
+                children.get(2));
+        assertEquals(span, wrapper.getChildren().findFirst().orElseThrow());
+    }
+
 }

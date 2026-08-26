@@ -43,6 +43,30 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void basicTableRendersRowsAndCells() {
+        NativeTableElement table = $(NativeTableElement.class)
+                .id("basic-table");
+        List<NativeTableRowElement> rows = table.$(NativeTableRowElement.class)
+                .all();
+
+        Assert.assertEquals(2, rows.size());
+        Assert.assertEquals(4,
+                rows.get(0).$(NativeTableCellElement.class).all().size());
+        Assert.assertEquals("Hi, I'm your first cell.",
+                rows.get(0).$(NativeTableCellElement.class).first().getText());
+        Assert.assertEquals("Second row, first cell.",
+                rows.get(1).$(NativeTableCellElement.class).first().getText());
+    }
+
+    @Test
+    public void rowsAddedWithAddRowLandInTheImplicitBody() {
+        NativeTableElement table = $(NativeTableElement.class)
+                .id("basic-table");
+        Assert.assertEquals("tbody",
+                table.getPropertyElement("firstElementChild").getTagName());
+    }
+
+    @Test
     public void colgroupRendered_withColumnsInDocumentOrder() {
         List<NativeTableColumnGroupElement> groups = timetable
                 .$(NativeTableColumnGroupElement.class).all();

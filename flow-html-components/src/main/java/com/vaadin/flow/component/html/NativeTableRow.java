@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,6 +53,19 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
+     * Add a header cell to this row with the given text content.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} element.
+     */
+    public NativeTableHeaderCell addHeaderCell(String text) {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell(text);
+        add(cell);
+        return cell;
+    }
+
+    /**
      * Add a header cell to this row.
      *
      * @return the new {@code <th>} element.
@@ -76,6 +90,19 @@ public class NativeTableRow extends HtmlContainer
         NativeTableHeaderCell headerCell = new NativeTableHeaderCell();
         addComponentAtIndex(position, headerCell);
         return headerCell;
+    }
+
+    /**
+     * Add a data cell to this row with the given text content.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <td>} element.
+     */
+    public NativeTableCell addDataCell(String text) {
+        NativeTableCell cell = new NativeTableCell(text);
+        add(cell);
+        return cell;
     }
 
     /**
@@ -235,4 +262,88 @@ public class NativeTableRow extends HtmlContainer
         remove(dataCell);
     }
 
+
+    /**
+     * Appends a sequence of data cells ({@code <td>}) with the given text
+     * contents to this row.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addDataCells(String... cellTexts) {
+        return addDataCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addDataCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addDataCells(List<String> cellTexts) {
+        cellTexts.forEach(this::addDataCell);
+        return this;
+    }
+
+    /**
+     * Appends a sequence of header cells ({@code <th>}) with the given text
+     * contents to this row.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addHeaderCells(String... cellTexts) {
+        return addHeaderCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addHeaderCells(List<String> cellTexts) {
+        cellTexts.forEach(this::addHeaderCell);
+        return this;
+    }
+
+    /**
+     * Appends children to this row. A {@link NativeTableCell} or
+     * {@link NativeTableHeaderCell} argument is added as-is; any other
+     * component is wrapped in a new {@link NativeTableCell}, since a
+     * <code>&lt;tr&gt;</code> may only contain {@code <td>} and {@code <th>}
+     * elements.
+     *
+     * @param components
+     *            the cells (used as-is) or other components (wrapped in
+     *            {@code <td>}) to append.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addCells(Component... components) {
+        return addCells(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCells(Component...)}.
+     *
+     * @param components
+     *            the cells or wrap-target components.
+     * @return this row, for fluent chaining.
+     */
+    public NativeTableRow addCells(List<? extends Component> components) {
+        for (Component component : components) {
+            add(isCell(component) ? component
+                    : new NativeTableCell(component));
+        }
+        return this;
+    }
+
+    private static boolean isCell(Component component) {
+        return component instanceof NativeTableCell
+                || component instanceof NativeTableHeaderCell;
+    }
 }
