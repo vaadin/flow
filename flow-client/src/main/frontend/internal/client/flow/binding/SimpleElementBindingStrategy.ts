@@ -46,7 +46,7 @@ import { addReadyCallback, isInitialized } from '../../ReactUtils';
 import type { EventRemover } from '../../../EventRemover';
 import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
-import { bindPolymerModelProperties } from '../../../SimpleElementBindingStrategy';
+import { bindPolymerModelProperties } from './PolymerModelBinding';
 import { StateNode } from '../StateNode';
 import type { ApplicationConfiguration, StateTree } from '../StateTree';
 import type { MapProperty } from '../nodefeature/MapProperty';

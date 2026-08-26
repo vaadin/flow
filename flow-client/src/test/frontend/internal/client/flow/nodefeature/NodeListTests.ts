@@ -1,10 +1,10 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { countingComputation } from './reactive/CountingComputation';
-import { NodeList } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
-import type { ListSpliceEvent } from '../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { NodeList } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
+import type { ListSpliceEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
 // A real state node; node-feature tests do not reach into the tree.
 const node = new StateNode(

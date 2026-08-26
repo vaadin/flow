@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
-import { bindPolymerModelProperties } from '../../../main/frontend/internal/SimpleElementBindingStrategy';
+import { bindPolymerModelProperties } from '../../../../../../main/frontend/internal/client/flow/binding/PolymerModelBinding';
 
-describe('SimpleElementBindingStrategy', () => {
+describe('PolymerModelBinding', () => {
   function makeCallbacks() {
     const calls: Array<[string, unknown[]]> = [];
     return {

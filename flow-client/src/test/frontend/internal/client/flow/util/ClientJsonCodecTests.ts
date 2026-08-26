@@ -3,9 +3,9 @@ import {
   decodeStateNode,
   decodeWithTypeInfo,
   decodeWithoutTypeInfo
-} from '../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+} from '../../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree, type Registry } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
 interface ReturnMessage {
   nodeId: number;

@@ -14,7 +14,9 @@
  * the License.
  */
 
-// Polymer model-property binding migrated from SimpleElementBindingStrategy.java.
+// Polymer model-property binding migrated from SimpleElementBindingStrategy.java:
+// a TypeScript-only split of that class's Polymer handling, so it lives in the
+// package of the class it was split from, alongside SimpleElementBindingStrategy.
 // The StateNode/StateTree-coupled callbacks (handlePropertiesChanged,
 // fireReadyEvent, handleListItemPropertyChange) are supplied by the caller with
 // the node and tree captured in their closures; here we only do the
