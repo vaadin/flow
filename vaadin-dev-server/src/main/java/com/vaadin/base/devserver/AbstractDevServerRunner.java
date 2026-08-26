@@ -396,7 +396,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         List<String> command = getServerStartupCommand(frontendTools);
 
-        FrontendUtils.console(FrontendUtils.GREEN, START);
+        FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, START);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(FrontendUtils.commandToString(
                     getProjectRoot().getAbsolutePath(), command));
@@ -468,10 +468,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void onDevServerCompilation(Result result) {
         if (result.isSuccess()) {
-            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, SUCCEED_MSG);
             failedOutput = null;
         } else {
-            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.RED, FAILED_MSG);
             failedOutput = result.getOutput();
         }
     }
