@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
@@ -29,8 +28,23 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;table&gt;</code> element.
+ * Component representing a <code>&lt;table&gt;</code> element — a
+ * two-dimensional grid of cells with optional header, body and footer sections,
+ * captioning and column-level styling.
+ * <p>
+ * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
+ * HTML specification</a>, a <code>&lt;table&gt;</code> may contain (in order):
+ * an optional <code>&lt;caption&gt;</code>, zero or more
+ * <code>&lt;colgroup&gt;</code> elements, an optional
+ * <code>&lt;thead&gt;</code>, zero or more <code>&lt;tbody&gt;</code> elements,
+ * and an optional <code>&lt;tfoot&gt;</code>. Building the table through the
+ * structured operations below places each part at the correct position
+ * automatically; the generic {@link HtmlContainer#add(Component...)} inherited
+ * from {@link HtmlContainer} appends without any such ordering.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table">MDN:
+ *      &lt;table&gt; — The Table element</a>
  * @since 24.5
  */
 @Tag(Tag.TABLE)
@@ -78,9 +92,9 @@ public class NativeTable extends HtmlContainer
      */
     public NativeTableCaption getCaption() {
         return findCaption().orElseGet(() -> {
-            NativeTableCaption caption = new NativeTableCaption();
-            addComponentAtIndex(getInsertionIndex(RANK_CAPTION), caption);
-            return caption;
+            NativeTableCaption newCaption = new NativeTableCaption();
+            addComponentAtIndex(getInsertionIndex(RANK_CAPTION), newCaption);
+            return newCaption;
         });
     }
 
@@ -95,7 +109,8 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Sets the caption text for this table.
+     * Sets the caption text for this table. Creates a caption element if none
+     * exists.
      *
      * @param text
      *            the caption's text
@@ -124,9 +139,9 @@ public class NativeTable extends HtmlContainer
      * @return the caption.
      */
     public NativeTableCaption addCaption(List<? extends Component> components) {
-        NativeTableCaption caption = getCaption();
-        caption.add(components.toArray(Component[]::new));
-        return caption;
+        NativeTableCaption tableCaption = getCaption();
+        tableCaption.add(components.toArray(Component[]::new));
+        return tableCaption;
     }
 
     /**
@@ -201,16 +216,17 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Returns the head of this table.
+     * Returns the head of this table. Creates a new one if none was present,
+     * inserted at the correct position (after the caption and any column
+     * groups).
      *
-     * @return This table's {@code <thead>} element. Creates a new one if no
-     *         element was present.
+     * @return this table's {@code <thead>} element.
      */
     public NativeTableHeader getHead() {
         return findHead().orElseGet(() -> {
-            NativeTableHeader head = new NativeTableHeader();
-            addComponentAtIndex(getInsertionIndex(RANK_HEAD), head);
-            return head;
+            NativeTableHeader newHead = new NativeTableHeader();
+            addComponentAtIndex(getInsertionIndex(RANK_HEAD), newHead);
+            return newHead;
         });
     }
 
@@ -222,16 +238,16 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Returns the {@code <tfoot>} element of this table.
+     * Returns the {@code <tfoot>} element of this table. Creates a new one if
+     * none was present, appended at the end of the table per the HTML spec.
      *
-     * @return The {@code <tfoot>} element of this table. Creates a new one if
-     *         none was present.
+     * @return the {@code <tfoot>} element of this table.
      */
     public NativeTableFooter getFoot() {
         return findFoot().orElseGet(() -> {
-            NativeTableFooter foot = new NativeTableFooter();
-            addComponentAtIndex(getInsertionIndex(RANK_FOOT), foot);
-            return foot;
+            NativeTableFooter newFoot = new NativeTableFooter();
+            addComponentAtIndex(getInsertionIndex(RANK_FOOT), newFoot);
+            return newFoot;
         });
     }
 
@@ -245,19 +261,18 @@ public class NativeTable extends HtmlContainer
     /**
      * Returns the list of {@code <tbody>} elements in this table.
      *
-     * @return the list of table body elements of this table.
+     * @return an unmodifiable list of body elements.
      */
     public List<NativeTableBody> getBodies() {
         return ComponentUtil.getChildrenOfType(this, NativeTableBody.class)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
      * Returns the first body element in this table. Creates one if there's
      * none.
      *
-     * @return the first {@code <tbody>} element in the table. Creates one if
-     *         there's none.
+     * @return the first {@code <tbody>} element in the table.
      */
     public NativeTableBody getBody() {
         return ComponentUtil.getFirstChildOfType(this, NativeTableBody.class)
@@ -265,9 +280,10 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Adds a new body element to the table.
+     * Adds a new body element to the table, positioned after the existing
+     * bodies and before the foot (if any).
      *
-     * @return The new body.
+     * @return the new body.
      */
     public NativeTableBody addBody() {
         NativeTableBody body = new NativeTableBody();
@@ -279,7 +295,7 @@ public class NativeTable extends HtmlContainer
      * Removes a body element from the table.
      *
      * @param body
-     *            The body component to remove.
+     *            the body component to remove.
      */
     public void removeBody(NativeTableBody body) {
         remove(body);
@@ -484,6 +500,19 @@ public class NativeTable extends HtmlContainer
         getFoot().addRows(rows);
     }
 
+    private Optional<NativeTableCaption> findCaption() {
+        return ComponentUtil.getFirstChildOfType(this,
+                NativeTableCaption.class);
+    }
+
+    private Optional<NativeTableHeader> findHead() {
+        return ComponentUtil.getFirstChildOfType(this, NativeTableHeader.class);
+    }
+
+    private Optional<NativeTableFooter> findFoot() {
+        return ComponentUtil.getFirstChildOfType(this, NativeTableFooter.class);
+    }
+
     /**
      * Returns the index at which a child of the given rank must be inserted to
      * keep the caption, column groups, head, bodies and foot in the order the
@@ -514,19 +543,6 @@ public class NativeTable extends HtmlContainer
             return RANK_FOOT;
         }
         return RANK_BODY;
-    }
-
-    private Optional<NativeTableCaption> findCaption() {
-        return ComponentUtil.getFirstChildOfType(this,
-                NativeTableCaption.class);
-    }
-
-    private Optional<NativeTableHeader> findHead() {
-        return ComponentUtil.getFirstChildOfType(this, NativeTableHeader.class);
-    }
-
-    private Optional<NativeTableFooter> findFoot() {
-        return ComponentUtil.getFirstChildOfType(this, NativeTableFooter.class);
     }
 
 }

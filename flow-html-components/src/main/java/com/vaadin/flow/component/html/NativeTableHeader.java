@@ -18,11 +18,19 @@ package com.vaadin.flow.component.html;
 import java.util.List;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;thead&gt;</code> element.
+ * Component representing a <code>&lt;thead&gt;</code> element — the header
+ * section of a {@link NativeTable}.
+ * <p>
+ * Per the <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
+ * HTML specification</a>, a {@code <thead>} may only contain
+ * <code>&lt;tr&gt;</code> elements, so build its content through the
+ * {@link NativeTableRowContainer} row operations rather than the generic
+ * {@link HtmlContainer#add(Component...)} inherited from {@link HtmlContainer}.
  *
  * @since 24.5
  */
@@ -31,7 +39,7 @@ public class NativeTableHeader extends HtmlContainer
         implements NativeTableRowContainer, ClickNotifier<NativeTableHeader> {
 
     /**
-     * Creates a new empty table header component.
+     * Creates a new empty table header.
      */
     public NativeTableHeader() {
         super();

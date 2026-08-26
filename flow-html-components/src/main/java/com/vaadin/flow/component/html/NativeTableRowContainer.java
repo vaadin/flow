@@ -15,14 +15,20 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 
 /**
- * A container of <code>&lt;tr&gt;</code> elements.
+ * A container of <code>&lt;tr&gt;</code> elements. Implemented by
+ * {@link NativeTableHeader}, {@link NativeTableBody} and
+ * {@link NativeTableFooter}.
+ * <p>
+ * Per the WHATWG HTML structural rules for {@code <thead>}, {@code <tbody>} and
+ * {@code <tfoot>}, only {@link NativeTableRow} children belong in such a
+ * container, which is what these operations produce.
  *
  * @since 24.4
  */
@@ -45,7 +51,7 @@ interface NativeTableRowContainer extends HasComponents {
      *            the rows to append.
      */
     default void addRows(NativeTableRow... rows) {
-        add(rows);
+        addRows(Arrays.asList(rows));
     }
 
     /**
@@ -73,7 +79,8 @@ interface NativeTableRowContainer extends HasComponents {
      * Create and insert a row at a given position.
      *
      * @param position
-     *            a value greater than 0 and less than the container's size.
+     *            a value greater than or equal to 0 and less than or equal to
+     *            the container's size.
      * @return the new row.
      */
     default NativeTableRow insertRow(int position) {
@@ -86,11 +93,10 @@ interface NativeTableRowContainer extends HasComponents {
      * Remove a list of rows from the container.
      *
      * @param rows
-     *            the rows to remove. If a component in the list is not a child
-     *            of the container, it will throw an exception.
+     *            the rows to remove.
      */
     default void removeRows(NativeTableRow... rows) {
-        remove(rows);
+        removeRows(Arrays.asList(rows));
     }
 
     /**
@@ -120,8 +126,7 @@ interface NativeTableRowContainer extends HasComponents {
      *            the new row to insert at the position of the old row.
      */
     default void replaceRow(int index, NativeTableRow row) {
-        Component oldRow = getComponentAt(index);
-        replace(oldRow, row);
+        replace(getComponentAt(index), row);
     }
 
 }

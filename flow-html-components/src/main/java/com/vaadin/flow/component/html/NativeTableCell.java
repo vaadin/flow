@@ -24,7 +24,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Component representing a <code>&lt;td&gt;</code> element.
+ * Component representing a <code>&lt;td&gt;</code> element (a table data cell).
+ * Inherits {@code colspan}/{@code rowspan} support from
+ * {@link AbstractNativeTableCell}.
  *
  * @since 24.5
  */
@@ -85,8 +87,6 @@ public class NativeTableCell extends AbstractNativeTableCell
      * @param textSignal
      *            the signal to bind, not <code>null</code>
      * @see #bindText(Signal)
-     *
-     * @since 25.1
      */
     public NativeTableCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -26,8 +26,15 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;th&gt;</code> element — a cell that labels
- * a group of other cells in a {@link NativeTable}. Which cells it labels is
- * defined by the {@link #setScope(Scope) scope} attribute.
+ * a group of other cells in a {@link NativeTable}. The exact group is defined
+ * by the {@link #setScope(Scope) scope} attribute (which row, column, row
+ * group, or column group the header applies to) and/or by
+ * {@link AbstractNativeTableCell#setHeaders(String...) headers} attributes on
+ * the data cells that reference this header by id.
+ * <p>
+ * Inherits {@code colspan}, {@code rowspan} and {@code headers} support from
+ * {@link AbstractNativeTableCell}, since those attributes apply equally to
+ * <code>&lt;td&gt;</code> and <code>&lt;th&gt;</code>.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/th">MDN:
@@ -83,7 +90,6 @@ public class NativeTableHeaderCell extends AbstractNativeTableCell
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
-     * @since 25.1
      */
     public NativeTableHeaderCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -17,23 +17,34 @@ package com.vaadin.flow.component.html;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;tr&gt;</code> element.
+ * <p>
+ * Per the
+ * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG HTML
+ * specification</a>, a {@code <tr>} may only contain {@code <td>} or
+ * {@code <th>} elements, so build its content through the cell operations
+ * below rather than the generic {@link HtmlContainer#add(Component...)}
+ * inherited from {@link HtmlContainer}.
+ * <p>
+ * The {@link #NativeTableRow(Component...) constructor} and {@link #addCells} accept
+ * any {@link Component}: {@link AbstractNativeTableCell} subclasses ({@link NativeTableCell},
+ * {@link NativeTableHeaderCell}) are placed as-is, and any other component is
+ * automatically wrapped in a new {@link NativeTableCell}.
  *
  * @since 24.5
  */
 @Tag(Tag.TR)
 public class NativeTableRow extends HtmlContainer
-        implements HasOrderedComponents, ClickNotifier<NativeTableRow> {
+        implements ClickNotifier<NativeTableRow> {
 
     /**
      * Creates a new empty table row component.
@@ -43,18 +54,18 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
-     * Creates a new table row with the given children. A
-     * {@link NativeTableCell} or {@link NativeTableHeaderCell} argument is
-     * added as-is; any other component is wrapped in a new
-     * {@link NativeTableCell}, matching {@link #addCells(Component...)}.
+     * Creates a new table row with the given children. Any {@link AbstractNativeTableCell}
+     * argument ({@link NativeTableCell} or {@link NativeTableHeaderCell}) is added
+     * as-is; any other component is wrapped in a new {@link NativeTableCell}
+     * — convenient for building rows from arbitrary content without the
+     * boilerplate of explicit {@code new NativeTableCell(...)} wrappers.
      *
      * @param components
      *            the cells (used as-is) or other components (wrapped in
      *            {@code <td>}) to place in this row.
      */
     public NativeTableRow(Component... components) {
-        super();
-        addCells(components);
+        this(Arrays.asList(components));
     }
 
     /**
@@ -65,7 +76,18 @@ public class NativeTableRow extends HtmlContainer
      */
     public NativeTableRow(List<? extends Component> components) {
         super();
-        addCells(components);
+        appendAsCells(components);
+    }
+
+    /**
+     * Add a header cell to this row.
+     *
+     * @return the new {@code <th>} element.
+     */
+    public NativeTableHeaderCell addHeaderCell() {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell();
+        add(cell);
+        return cell;
     }
 
     /**
@@ -84,27 +106,17 @@ public class NativeTableRow extends HtmlContainer
     /**
      * Add a header cell to this row that labels the row itself, with
      * {@code scope="row"} set on the resulting {@code <th>}. This is a
-     * shortcut for the common pattern of using a leading {@code <th>} as a row
-     * label, which assistive technologies announce as the header for the data
-     * cells in the same row.
+     * shortcut for the common pattern of using a leading {@code <th>} as a
+     * row label, which assistive technologies announce as the header for
+     * the data cells in the same row.
      *
      * @param text
      *            the text content.
      * @return the new {@code <th>} element with {@code scope="row"}.
      */
     public NativeTableHeaderCell addRowHeaderCell(String text) {
-        NativeTableHeaderCell cell = addHeaderCell(text);
+        NativeTableHeaderCell cell = new NativeTableHeaderCell(text);
         cell.setScope(NativeTableHeaderCell.Scope.ROW);
-        return cell;
-    }
-
-    /**
-     * Add a header cell to this row.
-     *
-     * @return the new {@code <th>} element.
-     */
-    public NativeTableHeaderCell addHeaderCell() {
-        NativeTableHeaderCell cell = new NativeTableHeaderCell();
         add(cell);
         return cell;
     }
@@ -117,12 +129,20 @@ public class NativeTableRow extends HtmlContainer
      * @return the new header cell.
      */
     public NativeTableHeaderCell insertHeaderCell(int position) {
-        if (position == 0) {
-            return addHeaderCell();
-        }
         NativeTableHeaderCell headerCell = new NativeTableHeaderCell();
         addComponentAtIndex(position, headerCell);
         return headerCell;
+    }
+
+    /**
+     * Add a data cell to this row.
+     *
+     * @return the new {@code <td>} element.
+     */
+    public NativeTableCell addDataCell() {
+        NativeTableCell cell = new NativeTableCell();
+        add(cell);
+        return cell;
     }
 
     /**
@@ -139,17 +159,6 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
-     * Add a data cell to this row.
-     *
-     * @return the new {@code <td>} element.
-     */
-    public NativeTableCell addDataCell() {
-        NativeTableCell cell = new NativeTableCell();
-        add(cell);
-        return cell;
-    }
-
-    /**
      * Insert a new data cell into a given position.
      *
      * @param position
@@ -157,12 +166,9 @@ public class NativeTableRow extends HtmlContainer
      * @return the new data cell.
      */
     public NativeTableCell insertDataCell(int position) {
-        if (position == 0) {
-            return addDataCell();
-        }
-        NativeTableCell nativeTableCell = new NativeTableCell();
-        addComponentAtIndex(position, nativeTableCell);
-        return nativeTableCell;
+        NativeTableCell tableCell = new NativeTableCell();
+        addComponentAtIndex(position, tableCell);
+        return tableCell;
     }
 
     /**
@@ -171,8 +177,7 @@ public class NativeTableRow extends HtmlContainer
      * @return A list of all header cells in this row.
      */
     public List<NativeTableHeaderCell> getHeaderCells() {
-        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
-                .map(c -> (NativeTableHeaderCell) c)
+        return ComponentUtil.getChildrenOfType(this, NativeTableHeaderCell.class)
                 .collect(Collectors.toList());
     }
 
@@ -182,22 +187,21 @@ public class NativeTableRow extends HtmlContainer
      * @return A list of all data cells in this row.
      */
     public List<NativeTableCell> getDataCells() {
-        return getChildren().filter(c -> c instanceof NativeTableCell)
-                .map(c -> (NativeTableCell) c).collect(Collectors.toList());
+        return ComponentUtil.getChildrenOfType(this, NativeTableCell.class)
+                .collect(Collectors.toList());
     }
 
     /**
      * Returns all cells in this row, in document order — both
-     * {@link NativeTableCell} and {@link NativeTableHeaderCell} entries
-     * combined. For kind-specific lists use {@link #getDataCells()} or
+     * {@link NativeTableCell} and {@link NativeTableHeaderCell} entries combined. For
+     * kind-specific lists use {@link #getDataCells()} or
      * {@link #getHeaderCells()}; index into any of these lists with
      * {@code .get(i)}.
      *
      * @return a list of all cells in this row.
      */
     public List<AbstractNativeTableCell> getCells() {
-        return getChildren().filter(AbstractNativeTableCell.class::isInstance)
-                .map(AbstractNativeTableCell.class::cast)
+        return ComponentUtil.getChildrenOfType(this, AbstractNativeTableCell.class)
                 .collect(Collectors.toList());
     }
 
@@ -231,7 +235,9 @@ public class NativeTableRow extends HtmlContainer
      * @return this row, for fluent chaining.
      */
     public NativeTableRow addDataCells(List<String> cellTexts) {
-        cellTexts.forEach(this::addDataCell);
+        for (String text : cellTexts) {
+            addDataCell(text);
+        }
         return this;
     }
 
@@ -255,16 +261,16 @@ public class NativeTableRow extends HtmlContainer
      * @return this row, for fluent chaining.
      */
     public NativeTableRow addHeaderCells(List<String> cellTexts) {
-        cellTexts.forEach(this::addHeaderCell);
+        for (String text : cellTexts) {
+            addHeaderCell(text);
+        }
         return this;
     }
 
     /**
-     * Appends children to this row. A {@link NativeTableCell} or
-     * {@link NativeTableHeaderCell} argument is added as-is; any other
-     * component is wrapped in a new {@link NativeTableCell}, since a
-     * <code>&lt;tr&gt;</code> may only contain {@code <td>} and {@code <th>}
-     * elements.
+     * Appends children to this row. Any {@link AbstractNativeTableCell} argument
+     * ({@link NativeTableCell} or {@link NativeTableHeaderCell}) is added as-is;
+     * any other component is wrapped in a new {@link NativeTableCell}.
      *
      * @param components
      *            the cells (used as-is) or other components (wrapped in
@@ -283,15 +289,16 @@ public class NativeTableRow extends HtmlContainer
      * @return this row, for fluent chaining.
      */
     public NativeTableRow addCells(List<? extends Component> components) {
-        for (Component component : components) {
-            add(isCell(component) ? component
-                    : new NativeTableCell(component));
-        }
+        appendAsCells(components);
         return this;
     }
 
-    private static boolean isCell(Component component) {
-        return component instanceof NativeTableCell
-                || component instanceof NativeTableHeaderCell;
+    private void appendAsCells(Iterable<? extends Component> components) {
+        for (Component c : components) {
+            AbstractNativeTableCell cell = (c instanceof AbstractNativeTableCell tc) ? tc
+                    : new NativeTableCell(c);
+            add(cell);
+        }
     }
+
 }
