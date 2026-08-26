@@ -15,15 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +27,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +35,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ResourceFolderUtil;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -98,88 +90,30 @@ class PinnedNpmVersions {
     }
 
     /**
-     * Reads the versions files from one folder on the classpath, which is
-     * either a folder in a jar or a folder on the file system.
+     * Reads the versions files from one folder on the classpath.
      * <p>
-     * The folder itself has no content to read, so the json files it contains
-     * are listed instead, which depends on where the folder lives.
+     * A folder that cannot be read is skipped with a warning, as the versions
+     * files of the other folders still pin the packages they define.
      */
     private static void readVersionsFiles(URL folder,
-            Map<String, VersionsFile> versionsFiles) throws IOException {
-        switch (folder.getProtocol()) {
-        case "file" -> readVersionsFilesFromFolder(folder, versionsFiles);
-        case "jar" -> readVersionsFilesFromJar(folder, versionsFiles);
-        default -> log().warn(
-                "Unable to read pinned npm versions from '{}' as the '{}' protocol is not supported."
-                        + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
-                folder, folder.getProtocol());
-        }
-    }
-
-    private static void readVersionsFilesFromFolder(URL folder,
-            Map<String, VersionsFile> versionsFiles) throws IOException {
-        Path path;
+            Map<String, VersionsFile> versionsFiles) {
         try {
-            path = Path.of(folder.toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("Unable to read pinned npm versions from "
-                    + folder + " as it is not a valid file URL", e);
-        }
-        try (Stream<Path> jsonFiles = Files.list(path)) {
-            for (Path jsonFile : jsonFiles.filter(
-                    file -> file.getFileName().toString().endsWith(JSON_SUFFIX))
-                    .filter(Files::isRegularFile).toList()) {
-                String origin = jsonFile.toUri().toString();
-                versionsFiles.put(origin, new VersionsFile(origin,
-                        JacksonUtils.readTree(Files.readString(jsonFile))));
-            }
-        }
-    }
-
-    private static void readVersionsFilesFromJar(URL folder,
-            Map<String, VersionsFile> versionsFiles) throws IOException {
-        URLConnection connection = folder.openConnection();
-        if (!(connection instanceof JarURLConnection jarConnection)) {
-            log().warn("Unable to read pinned npm versions from '{}'."
-                    + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
-                    folder);
-            return;
-        }
-        // The jar is opened for this read only, so it must not be cached
-        jarConnection.setUseCaches(false);
-        String jarUrl = jarConnection.getJarFileURL().toExternalForm();
-        JarFile jar;
-        try {
-            jar = jarConnection.getJarFile();
-        } catch (FileNotFoundException e) {
-            // A jar is not required to have an entry for the folder itself,
-            // and connecting to a folder that has no entry fails
+            ResourceFolderUtil.visitFiles(folder, file -> {
+                if (!file.getName().endsWith(JSON_SUFFIX)) {
+                    return;
+                }
+                try (InputStream content = file.open()) {
+                    versionsFiles.put(file.getLocation(),
+                            new VersionsFile(file.getLocation(),
+                                    JacksonUtils.readTree(
+                                            StringUtil.toUTF8String(content))));
+                }
+            });
+        } catch (IOException e) {
             log().warn("Unable to read pinned npm versions from '{}'."
                     + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                     folder, e);
-            return;
         }
-        try (JarFile jarFile = jar) {
-            for (JarEntry entry : jarFile.stream()
-                    .filter(entry -> isVersionsFile(entry.getName()))
-                    .toList()) {
-                String origin = "jar:" + jarUrl + "!/" + entry.getName();
-                try (InputStream content = jarFile.getInputStream(entry)) {
-                    versionsFiles.put(origin,
-                            new VersionsFile(origin, JacksonUtils.readTree(
-                                    StringUtil.toUTF8String(content))));
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks that the jar entry is a json file directly in the versions folder.
-     */
-    private static boolean isVersionsFile(String entryName) {
-        return entryName.startsWith(Constants.PINNED_NPM_VERSIONS_FOLDER)
-                && entryName.endsWith(JSON_SUFFIX) && entryName.indexOf('/',
-                        Constants.PINNED_NPM_VERSIONS_FOLDER.length()) == -1;
     }
 
     /**

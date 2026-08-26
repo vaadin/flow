@@ -212,8 +212,7 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
-    void versionsFolderWithoutAnEntryInTheJar_isSkippedWithoutFailing()
-            throws IOException {
+    void versionsFilesAreReadFromAJarWithoutFolderEntries() throws IOException {
         File jar = new File(temporaryFolder, "no-folder-entries.jar");
         writeJar(jar,
                 Map.of(Constants.PINNED_NPM_VERSIONS_FOLDER + "button.json", """
@@ -228,7 +227,7 @@ class PinnedNpmVersionsTest {
                         """), false);
 
         // A class loader does not report a folder that has no entry of its
-        // own, but one that does anyway must not fail the build
+        // own, but the files are still read for a handler that reports it
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(URI
@@ -236,7 +235,8 @@ class PinnedNpmVersionsTest {
                                 + Constants.PINNED_NPM_VERSIONS_FOLDER)
                         .toURL()));
 
-        assertTrue(new PinnedNpmVersions(finder).isEmpty());
+        assertTrue(new PinnedNpmVersions(finder).getDependencies(false, false)
+                .has("@vaadin/button"));
     }
 
     /**
