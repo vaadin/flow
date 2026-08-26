@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NativeTableTest extends ComponentTest {
@@ -79,6 +78,14 @@ class NativeTableTest extends ComponentTest {
         var caption = component.getCaption();
         caption.setText(expectedText);
         assertEquals(expectedText, component.getCaptionText());
+    }
+
+    @Test
+    void getCaptionText_withoutCaption_isEmptyAndCreatesNothing() {
+        var component = (NativeTable) getComponent();
+
+        assertEquals("", component.getCaptionText());
+        assertEquals(0, component.getChildren().count());
     }
 
     @Test
@@ -182,24 +189,6 @@ class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    void getBodyByIndex() {
-        var component = (NativeTable) getComponent();
-        var body = component.getBody(0);
-        assertEquals(1, component.getChildren().count());
-        var secondCallBody = component.getBody(0);
-        assertEquals(1, component.getChildren().count());
-        AssertUtils.assertEquals(body, secondCallBody,
-                "No new body should've been created");
-    }
-
-    @Test
-    void getNonExistentBodyByIndex() {
-        var component = (NativeTable) getComponent();
-        assertThrows(IndexOutOfBoundsException.class,
-                () -> component.getBody(1));
-    }
-
-    @Test
     void getBodies() {
         var component = (NativeTable) getComponent();
         for (int i = 0; i < 10; i++) {
@@ -210,31 +199,6 @@ class NativeTableTest extends ComponentTest {
             AssertUtils.assertEquals(component, body.getParent().orElseThrow(),
                     "Body is not a child of table");
         }
-    }
-
-    @Test
-    void removeBody() {
-        var component = (NativeTable) getComponent();
-        for (int i = 0; i < 10; i++) {
-            component.addBody();
-        }
-        var bodies = component.getBodies();
-        for (int i = 0; i < 10; i++) {
-            component.removeBody();
-            assertTrue(bodies.get(i).getParent().isEmpty());
-        }
-    }
-
-    @Test
-    void removeBodyByIndex() {
-        var component = (NativeTable) getComponent();
-        var body0 = component.addBody();
-        var body1 = component.addBody();
-        var body2 = component.addBody();
-        component.removeBody(1);
-        assertTrue(body0.getParent().isPresent());
-        assertTrue(body1.getParent().isEmpty());
-        assertTrue(body2.getParent().isPresent());
     }
 
     @Test

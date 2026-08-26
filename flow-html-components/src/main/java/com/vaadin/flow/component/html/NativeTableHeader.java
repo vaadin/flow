@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
@@ -37,12 +36,12 @@ public class NativeTableHeader extends HtmlContainer
     }
 
     /**
-     * Creates a new table header with the given children components.
+     * Creates a new table header with the given rows.
      *
-     * @param components
-     *            the children components.
+     * @param rows
+     *            the rows to add.
      */
-    public NativeTableHeader(Component... components) {
-        super(components);
+    public NativeTableHeader(NativeTableRow... rows) {
+        super(rows);
     }
 }

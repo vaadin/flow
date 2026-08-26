@@ -43,13 +43,18 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
-     * Creates a new table row with the given children components.
+     * Creates a new table row with the given children. A
+     * {@link NativeTableCell} or {@link NativeTableHeaderCell} argument is
+     * added as-is; any other component is wrapped in a new
+     * {@link NativeTableCell}, matching {@link #addCells(Component...)}.
      *
      * @param components
-     *            the children components.
+     *            the cells (used as-is) or other components (wrapped in
+     *            {@code <td>}) to place in this row.
      */
     public NativeTableRow(Component... components) {
-        super(components);
+        super();
+        addCells(components);
     }
 
     /**
@@ -171,114 +176,29 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
-     * Returns a list of all cells in this row.
+     * Returns all cells in this row, in document order — both
+     * {@link NativeTableCell} and {@link NativeTableHeaderCell} entries
+     * combined. For kind-specific lists use {@link #getDataCells()} or
+     * {@link #getHeaderCells()}; index into any of these lists with
+     * {@code .get(i)}.
      *
      * @return a list of all cells in this row.
      */
-    public List<Component> getAllCells() {
-        return getChildren()
-                .filter(c -> c instanceof NativeTableCell
-                        || c instanceof NativeTableHeaderCell)
+    public List<AbstractNativeTableCell> getCells() {
+        return getChildren().filter(AbstractNativeTableCell.class::isInstance)
+                .map(AbstractNativeTableCell.class::cast)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Returns the header cell at a given position relative to other header
-     * cells.
+     * Removes a cell from this row.
      *
-     * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
-     * @return the header cell at the given position (relative to other header
-     *         cells).
+     * @param cell
+     *            the cell to remove.
      */
-    public Optional<NativeTableHeaderCell> getHeaderCell(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
-                .map(c -> (NativeTableHeaderCell) c).skip(index).findFirst();
+    public void removeCell(AbstractNativeTableCell cell) {
+        remove(cell);
     }
-
-    /**
-     * Returns the data cell at a given position relative to other data cells.
-     *
-     * @param index
-     *            the position of the data cell relative to other data cells.
-     * @return the data cell at the given position (relative to other data
-     *         cells).
-     */
-    public Optional<NativeTableCell> getDataCell(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableCell)
-                .map(c -> (NativeTableCell) c).skip(index).findFirst();
-    }
-
-    /**
-     * Returns the cell at a given position.
-     *
-     * @param index
-     *            the position of the cell.
-     * @return the cell at the given position
-     * @throws IndexOutOfBoundsException
-     *             if index is negative or greater than (or equal to) the number
-     *             of cells in the row
-     */
-    public Optional<Component> getCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof NativeTableCell
-                        || c instanceof NativeTableHeaderCell)
-                .skip(index).findFirst();
-    }
-
-    /**
-     * Removes the cell at a given position.
-     *
-     * @param index
-     *            the position of the cell to remove
-     */
-    public void removeCell(int index) {
-        getCell(index).ifPresent(this::remove);
-    }
-
-    /**
-     * Removes the header cell at a position relative to other header cells.
-     *
-     * @param index
-     *            the position of the header cell relative to other header
-     *            cells.
-     */
-    public void removeHeaderCell(int index) {
-        getHeaderCell(index).ifPresent(this::remove);
-    }
-
-    /**
-     * Removes a header cell.
-     *
-     * @param headerCell
-     *            the header cell to remove.
-     */
-    public void removeHeaderCell(NativeTableHeaderCell headerCell) {
-        remove(headerCell);
-    }
-
-    /**
-     * Removes the data cell at a given position relative to other data cells.
-     *
-     * @param index
-     *            the position of the data cell to remove relative to other data
-     *            cells.
-     */
-    public void removeDataCell(int index) {
-        getDataCell(index).ifPresent(this::remove);
-    }
-
-    /**
-     * Removes a data cell.
-     *
-     * @param dataCell
-     *            the data cell to remove.
-     */
-    public void removeDataCell(NativeTableCell dataCell) {
-        remove(dataCell);
-    }
-
 
     /**
      * Appends a sequence of data cells ({@code <td>}) with the given text

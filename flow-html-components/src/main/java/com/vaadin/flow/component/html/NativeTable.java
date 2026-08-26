@@ -75,12 +75,13 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Return the caption text for this table.
+     * Returns the caption text for this table, or an empty string if no caption
+     * has been set.
      *
      * @return the table's caption text.
      */
     public String getCaptionText() {
-        return getCaption().getText();
+        return findCaption().map(NativeTableCaption::getText).orElse("");
     }
 
     /**
@@ -254,24 +255,6 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Returns the {@code <tbody>} element at a given position relative to other
-     * {@code <tbody>} elements.
-     *
-     * @param index
-     *            The position of the body element relative to other body
-     *            elements.
-     * @return The table body component at the given position. If the position
-     *         is 0 and there are no body elements present, a new one is created
-     *         and returned.
-     */
-    public NativeTableBody getBody(int index) {
-        if (index == 0) {
-            return getBody();
-        }
-        return getBodies().get(index);
-    }
-
-    /**
      * Adds a new body element to the table.
      *
      * @return The new body.
@@ -290,24 +273,6 @@ public class NativeTable extends HtmlContainer
      */
     public void removeBody(NativeTableBody body) {
         remove(body);
-    }
-
-    /**
-     * Removes a body element at a given position.
-     *
-     * @param index
-     *            The position of the body element to remove.
-     */
-    public void removeBody(int index) {
-        NativeTableBody body = getBody(index);
-        removeBody(body);
-    }
-
-    /**
-     * Removes the first body element in the list of bodies of this table.
-     */
-    public void removeBody() {
-        removeBody(0);
     }
 
     /**

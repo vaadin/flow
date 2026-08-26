@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -30,17 +29,6 @@ import com.vaadin.flow.component.HasOrderedComponents;
 interface NativeTableRowContainer extends HasOrderedComponents {
 
     /**
-     * Get the index of a given row.
-     *
-     * @param row
-     *            the row to get the index of.
-     * @return the index of the row.
-     */
-    default int getRowIndex(NativeTableRow row) {
-        return indexOf(row);
-    }
-
-    /**
      * Returns a list of all the rows.
      *
      * @return all the rows in the container.
@@ -48,19 +36,6 @@ interface NativeTableRowContainer extends HasOrderedComponents {
     default List<NativeTableRow> getRows() {
         return getChildren().filter(c -> c instanceof NativeTableRow)
                 .map(c -> (NativeTableRow) c).collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the row at the given index.
-     *
-     * @param index
-     *            the index of the row. Must be greater than 0 and less than the
-     *            size of the container.
-     * @return the row at position {@code index}.
-     */
-    default Optional<NativeTableRow> getRow(int index) {
-        return getChildren().filter(c -> c instanceof NativeTableRow)
-                .map(c -> (NativeTableRow) c).skip(index).findFirst();
     }
 
     /**
@@ -109,17 +84,6 @@ interface NativeTableRowContainer extends HasOrderedComponents {
     }
 
     /**
-     * Remove the row at the given index.
-     *
-     * @param index
-     *            the position of the row to remove.
-     */
-    default void removeRow(int index) {
-        getRow(index).ifPresent(this::remove);
-
-    }
-
-    /**
      * Remove all the rows in the container.
      */
     default void removeAllRows() {
@@ -138,15 +102,6 @@ interface NativeTableRowContainer extends HasOrderedComponents {
     default void replaceRow(int index, NativeTableRow row) {
         Component oldRow = getComponentAt(index);
         replace(oldRow, row);
-    }
-
-    /**
-     * Returns the number of rows in the container.
-     *
-     * @return the row count.
-     */
-    default long getRowCount() {
-        return getChildren().filter(c -> c instanceof NativeTableRow).count();
     }
 
 }
