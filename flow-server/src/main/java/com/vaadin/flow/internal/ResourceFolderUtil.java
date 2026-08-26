@@ -210,7 +210,7 @@ public final class ResourceFolderUtil {
      * @throws IOException
      *             if the jar cannot be opened
      */
-    public static JarFile openJarFile(URL resource) throws IOException {
+    private static JarFile openJarFile(URL resource) throws IOException {
         try {
             URLConnection connection = resource.openConnection();
             if (connection instanceof JarURLConnection jarConnection) {
