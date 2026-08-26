@@ -228,3 +228,28 @@ stack to retrofit it.
 > 31-module relayout across two already-reviewed branches, while `@since` was
 > requested, applied and then dropped again — both because there was no way to
 > say "new rule, applies from here".
+
+## 9. Look for deferred improvements, and file them
+
+Every review ends with one pass that asks a different question: not "is this
+faithful to Java?" but "is faithful also the best TypeScript can do?" Sweep the
+modules in scope for these shapes — each has already produced a real entry:
+
+- a type parameter with **no inference site** (it appears only in the return type),
+  so the caller declares it and nothing checks the claim;
+- an `as` cast, a `!` or a `@ts-expect-error` that exists **only** to satisfy a
+  Java shape;
+- a **boolean predicate used for narrowing**, where a type guard would infer the
+  result;
+- an **overload set** that a single generic signature would collapse;
+- a **structural check standing in for `instanceof`**, or `unknown` / `any` where
+  Java had a real type parameter;
+- `number` or `string` parameters that a **literal union** of the ported constants
+  would constrain;
+- a module or member that exists **only because the Java file exists**, whose body
+  is a one-liner over a native TypeScript construct.
+
+File each hit in [`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) per rule
+16 — the site stays `pass` in the grid, because the port is faithful — and list
+what you filed in the report. A review that files nothing says so explicitly, so
+"nothing found" is a claim rather than a silence.

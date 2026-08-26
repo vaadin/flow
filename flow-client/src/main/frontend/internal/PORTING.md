@@ -358,10 +358,26 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     this prevents: production and test modules across the stack carried
     `// See PORTING.md rule 14.6` and `// beyond the Java suite (PORTING.md 13.6)`
     comments that would outlive the review process.)
+16. **Record TypeScript improvements; do not make them.** Where the port is
+    faithful but TypeScript could express the same thing better — a type guard
+    instead of an unchecked type parameter, a literal union instead of `number`, a
+    generic instead of an overload set — leave the code as it is and file the idea
+    in [`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) against that file's
+    admission test. The port stays literal until the migration is complete, because
+    a reviewer's only leverage is reading a module against its Java original; the
+    cutover PR owns that list and empties it. A review grades such a site `pass` —
+    the port *is* faithful — and files the entry instead of reporting a finding;
+    `PORTING-REVIEW.md` §9 is the step that looks for them. _Introduced during
+    #24949._ (Regression this prevents: `BinderContext.getStrategies` invited a
+    mid-series signature change that would have diverged from `BinderContext.java`
+    while both trees were still being reviewed against each other.)
 
 ## Retrofit backlog
 
-Rules added mid-series that earlier ported code does not satisfy yet. A row is
+Rules added mid-series that earlier ported code does not satisfy yet — **parity
+debts**, whose fixes make the port *more* literal. An improvement that would
+deviate from the Java shape is not a row here; it goes to
+[`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) (rule 16). A row is
 removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 §8 for how rows get here and where a retrofit is allowed to land.
 
