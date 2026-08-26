@@ -110,6 +110,40 @@ file.
   ported modules still reference.
 - **Spotted in**: #24933
 
+### `MapProperty.getValue` — a value type instead of `unknown`
+
+- **Site**: `client/flow/nodefeature/MapProperty.ts`; casts at its consumers, e.g.
+  `client/flow/binding/TextBindingStrategy.ts:53`,
+  `client/flow/binding/SimpleElementBindingStrategy.ts:303`, `:667`, `:910`, `:917`,
+  `client/PolymerUtils.ts:174`
+- **Java shape**: `Object getValue()`, so every consumer casts — nine
+  `getValue() as …` sites in the ported binding layer alone.
+- **What TypeScript could do**: carry the type on the property, either as a generic
+  `MapProperty<T>` or by typing the value as the union a feature can actually hold
+  (`StateNode | JsonValue`). The type decision then lives in the one place that
+  knows it, and the casts at the consumers disappear.
+- **Why it waits**: `unknown` is the faithful rendering of `Object`, and the
+  binding layer is still reviewed against Java code that casts in the same places.
+- **Spotted in**: #24947, measured in #24949
+
+### `ReactiveEventRouter` — drop the `wrapper` / `dispatcher` callbacks
+
+- **Site**: `client/flow/reactive/ReactiveEventRouter.ts`, and its three
+  construction sites `MapProperty.ts:49-50`, `NodeMap.ts:44-46`,
+  `NodeList.ts:46-48`
+- **Java shape**: `ReactiveEventRouter` is abstract with
+  `protected abstract L wrap(ReactiveValueChangeListener)` and
+  `protected abstract void dispatchEvent(L, E)`, because a Java listener is an
+  interface instance that has to be adapted.
+- **What TypeScript could do**: nothing — a listener already *is* a function type,
+  so all three sites pass the identity (`(listener) => listener`) and an application
+  (`(listener, event) => listener(event)`). The constructor can take just the
+  reactive value, dropping two parameters and a layer of indirection from the
+  reactive core.
+- **Why it waits**: the callbacks are the faithful rendering of the two abstract
+  methods, and the router is reviewed against the Java class that needs them.
+- **Spotted in**: #24947
+
 ## Simplifications available once the constraint is gone
 
 ### `NodeFeature.isStateNode` — a real `instanceof StateNode`
@@ -161,3 +195,58 @@ file.
 - **Why it waits**: it needs a bundler-level decision and touches how the engine is
   built, not just how a module is written.
 - **Spotted in**: #24933
+
+### `Reactive`'s static state — an instance instead of module-level `let`s
+
+- **Site**: `client/flow/reactive/Reactive.ts:27-31`, and the `reset()` below it
+- **Java shape**: five `private static` fields on `Reactive`, plus a `reset()`
+  documented as *"Intended for test cases … Should never be called from non-test
+  code!"* — Java has no cheaper way to give the flush cycle a scope.
+- **What TypeScript could do**: make the reactive scope an instance the engine owns
+  and a test constructs per case. That removes a test-only member from the public
+  API and the cross-test coupling that currently makes `Reactive.reset()` mandatory
+  in every `beforeEach`.
+- **Why it waits**: module-level state is the faithful rendering of Java statics,
+  and every ported consumer reaches `Reactive` as a namespace.
+- **Spotted in**: #24947
+
+### `BrowserDetails` / `BrowserInfo` — parse the user agent with a library
+
+- **Site**: `flow/shared/BrowserDetails.ts` (~850 lines), `client/BrowserInfo.ts`
+- **Java shape**: hand-written user-agent sniffing, and the Java class is
+  `@Deprecated` — `BrowserInfo.ts` carries that deprecation on 15 members, each
+  saying to *"use a parsing library like ua-parser-js to parse the user agent"*.
+- **What TypeScript could do**: exactly what the deprecation asks. The pair reduces
+  to a thin adapter over a parser, and the version/OS matrices the suite pins today
+  become the library's problem.
+- **Why it waits**: rule 4 requires the complete public API of the ported class
+  while the Java class exists, deprecated or not.
+- **Spotted in**: #24933
+
+### `Profiler` — drop the GWT stats-event protocol
+
+- **Site**: `client/Profiler.ts` — 33 references to `__gwtStatsEvent` /
+  `GwtStatsEvent` across 629 lines
+- **Java shape**: the profiler reports through GWT's `__gwtStatsEvent` hook so GWT
+  dev tooling can consume it, and the port keeps the payload shape including a
+  `MODULE_NAME = ''` placeholder, since `GWT.getModuleName()` has no analogue.
+- **What TypeScript could do**: delete the protocol once GWT is gone — nothing
+  listens to it — leaving the timing tree and its consumer callback.
+- **Why it waits**: it is the faithful port of the Java class, and the hook is still
+  live while the GWT client is the running engine.
+- **Spotted in**: #24933
+
+## Rejected candidates
+
+Shapes that look like entries but are not, recorded so a later sweep does not
+re-propose them.
+
+- **`TreeChangeProcessor`'s non-null access** — no redundant `node!` exists: the
+  `assert` helper is declared `asserts condition`, so `assert(child !== null, …)`
+  narrows and the following statements need no assertion. Already idiomatic.
+- **`WidgetUtil`'s `Record<string, unknown>` property helpers** — dynamic property
+  access is the purpose of `getJsProperty` / `setJsProperty` / `deleteJsProperty`, so
+  a typed alternative would not be more correct. Fails admission test 3.
+- **`StateNode`'s `#nodeData: Map<unknown, unknown>`** — `getNodeData<T>(clazz)` is
+  already type-safe at the boundary; tightening the private map changes nothing
+  observable. Fails admission test 3.
