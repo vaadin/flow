@@ -13,33 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.flow.dom;
-
-import elemental.dom.Node;
+package com.vaadin.flow.server;
 
 /**
- * Access point for DOM API. All operations and interactions with DOM nodes and
- * elements should go through this class.
+ * Event fired through the {@link VaadinService#getEventBus() service event bus}
+ * when a Vaadin session lock has been acquired, for the outermost acquisition
+ * only.
  *
- * @author Vaadin Ltd
- * @since 1.0
+ * @see AbstractSessionLockEvent
+ * @since 25.3
  */
-public class DomApi {
-
-    private DomApi() {
-        // NOOP
-    }
+public class SessionLockAcquiredEvent extends AbstractSessionLockEvent {
 
     /**
-     * Wraps the given DOM node to make it safe to invoke any of the methods
-     * from {@link DomNode} or {@link DomElement}.
+     * Creates a new event.
      *
-     * @param node
-     *            the node to wrap
-     * @return a wrapped element
+     * @param service
+     *            the Vaadin service whose session lock is being acquired or
+     *            released, not {@code null}
      */
-    public static DomElement wrap(Node node) {
-        return (DomElement) node;
+    public SessionLockAcquiredEvent(VaadinService service) {
+        super(service);
     }
-
 }

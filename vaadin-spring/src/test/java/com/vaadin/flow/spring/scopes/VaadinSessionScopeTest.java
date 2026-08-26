@@ -17,9 +17,9 @@ package com.vaadin.flow.spring.scopes;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class VaadinSessionScopeTest extends AbstractScopeTest {
 
     @BeforeEach

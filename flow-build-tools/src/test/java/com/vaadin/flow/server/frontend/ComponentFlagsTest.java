@@ -21,11 +21,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -44,7 +44,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class ComponentFlagsTest extends NodeUpdateTestUtil {
 
     @TempDir

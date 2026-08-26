@@ -10,15 +10,16 @@ on:
     # branch's own copy of this file.
   merge_group:
 
-# Cancel previous runs if a new one is triggered
+# Cancel previous runs if a new one is triggered. The merge group head sha comes
+# first because the merge queue reuses one branch name for every merge group built
+# from the same PR and base commit, see the same note in validation.yml.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   JAVA_VERSION: '21'
-  MAVEN_VERSION: '3.9.16'
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 permissions:
@@ -45,11 +46,6 @@ jobs:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
           cache: 'maven'
-
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: "${{ env.MAVEN_VERSION }}"
 
       - name: Run formatter
         id: formatter

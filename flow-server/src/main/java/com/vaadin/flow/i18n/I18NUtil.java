@@ -18,9 +18,11 @@ package com.vaadin.flow.i18n;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -150,8 +152,7 @@ public final class I18NUtil {
         if ("jar".equals(protocol) ||
         // wsjar check is for OpenLiberty
                 "wsjar".equals(protocol)) {
-            File jar = getJarFile(resource);
-            try (JarFile jarFile = new JarFile(jar)) {
+            try (JarFile jarFile = openJarFile(resource)) {
                 Enumeration<JarEntry> entries = jarFile.entries();
                 entries.asIterator().forEachRemaining(entry -> {
                     String fileName = entry.getName();
@@ -162,7 +163,8 @@ public final class I18NUtil {
                 });
             } catch (IOException ioe) {
                 getLogger().debug(
-                        "failed to read jar file '" + jar + "' contents", ioe);
+                        "Failed to read the contents of the jar of resource '{}'",
+                        resource, ioe);
             }
         } else if ("vfs".equals(protocol)) {
             files.addAll(listJBossVfsDirectory(resource));
@@ -203,6 +205,41 @@ public final class I18NUtil {
     }
 
     /**
+     * Opens the jar that a {@code jar:} or {@code wsjar:} resource lives in.
+     * <p>
+     * The jar is opened through the connection of the resource, so that a jar
+     * which is not a plain file on disk, such as one nested inside a Spring
+     * Boot executable jar, is read by the handler that knows how to reach it.
+     * Only where the connection does not give access to a jar is the location
+     * resolved into a file instead.
+     *
+     * @param resource
+     *            the resource URL to open the jar for
+     * @return the jar containing the resource, to be closed by the caller
+     * @throws IOException
+     *             if the jar cannot be opened
+     */
+    private static JarFile openJarFile(URL resource) throws IOException {
+        try {
+            URLConnection connection = resource.openConnection();
+            if (connection instanceof JarURLConnection jarConnection) {
+                // The caller closes the jar, so it must not be the instance
+                // shared through the connection cache
+                jarConnection.setUseCaches(false);
+                return jarConnection.getJarFile();
+            }
+            getLogger().debug(
+                    "Resource '{}' is not served by a jar connection, resolving its jar as a file instead",
+                    resource);
+        } catch (IOException | RuntimeException e) {
+            getLogger().debug(
+                    "Cannot open the jar of resource '{}' through its connection, resolving it as a file instead",
+                    resource, e);
+        }
+        return new JarFile(getJarFile(resource));
+    }
+
+    /**
      * Resolves the jar file that a {@code jar:} or {@code wsjar:} resource
      * lives in.
      * <p>
@@ -220,8 +257,10 @@ public final class I18NUtil {
                 : file.substring(0, separatorIndex);
         try {
             return Paths.get(URI.create(jarUrl)).toFile();
-        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-            // Not a plain file: URL, for example a jar nested inside a war
+        } catch (IllegalArgumentException | FileSystemNotFoundException
+                | UnsupportedOperationException e) {
+            // Not a plain file: URL, for example a jar nested inside a war, or
+            // a path on a file system of its own that has no file to point at
             getLogger().debug(
                     "Cannot resolve a file path for the jar of resource '{}'",
                     resource, e);

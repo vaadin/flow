@@ -53,6 +53,14 @@ public class UrlUtil {
     private static final Pattern PERCENT_ENCODED = Pattern
             .compile("%([0-9A-Fa-f]{2})");
 
+    /**
+     * The only {@code about:} URL that is considered safe regardless of the
+     * configured schemes. It shows an empty document and cannot run scripts,
+     * while there are legitimate uses for it, such as the initial source of an
+     * {@code IFrame}.
+     */
+    private static final String ABOUT_BLANK = "about:blank";
+
     private UrlUtil() {
     }
 
@@ -267,9 +275,10 @@ public class UrlUtil {
      * The set of safe schemes is read from the current {@link VaadinService}'s
      * {@link DeploymentConfiguration#getUrlSafeSchemes()}, falling back to
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
-     * is available. Relative URLs (without a scheme) are always considered
-     * safe, whereas URLs containing control characters are rejected as they can
-     * be used to obfuscate the scheme. A {@code null} URL is considered unsafe.
+     * is available. Relative URLs (without a scheme) and {@code about:blank}
+     * are always considered safe, whereas URLs containing control characters
+     * are rejected as they can be used to obfuscate the scheme. A {@code null}
+     * URL is considered unsafe.
      *
      * @param url
      *            the URL to check, may be {@code null}
@@ -512,6 +521,10 @@ public class UrlUtil {
             if (Character.isISOControl(trimmed.charAt(i))) {
                 return false;
             }
+        }
+        if (ABOUT_BLANK.equalsIgnoreCase(trimmed)) {
+            // Safe even though the about scheme in general isn't
+            return true;
         }
         String scheme = extractScheme(trimmed);
         if (scheme == null) {
