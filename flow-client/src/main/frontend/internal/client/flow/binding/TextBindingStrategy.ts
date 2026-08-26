@@ -26,7 +26,7 @@ import type { StateNode } from '../StateNode';
 import type { BinderContext } from './BinderContext';
 import type { BindingStrategy } from './BindingStrategy';
 
-/** Binding strategy for simple (non-template) text nodes; mirrors TextBindingStrategy.java. */
+/** Binding strategy for simple (not template) text `Node`. */
 export class TextBindingStrategy implements BindingStrategy<Text> {
   // Used as a weak set: only keys matter, so state nodes are weakly referenced.
   static readonly #bound = new WeakMap<StateNode, boolean>();

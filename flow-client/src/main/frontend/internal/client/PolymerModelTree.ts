@@ -26,13 +26,14 @@
 // registering reactive change handlers that push later model changes into the
 // Polymer element (or the plain payload object when the host is not Polymer).
 
+import { assert } from '../assert';
 import type { JsonValue, NodeFeature } from './flow/nodefeature/NodeFeature';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { MapProperty } from './flow/nodefeature/MapProperty';
-import type { NodeList } from './flow/nodefeature/NodeList';
+import { NodeList } from './flow/nodefeature/NodeList';
 import type { ListSpliceEvent } from './flow/nodefeature/ListSpliceEvent';
-import type { NodeMap } from './flow/nodefeature/NodeMap';
+import { NodeMap } from './flow/nodefeature/NodeMap';
 import { isPolymerElement, setProperty, splice } from './PolymerUtils';
 import type { EventRemover } from '../EventRemover';
 import { Reactive } from './flow/reactive/Reactive';
@@ -41,9 +42,10 @@ import { setJsProperty } from './WidgetUtil';
 import { Console } from './Console';
 
 /**
- * Converts a model object (StateNode, MapProperty or scalar) into the plain JS
- * model tree Polymer binds to, tagging objects with their nodeId and registering
- * change handlers. Mirrors PolymerUtils.createModelTree.
+ * Makes an attempt to convert an object into json.
+ *
+ * @param object - the object to convert to json
+ * @returns json from object, `null` for null
  */
 export function createModelTree(object: unknown): JsonValue {
   if (object instanceof StateNode) {
@@ -57,7 +59,9 @@ export function createModelTree(object: unknown): JsonValue {
       return createModelTree(node.getMap(NodeFeatures.BASIC_TYPE_VALUE).getProperty(NodeProperties.VALUE));
     }
 
-    const convert = feature!.convert(createModelTree);
+    assert(feature !== null, "Don't know how to convert node without map or list features");
+
+    const convert = feature.convert(createModelTree);
     // Register change handlers for both model objects (ELEMENT_PROPERTIES) and
     // model lists (TEMPLATE_MODELLIST). The Java original gates on
     // `convert instanceof JsonObject`, which in elemental.json is also true for a
@@ -65,12 +69,12 @@ export function createModelTree(object: unknown): JsonValue {
     // must NOT be excluded here, otherwise model-list splices never reach Polymer.
     if (typeof convert === 'object' && convert !== null && !('nodeId' in convert)) {
       (convert as Record<string, unknown>).nodeId = node.getId();
-      registerChangeHandlers(node, feature!, convert);
+      registerChangeHandlers(node, feature, convert);
     }
     return convert;
   } else if (object instanceof MapProperty) {
     const property = object;
-    if ((property.getMap() as unknown as NodeMap).getId() === NodeFeatures.BASIC_TYPE_VALUE) {
+    if (property.getMap().getId() === NodeFeatures.BASIC_TYPE_VALUE) {
       return createModelTree(property.getValue());
     }
     const convertedObject: Record<string, JsonValue> = {};
@@ -83,13 +87,24 @@ export function createModelTree(object: unknown): JsonValue {
 function registerChangeHandlers(node: StateNode, feature: NodeFeature, value: JsonValue): void {
   const registrations: EventRemover[] = [];
   if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-    const map = feature as NodeMap;
+    assert(
+      feature instanceof NodeMap,
+      'Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. ' +
+        `It should be NodeMap, but it is: ${String(feature)}`
+    );
+    const map = feature;
     registerPropertyChangeHandlers(value, registrations, map);
     registerPropertyAddHandler(value, registrations, map);
   } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-    const list = feature as NodeList;
+    assert(
+      feature instanceof NodeList,
+      'Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. ' +
+        `It should be NodeList, but it is: ${String(feature)}`
+    );
+    const list = feature;
     registrations.push(list.addSpliceListener((event) => handleListChange(event, value)));
   }
+  assert(registrations.length !== 0, 'Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature');
 
   registrations.push(node.addUnregisterListener(() => registrations.forEach((registration) => registration.remove())));
 }
@@ -118,7 +133,7 @@ function doHandleListChange(event: ListSpliceEvent, value: JsonValue): void {
   const add = event.getAdd();
   const index = event.getIndex();
   const remove = event.getRemove().length;
-  const node = event.getSource().getNode() as StateNode;
+  const node = event.getSource().getNode();
   const root = getFirstParentWithDomNode(node);
   if (root === null) {
     Console.warn(`Root node for node ${node.getId()} could not be found`);
@@ -143,7 +158,7 @@ function handlePropertyChange(property: MapProperty, bean: JsonValue): void {
 
 function doHandlePropertyChange(property: MapProperty, value: JsonValue): void {
   const propertyName = property.getName();
-  const node = property.getMap().getNode() as unknown as StateNode;
+  const node = property.getMap().getNode();
   const root = getFirstParentWithDomNode(node);
   if (root === null) {
     Console.warn(`Root node for node ${node.getId()} could not be found`);
@@ -228,8 +243,10 @@ function getPropertiesNotificationPath(currentNode: StateNode): string | null {
 }
 
 /**
- * Gets the first parent node that also has a DOM node attached, or null. Mirrors
- * getFirstParentWithDomNode.
+ * Gets the first parent node that also has a DOM Node attached to it.
+ *
+ * @param node - the node
+ * @returns the first parent node with a DOM Node, or `null` if none can be found
  */
 function getFirstParentWithDomNode(node: StateNode): StateNode | null {
   let parent = node.getParent();

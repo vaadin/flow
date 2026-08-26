@@ -24,12 +24,12 @@
  * @param name - name of container to bind to
  * @param runnable - callback function runnable
  */
-export function addReadyCallback(element: Element, name: string, callback: () => void): void {
+export function addReadyCallback(element: Element, name: string, runnable: () => void): void {
   const el = element as unknown as {
     addReadyCallback?: (name: string, callback: () => void) => void;
   };
   if (el.addReadyCallback) {
-    el.addReadyCallback(name, callback);
+    el.addReadyCallback(name, runnable);
   }
 }
 

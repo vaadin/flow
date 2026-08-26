@@ -425,7 +425,10 @@ function create(node: StateNode): Element {
   }
   const parent = node.getParent();
   if (parent !== null) {
-    const namespaceURI = (parent.getDomNode() as Element | null)?.namespaceURI ?? null;
+    // Java dereferences the parent's DOM node unconditionally; mirror that with
+    // a non-null assertion rather than an optional chain so a missing DOM node
+    // fails here instead of silently falling through to a non-namespaced tag.
+    const namespaceURI = (parent.getDomNode()! as Element).namespaceURI;
     if (namespaceURI !== null) {
       return document.createElementNS(namespaceURI, tag);
     }
@@ -612,7 +615,8 @@ function bindEventHandlerProperty(eventHandlerProperty: MapProperty, context: Bi
 function removeEventHandler(eventType: string, context: BindingContext): void {
   const remover = context.listenerRemovers.get(eventType);
   context.listenerRemovers.delete(eventType);
-  remover?.remove();
+  assert(remover !== undefined, 'There must be a registered DOM event listener remover to remove');
+  remover.remove();
 }
 
 function addEventHandler(eventType: string, context: BindingContext): void {
@@ -658,13 +662,18 @@ function sendEventToServer(
  * handleDomEvent.
  */
 function handleDomEvent(event: Event, context: BindingContext): void {
-  const element = context.htmlNode as Element;
+  // Java asserts context != null here; context is a required parameter, so the
+  // check is unreachable and dropped.
+  assert(context.htmlNode instanceof Element, 'Cannot handle DOM event for a Node');
+  const element = context.htmlNode;
   const node = context.node;
   const type = event.type;
 
   const listenerMap = getDomEventListenerMap(node);
   const constantPool = node.getTree().getRegistry().getConstantPool();
   const expressionConstantKey = listenerMap.getProperty(type).getValue() as string;
+  assert(expressionConstantKey !== null, 'There must be an expression constant key for the event type');
+  assert(constantPool.has(expressionConstantKey), 'The constant pool must contain the expression constant key');
 
   const expressionSettings = constantPool.get<Record<string, unknown>>(expressionConstantKey);
   const expressions = Object.keys(expressionSettings);
@@ -1030,9 +1039,10 @@ function handleChildrenSplice(event: ListSpliceEvent, context: BindingContext): 
     for (const removed of event.getRemove()) {
       const childNode = removed as StateNode;
       const child = childNode.getDomNode();
+      assert(child !== null, "Can't find element to remove");
       // If the client-side element is not inside the parent the server expected
       // (client-only DOM changes), nothing is done here.
-      if (child !== null && child.parentNode === htmlNode) {
+      if (child.parentNode === htmlNode) {
         htmlNode.removeChild(child);
       }
     }
@@ -1053,6 +1063,8 @@ function removeAllChildren(htmlNode: Node): void {
 /**
  * Removes the children the node has right now, but only once the whole change
  * set has been applied so that the nodes replacing them are already in place.
+ *
+ * @param context - the binding context of the node whose children are replaced
  */
 function removeAllChildrenAfterReplacement(context: BindingContext): void {
   // childNodes is the live DOM child list, so the nodes to remove are collected
@@ -1135,6 +1147,9 @@ function getFirstNodeMappedAsStateNode(mappedNodeChildren: NodeList, htmlNode: N
  * Collects the DOM nodes of the given state nodes into a set, so that the nodes
  * currently in the DOM can be matched against them without scanning the state
  * node list for each of them.
+ *
+ * @param stateNodes - the state nodes to collect the DOM nodes of
+ * @returns the DOM nodes of the state nodes that have one
  */
 function getMappedDomNodes(stateNodes: NodeList): Set<Node> {
   const domNodes = new Set<Node>();
@@ -1190,6 +1205,7 @@ function attachShadow(context: BindingContext): void {
  * SHADOW_ROOT_DATA feature gains the shadow-root node. Mirrors bindShadowRoot.
  */
 function bindShadowRoot(context: BindingContext): EventRemover {
+  assert(context.htmlNode instanceof Element, 'Cannot bind shadow root to a Node');
   const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
   attachShadow(context);
   return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
@@ -1254,6 +1270,8 @@ function remove(
   context.listenerRemovers.forEach((remover) => remover.remove());
   listeners.forEach((remover) => remover.remove());
 
+  // Java asserts boundNodes != null here; boundNodes is a module-level constant,
+  // so the check is unreachable and dropped.
   boundNodes.delete(context.node);
 }
 
@@ -1300,7 +1318,8 @@ function appendVirtualChild(context: BindingContext, node: StateNode, reactivePh
     return;
   }
 
-  const element = context.htmlNode as Element;
+  assert(context.htmlNode instanceof Element, 'Unexpected html node. The node is supposed to be a custom element');
+  const element = context.htmlNode;
   if (type === NodeProperties.INJECT_BY_ID) {
     if (isLitElement(element)) {
       whenRendered(element, () => handleInjectId(context, node, object, false));
@@ -1471,9 +1490,13 @@ function updateVisibility(
   computationsCollection: Array<Map<string, Computation>>,
   nodeFactory: BinderContext
 ): void {
+  assert(
+    context.htmlNode instanceof Element,
+    `The HTML node for the StateNode with id=${context.node.getId()} is not an Element`
+  );
+  const element = context.htmlNode;
   const node = context.node;
   const visibilityData = node.getMap(NodeFeatures.ELEMENT_DATA);
-  const element = context.htmlNode as Element;
 
   if (needsRebind(node) && isVisible(node)) {
     remove(listeners, context, computationsCollection);
@@ -1499,6 +1522,10 @@ function bindVisibility(
   computationsCollection: Array<Map<string, Computation>>,
   nodeFactory: BinderContext
 ): EventRemover {
+  assert(
+    context.htmlNode instanceof Element,
+    `The HTML node for the StateNode with id=${context.node.getId()} is not an Element`
+  );
   const visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
   visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(isVisible(context.node));
@@ -1518,7 +1545,8 @@ function bindVisibility(
 // create/isApplicable/bind as the BindingStrategy<Element>.
 
 function bindClientCallableMethods(context: BindingContext): EventRemover {
-  return bindServerEventHandlerNames(context.htmlNode as Element, context.node);
+  assert(context.htmlNode instanceof Element, 'Cannot bind client delegate methods to a Node');
+  return bindServerEventHandlerNames(context.htmlNode, context.node);
 }
 
 function bindPolymerEventHandlerNames(context: BindingContext): EventRemover {

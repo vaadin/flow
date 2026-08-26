@@ -63,7 +63,7 @@ export interface BindingStrategy<T extends Node> {
   bind(stateNode: StateNode, domNode: T, context: BinderContext): void;
 
   /**
-   * Gets the tag value from the {@link NodeFeatures.ELEMENT_DATA} feature for
+   * Gets the tag value from the `NodeFeatures.ELEMENT_DATA` feature for
    * the `node`.
    *
    * @param node - the state node

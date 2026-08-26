@@ -31,6 +31,7 @@
 import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import type { StateNode } from '../StateNode';
+import { getJsProperty, setJsProperty } from '../../WidgetUtil';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).
@@ -108,7 +109,7 @@ export function getMethods(serverObject: ServerObject): string[] {
  *            function is stored
  */
 export function rejectPromises(serverObject: ServerObject, promiseCallbackName: string): void {
-  const promises = serverObject[promiseCallbackName]?.promises;
+  const promises = serverObject[promiseCallbackName].promises;
   if (promises !== undefined) {
     promises.forEach(function (item: [unknown, (reason: unknown) => void]) {
       item[1](Error('Client is resynchronizing'));
@@ -151,7 +152,7 @@ export function get(element: Element): ServerObject {
   if (serverObject === null) {
     serverObject = {};
     initPromiseHandler(serverObject, PROMISE_CALLBACK_NAME);
-    (element as any).$server = serverObject;
+    setJsProperty(element as unknown as Record<string, unknown>, '$server', serverObject);
   }
   return serverObject;
 }
@@ -164,7 +165,7 @@ export function get(element: Element): ServerObject {
  *         note present.
  */
 export function getIfPresent(node: Node): ServerObject | null {
-  const serverObject = (node as any).$server;
+  const serverObject = getJsProperty(node as unknown as Record<string, unknown>, '$server') as ServerObject | undefined;
   return serverObject === undefined ? null : serverObject;
 }
 
@@ -306,6 +307,12 @@ function createPolymerPropertyObject(
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression. The
  * `element` parameter receives the $server object, matching the Java contract.
+ *
+ * Java declares this `protected static`, which would map to an `export`. It is
+ * kept module-local because its return type mirrors the Java-`private`
+ * `ServerEventDataExpression` interface, and with `declaration` emit enabled an
+ * exported function cannot reference a non-exported type; exporting the function
+ * would force exposing that private type.
  */
 function getOrCreateExpression(expressionString: string): ServerEventDataExpression {
   let expression = expressionCache.get(expressionString);

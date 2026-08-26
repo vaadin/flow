@@ -160,8 +160,8 @@ export function getElementInShadowRootById(shadowRoot: ShadowRoot, id: string): 
  * @param tagName - the name of the custom element
  * @param runnable - the command to run when the element if initialized
  */
-export function invokeWhenDefined(tagName: string, callback: () => void): void {
-  void window.customElements.whenDefined(tagName).then(callback);
+export function invokeWhenDefined(tagName: string, runnable: () => void): void {
+  void window.customElements.whenDefined(tagName).then(runnable);
 }
 
 /**
@@ -285,6 +285,8 @@ function getChildIgnoringStyles(parent: Node, index: number): Node | null {
   let filteredIndex = -1;
   // eslint-disable-next-line @typescript-eslint/prefer-for-of -- indexed HTMLCollection access
   for (let i = 0; i < children.length; i++) {
+    // Java asserts each child is an Element; the DOM `children` collection is
+    // already typed as Element here, so the check is unreachable and dropped.
     const element = children[i];
     if (element.tagName.toLowerCase() !== 'style') {
       filteredIndex++;

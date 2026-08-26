@@ -40,7 +40,7 @@ export function isLitElement(element: Node): boolean {
  * @param element - the Lit element
  * @param runnable - the command to run
  */
-export function whenRendered(element: Element, callback: () => void): void {
+export function whenRendered(element: Element, runnable: () => void): void {
   const el = element as unknown as { updateComplete: Promise<unknown> };
-  void el.updateComplete.then(callback);
+  void el.updateComplete.then(runnable);
 }

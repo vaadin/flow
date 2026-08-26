@@ -51,6 +51,7 @@ export interface BinderContext {
    * strategies types are correct to avoid `ClassCastException`.
    *
    * @param predicate - predicate to filter strategies using type `T`.
+   * @typeParam T - the array type
    * @returns collection of filtered strategies
    */
   getStrategies<T extends BindingStrategy<Node>>(predicate: (strategy: BindingStrategy<Node>) => boolean): T[];

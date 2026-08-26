@@ -14,6 +14,14 @@ import {
 // with a real (open) shadow root and assert the sendExistingElementWithIdAttach
 // RPC arguments, mirroring the wrong-tag / no-corresponding-element /
 // duplicate-attach / success cases for both @id and indices-path addressing.
+//
+// Two Java cases are intentionally not ported yet:
+// testBindVirtualChild_withDeferredElementInShadowRoot_byId and
+// ..._byIndicesPath. Their central assertion is that a deferred bind reverts a
+// property value on flush, which is InitialPropertiesHandler behaviour; that
+// class is not ported yet (the test harness stubs it as a no-op), so a faithful
+// port has to wait for the InitialPropertiesHandler port rather than assert a
+// faked revert.
 describe('SimpleElementBindingStrategy virtual children', () => {
   let harness: CollectingTree;
   let node: StateNode;

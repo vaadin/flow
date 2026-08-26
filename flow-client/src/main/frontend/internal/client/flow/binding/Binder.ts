@@ -38,6 +38,9 @@ function getApplicableStrategy(node: StateNode): BindingStrategy<Node> {
   let applicable: BindingStrategy<Node> | null = null;
   for (const strategy of STRATEGIES) {
     if (strategy.isApplicable(node)) {
+      // Java's message names the two conflicting strategy classes via getClass();
+      // the message is built eagerly here, so it stays generic rather than
+      // dereferencing the (possibly null) previous strategy to name it.
       assert(applicable === null, 'Found multiple applicable binding strategies for the same node');
       applicable = strategy;
     }

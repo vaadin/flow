@@ -210,6 +210,8 @@ export class Debouncer {
   }
 
   static #hasPreviousCommand(previousCommands: Map<string, Command> | null, property: string): boolean {
+    // Java also guards property != null; property is typed non-null here, so that
+    // conjunct is unreachable and dropped.
     return previousCommands !== null && previousCommands.has(property);
   }
 
