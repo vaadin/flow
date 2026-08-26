@@ -22,6 +22,10 @@
 // model-property bridge -- the JSNI parts of the Java class, which patch Polymer
 // internals -- lives in PolymerModelBinding.ts beside this module and is called
 // from bind().
+//
+// SimpleElementBindingStrategy.java also declares a private INITIAL_CHANGE
+// constant and a private invokeWhenNodeIsConstructed method; both are unused in
+// the Java source, so neither is ported.
 
 import { assert } from '../../../assert';
 import { getElementById, getElementByName, hasTag } from '../../ElementUtil';
@@ -87,21 +91,39 @@ type SendCommand = (phase: string | null) => void;
 // A synchronization command run before an event is sent.
 type Command = () => void;
 
-// An event expression parsed via `new Function`, evaluated against the DOM event
-// and target element; mirrors the EventExpression @JsFunction.
+/**
+ * Callback interface for an event expression parsed using new Function() in
+ * JavaScript.
+ *
+ * @param event - Event to expand
+ * @param element - target Element
+ * @returns Result of evaluated function
+ */
 type EventExpression = (event: Event, element: Element) => unknown;
 
 let expressionCache: Map<string, EventExpression> | null = null;
 
 /**
- * Holds the data the binding operations pass around: the state node, its DOM
- * node, the binder context for child nodes, and the per-event-type listener
- * bookkeeping. Mirrors the BindingContext inner class.
+ * This is used as a weak set. Only keys are important so that they are weakly
+ * referenced
+ */
+const boundNodes = new WeakMap<object, boolean>();
+
+/**
+ * Just a context class whose instance is passed as a parameter between the
+ * operations of various kind to be able to access the data like listeners, node
+ * and element which they operate on.
+ *
+ * It's used to avoid having methods with a long numbers of parameters and
+ * because the strategy instance is stateless.
  */
 class BindingContext {
-  readonly node: StateNode;
-
+  // Java declares these private and reaches them from the enclosing class. A
+  // JavaScript #private is class-scoped, and here the enclosing class is the
+  // module, so the fields and the constructor are readonly-public instead.
   readonly htmlNode: Node;
+
+  readonly node: StateNode;
 
   readonly binderContext: BinderContext;
 
@@ -122,6 +144,8 @@ class BindingContext {
  * the InitialPropertyUpdate inner class.
  */
 class InitialPropertyUpdate {
+  // setCommand and execute are private in Java, reached from the enclosing
+  // class; as above, the module is the enclosing scope here, so they are public.
   #command: (() => void) | null = null;
 
   readonly #node: StateNode;
@@ -223,7 +247,7 @@ function scheduleInitialExecution(stateNode: StateNode): void {
 // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleListItemPropertyChange signature
 function handleListItemPropertyChange(
   nodeId: number,
-  _host: unknown,
+  host: Element,
   property: string,
   value: unknown,
   tree: StateTree
@@ -237,7 +261,7 @@ function handleListItemPropertyChange(
   }
 
   assert(
-    checkParent(node, _host),
+    checkParent(node, host),
     'Host element is not a parent of the node whose property has changed. ' +
       'This is an implementation error. ' +
       'Most likely it means that there are several StateTrees on the same page ' +
@@ -248,10 +272,19 @@ function handleListItemPropertyChange(
 
   // TODO: this code doesn't care about "security feature" which prevents sending
   // data from the client side to the server side if property is not
-  // "updatable". See handlePropertyChange and UpdatableModelProperties.
-  // It should be aware of that. The current issue is that we don't know the full
-  // property path (dot separated) to the property which is a property for the
-  // host StateNode and not a property of its subproperty.
+  // "updatable". See `handlePropertyChange` and UpdatableModelProperties.
+  // It should be aware of that. The current issue is that we don't know
+  // the full property path (dot separated) to the property which is a
+  // property for the `host` StateNode and not
+  // for the `node` below. It's tricky to calculate FQN
+  // property name at this point though the `host` element which is
+  // the template element could be used for that: a StateNode of
+  // `host` is an ancestor of the `node` and it
+  // should be possible to calculate FQN using this info. Also at the moment
+  // AllowClientUpdates ignores bean properties in
+  // lists ( if "list" is a property name of list type property and
+  // "name" is a property of a bean then
+  // "list.name" is not in the UpdatableModelProperties ).
   node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(property).syncToServer(value);
 }
 
@@ -259,7 +292,7 @@ function handleListItemPropertyChange(
  * Whether supposedParent is an ancestor of the node, walking the state-node
  * parents; mirrors checkParent.
  */
-function checkParent(node: StateNode, supposedParent: unknown): boolean {
+function checkParent(node: StateNode, supposedParent: Element): boolean {
   let parent: StateNode | null = node;
   for (;;) {
     parent = parent.getParent();
@@ -352,10 +385,6 @@ function bindShadowRoot(context: BindingContext): EventRemover {
   return map.addPropertyAddListener(() => Reactive.addFlushListener(() => attachShadow(context)));
 }
 
-// Used as a weak set: only the keys (bound state nodes) matter; mirrors the
-// static boundNodes JsWeakMap.
-const boundNodes = new WeakMap<object, boolean>();
-
 function attachShadow(context: BindingContext): void {
   const map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
   const shadowRootNode = map.getProperty(NodeProperties.SHADOW_ROOT).getValue() as StateNode | null;
@@ -430,8 +459,7 @@ function bindVisibility(
 
 /** Whether the node is visible; mirrors isVisible. */
 function isVisible(node: StateNode): boolean {
-  const tree = node.getTree();
-  return tree !== null && tree.isVisible(node);
+  return node.getTree().isVisible(node);
 }
 
 function updateVisibility(
@@ -476,9 +504,9 @@ function setElementInvisible(element: Element, visibilityData: NodeMap): void {
 }
 
 /**
- * Applies structural attributes (the "slot") to the element even while it is
- * invisible, preserving CSS selectors without exposing backend data. Mirrors
- * applyStructuralAttributes.
+ * Applies structural attributes (like "slot") to the element even when it is
+ * initially invisible. This preserves CSS selectors that depend on these
+ * attributes without exposing backend data.
  */
 function applyStructuralAttributes(stateNode: StateNode, element: Element): void {
   if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
@@ -495,16 +523,20 @@ function applyStructuralAttributes(stateNode: StateNode, element: Element): void
  */
 function restoreInitialHiddenAttribute(element: Element, visibilityData: NodeMap): void {
   storeInitialHiddenAttribute(element, visibilityData);
-  const configuration = visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration();
-
   const initialVisibility = visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
   if (initialVisibility.hasValue()) {
-    updateAttributeValue(configuration, element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
+    updateAttributeValue(
+      visibilityData.getNode().getTree().getRegistry().getApplicationConfiguration(),
+      element,
+      HIDDEN_ATTRIBUTE,
+      initialVisibility.getValue()
+    );
   }
 
   const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
   if (initialDisplay.hasValue()) {
-    (element as HTMLElement).style.display = String(initialDisplay.getValue());
+    const initialValue = String(initialDisplay.getValue());
+    (element as HTMLElement).style.display = initialValue;
   }
 }
 
@@ -520,8 +552,9 @@ function storeInitialHiddenAttribute(element: Element, visibilityData: NodeMap):
   }
 
   const initialDisplay = visibilityData.getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
-  if (isInShadowRoot(element) && !initialDisplay.hasValue()) {
-    initialDisplay.setValue((element as HTMLElement).style.display);
+  const style = (element as HTMLElement).style as CSSStyleDeclaration | null;
+  if (isInShadowRoot(element) && !initialDisplay.hasValue() && style !== null) {
+    initialDisplay.setValue(style.display);
   }
 }
 
@@ -564,9 +597,13 @@ function bindProperty(
   bindings: Map<string, Computation>
 ): Computation {
   const name = property.getName();
-  const computation = Reactive.runWhenDependenciesChange(() => user(property));
+
   assert(!bindings.has(name), `There's already a binding for ${name}`);
+
+  const computation = Reactive.runWhenDependenciesChange(() => user(property));
+
   bindings.set(name, computation);
+
   return computation;
 }
 
@@ -1052,7 +1089,9 @@ function getPreviousSibling(index: number, context: BindingContext): StateNode |
   return node;
 }
 
-/** Removes all bindings: stops computations and removes listeners. Mirrors remove. */
+/**
+ * Removes all bindings.
+ */
 function remove(
   listeners: EventRemover[],
   context: BindingContext,
@@ -1086,6 +1125,7 @@ function bindDomEventListeners(context: BindingContext): EventRemover {
 
 function bindEventHandlerProperty(eventHandlerProperty: MapProperty, context: BindingContext): Computation {
   const name = eventHandlerProperty.getName();
+  assert(!context.listenerBindings.has(name), `There is already an event-handler binding for ${name}`);
 
   const computation = Reactive.runWhenDependenciesChange(() => {
     const hasValue = eventHandlerProperty.hasValue();
@@ -1100,7 +1140,6 @@ function bindEventHandlerProperty(eventHandlerProperty: MapProperty, context: Bi
     }
   });
 
-  assert(!context.listenerBindings.has(name), `There is already an event-handler binding for ${name}`);
   context.listenerBindings.set(name, computation);
 
   return computation;
@@ -1366,7 +1405,10 @@ function updateAttributeValue(
       setElementAttribute(element, attribute, uri);
     }
   } else {
-    setElementAttribute(element, attribute, String(value));
+    // Java calls value.toString() on a JsonValue. An array reaches this branch
+    // there too (its type is ARRAY, not OBJECT) and stringifies as its JSON
+    // text, where a JavaScript array would join its elements with commas.
+    setElementAttribute(element, attribute, Array.isArray(value) ? JSON.stringify(value) : String(value));
   }
 }
 
@@ -1477,7 +1519,9 @@ function getClosestStateNodeIdToDomNode(
   return -1;
 }
 
-/** Binding strategy for a simple (non-template) Element; mirrors SimpleElementBindingStrategy. */
+/**
+ * Binding strategy for a simple (not template) {@link Element} node.
+ */
 export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
   create(node: StateNode): Element {
     return create(node);
@@ -1552,11 +1596,16 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         )
       );
 
+      // Warning: it is important that the tree is captured here and passed as
+      // an argument rather than resolved from the state node inside the
+      // callback. The dom-repeat prototype method the bridge replaces cannot
+      // use the context of the hook-up, so only a tree may be used as context.
+      const tree = stateNode.getTree();
       bindPolymerModelProperties(htmlNode, {
         handlePropertiesChanged: (changedProps: unknown) => handlePropertiesChanged(changedProps as object, stateNode),
-        fireReadyEvent: (element: unknown) => fireReadyEvent(element as Element),
-        handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) =>
-          handleListItemPropertyChange(nodeId as number, host, propertyName, value, stateNode.getTree())
+        fireReadyEvent: (element: Element) => fireReadyEvent(element),
+        handleListItemPropertyChange: (nodeId: number, host: Element, propertyName: string, value: unknown) =>
+          handleListItemPropertyChange(nodeId, host, propertyName, value, tree)
       });
 
       // Prepare teardown.

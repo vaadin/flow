@@ -106,6 +106,13 @@ describe('SimpleElementBindingStrategy attribute binding', () => {
       expect(element.getAttribute('tabindex')).to.equal('3');
     });
 
+    it('stringifies an array as its JSON text', () => {
+      // Java stringifies a JsonArray as its JSON text, not as a comma-joined
+      // list of its elements.
+      const { element } = bindWithAttribute('div', 'data-list', ['a', 'b']);
+      expect(element.getAttribute('data-list')).to.equal('["a","b"]');
+    });
+
     it('applies a uri object as-is when not in web-component mode', () => {
       const { element } = bindWithAttribute('img', 'src', { uri: 'pic.png' });
       expect(element.getAttribute('src')).to.equal('pic.png');

@@ -81,6 +81,9 @@ export function createModelTree(object: unknown): JsonValue {
     convertedObject[property.getName()] = createModelTree(property.getValue());
     return convertedObject;
   }
+  // Java returns WidgetUtil.crazyJsoCast(object) here; that is a
+  // GWT-compiler-only unchecked cast with no runtime effect and no port, so the
+  // value is passed straight through.
   return object as JsonValue;
 }
 

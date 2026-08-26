@@ -34,8 +34,8 @@ import { isPolymerElement, mayBePolymerElement } from '../../PolymerUtils';
 // Polymer-side arguments.
 interface PolymerBindingCallbacks {
   handlePropertiesChanged: (changedProps: unknown) => void;
-  fireReadyEvent: (element: unknown) => void;
-  handleListItemPropertyChange: (nodeId: unknown, host: unknown, propertyName: string, value: unknown) => void;
+  fireReadyEvent: (element: Element) => void;
+  handleListItemPropertyChange: (nodeId: number, host: Element, propertyName: string, value: unknown) => void;
 }
 
 /**
@@ -45,7 +45,7 @@ interface PolymerBindingCallbacks {
  * element is defined. A timeout races the whenDefined promise so a non-custom
  * element does not leak the chained closures.
  */
-export function bindPolymerModelProperties(element: any, callbacks: PolymerBindingCallbacks): void {
+export function bindPolymerModelProperties(element: Element, callbacks: PolymerBindingCallbacks): void {
   if (isPolymerElement(element)) {
     hookUpPolymerElement(element, callbacks);
   } else if (mayBePolymerElement(element)) {
@@ -65,11 +65,16 @@ export function bindPolymerModelProperties(element: any, callbacks: PolymerBindi
   }
 }
 
-function hookUpPolymerElement(element: any, callbacks: PolymerBindingCallbacks): void {
+function hookUpPolymerElement(polymerElement: Element, callbacks: PolymerBindingCallbacks): void {
+  // Polymer internals are patched below, so the element is handled untyped here.
+  const element = polymerElement as any;
   const originalPropertiesChanged = element._propertiesChanged;
 
   if (originalPropertiesChanged) {
     element._propertiesChanged = function (this: any, _currentProps: any, changedProps: any, _oldProps: any): void {
+      // Java wraps this call in GWT's $entry, which routes exceptions to the
+      // uncaught-exception handler; there is no equivalent, so exceptions
+      // surface through the browser.
       callbacks.handlePropertiesChanged(changedProps);
       originalPropertiesChanged.apply(this, arguments);
     };
@@ -141,6 +146,8 @@ function hookUpPolymerElement(element: any, callbacks: PolymerBindingCallbacks):
                     host = host.__dataHost;
                   }
 
+                  // As above, Java wraps this call in GWT's $entry; the port has
+                  // no equivalent.
                   callbacks.handleListItemPropertyChange(nodeId, host, propertyName, value);
                 }
               }
