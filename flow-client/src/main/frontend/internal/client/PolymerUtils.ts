@@ -30,6 +30,12 @@ import type { StateNode } from './flow/StateNode';
 // The deprecated PolymerUtils.hasTag(Node, String) is intentionally omitted; its
 // Javadoc directs callers to the generic ElementUtil.hasTag, which is ported in
 // ElementUtil.ts.
+//
+// Export order deviates from PolymerUtils.java's declaration order (rule 5): once
+// the StateNode-coupled methods (createModelTree and its change handlers) are
+// split out to PolymerModelTree.ts, the remaining functions are grouped by
+// concern here -- DOM/Polymer probes, model-data writers, then the ready-listener
+// registry -- rather than left in the interleaved Java order.
 
 // A node exposing the Polymer model-data API (set/get/splice).
 interface PolymerModelNode {
@@ -225,6 +231,10 @@ export function storeNodeId(domNode: Node, id: number, path: string): void {
   const node = domNode as unknown as PolymerModelNode;
   if (typeof node.get !== 'undefined') {
     const polymerProperty = node.get!(path) as Record<string, unknown> | null;
+    // Java tests only `typeof polymerProperty === 'object'` (PolymerUtils.java:119-120); since
+    // `typeof null === 'object'`, that JSNI would throw on a null property. The `!== null` guard
+    // is an intentional deviation that avoids the latent NPE, matching the documented guard in
+    // ServerEventObject.getPolymerPropertyObject.
     if (typeof polymerProperty === 'object' && polymerProperty !== null && polymerProperty.nodeId === undefined) {
       polymerProperty.nodeId = id;
     }
@@ -308,7 +318,11 @@ function getChildIgnoringStyles(parent: Node, index: number): Node | null {
 export function getCustomElement(root: Node | null, path: unknown[]): Element | null {
   let current: Node | null = root;
   for (const value of path) {
-    current = current === null ? null : getChildIgnoringStyles(current, value as number);
+    // Java calls getChildIgnoringStyles unconditionally (PolymerUtils.java:513-515); once a
+    // prior index is out of range it returns null and the next iteration NPEs. Mirror that
+    // unguarded deref rather than silently propagating null.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- mirror Java's unguarded deref
+    current = getChildIgnoringStyles(current!, value as number);
   }
   if (current instanceof Element) {
     return current;

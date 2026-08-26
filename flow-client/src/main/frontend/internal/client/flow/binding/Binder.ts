@@ -14,10 +14,16 @@
  * the License.
  */
 
-// TypeScript port of com.vaadin.client.flow.binding.Binder, the entry point for
-// binding DOM nodes to state nodes. It owns the binding-strategy list and the
+// TypeScript port of com.vaadin.client.flow.binding.Binder. The Java final class
+// becomes this function module; it owns the binding-strategy list and the
 // BinderContext implementation passed to the strategies so they can create and
 // bind child nodes without knowing the other strategies.
+
+/**
+ * Entry point for binding Node to state nodes.
+ *
+ * This is the only public API class for external use.
+ */
 
 import { assert } from '../../../assert';
 import type { StateNode } from '../StateNode';
@@ -27,12 +33,10 @@ import { SimpleElementBindingStrategy } from './SimpleElementBindingStrategy';
 import { TextBindingStrategy } from './TextBindingStrategy';
 
 // The strategies, in order; each handles a different kind of state node. The
-// generic-variance mismatch on bind() (T is contravariant) is bridged with a
-// cast, matching the Java raw-typed STRATEGIES array.
-const STRATEGIES: Array<BindingStrategy<Node>> = [
-  new SimpleElementBindingStrategy() as unknown as BindingStrategy<Node>,
-  new TextBindingStrategy() as unknown as BindingStrategy<Node>
-];
+// concrete strategies are BindingStrategy<Element> / BindingStrategy<Text>; they
+// widen to BindingStrategy<Node> here because the interface's methods use method
+// syntax (bivariant parameters), matching the Java raw-typed STRATEGIES array.
+const STRATEGIES: Array<BindingStrategy<Node>> = [new SimpleElementBindingStrategy(), new TextBindingStrategy()];
 
 function getApplicableStrategy(node: StateNode): BindingStrategy<Node> {
   let applicable: BindingStrategy<Node> | null = null;
@@ -63,7 +67,19 @@ export function bind(stateNode: StateNode, domNode: Node): void {
   getApplicableStrategy(stateNode).bind(stateNode, domNode, CONTEXT);
 }
 
-// The BinderContext passed to strategies; mirrors Binder.BinderContextImpl.
+/**
+ * This is the implementation of {@link BinderContext} which is passed to the
+ * {@link BindingStrategy} instances to be able to delegate creation of subnodes
+ * with the type that they are not aware of.
+ *
+ * This is the only factory/binder that may be used inside {@link BindingStrategy}
+ * implementation. So that implementation should not know anything about external
+ * classes/API. Everything that is required by the {@link BindingStrategy} must be
+ * here to avoid uncertainty which methods are allowed/correct to use in the
+ * implementation.
+ *
+ * @see BinderContext
+ */
 class BinderContextImpl implements BinderContext {
   createAndBind(stateNode: StateNode): Node {
     const strategy = getApplicableStrategy(stateNode);

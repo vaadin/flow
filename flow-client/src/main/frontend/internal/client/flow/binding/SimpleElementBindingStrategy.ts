@@ -822,8 +822,11 @@ function handleListItemPropertyChange(
   value: unknown,
   tree: StateTree
 ): void {
-  const node = tree.getNode(nodeId);
-  if (node === null || !node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+  // Java dereferences tree.getNode(nodeId) unguarded (SimpleElementBindingStrategy.java:434-436);
+  // a missing node throws there, so the port asserts non-null rather than silently returning.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- mirror Java's unguarded node deref
+  const node = tree.getNode(nodeId)!;
+  if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
     return;
   }
 
@@ -1345,8 +1348,10 @@ function appendVirtualChild(context: BindingContext, node: StateNode, reactivePh
       return;
     }
     doAppendVirtualChild(context, node, reactivePhase, elementLookup, name, address);
+  } else {
+    // type is server-supplied, so this branch is reachable; mirror Java's assert false.
+    assert(false, `Unexpected payload type ${type}`);
   }
-  // else: unexpected payload type (Java asserts; dropped here)
 }
 
 function handleTemplateInTemplate(
