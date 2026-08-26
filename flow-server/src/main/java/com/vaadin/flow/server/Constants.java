@@ -414,13 +414,13 @@ public final class Constants implements Serializable {
     public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
     /**
-     * The path of the folder containing versions files, listing the npm
-     * packages and versions that the platform manages.
+     * The path of the folder containing the versions files, listing the npm
+     * packages and the versions they are locked to.
      * <p>
-     * Every jar contributing platform managed npm packages ships one or more
-     * {@code .json} files in this folder and all of them are read and merged.
+     * Every jar locking npm package versions ships one or more {@code .json}
+     * files in this folder and all of them are read and merged.
      */
-    public static final String PLATFORM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
+    public static final String NPM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
             + "versions/";
 
     /**

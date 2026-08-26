@@ -491,8 +491,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
-        Mockito.when(
-                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(classFinder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
         ObjectNode packageJson = JacksonUtils
@@ -528,7 +527,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
 
             @Override
-            ObjectNode getPlatformPinnedDependencies() {
+            ObjectNode getPinnedNpmDependencies() {
                 if (versionsContent != null) {
                     return JacksonUtils.readTree(versionsContent);
                 } else {

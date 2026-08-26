@@ -416,7 +416,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();
@@ -2462,7 +2462,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();

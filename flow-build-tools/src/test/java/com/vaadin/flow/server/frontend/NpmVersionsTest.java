@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PlatformVersionsTest {
+class NpmVersionsTest {
 
     @TempDir
     File temporaryFolder;
@@ -49,7 +49,7 @@ class PlatformVersionsTest {
 
     @Test
     void dependenciesFromAllVersionsFilesAreMerged() throws IOException {
-        PlatformVersions platformVersions = createPlatformVersions("""
+        NpmVersions npmVersions = createNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -69,8 +69,7 @@ class PlatformVersionsTest {
                 }
                 """);
 
-        ObjectNode dependencies = platformVersions.getDependencies(false,
-                false);
+        ObjectNode dependencies = npmVersions.getDependencies(false, false);
 
         assertEquals("25.1.0", dependencies.get("@vaadin/button").asString());
         assertEquals("25.1.0", dependencies.get("@vaadin/grid").asString());
@@ -78,7 +77,7 @@ class PlatformVersionsTest {
 
     @Test
     void samePackageInMultipleFiles_newestVersionIsUsed() throws IOException {
-        PlatformVersions platformVersions = createPlatformVersions("""
+        NpmVersions npmVersions = createNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -98,15 +97,15 @@ class PlatformVersionsTest {
                 }
                 """);
 
-        assertEquals("25.1.2", platformVersions.getDependencies(false, false)
+        assertEquals("25.1.2", npmVersions.getDependencies(false, false)
                 .get("@vaadin/button").asString());
-        assertEquals("25.1.2", platformVersions.getAllDependencies()
+        assertEquals("25.1.2", npmVersions.getAllDependencies()
                 .get("@vaadin/button").asString());
     }
 
     @Test
     void packageExcludedInOneFile_isExcludedFromAllFiles() throws IOException {
-        PlatformVersions platformVersions = createPlatformVersions("""
+        NpmVersions npmVersions = createNpmVersions("""
                 {
                   "core": {
                     "button": {
@@ -127,8 +126,7 @@ class PlatformVersionsTest {
                 }
                 """);
 
-        ObjectNode dependencies = platformVersions.getDependencies(false,
-                false);
+        ObjectNode dependencies = npmVersions.getDependencies(false, false);
 
         assertFalse(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
@@ -136,7 +134,7 @@ class PlatformVersionsTest {
 
     @Test
     void platformVersionIsReadFromTheFileDeclaringIt() throws IOException {
-        PlatformVersions platformVersions = createPlatformVersions("""
+        NpmVersions npmVersions = createNpmVersions("""
                 {
                   "components": {
                     "grid": {
@@ -151,8 +149,7 @@ class PlatformVersionsTest {
                 }
                 """);
 
-        assertEquals(Optional.of("25.1.0"),
-                platformVersions.getPlatformVersion());
+        assertEquals(Optional.of("25.1.0"), npmVersions.getPlatformVersion());
     }
 
     @Test
@@ -162,7 +159,7 @@ class PlatformVersionsTest {
         try (JarOutputStream jarStream = new JarOutputStream(
                 new FileOutputStream(jar))) {
             writeJarEntry(jarStream,
-                    Constants.PLATFORM_VERSIONS_FOLDER + "button.json", """
+                    Constants.NPM_VERSIONS_FOLDER + "button.json", """
                             {
                               "core": {
                                 "button": {
@@ -173,7 +170,7 @@ class PlatformVersionsTest {
                             }
                             """);
             writeJarEntry(jarStream,
-                    Constants.PLATFORM_VERSIONS_FOLDER + "grid.json", """
+                    Constants.NPM_VERSIONS_FOLDER + "grid.json", """
                             {
                               "core": {
                                 "grid": {
@@ -185,8 +182,7 @@ class PlatformVersionsTest {
                             """);
             // Only the files directly in the folder are versions files
             writeJarEntry(jarStream,
-                    Constants.PLATFORM_VERSIONS_FOLDER + "nested/other.json",
-                    """
+                    Constants.NPM_VERSIONS_FOLDER + "nested/other.json", """
                             {
                               "core": {
                                 "dialog": {
@@ -199,15 +195,15 @@ class PlatformVersionsTest {
         }
 
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(
                         List.of(URI
                                 .create("jar:" + jar.toURI() + "!/"
-                                        + Constants.PLATFORM_VERSIONS_FOLDER)
+                                        + Constants.NPM_VERSIONS_FOLDER)
                                 .toURL()));
 
-        ObjectNode dependencies = new PlatformVersions(finder)
-                .getDependencies(false, false);
+        ObjectNode dependencies = new NpmVersions(finder).getDependencies(false,
+                false);
 
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
@@ -225,7 +221,7 @@ class PlatformVersionsTest {
      * Writes each versions file content into its own folder, as if each came
      * from a different jar.
      */
-    private PlatformVersions createPlatformVersions(String... versionsFiles)
+    private NpmVersions createNpmVersions(String... versionsFiles)
             throws IOException {
         List<URL> folders = new ArrayList<>();
         for (String content : versionsFiles) {
@@ -236,8 +232,8 @@ class PlatformVersionsTest {
             folders.add(folder.toURI().toURL());
         }
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(folders);
-        return new PlatformVersions(finder);
+        return new NpmVersions(finder);
     }
 }

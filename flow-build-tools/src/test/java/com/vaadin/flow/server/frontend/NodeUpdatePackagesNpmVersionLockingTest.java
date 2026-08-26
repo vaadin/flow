@@ -86,8 +86,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 StandardCharsets.UTF_8);
         // @formatter:on
 
-        Mockito.when(
-                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(classFinder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
     }
 
@@ -110,8 +109,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         // Test when there is no vaadin-version-core.json available
-        Mockito.when(
-                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(classFinder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater();
@@ -283,8 +281,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     @Test
     void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
-        Mockito.when(
-                classFinder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(classFinder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);

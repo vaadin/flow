@@ -54,18 +54,18 @@ import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_VERSION;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 /**
- * The npm packages and versions managed by the platform, collected from all the
- * {@value Constants#PLATFORM_VERSIONS_FOLDER} folders on the classpath.
+ * The npm packages and the versions they are locked to, collected from all the
+ * {@value Constants#NPM_VERSIONS_FOLDER} folders on the classpath.
  * <p>
- * Each jar contributing platform managed packages, such as the platform itself
- * and the component integrations, ships one or more json files in that folder.
- * All of them are read and merged into one set of packages. A package defined
- * in several files is expected to have the same version everywhere; if it does
+ * Each jar locking npm package versions, such as the platform itself and the
+ * component integrations, ships one or more json files in that folder. All of
+ * them are read and merged into one set of packages. A package defined in
+ * several files is expected to have the same version everywhere; if it does
  * not, the newest version wins and a warning is logged.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class PlatformVersions {
+class NpmVersions {
 
     private static final String JSON_SUFFIX = ".json";
 
@@ -85,12 +85,11 @@ class PlatformVersions {
      * @throws IOException
      *             if a versions file cannot be read
      */
-    PlatformVersions(ClassFinder finder) throws IOException {
+    NpmVersions(ClassFinder finder) throws IOException {
         // Sorted by origin for a deterministic order and to skip the
         // duplicates a class loader hierarchy may report for the same folder
         Map<String, VersionsFile> versionsFiles = new TreeMap<>();
-        for (URL folder : finder
-                .getResources(Constants.PLATFORM_VERSIONS_FOLDER)) {
+        for (URL folder : finder.getResources(Constants.NPM_VERSIONS_FOLDER)) {
             readVersionsFiles(folder, versionsFiles);
         }
         files = List.copyOf(versionsFiles.values());
@@ -106,7 +105,7 @@ class PlatformVersions {
         case "file" -> readVersionsFilesFromFolder(folder, versionsFiles);
         case "jar" -> readVersionsFilesFromJar(folder, versionsFiles);
         default -> log().warn(
-                "Unable to read platform versions from '{}' as the '{}' protocol is not supported."
+                "Unable to read npm versions from '{}' as the '{}' protocol is not supported."
                         + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                 folder, folder.getProtocol());
         }
@@ -118,8 +117,8 @@ class PlatformVersions {
         try {
             path = Path.of(folder.toURI());
         } catch (URISyntaxException e) {
-            throw new IOException("Unable to read platform versions from "
-                    + folder + " as it is not a valid file URL", e);
+            throw new IOException("Unable to read npm versions from " + folder
+                    + " as it is not a valid file URL", e);
         }
         try (Stream<Path> jsonFiles = Files.list(path)) {
             for (Path jsonFile : jsonFiles.filter(
@@ -136,7 +135,7 @@ class PlatformVersions {
             Map<String, VersionsFile> versionsFiles) throws IOException {
         URLConnection connection = folder.openConnection();
         if (!(connection instanceof JarURLConnection jarConnection)) {
-            log().warn("Unable to read platform versions from '{}'."
+            log().warn("Unable to read npm versions from '{}'."
                     + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                     folder);
             return;
@@ -167,9 +166,9 @@ class PlatformVersions {
      * Checks that the jar entry is a json file directly in the versions folder.
      */
     private static boolean isVersionsFile(String entryName) {
-        return entryName.startsWith(Constants.PLATFORM_VERSIONS_FOLDER)
+        return entryName.startsWith(Constants.NPM_VERSIONS_FOLDER)
                 && entryName.endsWith(JSON_SUFFIX) && entryName.indexOf('/',
-                        Constants.PLATFORM_VERSIONS_FOLDER.length()) == -1;
+                        Constants.NPM_VERSIONS_FOLDER.length()) == -1;
     }
 
     /**
@@ -349,6 +348,6 @@ class PlatformVersions {
     }
 
     private static Logger log() {
-        return LoggerFactory.getLogger(PlatformVersions.class);
+        return LoggerFactory.getLogger(NpmVersions.class);
     }
 }

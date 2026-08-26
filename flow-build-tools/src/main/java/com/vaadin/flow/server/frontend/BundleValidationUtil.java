@@ -384,7 +384,7 @@ public final class BundleValidationUtil {
                     .put(NodeUpdater.HASH_KEY, hash);
 
             final JsonNode platformPinnedDependencies = nodeUpdater
-                    .getPlatformPinnedDependencies();
+                    .getPinnedNpmDependencies();
             for (String key : JacksonUtils
                     .getKeys(platformPinnedDependencies)) {
                 // need to double check that not overriding a scanned

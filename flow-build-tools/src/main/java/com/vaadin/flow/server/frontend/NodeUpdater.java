@@ -120,7 +120,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Gets the platform pinned versions that are not overridden by the user in
+     * Gets the pinned npm versions that are not overridden by the user in
      * package.json.
      *
      * @return {@code JsonNode} with the dependencies or empty {@code JsonNode}
@@ -128,23 +128,23 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when versions file could not be read
      */
-    ObjectNode getPlatformPinnedDependencies() throws IOException {
-        PlatformVersions platformVersions = new PlatformVersions(finder);
-        if (platformVersions.isEmpty()) {
+    ObjectNode getPinnedNpmDependencies() throws IOException {
+        NpmVersions npmVersions = new NpmVersions(finder);
+        if (npmVersions.isEmpty()) {
             log().info(
-                    "Couldn't find any versions file in {} to pin dependency versions for platform components."
+                    "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.PLATFORM_VERSIONS_FOLDER);
+                    Constants.NPM_VERSIONS_FOLDER);
             return JacksonUtils.createObjectNode();
         }
 
-        ObjectNode versionsJson = platformVersions.getDependencies(
+        ObjectNode versionsJson = npmVersions.getDependencies(
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents());
         return new VersionsJsonFilter(getPackageJson(), DEPENDENCIES)
                 .getFilteredVersions(versionsJson,
-                        Constants.PLATFORM_VERSIONS_FOLDER);
+                        Constants.NPM_VERSIONS_FOLDER);
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
@@ -595,7 +595,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected void generateVersionsJson(ObjectNode packageJson)
             throws IOException {
-        versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPinnedNpmDependencies();
         ObjectNode packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (JacksonUtils.getKeys(versionsJson).isEmpty()) {
@@ -611,9 +611,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions for
-     * defined packages.
+     * If we do not have the npm versions to lock we should lock any versions in
+     * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json
      */

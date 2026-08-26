@@ -685,7 +685,7 @@ class FrontendUtilsTest {
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -720,7 +720,7 @@ class FrontendUtilsTest {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         Optional<String> vaadinVersion = FrontendBuildUtils
@@ -739,7 +739,7 @@ class FrontendUtilsTest {
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -790,7 +790,7 @@ class FrontendUtilsTest {
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -843,7 +843,7 @@ class FrontendUtilsTest {
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off

@@ -106,14 +106,14 @@ class TaskUpdatePackagesNpmTest {
         versionsFolder.mkdirs();
         versionJsonFile = new File(versionsFolder, "versions.json");
         finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageJson = new File(npmFolder, PACKAGE_JSON);
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned()
+    void npmIsInUse_npmVersionsJsonHasPinnedVersions_versionsArePinned()
             throws IOException {
         runTestWithoutPreexistingPackageJson();
     }
@@ -197,14 +197,14 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
             throws IOException {
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
         JsonNode dependencies = getOrCreatePackageJson().get(DEPENDENCIES);
         assertEquals(PLATFORM_DIALOG_VERSION,
@@ -212,13 +212,12 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
-            throws IOException {
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+    void npmIsInUse_npmVersionsJsonAdded_versionsPinned() throws IOException {
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
         createTask(createApplicationDependencies()).execute();
 
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
@@ -252,7 +251,7 @@ class TaskUpdatePackagesNpmTest {
         JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
         assertEquals("1.0", overrides.get("@vaadin/aura").asString());
 
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
         String versionJsonString = """
                 {
@@ -283,13 +282,13 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
+    void pnpmIsInUse_npmVersionsJsonAdded_dependenciesAdded()
             throws IOException {
         verifyPlatformDependenciesAreAdded(true);
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
+    void npmIsInUse_npmVersionsJsonAdded_dependenciesAdded()
             throws IOException {
         verifyPlatformDependenciesAreAdded(false);
     }
@@ -1296,7 +1295,7 @@ class TaskUpdatePackagesNpmTest {
 
     private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
             throws IOException {
-        Mockito.when(finder.getResources(Constants.PLATFORM_VERSIONS_FOLDER))
+        Mockito.when(finder.getResources(Constants.NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
@@ -1371,7 +1370,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_staleOverridesAndTrackingSection_healedToPlatformVersionsOnBump()
+    void npmIsInUse_staleOverridesAndTrackingSection_healedToNpmVersionsOnBump()
             throws IOException {
         // Reproduces the upgrade scenario from #24702: a project carried over
         // from an earlier Vaadin version where the "overrides" section and the

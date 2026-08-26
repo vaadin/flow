@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Excludes dependencies listed in an "exclusions" array of a platform versions
- * file from a package.json.
+ * Excludes dependencies listed in an "exclusions" array of an npm versions file
+ * from a package.json.
  * 
  * @since 24.4
  */
@@ -86,9 +86,8 @@ public class ExclusionFilter implements Serializable {
     }
 
     /**
-     * Exclude dependencies from the given map based on the platform versions
-     * files, and dependencies that are part of a package Flow manages the
-     * version of.
+     * Exclude dependencies from the given map based on the npm versions files,
+     * and dependencies that are part of a package Flow manages the version of.
      *
      * @param dependencies
      *            the dependencies to filter
@@ -127,7 +126,7 @@ public class ExclusionFilter implements Serializable {
     }
 
     private Set<String> getExclusions() throws IOException {
-        return new PlatformVersions(finder).getExclusions(reactEnabled,
+        return new NpmVersions(finder).getExclusions(reactEnabled,
                 excludeWebComponentNpmPackages);
     }
 }
