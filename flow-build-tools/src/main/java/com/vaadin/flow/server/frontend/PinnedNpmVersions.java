@@ -76,7 +76,7 @@ class PinnedNpmVersions {
      * @param finder
      *            the class finder to look up the versions files with
      * @throws IOException
-     *             if a versions file cannot be read
+     *             if the versions folders cannot be looked up
      */
     PinnedNpmVersions(ClassFinder finder) throws IOException {
         // Sorted by origin for a deterministic order and to skip the
@@ -92,18 +92,21 @@ class PinnedNpmVersions {
     /**
      * Reads the versions files from one folder on the classpath.
      * <p>
-     * A folder that cannot be read is skipped with a warning, as the versions
-     * files of the other folders still pin the packages they define.
+     * A folder that cannot be read is skipped as a whole, with a warning, as
+     * the versions files of the other folders still pin the packages they
+     * define. Half of a folder would pin only some of the packages that belong
+     * together.
      */
     private static void readVersionsFiles(URL folder,
             Map<String, VersionsFile> versionsFiles) {
+        Map<String, VersionsFile> filesInFolder = new TreeMap<>();
         try {
             ResourceFolderUtil.visitFiles(folder, file -> {
                 if (!file.getName().endsWith(JSON_SUFFIX)) {
                     return;
                 }
                 try (InputStream content = file.open()) {
-                    versionsFiles.put(file.getLocation(),
+                    filesInFolder.put(file.getLocation(),
                             new VersionsFile(file.getLocation(),
                                     JacksonUtils.readTree(
                                             StringUtil.toUTF8String(content))));
@@ -113,7 +116,9 @@ class PinnedNpmVersions {
             log().warn("Unable to read pinned npm versions from '{}'."
                     + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
                     folder, e);
+            return;
         }
+        versionsFiles.putAll(filesInFolder);
     }
 
     /**

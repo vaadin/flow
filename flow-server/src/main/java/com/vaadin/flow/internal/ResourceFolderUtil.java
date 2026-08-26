@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -115,8 +116,8 @@ public final class ResourceFolderUtil {
      * @param visitor
      *            called for each file in the folder
      * @throws IOException
-     *             if the folder cannot be listed, for example because it is
-     *             served through a protocol that is not supported
+     *             if the folder cannot be listed, for example because it is not
+     *             an existing folder
      */
     public static void visitFiles(URL folder, FolderFileVisitor visitor)
             throws IOException {
@@ -126,9 +127,10 @@ public final class ResourceFolderUtil {
         case "jar", "wsjar" -> visitFilesInJar(folder, visitor);
         // vfs is the protocol WildFly uses for a deployed archive
         case "vfs" -> visitFilesInVfsFolder(folder, visitor);
-        default -> throw new IOException(
-                "Unable to list the files in '" + folder + "' as the '"
-                        + folder.getProtocol() + "' protocol is not supported");
+        // Any other protocol, such as the vfsfile of an exploded WildFly
+        // deployment or the bundleresource of OSGi, is served from a folder
+        // that the URL points at
+        default -> visitFilesInFolder(folder, visitor);
         }
     }
 
@@ -137,11 +139,21 @@ public final class ResourceFolderUtil {
         Path path;
         try {
             path = Path.of(folder.toURI());
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            // Not an absolute file: URL, so the path is in the URL as is
+        } catch (URISyntaxException | IllegalArgumentException
+                | FileSystemNotFoundException e) {
+            // Not a URL of a file system that is available, such as an
+            // exploded deployment served through a protocol of its own, so
+            // the path is taken from the URL as is
             getLogger().debug("Reading '{}' as a path instead of a file URL",
                     folder, e);
-            path = Path.of(UrlUtil.decodeURIComponent(folder.getFile()));
+            try {
+                path = Path.of(UrlUtil.decodeURIComponent(folder.getFile()));
+            } catch (InvalidPathException pathException) {
+                throw new IOException(
+                        "Unable to list the files in '" + folder
+                                + "' as it is not a folder that can be read",
+                        pathException);
+            }
         }
         try (Stream<Path> files = Files.list(path)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
