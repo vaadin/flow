@@ -26,6 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class NativeTableHeaderCellTest extends ComponentTest {
     // Actual test methods in super class
 
+    @Override
+    protected void addProperties() {
+        addProperty("colspan", int.class, 1, 2, false, false);
+        addProperty("rowspan", int.class, 1, 2, false, false);
+    }
+
     @Test
     void setScope_writesTheAttributeAndReadsBack() {
         NativeTableHeaderCell cell = new NativeTableHeaderCell();
@@ -55,4 +61,5 @@ public class NativeTableHeaderCellTest extends ComponentTest {
 
         assertEquals(Optional.empty(), cell.getScope());
     }
+
 }

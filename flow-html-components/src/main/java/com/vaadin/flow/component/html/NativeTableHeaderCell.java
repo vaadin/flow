@@ -20,7 +20,6 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.signals.Signal;
 
@@ -35,7 +34,7 @@ import com.vaadin.flow.signals.Signal;
  * @since 24.5
  */
 @Tag(Tag.TH)
-public class NativeTableHeaderCell extends HtmlContainer
+public class NativeTableHeaderCell extends AbstractNativeTableCell
         implements ClickNotifier<NativeTableHeaderCell> {
 
     /**

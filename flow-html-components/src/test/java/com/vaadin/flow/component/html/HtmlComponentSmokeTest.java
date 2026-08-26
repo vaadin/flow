@@ -435,8 +435,9 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        // Abstract bases such as TableCell cannot be instantiated; they are
-        // covered through their concrete subclasses
+        // Abstract bases such as TableCell and AbstractNativeTableCell
+        // cannot be instantiated; they are covered through their concrete
+        // subclasses
         return HtmlComponent.class.isAssignableFrom(cls)
                 && !Modifier.isAbstract(cls.getModifiers());
     }
