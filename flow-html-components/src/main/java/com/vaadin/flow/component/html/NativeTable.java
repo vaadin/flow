@@ -94,6 +94,31 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
+     * Appends the given components to this table's caption, creating it if none
+     * exists yet. Useful for richer captions containing inline markup.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public NativeTableCaption addCaption(Component... components) {
+        return addCaption(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCaption(Component...)}.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public NativeTableCaption addCaption(List<? extends Component> components) {
+        NativeTableCaption caption = getCaption();
+        caption.add(components.toArray(Component[]::new));
+        return caption;
+    }
+
+    /**
      * Remove the caption from this table.
      */
     public void removeCaption() {

@@ -66,6 +66,23 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
+     * Add a header cell to this row that labels the row itself, with
+     * {@code scope="row"} set on the resulting {@code <th>}. This is a
+     * shortcut for the common pattern of using a leading {@code <th>} as a row
+     * label, which assistive technologies announce as the header for the data
+     * cells in the same row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} element with {@code scope="row"}.
+     */
+    public NativeTableHeaderCell addRowHeaderCell(String text) {
+        NativeTableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(NativeTableHeaderCell.Scope.ROW);
+        return cell;
+    }
+
+    /**
      * Add a header cell to this row.
      *
      * @return the new {@code <th>} element.

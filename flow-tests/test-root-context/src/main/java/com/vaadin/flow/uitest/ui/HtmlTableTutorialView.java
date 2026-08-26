@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.NativeTable;
 import com.vaadin.flow.component.html.NativeTableColumn;
 import com.vaadin.flow.component.html.NativeTableColumnGroup;
+import com.vaadin.flow.component.html.NativeTableHeader;
 import com.vaadin.flow.component.html.NativeTableHeaderCell;
 import com.vaadin.flow.component.html.NativeTableHeaderCell.Scope;
 import com.vaadin.flow.component.html.NativeTableRow;
@@ -32,8 +34,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Replicates the examples from the MDN "HTML table basics" tutorial:
  * https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_table_basics
  * <p>
- * The examples are added as the table API they need becomes available; the one
- * still missing needs caption content API.
+ * All five examples are present.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.HtmlTableTutorialView", layout = ViewTestLayout.class)
 public class HtmlTableTutorialView extends Div {
@@ -88,6 +89,11 @@ public class HtmlTableTutorialView extends Div {
         AnimalsTable animals = new AnimalsTable();
         animals.setId("animals-table");
         add(animals);
+
+        add(new H3("4. Adding a caption with <caption>, plus <thead>/<tbody>"));
+        PlanetsTable planets = new PlanetsTable();
+        planets.setId("planets-table");
+        add(planets);
 
         add(new H3("5. School timetable styled with <colgroup>/<col>"));
         SchoolTimetable timetable = new SchoolTimetable();
@@ -152,6 +158,113 @@ public class HtmlTableTutorialView extends Div {
             chicken.setRowspan(2);
             chickenRow.addDataCell("Hen");
             addRow("Rooster");
+        }
+    }
+
+    /** Example 4: planet data with caption, thead and rowgroup spans. */
+    static class PlanetsTable extends NativeTable {
+        {
+            addCaption(new Html("<span>Data about the planets of our solar"
+                    + " system (Source: <a href=\"https://nssdc.gsfc.nasa.gov/"
+                    + "planetary/factsheet/\">Nasa's Planetary Fact Sheet -"
+                    + " Metric</a>).</span>"));
+
+            NativeTableHeader head = getHead();
+            NativeTableRow headerRow = head.addRow();
+            headerRow.addDataCell().setColspan(2);
+            addColHeader(headerRow, new Html("<span>Name</span>"));
+            addColHeader(headerRow,
+                    new Html("<span>Mass (10<sup>24</sup>kg)</span>"));
+            addColHeader(headerRow, new Html("<span>Diameter (km)</span>"));
+            addColHeader(headerRow,
+                    new Html("<span>Density (kg/m<sup>3</sup>)</span>"));
+            addColHeader(headerRow,
+                    new Html("<span>Gravity (m/s<sup>2</sup>)</span>"));
+            addColHeader(headerRow,
+                    new Html("<span>Length of day (hours)</span>"));
+            addColHeader(headerRow, new Html(
+                    "<span>Distance from Sun (10<sup>6</sup>km)</span>"));
+            addColHeader(headerRow,
+                    new Html("<span>Mean temperature (\u00b0C)</span>"));
+            addColHeader(headerRow, new Html("<span>Number of moons</span>"));
+            addColHeader(headerRow, new Html("<span>Notes</span>"));
+
+            NativeTableRow mercury = addRow();
+            NativeTableHeaderCell terrestrial = mercury
+                    .addHeaderCell("Terrestrial planets");
+            terrestrial.setScope(Scope.ROWGROUP);
+            terrestrial.setColspan(2);
+            terrestrial.setRowspan(4);
+            addRowHeader(mercury, "Mercury");
+            mercury.addDataCells("0.330", "4,879", "5427", "3.7", "4222.6",
+                    "57.9", "167", "0", "Closest to the Sun");
+
+            NativeTableRow venus = addRow();
+            addRowHeader(venus, "Venus");
+            venus.addDataCells("4.87", "12,104", "5243", "8.9", "2802.0",
+                    "108.2", "464", "0", "");
+
+            NativeTableRow earth = addRow();
+            addRowHeader(earth, "Earth");
+            earth.addDataCells("5.97", "12,756", "5514", "9.8", "24.0",
+                    "149.6", "15", "1", "Our world");
+
+            NativeTableRow mars = addRow();
+            addRowHeader(mars, "Mars");
+            mars.addDataCells("0.642", "6,792", "3933", "3.7", "24.7", "227.9",
+                    "-65", "2", "The red planet");
+
+            NativeTableRow jupiter = addRow();
+            NativeTableHeaderCell jovian = jupiter
+                    .addHeaderCell("Jovian planets");
+            jovian.setScope(Scope.ROWGROUP);
+            jovian.setRowspan(4);
+            NativeTableHeaderCell gasGiants = jupiter
+                    .addHeaderCell("Gas giants");
+            gasGiants.setScope(Scope.ROWGROUP);
+            gasGiants.setRowspan(2);
+            addRowHeader(jupiter, "Jupiter");
+            jupiter.addDataCells("1898", "142,984", "1326", "23.1", "9.9",
+                    "778.6", "-110", "67", "The largest planet");
+
+            NativeTableRow saturn = addRow();
+            addRowHeader(saturn, "Saturn");
+            saturn.addDataCells("568", "120,536", "687", "9.0", "10.7",
+                    "1433.5", "-140", "62", "");
+
+            NativeTableRow uranus = addRow();
+            NativeTableHeaderCell iceGiants = uranus
+                    .addHeaderCell("Ice giants");
+            iceGiants.setScope(Scope.ROWGROUP);
+            iceGiants.setRowspan(2);
+            addRowHeader(uranus, "Uranus");
+            uranus.addDataCells("86.8", "51,118", "1271", "8.7", "17.2",
+                    "2872.5", "-195", "27", "");
+
+            NativeTableRow neptune = addRow();
+            addRowHeader(neptune, "Neptune");
+            neptune.addDataCells("102", "49,528", "1638", "11.0", "16.1",
+                    "4495.1", "-200", "14", "");
+
+            NativeTableRow pluto = addRow();
+            NativeTableHeaderCell dwarf = pluto
+                    .addHeaderCell("Dwarf planets");
+            dwarf.setScope(Scope.ROWGROUP);
+            dwarf.setColspan(2);
+            addRowHeader(pluto, "Pluto");
+            pluto.addDataCells("0.0146", "2,370", "2095", "0.7", "153.3",
+                    "5906.4", "-225", "5", "Declassified as a planet in 2006,"
+                            + " but this remains controversial.");
+        }
+
+        private static void addColHeader(NativeTableRow row, Html content) {
+            NativeTableHeaderCell th = row.addHeaderCell();
+            th.setScope(Scope.COL);
+            th.add(content);
+        }
+
+        private static void addRowHeader(NativeTableRow row, String text) {
+            row.addRowHeaderCell(text);
         }
     }
 

@@ -71,4 +71,15 @@ public class NativeTableRowTest extends ComponentTest {
         assertEquals(span, wrapper.getChildren().findFirst().orElseThrow());
     }
 
+    @Test
+    void addRowHeaderCell_setsRowScope() {
+        NativeTableRow row = new NativeTableRow();
+
+        NativeTableHeaderCell cell = row.addRowHeaderCell("Breed");
+
+        assertEquals("Breed", cell.getText());
+        assertEquals(java.util.Optional.of(NativeTableHeaderCell.Scope.ROW),
+                cell.getScope());
+    }
+
 }

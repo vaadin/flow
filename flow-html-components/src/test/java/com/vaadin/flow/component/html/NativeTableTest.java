@@ -427,4 +427,16 @@ class NativeTableTest extends ComponentTest {
         assertEquals(3, table.getChildren().count());
     }
 
+    @Test
+    void addCaption_appendsToTheCaptionAndCreatesItIfMissing() {
+        var table = (NativeTable) getComponent();
+        var span = new Span("rich");
+
+        var caption = table.addCaption(span);
+
+        assertEquals(table.getCaption(), caption);
+        assertEquals(span, caption.getChildren().findFirst().orElseThrow());
+        assertEquals(caption, table.getChildren().findFirst().orElseThrow());
+    }
+
 }

@@ -20,11 +20,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.html.testbench.NativeTableBodyElement;
+import com.vaadin.flow.component.html.testbench.NativeTableCaptionElement;
 import com.vaadin.flow.component.html.testbench.NativeTableCellElement;
 import com.vaadin.flow.component.html.testbench.NativeTableColumnElement;
 import com.vaadin.flow.component.html.testbench.NativeTableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.NativeTableElement;
 import com.vaadin.flow.component.html.testbench.NativeTableHeaderCellElement;
+import com.vaadin.flow.component.html.testbench.NativeTableHeaderElement;
 import com.vaadin.flow.component.html.testbench.NativeTableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -106,6 +109,35 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         // The <th rowspan=2> means the following row holds only its own cell.
         Assert.assertEquals(1,
                 rows.get(3).$(NativeTableCellElement.class).all().size());
+    }
+
+    @Test
+    public void planetsTableHasCaptionAndHeadWithRowgroupSpans() {
+        NativeTableElement table = $(NativeTableElement.class)
+                .id("planets-table");
+
+        NativeTableCaptionElement caption = table
+                .$(NativeTableCaptionElement.class).first();
+        Assert.assertEquals("caption",
+                table.getPropertyElement("firstElementChild").getTagName());
+        Assert.assertTrue(caption.getText()
+                .startsWith("Data about the planets of our solar system"));
+        // The caption holds real markup, not just text.
+        Assert.assertEquals("Nasa's Planetary Fact Sheet - Metric",
+                caption.$("a").first().getText());
+
+        NativeTableHeaderElement head = table.$(NativeTableHeaderElement.class)
+                .first();
+        Assert.assertEquals(10,
+                head.$(NativeTableHeaderCellElement.class).all().size());
+
+        NativeTableHeaderCellElement terrestrial = table
+                .$(NativeTableBodyElement.class).first()
+                .$(NativeTableHeaderCellElement.class).first();
+        Assert.assertEquals("Terrestrial planets", terrestrial.getText());
+        Assert.assertEquals("rowgroup", terrestrial.getDomAttribute("scope"));
+        Assert.assertEquals("4", terrestrial.getDomAttribute("rowspan"));
+        Assert.assertEquals("2", terrestrial.getDomAttribute("colspan"));
     }
 
     @Test
