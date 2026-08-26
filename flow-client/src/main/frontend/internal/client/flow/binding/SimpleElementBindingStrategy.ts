@@ -1366,7 +1366,9 @@ function handleTemplateInTemplate(
 ): void {
   const path = object[NodeProperties.PAYLOAD] as unknown[];
   const address = `path='${JSON.stringify(path)}'`;
-  const elementLookup = (): Element | null => getCustomElement(getDomRoot(context.htmlNode as Element), path);
+  // getDomRoot is typed Element in Java, so the null case is dereferenced there
+  // too rather than short-circuited here.
+  const elementLookup = (): Element | null => getCustomElement(getDomRoot(context.htmlNode as Element)!, path);
   doAppendVirtualChild(context, node, reactivePhase, elementLookup, null, address);
 }
 

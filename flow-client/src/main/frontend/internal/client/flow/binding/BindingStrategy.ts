@@ -17,10 +17,9 @@
 // TypeScript port of com.vaadin.client.flow.binding.BindingStrategy, built
 // alongside the Java version.
 //
-// The Java `getTag` default method delegates to the (now ported)
-// PolymerUtils.getTag. A TypeScript interface cannot carry a method body, so
-// `getTag` is declared optional here and the delegation is done by the
-// implementing strategy (see SimpleElementBindingStrategy).
+// A TypeScript interface cannot carry a method body, so the Java `getTag`
+// default method is declared here and every strategy implements it by
+// delegating to PolymerUtils.getTag, exactly as the Java default does.
 
 import type { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import type { StateNode } from '../StateNode';
@@ -70,5 +69,5 @@ export interface BindingStrategy<T extends Node> {
    * @param node - the state node
    * @returns tag of the `node`
    */
-  getTag?(node: StateNode): string | null;
+  getTag(node: StateNode): string | null;
 }

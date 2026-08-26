@@ -14,6 +14,10 @@
  * the License.
  */
 
+/**
+ * Binds and updates server object able to send notifications to the server.
+ */
+
 // TypeScript port of com.vaadin.client.flow.binding.ServerEventHandlerBinder,
 // built on top of the ServerEventObject. It binds the server event handler names
 // from a node feature onto the element's $server object and keeps them in sync
@@ -22,6 +26,7 @@
 import type { EventRemover } from '../../../EventRemover';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import type { StateNode } from '../StateNode';
+import type * as ServerEventObject from './ServerEventObject';
 import { defineMethod, get, removeMethod, type ServerObject } from './ServerEventObject';
 
 /**
@@ -57,6 +62,11 @@ export function bindServerEventHandlerNames(
   returnValue: boolean
 ): EventRemover;
 
+// The two Java overloads -- (Element, StateNode) and (Supplier, StateNode, int,
+// boolean) -- merge into one implementation, since TypeScript has no separate
+// bodies per overload signature. The declared overloads above keep the Java call
+// shapes; this signature discriminates on the first parameter and carries the
+// defaults the two-argument Java overload passes on.
 export function bindServerEventHandlerNames(
   elementOrProvider: Element | (() => ServerObject),
   node: StateNode,

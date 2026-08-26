@@ -23,6 +23,10 @@ import type { StateNode } from './flow/StateNode';
 /**
  * Utils class, intended to ease working with Polymer related code on a client
  * side.
+ *
+ * The deprecated `PolymerUtils.hasTag(Node, String)` is intentionally omitted:
+ * its Javadoc directs callers to the generic `ElementUtil.hasTag`, which is
+ * ported in {@link ElementUtil.hasTag}.
  */
 
 // DOM/Polymer probes and model-data writers migrated from PolymerUtils.java. The
@@ -33,9 +37,6 @@ import type { StateNode } from './flow/StateNode';
 // (addReadyListener/fireReadyEvent/getCustomElement) are used by the
 // SimpleElementBindingStrategy attach machinery.
 //
-// The deprecated PolymerUtils.hasTag(Node, String) is intentionally omitted; its
-// Javadoc directs callers to the generic ElementUtil.hasTag, which is ported in
-// ElementUtil.ts.
 
 // Registry of "ready" listeners per (polymer) element; mirrors the static
 // readyListeners JsWeakMap.
@@ -215,7 +216,7 @@ export function isReady(shadowRootParent: Node): boolean {
  * @param path - the indices path identifying the custom element.
  * @returns the element inside the `root` by the path of indices
  */
-export function getCustomElement(root: Node | null, path: unknown[]): Element | null {
+export function getCustomElement(root: Node, path: unknown[]): Element | null {
   let current: Node | null = root;
   for (const value of path) {
     // Java calls getChildIgnoringStyles unconditionally (PolymerUtils.java:513-515); once a

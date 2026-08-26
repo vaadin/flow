@@ -236,6 +236,20 @@ file.
   live while the GWT client is the running engine.
 - **Spotted in**: #24933
 
+## Deviations that fix a Java defect
+
+Places where the port deliberately does **not** mirror the Java behaviour because
+the Java behaviour is a bug. Each is documented at the site; they are listed here
+so a review does not read them as porting slips.
+
+- **`Debouncer.flushAll` guards the intermediate branch** — an intermediate-only
+  debouncer has no idle timer and clears its buffered command on every tick, so
+  between two ticks `flushAll` reaches the intermediate branch with a null
+  command and a null command map. `Debouncer.java:288` dereferences both, so the
+  `NullPointerException` aborts the flush for every remaining debouncer too. The
+  port skips that debouncer instead.
+- **Spotted in**: #24949
+
 ## Rejected candidates
 
 Shapes that look like entries but are not, recorded so a later sweep does not

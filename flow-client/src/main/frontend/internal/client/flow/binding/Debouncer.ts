@@ -27,48 +27,10 @@ const EVENT_PHASE_LEADING = JsonConstants.EVENT_PHASE_LEADING;
 const EVENT_PHASE_INTERMEDIATE = JsonConstants.EVENT_PHASE_INTERMEDIATE;
 const EVENT_PHASE_TRAILING = JsonConstants.EVENT_PHASE_TRAILING;
 
+import { Timer } from '../../../Timer';
+
 type SendCommand = (phase: string) => void;
 type Command = () => void;
-
-// Re-usable timer mirroring elemental.util.Timer (schedule = one-shot,
-// scheduleRepeating = interval, cancel = stop).
-class Timer {
-  #handle: ReturnType<typeof setTimeout> | null = null;
-
-  #repeating = false;
-
-  readonly #task: () => void;
-
-  constructor(task: () => void) {
-    this.#task = task;
-  }
-
-  schedule(ms: number): void {
-    this.cancel();
-    this.#repeating = false;
-    this.#handle = setTimeout(() => {
-      this.#handle = null;
-      this.#task();
-    }, ms);
-  }
-
-  scheduleRepeating(ms: number): void {
-    this.cancel();
-    this.#repeating = true;
-    this.#handle = setInterval(() => this.#task(), ms);
-  }
-
-  cancel(): void {
-    if (this.#handle !== null) {
-      if (this.#repeating) {
-        clearInterval(this.#handle);
-      } else {
-        clearTimeout(this.#handle);
-      }
-      this.#handle = null;
-    }
-  }
-}
 
 /**
  * Manages debouncing of events. Use {@link Debouncer.getOrCreate} to either
@@ -94,9 +56,9 @@ export class Debouncer {
 
   #previousBufferedNonExecutedCommands: Map<string, Command> | null = null;
 
-  #potentialTrailing: SendCommand | null = null;
+  #potentialTrailingWithBothTrailingAndIntermediate: SendCommand | null = null;
 
-  #potentialTrailingBufferedCommands: Map<string, Command> | null = null;
+  #potentialTrailingWithBothTrailingAndIntermediateBufferedCommands: Map<string, Command> | null = null;
 
   private constructor(element: Node, identifier: string, timeout: number) {
     this.#element = element;
@@ -133,8 +95,8 @@ export class Debouncer {
       ) {
         this.#previousBufferedNonExecutedCommands = commands;
       }
-      this.#potentialTrailing = null;
-      this.#potentialTrailingBufferedCommands = null;
+      this.#potentialTrailingWithBothTrailingAndIntermediate = null;
+      this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = null;
     }
 
     if (phases.has(EVENT_PHASE_LEADING) || phases.has(EVENT_PHASE_TRAILING)) {
@@ -150,14 +112,14 @@ export class Debouncer {
             this.#bufferedSendCommand = null;
             this.#bufferedCommands = null;
             this.#previousBufferedNonExecutedCommands = null;
-          } else if (this.#potentialTrailing !== null) {
+          } else if (this.#potentialTrailingWithBothTrailingAndIntermediate !== null) {
             // Both trailing & intermediate configured and e.g. typing stopped:
             // after one more timeout with no new commands, re-post the same
             // event to the server.
             Debouncer.#runCommands(
               EVENT_PHASE_TRAILING,
-              this.#potentialTrailing,
-              this.#potentialTrailingBufferedCommands!,
+              this.#potentialTrailingWithBothTrailingAndIntermediate,
+              this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands!,
               null
             );
           }
@@ -165,7 +127,7 @@ export class Debouncer {
         });
       }
       this.#idleTimer.cancel();
-      this.#idleTimer.schedule(this.#timeout);
+      this.#idleTimer.schedule(Math.trunc(this.#timeout));
     }
 
     if (this.#intermediateTimer === null && phases.has(EVENT_PHASE_INTERMEDIATE)) {
@@ -173,8 +135,8 @@ export class Debouncer {
         if (this.#bufferedSendCommand !== null) {
           Debouncer.#runCommands(EVENT_PHASE_INTERMEDIATE, this.#bufferedSendCommand, this.#bufferedCommands!, null);
           if (phases.has(EVENT_PHASE_TRAILING)) {
-            this.#potentialTrailing = this.#bufferedSendCommand;
-            this.#potentialTrailingBufferedCommands = this.#bufferedCommands;
+            this.#potentialTrailingWithBothTrailingAndIntermediate = this.#bufferedSendCommand;
+            this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = this.#bufferedCommands;
           }
           this.#bufferedSendCommand = null;
           this.#bufferedCommands = null;
@@ -183,7 +145,7 @@ export class Debouncer {
           this.#unregister();
         }
       });
-      this.#intermediateTimer.scheduleRepeating(this.#timeout);
+      this.#intermediateTimer.scheduleRepeating(Math.trunc(this.#timeout));
     }
 
     return triggerImmediately;
@@ -296,11 +258,15 @@ export class Debouncer {
           } else if (debouncer.#bufferedSendCommand !== null) {
             // otherwise an extra intermediate event; comes a bit early but
             // better than out of order.
-            // Deviation from Debouncer.java: Java runs runCommands here
-            // unconditionally and then restarts the intermediate timer. With no
-            // buffered command that runCommands NPEs on the null command, so we
-            // guard on bufferedSendCommand and skip; the timer restart is moot
-            // with nothing to fire.
+            //
+            // Deviation from Debouncer.java, which runs the commands here
+            // unconditionally. An intermediate-only debouncer has no idle timer
+            // and clears its buffered command on every tick, so between two
+            // ticks it reaches this branch with a null command and a null
+            // command map -- and Java dereferences both, throwing a
+            // NullPointerException that aborts the whole flush. The guard keeps
+            // the flush going for the other debouncers; the timer restart below
+            // is moot with nothing to fire.
             Debouncer.#runCommands(
               EVENT_PHASE_INTERMEDIATE,
               debouncer.#bufferedSendCommand,
@@ -308,7 +274,7 @@ export class Debouncer {
               null
             );
             // restart so we don't fire more than one event quicker than ordered
-            debouncer.#intermediateTimer!.scheduleRepeating(debouncer.#timeout);
+            debouncer.#intermediateTimer!.scheduleRepeating(Math.trunc(debouncer.#timeout));
           }
           if (debouncer.#bufferedSendCommand !== null) {
             executedCommands.push(debouncer.#bufferedSendCommand);

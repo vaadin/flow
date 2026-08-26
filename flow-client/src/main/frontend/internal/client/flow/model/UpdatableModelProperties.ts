@@ -19,6 +19,7 @@
 // SimpleElementBindingStrategy uses it to decide whether a Polymer
 // model-property update should be sent to the server.
 
+import type { SimpleElementBindingStrategy } from '../binding/SimpleElementBindingStrategy';
 import type { StateNode } from '../StateNode';
 
 /**
@@ -29,7 +30,7 @@ import type { StateNode } from '../StateNode';
  * Once it's stored in the {@link StateNode} the code which sends updates to the
  * server side when a polymer property is updated uses this data to detect
  * whether server expects the update to be sent(see
- * `SimpleElementBindingStrategy`).
+ * {@link SimpleElementBindingStrategy}).
  */
 export class UpdatableModelProperties {
   readonly #properties: Set<string>;

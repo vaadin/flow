@@ -17,8 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.StateTree, on top of the TS state
 // node and node features. The slices of the Registry and server-communication
 // layer that StateTree needs are declared here as contracts that the
-// Registry/connector satisfy. ServerEventObject lookup (used only during resync)
-// is injected, defaulting to "no server event object".
+// Registry/connector satisfy.
 
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';

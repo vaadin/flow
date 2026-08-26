@@ -41,10 +41,10 @@ export function addReadyCallback(element: Element, name: string, runnable: () =>
 /**
  * Check if the react element is initialized and functional.
  *
+ * Mirrors ReactUtils.isInitialized.
+ *
  * @param elementLookup - react element lookup supplier
  * @returns `true` if Flow binding can already be done
- *
- * Mirrors ReactUtils.isInitialized.
  */
 export function isInitialized(elementLookup: () => Element | null): boolean {
   return elementLookup() !== null;

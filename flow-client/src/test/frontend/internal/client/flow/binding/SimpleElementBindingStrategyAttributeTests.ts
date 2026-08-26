@@ -56,17 +56,6 @@ describe('SimpleElementBindingStrategy attribute binding', () => {
     expect(element.getAttribute('lang')).to.equal('foo');
   });
 
-  it('removes the attribute when its value is removed', () => {
-    // Ported from testRemoveAttribute.
-    const { element, node } = bindWithAttribute('div', 'id', 'foo');
-    expect(element.getAttribute('id')).to.equal('foo');
-
-    node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty('id').removeValue();
-    Reactive.flush();
-
-    expect(element.getAttribute('id')).to.equal(null);
-  });
-
   it('applies an existing attribute eagerly at bind time, before any flush', () => {
     // Ported from testBindAttributeWithoutFlush.
     const harness = makeCollectingTree();
@@ -95,6 +84,17 @@ describe('SimpleElementBindingStrategy attribute binding', () => {
     node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty('id').setValue('foo');
 
     expect(element.id).to.equal('');
+  });
+
+  it('removes the attribute when its value is removed', () => {
+    // Ported from testRemoveAttribute.
+    const { element, node } = bindWithAttribute('div', 'id', 'foo');
+    expect(element.getAttribute('id')).to.equal('foo');
+
+    node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty('id').removeValue();
+    Reactive.flush();
+
+    expect(element.getAttribute('id')).to.equal(null);
   });
 
   // Beyond the Java suite: GwtBasicElementBinderTest only covers plain string

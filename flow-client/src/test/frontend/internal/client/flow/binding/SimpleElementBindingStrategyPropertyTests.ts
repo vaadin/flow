@@ -70,42 +70,6 @@ describe('SimpleElementBindingStrategy property binding', () => {
     expect(element.lang).to.equal('foo');
   });
 
-  it('deletes an arbitrary property when its value is removed', () => {
-    // Ported from testRemoveArbitraryProperty.
-    const foo = properties.getProperty('foo');
-    foo.setValue('bar');
-
-    bind(node, element);
-
-    Reactive.flush();
-
-    expect(Object.hasOwn(element, 'foo')).to.be.true;
-
-    foo.removeValue();
-
-    Reactive.flush();
-
-    expect(Object.hasOwn(element, 'foo')).to.be.false;
-  });
-
-  it('clears a built-in property when its value is removed', () => {
-    // Ported from testRemoveBuiltInProperty.
-    const titleProperty = properties.getProperty('title');
-    titleProperty.setValue('foo');
-
-    bind(node, element);
-
-    Reactive.flush();
-
-    titleProperty.removeValue();
-
-    Reactive.flush();
-
-    // Properties inherited from e.g. Element can't be removed; assigning null
-    // to title produces "null".
-    expect(element.title).to.equal('null');
-  });
-
   it('applies an existing property eagerly at bind time, before any flush', () => {
     // Ported from testBindBeforeFlush. Binding eagerly applies property values
     // that already exist, so the value is visible without a Reactive.flush().
@@ -186,23 +150,40 @@ describe('SimpleElementBindingStrategy property binding', () => {
     expect(unboundElement.lang).to.equal('');
   });
 
-  // Beyond the Java suite: the guard against overwriting a DOM value the user
-  // changed during a server round-trip has no GWT counterpart.
-  describe('beyond the Java suite', () => {
-    it('does not overwrite when the previous DOM value already matches the tree value', () => {
-      const property = properties.getProperty('foo');
-      property.setValue('bar');
-      // The value the DOM had before the round-trip equals the tree value, so
-      // the user-modified DOM value is kept.
-      property.setPreviousDomValue('bar');
-      (element as unknown as Record<string, unknown>).foo = 'user edit';
+  it('deletes an arbitrary property when its value is removed', () => {
+    // Ported from testRemoveArbitraryProperty.
+    const foo = properties.getProperty('foo');
+    foo.setValue('bar');
 
-      bind(node, element);
+    bind(node, element);
 
-      Reactive.flush();
+    Reactive.flush();
 
-      expect((element as unknown as Record<string, unknown>).foo).to.equal('user edit');
-    });
+    expect(Object.hasOwn(element, 'foo')).to.be.true;
+
+    foo.removeValue();
+
+    Reactive.flush();
+
+    expect(Object.hasOwn(element, 'foo')).to.be.false;
+  });
+
+  it('clears a built-in property when its value is removed', () => {
+    // Ported from testRemoveBuiltInProperty.
+    const titleProperty = properties.getProperty('title');
+    titleProperty.setValue('foo');
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    titleProperty.removeValue();
+
+    Reactive.flush();
+
+    // Properties inherited from e.g. Element can't be removed; assigning null
+    // to title produces "null".
+    expect(element.title).to.equal('null');
   });
 
   // Ported from GwtMultipleBindingTest.testSetPropertyDoubleBind: a second bind
@@ -224,7 +205,10 @@ describe('SimpleElementBindingStrategy property binding', () => {
   });
 
   // Ported from GwtMultipleBindingTest.testSetAttributeDoubleBind: a second bind
-  // must not re-read the element-attributes feature.
+  // must not re-read the element-attributes feature. The Java case in fact
+  // guards ELEMENT_PROPERTIES, the same feature its sibling case guards, which
+  // reads as a copy-paste slip; this guards the attributes feature its name
+  // describes, which is strictly stronger.
   it('binding twice does not re-read the element-attributes feature', () => {
     Reactive.reset();
     const { tree } = makeCollectingTree();
@@ -239,5 +223,23 @@ describe('SimpleElementBindingStrategy property binding', () => {
     node.setBound();
     bind(node, element);
     Reactive.flush();
+  });
+  // Beyond the Java suite: the guard against overwriting a DOM value the user
+  // changed during a server round-trip has no GWT counterpart.
+  describe('beyond the Java suite', () => {
+    it('does not overwrite when the previous DOM value already matches the tree value', () => {
+      const property = properties.getProperty('foo');
+      property.setValue('bar');
+      // The value the DOM had before the round-trip equals the tree value, so
+      // the user-modified DOM value is kept.
+      property.setPreviousDomValue('bar');
+      (element as unknown as Record<string, unknown>).foo = 'user edit';
+
+      bind(node, element);
+
+      Reactive.flush();
+
+      expect((element as unknown as Record<string, unknown>).foo).to.equal('user edit');
+    });
   });
 });

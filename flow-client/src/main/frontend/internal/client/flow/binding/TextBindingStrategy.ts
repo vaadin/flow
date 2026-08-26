@@ -20,6 +20,7 @@
 import { assert } from '../../../assert';
 import type { Computation } from '../reactive/Computation';
 import { Reactive } from '../reactive/Reactive';
+import { getTag as polymerGetTag } from '../../PolymerUtils';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../flow/internal/nodefeature/NodeProperties';
 import type { StateNode } from '../StateNode';
@@ -33,6 +34,17 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
    * referenced
    */
   static readonly #bound = new WeakMap<StateNode, boolean>();
+
+  /**
+   * Gets the tag value from the {@link NodeFeatures.ELEMENT_DATA} feature for
+   * the `node`.
+   *
+   * @param node - the state node
+   * @returns tag of the `node`
+   */
+  getTag(node: StateNode): string | null {
+    return polymerGetTag(node);
+  }
 
   create(_node: StateNode): Text {
     return document.createTextNode('');

@@ -17,9 +17,8 @@
 /**
  * Utils class, intended to ease working with DOM elements on client side.
  *
- * Migrated from `com.vaadin.client.ElementUtil`. The Java class is now a native
- * `@JsType` shim that calls into these functions, which are registered on
- * `window.Vaadin.Flow.internal.ElementUtil`.
+ * Migrated from `com.vaadin.client.ElementUtil`, which stays in place until the
+ * GWT client is retired.
  */
 
 /**
