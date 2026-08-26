@@ -243,6 +243,26 @@ class UrlUtilTest {
     }
 
     @Test
+    void isSafeUrl_aboutBlank_returnsTrue() {
+        assertTrue(UrlUtil.isSafeUrl("about:blank",
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
+        assertTrue(UrlUtil.isSafeUrl("About:Blank",
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
+        // Also when the configuration doesn't include the about scheme
+        assertTrue(UrlUtil.isSafeUrl("about:blank", Set.of("https")));
+    }
+
+    @Test
+    void isSafeUrl_otherAboutUrl_returnsFalse() {
+        assertFalse(UrlUtil.isSafeUrl("about:config",
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
+        assertFalse(UrlUtil.isSafeUrl("about:blank:evil",
+                Constants.DEFAULT_URL_SAFE_SCHEMES));
+        // Unless the about scheme is explicitly configured as safe
+        assertTrue(UrlUtil.isSafeUrl("about:config", Set.of("about")));
+    }
+
+    @Test
     void isSafeUrl_relativeUrl_returnsTrue() {
         assertTrue(UrlUtil.isSafeUrl("/path/to/view",
                 Constants.DEFAULT_URL_SAFE_SCHEMES));

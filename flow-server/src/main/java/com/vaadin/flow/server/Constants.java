@@ -577,7 +577,11 @@ public final class Constants implements Serializable {
      * Script-capable schemes such as {@code javascript} and {@code data} are
      * intentionally excluded as they can be used to execute scripts in the
      * browser when used as a link or frame target.
-     * 
+     * <p>
+     * Note that the {@code about:blank} URL is considered safe regardless of
+     * the configured schemes, whereas other {@code about:} URLs are not safe
+     * unless the {@code about} scheme is explicitly configured as safe.
+     *
      * @since 25.2
      */
     public static final Set<String> DEFAULT_URL_SAFE_SCHEMES = Set.of("http",
