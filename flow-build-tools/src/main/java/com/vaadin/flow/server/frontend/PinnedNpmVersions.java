@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -147,7 +148,18 @@ class PinnedNpmVersions {
         // The jar is opened for this read only, so it must not be cached
         jarConnection.setUseCaches(false);
         String jarUrl = jarConnection.getJarFileURL().toExternalForm();
-        try (JarFile jarFile = jarConnection.getJarFile()) {
+        JarFile jar;
+        try {
+            jar = jarConnection.getJarFile();
+        } catch (FileNotFoundException e) {
+            // A jar is not required to have an entry for the folder itself,
+            // and connecting to a folder that has no entry fails
+            log().warn("Unable to read pinned npm versions from '{}'."
+                    + " Dependencies defined there won't be pinned for npm/pnpm/bun.",
+                    folder, e);
+            return;
+        }
+        try (JarFile jarFile = jar) {
             for (JarEntry entry : jarFile.stream()
                     .filter(entry -> isVersionsFile(entry.getName()))
                     .toList()) {

@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -210,19 +211,54 @@ class PinnedNpmVersionsTest {
         assertFalse(dependencies.has("@vaadin/dialog"));
     }
 
+    @Test
+    void versionsFolderWithoutAnEntryInTheJar_isSkippedWithoutFailing()
+            throws IOException {
+        File jar = new File(temporaryFolder, "no-folder-entries.jar");
+        writeJar(jar,
+                Map.of(Constants.PINNED_NPM_VERSIONS_FOLDER + "button.json", """
+                        {
+                          "core": {
+                            "button": {
+                              "npmName": "@vaadin/button",
+                              "jsVersion": "25.1.0"
+                            }
+                          }
+                        }
+                        """), false);
+
+        // A class loader does not report a folder that has no entry of its
+        // own, but one that does anyway must not fail the build
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(URI
+                        .create("jar:" + jar.toURI() + "!/"
+                                + Constants.PINNED_NPM_VERSIONS_FOLDER)
+                        .toURL()));
+
+        assertTrue(new PinnedNpmVersions(finder).isEmpty());
+    }
+
     /**
      * Writes a jar with the given entries, including the folder entries a class
      * loader needs to find a folder inside a jar.
      */
     private static void writeJar(File jar, Map<String, String> entries)
             throws IOException {
+        writeJar(jar, entries, true);
+    }
+
+    private static void writeJar(File jar, Map<String, String> entries,
+            boolean withFolderEntries) throws IOException {
         Set<String> folders = new LinkedHashSet<>();
-        entries.keySet().forEach(name -> {
-            for (int slash = name.indexOf('/'); slash != -1; slash = name
-                    .indexOf('/', slash + 1)) {
-                folders.add(name.substring(0, slash + 1));
-            }
-        });
+        if (withFolderEntries) {
+            entries.keySet().forEach(name -> {
+                for (int slash = name.indexOf('/'); slash != -1; slash = name
+                        .indexOf('/', slash + 1)) {
+                    folders.add(name.substring(0, slash + 1));
+                }
+            });
+        }
         try (JarOutputStream jarStream = new JarOutputStream(
                 new FileOutputStream(jar))) {
             for (String folder : folders) {
