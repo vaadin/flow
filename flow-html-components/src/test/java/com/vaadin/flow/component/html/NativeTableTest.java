@@ -297,4 +297,77 @@ class NativeTableTest extends ComponentTest {
         assertEquals(1, component.getChildren().count());
     }
 
+    @Test
+    void addColumnGroup_insertedAfterCaptionBeforeHead() {
+        var table = (NativeTable) getComponent();
+        table.getCaption();
+        table.getHead();
+        var group = table.addColumnGroup();
+        var children = table.getChildren().toList();
+        assertEquals(table.getCaption(), children.get(0));
+        assertEquals(group, children.get(1));
+        assertEquals(table.getHead(), children.get(2));
+    }
+
+    @Test
+    void addColumnGroup_beforeHeadEvenIfHeadAddedLater() {
+        var table = (NativeTable) getComponent();
+        var group = table.addColumnGroup();
+        var head = table.getHead();
+        var children = table.getChildren().toList();
+        assertEquals(group, children.get(0));
+        assertEquals(head, children.get(1));
+    }
+
+    @Test
+    void addColumnGroup_withColumns() {
+        var table = (NativeTable) getComponent();
+        var group = table.addColumnGroup(new NativeTableColumn(),
+                new NativeTableColumn(2));
+        assertEquals(2, group.getColumns().size());
+        assertEquals(List.of(group), table.getColumnGroups());
+    }
+
+    @Test
+    void multipleColumnGroups_appearInInsertionOrder() {
+        var table = (NativeTable) getComponent();
+        var g1 = table.addColumnGroup();
+        var g2 = table.addColumnGroup();
+        var children = table.getChildren().toList();
+        assertEquals(g1, children.get(0));
+        assertEquals(g2, children.get(1));
+    }
+
+    @Test
+    void removeColumnGroup() {
+        var table = (NativeTable) getComponent();
+        var g1 = table.addColumnGroup();
+        var g2 = table.addColumnGroup();
+        table.removeColumnGroup(g1);
+        assertEquals(List.of(g2), table.getColumnGroups());
+        assertTrue(g1.getParent().isEmpty());
+    }
+
+    @Test
+    void addBody_afterCaptionColumnGroupsAndHead() {
+        // caption + 2 colgroups + thead -> tbody must land at index 4
+        var table = (NativeTable) getComponent();
+        table.setCaptionText("x");
+        table.addColumnGroup();
+        table.addColumnGroup();
+        table.getHead();
+        var body = table.addBody();
+        assertEquals(4, table.getChildren().toList().indexOf(body));
+    }
+
+    @Test
+    void addBody_beforeFoot() {
+        var table = (NativeTable) getComponent();
+        var foot = table.getFoot();
+        var body = table.addBody();
+        var children = table.getChildren().toList();
+        assertEquals(body, children.get(0));
+        assertEquals(foot, children.get(1));
+    }
+
 }

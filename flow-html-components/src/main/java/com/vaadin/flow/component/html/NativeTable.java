@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,6 +34,12 @@ import com.vaadin.flow.component.Tag;
 @Tag(Tag.TABLE)
 public class NativeTable extends HtmlContainer
         implements ClickNotifier<NativeTable> {
+
+    private static final int RANK_CAPTION = 0;
+    private static final int RANK_COLUMN_GROUP = 1;
+    private static final int RANK_HEAD = 2;
+    private static final int RANK_BODY = 3;
+    private static final int RANK_FOOT = 4;
 
     /**
      * Creates a new empty table.
@@ -60,7 +67,7 @@ public class NativeTable extends HtmlContainer
     public NativeTableCaption getCaption() {
         return findCaption().orElseGet(() -> {
             NativeTableCaption caption = new NativeTableCaption();
-            addComponentAsFirst(caption);
+            addComponentAtIndex(getInsertionIndex(RANK_CAPTION), caption);
             return caption;
         });
     }
@@ -92,6 +99,70 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
+     * Appends a new empty {@code <colgroup>} to this table.
+     *
+     * @return the newly created column group.
+     */
+    public NativeTableColumnGroup addColumnGroup() {
+        return addColumnGroup(new NativeTableColumnGroup());
+    }
+
+    /**
+     * Appends an existing {@code <colgroup>} to this table.
+     *
+     * @param group
+     *            the column group to add.
+     * @return the same group, for fluent chaining.
+     */
+    public NativeTableColumnGroup addColumnGroup(NativeTableColumnGroup group) {
+        addComponentAtIndex(getInsertionIndex(RANK_COLUMN_GROUP), group);
+        return group;
+    }
+
+    /**
+     * Appends a new {@code <colgroup>} populated with the given columns.
+     *
+     * @param columns
+     *            the columns to place inside the new group.
+     * @return the newly created column group.
+     */
+    public NativeTableColumnGroup addColumnGroup(NativeTableColumn... columns) {
+        return addColumnGroup(Arrays.asList(columns));
+    }
+
+    /**
+     * List equivalent of {@link #addColumnGroup(NativeTableColumn...)}.
+     *
+     * @param columns
+     *            the columns to place inside the new group.
+     * @return the newly created column group.
+     */
+    public NativeTableColumnGroup addColumnGroup(
+            List<? extends NativeTableColumn> columns) {
+        return addColumnGroup(new NativeTableColumnGroup(columns));
+    }
+
+    /**
+     * Returns the column groups attached to this table, in document order.
+     *
+     * @return an unmodifiable list of column groups.
+     */
+    public List<NativeTableColumnGroup> getColumnGroups() {
+        return ComponentUtil
+                .getChildrenOfType(this, NativeTableColumnGroup.class).toList();
+    }
+
+    /**
+     * Removes a column group from this table.
+     *
+     * @param group
+     *            the group to remove.
+     */
+    public void removeColumnGroup(NativeTableColumnGroup group) {
+        remove(group);
+    }
+
+    /**
      * Returns the head of this table.
      *
      * @return This table's {@code <thead>} element. Creates a new one if no
@@ -100,7 +171,7 @@ public class NativeTable extends HtmlContainer
     public NativeTableHeader getHead() {
         return findHead().orElseGet(() -> {
             NativeTableHeader head = new NativeTableHeader();
-            addComponentAtIndex(findCaption().isPresent() ? 1 : 0, head);
+            addComponentAtIndex(getInsertionIndex(RANK_HEAD), head);
             return head;
         });
     }
@@ -121,7 +192,7 @@ public class NativeTable extends HtmlContainer
     public NativeTableFooter getFoot() {
         return findFoot().orElseGet(() -> {
             NativeTableFooter foot = new NativeTableFooter();
-            add(foot);
+            addComponentAtIndex(getInsertionIndex(RANK_FOOT), foot);
             return foot;
         });
     }
@@ -180,14 +251,7 @@ public class NativeTable extends HtmlContainer
      */
     public NativeTableBody addBody() {
         NativeTableBody body = new NativeTableBody();
-        int index = getBodies().size();
-        if (findCaption().isPresent()) {
-            index++;
-        }
-        if (findHead().isPresent()) {
-            index++;
-        }
-        addComponentAtIndex(index, body);
+        addComponentAtIndex(getInsertionIndex(RANK_BODY), body);
         return body;
     }
 
@@ -217,6 +281,38 @@ public class NativeTable extends HtmlContainer
      */
     public void removeBody() {
         removeBody(0);
+    }
+
+    /**
+     * Returns the index at which a child of the given rank must be inserted to
+     * keep the caption, column groups, head, bodies and foot in the order the
+     * HTML specification requires: right after the last child of the same or a
+     * lower rank.
+     */
+    private int getInsertionIndex(int rank) {
+        List<Component> children = getChildren().toList();
+        for (int i = 0; i < children.size(); i++) {
+            if (getRank(children.get(i)) > rank) {
+                return i;
+            }
+        }
+        return children.size();
+    }
+
+    private static int getRank(Component child) {
+        if (child instanceof NativeTableCaption) {
+            return RANK_CAPTION;
+        }
+        if (child instanceof NativeTableColumnGroup) {
+            return RANK_COLUMN_GROUP;
+        }
+        if (child instanceof NativeTableHeader) {
+            return RANK_HEAD;
+        }
+        if (child instanceof NativeTableFooter) {
+            return RANK_FOOT;
+        }
+        return RANK_BODY;
     }
 
     private Optional<NativeTableCaption> findCaption() {
