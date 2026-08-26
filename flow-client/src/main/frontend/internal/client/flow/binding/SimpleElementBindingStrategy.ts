@@ -21,9 +21,9 @@
 // binding, creation & identity, visibility binding, children/shadow/virtual-child
 // binding and the Polymer model handlers. These module-local functions are
 // assembled into the exported BindingStrategy<Element> class at the bottom of the
-// module. The Polymer model-property bridge stays in
-// internal/SimpleElementBindingStrategy.ts (window-registered) and is imported
-// at cutover.
+// module. The Polymer model-property bridge -- the JSNI parts of the Java class,
+// which patch Polymer internals -- lives in PolymerModelBinding.ts beside this
+// module and is called from bind().
 
 import { assert } from '../../../assert';
 import { getElementById, getElementByName, hasTag } from '../../ElementUtil';
