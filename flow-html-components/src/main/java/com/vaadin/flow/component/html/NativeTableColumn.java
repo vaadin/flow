@@ -38,9 +38,8 @@ import com.vaadin.flow.component.Tag;
  *      &lt;col&gt; — The Table Column element</a>
  */
 @Tag(Tag.COL)
-public class NativeTableColumn extends HtmlComponent {
-
-    private static final String ATTRIBUTE_SPAN = "span";
+public class NativeTableColumn extends HtmlComponent
+        implements NativeTableColumnSpan {
 
     /**
      * Creates a new column component spanning a single column.
@@ -59,42 +58,5 @@ public class NativeTableColumn extends HtmlComponent {
     public NativeTableColumn(int span) {
         super();
         setSpan(span);
-    }
-
-    /**
-     * Sets the {@code span} attribute — how many consecutive columns this
-     * {@code <col>} element covers. The default is {@code 1}. Use it to apply
-     * the same styling or attributes across a range of columns without writing
-     * one {@code <col>} per column.
-     *
-     * @param span
-     *            a positive integer.
-     */
-    public void setSpan(int span) {
-        if (span < 1) {
-            throw new IllegalArgumentException(
-                    "span must be a positive integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_SPAN, String.valueOf(span));
-    }
-
-    /**
-     * Returns the value of the {@code span} attribute.
-     *
-     * @return the current span. Default is 1.
-     */
-    public int getSpan() {
-        String span = getElement().getAttribute(ATTRIBUTE_SPAN);
-        if (span == null) {
-            span = "1";
-        }
-        return Integer.parseInt(span);
-    }
-
-    /**
-     * Resets the span to its default value of 1.
-     */
-    public void resetSpan() {
-        getElement().removeAttribute(ATTRIBUTE_SPAN);
     }
 }

@@ -49,9 +49,8 @@ import com.vaadin.flow.component.Tag;
  *      &lt;colgroup&gt; — The Table Column Group element</a>
  */
 @Tag(Tag.COLGROUP)
-public class NativeTableColumnGroup extends HtmlContainer {
-
-    private static final String ATTRIBUTE_SPAN = "span";
+public class NativeTableColumnGroup extends HtmlContainer
+        implements NativeTableColumnSpan {
 
     /**
      * Creates a new empty column group.
@@ -149,42 +148,5 @@ public class NativeTableColumnGroup extends HtmlContainer {
      */
     public void removeAllColumns() {
         removeAll();
-    }
-
-    /**
-     * Sets the {@code span} attribute — how many consecutive columns this group
-     * covers when used without {@link NativeTableColumn} children. Per the HTML
-     * specification, {@code span} is only valid on a {@code <colgroup>} that
-     * has no {@code <col>} children. The default is {@code 1}.
-     *
-     * @param span
-     *            a positive integer.
-     */
-    public void setSpan(int span) {
-        if (span < 1) {
-            throw new IllegalArgumentException(
-                    "span must be a positive integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_SPAN, String.valueOf(span));
-    }
-
-    /**
-     * Returns the value of the {@code span} attribute.
-     *
-     * @return the current span. Default is 1.
-     */
-    public int getSpan() {
-        String span = getElement().getAttribute(ATTRIBUTE_SPAN);
-        if (span == null) {
-            span = "1";
-        }
-        return Integer.parseInt(span);
-    }
-
-    /**
-     * Removes the {@code span} attribute, restoring the default value of 1.
-     */
-    public void resetSpan() {
-        getElement().removeAttribute(ATTRIBUTE_SPAN);
     }
 }
