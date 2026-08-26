@@ -1527,6 +1527,24 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    void nullValueForPrimitiveDoubleField_showsValidationError() {
+        Binder<ExampleDouble> binder = new Binder<>(ExampleDouble.class);
+        TestTextField field = new TestTextField();
+        Binder.Binding<ExampleDouble, ?> binding = binder.forField(field)
+                .withConverter(new StringToDoubleConverter("")).bind("value");
+        binder.setBean(new ExampleDouble());
+
+        field.setValue("");
+
+        BindingValidationStatus<?> status = binding.validate();
+        assertTrue(status.isError());
+        assertEquals(
+                "Null value cannot be assigned to a primitive bean property. "
+                        + "Use asRequired() before any converter to prevent null values.",
+                status.getMessage().get());
+    }
+
+    @Test
     void remove_field_binding() {
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter("Can't convert"))
@@ -3028,6 +3046,18 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 ((DecimalFormat) format).setMinimumFractionDigits(2);
             }
             return format;
+        }
+    }
+
+    private static class ExampleDouble {
+        private double value;
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
         }
     }
 

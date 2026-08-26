@@ -77,6 +77,7 @@ public interface VaadinResponse {
      * @return {@code true} if the header has been set, {@code false} otherwise
      *
      * @see jakarta.servlet.http.HttpServletResponse#containsHeader(String)
+     * @since 25.0
      */
     boolean containsHeader(String name);
 
@@ -188,6 +189,7 @@ public interface VaadinResponse {
      * @param len
      *            a long specifying the length of the content being returned to
      *            the client
+     * @since 24.8
      */
     void setContentLengthLong(long len);
 

@@ -61,12 +61,12 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
@@ -253,7 +253,7 @@ public abstract class AbstractNavigationStateRenderer
         // After navigation event
         handleAfterNavigationEvents(ui, parameters);
 
-        updatePageTitle(event, componentInstance, route);
+        updatePageTitle(event, componentInstance, route, parameters);
 
         return statusCode;
     }
@@ -396,6 +396,12 @@ public abstract class AbstractNavigationStateRenderer
      */
     private void handleAfterNavigationEvents(UI ui,
             RouteParameters parameters) {
+        ui.getInternals()
+                .updateRouterState(new RouterState(
+                        locationChangeEvent.getLocation(), parameters,
+                        ui.getInternals().getActiveRouterTargetsChain(),
+                        navigationState.getNavigationTarget()));
+
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
         afterNavigationHandlers
@@ -448,6 +454,7 @@ public abstract class AbstractNavigationStateRenderer
      * @param path
      *            request path
      * @return List of parent layouts
+     * @since 24.5
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -535,6 +542,7 @@ public abstract class AbstractNavigationStateRenderer
      *            used router instance
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
+     * @since 1.3
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
@@ -868,6 +876,7 @@ public abstract class AbstractNavigationStateRenderer
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
      * @see HttpStatusCode
+     * @since 4.0
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
@@ -1122,12 +1131,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget, String route) {
+            Component routeTarget, String route, RouteParameters parameters) {
         Instantiator instantiator = navigationEvent.getUI().getSession()
                 .getService().getInstantiator();
-        Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
-                instantiator.getApplicationClass(routeTarget))
-                .map(PageTitle::value).orElse("");
+        QueryParameters queryParameters = navigationEvent.getLocation()
+                .getQueryParameters();
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> targetClass = (Class<? extends Component>) instantiator
+                .getApplicationClass(routeTarget);
+        Supplier<String> lookForTitleInTarget = () -> navigationEvent
+                .getSource()
+                .resolvePageTitle(targetClass, parameters, queryParameters)
+                .orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1138,11 +1153,6 @@ public abstract class AbstractNavigationStateRenderer
                         .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
-    }
-
-    private static Optional<PageTitle> lookForTitleInTarget(
-            Class<?> routeTarget) {
-        return Optional.ofNullable(routeTarget.getAnnotation(PageTitle.class));
     }
 
     private static boolean isPreserveOnRefreshTarget(
@@ -1249,6 +1259,7 @@ public abstract class AbstractNavigationStateRenderer
      *            the inactive UI
      * @throws IllegalStateException
      *             if the UI is not in closing state
+     * @since 24.3.11
      */
     public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
         if (!inactiveUI.isClosing()) {

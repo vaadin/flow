@@ -47,8 +47,10 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -457,6 +459,54 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sharedSignalUpdatedOutsideSessionTransaction_reRunsWithFreshValue() {
+        // Reproduces issue #24399: while a UIDL request holds the session
+        // lock, the session's repeatable-read transaction has cached the
+        // current signal value. A concurrent write to that signal — done
+        // outside the session transaction, simulating another session or
+        // a background message handler — must trigger the effect to
+        // re-run with the fresh value, not the stale value cached in the
+        // session transaction.
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(signal.get()));
+
+        // Initial run executes inline (UI.getCurrent() == ui) and reads
+        // through the session-scoped write-through transaction, priming
+        // its repeatable-read cache with "initial".
+        assertEquals(List.of("initial"), observed,
+                "Effect should run once initially");
+
+        // Clear UI thread-local so the effect dispatcher takes the
+        // async path and routes the re-run through ui.access(), which
+        // enqueues a FutureAccess while the session lock is held.
+        UI.setCurrent(null);
+
+        // Update the signal outside the session's repeatable-read
+        // transaction (runWithoutTransaction routes the write through
+        // ROOT). The tree's submitted snapshot becomes "external"
+        // while the session transaction still caches "initial".
+        Signal.runWithoutTransaction(() -> signal.set("external"));
+
+        // Flush the effect dispatcher (queued in TestService's
+        // FlushableExecutor) and then run pending access tasks —
+        // simulating session unlock at the end of a UIDL request.
+        service.flushExecutorAndAccessTasks(session);
+
+        assertEquals(List.of("initial", "external"), observed,
+                "Effect re-run must observe the fresh signal value, not the "
+                        + "stale value cached in the session transaction");
+    }
+
+    @Test
     void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
@@ -579,6 +629,49 @@ class ElementEffectTest {
         registration.remove();
         signal.set("test4");
         assertEquals(4, count.get(), "Effect should not be run after remove");
+    }
+
+    @Test
+    void effect_reattachedViaMoveToNewUI_detachDoesNotThrow() {
+        // Reproduces #24973: UIInternals.moveToNewUI (used for
+        // @PreserveOnRefresh) re-attaches an element via
+        // StateNode.removeFromTree(false) followed by appendChild. This fires
+        // the attach listener again without a detach event in between.
+        // ElementEffect must not accumulate multiple detach listeners sharing
+        // the single detachRegistration field, otherwise the next real detach
+        // throws a NullPointerException.
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+
+        // Simulate UIInternals.moveToNewUI: reset the node without firing
+        // detach listeners, then re-attach the element to a new UI.
+        MockUI newUi = new MockUI();
+        component.getElement().getNode().removeFromTree(false);
+        newUi.getElement().appendChild(component.getElement());
+
+        // An ordinary detach must not throw. Before the fix this raised a
+        // NullPointerException from a second, stale ElementEffect detach
+        // listener dereferencing the already-nulled registration.
+        assertDoesNotThrow(() -> component.getElement().removeFromParent());
+
+        // The effect keeps working after the move: it is disabled while
+        // detached and re-enabled (and re-run because the signal changed) on a
+        // fresh attach.
+        signal.set("while detached");
+        int countAfterDetach = count.get();
+        newUi.getElement().appendChild(component.getElement());
+        signal.set("after reattach");
+        assertTrue(count.get() > countAfterDetach,
+                "Effect should still run after re-attach following a move");
     }
 
     @Test

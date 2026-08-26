@@ -18,8 +18,8 @@ package com.vaadin.flow.spring.flowsecurity;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.notification.testbench.NotificationElement;
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 
 public class AppViewIT extends AbstractIT {
 
@@ -34,7 +34,7 @@ public class AppViewIT extends AbstractIT {
         loginUser();
         assertPrivatePageShown(USER_FULLNAME);
 
-        $(ButtonElement.class).id("applyForLoan").click();
+        $(NativeButtonElement.class).id("applyForLoan").click();
         String balance = $("span").id("balanceText").getText();
         Assert.assertEquals(
                 "Hello John the User, your bank account balance is $20000.00.",
@@ -48,10 +48,9 @@ public class AppViewIT extends AbstractIT {
         loginUser();
         assertPrivatePageShown(USER_FULLNAME);
 
-        $(ButtonElement.class).id("applyForHugeLoan").click();
-        String notification = $(NotificationElement.class).waitForFirst()
-                .getText();
-        Assert.assertEquals("Application failed: Access Denied", notification);
+        $(NativeButtonElement.class).id("applyForHugeLoan").click();
+        Assert.assertEquals("Application failed: Access Denied",
+                awaitNotificationText());
     }
 
     @Test
@@ -61,7 +60,7 @@ public class AppViewIT extends AbstractIT {
         loginAdmin();
         assertPrivatePageShown(ADMIN_FULLNAME);
 
-        $(ButtonElement.class).id("applyForHugeLoan").click();
+        $(NativeButtonElement.class).id("applyForHugeLoan").click();
         String balance = $("span").id("balanceText").getText();
         Assert.assertEquals(
                 "Hello Emma the Admin, your bank account balance is $1200000.00.",
@@ -75,10 +74,14 @@ public class AppViewIT extends AbstractIT {
         loginAdmin();
         assertPrivatePageShown(ADMIN_FULLNAME);
 
-        $(ButtonElement.class).id("applyForLoan").click();
-        String notification = $(NotificationElement.class).waitForFirst()
-                .getText();
-        Assert.assertEquals("Application failed: Access Denied", notification);
+        $(NativeButtonElement.class).id("applyForLoan").click();
+        Assert.assertEquals("Application failed: Access Denied",
+                awaitNotificationText());
+    }
+
+    private String awaitNotificationText() {
+        return waitUntil(d -> $(DivElement.class)
+                .withAttribute("class", "notification").first()).getText();
     }
 
 }

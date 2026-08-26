@@ -26,7 +26,7 @@ import com.vaadin.flow.signals.Signal;
 /**
  * Component representing a <code>&lt;th&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  * @deprecated since 25.2; use {@link TableHeaderCell} instead.
  */
 @Deprecated
@@ -69,6 +69,7 @@ public class NativeTableHeaderCell extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public NativeTableHeaderCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

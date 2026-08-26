@@ -26,7 +26,7 @@ import com.vaadin.flow.signals.Signal;
 /**
  * Component representing a <code>&lt;td&gt;</code> element.
  *
- * @since 24.4
+ * @since 24.5
  * @deprecated since 25.2; use {@link TableDataCell} instead.
  */
 @Deprecated

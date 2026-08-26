@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,13 +33,14 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.trigger.internal.CallbackAction;
+import com.vaadin.flow.component.trigger.internal.TimeoutTrigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -71,6 +73,7 @@ import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -135,8 +138,6 @@ public class UI extends Component
 
     private final Page page;
 
-    private final Geolocation geolocation;
-
     /*
      * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
      * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
@@ -159,6 +160,7 @@ public class UI extends Component
      *
      * @param internalsHandler
      *            an implementation of UIInternalsHandler.
+     * @since 3.0
      */
     protected UI(UIInternalUpdater internalsHandler) {
         super(null);
@@ -167,7 +169,6 @@ public class UI extends Component
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
         page = new Page(this);
-        geolocation = new Geolocation(this);
     }
 
     /**
@@ -226,6 +227,7 @@ public class UI extends Component
      *            the application id
      *
      * @see #getUIId()
+     * @since 23.3
      */
     public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
@@ -341,6 +343,7 @@ public class UI extends Component
      *             if no UI is bound to the current thread
      * @see #getCurrent()
      * @see #access(Command)
+     * @since 25.0
      */
     public static UI getCurrentOrThrow() {
         UI ui = getCurrent();
@@ -636,6 +639,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a runnable that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
             SerializableRunnable detachHandler) {
@@ -665,6 +669,7 @@ public class UI extends Component
      *            <code>null</code> as described above
      * @return a consumer that will run either the access task or the detach
      *         handler, possibly asynchronously
+     * @since 1.3
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
@@ -703,6 +708,57 @@ public class UI extends Component
     public int getPollInterval() {
         return getNode().getFeature(PollConfigurationMap.class)
                 .getPollInterval();
+    }
+
+    /**
+     * Runs a task on the server once the given delay has elapsed in the
+     * browser.
+     * <p>
+     * The delay is measured by the browser: a one-shot timer is armed on the
+     * client when the response of the current request is sent, and the task is
+     * run on the server when the client makes a round trip back as the timer
+     * elapses. The task runs in the same way as any other event handler, with
+     * the session locked. This makes it possible to defer a single piece of
+     * server-side work for a short while without enabling
+     * {@link PushConfiguration push} just for that purpose.
+     * <p>
+     * The returned {@link Registration} can be used to cancel the task by
+     * clearing the client timer, so a task cancelled before its delay elapses
+     * does not run. A cancellation that races an already-elapsed timer (the
+     * round trip is in flight) may still run once.
+     * <p>
+     * Because the timer lives in the browser, the task is not run if the page
+     * is reloaded, navigated away from or closed before the delay elapses.
+     * <p>
+     * This method must be called while holding the session lock, i.e. from a
+     * regular request such as an event listener or from inside
+     * {@link #access(Command)}. The same applies to
+     * {@link Registration#remove()} on the returned registration.
+     *
+     * @param delay
+     *            the delay after which the task should be run, not
+     *            <code>null</code> and not negative
+     * @param task
+     *            the task to run on the server, not <code>null</code>; must be
+     *            serializable if the session is serialized
+     * @return a registration for cancelling the task before it runs, not
+     *         <code>null</code>
+     * @since 25.2
+     */
+    public Registration triggerAfter(Duration delay,
+            SerializableRunnable task) {
+        Objects.requireNonNull(delay, "Delay cannot be null");
+        Objects.requireNonNull(task, "Task cannot be null");
+        if (delay.isNegative()) {
+            throw new IllegalArgumentException("Delay cannot be negative");
+        }
+
+        TimeoutTrigger trigger = new TimeoutTrigger(this, delay);
+        trigger.triggers(new CallbackAction<>(task));
+
+        // Removing the trigger clears the client timer, so a task cancelled
+        // before its delay elapses never runs.
+        return trigger::remove;
     }
 
     /**
@@ -837,9 +893,42 @@ public class UI extends Component
      * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
+     * @since 25.1
      */
     public Signal<Locale> localeSignal() {
         return localeSignal.asReadonly();
+    }
+
+    /**
+     * Gets a read-only signal that holds the current {@link RouterState} of
+     * this UI.
+     * <p>
+     * The signal value is updated whenever a navigation completes, immediately
+     * before {@link AfterNavigationListener}s are notified, so reactive
+     * consumers and listeners observe the same state. Use {@link Signal#get()}
+     * to read reactively (creates a dependency when called inside a
+     * {@link Signal#effect}). Use {@link Signal#peek()} for a non-reactive
+     * snapshot.
+     * <p>
+     * Before the first navigation completes, the value is a {@code
+     * RouterState} with an empty {@link Location}, empty
+     * {@link RouteParameters}, an empty active chain and a {@code null}
+     * navigation target.
+     * <p>
+     * Fine-grained projections can be derived with {@link Signal#map}, for
+     * example:
+     *
+     * <pre>
+     * Signal&lt;Location&gt; locationSignal = ui.routerStateSignal()
+     *         .map(RouterState::location);
+     * </pre>
+     *
+     * @return a read-only signal holding the current router state, never
+     *         {@code null}
+     * @since 25.2
+     */
+    public Signal<RouterState> routerStateSignal() {
+        return internals.getRouterStateSignal();
     }
 
     /**
@@ -872,6 +961,7 @@ public class UI extends Component
      *
      * @param direction
      *            the direction to use, not {@code null}
+     * @since 3.1
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
@@ -917,16 +1007,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Returns the {@link Geolocation} facade for this UI, used to read the end
-     * user's physical location from the browser.
-     *
-     * @return the Geolocation facade
-     */
-    public Geolocation getGeolocation() {
-        return geolocation;
     }
 
     /**
@@ -1041,6 +1121,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 4.0
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
@@ -1079,6 +1160,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1.1
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParam... parameters) {
@@ -1119,6 +1201,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
@@ -1168,6 +1251,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 24.1
      */
     @SuppressWarnings("unchecked")
     public <C extends Component> Optional<C> navigate(
@@ -1203,6 +1287,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @since 23.2
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> Optional<T> navigate(
@@ -1308,6 +1393,7 @@ public class UI extends Component
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         getInternals().refreshCurrentRoute(refreshRouteChain);
@@ -1321,6 +1407,7 @@ public class UI extends Component
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
+     * @since 5.0
      */
     public boolean isNavigationSupported() {
         // By default any UI supports navigation. Override this to return false
@@ -1343,6 +1430,7 @@ public class UI extends Component
      * @return the currently active route instance if available
      * @throws IllegalStateException
      *             if current view is not yet available
+     * @since 24.0
      */
     public Component getCurrentView() {
         if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
@@ -1511,6 +1599,7 @@ public class UI extends Component
      * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...) for
      *      registering a listener which receives a ShortcutEvent
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(Command command, Key key,
             KeyModifier... keyModifiers) {
@@ -1545,6 +1634,7 @@ public class UI extends Component
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
      * @see Shortcuts for a more generic way to add a shortcut
+     * @since 1.3
      */
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
@@ -1575,6 +1665,7 @@ public class UI extends Component
      * @param listener
      *            the heartbeat listener
      * @return handler to remove the heartbeat listener
+     * @since 23.0
      */
     public Registration addHeartbeatListener(HeartbeatListener listener) {
         Objects.requireNonNull(listener, NULL_LISTENER);
@@ -1623,6 +1714,7 @@ public class UI extends Component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
      * @see #setChildComponentModal(Component, ModalityMode)
+     * @since 23.0
      */
     public void addModal(Component component) {
         add(component);
@@ -1667,6 +1759,7 @@ public class UI extends Component
      *            the child component to change state for
      * @param mode
      *            the modality mode, not null
+     * @since 25.0
      */
     public void setChildComponentModal(Component childComponent,
             ModalityMode mode) {
@@ -1691,6 +1784,7 @@ public class UI extends Component
      * Check if UI has a defined modal component.
      *
      * @return {@code true} if a modal component has been set
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return getInternals().hasModalComponent();
@@ -1706,6 +1800,7 @@ public class UI extends Component
      *
      * @param component
      *            component to add to modal component
+     * @since 23.0
      */
     public void addToModalComponent(Component component) {
         if (hasModalComponent()) {
@@ -1745,6 +1840,7 @@ public class UI extends Component
      * the servlet mapping used for serving the related UI.
      *
      * @return the view location, not <code>null</code>
+     * @since 24.3
      */
     public Location getActiveViewLocation() {
         return getInternals().getActiveViewLocation();
@@ -1755,6 +1851,7 @@ public class UI extends Component
      *
      * @return a list of active router target and parent layout instances,
      *         starting from the innermost part
+     * @since 24.3
      */
     public List<HasElement> getActiveRouterTargetsChain() {
         return getInternals().getActiveRouterTargetsChain();
@@ -1776,6 +1873,7 @@ public class UI extends Component
      *
      * @deprecated Use {@link UIInternals#getWrapperElement()} through
      *             {@code getInternals().getWrapperElement()} instead.
+     * @since 24.0
      */
     @Deprecated(forRemoval = true)
     public Element wrapperElement;
@@ -1790,11 +1888,15 @@ public class UI extends Component
      * Gets the new forward url.
      *
      * @return the new forward url
+     * @since 24.0
      */
     public String getForwardToClientUrl() {
         return forwardToClientUrl;
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-leave-navigation";
@@ -1823,6 +1925,9 @@ public class UI extends Component
         }
     }
 
+    /**
+     * @since 24.4
+     */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-navigate";
@@ -1853,6 +1958,7 @@ public class UI extends Component
          * @param trigger
          *            navigation trigger
          *
+         * @since 24.8
          */
         public BrowserNavigateEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
@@ -1878,6 +1984,7 @@ public class UI extends Component
      * the route chain if the {@code fullRefresh} event flag is active.
      *
      * @see #refreshCurrentRoute(boolean)
+     * @since 24.5
      */
     @DomEvent(BrowserRefreshEvent.EVENT_NAME)
     public static class BrowserRefreshEvent extends ComponentEvent<UI> {
@@ -1912,6 +2019,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void browserNavigate(BrowserNavigateEvent event) {
 
@@ -1999,6 +2107,7 @@ public class UI extends Component
      *
      * @param event
      *            the event from the browser
+     * @since 24.4
      */
     public void leaveNavigation(BrowserLeaveNavigationEvent event) {
         navigateToPlaceholder(new Location(PathUtil.trimPath(event.route),
@@ -2125,6 +2234,8 @@ public class UI extends Component
     /**
      * Placeholder view when navigating from server-side views to client-side
      * views.
+     * 
+     * @since 24.0
      */
     @Tag(Tag.DIV)
     @AnonymousAllowed

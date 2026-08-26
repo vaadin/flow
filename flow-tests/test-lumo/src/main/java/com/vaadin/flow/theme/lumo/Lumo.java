@@ -22,21 +22,17 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 /**
- * Lumo component theme class implementation. Used for testing theming features.
- *
- * @since 1.0
+ * Lumo theme stub used by tests that rely on Flow's classpath detection of
+ * {@code com.vaadin.flow.theme.lumo.Lumo} as the default theme (see
+ * {@code AbstractDependenciesScanner.LUMO}). Provides the {@code LIGHT} /
+ * {@code DARK} variants and the standard
+ * {@link com.vaadin.flow.theme.AbstractTheme} contract without pulling in any
+ * Vaadin Lumo npm packages — tests that need real Lumo styling must declare
+ * those deps themselves.
  */
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = TestVersion.VAADIN)
-@CssImport("@vaadin/vaadin-lumo-styles/lumo.css")
-@JsModule("@vaadin/vaadin-lumo-styles/vaadin-iconset.js")
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";

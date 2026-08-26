@@ -28,6 +28,8 @@ import java.util.function.Function;
  * asynchronously without holding irrelevant locks. It is assumed that the
  * environment is based on a {@link ThreadLocal} with regards to how results can
  * be cached between invocations.
+ * 
+ * @since 25.1
  */
 public abstract class SignalEnvironment {
     private static final List<SignalEnvironment> environments = new CopyOnWriteArrayList<>();
@@ -106,6 +108,7 @@ public abstract class SignalEnvironment {
      * @param environment
      *            the environment to register, not <code>null</code>
      * @return callback for unregistering the environment, not <code>null</code>
+     * @since 25.1.2
      */
     public static Runnable registerFirst(SignalEnvironment environment) {
         environments.add(0, Objects.requireNonNull(environment));

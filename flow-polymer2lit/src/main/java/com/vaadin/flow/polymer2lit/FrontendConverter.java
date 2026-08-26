@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -59,8 +60,8 @@ public class FrontendConverter implements AutoCloseable {
     @Override
     public void close() throws IOException {
         // cleanup by deleting all temp files
-        Files.deleteIfExists(converterTempPath);
-        Files.deleteIfExists(tempDirPath);
+        FileIOUtils.delete(converterTempPath);
+        FileIOUtils.delete(tempDirPath);
     }
 
     public boolean convertFile(Path filePath, boolean useLit1,

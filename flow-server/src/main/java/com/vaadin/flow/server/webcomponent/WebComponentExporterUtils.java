@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.ReflectTools;
  *
  * @author Vaadin Ltd
  *
+ * @since 2.2
  */
 public final class WebComponentExporterUtils {
 

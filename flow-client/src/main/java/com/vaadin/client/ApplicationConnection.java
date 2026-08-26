@@ -25,7 +25,6 @@ import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -90,8 +89,6 @@ public class ApplicationConnection {
             Console.debug(
                     "Vaadin application servlet version: " + servletVersion);
         }
-
-        ConnectionIndicator.setState(ConnectionIndicator.LOADING);
     }
 
     /**
@@ -210,12 +207,10 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-    
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-    
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
@@ -274,7 +269,7 @@ public class ApplicationConnection {
 
     private int getNodeId(Element element) {
         StateNode node = registry.getStateTree()
-                .getStateNodeForDomNode(DomApi.wrap(element));
+                .getStateNodeForDomNode(element);
         return node == null ? -1 : node.getId();
     }
 

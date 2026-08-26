@@ -35,6 +35,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * Watches the given theme folder for changes, combines the theme on changes and
  * pushes the new version to the browser.
  *
+ * @since 24.1
  */
 public class ThemeLiveUpdater implements Closeable {
 

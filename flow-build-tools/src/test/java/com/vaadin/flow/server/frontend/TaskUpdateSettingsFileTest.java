@@ -51,7 +51,7 @@ class TaskUpdateSettingsFileTest {
             "frontendFolder", "themeResourceFolder", "staticOutput",
             "statsOutput", "frontendBundleOutput", "devBundleOutput",
             "devBundleStatsOutput", "jarResourcesFolder",
-            "clientServiceWorkerSource");
+            "clientServiceWorkerSource", "clientIndexHtmlSource");
 
     @BeforeEach
     void setUp() throws IOException {

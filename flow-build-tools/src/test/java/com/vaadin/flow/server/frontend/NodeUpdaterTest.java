@@ -169,6 +169,7 @@ class NodeUpdaterTest {
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/core");
+        expectedDependencies.add("@babel/types");
         expectedDependencies
                 .add("@babel/plugin-transform-react-jsx-development");
         expectedDependencies.add("@babel/preset-react");
@@ -818,8 +819,8 @@ class NodeUpdaterTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be an object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
     }
 
     @Test

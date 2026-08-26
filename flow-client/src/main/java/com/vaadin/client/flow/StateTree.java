@@ -22,7 +22,6 @@ import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -186,7 +185,7 @@ public class StateTree {
      *            the dom node to find state node for
      * @return the state node or null
      */
-    public StateNode getStateNodeForDomNode(DomNode domNode) {
+    public StateNode getStateNodeForDomNode(Node domNode) {
         final JsArray<StateNode> stateNodes = idToNode.mapValues();
         for (int i = 0; i < stateNodes.length(); i++) {
             StateNode stateNode = stateNodes.get(i);

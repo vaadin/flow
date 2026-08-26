@@ -43,9 +43,9 @@ import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMP
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
-    private static final String BORDER_RADIUS = "3px";
-    private static final String OTHER_BORDER_RADIUS = "6px";
-    private static final String PARENT_BORDER_RADIUS = "9px";
+    private static final String BORDER_RADIUS = "11px";
+    private static final String OTHER_BORDER_RADIUS = "17px";
+    private static final String PARENT_BORDER_RADIUS = "23px";
 
     private static final String THEMES_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/themes/";

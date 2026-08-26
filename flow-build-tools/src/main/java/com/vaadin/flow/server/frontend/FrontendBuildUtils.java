@@ -50,6 +50,8 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
  * build process.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 public class FrontendBuildUtils {
 

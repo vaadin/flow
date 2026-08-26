@@ -34,6 +34,7 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#runInTransaction(ValueSupplier)
  * @see Signal#runWithoutTransaction(ValueSupplier)
  * @see Signal#untracked(ValueSupplier)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface ValueSupplier<T extends @Nullable Object>

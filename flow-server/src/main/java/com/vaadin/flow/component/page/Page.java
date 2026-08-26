@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -34,8 +37,10 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -52,11 +57,17 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class Page implements Serializable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
+
     private final UI ui;
     private final History history;
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
+    private final ValueSignal<PageVisibility> pageVisibilitySignal = new ValueSignal<>(
+            PageVisibility.UNKNOWN);
+    private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
+            .asReadonly();
 
     /**
      * Creates a page instance for the given UI.
@@ -67,6 +78,10 @@ public class Page implements Serializable {
     public Page(UI ui) {
         this.ui = ui;
         history = new History(ui);
+        ui.getElement()
+                .addEventListener("vaadin-page-visibility-change",
+                        e -> setPageVisibility(e.getEventDetail(String.class)))
+                .addEventDetail().debounce(100).allowInert();
     }
 
     /**
@@ -99,6 +114,7 @@ public class Page implements Serializable {
      * @param colorScheme
      *            the color scheme to set (e.g., ColorScheme.Value.DARK,
      *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
+     * @since 25.0
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
@@ -124,6 +140,7 @@ public class Page implements Serializable {
      * developer tools.
      *
      * @return the color scheme value, never {@code null}
+     * @since 25.0
      */
     public ColorScheme.Value getColorScheme() {
         return getExtendedClientDetails().getColorScheme();
@@ -269,6 +286,7 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @since 2.0
      */
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
@@ -291,6 +309,7 @@ public class Page implements Serializable {
      *
      * @param expression
      *            the JavaScript expression which return a Promise
+     * @since 2.1
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
@@ -325,6 +344,8 @@ public class Page implements Serializable {
      * attached)
      * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
      * additional wrapping)
+     * <li>{@link JsFunction} (manifested as a callable JavaScript function with
+     * its captured parameters pre-bound)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -338,6 +359,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -363,6 +385,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
@@ -397,6 +420,7 @@ public class Page implements Serializable {
      * The returned signal is read-only.
      *
      * @return a read-only signal with the current window size
+     * @since 25.1
      */
     public Signal<WindowSize> windowSizeSignal() {
         ensureWindowSizeSignal();
@@ -436,6 +460,7 @@ public class Page implements Serializable {
      *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see Registration
+     * @since 1.2
      */
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
@@ -478,10 +503,78 @@ public class Page implements Serializable {
     }
 
     /**
+     * Returns a read-only signal that tracks the browser tab's visibility and
+     * focus state.
+     * <p>
+     * The signal distinguishes between {@link PageVisibility#VISIBLE VISIBLE}
+     * (tab shown and focused), {@link PageVisibility#VISIBLE_NOT_FOCUSED
+     * VISIBLE_NOT_FOCUSED} (tab shown but behind another window or another
+     * application has focus), {@link PageVisibility#HIDDEN HIDDEN} (tab in
+     * background, minimized, or on a different virtual desktop), and
+     * {@link PageVisibility#UNKNOWN UNKNOWN} (the initial value, replaced with
+     * a real one before any user code observes the signal).
+     * <p>
+     * The signal value is seeded from the initial client bootstrap, so user
+     * code always sees a real value. Subscribe with
+     * {@code Signal.effect(owner, ...)} to react to changes; call
+     * {@code pageVisibilitySignal().peek()} for a snapshot outside a reactive
+     * context, and {@code .get()} inside one.
+     * <p>
+     * <b>Reliability caveats.</b> The value is best-effort:
+     * <ul>
+     * <li>Firefox defers the {@code visibilitychange} event while the window is
+     * blurred, so transitions from {@link PageVisibility#VISIBLE VISIBLE} to
+     * {@link PageVisibility#HIDDEN HIDDEN} may take up to half a second longer
+     * than on Chromium or Safari.</li>
+     * <li>The {@link PageVisibility#VISIBLE_NOT_FOCUSED VISIBLE_NOT_FOCUSED}
+     * distinction relies on {@code document.hasFocus()}, which is accurate in
+     * all supported browsers but depends on the OS reporting focus changes
+     * promptly — some window-manager configurations can delay it briefly.</li>
+     * <li>Rapid focus/blur bursts are intentionally coalesced
+     * ({@code debounce(100)}) so the signal settles once the sequence ends
+     * instead of firing on each intermediate state.</li>
+     * </ul>
+     *
+     * @return the read-only visibility signal
+     * @since 25.2
+     */
+    public Signal<PageVisibility> pageVisibilitySignal() {
+        return pageVisibilityReadOnly;
+    }
+
+    /**
+     * Sets the page visibility from a raw client-side value (e.g. from the
+     * bootstrap parameters or from a {@code vaadin-page-visibility-change} DOM
+     * event). {@code null} and unknown values are ignored — the latter is
+     * logged at debug level so a forward-compatible client value does not
+     * silently disappear.
+     *
+     * @param value
+     *            the raw value, or {@code null}
+     */
+    void setPageVisibility(String value) {
+        if (value == null) {
+            return;
+        }
+        try {
+            pageVisibilitySignal.set(PageVisibility.valueOf(value));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown page visibility value from client: {}",
+                    value);
+        }
+    }
+
+    /**
      * Opens the given url in a new tab.
      *
      * @param url
      *            the URL to open.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe; see {@link #openUnsafe(String)}
+     *             and the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
+     * @since 2.0
      */
     public void open(String url) {
         open(url, "_blank");
@@ -519,8 +612,64 @@ public class Page implements Serializable {
      *            the URL to open.
      * @param windowName
      *            the name of the window.
+     * @throws IllegalArgumentException
+     *             if {@code url} is {@code null}, or if the URL uses a scheme
+     *             that is not considered safe; see
+     *             {@link #openUnsafe(String, String)} and the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 2.2
      */
     public void open(String url, String windowName) {
+        if (url == null) {
+            throw new IllegalArgumentException("URL must not be null");
+        }
+        UrlUtil.validateUrl(ui, "URL", url, "openUnsafe(String, String)");
+        openInternal(url, windowName);
+    }
+
+    /**
+     * Opens the given url in a new tab without validating its scheme.
+     * <p>
+     * Unlike {@link #open(String)}, this method does not reject URLs based on
+     * the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it only
+     * for URLs that are fully under your control and known to be safe. Passing
+     * untrusted input here can expose the application to cross-site scripting
+     * (XSS) attacks.
+     *
+     * @see #open(String)
+     *
+     * @param url
+     *            the URL to open.
+     * @since 25.1.12
+     */
+    public void openUnsafe(String url) {
+        openInternal(url, "_blank");
+    }
+
+    /**
+     * Opens the given URL in a window with the given name without validating
+     * its scheme.
+     * <p>
+     * Unlike {@link #open(String, String)}, this method does not reject URLs
+     * based on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use
+     * it only for URLs that are fully under your control and known to be safe.
+     * Passing untrusted input here can expose the application to cross-site
+     * scripting (XSS) attacks.
+     *
+     * @see #open(String, String)
+     *
+     * @param url
+     *            the URL to open.
+     * @param windowName
+     *            the name of the window.
+     * @since 25.1.12
+     */
+    public void openUnsafe(String url, String windowName) {
+        openInternal(url, windowName);
+    }
+
+    private void openInternal(String url, String windowName) {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
@@ -536,6 +685,13 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe; call
+     *             {@code openUnsafe(uri, "_self")} to bypass scheme validation,
+     *             and see the {@value InitParameters#URL_SAFE_SCHEMES}
+     *             configuration property
+     * @since 2.0
      */
     public void setLocation(String uri) {
         open(uri, "_self");
@@ -547,6 +703,14 @@ public class Page implements Serializable {
      *
      * @param uri
      *            the URI to show
+     * @throws IllegalArgumentException
+     *             if {@code uri} is {@code null}, or if the URI uses a scheme
+     *             that is not considered safe; call
+     *             {@code openUnsafe(uri.toString(), "_self")} to bypass scheme
+     *             validation, and see the
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration
+     *             property
+     * @since 2.0
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
@@ -559,6 +723,8 @@ public class Page implements Serializable {
 
     /**
      * Callback for receiving extended client-side details.
+     * 
+     * @since 2.0
      */
     @FunctionalInterface
     public interface ExtendedClientDetailsReceiver extends Serializable {
@@ -590,6 +756,7 @@ public class Page implements Serializable {
      * time, use {@link ExtendedClientDetails#refresh(SerializableConsumer)}.
      *
      * @return the extended client details (never {@code null})
+     * @since 25.0
      */
     public ExtendedClientDetails getExtendedClientDetails() {
         return ui.getInternals().getExtendedClientDetails();
@@ -606,6 +773,7 @@ public class Page implements Serializable {
      *             details, or
      *             {@link ExtendedClientDetails#refresh(SerializableConsumer)}
      *             to refresh the cached values.
+     * @since 2.0
      */
     @Deprecated
     public void retrieveExtendedClientDetails(
@@ -636,6 +804,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the url is resolved.
+     * @since 7.0
      */
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
@@ -666,6 +835,7 @@ public class Page implements Serializable {
      *
      * @param callback
      *            to be notified when the direction is resolved.
+     * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
         executeJs("return document.dir").then(String.class, dir -> {

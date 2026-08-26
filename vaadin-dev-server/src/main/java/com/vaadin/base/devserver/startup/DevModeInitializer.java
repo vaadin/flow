@@ -81,6 +81,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
@@ -94,7 +95,7 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 8.0
  */
 public class DevModeInitializer implements Serializable {
 
@@ -184,6 +185,7 @@ public class DevModeInitializer implements Serializable {
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
+     * @since 24.7
      */
     public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
             VaadinContext context, Executor taskExecutor)
@@ -268,10 +270,13 @@ public class DevModeInitializer implements Serializable {
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        String[] additionalPostinstallPackages = config
-                .getStringProperty(
-                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
-                .split(",");
+        List<String> additionalPostinstallPackages = parsePackageList(
+                config.getStringProperty(
+                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, ""));
+
+        List<String> excludePostinstallPackages = parsePackageList(
+                config.getStringProperty(
+                        InitParameters.EXCLUDE_POSTINSTALL_PACKAGES, ""));
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
@@ -288,6 +293,9 @@ public class DevModeInitializer implements Serializable {
         boolean npmExcludeWebComponents = config
                 .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
 
+        int minimumFrontendPackageAgeDays = Integer.parseInt(config
+                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"));
+
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -301,8 +309,8 @@ public class DevModeInitializer implements Serializable {
                 .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
-                .withPostinstallPackages(
-                        Arrays.asList(additionalPostinstallPackages))
+                .withPostinstallPackages(additionalPostinstallPackages)
+                .withExcludePostinstallPackages(excludePostinstallPackages)
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
@@ -310,6 +318,8 @@ public class DevModeInitializer implements Serializable {
                         getFrontendExtraFileExtensions(config))
                 .withReact(reactEnable)
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
+                .withMinimumFrontendPackageAgeDays(
+                        minimumFrontendPackageAgeDays)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
                         DEFAULT_NODE_VERSION))
                 .withNodeFolder(config.getStringProperty(NODE_FOLDER, null))
@@ -353,6 +363,14 @@ public class DevModeInitializer implements Serializable {
                     () -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
+    }
+
+    static List<String> parsePackageList(String property) {
+        if (property.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(property.split(",")).map(String::trim)
+                .filter(input -> !input.isBlank()).toList();
     }
 
     static List<String> getFrontendExtraFileExtensions(

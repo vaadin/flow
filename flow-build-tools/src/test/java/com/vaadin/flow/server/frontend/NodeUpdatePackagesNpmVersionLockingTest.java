@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +43,9 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.DEPENDENCIES;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -106,6 +107,11 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     @Test
     void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
+        // Test when there is no vaadin-version-core.json available
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(null);
+
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
 
@@ -119,13 +125,15 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    void shouldNotUpdatesOverrides_whenHasUserModification()
+    void userPinnedDependency_overrideUsesDependencyReference()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ObjectNode overridesSection = JacksonUtils.createObjectNode();
         packageJson.set(OVERRIDES, overridesSection);
 
+        // The user pins the dependency to a custom version. The override is
+        // reset to a dependency reference so the pinned version is enforced.
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
@@ -133,7 +141,119 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        assertEquals(USER_PINNED_DEPENDENCY_VERSION,
+        assertEquals(RELATIVE_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void dependencyInDevDependencies_overrideUsesDependencyReference()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // The package is declared as a devDependency, so the override should
+        // reference it instead of pinning the platform version.
+        ((ObjectNode) packageJson.get("devDependencies")).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        assertEquals(RELATIVE_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void overrideReferencesMissingDependency_referenceRemoved()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        // A dependency reference whose target is not declared anywhere.
+        overridesSection.put("@some/unused", "$@some/unused");
+        packageJson.set(OVERRIDES, overridesSection);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        assertNull(packageJson.get(OVERRIDES).get("@some/unused"),
+                "Dangling dependency reference should be removed");
+    }
+
+    @Test
+    void legacyVaadinOverridesSection_removed() throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // Simulate a vaadin.overrides section written by an earlier Flow
+        // version, which is no longer used.
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        boolean updated = packageUpdater.lockVersionForNpm(packageJson);
+
+        assertTrue(updated, "Removing vaadin.overrides should mark as updated");
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "Legacy vaadin.overrides section should be removed");
+    }
+
+    @Test
+    void shouldUpdateOldPlatformOverride_whenDependencyVersionBumped()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+
+        // Simulate existing platform override from a previous Flow version.
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+        overridesSection.put(TEST_DEPENDENCY, "0.0.1");
+
+        // vaadin.overrides are missing in package.json from before 25.1
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void shouldUpdatePlatformOverride_whenDependencyVersionBumped()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+
+        // Simulate existing platform override from a previous Flow version.
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        packageJson.set(OVERRIDES, overridesSection);
+        overridesSection.put(TEST_DEPENDENCY, "0.0.1");
+
+        // vaadin.overrides tracks what Flow last wrote
+        ObjectNode vaadinSection = (ObjectNode) packageJson.get(VAADIN_DEP_KEY);
+        vaadinSection.set(OVERRIDES,
+                JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        // Override is updated to the new platform version
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+                packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
+    }
+
+    @Test
+    void platformDependencyNotDeclared_overridePinnedToPlatformVersion()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        // The platform package is not declared as a dependency, so a fresh
+        // override pinned to the platform version is added.
+        assertNull(packageJson.get(OVERRIDES));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
@@ -228,20 +348,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 overrides.get("parent-package").get("nested-dep").stringValue(),
                 "Nested override value should be preserved");
 
-        // Verify vaadin.overrides tracks the nested structure correctly
-        assertTrue(packageJson.has(VAADIN_DEP_KEY));
-        JsonNode vaadinSection = packageJson.get(VAADIN_DEP_KEY);
-        assertTrue(vaadinSection.has(OVERRIDES),
-                "vaadin.overrides should exist");
-        JsonNode vaadinOverrides = vaadinSection.get(OVERRIDES);
-        assertTrue(vaadinOverrides.has("parent-package"),
-                "vaadin.overrides should track nested override");
-        assertTrue(vaadinOverrides.get("parent-package").isObject(),
-                "vaadin.overrides should preserve nested structure");
-        assertEquals("1.0.0",
-                vaadinOverrides.get("parent-package").get("nested-dep")
-                        .stringValue(),
-                "vaadin.overrides should track exact nested values");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
 
         // Verify deep nesting is preserved
         JsonNode level1Override = overrides.get("level1");
@@ -281,32 +390,29 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         // Run version locking
         packageUpdater.lockVersionForNpm(packageJson);
 
-        // Verify pnpm flattens overrides with > separator
-        JsonNode overrides = packageJson.get(PNPM).get(OVERRIDES);
-        assertTrue(overrides.has("parent-package>nested-dep"),
+        // Verify pnpm flattens overrides into pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(baseDir)
+                .getOverrides();
+        assertTrue(overrides.containsKey("parent-package>nested-dep"),
                 "Nested override should be flattened with > separator for pnpm");
-        assertEquals("1.0.0",
-                overrides.get("parent-package>nested-dep").stringValue(),
+        assertEquals("1.0.0", overrides.get("parent-package>nested-dep"),
                 "Flattened override should have correct value");
 
-        // Verify flat override stays flat
-        assertTrue(overrides.has("flat-dep"),
+        assertTrue(overrides.containsKey("flat-dep"),
                 "Flat override should remain unchanged");
-        assertEquals("3.0.0", overrides.get("flat-dep").stringValue());
+        assertEquals("3.0.0", overrides.get("flat-dep"));
 
-        // Verify vaadin.overrides tracks the original nested structure
-        JsonNode vaadinOverrides = packageJson.get(VAADIN_DEP_KEY)
-                .get(OVERRIDES);
-        assertTrue(vaadinOverrides.has("parent-package"),
-                "vaadin.overrides should track nested structure");
-        assertTrue(vaadinOverrides.get("parent-package").isObject(),
-                "vaadin.overrides should preserve object format");
+        // The pnpm field must not be left in package.json
+        assertFalse(packageJson.has(PNPM),
+                "pnpm field should not be written to package.json");
 
-        // Verify deep nesting is fully flattened
-        assertTrue(overrides.has("level1>level2>deep-dep"),
+        // The obsolete vaadin.overrides tracking section is not written
+        assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
+
+        assertTrue(overrides.containsKey("level1>level2>deep-dep"),
                 "Deeply nested override should be fully flattened");
-        assertEquals("2.0.0",
-                overrides.get("level1>level2>deep-dep").stringValue());
+        assertEquals("2.0.0", overrides.get("level1>level2>deep-dep"));
     }
 
     @Test
@@ -314,43 +420,120 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
         ObjectNode packageJson = packageUpdater.getPackageJson();
 
-        // User adds a flat override in pnpm format
-        ObjectNode overridesSection = JacksonUtils.createObjectNode();
-        overridesSection.put("user-package>user-dep", "5.0.0");
-        JacksonUtils.setNestedKey(packageJson, List.of(PNPM, OVERRIDES),
-                overridesSection,
+        // User adds a flat override directly in pnpm-workspace.yaml
+        PnpmWorkspaceFile workspace = new PnpmWorkspaceFile(baseDir);
+        workspace.setOverrides(Map.of("user-package>user-dep", "5.0.0"));
+        workspace.save();
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        Map<String, String> overrides = new PnpmWorkspaceFile(baseDir)
+                .getOverrides();
+        assertEquals("5.0.0", overrides.get("user-package>user-dep"),
+                "User's override should be preserved");
+
+        // Run again to ensure it remains stable
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        overrides = new PnpmWorkspaceFile(baseDir).getOverrides();
+        assertEquals("5.0.0", overrides.get("user-package>user-dep"),
+                "User's override should remain preserved on second run");
+    }
+
+    @Test
+    void pnpmIsInUse_workspaceFileReformattedByPnpm_notReportedAsChange()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        File workspaceFile = new File(baseDir,
+                PnpmWorkspaceFile.WORKSPACE_FILE);
+        assertTrue(workspaceFile.exists(),
+                "Precondition: the run wrote the workspace file");
+
+        // pnpm rewrites the file while installing, adding its own block with
+        // scalars unquoted where Flow quotes them. The configuration Flow
+        // manages is unchanged, so the next run must not report a change: that
+        // would mark package.json as modified and run a package install.
+        Files.writeString(workspaceFile.toPath(), Files
+                .readString(workspaceFile.toPath(), StandardCharsets.UTF_8)
+                + "allowBuilds:\n  esbuild: set this to true or false\n",
+                StandardCharsets.UTF_8);
+
+        assertFalse(packageUpdater.lockVersionForNpm(packageJson),
+                "Reformatting by pnpm must not be reported as a dependency change");
+    }
+
+    @Test
+    void pnpmIsInUse_legacyPnpmOverridesInPackageJson_migratedToWorkspace()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+
+        // Simulate a project upgraded from an older Flow: overrides still in
+        // package.json.pnpm.overrides.
+        ObjectNode legacy = JacksonUtils.createObjectNode();
+        legacy.put("legacy-dep", "9.9.9");
+        JacksonUtils.setNestedKey(packageJson, List.of(PNPM, OVERRIDES), legacy,
                 (nonObjectNode) -> JacksonUtils.createObjectNode());
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        // Verify user's override is preserved
-        JsonNode overrides = JacksonUtils.getNestedKey(packageJson,
-                List.of(PNPM, OVERRIDES));
-        assertNotNull(overrides);
-        assertTrue(overrides.has("user-package>user-dep"),
-                "User's override should be preserved");
-        assertEquals("5.0.0",
-                overrides.get("user-package>user-dep").stringValue());
+        assertFalse(packageJson.has(PNPM),
+                "Legacy pnpm field must be removed from package.json");
+        Map<String, String> overrides = new PnpmWorkspaceFile(baseDir)
+                .getOverrides();
+        assertEquals("9.9.9", overrides.get("legacy-dep"),
+                "Legacy override must be migrated to pnpm-workspace.yaml");
+    }
 
-        // Run again to ensure it remains stable
-        packageUpdater.lockVersionForNpm(packageJson);
+    @Test
+    void switchingToNpm_managedOverridesWrittenToPackageJson()
+            throws IOException {
+        // Start on pnpm and produce a workspace override.
+        TaskUpdatePackages pnpmUpdater = createPackageUpdater(true);
+        ObjectNode pnpmPackageJson = pnpmUpdater.getPackageJson();
+        ((ObjectNode) pnpmPackageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        pnpmUpdater.generateVersionsJson(pnpmPackageJson);
+        pnpmUpdater.lockVersionForNpm(pnpmPackageJson);
+        assertFalse(new PnpmWorkspaceFile(baseDir).getOverrides().isEmpty(),
+                "Precondition: pnpm run wrote overrides to the workspace file");
 
-        overrides = JacksonUtils.getNestedKey(packageJson,
-                List.of(PNPM, OVERRIDES));
-        assertNotNull(overrides);
-        assertTrue(overrides.has("user-package>user-dep"),
-                "User's override should remain preserved on second run");
-        assertEquals("5.0.0",
-                overrides.get("user-package>user-dep").stringValue());
+        // Now switch to npm: managed overrides are (re)written to package.json.
+        TaskUpdatePackages npmUpdater = createPackageUpdater(false);
+        ObjectNode npmPackageJson = npmUpdater.getPackageJson();
+        ((ObjectNode) npmPackageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        npmUpdater.generateVersionsJson(npmPackageJson);
+        npmUpdater.lockVersionForNpm(npmPackageJson);
+
+        assertNotNull(npmPackageJson.get(OVERRIDES),
+                "npm overrides must be written to package.json");
+        assertTrue(npmPackageJson.get(OVERRIDES).has(TEST_DEPENDENCY),
+                "Managed override must be present in npm overrides");
+        // pnpm-workspace.yaml is left untouched: Flow manages it only while
+        // pnpm is in use, so an npm build never rewrites or deletes the user's
+        // file.
+        assertTrue(new File(baseDir, PnpmWorkspaceFile.WORKSPACE_FILE).exists(),
+                "pnpm-workspace.yaml must be left in place when using npm");
+        assertFalse(new PnpmWorkspaceFile(baseDir).getOverrides().isEmpty(),
+                "Existing workspace overrides must be preserved");
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm,
             ObjectNode testOverrides) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true)
+        Options options = new MockOptions(classFinder, baseDir)
+                .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
+                .withProductionMode(true)
                 .withFrontendDependenciesScanner(scanner);
 
         return new TaskUpdatePackages(options) {

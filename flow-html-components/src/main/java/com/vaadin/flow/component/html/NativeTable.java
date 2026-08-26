@@ -35,7 +35,7 @@ import com.vaadin.flow.component.Tag;
  * <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  * HTML</a>).
  *
- * @since 24.4
+ * @since 24.5
  * @deprecated since 25.2; use {@link Table} instead.
  */
 @Deprecated

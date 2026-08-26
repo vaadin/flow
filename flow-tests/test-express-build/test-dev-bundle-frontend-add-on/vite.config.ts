@@ -1,5 +1,5 @@
 import { PluginOption, UserConfigFn } from 'vite';
-import { overrideVaadinConfig } from './vite.generated';
+import { overrideVaadinConfig } from './vite.generated.ts';
 
 function addCssToIndex(): PluginOption {
   return {

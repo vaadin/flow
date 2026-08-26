@@ -63,11 +63,11 @@ public class PwaTestIT extends ChromeDeviceTest {
                         .size());
 
         // test theme color for apple mobile
-        Assert.assertEquals(1, head
-                .findElements(By.xpath(
+        Assert.assertEquals(1,
+                head.findElements(By.xpath(
                         "//meta[@name='apple-mobile-web-app-status-bar-style']"
-                                + "[@content='" + AppShell.THEME_COLOR + "']"))
-                .size());
+                                + "[@content='black-translucent']"))
+                        .size());
         // icons test
         checkIcons(head.findElements(By.xpath("//link[@rel='shortcut icon']")),
                 1);

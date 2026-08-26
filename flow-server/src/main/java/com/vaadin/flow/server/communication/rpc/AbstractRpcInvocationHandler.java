@@ -31,7 +31,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -82,30 +81,56 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private void logHandlingIgnoredMessage(StateNode node, String reason) {
-        StringBuilder targetInfo = new StringBuilder();
-        if (node != null && node.hasFeature(ElementData.class)) {
-            Element element = Element.get(node);
-            Optional<Component> component = element.getComponent();
-            targetInfo.append(" element with tag").append("'")
-                    .append(element.getTag()).append("'");
-            if (component.isPresent()) {
-                targetInfo.append(" Component: ").append("'")
-                        .append(component.get().getClass().getName())
-                        .append("'");
-                Optional<Component> routeComponent = ComponentUtil
-                        .getRouteComponent(component.get());
-                if (routeComponent.isPresent()) {
-                    targetInfo.append(" Route: ").append("'")
-                            .append(routeComponent.get().getClass()
-                                    .getAnnotation(Route.class).value())
-                            .append("'");
-                }
-            }
-        }
         getLogger().info(
                 "Ignored RPC for invocation handler '{}' from "
-                        + "the client side for an {} node id='{}'{}",
-                getClass().getName(), reason, node.getId(), targetInfo);
+                        + "the client side for an {} {}",
+                getClass().getName(), reason, describeTarget(node));
+    }
+
+    /**
+     * Describes the target of an RPC invocation so that an application
+     * developer can tell which part of the application it relates to. In
+     * addition to the state node id, the description contains the element tag
+     * and, when available, the component class and the routing target that the
+     * component is used in.
+     *
+     * @param node
+     *            the target node, may be {@code null}
+     * @return a description of the target, not {@code null}
+     * @since 25.3
+     */
+    protected static String describeTarget(StateNode node) {
+        if (node == null) {
+            return "unknown node";
+        }
+
+        StringBuilder targetInfo = new StringBuilder("node id=")
+                .append(node.getId());
+        if (node.hasFeature(ElementData.class)) {
+            Element element = Element.get(node);
+            targetInfo.append(", element with tag '").append(element.getTag())
+                    .append("'");
+            Optional<Component> component = element.getComponent();
+            if (component.isPresent()) {
+                targetInfo.append(", component '")
+                        .append(component.get().getClass().getName())
+                        .append("'");
+                /*
+                 * The routing target is identified by its class since the path
+                 * in its annotation is not necessarily the path it is served
+                 * from: the path may be a placeholder for a name derived from
+                 * the class, and it doesn't include the prefixes that parent
+                 * layouts contribute.
+                 */
+                ComponentUtil.getRouteComponent(component.get()).filter(
+                        routeComponent -> routeComponent != component.get())
+                        .ifPresent(routeComponent -> targetInfo
+                                .append(", used in '")
+                                .append(routeComponent.getClass().getName())
+                                .append("'"));
+            }
+        }
+        return targetInfo.toString();
     }
 
     /**
@@ -214,6 +239,7 @@ public abstract class AbstractRpcInvocationHandler
      *            the JsonObject containing invocation properties.
      * @return a boolean indicating that the inert status should be ignored for
      *         the current invocation or not.
+     * @since 25.0
      */
     protected boolean allowInert(UI ui, JsonNode invocationJson) {
         return isValidPollInvocation(ui, invocationJson);
@@ -228,6 +254,7 @@ public abstract class AbstractRpcInvocationHandler
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
      * @return an optional runnable
+     * @since 25.0
      */
     protected abstract Optional<Runnable> handleNode(StateNode node,
             JsonNode invocationJson);

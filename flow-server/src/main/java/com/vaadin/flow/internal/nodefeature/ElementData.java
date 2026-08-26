@@ -80,6 +80,7 @@ public class ElementData extends NodeMap {
      *
      * @param namespace
      *            the namespace to set
+     * @since 25.0
      */
     public void setNamespace(String namespace) {
         put(NodeProperties.NAMESPACE, namespace);
@@ -89,6 +90,7 @@ public class ElementData extends NodeMap {
      * Gets the namespace of the element.
      *
      * @return namespace
+     * @since 25.0
      */
     public String getNamespace() {
         return getOrDefault(NodeProperties.NAMESPACE, null);
@@ -99,6 +101,7 @@ public class ElementData extends NodeMap {
      *
      * @param payload
      *            the payload data
+     * @since 25.0
      */
     public void setPayload(BaseJsonNode payload) {
         put(NodeProperties.PAYLOAD, payload);
@@ -160,6 +163,7 @@ public class ElementData extends NodeMap {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
+     * @since 25.1
      */
     public SignalBinding<Boolean> bindVisibleSignal(Element owner,
             Signal<Boolean> signal) {

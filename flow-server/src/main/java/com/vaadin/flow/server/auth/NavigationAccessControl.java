@@ -80,6 +80,7 @@ import com.vaadin.flow.server.WrappedSession;
  * @see AnnotatedViewAccessChecker
  * @see #setLoginView(String)
  * @see #setLoginView(Class)
+ * @since 24.3
  */
 public class NavigationAccessControl implements BeforeEnterListener {
 
@@ -417,6 +418,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @param type
      *            the type of access checker to check for
      * @return {@code true} if a checker is in use, {@code false} otherwise
+     * @since 24.4
      */
     public boolean hasAccessChecker(
             Class<? extends NavigationAccessChecker> type) {
@@ -437,6 +439,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @param vaadinRequest
      *            the Vaadin request.
      * @return a new navigation context instance.
+     * @since 24.4
      */
     public NavigationContext createNavigationContext(Class<?> navigationTarget,
             String path, VaadinService vaadinService,

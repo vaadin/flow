@@ -31,9 +31,9 @@ holds `private final UI ui`, and all `executeJs` calls go through
 `ui.getElement()` or `ui.getPage()`. Follow the `Page` / `History`
 pattern. Enforce single-instance creation in the constructor if needed.
 
-If the facade hands out a stateful handle (e.g. `Geolocation.track()`
-returning a `GeolocationTracker`), make the handle's constructor
-**package-private** so application code cannot bypass the facade.
+If a feature hands out a stateful handle (e.g. `Geolocation.watchPosition()`
+returning a `GeolocationWatcher`), make the handle's constructor
+**package-private** so application code cannot bypass the entry point.
 
 ### Keep internal mutators off user-facing classes
 
@@ -50,9 +50,9 @@ is a DX hazard: for example, `setGeolocationAvailability` lives on
 For tunable knobs (accuracy, timeout, cache age), prefer an immutable
 Java record over a long parameter list:
 
-- Public canonical constructor with `@Nullable` params and validation
-  (reject negative durations, etc.) — NullAway needs the canonical ctor
-  spelled out explicitly rather than the record-derived one.
+- Compact constructor with validation (reject negative durations, etc.).
+  NullAway reads `@Nullable` off the record components, so there is no
+  need to spell out the full canonical constructor.
 - Builder for ergonomics. Offer both `Duration` and `int`-ms overloads
   on time-related setters where the wire format is ms; applications get
   a fluent `Duration` API and the record stores the int.
@@ -77,6 +77,47 @@ site. Other precedents: `windowSizeSignal`, `validationStatusSignal`.
   pattern match without a `case null` arm.
 - Inside a reactive context, callers use `.get()` (subscribes); outside,
   they use `.peek()` (snapshot). Document this in the accessor's Javadoc.
+
+### Interfaces vs abstract classes
+
+When introducing a new type that callers will receive or pass around
+(e.g. `Trigger`, `Action`, `Argument`), pick *one* of: a single concrete /
+abstract class named `Xyz`, or both an interface `Xyz` and an abstract
+class `AbstractXyz`. Don't introduce one half speculatively.
+
+- **Default to a single abstract (or concrete) class named `Xyz`.** Skip
+  the interface unless you can demonstrate, today, a useful implementation
+  that does *not* extend the abstract class. Introducing the interface
+  later does not retroactively help: every existing method signature that
+  accepts `AbstractXyz` will still reject interface-only implementations,
+  so the migration is just as expensive as not having had an interface at
+  all.
+- **Only add an interface alongside an abstract class if you can ship a
+  worked example of using the interface without the abstract class.** The
+  interface is a commitment that it stands on its own today and keeps
+  standing — not an option you keep open "in case". An interface that
+  only ever has one valid implementation adds noise without value.
+- **Name it `Xyz`, not `AbstractXyz`, unless an interface exists or is
+  explicitly planned.** The class name appears in every method signature
+  that accepts an instance (`doSomething(Trigger trigger)` reads better
+  than `doSomething(AbstractTrigger trigger)`), and renaming later
+  doesn't unblock interface adoption — see above.
+- **Prefer an interface with default methods over an abstract class when
+  there is no state.** Abstract classes earn their keep by holding
+  fields. If today and foreseeably the type has none, an interface is
+  the lighter choice.
+- **Don't reach for multiple inheritance.** The usual motivation for
+  splitting interface + abstract class is "what if someone needs to
+  combine this with another base class?". In practice almost every such
+  case is better served by a separate "view" class that exposes the same
+  underlying state, or by composition. Design the view, then decide if
+  the interface is actually needed.
+- **Don't make a sealed interface that permits a single abstract class.**
+  That combination has no callers it serves: it can't be implemented
+  outside the package (sealed), it can't be subclassed except via the one
+  permitted class, and it adds a type with no behaviour. Either keep just
+  the abstract class, or open the interface up to genuinely independent
+  implementations.
 
 ### Result types: sealed interfaces + pattern matching
 
@@ -107,9 +148,9 @@ public sealed interface Foo permits FooA, FooB, FooC {}
   fields may be `@Nullable` because the wire format permits omissions.
   Keep the wire record private and translate to a non-null public shape
   at the boundary.
-- NullAway requires `@Nullable` on constructor type arguments for
-  nullable-parameterised signals:
-  `new ValueSignal<@Nullable X>(null)`.
+- `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
+  and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
+  and `Signal.cached(...)` need no repeated type argument or type witness.
 
 ### Lifecycle and cleanup
 

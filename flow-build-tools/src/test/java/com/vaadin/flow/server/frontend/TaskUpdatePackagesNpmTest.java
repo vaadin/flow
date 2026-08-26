@@ -29,11 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class TaskUpdatePackagesNpmTest {
 
     private static final String PLATFORM_DIALOG_VERSION = "2.5.2";
@@ -806,14 +807,12 @@ class TaskUpdatePackagesNpmTest {
                 oldPlatformVersion);
         verifyVersionLockingWithPnpmOverrides(true, true, true);
 
-        JsonNode pnpm = getOrCreatePackageJson().get(PNPM);
-        assertNotNull(pnpm, "Object for 'pnpm' should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
-        assertNotNull(overrides, "Object for 'overrides' should exist");
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
-        assertTrue(overrides.has(CUSTOM_COMPONENT),
+        assertTrue(overrides.containsKey(CUSTOM_COMPONENT),
                 "Custom component override was not present");
-        assertEquals("1.2.1", overrides.get(CUSTOM_COMPONENT).asString());
+        assertEquals("1.2.1", overrides.get(CUSTOM_COMPONENT));
     }
 
     @Test
@@ -1261,34 +1260,30 @@ class TaskUpdatePackagesNpmTest {
     private void verifyVersionLockingWithPnpmOverrides(boolean hasDialogLocking,
             boolean hasElementMixinLocking, boolean hasOverlayLocking)
             throws IOException {
-        JsonNode pnpm = getOrCreatePackageJson().get(PNPM);
-        assertNotNull(pnpm, "Object for 'pnpm' should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
-        assertNotNull(overrides, "Object for 'overrides' should exist");
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
         if (hasDialogLocking) {
-            assertTrue(overrides.has(VAADIN_DIALOG),
+            assertTrue(overrides.containsKey(VAADIN_DIALOG),
                     "Dialog override was not present");
-            assertEquals("$" + VAADIN_DIALOG,
-                    overrides.get(VAADIN_DIALOG).asString());
+            assertEquals("$" + VAADIN_DIALOG, overrides.get(VAADIN_DIALOG));
         } else {
             assertNull(overrides.get(VAADIN_DIALOG),
                     "vaadin-dialog dependency should not be present");
         }
         if (hasElementMixinLocking) {
-            assertTrue(overrides.has(VAADIN_ELEMENT_MIXIN),
+            assertTrue(overrides.containsKey(VAADIN_ELEMENT_MIXIN),
                     "Element-Mixin override was not present");
             assertEquals("$" + VAADIN_ELEMENT_MIXIN,
-                    overrides.get(VAADIN_ELEMENT_MIXIN).asString());
+                    overrides.get(VAADIN_ELEMENT_MIXIN));
         } else {
             assertNull(overrides.get(VAADIN_ELEMENT_MIXIN),
                     "vaadin-element-mixin dependency should not be present");
         }
         if (hasOverlayLocking) {
-            assertTrue(overrides.has(VAADIN_OVERLAY),
+            assertTrue(overrides.containsKey(VAADIN_OVERLAY),
                     "Overlay override was not present");
-            assertEquals("$" + VAADIN_OVERLAY,
-                    overrides.get(VAADIN_OVERLAY).asString());
+            assertEquals("$" + VAADIN_OVERLAY, overrides.get(VAADIN_OVERLAY));
         } else {
             assertNull(overrides.get(VAADIN_OVERLAY),
                     "vaadin-overlay dependency should not be present");
@@ -1332,8 +1327,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
     }
 
     @Test
@@ -1353,7 +1348,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_pwaOfflineEnabled_overridesTrackedInVaadinSection()
+    void npmIsInUse_pwaOfflineEnabled_overridesNotTrackedInVaadinSection()
             throws IOException {
         createBasicVaadinVersionsJson();
         final TaskUpdatePackages task = createTaskWithPwa(
@@ -1361,15 +1356,66 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
 
         ObjectNode pkgJson = getOrCreatePackageJson();
-        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
-        JsonNode vaadin = pkgJson.get(VAADIN_DEP_KEY);
-        assertTrue(vaadin.has(OVERRIDES),
-                "vaadin.overrides section should exist");
-        JsonNode vaadinOverrides = vaadin.get(OVERRIDES);
+        // The workbox override is added to the main overrides section
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be present");
 
-        // Verify workbox-build is tracked in vaadin.overrides
-        assertTrue(vaadinOverrides.has("workbox-build"),
-                "workbox-build should be tracked in vaadin.overrides");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
+    }
+
+    @Test
+    void npmIsInUse_staleOverridesAndTrackingSection_healedToPlatformVersionsOnBump()
+            throws IOException {
+        // Reproduces the upgrade scenario from #24702: a project carried over
+        // from an earlier Vaadin version where the "overrides" section and the
+        // obsolete "vaadin.overrides" tracking section have drifted out of sync
+        // and lock platform packages to an older version. On the next run with
+        // newer platform versions, all locks must heal to the new versions and
+        // the tracking section must be dropped, without needing clean-frontend.
+        final String oldVersion = "1.0.0";
+        final String newVersion = "2.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        // Dialog is a direct dependency pinned to the old version; overlay is a
+        // transitive platform package locked to the old version directly.
+        ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
+        overrides.put(VAADIN_OVERLAY, oldVersion);
+        pkgJson.set(OVERRIDES, overrides);
+        // Drifted tracking section: differs from the live overrides so the old
+        // diff logic would treat the live values as user opt-outs and freeze
+        // them at the old version.
+        JacksonUtils.setNestedKey(pkgJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_OVERLAY),
+                StringNode.valueOf(newVersion),
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        pkgJson = getOrCreatePackageJson();
+        JsonNode healed = pkgJson.get(OVERRIDES);
+        // The direct dependency was bumped to the new version and stays locked
+        // by reference.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
+        assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
+        // The overlay lock was frozen at the old version by the drifted
+        // tracking section; it now heals to the bumped platform version. The
+        // old diff logic would have left it stuck at oldVersion.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_OVERLAY).asString());
+        assertEquals("$" + VAADIN_OVERLAY,
+                healed.get(VAADIN_OVERLAY).asString());
+        // The obsolete tracking section is removed.
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides tracking section should be removed on upgrade");
     }
 
     @Test
@@ -1532,27 +1578,20 @@ class TaskUpdatePackagesNpmTest {
         assertFalse(pkgJson.has(OVERRIDES),
                 "npm overrides should not exist at root when pnpm is enabled");
 
-        // Verify pnpm.overrides section exists
-        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
-        JsonNode pnpm = pkgJson.get(PNPM);
-        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
+        // Verify the pnpm field is not left in package.json
+        assertFalse(pkgJson.has(PNPM),
+                "pnpm field should not be written to package.json");
+
+        // Verify overrides are flattened into pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
-        assertTrue(overrides.has("workbox-build>glob"),
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
-        // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
-                "Flattened override should be a string value");
-
         // Verify nested object form does NOT exist
-        assertFalse(overrides.has("workbox-build"),
+        assertFalse(overrides.containsKey("workbox-build"),
                 "Nested object workbox-build should not exist in pnpm overrides");
     }
 
@@ -1568,10 +1607,9 @@ class TaskUpdatePackagesNpmTest {
 
         // Verify flattened overrides were added
         ObjectNode pkgJson = getOrCreatePackageJson();
-        assertTrue(pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES));
-        assertTrue(
-                pkgJson.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened override should be present after first run");
 
         // Second run with PWA offline disabled
@@ -1580,15 +1618,9 @@ class TaskUpdatePackagesNpmTest {
 
         // Verify all flattened workbox overrides were removed
         pkgJson = getOrCreatePackageJson();
-        if (pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES)) {
-            JsonNode overrides = pkgJson.get(PNPM).get(OVERRIDES);
-            assertFalse(overrides.has("workbox-build>serialize-javascript"),
-                    "Flattened workbox-build>serialize-javascript should be removed");
-            assertFalse(overrides.has("workbox-build>@rollup/plugin-terser"),
-                    "Flattened workbox-build>@rollup/plugin-terser should be removed");
-            assertFalse(overrides.has("workbox-build>glob"),
-                    "Flattened workbox-build>glob should be removed");
-        }
+        overrides = new PnpmWorkspaceFile(npmFolder).getOverrides();
+        assertFalse(overrides.containsKey("workbox-build>glob"),
+                "Flattened workbox-build>glob should be removed");
 
         // Also verify vaadin.overrides was cleaned up
         if (pkgJson.has(VAADIN_DEP_KEY)
@@ -1600,24 +1632,88 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
+    /**
+     * This tests that other systems generate the same hash as we get for a
+     * Windows machine. There was an issue in the jackson indenter that used
+     * different line separators on windows (\r\n) and linux (\n).
+     */
+    @Test
+    void windowsHashedPackageJson_otherSystemsGetSameHash() {
+        var json = """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "type": "module",
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.23",
+                    "@vaadin/react-components": "25.1.2",
+                    "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                    "adaptivecards": "1.2.6",
+                    "brace": "0.11.1",
+                    "date-fns": "4.1.0",
+                    "lit": "3.3.2",
+                    "react": "19.2.4",
+                    "react-dom": "19.2.4",
+                    "react-router": "7.13.1"
+                  },
+                  "devDependencies": {
+                    "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                    "@types/node": "25.5.0",
+                    "@types/react": "19.2.14",
+                    "@types/react-dom": "19.2.3",
+                    "typescript": "5.9.3",
+                    "vite": "7.3.2",
+                    "vite-plugin-checker": "0.12.0"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                        "@vaadin/common-frontend": "0.0.23",
+                        "@vaadin/react-components": "25.1.2",
+                        "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                        "adaptivecards": "1.2.6",
+                        "brace": "0.11.1",
+                        "date-fns": "4.1.0",
+                        "lit": "3.3.2",
+                        "react": "19.2.4",
+                        "react-dom": "19.2.4",
+                        "react-router": "7.13.1"
+                    },
+                    "devDependencies": {
+                        "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                        "@types/node": "25.5.0",
+                        "@types/react": "19.2.14",
+                        "@types/react-dom": "19.2.3",
+                        "typescript": "5.9.3",
+                        "vite": "7.3.2",
+                        "vite-plugin-checker": "0.12.0"
+                    },
+                    "hash": "3e24abefab9213fc1c8c312e7bb14eb645dfefda1f0ce799eef30bc00d2eb9c4"
+                  }
+                }
+                """;
+
+        var packageJson = JacksonUtils.readTree(json);
+        var hash = TaskUpdatePackages.generatePackageJsonHash(packageJson,
+                Map.of());
+        Assert.assertEquals(packageJson.get("vaadin").get("hash").asString(),
+                hash);
+    }
+
     @Test
     void generatePackageJsonHash_pnpmOverrides_includedInHash()
             throws IOException {
-        // Create package.json with pnpm overrides
+        // Create package.json and pnpm overrides (stored in
+        // pnpm-workspace.yaml, passed in separately from package.json)
         ObjectNode pkgJson = getOrCreatePackageJson();
-        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
-        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
-        pnpmOverrides.put("some-package", "1.0.0");
-        pnpmSection.set(OVERRIDES, pnpmOverrides);
-        pkgJson.set(PNPM, pnpmSection);
 
         String hashWithPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("some-package", "1.0.0"));
 
         // Modify pnpm overrides and verify hash changes
-        pnpmOverrides.put("some-package", "2.0.0");
         String hashWithModifiedOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("some-package", "2.0.0"));
 
         assertNotEquals(hashWithPnpmOverrides, hashWithModifiedOverrides,
                 "Hash should change when pnpm overrides are modified");
@@ -1629,17 +1725,12 @@ class TaskUpdatePackagesNpmTest {
         // Create package.json without pnpm overrides
         ObjectNode pkgJson = getOrCreatePackageJson();
         String hashWithoutPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson, Map.of());
 
-        // Add pnpm overrides
-        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
-        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
-        pnpmOverrides.put("workbox-build>serialize-javascript", "7.0.4");
-        pnpmSection.set(OVERRIDES, pnpmOverrides);
-        pkgJson.set(PNPM, pnpmSection);
-
+        // Add pnpm overrides (stored in pnpm-workspace.yaml)
         String hashWithPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("workbox-build>glob", "13.0.5"));
 
         assertNotEquals(hashWithoutPnpmOverrides, hashWithPnpmOverrides,
                 "Hash should change when pnpm overrides are added");
@@ -1675,12 +1766,10 @@ class TaskUpdatePackagesNpmTest {
         assertNotEquals(hashWithoutWorkboxOverrides, hashWithWorkboxOverrides,
                 "Hash should be different when workbox overrides are added");
 
-        // Verify flattened overrides exist
-        assertTrue(pkgJsonWithPwa.has(PNPM));
-        assertTrue(pkgJsonWithPwa.get(PNPM).has(OVERRIDES));
-        assertTrue(
-                pkgJsonWithPwa.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+        // Verify flattened overrides exist in pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox override should be present");
     }
 
@@ -1710,33 +1799,26 @@ class TaskUpdatePackagesNpmTest {
         assertFalse(pkgJson.has(OVERRIDES),
                 "npm overrides should not exist at root when pnpm is enabled");
 
-        // Verify pnpm.overrides section exists
-        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
-        JsonNode pnpm = pkgJson.get(PNPM);
-        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
+        // Verify the pnpm field is not left in package.json
+        assertFalse(pkgJson.has(PNPM),
+                "pnpm field should not be written to package.json");
+
+        // Verify overrides are flattened into pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
-        assertTrue(overrides.has("workbox-build>glob"),
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
         // Verify user overrides are converted to pnpm format
-        assertTrue(overrides.has("user-nested"),
+        assertTrue(overrides.containsKey("user-nested"),
                 "Flattened user-nested should be present");
-        assertTrue(overrides.has("user-nested>dep"),
+        assertTrue(overrides.containsKey("user-nested>dep"),
                 "Flattened user-nested>dep should be present");
 
-        // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
-                "Flattened override should be a string value");
-
         // Verify nested object form does NOT exist
-        assertFalse(overrides.has("workbox-build"),
+        assertFalse(overrides.containsKey("workbox-build"),
                 "Nested object workbox-build should not exist in pnpm overrides");
     }
 
@@ -1749,12 +1831,17 @@ class TaskUpdatePackagesNpmTest {
                 createApplicationDependencies(), true, true);
         task.execute();
 
-        // Add user nested override (pnpm format)
+        // Simulate a user override left in package.json.pnpm.overrides by an
+        // older Flow version; this legacy location must still be migrated
+        // when switching to npm, even though current pnpm runs write
+        // overrides to pnpm-workspace.yaml instead.
         ObjectNode pkgJson = getOrCreatePackageJson();
-        ((ObjectNode) pkgJson.get(PNPM).get(OVERRIDES))
-                .put("user-nested", "1.0").put("user-nested>dep", "2.0")
+        ObjectNode legacyOverrides = JacksonUtils.createObjectNode();
+        legacyOverrides.put("user-nested", "1.0").put("user-nested>dep", "2.0")
                 .put("user-nested-reverse>dep", "3.0")
                 .put("user-nested-reverse", "4.0");
+        pkgJson.set(PNPM, JacksonUtils.createObjectNode().set(OVERRIDES,
+                legacyOverrides));
         FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
                 StandardCharsets.UTF_8);
 
@@ -1772,8 +1859,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
 
         // Verify user overrides are converted to npm format
         JsonNode nestedOverride = overrides.get("user-nested");

@@ -16,13 +16,12 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -34,7 +33,7 @@ import com.vaadin.flow.router.RouterLink;
 @RouteAlias("home")
 @PageTitle("Public View")
 @Menu(order = 1)
-public class PublicView extends FlexLayout {
+public class PublicView extends Div {
 
     public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";
     public static final String ANCHOR_NAVIGATION_ID = "anchorNavi";
@@ -43,8 +42,8 @@ public class PublicView extends FlexLayout {
     public static final String REROUTE_NAVIGATION_ID = "rerouteNavi";
 
     public PublicView() {
-        setFlexDirection(FlexDirection.COLUMN);
-        setHeightFull();
+        getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("height", "100%");
 
         H1 header = new H1("Welcome to the Java Bank of Vaadin");
         header.setId("header");
@@ -56,7 +55,7 @@ public class PublicView extends FlexLayout {
         add(new Paragraph(
                 "We are very great and have great amounts of money."));
 
-        Button backgroundNavigation = new Button(
+        NativeButton backgroundNavigation = new NativeButton(
                 "Navigate to admin view in 1 second", e -> {
                     UI ui = e.getSource().getUI().get();
                     new Thread(() -> {
@@ -85,7 +84,9 @@ public class PublicView extends FlexLayout {
                 PassThroughView.class, new RouteParameters("type", "reroute"));
         rerouteToAdmin.setId(REROUTE_NAVIGATION_ID);
 
-        HorizontalLayout additionalNavigation = new HorizontalLayout();
+        Div additionalNavigation = new Div();
+        additionalNavigation.getStyle().set("display", "flex").set("gap",
+                "0.5rem");
         additionalNavigation.add(backgroundNavigation);
         additionalNavigation.add(linkToAdmin);
         additionalNavigation.add(linkToAdminAlias);

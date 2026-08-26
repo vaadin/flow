@@ -142,6 +142,10 @@ internal class PrepareFrontendInputProperties(
         config.postinstallPackages
 
     @Input
+    fun getExcludePostInstallPackages(): ListProperty<String> =
+        config.excludePostinstallPackages
+
+    @Input
     fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
 
     @Input

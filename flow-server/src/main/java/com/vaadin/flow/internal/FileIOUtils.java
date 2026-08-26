@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
@@ -45,6 +48,8 @@ import org.slf4j.LoggerFactory;
  * file searching, and content comparison.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.0
  */
 public class FileIOUtils {
 
@@ -56,18 +61,54 @@ public class FileIOUtils {
      * Deletes file if it exists and eats exceptions.
      *
      * Note, this is an internal helper method, use only from framework code.
-     * 
+     *
      * @param file
      *            to be deleted
      * @return true if succeeded
+     * @deprecated use {@link #deleteQuietly(File)} instead, which also deletes
+     *             directory contents and logs why a deletion failed instead of
+     *             failing silently
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public static boolean deleteFileQuietly(File file) {
-        if (file == null) {
+        return deleteQuietly(file);
+    }
+
+    /**
+     * Deletes a file, or a directory and its contents, logging a warning that
+     * explains how to unblock the deletion if it fails.
+     *
+     * Note, this is an internal helper method, use only from framework code.
+     *
+     * @param file
+     *            the file or directory to delete, may be {@code null}
+     * @return {@code true} if the file was deleted or did not exist
+     * @since 25.3
+     */
+    public static boolean deleteQuietly(File file) {
+        return file != null && deleteQuietly(file.toPath());
+    }
+
+    /**
+     * Deletes a file, or a directory and its contents, logging a warning that
+     * explains how to unblock the deletion if it fails.
+     *
+     * Note, this is an internal helper method, use only from framework code.
+     *
+     * @param path
+     *            the file or directory to delete, may be {@code null}
+     * @return {@code true} if the file was deleted or did not exist
+     * @since 25.3
+     */
+    public static boolean deleteQuietly(Path path) {
+        if (path == null) {
             return false;
         }
         try {
-            return file.delete();
-        } catch (final Exception ignored) {
+            delete(path);
+            return true;
+        } catch (IOException | RuntimeException e) {
+            log().warn(e.getMessage(), e);
             return false;
         }
     }
@@ -147,38 +188,130 @@ public class FileIOUtils {
     }
 
     /**
-     * Deletes a file or directory recursively. Throws an exception if the
-     * deletion fails.
+     * Deletes a file, or a directory and its contents, recursively. Does
+     * nothing if the file does not exist.
+     * <p>
+     * Symbolic links and Windows junctions are removed as links, the contents
+     * they point to are left untouched.
      *
      * @param file
      *            the file or directory to delete
      * @throws IOException
-     *             if an I/O error occurs
+     *             if the file or any of its contents could not be deleted, with
+     *             a message describing how the deletion can be unblocked
      */
     public static void delete(File file) throws IOException {
-        if (!file.exists()) {
+        delete(file.toPath());
+    }
+
+    /**
+     * Deletes a file, or a directory and its contents, recursively. Does
+     * nothing if the file does not exist.
+     * <p>
+     * Symbolic links and Windows junctions are removed as links, the contents
+     * they point to are left untouched.
+     *
+     * @param path
+     *            the file or directory to delete
+     * @throws IOException
+     *             if the file or any of its contents could not be deleted, with
+     *             a message describing how the deletion can be unblocked
+     * @since 25.3
+     */
+    public static void delete(Path path) throws IOException {
+        BasicFileAttributes attributes;
+        try {
+            attributes = Files.readAttributes(path, BasicFileAttributes.class,
+                    LinkOption.NOFOLLOW_LINKS);
+        } catch (NoSuchFileException e) {
+            return;
+        } catch (IOException e) {
+            throw deletionFailed(path, e);
+        }
+
+        if (!hasDeletableContents(attributes)) {
+            deleteSingle(path);
             return;
         }
-        Path path = file.toPath();
-        if (Files.isDirectory(path)) {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file,
-                        BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
 
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir,
-                        IOException exc) throws IOException {
-                    Files.delete(dir);
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir,
+                    BasicFileAttributes attrs) throws IOException {
+                if (hasDeletableContents(attrs)) {
                     return FileVisitResult.CONTINUE;
                 }
-            });
-        } else {
-            Files.delete(path);
+                // A junction looks like a directory but must be removed as a
+                // link so that the linked contents are not deleted
+                deleteSingle(dir);
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
+                deleteSingle(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc)
+                    throws IOException {
+                throw deletionFailed(file, exc);
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                    throws IOException {
+                // A failure to list the contents surfaces as a failure to
+                // delete the then non-empty directory
+                deleteSingle(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    /**
+     * Checks whether the given attributes describe a directory that can be
+     * traversed to delete its contents.
+     * <p>
+     * A symbolic link to a directory is not reported as a directory as the
+     * attributes are read without following links. A Windows junction is
+     * reported as a directory but also as {@code other}, which no real
+     * directory is.
+     */
+    private static boolean hasDeletableContents(
+            BasicFileAttributes attributes) {
+        return attributes.isDirectory() && !attributes.isOther();
+    }
+
+    private static void deleteSingle(Path path) throws IOException {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw deletionFailed(path, e);
         }
+    }
+
+    /**
+     * Wraps a deletion failure into an exception that suggests how to unblock
+     * the deletion, as the reported cause is usually another process holding
+     * the file open rather than the actual root cause.
+     */
+    private static IOException deletionFailed(Path path, IOException cause) {
+        String advice = FrontendUtils.isWindows() ? """
+                On Windows this usually means that another process, such as a \
+                running development server, an editor or a virus scanner, is \
+                keeping the file open. Find the process holding it with \
+                'openfiles /query' or with Sysinternals \
+                'handle64 <path>', stop it with 'taskkill /PID <pid> /F' and \
+                then run the build again.""" : """
+                Check that no other process is using the file, for example \
+                with 'lsof <path>', and that you have permission to delete \
+                it, and then run the build again.""";
+        return new IOException("Failed to delete " + path + ". "
+                + advice.replace("<path>", path.toAbsolutePath().toString()),
+                cause);
     }
 
     /**
@@ -366,8 +499,42 @@ public class FileIOUtils {
                 file);
 
         file.getParentFile().mkdirs();
-        Files.writeString(file.toPath(), content);
+        writeAtomically(file.toPath(), content);
         return true;
+    }
+
+    /**
+     * Writes the given content to the target path atomically.
+     * <p>
+     * The content is first written to a temporary file in the same directory
+     * and then moved over the target, so that a file system watcher (such as
+     * Vite's during development) never observes a truncated, partially written
+     * or momentarily missing file while the content is being updated. Observing
+     * such an intermediate state would otherwise make the dev server fail to
+     * resolve imports between generated files.
+     */
+    private static void writeAtomically(Path target, String content)
+            throws IOException {
+        Path directory = target.getParent();
+        Path tempFile = Files.createTempFile(directory,
+                target.getFileName().toString(), ".tmp");
+        try {
+            Files.writeString(tempFile, content);
+            try {
+                Files.move(tempFile, target, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                // Fall back to a non-atomic replace if the file system does not
+                // support atomic moves. This is still a single move operation
+                // and avoids the truncate-then-write window of a direct write.
+                log().debug("atomic move not supported for '{}', "
+                        + "falling back to a regular move", target, e);
+                Files.move(tempFile, target,
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     private static Logger log() {

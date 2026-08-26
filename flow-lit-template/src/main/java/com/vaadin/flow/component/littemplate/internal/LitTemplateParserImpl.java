@@ -63,6 +63,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  *
  * @see BundleLitParser
+ * @since 5.0
  */
 public class LitTemplateParserImpl implements LitTemplateParser {
 
@@ -178,6 +179,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      *            {@code @vaadin/vaadin-button.js}.
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
+     * @since 9.0
      */
     protected String getSourcesFromTemplate(VaadinService service, String tag,
             String url) {

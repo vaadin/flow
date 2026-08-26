@@ -460,7 +460,16 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             scheduledReconnect.cancel();
             scheduledReconnect = null;
         }
-        ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
+        if (Type.HEARTBEAT.equals(type)) {
+            // Heartbeat never has loading indication, it is safe to assume
+            // that no other requests are in progress and set the `CONNECTED`
+            // state directly.
+            ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
+        } else {
+            // Let the loading indicator state handler check and remove
+            // the prior loading state indication if necessary.
+            registry.getLoadingIndicatorStateHandler().stopLoading();
+        }
 
         Console.debug("Re-established connection to server");
     }

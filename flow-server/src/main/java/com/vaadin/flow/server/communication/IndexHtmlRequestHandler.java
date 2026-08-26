@@ -61,6 +61,7 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevToolsToken;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -82,6 +83,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * and inject baseHref as well as the bundle scripts into the template.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 3.0
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
@@ -145,6 +148,26 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addStyleTagReferences(indexDocument, config.isProductionMode());
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+
+        String frameOptions = config.getFrameOptions();
+        if (frameOptions != null && !frameOptions.isEmpty()) {
+            if (response.containsHeader("X-Frame-Options")) {
+                // Don't override a header set elsewhere (e.g. by a servlet
+                // filter), but warn if an explicitly configured value is
+                // being ignored because of it.
+                if (config.getStringProperty(
+                        InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,
+                        null) != null) {
+                    getLogger().warn(
+                            "The configured '{}' value '{}' is ignored because "
+                                    + "the response already has an X-Frame-Options header.",
+                            InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS,
+                            frameOptions);
+                }
+            } else {
+                response.setHeader("X-Frame-Options", frameOptions);
+            }
+        }
 
         VaadinContext context = session.getService().getContext();
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
@@ -219,23 +242,31 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void initializeFeatureFlags(Document indexDocument,
             VaadinRequest request) {
         String script = featureFlagsInitializer(request);
+        if (script.isEmpty()) {
+            return;
+        }
         Element scriptElement = indexDocument.head().prependElement("script");
         scriptElement.attr(SCRIPT_INITIAL, "");
         scriptElement.appendChild(new DataNode(script));
     }
 
     static String featureFlagsInitializer(VaadinRequest request) {
-        return FeatureFlags.get(request.getService().getContext()).getFeatures()
-                .stream().filter(Feature::isEnabled)
-                .map(feature -> String.format("activator(\"%s\");",
-                        feature.getId()))
-                .collect(Collectors.joining("\n",
-                        """
-                                window.Vaadin = window.Vaadin || {};
-                                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
-                                window.Vaadin.featureFlagsUpdaters.push((activator) => {
-                                """,
-                        "});"));
+        String activators = FeatureFlags
+                .get(request.getService().getContext()).getFeatures().stream()
+                .filter(Feature::isEnabled).map(feature -> String
+                        .format("activator(\"%s\");", feature.getId()))
+                .collect(Collectors.joining("\n"));
+        if (activators.isEmpty()) {
+            // No feature flags enabled, so there is no need to emit the
+            // updater registration script into the document.
+            return "";
+        }
+        return """
+                window.Vaadin = window.Vaadin || {};
+                window.Vaadin.featureFlagsUpdaters = window.Vaadin.featureFlagsUpdaters || [];
+                window.Vaadin.featureFlagsUpdaters.push((activator) => {
+                """
+                + activators + "\n});";
     }
 
     private static void addDevBundleTheme(Document document,
@@ -355,6 +386,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      *
      * @param indexDocument
      *            the document to add the license checker to
+     * @since 23.2
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker

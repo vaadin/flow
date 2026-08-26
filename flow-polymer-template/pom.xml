@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.2-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>flow-polymer-template</artifactId>
   <packaging>jar</packaging>
@@ -83,7 +83,7 @@
         <plugin>
           <groupId>com.mycila</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>5.0.0</version>
+          <version>5.1.2</version>
           <configuration>
             <header>src/license/vclst/header.txt</header>
             <quiet>false</quiet>

@@ -45,11 +45,12 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *
  * @param <T>
  *            the element type
+ * @since 25.1
  */
 public class SharedMapSignal<T extends @Nullable Object> extends
         AbstractSharedSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
-    private Class<T> elementType;
+    private Class<@NonNull T> elementType;
 
     /**
      * Creates a new map signal with the given element type. The signal does not
@@ -58,7 +59,7 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public SharedMapSignal(Class<T> elementType) {
+    public SharedMapSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -80,7 +81,7 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      *            the element type, not <code>null</code>
      */
     protected SharedMapSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+            CommandValidator validator, Class<@NonNull T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }

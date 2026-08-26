@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -39,18 +40,16 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -65,6 +64,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -77,12 +77,18 @@ import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.communication.AbstractRpcInvocationEvent;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
+import com.vaadin.flow.server.communication.RpcInvocationEvent;
+import com.vaadin.flow.server.communication.RpcInvocationFailedEvent;
+import com.vaadin.flow.server.communication.RpcInvocationListener;
+import com.vaadin.flow.server.communication.RpcInvocationStartedEvent;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -148,17 +154,14 @@ public abstract class VaadinService implements Serializable {
     private final DeploymentConfiguration deploymentConfiguration;
 
     /*
-     * Can't use EventRouter for these listeners since it's not thread safe. One
-     * option would be to use an EventRouter instance guarded with a lock, but
-     * then we would needlessly hold a "global" lock while invoking potentially
-     * slow listener implementations.
+     * All listeners registered on the service live in this bus. It can't be an
+     * EventRouter since that one isn't thread safe; one option would be to use
+     * an EventRouter instance guarded with a lock, but then we would needlessly
+     * hold a "global" lock while invoking potentially slow listener
+     * implementations.
      */
-    private final Set<ServiceDestroyListener> serviceDestroyListeners = Collections
-            .newSetFromMap(new ConcurrentHashMap<>());
-
-    private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
-    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
-    private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
+    private final VaadinServiceEventBus eventBus = new VaadinServiceEventBus(
+            this);
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
@@ -469,6 +472,7 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            Request.
      * @return Relative context root path for that request.
+     * @since 2.0
      */
     public abstract String getContextRootRelativePath(VaadinRequest request);
 
@@ -512,6 +516,7 @@ public abstract class VaadinService implements Serializable {
      * @return The list of request handlers used by this service.
      * @throws ServiceException
      *             if a problem occurs when creating the request interceptors
+     * @since 24.3
      */
     protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
             throws ServiceException {
@@ -622,6 +627,7 @@ public abstract class VaadinService implements Serializable {
      * @return a default executor instance to use, never {@literal null}.
      * @see VaadinServiceInitListener
      * @see ServiceInitEvent#setExecutor(Executor)
+     * @since 24.8
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
@@ -660,6 +666,7 @@ public abstract class VaadinService implements Serializable {
      * @return the Executor instance, never {@literal null}.
      * @see VaadinServiceInitListener
      * @see ServiceInitEvent#setExecutor(Executor)
+     * @since 24.8
      */
     public Executor getExecutor() {
         return executor;
@@ -671,6 +678,7 @@ public abstract class VaadinService implements Serializable {
      * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
+     * @since 24.8
      */
     protected ObjectMapper createDefaultObjectMapper() {
         return JacksonUtils.getMapper();
@@ -798,7 +806,36 @@ public abstract class VaadinService implements Serializable {
      * @see SessionInitListener
      */
     public Registration addSessionInitListener(SessionInitListener listener) {
-        return Registration.addAndRemove(sessionInitListeners, listener);
+        return eventBus.addListener(SessionInitEvent.class, event -> {
+            try {
+                listener.sessionInit(event);
+            } catch (ServiceException e) {
+                // A bus listener cannot declare the checked exception that
+                // sessionInit does, so it is caught and handed to the session
+                // error handler here instead
+                event.getSession().getErrorHandler().error(new ErrorEvent(e));
+            }
+        });
+    }
+
+    /**
+     * Gets the event bus of this service, through which events can be fired to
+     * the listeners registered on the service.
+     * <p>
+     * Anything that wants to notify service-level listeners can define its own
+     * event type and fire it through the bus, without the service needing a
+     * dedicated {@code fireXyz} method for it:
+     *
+     * <pre>
+     * service.getEventBus().addListener(MyEvent.class, event -&gt; doSomething());
+     * service.getEventBus().fireEvent(new MyEvent(service));
+     * </pre>
+     *
+     * @return the event bus of this service, not {@code null}
+     * @since 25.3
+     */
+    public VaadinServiceEventBus getEventBus() {
+        return eventBus;
     }
 
     /**
@@ -810,7 +847,95 @@ public abstract class VaadinService implements Serializable {
      * @see UIInitListener
      */
     public Registration addUIInitListener(UIInitListener listener) {
-        return Registration.addAndRemove(uiInitListeners, listener);
+        return eventBus.addListener(UIInitEvent.class, listener::uiInit);
+    }
+
+    /**
+     * Adds a listener that gets notified around the handling of individual
+     * client-to-server RPC invocations, enabling per-invocation observation
+     * (for example to emit a tracing span per DOM event or
+     * {@code @ClientCallable} call).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}; see
+     * {@link RpcInvocationListener} for the callback contract.
+     *
+     * @param listener
+     *            the RPC invocation listener
+     * @return a handle that can be used for removing the listener
+     * @see RpcInvocationListener
+     * @since 25.2
+     * @deprecated add listeners for {@link RpcInvocationStartedEvent},
+     *             {@link RpcInvocationFailedEvent} and
+     *             {@link RpcInvocationEndedEvent} through
+     *             {@link #getEventBus()} instead
+     */
+    @Deprecated(since = "25.3", forRemoval = true)
+    public Registration addRpcInvocationListener(
+            RpcInvocationListener listener) {
+        return Registration.combine(
+                eventBus.addListener(RpcInvocationStartedEvent.class,
+                        event -> listener
+                                .invocationStarted(rpcInvocationEvent(event))),
+                eventBus.addListener(RpcInvocationFailedEvent.class,
+                        event -> listener.invocationFailed(
+                                rpcInvocationEvent(event), event.getError())),
+                eventBus.addListener(RpcInvocationEndedEvent.class,
+                        event -> listener
+                                .invocationEnded(rpcInvocationEvent(event))));
+    }
+
+    @SuppressWarnings("removal")
+    private static RpcInvocationEvent rpcInvocationEvent(
+            AbstractRpcInvocationEvent event) {
+        return new RpcInvocationEvent(event.getUI(), event.getType(),
+                event.getNodeId(), event.getName());
+    }
+
+    /**
+     * Creates an error handler that routes exceptions thrown by listeners to
+     * the error handler of the given session.
+     * <p>
+     * For now, the session error handler is used; in the future, there could be
+     * an API for using some other handler for session init and destroy
+     * listeners.
+     */
+    private static SerializableBiConsumer<EventObject, Exception> sessionErrorHandler(
+            VaadinSession session) {
+        return (event, error) -> session.getErrorHandler()
+                .error(new ErrorEvent(error));
+    }
+
+    /**
+     * Adds a listener that gets notified when a session lock for this service
+     * is acquired and released, enabling observation of session-lock contention
+     * (for example to publish lock wait and hold-time metrics).
+     * <p>
+     * Register typically from a {@link VaadinServiceInitListener}. Listeners
+     * are notified for the outermost lock acquisition only; see
+     * {@link SessionLockListener} for the callback contract.
+     *
+     * @param listener
+     *            the session lock listener
+     * @return a handle that can be used for removing the listener
+     * @see SessionLockListener
+     * @since 25.2
+     * @deprecated add listeners for {@link SessionLockRequestedEvent},
+     *             {@link SessionLockAcquiredEvent} and
+     *             {@link SessionLockReleasedEvent} through
+     *             {@link #getEventBus()} instead
+     */
+    @Deprecated(since = "25.3", forRemoval = true)
+    public Registration addSessionLockListener(SessionLockListener listener) {
+        return Registration.combine(
+                eventBus.addListener(SessionLockRequestedEvent.class,
+                        event -> listener.lockRequested(
+                                new SessionLockEvent(event.getService()))),
+                eventBus.addListener(SessionLockAcquiredEvent.class,
+                        event -> listener.lockAcquired(
+                                new SessionLockEvent(event.getService()))),
+                eventBus.addListener(SessionLockReleasedEvent.class,
+                        event -> listener.lockReleased(
+                                new SessionLockEvent(event.getService()))));
     }
 
     /**
@@ -834,7 +959,8 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
-        return Registration.addAndRemove(sessionDestroyListeners, listener);
+        return eventBus.addListener(SessionDestroyEvent.class,
+                listener::sessionDestroy);
     }
 
     /**
@@ -847,6 +973,7 @@ public abstract class VaadinService implements Serializable {
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the Index HTML response.
+     * @since 3.0
      */
     public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
         indexHtmlRequestListeners.forEach(
@@ -890,19 +1017,16 @@ public abstract class VaadinService implements Serializable {
             }
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
-            Stream.concat(session.destroyListeners.stream(),
-                    sessionDestroyListeners.stream()).forEach(listener -> {
-                        try {
-                            listener.sessionDestroy(event);
-                        } catch (Exception e) {
-                            /*
-                             * for now, use the session error handler; in the
-                             * future, could have an API for using some other
-                             * handler for session init and destroy listeners
-                             */
-                            session.getErrorHandler().error(new ErrorEvent(e));
-                        }
-                    });
+            // Listeners registered on the session are notified before the ones
+            // registered on the service
+            session.destroyListeners.forEach(listener -> {
+                try {
+                    listener.sessionDestroy(event);
+                } catch (Exception e) {
+                    session.getErrorHandler().error(new ErrorEvent(e));
+                }
+            });
+            eventBus.fireEvent(event, sessionErrorHandler(session));
 
             session.setState(VaadinSessionState.CLOSED);
         });
@@ -1027,7 +1151,7 @@ public abstract class VaadinService implements Serializable {
             synchronized (VaadinService.class) {
                 lock = getSessionLock(wrappedSession);
                 if (lock == null) {
-                    lock = new ReentrantLock();
+                    lock = new InstrumentedReentrantLock(this);
                     setSessionLock(wrappedSession, lock);
                 }
             }
@@ -1064,6 +1188,7 @@ public abstract class VaadinService implements Serializable {
      *            The session to unlock
      * @param lock
      *            Lock instance to unlock
+     * @since 8.0.5
      */
     protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
         assert ((ReentrantLock) lock).isHeldByCurrentThread()
@@ -1238,18 +1363,7 @@ public abstract class VaadinService implements Serializable {
     private void onVaadinSessionStarted(VaadinRequest request,
             VaadinSession session) {
         SessionInitEvent event = new SessionInitEvent(this, session, request);
-        for (SessionInitListener listener : sessionInitListeners) {
-            try {
-                listener.sessionInit(event);
-            } catch (Exception e) {
-                /*
-                 * for now, use the session error handler; in the future, could
-                 * have an API for using some other handler for session init and
-                 * destroy listeners
-                 */
-                session.getErrorHandler().error(new ErrorEvent(e));
-            }
-        }
+        eventBus.fireEvent(event, sessionErrorHandler(session));
     }
 
     private void closeSession(VaadinSession vaadinSession,
@@ -1785,6 +1899,7 @@ public abstract class VaadinService implements Serializable {
      * @return a collection of request interceptors in the order they are
      *         invoked
      * @see #createVaadinRequestInterceptors()
+     * @since 24.3
      */
     public Iterable<VaadinRequestInterceptor> getVaadinRequestInterceptors() {
         return vaadinRequestInterceptors;
@@ -2059,6 +2174,7 @@ public abstract class VaadinService implements Serializable {
      *            shown. If the selector is {@code null}, the body element is
      *            used.
      * @return A JSON string to be sent to the client
+     * @since 2.2
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url, String querySelector) {
@@ -2096,6 +2212,7 @@ public abstract class VaadinService implements Serializable {
      *            or asynchronously.
      * @return the JSON used to inform the client about a session expiration, as
      *         a string
+     * @since 2.2
      */
     public static String createSessionExpiredJSON(boolean async) {
         ObjectNode json = JacksonUtils.createObjectNode();
@@ -2118,6 +2235,7 @@ public abstract class VaadinService implements Serializable {
      *            or asynchronously.
      * @return the JSON used to inform the client that the UI cannot be found,
      *         as a string
+     * @since 2.2
      */
     public static String createUINotFoundJSON(boolean async) {
         // Session Expired is technically not really the correct thing as
@@ -2235,6 +2353,7 @@ public abstract class VaadinService implements Serializable {
      *         disabled; <code>false</code> if protection is enabled and the
      *         token is invalid
      * @see DeploymentConfiguration#isXsrfProtectionEnabled()
+     * @since 2.0
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
@@ -2337,6 +2456,9 @@ public abstract class VaadinService implements Serializable {
                 if (!pendingAccess.isCancelled()) {
                     CurrentInstance.clearAll();
                     CurrentInstance.setCurrent(session);
+                    // Clear session-scoped transaction so each task gets fresh
+                    // reads from shared signals instead of stale cached values
+                    session.clearSessionScopedTransaction();
                     pendingAccess.run();
 
                     try {
@@ -2373,7 +2495,8 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addServiceDestroyListener(
             ServiceDestroyListener listener) {
-        return Registration.addAndRemove(serviceDestroyListeners, listener);
+        return eventBus.addListener(ServiceDestroyEvent.class,
+                listener::serviceDestroy);
     }
 
     /**
@@ -2390,20 +2513,19 @@ public abstract class VaadinService implements Serializable {
             cast.shutdownNow();
             this.executor = null;
         }
-        RuntimeException exception = null;
-        for (ServiceDestroyListener listener : serviceDestroyListeners) {
-            try {
-                listener.serviceDestroy(event);
-            } catch (RuntimeException e) {
-                if (exception == null) {
-                    exception = e;
-                } else {
-                    e.addSuppressed(e);
-                }
+        // All listeners are notified even if some of them throw; the first
+        // failure is rethrown with the later ones suppressed
+        AtomicReference<Exception> failure = new AtomicReference<>();
+        eventBus.fireEvent(event, (destroyEvent, error) -> {
+            if (!failure.compareAndSet(null, error)) {
+                failure.get().addSuppressed(error);
             }
-        }
-        if (exception != null) {
-            throw exception;
+        });
+        Exception error = failure.get();
+        if (error instanceof RuntimeException runtimeException) {
+            throw runtimeException;
+        } else if (error != null) {
+            throw new RuntimeException(error);
         }
     }
 
@@ -2546,18 +2668,22 @@ public abstract class VaadinService implements Serializable {
      *
      * @param ui
      *            the initialized {@link UI}
+     * @deprecated fire a {@link UIInitEvent} through {@link #getEventBus()}
+     *             instead
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public void fireUIInitListeners(UI ui) {
-        UIInitEvent initEvent = new UIInitEvent(ui, this);
-        uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
+        eventBus.fireEvent(new UIInitEvent(ui, this));
     }
 
     /**
      * Returns a URL to the static resource at the given URI or null if no file
-     * found.
+     * found. The path must start with a {@code /} character for servlet-based
+     * implementations, as required by the Jakarta Servlet specification for
+     * {@code ServletContext.getResource()}.
      *
      * @param url
-     *            the URL for the resource
+     *            the URL for the resource, must start with {@code /}
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
@@ -2570,6 +2696,7 @@ public abstract class VaadinService implements Serializable {
      *            the untranslated Vaadin URL for the resource
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
+     * @since 3.0
      */
     public abstract URL getResource(String url);
 
@@ -2580,6 +2707,7 @@ public abstract class VaadinService implements Serializable {
      *            the untranslated Vaadin URL for the resource
      * @return a stream for the resource or <code>null</code> if no resource
      *         exists at the specified path
+     * @since 3.0
      */
     public abstract InputStream getResourceAsStream(String url);
 
@@ -2591,6 +2719,7 @@ public abstract class VaadinService implements Serializable {
      * @return <code>true</code> if a resource is found and can be read using
      *         {@link #getResourceAsStream(String)}, <code>false</code> if it is
      *         not found
+     * @since 3.0
      */
     public boolean isResourceAvailable(String url) {
         return getResource(url) != null;
@@ -2604,6 +2733,7 @@ public abstract class VaadinService implements Serializable {
      *            the resource to resolve, not <code>null</code>
      * @return the resolved URL or the same as the input url if no translation
      *         was performed
+     * @since 3.0
      */
     public abstract String resolveResource(String url);
 
@@ -2614,6 +2744,7 @@ public abstract class VaadinService implements Serializable {
      * {@link #getContext()}.
      *
      * @return Context. This may never be {@code null}.
+     * @since 2.0
      */
     protected abstract VaadinContext constructVaadinContext();
 
@@ -2621,6 +2752,7 @@ public abstract class VaadinService implements Serializable {
      * Returns {@link VaadinContext} for this service.
      *
      * @return A non-null context instance.
+     * @since 2.0
      */
     public VaadinContext getContext() {
         if (vaadinContext == null) {
@@ -2654,6 +2786,7 @@ public abstract class VaadinService implements Serializable {
      * in the case
      *
      * @return a non-null instance.
+     * @since 3.0
      */
     public BootstrapInitialPredicate getBootstrapInitialPredicate() {
         if (bootstrapInitialPredicate == null) {
@@ -2669,6 +2802,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param bootstrapInitialPredicate
      *            the predicate.
+     * @since 3.0
      */
     public void setBootstrapInitialPredicate(
             BootstrapInitialPredicate bootstrapInitialPredicate) {
@@ -2682,6 +2816,7 @@ public abstract class VaadinService implements Serializable {
      * By default it returns an instance that returns true for all requests.
      *
      * @return a non-null instance.
+     * @since 3.0
      */
     public BootstrapUrlPredicate getBootstrapUrlPredicate() {
         if (bootstrapUrlPredicate == null) {
@@ -2696,6 +2831,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param bootstrapUrlPredicate
      *            the predicate.
+     * @since 3.0
      */
     public void setBootstrapUrlPredicate(
             BootstrapUrlPredicate bootstrapUrlPredicate) {
@@ -2706,6 +2842,7 @@ public abstract class VaadinService implements Serializable {
      * Get the name of the CSRF Token attribute in HTTP session.
      *
      * @return the attribute name string
+     * @since 3.0
      */
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."

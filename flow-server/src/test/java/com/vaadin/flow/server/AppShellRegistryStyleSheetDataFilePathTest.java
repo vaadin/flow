@@ -108,14 +108,12 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
         // Register stylesheet resources so the hash can be computed.
-        // Paths must match what resolveResource() produces for each
-        // annotation value.
+        // Paths use leading '/' as required by ServletContext.getResource().
         mocks.getServlet().addServletContextResource("/absolute.css",
                 "body { color: red; }");
         mocks.getServlet().addServletContextResource("/from-context.css",
                 "body { color: blue; }");
-        // ./relative/path.css is passed through resolveResource unchanged
-        mocks.getServlet().addServletContextResource("./relative/path.css",
+        mocks.getServlet().addServletContextResource("/relative/path.css",
                 "body { color: green; }");
 
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
@@ -170,8 +168,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @Test
-    void modifyIndex_customServletMapping_hrefIsServletRelative()
-            throws Exception {
+    void modifyIndex_customServletMapping_hrefIsServletRelative() {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyShell.class);
 
@@ -193,6 +190,70 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         // Remote URL untouched
         assertEquals("https://cdn.example.com/remote.css",
                 links.get(3).attr("href"));
+    }
+
+    @Test
+    void productionMode_modifyIndex_customServletMapping_hrefIsServletRelative() {
+
+        // Register stylesheet resources so the hash can be computed.
+        // Paths use leading '/' as required by ServletContext.getResource().
+        mocks.getServlet().addServletContextResource("/absolute.css",
+                "body { color: red; }");
+        mocks.getServlet().addServletContextResource("/from-context.css",
+                "body { color: blue; }");
+        mocks.getServlet().addServletContextResource("/relative/path.css",
+                "body { color: green; }");
+
+        Pattern hashPattern = Pattern
+                .compile("\\?" + ApplicationConstants.CONTENT_HASH_PARAMETER
+                        + "=[0-9a-f]{8}$");
+
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyShell.class);
+
+        // Servlet mapped to "/myservlet/*", context path "/ctx".
+        // contextRootRelativePath becomes "./../" so relative and
+        // context:// hrefs must step one level up from the servlet path.
+        VaadinServletRequest request = createRequest("/", "/ctx", "/myservlet");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(4, links.size());
+
+        // 1) Absolute path: href has hash appended, data-file-path unchanged
+        Element abs = links.get(0);
+        assertTrue(hashPattern.matcher(abs.attr("href")).find(),
+                "Absolute href should contain hash parameter");
+        assertTrue(abs.attr("href").startsWith("/absolute.css"),
+                "Absolute href should start with /absolute.css");
+        assertEquals("/absolute.css", abs.attr("data-file-path"));
+
+        // 2) Relative path: href is servlet-relative, hash appended,
+        // data-file-path unchanged
+        Element rel = links.get(1);
+        assertTrue(hashPattern.matcher(rel.attr("href")).find(),
+                "Relative href should contain hash parameter");
+        assertTrue(rel.attr("href").startsWith("./../relative/path.css"),
+                "Relative href should start with ./../");
+        assertEquals("./relative/path.css", rel.attr("data-file-path"));
+
+        // 3) Context path: href is servlet-relative (context:// expanded),
+        // hash appended, data-file-path unchanged
+        Element ctx = links.get(2);
+        assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
+                "Context href should contain hash parameter");
+        assertTrue(ctx.attr("href").startsWith("./../from-context.css"),
+                "Context href should start with ./../");
+        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
+
+        // 4) External URL: no hash appended, data-file-path unchanged
+        Element remote = links.get(3);
+        assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
+        assertFalse(hashPattern.matcher(remote.attr("href")).find(),
+                "External href should not have hash");
+        assertEquals("https://cdn.example.com/remote.css",
+                remote.attr("data-file-path"));
     }
 
     @Test

@@ -49,6 +49,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -284,6 +285,7 @@ public class Element extends Node<Element> {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
+     * @since 25.0
      */
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
@@ -428,6 +430,7 @@ public class Element extends Node<Element> {
      * @param requestHandler
      *            the resource value, not null
      * @return this element
+     * @since 24.8
      */
     public Element setAttribute(String attribute,
             ElementRequestHandler requestHandler) {
@@ -614,6 +617,7 @@ public class Element extends Node<Element> {
      * client.
      *
      * @return this element
+     * @since 2.0
      */
     public Element removeFromTree() {
         return removeFromTree(true);
@@ -631,6 +635,7 @@ public class Element extends Node<Element> {
      * @param sendDetach
      *            if the detach event should be sent to the client
      * @return this element
+     * @since 24.2
      */
     public Element removeFromTree(boolean sendDetach) {
         Node<?> parent = getParentNode();
@@ -847,6 +852,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public <T> Element setPropertyList(String name, List<T> value) {
         if (value == null) {
@@ -871,6 +877,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
+     * @since 4.0
      */
     public Element setPropertyMap(String name, Map<String, ?> value) {
         if (value == null) {
@@ -951,6 +958,7 @@ public class Element extends Node<Element> {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
+     * @since 25.1
      */
     @SuppressWarnings("unchecked")
     public <T extends @Nullable Object> SignalBinding<T> bindProperty(
@@ -1226,6 +1234,7 @@ public class Element extends Node<Element> {
      *            <code>null</code>
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
+     * @since 25.0
      */
     public <T> T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
@@ -1265,6 +1274,7 @@ public class Element extends Node<Element> {
      *            <code>null</code>
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
+     * @since 25.0
      */
     public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
@@ -1409,6 +1419,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
+     * @since 25.0
      */
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
@@ -1524,6 +1535,7 @@ public class Element extends Node<Element> {
      *
      * @param className
      *            the CSS class name to flash, not <code>null</code>
+     * @since 25.1
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
@@ -1721,6 +1733,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
             Object... arguments) {
@@ -1757,6 +1770,7 @@ public class Element extends Node<Element> {
      *            the arguments to pass to the function
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1792,6 +1806,8 @@ public class Element extends Node<Element> {
      * invocation is sent to the client, or as <code>null</code> if not
      * attached)
      * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
+     * <li>{@link JsFunction} (manifested as a callable JavaScript function with
+     * its captured parameters pre-bound)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1808,6 +1824,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -1842,11 +1859,53 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * The expression is executed with this element as <code>this</code> and
+     * parameters available as <code>$0</code>, <code>$1</code>, ... exactly
+     * like {@link #executeJs(String, Object...)}. If the expression returns a
+     * function, that function is stored and invoked when:
+     * <ul>
+     * <li>the client-side DOM node for this element is destroyed (real detach
+     * where the client discarded its DOM), or</li>
+     * <li>the returned {@link Registration} is removed on the server.</li>
+     * </ul>
+     * <p>
+     * The initializer is re-run after any real re-attach (the browser receives
+     * a fresh DOM node). It is <strong>not</strong> re-run for a server-side
+     * detach + re-attach inside a single round trip, since the client never
+     * discarded its DOM.
+     * <p>
+     * The return value is read synchronously. The expression must return a
+     * function, {@code null}, or {@code undefined} (the latter being the
+     * implicit value when there is no {@code return}). Returning any other
+     * value, including a promise, is logged as an error on the client.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke, not <code>null</code>
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     * @since 25.2
+     */
+    public Registration addJsInitializer(String expression,
+            Object... parameters) {
+        Objects.requireNonNull(expression, "Expression cannot be null");
+        return new ElementJsInitializerRegistration(getNode(), expression,
+                parameters == null ? new Object[0] : parameters);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
@@ -1925,6 +1984,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
+     * @since 25.1
      */
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
@@ -1983,6 +2043,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
+     * @since 25.1
      */
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
@@ -2099,16 +2160,16 @@ public class Element extends Node<Element> {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
+     * @since 25.0
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
 
         // Use setTimeout to work on newly created elements
         if (json == null) {
-            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
         } else {
-            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
-                    json);
+            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
         }
 
         return getSelf();
@@ -2124,6 +2185,7 @@ public class Element extends Node<Element> {
      * @param scrollOptions
      *            the scroll options to pass to the method
      * @return the element
+     * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {

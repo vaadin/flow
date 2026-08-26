@@ -861,7 +861,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // User adds an override to package.json
         ObjectNode json = (ObjectNode) getPackageJson(packageJson);
         ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put("some-dep", "$some-dep");
+        overrides.put("some-dep", "1.0.0");
         json.set(OVERRIDES, overrides);
         writePackageJson(packageJson, json);
 
@@ -874,7 +874,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get("overrides");
         assertNotNull(overrides);
-        assertEquals("$some-dep", overrides.get("some-dep").asString());
+        assertEquals("1.0.0", overrides.get("some-dep").asString());
     }
 
     @Test
@@ -897,7 +897,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // User adds an override to package.json
         ObjectNode json = (ObjectNode) getPackageJson(packageJson);
         ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put("some-dep", "$some-dep");
+        overrides.put("some-dep", "1.0.0");
         ObjectNode nestedOverride = JacksonUtils.createObjectNode();
         nestedOverride.put("nested-dep", "1.0.0");
         overrides.set("parent-package", nestedOverride);
@@ -935,7 +935,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get("overrides");
         assertNotNull(overrides);
-        assertEquals("$some-dep", overrides.get("some-dep").asString(),
+        assertEquals("1.0.0", overrides.get("some-dep").asString(),
                 "Flat user override should be preserved");
         assertTrue(overrides.get("parent-package").isObject(),
                 "Nested user override should remain an object");
@@ -950,15 +950,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 overrides, List.of("@vaadin/nested-override", ".")));
         assertEquals(StringNode.valueOf("4.0.0"), JacksonUtils.getNestedKey(
                 overrides, List.of("@vaadin/nested-override", "dep")));
-        // Verify Vaadin overrides are present
-        assertEquals(StringNode.valueOf("2.0.0"), JacksonUtils.getNestedKey(
-                json, List.of("vaadin", "overrides", "@vaadin/flat-override")));
-        assertEquals(StringNode.valueOf("3.0.0"),
-                JacksonUtils.getNestedKey(json, List.of("vaadin", "overrides",
-                        "@vaadin/nested-override", ".")));
-        assertEquals(StringNode.valueOf("4.0.0"),
-                JacksonUtils.getNestedKey(json, List.of("vaadin", "overrides",
-                        "@vaadin/nested-override", "dep")));
+        // The obsolete vaadin.overrides tracking section is not written
+        assertFalse(json.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
     }
 
     @Test
@@ -991,7 +985,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // Add multiple types of overrides: flat, nested, and mixed
         ObjectNode json = (ObjectNode) getPackageJson(packageJson);
         ObjectNode overrides = JacksonUtils.createObjectNode();
-        overrides.put("some-dep", "$some-dep");
+        overrides.put("some-dep", "1.0.0");
         ObjectNode nestedOverride = JacksonUtils.createObjectNode();
         nestedOverride.put("nested-dep", "1.0.0");
         overrides.set("parent-package", nestedOverride);
@@ -1000,13 +994,6 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         // Run to register the override
         packageUpdater.execute();
-
-        // Capture vaadin.overrides state after first run
-        json = (ObjectNode) getPackageJson(packageJson);
-        JsonNode vaadinOverridesAfterFirstRun = json.get(VAADIN_DEP_KEY)
-                .get(OVERRIDES);
-        assertNotNull(vaadinOverridesAfterFirstRun,
-                "Vaadin overrides should be preserved.");
 
         // Run again with same overrides - should not be modified
         packageUpdater.execute();
@@ -1018,7 +1005,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get(OVERRIDES);
         assertNotNull(overrides);
-        assertEquals("$some-dep", overrides.get("some-dep").asString(),
+        assertEquals("1.0.0", overrides.get("some-dep").asString(),
                 "Flat user override should be preserved");
         assertTrue(overrides.get("parent-package").isObject(),
                 "Nested user override should remain an object");
@@ -1031,16 +1018,6 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         assertFalse(packageUpdater.modified,
                 "Modification flag should remain false on third run.");
 
-        // Verify vaadin.overrides consistency across runs
-        json = (ObjectNode) getPackageJson(packageJson);
-        JsonNode vaadinOverridesAfterThirdRun = json.get(VAADIN_DEP_KEY) != null
-                ? json.get(VAADIN_DEP_KEY).get(OVERRIDES)
-                : null;
-        assertTrue(
-                JacksonUtils.jsonEquals(vaadinOverridesAfterFirstRun,
-                        vaadinOverridesAfterThirdRun),
-                "vaadin.overrides should remain consistent across runs");
-
         // Run a fourth time to ensure long-term stability
         packageUpdater.execute();
         assertFalse(packageUpdater.modified,
@@ -1048,7 +1025,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    void generatePackageJson_userModifiesVaadinOverride_optOut()
+    void generatePackageJson_userModifiesVaadinOverride_overrideEnforced()
             throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -1093,22 +1070,24 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // Run updater again
         packageUpdater.execute();
 
-        // Verify the user's modification is preserved (opt-out behavior)
+        // The Vaadin-managed overrides are reset to the enforced values: a
+        // dependency reference for the locked dependency and the default
+        // override versions for the rest.
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get(OVERRIDES);
-        assertEquals("99.99.1", overrides.get("@polymer/iron-list").asString(),
-                "User's modified override should be preserved (opted out)");
-        assertEquals("99.99.2",
-                overrides.get("@vaadin/flat-override").asString(),
-                "User's modified override should be preserved (opted out)");
-        assertEquals(StringNode.valueOf("99.99.3"),
+        assertEquals("$@polymer/iron-list",
+                overrides.get("@polymer/iron-list").asString(),
+                "Locked dependency should be enforced as a reference");
+        assertEquals("2.0.0", overrides.get("@vaadin/flat-override").asString(),
+                "Default override should be enforced");
+        assertEquals(StringNode.valueOf("4.0.0"),
                 JacksonUtils.getNestedKey(overrides,
                         List.of("@vaadin/nested-override", "dep")),
-                "User's modified override should be preserved (opted out)");
+                "Default override should be enforced");
     }
 
     @Test
-    void generatePackageJson_mixedOptOutAndUpdates_handledCorrectly()
+    void generatePackageJson_managedOverridesEnforced_userOverridesPreserved()
             throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -1138,7 +1117,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // Register the overrides
         packageUpdater.execute();
 
-        // User modifies one Vaadin override but leaves another alone
+        // User modifies a Vaadin-managed override but leaves their own alone
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get(OVERRIDES);
         overrides.put("@polymer/iron-list", "99.0.0");
@@ -1151,8 +1130,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get(OVERRIDES);
 
-        assertEquals("99.0.0", overrides.get("@polymer/iron-list").asString(),
-                "User-modified override should be preserved (opted out)");
+        assertEquals("$@polymer/iron-list",
+                overrides.get("@polymer/iron-list").asString(),
+                "Managed dependency override should be enforced as a reference");
 
         assertEquals("3.0.0", overrides.get("user-dep").asString(),
                 "User's own override should always be preserved");
@@ -1161,8 +1141,9 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageUpdater.execute();
         json = (ObjectNode) getPackageJson(packageJson);
         overrides = (ObjectNode) json.get(OVERRIDES);
-        assertEquals("99.0.0", overrides.get("@polymer/iron-list").asString(),
-                "Opted-out override should remain stable");
+        assertEquals("$@polymer/iron-list",
+                overrides.get("@polymer/iron-list").asString(),
+                "Enforced override should remain stable");
         assertEquals("3.0.0", overrides.get("user-dep").asString(),
                 "User override should remain stable");
     }

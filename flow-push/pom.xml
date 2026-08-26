@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.2-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>flow-push</artifactId>
   <packaging>jar</packaging>
@@ -91,7 +91,7 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.10.0</version>
+        <version>3.11.0</version>
         <executions>
           <execution>
             <id>unpack-atmosphere-js</id>

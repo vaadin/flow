@@ -35,7 +35,6 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
@@ -165,30 +164,6 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Child theme values should be applied", "5px",
                 $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("padding"));
-
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals(
-                "Polymer text field should get parent border radius", "0px",
-                input.getCssValue("border-radius"));
-
-        Assert.assertEquals("Polymer text field should use green as color",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
-
-    }
-
-    @Test
-    public void componentThemeIsApplied() {
-        open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
 
     @Test

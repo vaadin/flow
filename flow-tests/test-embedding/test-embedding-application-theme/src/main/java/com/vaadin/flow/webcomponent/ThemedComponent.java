@@ -25,7 +25,6 @@ public class ThemedComponent extends Div {
 
     public static final String TEST_TEXT_ID = "test-text";
 
-    public static final String MY_COMPONENT_ID = "field";
     public static final String CSS_IMPORT_COMPONENT_ID = "embedded-cssimport";
     public static final String EMBEDDED_ID = "embedded";
 
@@ -44,7 +43,6 @@ public class ThemedComponent extends Div {
         add(textSpan, hand);
 
         add(new Div());
-        add(new MyComponent().withId(MY_COMPONENT_ID));
         add(new CssImportComponent(CSS_IMPORT_COMPONENT_ID));
     }
 }
