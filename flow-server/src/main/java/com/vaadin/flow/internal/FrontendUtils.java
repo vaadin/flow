@@ -58,7 +58,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -359,13 +358,37 @@ public class FrontendUtils {
     public static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     public static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+    /**
+     * ANSI foreground colors usable with {@link #console(AnsiColor, String)}.
+     */
+    public enum AnsiColor {
+        YELLOW("\u001b[38;5;220m"),
+        RED("\u001b[38;5;196m"),
+        GREEN("\u001b[38;5;35m"),
+        BRIGHT_BLUE("\u001b[94m");
 
-    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+        private static final String RESET = "\u001b[0m";
 
-    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
+        private final String code;
 
-    public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+        AnsiColor(String code) {
+            this.code = code;
+        }
+
+        /**
+         * Wraps {@code message} with this color's ANSI escape sequence and the
+         * reset sequence. The message is never interpreted as a
+         * {@link String#format(String, Object...)} format string.
+         *
+         * @param message
+         *            the message to wrap, printed literally
+         * @return the message prefixed with this color's escape sequence and
+         *         suffixed with the reset sequence
+         */
+        String wrap(String message) {
+            return code + message + RESET;
+        }
+    }
 
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
@@ -1130,16 +1153,19 @@ public class FrontendUtils {
     /**
      * Intentionally send to console instead to log, useful when executing
      * external processes.
+     * <p>
+     * The message is printed as-is, wrapped with the given ANSI color escape
+     * sequence and {@link AnsiColor#RESET}; it is never interpreted as a
+     * {@link String#format(String, Object...)} format string.
      *
-     * @param format
-     *            Format of the line to send to console, it must contain a `%s`
-     *            outlet for the message
+     * @param ansiColor
+     *            the ANSI color to wrap the message with
      * @param message
-     *            the string to show
+     *            the message to show, printed literally
      */
     @SuppressWarnings("squid:S106")
-    public static void console(String format, Object message) {
-        System.out.print(format(format, message));
+    public static void console(AnsiColor ansiColor, String message) {
+        System.out.print(ansiColor.wrap(message));
     }
 
     /**
