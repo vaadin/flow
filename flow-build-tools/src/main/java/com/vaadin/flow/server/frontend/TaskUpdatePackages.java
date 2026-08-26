@@ -675,7 +675,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // dependency since add-ons should be able to downgrade
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
-                    && pinPlatformDependency(packageJson, pinnedNpmDependencies,
+                    && pinNpmDependency(packageJson, pinnedNpmDependencies,
                             key)) {
                 added++;
             }
@@ -754,12 +754,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
-    protected static boolean pinPlatformDependency(JsonNode packageJson,
-            JsonNode platformPinnedVersions, String pkg) {
-        final FrontendVersion platformPinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(platformPinnedVersions, pkg,
+    protected static boolean pinNpmDependency(JsonNode packageJson,
+            JsonNode pinnedNpmVersions, String pkg) {
+        final FrontendVersion pinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
                         "vaadin_dependencies.json");
-        if (platformPinnedVersion == null) {
+        if (pinnedVersion == null) {
             return false;
         }
 
@@ -797,13 +797,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             return false;
         }
 
-        if (platformPinnedVersion.equals(packageJsonVersion)
-                && platformPinnedVersion.equals(vaadinDepsVersion)) {
+        if (pinnedVersion.equals(packageJsonVersion)
+                && pinnedVersion.equals(vaadinDepsVersion)) {
             return false;
         }
 
-        packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
-        vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
+        vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
         return true;
     }
 

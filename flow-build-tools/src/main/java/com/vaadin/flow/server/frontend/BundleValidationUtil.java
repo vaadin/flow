@@ -390,7 +390,7 @@ public final class BundleValidationUtil {
                 // dependency since add-ons should be able to downgrade
                 // version through exclusion
                 if (!filteredApplicationDependencies.containsKey(key)) {
-                    TaskUpdatePackages.pinPlatformDependency(packageJson,
+                    TaskUpdatePackages.pinNpmDependency(packageJson,
                             pinnedNpmDependencies, key);
                 }
             }
