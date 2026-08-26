@@ -252,10 +252,15 @@ function handleListItemPropertyChange(
   value: unknown,
   tree: StateTree
 ): void {
-  // Java dereferences tree.getNode(nodeId) unguarded (SimpleElementBindingStrategy.java:434-436);
-  // a missing node throws there, so the port asserts non-null rather than silently returning.
-
-  const node = tree.getNode(nodeId)!;
+  // Warning : it's important that `tree` is passed as an
+  // argument instead of StateNode or Element ! We have replaced a method
+  // in the prototype which means that it may not use the context from the
+  // hookUpPolymerElement method. Only a tree may be use as a context
+  // since StateTree is a singleton.
+  // Java dereferences the looked-up node unguarded, so a missing node throws
+  // there; the non-null assertion keeps that contract instead of silently
+  // returning.
+  const node = tree.getNode(Math.trunc(nodeId))!;
   if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
     return;
   }
@@ -366,6 +371,8 @@ function handlePropertyChange(fullPropertyName: string, valueProvider: () => unk
   if (mapProperty!.getValue() instanceof StateNode) {
     // Don't send updates for list nodes
     const nodeValue = mapProperty!.getValue() as StateNode;
+    // Java reads the value through WidgetUtil.crazyJsCast, a GWT-compiler-only
+    // unchecked cast with no port; the value is used directly here.
     const obj = valueProvider() as Record<string, unknown>;
     if (obj.nodeId === undefined || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
       return;
@@ -585,6 +592,10 @@ function doBind(node: StateNode, nodeFactory: BinderContext): void {
  * @returns `true` if the node is not entirely bound and needs re-bind later on
  */
 export function needsRebind(node: StateNode): boolean {
+  /*
+   * Absence of value or "true" means that the node doesn't need re-bind.
+   * So only "false" means "needs re-bind".
+   */
   return readElementData(node, NodeProperties.VISIBILITY_BOUND_PROPERTY) === false;
 }
 
@@ -1365,6 +1376,7 @@ function bindClassList(element: Element, node: StateNode): EventRemover {
 }
 
 function bindPolymerEventHandlerNames(context: BindingContext): EventRemover {
+  // Java casts context.htmlNode with WidgetUtil.crazyJsoCast, which has no port.
   return bindServerEventHandlerNames(
     () => context.htmlNode as unknown as Record<string, unknown>,
     context.node,
@@ -1392,6 +1404,9 @@ function updateAttributeValue(
 ): void {
   if (value === null || value === undefined || typeof value === 'string') {
     setElementAttribute(element, attribute, (value ?? null) as string | null);
+    // Java reinterprets the value as a JsonValue through WidgetUtil.crazyJsoCast
+    // and switches on its JsonType; that cast is GWT-compiler-only and has no
+    // port, so the JavaScript type is inspected directly.
   } else if (typeof value === 'object' && !Array.isArray(value)) {
     assert(
       NodeProperties.URI_ATTRIBUTE in value,
@@ -1444,6 +1459,8 @@ function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTar
     return -1;
   }
   try {
+    // Java casts the target with WidgetUtil.crazyJsCast, which has no port; the
+    // target is treated as a Node directly.
     const stack: StateNode[] = [topNode];
 
     // collect children and test eagerly for direct match; the stack grows as
@@ -1502,6 +1519,7 @@ function getClosestStateNodeIdToDomNode(
     return -1;
   }
   try {
+    // As above, Java's WidgetUtil.crazyJsCast has no port.
     let targetNode = domNodeReference as Node | null;
     while (targetNode !== null) {
       const stateNodeForDomNode = stateTree.getStateNodeForDomNode(targetNode);
@@ -1598,10 +1616,8 @@ export class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         )
       );
 
-      // Warning: it is important that the tree is captured here and passed as
-      // an argument rather than resolved from the state node inside the
-      // callback. The dom-repeat prototype method the bridge replaces cannot
-      // use the context of the hook-up, so only a tree may be used as context.
+      // Captured once and passed into the callbacks, for the reason spelled out
+      // on handleListItemPropertyChange.
       const tree = stateNode.getTree();
       bindPolymerModelProperties(htmlNode, {
         handlePropertiesChanged: (changedProps: unknown) => handlePropertiesChanged(changedProps as object, stateNode),
