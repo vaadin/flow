@@ -133,9 +133,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
 
-        final Map<String, String> platformVersions = collectPlatformVersions();
+        final Map<String, String> pinnedNpmVersions = collectPinnedNpmVersions();
         final ObjectNode vaadinOverrides = computeVaadinOverrides(
-                platformVersions, dependencies, devDependencies);
+                pinnedNpmVersions, dependencies, devDependencies);
 
         // Overrides are managed identically for npm and pnpm; only where they
         // are loaded from and saved to differs, which the store abstracts away.
@@ -146,8 +146,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         final Map<String, String> overridesBefore = new LinkedHashMap<>(
                 overrides);
 
-        removeManagedOverrides(overrides, managedOverrideKeys(platformVersions),
-                dependencies, devDependencies);
+        removeManagedOverrides(overrides,
+                managedOverrideKeys(pinnedNpmVersions), dependencies,
+                devDependencies);
         overrides.putAll(flattenOverrides(vaadinOverrides));
 
         boolean updated = store.save(overrides) || store.migrated()
@@ -305,19 +306,19 @@ public class TaskUpdatePackages extends NodeUpdater {
      * versions are available, {@code versionsJson} falls back to the versions
      * declared in package.json so that those get locked as well.
      */
-    private Map<String, String> collectPlatformVersions() throws IOException {
-        final Map<String, String> platformVersions = new HashMap<>();
-        final ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
+    private Map<String, String> collectPinnedNpmVersions() throws IOException {
+        final Map<String, String> pinnedNpmVersions = new HashMap<>();
+        final ObjectNode allPinnedNpmDependencies = getAllPinnedNpmDependencies();
         for (String dependency : JacksonUtils
-                .getKeys(fullPlatformDependencies)) {
-            platformVersions.put(dependency,
-                    fullPlatformDependencies.get(dependency).asString());
+                .getKeys(allPinnedNpmDependencies)) {
+            pinnedNpmVersions.put(dependency,
+                    allPinnedNpmDependencies.get(dependency).asString());
         }
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
-            platformVersions.putIfAbsent(dependency,
+            pinnedNpmVersions.putIfAbsent(dependency,
                     versionsJson.get(dependency).asString());
         }
-        return platformVersions;
+        return pinnedNpmVersions;
     }
 
     /**
@@ -326,18 +327,18 @@ public class TaskUpdatePackages extends NodeUpdater {
      * version otherwise.
      */
     private ObjectNode computeVaadinOverrides(
-            Map<String, String> platformVersions, JsonNode dependencies,
+            Map<String, String> pinnedNpmVersions, JsonNode dependencies,
             JsonNode devDependencies) {
         final ObjectNode vaadinOverrides = getDefaultOverrides();
-        for (Map.Entry<String, String> platformEntry : platformVersions
+        for (Map.Entry<String, String> pinnedEntry : pinnedNpmVersions
                 .entrySet()) {
-            final String dependency = platformEntry.getKey();
+            final String dependency = pinnedEntry.getKey();
             if (vaadinOverrides.has(dependency)) {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
             final FrontendVersion platformVersion = parseLockableVersion(
-                    platformEntry.getValue());
+                    pinnedEntry.getValue());
             if (platformVersion == null) {
                 continue;
             }
@@ -382,9 +383,9 @@ public class TaskUpdatePackages extends NodeUpdater {
      * overrides Vaadin may add (e.g. workbox).
      */
     private Set<String> managedOverrideKeys(
-            Map<String, String> platformVersions) {
+            Map<String, String> pinnedNpmVersions) {
         final Set<String> managedKeys = new HashSet<>(
-                platformVersions.keySet());
+                pinnedNpmVersions.keySet());
         managedKeys.addAll(JacksonUtils.getKeys(getManagedDefaultOverrides()));
         return managedKeys;
     }
@@ -480,7 +481,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @throws IOException
      *             thrown for exception reading stream
      */
-    private ObjectNode getFullPlatformDependencies() throws IOException {
+    private ObjectNode getAllPinnedNpmDependencies() throws IOException {
         ObjectNode platformDependencies = JacksonUtils.createObjectNode();
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
@@ -668,19 +669,19 @@ public class TaskUpdatePackages extends NodeUpdater {
         /*
          * #10572 lock all platform internal versions
          */
-        List<String> pinnedPlatformDependencies = new ArrayList<>();
-        final ObjectNode platformPinnedDependencies = getPlatformPinnedDependencies();
-        for (String key : JacksonUtils.getKeys(platformPinnedDependencies)) {
+        List<String> pinnedNpmDependencyNames = new ArrayList<>();
+        final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();
+        for (String key : JacksonUtils.getKeys(pinnedNpmDependencies)) {
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
             // version through exclusion
             if (!filteredApplicationDependencies.containsKey(key)
-                    && pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key)) {
+                    && pinPlatformDependency(packageJson, pinnedNpmDependencies,
+                            key)) {
                 added++;
             }
             // make sure platform pinned dependency is not cleared
-            pinnedPlatformDependencies.add(key);
+            pinnedNpmDependencyNames.add(key);
         }
 
         if (added > 0) {
@@ -696,7 +697,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .concat(filteredApplicationDependencies.entrySet().stream(),
                         getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
-        dependencyCollection.addAll(pinnedPlatformDependencies);
+        dependencyCollection.addAll(pinnedNpmDependencyNames);
 
         boolean doCleanUp = forceCleanUp; // forced only in tests
         int removed = removeLegacyProperties(packageJson);

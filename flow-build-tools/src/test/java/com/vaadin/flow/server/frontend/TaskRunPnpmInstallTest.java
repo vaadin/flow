@@ -521,7 +521,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
 
             @Override
-            ObjectNode getPlatformPinnedDependencies() {
+            ObjectNode getPinnedNpmDependencies() {
                 if (versionsContent != null) {
                     return JacksonUtils.readTree(versionsContent);
                 } else {

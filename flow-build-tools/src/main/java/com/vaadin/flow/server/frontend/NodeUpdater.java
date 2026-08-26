@@ -130,7 +130,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when versions file could not be read
      */
-    ObjectNode getPlatformPinnedDependencies() throws IOException {
+    ObjectNode getPinnedNpmDependencies() throws IOException {
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
         if (coreVersionsResource == null) {
@@ -626,7 +626,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected void generateVersionsJson(ObjectNode packageJson)
             throws IOException {
-        versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPinnedNpmDependencies();
         ObjectNode packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (JacksonUtils.getKeys(versionsJson).isEmpty()) {
