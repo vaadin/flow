@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -51,6 +52,16 @@ public class NativeTableHeaderCell extends AbstractNativeTableCell
      *            the children components.
      */
     public NativeTableHeaderCell(Component... components) {
+        super(components);
+    }
+
+    /**
+     * List equivalent of {@link #NativeTableHeaderCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public NativeTableHeaderCell(List<? extends Component> components) {
         super(components);
     }
 

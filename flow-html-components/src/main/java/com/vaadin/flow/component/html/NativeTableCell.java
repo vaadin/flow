@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -45,6 +46,16 @@ public class NativeTableCell extends AbstractNativeTableCell
      *            the children components.
      */
     public NativeTableCell(Component... components) {
+        super(components);
+    }
+
+    /**
+     * List equivalent of {@link #NativeTableCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public NativeTableCell(List<? extends Component> components) {
         super(components);
     }
 

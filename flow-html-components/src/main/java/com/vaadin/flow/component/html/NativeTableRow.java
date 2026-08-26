@@ -58,6 +58,17 @@ public class NativeTableRow extends HtmlContainer
     }
 
     /**
+     * List equivalent of {@link #NativeTableRow(Component...)}.
+     *
+     * @param components
+     *            the cells or wrap-target components for this row.
+     */
+    public NativeTableRow(List<? extends Component> components) {
+        super();
+        addCells(components);
+    }
+
+    /**
      * Add a header cell to this row with the given text content.
      *
      * @param text

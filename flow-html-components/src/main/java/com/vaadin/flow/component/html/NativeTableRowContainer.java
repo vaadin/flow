@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.HasComponents;
 
 /**
  * A container of <code>&lt;tr&gt;</code> elements.
  *
  * @since 24.4
  */
-interface NativeTableRowContainer extends HasOrderedComponents {
+interface NativeTableRowContainer extends HasComponents {
 
     /**
      * Returns a list of all the rows.
@@ -46,6 +46,16 @@ interface NativeTableRowContainer extends HasOrderedComponents {
      */
     default void addRows(NativeTableRow... rows) {
         add(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addRows(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to append.
+     */
+    default void addRows(List<? extends NativeTableRow> rows) {
+        add(rows.toArray(NativeTableRow[]::new));
     }
 
     /**
@@ -81,6 +91,16 @@ interface NativeTableRowContainer extends HasOrderedComponents {
      */
     default void removeRows(NativeTableRow... rows) {
         remove(rows);
+    }
+
+    /**
+     * List equivalent of {@link #removeRows(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to remove.
+     */
+    default void removeRows(List<? extends NativeTableRow> rows) {
+        remove(rows.toArray(NativeTableRow[]::new));
     }
 
     /**

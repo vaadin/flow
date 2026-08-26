@@ -62,6 +62,16 @@ public abstract class AbstractNativeTableCell extends HtmlContainer {
     }
 
     /**
+     * List equivalent of {@link #AbstractNativeTableCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    protected AbstractNativeTableCell(List<? extends Component> components) {
+        super(components.toArray(Component[]::new));
+    }
+
+    /**
      * Sets the {@code colspan} attribute — how many columns this cell spans.
      * The default is {@code 1}. Browsers clamp values higher than 1000 back to
      * {@code 1}.

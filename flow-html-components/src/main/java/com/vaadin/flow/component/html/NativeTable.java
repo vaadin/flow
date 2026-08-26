@@ -61,6 +61,16 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
+     * List equivalent of {@link #NativeTable(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public NativeTable(List<? extends Component> components) {
+        super(components.toArray(Component[]::new));
+    }
+
+    /**
      * Return the table's caption component. Creates a new instance if no
      * caption is present.
      *
@@ -355,6 +365,16 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
+     * List equivalent of {@link #addRows(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addRows(List<? extends NativeTableRow> rows) {
+        getBody().addRows(rows);
+    }
+
+    /**
      * Appends a new empty row to this table's {@code <thead>}, creating it if
      * none exists yet.
      *
@@ -400,6 +420,16 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
+     * List equivalent of {@link #addHeaderRows(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addHeaderRows(List<? extends NativeTableRow> rows) {
+        getHead().addRows(rows);
+    }
+
+    /**
      * Appends a new empty row to this table's {@code <tfoot>}, creating it if
      * none exists yet.
      *
@@ -441,6 +471,16 @@ public class NativeTable extends HtmlContainer
      *            the rows to add.
      */
     public void addFooterRows(NativeTableRow... rows) {
+        getFoot().addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRows(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addFooterRows(List<? extends NativeTableRow> rows) {
         getFoot().addRows(rows);
     }
 

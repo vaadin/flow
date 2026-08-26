@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
@@ -43,5 +45,15 @@ public class NativeTableHeader extends HtmlContainer
      */
     public NativeTableHeader(NativeTableRow... rows) {
         super(rows);
+    }
+
+    /**
+     * List equivalent of {@link #NativeTableHeader(NativeTableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public NativeTableHeader(List<? extends NativeTableRow> rows) {
+        super(rows.toArray(NativeTableRow[]::new));
     }
 }
