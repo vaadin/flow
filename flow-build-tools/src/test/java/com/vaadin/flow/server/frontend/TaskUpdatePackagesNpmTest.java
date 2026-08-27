@@ -122,7 +122,7 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates we're not written");
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 PINNED_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -187,7 +187,7 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersions(newVersion, newVersion, newVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -224,7 +224,7 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersions(newVersion, newVersion, newVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -299,7 +299,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
     @Test
@@ -316,9 +316,9 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
 
-        // Remove the lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -333,7 +333,7 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
@@ -350,9 +350,9 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
 
-        // Remove the lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -378,7 +378,7 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -394,7 +394,7 @@ class TaskUpdatePackagesNpmTest {
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
 
-        // Remove the lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -418,7 +418,7 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
@@ -434,7 +434,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
     @Test
@@ -456,7 +456,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PINNED_DIALOG_VERSION, "file:../foobar",
                 PINNED_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
@@ -557,7 +557,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PINNED_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
         final ObjectNode packageJson = getOrCreatePackageJson();
         JsonNode dependencies = packageJson.get(DEPENDENCIES);
 
@@ -736,7 +736,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(appDependencyVersion, oldPinnedVersion,
                 oldPinnedVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -759,7 +759,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(appDependencyVersion, oldPinnedVersion,
                 oldPinnedVersion);
-        verifyVersionLockingWithPnpmOverrides(true, true, true);
+        verifyVersionPinningWithPnpmOverrides(true, true, true);
     }
 
     @Test
@@ -801,7 +801,7 @@ class TaskUpdatePackagesNpmTest {
 
         verifyVersions(appDependencyVersion, oldPinnedVersion,
                 oldPinnedVersion);
-        verifyVersionLockingWithPnpmOverrides(true, true, true);
+        verifyVersionPinningWithPnpmOverrides(true, true, true);
 
         Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
                 .getOverrides();
@@ -1218,13 +1218,13 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyVersionLockingWithNpmOverrides(boolean hasDialogLocking,
-            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+    private void verifyVersionPinningWithNpmOverrides(boolean hasDialogPinning,
+            boolean hasElementMixinPinning, boolean hasOverlayPinning)
             throws IOException {
         JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
         assertNotNull(overrides, "Object for 'overrides' should exist");
 
-        if (hasDialogLocking) {
+        if (hasDialogPinning) {
             assertTrue(overrides.has(VAADIN_DIALOG),
                     "Dialog override was not present");
             assertEquals("$" + VAADIN_DIALOG,
@@ -1233,7 +1233,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_DIALOG),
                     "vaadin-dialog dependency should not be present");
         }
-        if (hasElementMixinLocking) {
+        if (hasElementMixinPinning) {
             assertTrue(overrides.has(VAADIN_ELEMENT_MIXIN),
                     "Element-Mixin override was not present");
             assertEquals("$" + VAADIN_ELEMENT_MIXIN,
@@ -1242,7 +1242,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_ELEMENT_MIXIN),
                     "vaadin-element-mixin dependency should not be present");
         }
-        if (hasOverlayLocking) {
+        if (hasOverlayPinning) {
             assertTrue(overrides.has(VAADIN_OVERLAY),
                     "Overlay override was not present");
             assertEquals("$" + VAADIN_OVERLAY,
@@ -1253,13 +1253,13 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyVersionLockingWithPnpmOverrides(boolean hasDialogLocking,
-            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+    private void verifyVersionPinningWithPnpmOverrides(boolean hasDialogPinning,
+            boolean hasElementMixinPinning, boolean hasOverlayPinning)
             throws IOException {
         Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
                 .getOverrides();
 
-        if (hasDialogLocking) {
+        if (hasDialogPinning) {
             assertTrue(overrides.containsKey(VAADIN_DIALOG),
                     "Dialog override was not present");
             assertEquals("$" + VAADIN_DIALOG, overrides.get(VAADIN_DIALOG));
@@ -1267,7 +1267,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_DIALOG),
                     "vaadin-dialog dependency should not be present");
         }
-        if (hasElementMixinLocking) {
+        if (hasElementMixinPinning) {
             assertTrue(overrides.containsKey(VAADIN_ELEMENT_MIXIN),
                     "Element-Mixin override was not present");
             assertEquals("$" + VAADIN_ELEMENT_MIXIN,
@@ -1276,7 +1276,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_ELEMENT_MIXIN),
                     "vaadin-element-mixin dependency should not be present");
         }
-        if (hasOverlayLocking) {
+        if (hasOverlayPinning) {
             assertTrue(overrides.containsKey(VAADIN_OVERLAY),
                     "Overlay override was not present");
             assertEquals("$" + VAADIN_OVERLAY, overrides.get(VAADIN_OVERLAY));
@@ -1368,15 +1368,15 @@ class TaskUpdatePackagesNpmTest {
         // Reproduces the upgrade scenario from #24702: a project carried over
         // from an earlier Vaadin version where the "overrides" section and the
         // obsolete "vaadin.overrides" tracking section have drifted out of sync
-        // and lock the packages to an older version. On the next run with
-        // newer pinned versions, all locks must heal to the new versions and
+        // and pin the packages to an older version. On the next run with
+        // newer pinned versions, all pins must heal to the new versions and
         // the tracking section must be dropped, without needing clean-frontend.
         final String oldVersion = "1.0.0";
         final String newVersion = "2.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
         ObjectNode pkgJson = getOrCreatePackageJson();
         // Dialog is a direct dependency pinned to the old version; overlay is a
-        // transitive pinned package locked to the old version directly.
+        // transitive pinned package pinned to the old version directly.
         ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
         ObjectNode overrides = JacksonUtils.createObjectNode();
         overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
@@ -1397,12 +1397,12 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         pkgJson = getOrCreatePackageJson();
         JsonNode healed = pkgJson.get(OVERRIDES);
-        // The direct dependency was bumped to the new version and stays locked
+        // The direct dependency was bumped to the new version and stays pinned
         // by reference.
         assertEquals(newVersion,
                 pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
         assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
-        // The overlay lock was frozen at the old version by the drifted
+        // The overlay pin was frozen at the old version by the drifted
         // tracking section; it now heals to the bumped pinned version. The
         // old diff logic would have left it stuck at oldVersion.
         assertEquals(newVersion,
@@ -1495,7 +1495,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_nestedObjectOverrides_handledCorrectlyInVersionLocking()
+    void npmIsInUse_nestedObjectOverrides_handledCorrectlyInVersionPinning()
             throws IOException {
         createBasicVaadinVersionsJson();
 

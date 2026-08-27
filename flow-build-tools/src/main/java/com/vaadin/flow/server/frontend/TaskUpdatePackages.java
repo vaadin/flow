@@ -94,7 +94,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
-            modified = lockVersionForNpm(packageJson) || modified;
+            modified = pinVersionsForNpm(packageJson) || modified;
 
             // Recompute hash
             final Map<String, String> pnpmOverrides = enablePnpm
@@ -129,7 +129,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
+    boolean pinVersionsForNpm(ObjectNode packageJson) throws IOException {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
 
@@ -304,7 +304,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Collects the versions the npm packages are pinned to. When no pinned
      * versions are available, {@code versionsJson} falls back to the versions
-     * declared in package.json so that those get locked as well.
+     * declared in package.json so that those get pinned as well.
      */
     private Map<String, String> collectPinnedNpmVersions() throws IOException {
         final Map<String, String> pinnedNpmVersions = new HashMap<>();
@@ -348,7 +348,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Not declared directly, pin to the pinned version.
                 vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
             } else if (isNumericVersion(directVersion)) {
-                // Locked by a dependency/devDependency; reference it so the
+                // Pinned by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
                 vaadinOverrides.put(dependency, "$" + dependency);
             }
@@ -479,7 +479,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Collect all pinned npm dependencies from vaadin-core-versions.json and
      * vaadin-versions.json to use in overrides so that any component versions
-     * get locked even when they are transitive.
+     * get pinned even when they are transitive.
      *
      * @return json containing all npm keys and versions
      * @throws IOException
@@ -671,7 +671,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         /*
-         * #10572 lock all internal pinned versions
+         * #10572 pin all internal versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
         final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();
