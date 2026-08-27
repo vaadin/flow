@@ -131,30 +131,30 @@ class PinnedNpmVersions {
     }
 
     /**
-     * Gets the platform version, i.e. the version of the Vaadin platform the
-     * versions files come from.
+     * Gets the Vaadin version, i.e. the version of the platform the versions
+     * files come from, as declared in their {@code platform} field.
      *
-     * @return the platform version, or empty if no versions file declares one
+     * @return the Vaadin version, or empty if no versions file declares one
      */
-    Optional<String> getPlatformVersion() {
-        String platformVersion = null;
+    Optional<String> getVaadinVersion() {
+        String vaadinVersion = null;
         String origin = null;
         for (VersionsFile file : files) {
             JsonNode platform = file.content().get("platform");
             if (platform == null || !platform.isString()) {
                 continue;
             }
-            if (platformVersion == null) {
-                platformVersion = platform.asString();
+            if (vaadinVersion == null) {
+                vaadinVersion = platform.asString();
                 origin = file.origin();
-            } else if (!platformVersion.equals(platform.asString())) {
+            } else if (!vaadinVersion.equals(platform.asString())) {
                 log().warn(
-                        "Conflicting platform versions found: '{}' in {} and '{}' in {}. Using '{}'.",
-                        platformVersion, origin, platform.asString(),
-                        file.origin(), platformVersion);
+                        "Conflicting Vaadin versions found: '{}' in {} and '{}' in {}. Using '{}'.",
+                        vaadinVersion, origin, platform.asString(),
+                        file.origin(), vaadinVersion);
             }
         }
-        return Optional.ofNullable(platformVersion);
+        return Optional.ofNullable(vaadinVersion);
     }
 
     /**

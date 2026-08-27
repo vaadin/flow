@@ -139,7 +139,7 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
-    void platformVersionIsReadFromTheFileDeclaringIt() throws IOException {
+    void vaadinVersionIsReadFromTheFileDeclaringIt() throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "components": {
@@ -156,7 +156,7 @@ class PinnedNpmVersionsTest {
                 """);
 
         assertEquals(Optional.of("25.1.0"),
-                pinnedNpmVersions.getPlatformVersion());
+                pinnedNpmVersions.getVaadinVersion());
     }
 
     @Test
