@@ -196,7 +196,11 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     functions) alongside it. Such an import does **not** trip `noUnusedLocals`:
     TypeScript counts a `{@link}` reference as a use, so the link and the import
     keep each other alive. Do not settle for a plain code span — that was the
-    earlier workaround and it loses the link.
+    earlier workaround and it loses the link. The cross-module half of this rule
+    was _introduced during #24949_; a code span standing in for a cross-module
+    link in an earlier branch is `n/a` per `PORTING-REVIEW.md` §8.6, not a
+    finding. (A code span for a symbol that is not ported at all stays correct
+    under rule 11, whichever branch it is in.)
 
 ## References to not-yet-ported symbols
 
