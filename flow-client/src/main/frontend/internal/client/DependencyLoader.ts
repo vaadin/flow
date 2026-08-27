@@ -97,7 +97,11 @@ export class DependencyLoader {
     loader(data, this.#eagerListener);
   }
 
-  /** Triggers loading of the given dependencies, grouped by load mode. */
+  /**
+   * Triggers loading of the given dependencies.
+   *
+   * @param clientDependencies - the map of the dependencies to load, divided into groups by load mode, not `null`.
+   */
   loadDependencies(clientDependencies: Map<LoadMode, Dependency[]>): void {
     // Java asserts clientDependencies != null; the parameter is non-nullable,
     // so the check is unreachable and dropped.

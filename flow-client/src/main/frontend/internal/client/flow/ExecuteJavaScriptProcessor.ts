@@ -152,7 +152,11 @@ export class ExecuteJavaScriptProcessor {
     this.#registry = registry;
   }
 
-  /** Runs each invocation (an array of parameters followed by the JS expression). */
+  /**
+   * Executes invocations received from the server.
+   *
+   * @param invocations - a JSON containing invocation data
+   */
   execute(invocations: unknown[][]): void {
     for (const invocation of invocations) {
       this.#handleInvocation(invocation);
@@ -194,6 +198,17 @@ export class ExecuteJavaScriptProcessor {
     this.#invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
+  /**
+   * Executes the actual invocation.
+   *
+   * Java declares this protected instead of private for testing purposes; the
+   * port keeps it private and covers it through execute().
+   *
+   * @param parameterNamesAndCode - an array consisting of parameter names
+   *          followed by the JavaScript expression to execute
+   * @param parameters - an array of parameter values
+   * @param nodeParameters - the node parameters
+   */
   #invoke(parameterNamesAndCode: string[], parameters: unknown[], nodeParameters: Map<unknown, StateNode>): void {
     const configuration = this.#registry.getApplicationConfiguration();
     const getNode = (element: unknown): unknown => {

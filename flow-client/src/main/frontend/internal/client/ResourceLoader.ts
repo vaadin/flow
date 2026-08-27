@@ -26,8 +26,13 @@ import { getAbsoluteUrl } from './WidgetUtil';
 import { Console } from './Console';
 
 /**
- * Wires onLoad/onError handlers on a link or script element, clearing all
- * handlers once one fires. Also handles the legacy onreadystatechange path.
+ * Adds an onload listener to the given element, which should be a link or a
+ * script tag. The listener is called whenever loading is complete or an
+ * error occurred.
+ *
+ * @param element - the element to attach a listener to
+ * @param listener - the listener to call
+ * @param event - the event passed to the listener
  */
 export function addOnloadHandler(element: Element, onLoad: () => void, onError: () => void): void {
   const el = element as unknown as {
@@ -167,7 +172,21 @@ export class ResourceLoader {
   }
 
   /** Loads an external script, notifying the listener when loaded (deduped). */
-  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java loadScript(url, listener, async, defer, type) signature
+
+  /**
+   * Load a script and notify a listener when the script is loaded. Calling
+   * this method when the script is currently loading or already loaded
+   * doesn't cause the script to be loaded again, but the listener will still
+   * be notified when appropriate.
+   *
+   * Loads all dependencies with `async = false` and
+   * `defer = false` attribute values, see
+   * {@link ResourceLoader.loadScript}.
+   *
+   * @param scriptUrl - the url of the script to load
+   * @param resourceLoadListener - the listener that will get notified when the script is loaded
+   */
+  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java loadScript signature
   loadScript(
     scriptUrl: string,
     resourceLoadListener: ResourceLoadListener | null,
@@ -196,7 +215,18 @@ export class ResourceLoader {
     }
   }
 
-  /** Loads an external script as a module. */
+  /**
+   * Load a script with type module and notify a listener when the script is
+   * loaded. Calling this method when the script is currently loading or
+   * already loaded doesn't cause the script to be loaded again, but the
+   * listener will still be notified when appropriate.
+   *
+   *
+   * @param scriptUrl - url of script to load. It should be an external URL.
+   * @param resourceLoadListener - listener to notify when script is loaded
+   * @param async - What mode the script.async attribute should be set to
+   * @param defer - What mode the script.defer attribute should be set to
+   */
   loadJsModule(
     scriptUrl: string,
     resourceLoadListener: ResourceLoadListener | null,
@@ -206,7 +236,15 @@ export class ResourceLoader {
     this.loadScript(scriptUrl, resourceLoadListener, async, defer, 'module');
   }
 
-  /** Inlines a script's contents, notifying the listener when loaded (deduped by contents). */
+  /**
+   * Inlines a script and notify a listener when the script is loaded. Calling
+   * this method when the script is currently loading or already loaded
+   * doesn't cause the script to be loaded again, but the listener will still
+   * be notified when appropriate.
+   *
+   * @param scriptContents - the script contents to inline
+   * @param resourceLoadListener - listener to notify when script is loaded
+   */
   inlineScript(scriptContents: string, resourceLoadListener: ResourceLoadListener | null): void {
     const event = this.#makeEvent(scriptContents);
     if (this.#resources.isLoaded(scriptContents)) {
@@ -226,7 +264,13 @@ export class ResourceLoader {
     }
   }
 
-  /** Loads a dynamic import via a JS expression returning a Promise. */
+  /**
+   * Loads a dynamic import via the provided JS `expression` and reports
+   * the result via the `resourceLoadListener`.
+   *
+   * @param expression - the JS expression which returns a Promise
+   * @param resourceLoadListener - a listener to report the Promise result exection
+   */
   loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
     const event = this.#makeEvent(expression);
     const fn = new Function(expression) as () => unknown;
@@ -238,7 +282,15 @@ export class ResourceLoader {
     );
   }
 
-  /** Loads an external stylesheet, optionally tracked by a dependency id (deduped). */
+  /**
+   * Load a stylesheet and notify a listener when the stylesheet is loaded.
+   * Calling this method when the stylesheet is currently loading or already
+   * loaded doesn't cause the stylesheet to be loaded again, but the listener
+   * will still be notified when appropriate.
+   *
+   * @param stylesheetUrl - the url of the stylesheet to load
+   * @param resourceLoadListener - the listener that will get notified when the stylesheet is loaded
+   */
   loadStylesheet(
     stylesheetUrl: string,
     resourceLoadListener: ResourceLoadListener | null,
@@ -313,7 +365,15 @@ export class ResourceLoader {
     }, 10);
   }
 
-  /** Inlines a stylesheet's contents, optionally tracked by a dependency id (deduped by contents). */
+  /**
+   * Inlines a stylesheet and notify a listener when the stylesheet is loaded.
+   * Calling this method when the stylesheet is currently loading or already
+   * loaded doesn't cause the stylesheet to be loaded again, but the listener
+   * will still be notified when appropriate.
+   *
+   * @param styleSheetContents - the contents to inline
+   * @param resourceLoadListener - the listener that will get notified when the stylesheet is loaded
+   */
   inlineStyleSheet(
     styleSheetContents: string,
     resourceLoadListener: ResourceLoadListener | null,
@@ -377,7 +437,14 @@ export class ResourceLoader {
     return null;
   }
 
-  /** Clears a loaded resource (and its listeners) by its dependency id. */
+  /**
+   * Clears a resource from the loaded resources set by its dependency ID.
+   *
+   * This is used when a resource is removed from the DOM using its dependency
+   * ID.
+   *
+   * @param dependencyId - the dependency ID of the resource to clear
+   */
   clearLoadedResourceById(dependencyId: string): void {
     this.#resources.clearLoadedResourceById(dependencyId);
   }

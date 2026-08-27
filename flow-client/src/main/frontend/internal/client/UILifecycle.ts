@@ -45,6 +45,11 @@ const ORDINAL: Record<UIState, number> = {
  * {@link UILifecycle.addHandler}.
  */
 export interface StateChangeEvent {
+  /**
+   * Gets the {@link UILifecycle} instance which triggered this event.
+   *
+   * @returns the {@link UILifecycle} which triggered the event
+   */
   getUiLifecycle(): UILifecycle;
 }
 

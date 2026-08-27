@@ -39,8 +39,11 @@ export class Registry {
   readonly #resettable = new Map<ServiceKey, () => unknown>();
 
   /**
-   * Stores a (final) instance of the given type. Throws if one is already
-   * registered. Mirrors Registry.set(Class, Object).
+   * Stores an instance of the given type.
+   *
+   * @param type - the type to store
+   * @param instance - the instance to store
+   * @typeParam T - the type
    */
   protected set<T>(type: ServiceKey, instance: T): void {
     assert(!this.#lookupTable.has(type), 'Registry already has a class of this type registered');
@@ -71,7 +74,9 @@ export class Registry {
     return this.#lookupTable.has(type);
   }
 
-  /** Deletes and recreates the resettable singletons. Mirrors Registry.reset. */
+  /**
+   * Deletes and recreates resettable instances of registry singletons.
+   */
   reset(): void {
     this.#resettable.forEach((supplier, key) => {
       this.#lookupTable.delete(key);

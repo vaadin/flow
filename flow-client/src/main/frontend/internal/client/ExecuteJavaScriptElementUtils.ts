@@ -66,9 +66,15 @@ interface UpdatablePropertiesNode {
 }
 
 /**
- * Registers the model properties whose updates may be sent to the server
- * without explicit synchronization. Mirrors
- * ExecuteJavaScriptElementUtils.registerUpdatableModelProperties.
+ * Register the updatable model properties of the `node`.
+ *
+ * Only updates for the properties from the `properties` array will be
+ * sent to the server without explicit synchronization. The
+ * `properties` array includes all properties that are allowed to be
+ * updated (including sub properties).
+ *
+ * @param node - the node whose updatable properties should be registered
+ * @param properties - all updatable model properties
  */
 export function registerUpdatableModelProperties(node: UpdatablePropertiesNode, properties: string[]): void {
   if (properties.length > 0) {
@@ -126,10 +132,13 @@ function getExistingIdOrUpdate(
 }
 
 /**
- * Finds the existing DOM element matching the given tag after the previous
- * sibling among the parent's children, resolves its server-side id (registering
- * it if new), and reports the attachment back to the server. Mirrors
- * ExecuteJavaScriptElementUtils.attachExistingElement.
+ * Calculate the data required for server side callback to attach existing
+ * element and send it to the server.
+ *
+ * @param parent - the parent node whose child is requested to attach
+ * @param previousSibling - previous sibling element
+ * @param tagName - the tag name of the element requested to attach
+ * @param id - the identifier of the server side node which is requested to be a counterpart of the client side element
  */
 export function attachExistingElement(
   parent: AttachParentNode,
@@ -197,10 +206,13 @@ function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, propert
 }
 
 /**
- * Populates the given model properties on the node's element, syncing
- * client-side values back to the server for updatable properties. If the element
- * is not yet upgraded, retries once its custom element is defined. Mirrors
- * ExecuteJavaScriptElementUtils.populateModelProperties.
+ * Populate model `properties`: add them into
+ * `NodeFeatures.ELEMENT_PROPERTIES` {@link NodeMap} if they are
+ * not defined by the client-side element or send their client-side value to
+ * the server otherwise.
+ *
+ * @param node - the node whose properties should be populated
+ * @param properties - array of property names to populate
  */
 export function populateModelProperties(node: ModelNode, properties: string[]): void {
   const map = node.getMap(ELEMENT_PROPERTIES);
@@ -244,11 +256,16 @@ function drainInitializers(node: InitializerNode): void {
 }
 
 /**
- * Stores a cleanup callback for a JS initializer. If one was already stored for
- * the same id, it is invoked before being replaced (defensive against stale
- * state). The first registration for a node attaches an unregister listener that
- * drains all remaining cleanups when the node leaves the tree. Mirrors
- * ExecuteJavaScriptElementUtils.registerInitializer.
+ * Stores a cleanup callback for a JS initializer registered through
+ * {@link com.vaadin.flow.dom.Element#addJsInitializer}. If a callback was
+ * previously stored for the same id, it is invoked before being replaced
+ * (defensive against stale state from a discarded DOM). On the first
+ * registration for a node, an unregister listener is attached so that all
+ * remaining cleanups are drained when the node leaves the tree.
+ *
+ * @param node - the state node owning the initializer, not `null`
+ * @param id - the UI-wide initializer id
+ * @param cleanup - the JS cleanup function to invoke when disposing, not `null`
  */
 export function registerInitializer(node: InitializerNode, id: number, cleanup: JsCallback): void {
   let entry = initializerCleanups.get(node);
@@ -267,8 +284,11 @@ export function registerInitializer(node: InitializerNode, id: number, cleanup: 
 }
 
 /**
- * Disposes a previously registered JS initializer cleanup (invoking it); a no-op
- * for an unknown id. Mirrors ExecuteJavaScriptElementUtils.disposeInitializer.
+ * Disposes a previously registered JS initializer cleanup. No-op if the id
+ * is unknown (e.g. the node has already been unregistered).
+ *
+ * @param node - the state node owning the initializer, not `null`
+ * @param id - the UI-wide initializer id
  */
 export function disposeInitializer(node: InitializerNode, id: number): void {
   const entry = initializerCleanups.get(node);

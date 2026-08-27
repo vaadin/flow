@@ -91,7 +91,14 @@ function getShadowRootElement(host: Element): ShadowRoot | null {
  * returned, even when a querySelector matched no element (it is then left
  * unattached), matching the original behaviour the caller relies on.
  */
-// eslint-disable-next-line @typescript-eslint/max-params -- positional JSNI delegation mirrors the Java signature plus the log callback
+
+/**
+ * Shows the given error message if not running in production mode and logs
+ * it to the console if running in production mode.
+ *
+ * @param errorMessage - the error message to show
+ */
+// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleError signature
 export function handleError(
   caption: string | null,
   message: string | null,
@@ -178,7 +185,12 @@ export class SystemErrorHandler {
     this.#registry = registry;
   }
 
-  /** Logs the given error message. Mirrors SystemErrorHandler.handleError(String). */
+  /**
+   * Shows the given error message if not running in production mode and logs
+   * it to the console if running in production mode.
+   *
+   * @param errorMessage - the error message to show
+   */
   handleError(errorMessage: string): void {
     Console.error(errorMessage);
   }
@@ -271,7 +283,11 @@ export class SystemErrorHandler {
     );
   }
 
-  /** Shows the configured session-expired notification. Mirrors handleSessionExpiredError. */
+  /**
+   * Shows the session expiration notification.
+   *
+   * @param details - message details or null if there are no details
+   */
   handleSessionExpiredError(details: string | null): void {
     const message = this.#registry.getApplicationConfiguration().getSessionExpiredError();
     this.handleUnrecoverableError(
@@ -284,10 +300,17 @@ export class SystemErrorHandler {
   }
 
   /**
-   * Shows an error notification for an unrecoverable error. With no caption,
-   * message or details, redirects to `url` (reloads when null) instead.
-   * Clicking the notification or pressing Escape performs that same redirect.
-   * Mirrors SystemErrorHandler.handleUnrecoverableError.
+   * Shows an error notification for an error which is unrecoverable, using the
+   * given parameters.
+   *
+   * @param caption - the caption of the message
+   * @param message - the message body
+   * @param details - message details or `null` if there are no details
+   * @param url - a URL to redirect to when the user clicks the message or
+   *          `null` to refresh on click
+   * @param querySelector - query selector to find the element under which the
+   *          error will be added . If element is not found or the selector is
+   *          `null`, body will be used
    */
   // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleUnrecoverableError signature
   handleUnrecoverableError(
