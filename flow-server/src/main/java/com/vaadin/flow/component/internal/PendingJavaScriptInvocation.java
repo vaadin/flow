@@ -49,8 +49,15 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * invocation, or <code>null</code> if it is not counted, either because no
      * UI could be resolved when it was scheduled or because it is no longer
      * waiting to be sent.
+     * <p>
+     * Not serialized: an invocation that is waiting to be sent is reachable
+     * from its owner node, so serializing a component that has scheduled one
+     * would otherwise pull in the whole UI and its session. A deserialized
+     * invocation is not counted anywhere, which matches
+     * {@link UIInternals#addUndeliveredJsInvocations(int)} starting over from
+     * zero for a deserialized UI.
      */
-    private UIInternals countedIn;
+    private transient UIInternals countedIn;
 
     /**
      * Creates a new pending invocation for the given owner node and invocation.

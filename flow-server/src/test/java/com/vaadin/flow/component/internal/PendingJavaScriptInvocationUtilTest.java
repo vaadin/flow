@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -254,6 +259,40 @@ class PendingJavaScriptInvocationUtilTest {
 
         assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
                 "invocations sent to the browser should not be counted");
+    }
+
+    @Test
+    void serializeOwnerOfScheduledInvocation_uiNotPartOfTheGraph()
+            throws Exception {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        // A detached owner holds on to the invocation until it is attached
+        component.getElement().executeJs("this.foo = $0", "bar");
+        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
+                "the invocation should be counted in the current UI");
+
+        List<Object> serialized = new ArrayList<>();
+        ObjectOutputStream stream = new ObjectOutputStream(
+                new ByteArrayOutputStream()) {
+            {
+                enableReplaceObject(true);
+            }
+
+            @Override
+            protected Object replaceObject(Object object) {
+                serialized.add(object);
+                return object;
+            }
+        };
+
+        stream.writeObject(component);
+
+        assertTrue(
+                serialized.stream().anyMatch(
+                        PendingJavaScriptInvocation.class::isInstance),
+                "the scheduled invocation should be part of the serialized graph");
+        assertTrue(serialized.stream().noneMatch(UIInternals.class::isInstance),
+                "serializing the owner of a scheduled invocation should not pull in the UI it was counted in");
     }
 
     private static StateNode attachedNode(MockUI ui) {
