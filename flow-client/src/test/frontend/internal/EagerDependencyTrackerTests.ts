@@ -1,13 +1,13 @@
 import { expect } from '@open-wc/testing';
 import {
   endEagerDependencyLoading,
-  resetForTesting,
   runWhenEagerDependenciesLoaded,
   startEagerDependencyLoading
 } from '../../../main/frontend/internal/client/EagerDependencyTracker';
 
 describe('EagerDependencyTracker', () => {
-  beforeEach(() => resetForTesting());
+  // Every case below balances its own start/end calls, so the module counter is
+  // back at zero when it finishes.
 
   it('runs the command immediately when no eager dependencies are loading', () => {
     let ran = false;

@@ -1,6 +1,5 @@
 import { expect } from '@open-wc/testing';
 import { DependencyLoader } from '../../../main/frontend/internal/client/DependencyLoader';
-import { resetForTesting } from '../../../main/frontend/internal/client/EagerDependencyTracker';
 import type { ResourceLoadListener } from '../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -12,6 +11,9 @@ function makeRegistry() {
     (...args: unknown[]) => {
       const listener = args.find((a) => a && typeof a === 'object' && 'onLoad' in a) as ResourceLoadListener;
       calls.push({ method, args, listener });
+      // A real ResourceLoader always notifies the listener; doing the same here
+      // keeps the eager-dependency counter balanced across cases.
+      listener?.onLoad({ getResourceLoader: () => resourceLoader, getResourceData: () => String(args[0]) });
     };
   const resourceLoader = {
     loadScript: record('loadScript'),
@@ -30,7 +32,8 @@ function makeRegistry() {
 }
 
 describe('DependencyLoader (class)', () => {
-  beforeEach(() => resetForTesting());
+  // Each case completes the loads it starts (see makeRegistry), so the eager
+  // counter is back to zero by the end of it - as it is after a real load.
 
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
     const registry = makeRegistry();

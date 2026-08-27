@@ -20,7 +20,7 @@
  * Checks whether the node's element class declares the given property with a
  * default value (Polymer-style static `properties` with a `value`).
  */
-export function isPropertyDefined(node: Node, property: string): boolean {
+function isPropertyDefined(node: Node, property: string): boolean {
   const ctor = (node as unknown as { constructor?: { properties?: Record<string, { value?: unknown }> } }).constructor;
   const declared = ctor && ctor.properties && ctor.properties[property];
   return !!declared && typeof declared.value !== 'undefined';
@@ -281,9 +281,4 @@ export function disposeInitializer(node: InitializerNode, id: number): void {
   }
   entry.delete(id);
   invokeSafely(fn);
-}
-
-/** Clears the registry; for tests only. */
-export function resetForTesting(): void {
-  initializerCleanups.clear();
 }

@@ -2,11 +2,9 @@ import { expect } from '@open-wc/testing';
 import {
   attachExistingElement,
   disposeInitializer,
-  isPropertyDefined,
   populateModelProperties,
   registerInitializer,
-  registerUpdatableModelProperties,
-  resetForTesting
+  registerUpdatableModelProperties
 } from '../../../main/frontend/internal/client/ExecuteJavaScriptElementUtils';
 import { UpdatableModelProperties } from '../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 
@@ -47,30 +45,9 @@ function makeNode() {
 }
 
 describe('ExecuteJavaScriptElementUtils', () => {
-  it('isPropertyDefined is true for a declared property with a value', () => {
-    const node = {
-      constructor: { properties: { foo: { value: 1 }, bar: {} } }
-    } as unknown as Node;
-    expect(isPropertyDefined(node, 'foo')).to.be.true;
-  });
-
-  it('isPropertyDefined is false for a property without a value', () => {
-    const node = {
-      constructor: { properties: { bar: {} } }
-    } as unknown as Node;
-    expect(isPropertyDefined(node, 'bar')).to.be.false;
-  });
-
-  it('isPropertyDefined is false for missing properties or plain elements', () => {
-    const node = {
-      constructor: { properties: { foo: { value: 1 } } }
-    } as unknown as Node;
-    expect(isPropertyDefined(node, 'missing')).to.be.false;
-    expect(isPropertyDefined(document.createElement('div'), 'foo')).to.be.false;
-  });
-
   describe('initializer cleanups', () => {
-    beforeEach(() => resetForTesting());
+    // The registry is keyed by node and each case builds its own, so nothing
+    // leaks between them.
 
     it('invokes the cleanup when an initializer is disposed', () => {
       const node = makeNode();
@@ -141,6 +118,18 @@ describe('ExecuteJavaScriptElementUtils', () => {
     it('sets null for an undeclared property without a value', () => {
       // Plain element: no declared property and no current value -> setValue(null).
       const node = makeModelNode(document.createElement('div'), null);
+      populateModelProperties(node, ['caption']);
+      expect(node.props.caption.value).to.equal(null);
+      expect(node.props.caption.hasValue).to.be.true;
+    });
+
+    it('sets null for a property declared without a value', () => {
+      const element = document.createElement('div');
+      // Declared Polymer-style but with no `value` entry, so it does not count
+      // as defined and is treated like an undeclared property.
+      (element as unknown as { constructor: unknown }).constructor = { properties: { caption: {} } };
+
+      const node = makeModelNode(element, null);
       populateModelProperties(node, ['caption']);
       expect(node.props.caption.value).to.equal(null);
       expect(node.props.caption.hasValue).to.be.true;

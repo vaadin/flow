@@ -65,9 +65,3 @@ export function endEagerDependencyLoading(): void {
     }
   }
 }
-
-/** Resets the module state; for tests only. */
-export function resetForTesting(): void {
-  eagerDependenciesLoading = 0;
-  callbacks = [];
-}
