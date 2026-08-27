@@ -337,7 +337,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion pinnedVersion = parseLockableVersion(
+            final FrontendVersion pinnedVersion = getPinnableVersion(
                     pinnedEntry.getValue());
             if (pinnedVersion == null) {
                 continue;
@@ -359,10 +359,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Parses a pinned version, returning {@code null} for build-folder,
-     * SNAPSHOT or otherwise non-numeric versions that should not be locked.
+     * Gets the version an npm package can be pinned to.
+     *
+     * @param version
+     *            the version declared for the package
+     * @return the version to pin the package to, or {@code null} if it cannot
+     *         be pinned, which is the case for a package that points at the
+     *         build folder and for a SNAPSHOT or otherwise non-numeric version
      */
-    private FrontendVersion parseLockableVersion(String version) {
+    private FrontendVersion getPinnableVersion(String version) {
         if (isInternalPseudoDependency(version)) {
             return null;
         }
