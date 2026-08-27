@@ -72,6 +72,11 @@ export class InitialPropertiesHandler {
 
   readonly #propertyUpdateQueue: InitialPropertiesProperty[] = [];
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: InitialPropertiesRegistry) {
     this.#registry = registry;
   }
@@ -88,15 +93,27 @@ export class InitialPropertiesHandler {
     }
   }
 
-  /** Notifies the handler about a newly registered node. */
+  /**
+   * Notifies the handler about registered node.
+   *
+   * The method is called for the newly created `node` which is registered in
+   * the `StateTree`.
+   *
+   * @param node - the newly registered node
+   */
   nodeRegistered(node: InitialPropertiesNode): void {
     this.#newNodeDuringUpdate.add(node.getId());
   }
 
   /**
-   * Handles a property update before it is sent to the server. Returns true if
-   * the update is handled here (queued and possibly sent later), false if the
-   * caller should send it normally.
+   * Handles the property update before it's sent to the server via RPC.
+   *
+   * The method returns `true` for the `property` which shouldn't be sent to
+   * the server because it's going to be handled by the handler (queued and sent
+   * later on if allowed).
+   *
+   * @param property - property to handle
+   * @returns `true` if property is handled by the handler, `false` otherwise
    */
   handlePropertyUpdate(property: InitialPropertiesProperty): boolean {
     if (this.#isNodeNewlyCreated(property.getMap().getNode())) {

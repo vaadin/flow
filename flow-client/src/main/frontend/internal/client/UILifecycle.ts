@@ -38,7 +38,12 @@ const ORDINAL: Record<UIState, number> = {
   TERMINATED: 2
 };
 
-/** Event fired when the lifecycle state changes; mirrors UILifecycle.StateChangeEvent. */
+/**
+ * Event triggered when the lifecycle state of a UI is changed.
+ *
+ * To listen for the event add a {@link StateChangeHandler} using
+ * {@link UILifecycle.addHandler}.
+ */
 export interface StateChangeEvent {
   getUiLifecycle(): UILifecycle;
 }
@@ -52,15 +57,24 @@ export class UILifecycle {
 
   readonly #handlers = new Set<StateChangeHandler>();
 
-  /** The current lifecycle state. */
+  /**
+   * Gets the state of the UI.
+   *
+   * @returns the current state of the UI
+   */
   getState(): UIState {
     return this.#state;
   }
 
   /**
-   * Advances the state. Only single-step forward transitions
-   * (INITIALIZING -\> RUNNING -\> TERMINATED) are allowed; fires a state-change
-   * event.
+   * Sets the state of the UI to the given value.
+   *
+   * Only allows state changes in one direction: {@link UIState.INITIALIZING}
+   * -\> {@link UIState.RUNNING} -\> {@link UIState.TERMINATED}.
+   *
+   * Changing the state fires a {@link StateChangeEvent}.
+   *
+   * @param state - the new UI state
    */
   setState(state: UIState): void {
     if (ORDINAL[state] !== ORDINAL[this.#state] + 1) {
@@ -71,17 +85,33 @@ export class UILifecycle {
     this.#handlers.forEach((handler) => handler(event));
   }
 
-  /** Whether the state is RUNNING. */
+  /**
+   * Check if the state is {@link UIState.RUNNING}.
+   *
+   * @returns `true` if the status is {@link UIState.RUNNING}, `false`
+   *          otherwise
+   */
   isRunning(): boolean {
     return this.#state === UIState.RUNNING;
   }
 
-  /** Whether the state is TERMINATED. */
+  /**
+   * Check if the state is {@link UIState.TERMINATED}.
+   *
+   * @returns `true` if the status is {@link UIState.TERMINATED}, `false`
+   *          otherwise
+   */
   isTerminated(): boolean {
     return this.#state === UIState.TERMINATED;
   }
 
-  /** Adds a state-change handler, returning a remover. */
+  /**
+   * Adds a state change event handler.
+   *
+   * @param handler - the handler to add
+   * @returns a handler registration object which can be used to remove the
+   *          handler
+   */
   addHandler(handler: StateChangeHandler): EventRemover {
     this.#handlers.add(handler);
     return {

@@ -35,7 +35,12 @@ export class TrackingScheduler {
     }, 0);
   }
 
-  /** Whether there is deferred work queued or currently being executed. */
+  /**
+   * Checks if there is work queued or currently being executed.
+   *
+   * @returns true if there is work queued or if work is currently being
+   *          executed, false otherwise
+   */
   hasWorkQueued(): boolean {
     return this.#deferredCommandTrackers !== 0;
   }
