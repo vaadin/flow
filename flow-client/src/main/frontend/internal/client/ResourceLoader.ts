@@ -60,7 +60,7 @@ export function addOnloadHandler(element: Element, onLoad: () => void, onError: 
  * if loaded but the rules are inaccessible (cross-origin), or -1 if no matching
  * stylesheet is loaded yet.
  */
-export function getStyleSheetLength(url: string): number {
+function getStyleSheetLength(url: string): number {
   for (const styleSheet of Array.from(document.styleSheets)) {
     const sheet = styleSheet as StyleSheet & {
       cssRules?: { length: number } | null;
@@ -91,7 +91,7 @@ export function getStyleSheetLength(url: string): number {
  * settles. Runs onError synchronously if the supplier throws or does not return
  * a Promise.
  */
-export function runPromiseExpression(
+function runPromiseExpression(
   expression: string,
   promiseSupplier: () => unknown,
   onSuccess: () => void,

@@ -74,7 +74,7 @@ interface ContextCallbacks {
  * application id has its trailing per-UI suffix (`-<number>`) stripped so the
  * script sees the stable app id.
  */
-export function getContextExecutionObject(
+function getContextExecutionObject(
   appId: string,
   registry: unknown,
   callbacks: ContextCallbacks
@@ -103,7 +103,7 @@ export function getContextExecutionObject(
  * ExecuteJavaScriptProcessor.invoke (the context object is assembled by
  * getContextExecutionObject).
  */
-export function invokeJavaScript(
+function invokeJavaScript(
   parameterNamesAndCode: string[],
   parameters: unknown[],
   context: object,
