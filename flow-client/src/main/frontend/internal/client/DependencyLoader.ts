@@ -99,6 +99,8 @@ export class DependencyLoader {
 
   /** Triggers loading of the given dependencies, grouped by load mode. */
   loadDependencies(clientDependencies: Map<LoadMode, Dependency[]>): void {
+    // Java asserts clientDependencies != null; the parameter is non-nullable,
+    // so the check is unreachable and dropped.
     const lazyDependencies = new Map<string, Loader>();
     clientDependencies.forEach((dependencies, mode) => {
       this.#extractLazyDependenciesAndLoadOthers(mode, dependencies).forEach((loader, url) => {

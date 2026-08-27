@@ -21,6 +21,7 @@
 // as window.Vaadin.Flow.internal.ApplicationConfiguration; the bootstrap
 // populates it via the setters before the engine starts.
 
+import { assert } from '../assert';
 import { Console } from './Console';
 
 /** Holds the bootstrap configuration of a UI; mirrors ApplicationConfiguration.java. */
@@ -86,6 +87,7 @@ export class ApplicationConfiguration {
   }
 
   setContextRootUrl(contextRootUrl: string): void {
+    assert(contextRootUrl.endsWith('/'), 'The context root URL must end with a "/"');
     this.#contextRootUrl = contextRootUrl;
   }
 

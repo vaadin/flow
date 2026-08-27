@@ -32,6 +32,7 @@
 // getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
 // are contracts satisfied at cutover.
 
+import { assert } from '../../assert';
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
 import {
@@ -108,6 +109,11 @@ export function invokeJavaScript(
   context: object,
   productionMode: boolean
 ): void {
+  assert(
+    parameterNamesAndCode.length === parameters.length + 1,
+    'Expected one more entry in parameterNamesAndCode than there are parameters'
+  );
+
   try {
     // The last entry is the expression; the rest are parameter names.
     const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;

@@ -14,6 +14,8 @@
  * the License.
  */
 
+import { assert } from '../assert';
+
 // TypeScript port of the container mechanism of com.vaadin.client.Registry.
 // The Registry is a holder of singleton services (MessageSender, StateTree, ...)
 // looked up by a key; some are resettable via a supplier so the whole set can be
@@ -36,9 +38,7 @@ export class Registry {
    * registered. Mirrors Registry.set(Class, Object).
    */
   protected set<T>(type: ServiceKey, instance: T): void {
-    if (this.#lookupTable.has(type)) {
-      throw new Error('Registry already has a class of this type registered');
-    }
+    assert(!this.#lookupTable.has(type), 'Registry already has a class of this type registered');
     this.#lookupTable.set(type, instance);
   }
 
@@ -57,9 +57,7 @@ export class Registry {
    * registered. Mirrors Registry.get(Class).
    */
   protected get<T>(type: ServiceKey): T {
-    if (!this.#lookupTable.has(type)) {
-      throw new Error('Tried to look up a type but no instance has been registered');
-    }
+    assert(this.#lookupTable.has(type), 'Tried to look up a type but no instance has been registered');
     return this.#lookupTable.get(type) as T;
   }
 
