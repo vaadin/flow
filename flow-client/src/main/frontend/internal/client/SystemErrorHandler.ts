@@ -54,7 +54,7 @@ function getWithCredentials(
  * mocking its disconnected callback. Used to detach stale components without
  * triggering their server-side disconnect handling.
  */
-export function recreateNodes(elementName: string): void {
+function recreateNodes(elementName: string): void {
   // Snapshot the live collection before mutating it.
   const elements = Array.from(document.getElementsByTagName(elementName)) as Array<
     Element & {
@@ -69,7 +69,7 @@ export function recreateNodes(elementName: string): void {
 }
 
 /** Invokes the native showPopover() of the element if it supports it. */
-export function showPopover(el: Element): void {
+function showPopover(el: Element): void {
   const fn = el && (el as Element & { showPopover?: () => void }).showPopover;
   if (typeof fn === 'function') {
     fn.call(el);
@@ -77,7 +77,7 @@ export function showPopover(el: Element): void {
 }
 
 /** Returns the shadow root of the given host element, if any. */
-export function getShadowRootElement(host: Element): ShadowRoot | null {
+function getShadowRootElement(host: Element): ShadowRoot | null {
   return host.shadowRoot;
 }
 
