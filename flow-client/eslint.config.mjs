@@ -31,7 +31,6 @@ export default [
           // multi-level wildcard, hence one entry per level).
           allowDefaultProject: [
             'src/test/frontend/*',
-            'src/test/frontend/internal/*',
             'src/test/frontend/internal/client/*',
             'src/test/frontend/internal/client/flow/*',
             'src/test/frontend/internal/client/flow/binding/*',

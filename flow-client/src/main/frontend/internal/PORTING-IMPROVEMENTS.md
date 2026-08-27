@@ -271,8 +271,7 @@ so a review does not read them as porting slips.
   between two ticks `flushAll` reaches the intermediate branch with a null
   command and a null command map. `Debouncer.java:288` dereferences both, so the
   `NullPointerException` aborts the flush for every remaining debouncer too. The
-  port skips that debouncer instead.
-- **Spotted in**: #24949
+  port skips that debouncer instead. Spotted in #24949.
 
 ## Rejected candidates
 
