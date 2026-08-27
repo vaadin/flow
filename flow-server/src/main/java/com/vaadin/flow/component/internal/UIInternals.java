@@ -203,8 +203,11 @@ public class UIInternals implements Serializable {
      * Not serialized: the invocations restored with the related UI have lost
      * the reference to the internals that counted them, so they would never
      * bring this count back down again. Counting starts over from zero instead,
-     * which only delays the warning for a UI that is deserialized with
-     * invocations already waiting to be sent.
+     * which delays the warning for a UI that is deserialized with invocations
+     * already waiting to be sent - and silences it entirely in a deployment
+     * that serializes the session for every request, such as session
+     * replication in a cluster, since the count then restarts before it can
+     * ever reach the threshold.
      */
     private transient int undeliveredJsInvocations;
 
@@ -494,9 +497,10 @@ public class UIInternals implements Serializable {
     // Package private: only used through PendingJavaScriptInvocationUtil
     int addUndeliveredJsInvocations(int delta) {
         session.checkHasLock();
-        // Clamped rather than asserted: an invocation can outlive the count
-        // that included it, for instance when only some of them are restored
-        // by deserialization. Miscounting is not worth failing over
+        // Only an invocation that this instance counted uncounts itself, so
+        // the count is not expected to go negative. Clamped rather than
+        // asserted since a slip in the bookkeeping behind a warning is not
+        // worth failing an application over
         undeliveredJsInvocations = Math.max(0,
                 undeliveredJsInvocations + delta);
         return undeliveredJsInvocations;

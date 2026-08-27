@@ -635,7 +635,7 @@ class UIInternalsTest {
         internals.addUndeliveredJsInvocations(1);
 
         assertEquals(0, internals.addUndeliveredJsInvocations(-2),
-                "the count should stay at zero when an invocation that this UI never counted stops being counted");
+                "the count should never go negative");
         assertEquals(1, internals.addUndeliveredJsInvocations(1),
                 "counting should continue from zero after being clamped");
     }
