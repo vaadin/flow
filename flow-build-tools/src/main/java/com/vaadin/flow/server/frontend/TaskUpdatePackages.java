@@ -85,7 +85,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
-            modified = lockVersionForNpm(packageJson) || modified;
+            modified = pinVersionsForNpm(packageJson) || modified;
 
             // Recompute hash
             final Map<String, String> pnpmOverrides = enablePnpm
@@ -120,7 +120,19 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
+    /**
+     * Pins the npm packages Vaadin manages by writing the overrides that
+     * enforce their versions, into package.json for npm and into
+     * pnpm-workspace.yaml for pnpm.
+     *
+     * @param packageJson
+     *            the package.json content to pin the versions in
+     * @return {@code true} if the overrides changed
+     * @throws IOException
+     *             if the versions files cannot be read, or the overrides cannot
+     *             be read or written
+     */
+    boolean pinVersionsForNpm(ObjectNode packageJson) throws IOException {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
 
@@ -293,9 +305,27 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collects the versions the npm packages are pinned to. When no pinned
-     * versions are available, {@code versionsJson} falls back to the versions
-     * declared in package.json so that those get locked as well.
+     * Collects the versions to pin the npm packages to, from the two places
+     * they are declared in.
+     * <p>
+     * Every package of the versions files is taken first, so that a package is
+     * pinned to the version Vaadin ships even when it is only used
+     * transitively. What {@link #versionsJson} declares is then filled in for
+     * the packages the versions files do not cover. That is the same set of
+     * packages narrowed down to the current mode and without the SNAPSHOT and
+     * unparsable versions, plus the version package.json declares for each of
+     * its dependencies that is not pinned by a versions file.
+     * <p>
+     * A version the user changed in package.json does not replace the one the
+     * versions files declare; it only produces a warning when the user pinned
+     * an older version than Vaadin ships.
+     * <p>
+     * This is not about what package.json currently pins through overrides:
+     * those are read separately and are replaced by what this returns.
+     *
+     * @return the version to pin each npm package to, by package name
+     * @throws IOException
+     *             if the versions files cannot be read
      */
     private Map<String, String> collectPinnedNpmVersions() throws IOException {
         final Map<String, String> pinnedNpmVersions = new HashMap<>();
@@ -313,9 +343,10 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Builds the overrides Vaadin wants to enforce: a dependency reference
-     * ({@code $dependency}) when the package is declared directly, the pinned
-     * version otherwise.
+     * Builds the overrides Vaadin wants to enforce for the packages of
+     * {@link #collectPinnedNpmVersions()}: a dependency reference
+     * ({@code $dependency}) when the package is declared directly in
+     * package.json, the version to pin it to otherwise.
      */
     private ObjectNode computeVaadinOverrides(
             Map<String, String> pinnedNpmVersions, JsonNode dependencies,
@@ -328,7 +359,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion pinnedVersion = parseLockableVersion(
+            final FrontendVersion pinnedVersion = getPinnableVersion(
                     pinnedEntry.getValue());
             if (pinnedVersion == null) {
                 continue;
@@ -339,7 +370,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Not declared directly, pin to the pinned version.
                 vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
             } else if (isNumericVersion(directVersion)) {
-                // Locked by a dependency/devDependency; reference it so the
+                // Pinned by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
                 vaadinOverrides.put(dependency, "$" + dependency);
             }
@@ -350,10 +381,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Parses a pinned version, returning {@code null} for build-folder,
-     * SNAPSHOT or otherwise non-numeric versions that should not be locked.
+     * Gets the version an npm package can be pinned to.
+     *
+     * @param version
+     *            the version declared for the package
+     * @return the version to pin the package to, or {@code null} if it cannot
+     *         be pinned, which is the case for a package that points at the
+     *         build folder and for a SNAPSHOT or otherwise non-numeric version
      */
-    private FrontendVersion parseLockableVersion(String version) {
+    private FrontendVersion getPinnableVersion(String version) {
         if (isInternalPseudoDependency(version)) {
             return null;
         }
@@ -369,8 +405,10 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Top-level override keys Vaadin manages: the pinned npm packages and the
-     * default overrides Vaadin may add (e.g. workbox).
+     * Top-level override keys Vaadin manages, which are the ones it removes
+     * from package.json once they are no longer pinned: the packages of
+     * {@link #collectPinnedNpmVersions()} and the default overrides Vaadin may
+     * add (e.g. workbox).
      */
     private Set<String> managedOverrideKeys(
             Map<String, String> pinnedNpmVersions) {
@@ -463,11 +501,12 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all npm dependencies from the pinned npm versions files to use in
-     * overrides so that any component versions get locked even when they are
-     * transitive.
+     * Collect all npm dependencies the versions files declare, that is
+     * vaadin-core-versions.json and vaadin-versions.json, regardless of the
+     * mode they apply to, so that any component version gets pinned even when
+     * it is only used transitively.
      *
-     * @return json containing all npm keys and versions
+     * @return the version each versions file declares, by npm package name
      * @throws IOException
      *             thrown for exception reading stream
      */
@@ -602,7 +641,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         /*
-         * #10572 lock all internal pinned npm versions
+         * #10572 pin all internal versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
         final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();

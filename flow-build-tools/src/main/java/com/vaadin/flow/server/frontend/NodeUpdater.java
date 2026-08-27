@@ -585,7 +585,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file for version locking.
+     * Generate versions json file for version pinning.
      *
      * @param packageJson
      *            the package json content
@@ -611,14 +611,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the pinned npm versions we should lock any versions in
+     * If we do not have the pinned npm versions we should pin any versions in
      * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json
      */
     private ObjectNode generateVersionsFromPackageJson(JsonNode packageJson) {
         ObjectNode versionsJson = JacksonUtils.createObjectNode();
-        // if we don't have versionsJson lock package dependency versions.
+        // if we don't have versionsJson pin package dependency versions.
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         if (dependencies != null) {
             for (String key : JacksonUtils.getKeys(dependencies)) {
