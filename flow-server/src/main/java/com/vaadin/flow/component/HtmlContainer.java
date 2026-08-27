@@ -25,14 +25,24 @@ package com.vaadin.flow.component;
  * {@link Component} can be added as a child and the API cannot prevent a child
  * that the element isn't allowed to contain.
  * <p>
- * Elements with a restricted content model are a poor fit. A
- * <code>&lt;table&gt;</code>, for example, only accepts
- * <code>&lt;caption&gt;</code>, <code>&lt;colgroup&gt;</code>,
- * <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code>,
- * <code>&lt;tfoot&gt;</code> and <code>&lt;tr&gt;</code> children. Such a
- * component should instead extend {@link HtmlComponent} and implement
- * {@link HasComponentsOfType} with the type of child component that the element
- * accepts, so that invalid content is rejected already at compile time.
+ * Elements with a restricted content model are a poor fit. Such a component
+ * should instead extend {@link HtmlComponent} and expose only an API that
+ * matches what the element actually accepts. The shape of that API depends on
+ * the element:
+ * <ul>
+ * <li>When each part of the content is different, a dedicated API for each part
+ * is the clearest option. A <code>&lt;table&gt;</code>, for example, accepts an
+ * optional <code>&lt;caption&gt;</code>, then <code>&lt;colgroup&gt;</code>,
+ * <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code> and
+ * <code>&lt;tfoot&gt;</code> elements in a specific order, so a table component
+ * is better served by separate methods for the caption, the header, the bodies
+ * and the footer than by a generic add-a-child method.</li>
+ * <li>When all children are of the same type, such as the
+ * <code>&lt;li&gt;</code> children of a <code>&lt;ul&gt;</code>,
+ * {@link HasComponentsOfType} gives the same add and remove methods as
+ * {@link HasComponents} while rejecting unrelated components already at compile
+ * time.</li>
+ * </ul>
  *
  * @author Vaadin Ltd
  * @since 1.0

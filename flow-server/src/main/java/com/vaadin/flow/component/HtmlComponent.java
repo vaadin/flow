@@ -25,8 +25,9 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * This base class provides no API for adding child components. Use
  * {@link HtmlContainer} instead for an element that may contain any kind of
- * content, and extend this class while implementing {@link HasComponentsOfType}
- * for an element that only accepts specific kinds of children.
+ * content. For an element with a restricted content model, extend this class
+ * and add only the API that matches what the element accepts, for example
+ * {@link HasComponentsOfType} when all children are of the same type.
  *
  * @author Vaadin Ltd
  * @since 1.0
