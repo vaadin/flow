@@ -56,7 +56,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         if (!node.hasFeature(ReturnChannelMap.class)) {
             getLogger()
                     .warn("Ignoring update for a node that cannot have return"
-                            + " channels. Target: {}", describeTarget(node));
+                            + " channels. Target: {}", node.describe());
             logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
@@ -72,7 +72,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                             + " the JavaScript execution that registered it was"
                             + " handled, or it was never registered."
                             + " Target: {}",
-                    channelId, describeTarget(node));
+                    channelId, node.describe());
             logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
@@ -83,7 +83,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                     "Ignoring update for disabled return channel {}, the"
                             + " message from the client is not passed to the"
                             + " channel handler. Target: {}. {}",
-                    channelId, describeTarget(node), describeDisabledBy(node));
+                    channelId, node.describe(), describeDisabledBy(node));
             logIgnoredPayload(invocationJson);
             return Optional.empty();
         }
@@ -119,7 +119,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
             return "The target itself is disabled";
         }
         return "The target is disabled through its ancestor "
-                + describeTarget(disabledNode);
+                + disabledNode.describe();
     }
 
     @Override

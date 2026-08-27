@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -627,6 +628,52 @@ class UIInternalsTest {
 
         assertFalse(internals.isDirty(),
                 "No pending JS invocations to send to the client, expecting UI not to be dirty");
+    }
+
+    @Test
+    void markUndeliveredJsInvocationsWarningLogged_onlyTheFirstCallReturnsTrue() {
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should be logged when the threshold is first exceeded");
+        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should not be logged again for the same UI");
+    }
+
+    @Test
+    void lastUpdateSentTimestamp_initializedOnCreation() {
+        Instant before = Instant.now();
+        UIInternals freshInternals = new UIInternals(ui);
+
+        assertFalse(
+                freshInternals.getLastUpdateSentTimestamp().isBefore(before),
+                "a UI that has not sent anything yet should report its creation time");
+        assertFalse(freshInternals.getLastUpdateSentTimestamp()
+                .isAfter(Instant.now()));
+    }
+
+    @Test
+    void dumpPendingJavaScriptInvocations_updatesLastUpdateSentTimestamp() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
+
+        internals.dumpPendingJavaScriptInvocations();
+
+        assertTrue(
+                internals.getLastUpdateSentTimestamp()
+                        .isAfter(initialTimestamp),
+                "purging the pending invocations should update the timestamp");
+        assertFalse(
+                internals.getLastUpdateSentTimestamp().isAfter(Instant.now()));
+    }
+
+    @Test
+    void pendingJsInvocationNotPurged_lastUpdateSentTimestampNotUpdated() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                internals.getStateTree().getRootNode(),
+                new UIInternals.JavaScriptInvocation("")));
+
+        assertEquals(initialTimestamp, internals.getLastUpdateSentTimestamp(),
+                "scheduling an invocation should not update the timestamp");
     }
 
     @Test
