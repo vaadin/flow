@@ -236,6 +236,30 @@ file.
   live while the GWT client is the running engine.
 - **Spotted in**: #24933
 
+## Test-side ergonomics
+
+### `stateTreeTestRegistry` — a `registryWith(overrides)` instead of whole literals
+
+- **Site**: `src/test/frontend/internal/client/flow/stateTreeTestRegistry.ts`, plus
+  the four places that still build a `Registry` literal of their own —
+  `client/flow/StateTreeTests.ts`, `client/flow/util/ClientJsonCodecTests.ts`,
+  `client/flow/binding/BinderTests.ts`, `client/flow/bindingTestHelpers.ts`
+- **Java shape**: none. The fakes stand in for the ported `Registry` slice, and the
+  GWT tests build their own registry per test class as well.
+- **What TypeScript could do**: let a suite state only the member it cares about —
+  ```ts
+  const registry = registryWith({ getServerConnector: () => ({ sendReturnChannelMessage: record }) });
+  ```
+  merging over `inertRegistry()`. Today one recording member costs a suite all five
+  `Registry` members and, if the member is on the connector, all six of its methods.
+  That is why the helper's own promise — *"a member added to `Registry` is filled in
+  once"* — does not hold: adding one still means editing four more files.
+- **Why it waits**: not the Java shape — **this entry fails admission test 2** and
+  could land at any time. It waits only because two of the four sites belong to
+  branches below, and editing them is churn while those are read against Java. The
+  next PR to touch these suites should simply do it rather than inherit the note.
+- **Spotted in**: #24949
+
 ## Deviations that fix a Java defect
 
 Places where the port deliberately does **not** mirror the Java behaviour because
