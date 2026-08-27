@@ -24,6 +24,7 @@ class TestRegistry extends Registry {
 // Ported from com.vaadin.client.RegistryTest.
 describe('Registry', () => {
   it('stores and looks up an instance by token', () => {
+    // Ported from setAndGet.
     const registry = new TestRegistry();
     const service = { name: 'sender' };
     registry.register('MessageSender', service);
@@ -32,17 +33,20 @@ describe('Registry', () => {
   });
 
   it('throws when registering the same type twice', () => {
+    // Beyond the Java suite.
     const registry = new TestRegistry();
     registry.register('X', {});
     expect(() => registry.register('X', {})).to.throw('already has');
   });
 
   it('throws when looking up an unregistered type', () => {
+    // Ported from getUndefined.
     const registry = new TestRegistry();
     expect(() => registry.lookup('missing')).to.throw('no instance has been registered');
   });
 
   it('recreates resettable instances on reset, leaving final ones untouched', () => {
+    // Ported from setAndGetCustom.
     const registry = new TestRegistry();
     const final = { id: 'final' };
     registry.register('Final', final);

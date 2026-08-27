@@ -46,6 +46,7 @@ function fakeRegistry(nodesById: Record<number, any>, updateInProgress: boolean)
 // Ported from com.vaadin.client.InitialPropertiesHandlerTest.
 describe('InitialPropertiesHandler', () => {
   it('queues property updates only for newly created nodes', () => {
+    // Ported from flushPropertyUpdates_updateIsNotInProgress_collectInitialProperties.
     const node = fakeNode(2, {});
     const { registry } = fakeRegistry({ 2: node }, false);
     const handler = new InitialPropertiesHandler(registry);
@@ -58,6 +59,7 @@ describe('InitialPropertiesHandler', () => {
   });
 
   it('does nothing while a server update is in progress', () => {
+    // Ported from flushPropertyUpdates_updateInProgress_noInteractions.
     const node = fakeNode(2, { color: 'red' });
     const { tree, registry } = fakeRegistry({ 2: node }, true);
     const handler = new InitialPropertiesHandler(registry);
@@ -73,6 +75,7 @@ describe('InitialPropertiesHandler', () => {
   });
 
   it('resets properties with a server initial value and sends the rest', () => {
+    // Ported from flushPropertyUpdates_updateIsNotInProgress_flushForEechProperty.
     const node = fakeNode(2, { color: 'red' });
     const { tree, registry } = fakeRegistry({ 2: node }, false);
     const handler = new InitialPropertiesHandler(registry);

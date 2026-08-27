@@ -412,6 +412,7 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 | --- | --- | --- | --- |
 | 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()` | the PR that ports `InitialPropertiesHandler` | open |
 | 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are omitted while 14 of their return types are unported, so `DependencyLoader`, `SystemErrorHandler`, `InitialPropertiesHandler`, `ExecuteJavaScriptProcessor` and `StateTree` still declare a local interface for the getters they call | the PR that ports the remaining services (`MessageSender`, `MessageHandler`, `ApplicationConnection`, …) | open |
+| 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`, and `DependencyLoaderClassTests` is two short of the `DependencyLoaderTest` + `GwtDependencyLoaderTest` union; both need a state tree with virtual children and bound/unbound parents to drive | a follow-up on the support-services layer | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on

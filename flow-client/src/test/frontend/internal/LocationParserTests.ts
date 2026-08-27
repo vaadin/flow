@@ -4,6 +4,7 @@ import { getParameter } from '../../../main/frontend/internal/client/bootstrap/L
 // Ported from com.vaadin.client.bootstrap.LocationParserTest.
 describe('LocationParser', () => {
   it('parses parameters from a search string', () => {
+    // Ported from testParameterParsing.
     expect(getParameter('?', 'foo')).to.equal(null);
     expect(getParameter('?bar', 'foo')).to.equal(null);
     expect(getParameter('?foo', 'foo')).to.equal('');
@@ -17,6 +18,7 @@ describe('LocationParser', () => {
   });
 
   it('keeps everything after the first = as the value', () => {
+    // Beyond the Java suite.
     expect(getParameter('?foo=a=b', 'foo')).to.equal('a=b');
   });
 });
