@@ -83,6 +83,7 @@ public class FileIOUtils {
      * @param file
      *            the file or directory to delete, may be {@code null}
      * @return {@code true} if the file was deleted or did not exist
+     * @since 25.3
      */
     public static boolean deleteQuietly(File file) {
         return file != null && deleteQuietly(file.toPath());
@@ -97,6 +98,7 @@ public class FileIOUtils {
      * @param path
      *            the file or directory to delete, may be {@code null}
      * @return {@code true} if the file was deleted or did not exist
+     * @since 25.3
      */
     public static boolean deleteQuietly(Path path) {
         if (path == null) {
@@ -214,6 +216,7 @@ public class FileIOUtils {
      * @throws IOException
      *             if the file or any of its contents could not be deleted, with
      *             a message describing how the deletion can be unblocked
+     * @since 25.3
      */
     public static void delete(Path path) throws IOException {
         BasicFileAttributes attributes;

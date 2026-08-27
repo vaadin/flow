@@ -41,6 +41,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
@@ -1211,6 +1212,57 @@ public class StateNode implements Serializable {
         beforeClientResponseEntries = null;
 
         return !entries.isEmpty() ? entries : Collections.emptyList();
+    }
+
+    /**
+     * Describes which part of the application this node belongs to, for
+     * inclusion in a log message. In addition to the node id, the description
+     * contains the element tag and, when available, the component class, the
+     * routing target the component is used in, and the location where the
+     * component was created.
+     *
+     * @return a description of this node, not <code>null</code>
+     */
+    public String describe() {
+        StringBuilder targetInfo = new StringBuilder("node id=")
+                .append(getId());
+        // The node is not necessarily usable as an element even when it has
+        // the feature, and a description for a log message must never throw
+        if (BasicElementStateProvider.get().supports(this)) {
+            Element element = Element.get(this);
+            targetInfo.append(", element with tag '").append(element.getTag())
+                    .append("'");
+            Optional<Component> component = element.getComponent();
+            if (component.isPresent()) {
+                targetInfo.append(", component '")
+                        .append(component.get().getClass().getName())
+                        .append("'");
+                /*
+                 * The routing target is identified by its class since the path
+                 * in its annotation is not necessarily the path it is served
+                 * from: the path may be a placeholder for a name derived from
+                 * the class, and it doesn't include the prefixes that parent
+                 * layouts contribute.
+                 */
+                ComponentUtil.getRouteComponent(component.get()).filter(
+                        routeComponent -> routeComponent != component.get())
+                        .ifPresent(routeComponent -> targetInfo
+                                .append(", used in '")
+                                .append(routeComponent.getClass().getName())
+                                .append("'"));
+
+                // Only available while component tracking is enabled, which
+                // is the case in development mode
+                ComponentTracker.Location location = ComponentTracker
+                        .findCreate(component.get());
+                if (location != null) {
+                    targetInfo.append(", created at ")
+                            .append(location.filename()).append(":")
+                            .append(location.lineNumber());
+                }
+            }
+        }
+        return targetInfo.toString();
     }
 
     /**

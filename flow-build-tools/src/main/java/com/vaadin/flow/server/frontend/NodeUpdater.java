@@ -122,7 +122,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Gets the platform pinned versions that are not overridden by the user in
+     * Gets the pinned npm versions that are not overridden by the user in
      * package.json.
      *
      * @return {@code JsonNode} with the dependencies or empty {@code JsonNode}
@@ -130,7 +130,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when versions file could not be read
      */
-    ObjectNode getPlatformPinnedDependencies() throws IOException {
+    ObjectNode getPinnedNpmDependencies() throws IOException {
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
         if (coreVersionsResource == null) {
@@ -616,7 +616,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file for version locking.
+     * Generate versions json file for version pinning.
      *
      * @param packageJson
      *            the package json content
@@ -626,7 +626,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected void generateVersionsJson(ObjectNode packageJson)
             throws IOException {
-        versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPinnedNpmDependencies();
         ObjectNode packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (JacksonUtils.getKeys(versionsJson).isEmpty()) {
@@ -642,15 +642,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions for
-     * defined packages.
+     * If we do not have the pinned npm versions we should pin any versions in
+     * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json
      */
     private ObjectNode generateVersionsFromPackageJson(JsonNode packageJson) {
         ObjectNode versionsJson = JacksonUtils.createObjectNode();
-        // if we don't have versionsJson lock package dependency versions.
+        // if we don't have versionsJson pin package dependency versions.
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         if (dependencies != null) {
             for (String key : JacksonUtils.getKeys(dependencies)) {

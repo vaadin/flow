@@ -5,17 +5,24 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are validated too, not only those targeting main.
+    # PRs against a maintenance branch run that branch's own copy of this file.
   merge_group:
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.head_ref || github.ref_name }}
+  # The merge queue reuses the same branch name (gh-readonly-queue/<base>/pr-<n>-<base sha>)
+  # for every merge group built from the same PR and base commit, so the group has to be keyed
+  # on the merge group's own head sha. Otherwise re-running an obsolete merge queue validation
+  # cancels the run validating the current merge group, which ejects the PR from the queue.
+  group: ${{ github.workflow }}-${{ github.event.merge_group.head_sha || github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_REF: ${{ github.head_ref }}
   _REF_NAME: ${{ github.ref_name }}
+  _MERGE_GROUP_SHA: ${{ github.event.merge_group.head_sha }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -29,7 +36,7 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = ${_HEAD_REF:-$_REF_NAME}"
+      - run: echo "Concurrency Group = $GITHUB_WORKFLOW-${_MERGE_GROUP_SHA:-${_HEAD_REF:-$_REF_NAME}}"
       - name: Check secrets
         if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
@@ -43,16 +50,12 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.19.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -95,10 +98,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -196,10 +195,10 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.19.0'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.0.8'
+          version: '11.21.0'
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
@@ -208,10 +207,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -301,10 +296,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         # The saved workspace was built as 999.99-SNAPSHOT; the poms must
         # match it for the restored target directories and .m2 artifacts
@@ -417,7 +408,7 @@ jobs:
             saved-workspace
   auto-merge:
     needs: api-diff-labeling
-    if: github.event_name == 'pull_request' && github.base_ref != 'main'
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     runs-on: ubuntu-24.04
     permissions:
@@ -431,7 +422,7 @@ jobs:
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.19.0'
       - name: Auto-merge PR
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
@@ -456,10 +447,6 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
-        with:
-          maven-version: 3.9.2
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |

@@ -20,8 +20,6 @@ import java.util.Objects;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 
-import com.vaadin.client.flow.dom.DomApi;
-
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.html.AnchorElement;
@@ -155,9 +153,9 @@ public class WidgetUtil {
     public static void updateAttribute(Element element, String attribute,
             String value) {
         if (value == null) {
-            DomApi.wrap(element).removeAttribute(attribute);
+            element.removeAttribute(attribute);
         } else {
-            DomApi.wrap(element).setAttribute(attribute, value);
+            element.setAttribute(attribute, value);
         }
     }
 

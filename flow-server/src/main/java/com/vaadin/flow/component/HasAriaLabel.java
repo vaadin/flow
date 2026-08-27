@@ -115,9 +115,16 @@ public interface HasAriaLabel extends HasElement {
      * component. If {@code labelComponent} does not have an id, one is
      * generated automatically.
      * <p>
-     * The id is resolved lazily before the next client response after this
-     * component is attached, so the label component's id can be set after
-     * calling this method. If no id is set by then, one will be generated.
+     * The aria-labelledby value is available right away, but a generated id is
+     * only assigned to the label component before the next client response
+     * after this component is attached, so the label component's id can be set
+     * after calling this method, in which case that id is referenced instead.
+     * For that reason the value read with {@link #getAriaLabelledBy()} should
+     * not be cached within the same request.
+     * <p>
+     * Calling {@link #setAriaLabelledBy(String)}, also with {@code null} to
+     * clear the value, or referencing another component cancels a pending
+     * resolution, leaving the previously referenced component's id untouched.
      * <p>
      * The label component <b>must</b> be in the same DOM scope as this
      * component, otherwise screen readers may fail to announce the label
@@ -137,7 +144,8 @@ public interface HasAriaLabel extends HasElement {
                     "The provided component cannot be null");
         }
         ComponentUtil.resolveOrGenerateIdLater(getElement(), labelComponent,
-                "arialabelledby-", this::setAriaLabelledBy);
+                "arialabelledby-", this::getAriaLabelledBy,
+                this::setAriaLabelledBy);
     }
 
     /**

@@ -584,6 +584,25 @@ public class ComponentTest {
     }
 
     @Test
+    public void whenAttached_attachAndDetach_handlerAndCleanupRun() {
+        TestComponent component = new TestComponent();
+        UI ui = new UI();
+        List<String> log = new ArrayList<>();
+
+        component.whenAttached(handlerUi -> {
+            log.add("attach:" + (handlerUi == ui));
+            return () -> log.add("detach");
+        });
+        assertEquals(List.of(), log);
+
+        ui.add(component);
+        assertEquals(List.of("attach:true"), log);
+
+        ui.remove(component);
+        assertEquals(List.of("attach:true", "detach"), log);
+    }
+
+    @Test
     public void getUI_attachedToUI() {
         TestComponent child = new TestComponent();
         UI ui = new UI();
