@@ -266,7 +266,7 @@ export const JsonConstants = {
   EVENT_DATA_PHASE: 'for',
 
   // TODO(flow-client-ts): restore the `{@link DebouncePhase}` links below once
-  // com.vaadin.flow.shared.communication.PushMode's DebouncePhase is ported.
+  // com.vaadin.flow.dom.DebouncePhase is ported.
   /**
    * Character used for representing `DebouncePhase.LEADING`.
    */
