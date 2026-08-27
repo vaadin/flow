@@ -8,6 +8,8 @@ function recordingListener() {
   return { calls, listener: { onLoad: () => calls.push('load'), onError: () => calls.push('error') } };
 }
 
+// Beyond the Java suite: com.vaadin.client.ResourceLoader has no test class of
+// its own.
 describe('ResourceLoader (class)', () => {
   it('loads a dynamic import and reports success', async () => {
     const loader = new ResourceLoader({ handleError: () => {} }, false);

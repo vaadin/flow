@@ -16,6 +16,8 @@ function recordingListener() {
   };
 }
 
+// Beyond the Java suite: the resource registry is a TypeScript-only split of
+// ResourceLoader, which has no test class of its own.
 describe('ResourceRegistry', () => {
   it('reports the first listener for a key, but not later ones', () => {
     const registry = new ResourceRegistry({ handleError: () => {} });

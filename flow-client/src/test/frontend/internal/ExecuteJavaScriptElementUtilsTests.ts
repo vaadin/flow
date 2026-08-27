@@ -44,6 +44,7 @@ function makeNode() {
   };
 }
 
+// Ported from com.vaadin.client.GwtExecuteJavaScriptElementUtilsTest.
 describe('ExecuteJavaScriptElementUtils', () => {
   describe('initializer cleanups', () => {
     // The registry is keyed by node and each case builds its own, so nothing

@@ -21,6 +21,7 @@ class TestRegistry extends Registry {
   }
 }
 
+// Ported from com.vaadin.client.RegistryTest.
 describe('Registry', () => {
   it('stores and looks up an instance by token', () => {
     const registry = new TestRegistry();

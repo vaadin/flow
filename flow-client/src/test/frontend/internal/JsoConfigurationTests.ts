@@ -13,6 +13,8 @@ function config(values: Record<string, unknown>) {
   return { getConfig: (name: string) => values[name] };
 }
 
+// Beyond the Java suite: com.vaadin.client.bootstrap.JsoConfiguration has no test
+// class of its own.
 describe('JsoConfiguration', () => {
   it('getConfigString stringifies the value, or null when absent', () => {
     expect(getConfigString(config({ a: 'x' }), 'a')).to.equal('x');

@@ -1,6 +1,8 @@
 import { expect } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
 
+// Beyond the Java suite: com.vaadin.client.ApplicationConfiguration has no test
+// class of its own.
 describe('ApplicationConfiguration', () => {
   it('round-trips the URL / id / timeout configuration', () => {
     const config = new ApplicationConfiguration();

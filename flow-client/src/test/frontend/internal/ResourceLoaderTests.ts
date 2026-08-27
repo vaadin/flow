@@ -8,6 +8,8 @@ type HandlerEl = {
   onreadystatechange: (() => void) | null;
 };
 
+// Beyond the Java suite: com.vaadin.client.ResourceLoader has no test class of
+// its own.
 describe('ResourceLoader', () => {
   it('addOnloadHandler calls onLoad and clears the handlers', () => {
     const el = document.createElement('script') as unknown as HandlerEl;

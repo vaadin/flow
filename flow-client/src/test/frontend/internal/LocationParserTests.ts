@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { getParameter } from '../../../main/frontend/internal/client/bootstrap/LocationParser';
 
+// Ported from com.vaadin.client.bootstrap.LocationParserTest.
 describe('LocationParser', () => {
   it('parses parameters from a search string', () => {
     expect(getParameter('?', 'foo')).to.equal(null);

@@ -1,6 +1,8 @@
 import { expect } from '@open-wc/testing';
 import { handleError, SystemErrorHandler } from '../../../main/frontend/internal/client/SystemErrorHandler';
 
+// Beyond the Java suite: com.vaadin.client.SystemErrorHandler has no test class
+// of its own.
 describe('SystemErrorHandler', () => {
   describe('handleError', () => {
     const created: Element[] = [];

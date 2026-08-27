@@ -5,6 +5,9 @@ import {
   startEagerDependencyLoading
 } from '../../../main/frontend/internal/client/EagerDependencyTracker';
 
+// Beyond the Java suite: the eager-dependency gate is a TypeScript-only split of
+// DependencyLoader, so it has no Java test class of its own; the Java coverage
+// lives in DependencyLoaderTest, ported in DependencyLoaderClassTests.
 describe('EagerDependencyTracker', () => {
   // Every case below balances its own start/end calls, so the module counter is
   // back at zero when it finishes.

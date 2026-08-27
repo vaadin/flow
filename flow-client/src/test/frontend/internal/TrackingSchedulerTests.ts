@@ -3,6 +3,8 @@ import { TrackingScheduler } from '../../../main/frontend/internal/client/Tracki
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+// Beyond the Java suite: com.vaadin.client.TrackingScheduler has no test class of
+// its own.
 describe('TrackingScheduler', () => {
   it('reports no work queued initially', () => {
     expect(new TrackingScheduler().hasWorkQueued()).to.be.false;

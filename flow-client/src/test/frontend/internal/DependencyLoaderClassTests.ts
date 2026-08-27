@@ -31,6 +31,8 @@ function makeRegistry() {
   return registry;
 }
 
+// Ported from com.vaadin.client.DependencyLoaderTest and
+// com.vaadin.client.GwtDependencyLoaderTest.
 describe('DependencyLoader (class)', () => {
   // Each case completes the loads it starts (see makeRegistry), so the eager
   // counter is back to zero by the end of it - as it is after a real load.

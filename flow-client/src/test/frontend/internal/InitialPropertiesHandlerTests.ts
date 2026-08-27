@@ -43,6 +43,7 @@ function fakeRegistry(nodesById: Record<number, any>, updateInProgress: boolean)
   return { tree, registry: { getStateTree: () => tree } };
 }
 
+// Ported from com.vaadin.client.InitialPropertiesHandlerTest.
 describe('InitialPropertiesHandler', () => {
   it('queues property updates only for newly created nodes', () => {
     const node = fakeNode(2, {});

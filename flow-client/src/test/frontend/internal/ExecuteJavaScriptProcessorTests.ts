@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { ExecuteJavaScriptProcessor } from '../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 
+// Ported from com.vaadin.client.flow.ExecuteJavaScriptProcessorTest.
 describe('ExecuteJavaScriptProcessor', () => {
   describe('class execute', () => {
     function makeRegistry() {
