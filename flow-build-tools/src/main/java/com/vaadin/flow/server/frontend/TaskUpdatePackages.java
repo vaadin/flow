@@ -501,14 +501,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all npm dependencies the versions files declare, that is
-     * vaadin-core-versions.json and vaadin-versions.json, regardless of the
-     * mode they apply to, so that any component version gets pinned even when
-     * it is only used transitively.
+     * Collect all npm dependencies the versions files declare, that is the json
+     * files of the versions folders on the classpath, regardless of the mode
+     * they apply to, so that any component version gets pinned even when it is
+     * only used transitively.
      *
      * @return the version each versions file declares, by npm package name
      * @throws IOException
-     *             thrown for exception reading stream
+     *             if the versions files cannot be read
+     * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
         return new PinnedNpmVersions(finder).getAllDependencies();
