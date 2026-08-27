@@ -25,27 +25,11 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
-          // Test files use the default project. They mirror the ported modules'
-          // directory layout, so each test subdirectory is listed here (the
-          // typescript-eslint allowDefaultProject globs do not support the `**`
-          // multi-level wildcard, hence one entry per level).
-          allowDefaultProject: [
-            'src/test/frontend/*',
-            'src/test/frontend/internal/client/*',
-            'src/test/frontend/internal/client/flow/*',
-            'src/test/frontend/internal/client/flow/binding/*',
-            'src/test/frontend/internal/client/flow/collection/*',
-            'src/test/frontend/internal/client/flow/model/*',
-            'src/test/frontend/internal/client/flow/nodefeature/*',
-            'src/test/frontend/internal/client/flow/util/*',
-            'src/test/frontend/internal/client/flow/reactive/*',
-            'src/test/frontend/internal/flow/shared/*',
-            'src/test/frontend/internal/flow/shared/util/*'
-          ],
-          // The migration adds a *Tests.ts per converted module; the test files
-          // use the default project, so raise its file cap (default 8) to keep
-          // linting working as the suite grows.
-          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 100
+          // The ported suites belong to src/test/frontend/tsconfig.json, which
+          // the project service finds by walking up from each file. Only the
+          // two root-level suites need the default project: they predate the
+          // port and are not type-clean, so that project leaves them out.
+          allowDefaultProject: ['src/test/frontend/*']
         }
       }
     },
