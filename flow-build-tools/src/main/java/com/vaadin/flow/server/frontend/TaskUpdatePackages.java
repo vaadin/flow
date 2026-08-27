@@ -138,7 +138,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            the package.json content to pin the versions in
      * @return {@code true} if the overrides changed
      * @throws IOException
-     *             if the versions files cannot be read
+     *             if the versions files cannot be read, or the overrides cannot
+     *             be read or written
      */
     boolean pinVersionsForNpm(ObjectNode packageJson) throws IOException {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
@@ -320,13 +321,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      * pinned to the version Vaadin ships even when it is only used
      * transitively. What {@link #versionsJson} declares is then filled in for
      * the packages the versions files do not cover. That is the same set of
-     * packages narrowed down to the current mode and with the versions the user
-     * overrode in package.json left out, or, when no versions file was found at
-     * all, the versions declared in package.json itself.
+     * packages narrowed down to the current mode and without the SNAPSHOT and
+     * unparsable versions, plus the version package.json declares for each of
+     * its dependencies that is not pinned by a versions file.
      * <p>
-     * This is not about what package.json currently pins: the overrides already
-     * in package.json are read separately, and are replaced by what this
-     * returns.
+     * A version the user changed in package.json does not replace the one the
+     * versions files declare; it only produces a warning when the user pinned
+     * an older version than Vaadin ships.
+     * <p>
+     * This is not about what package.json currently pins through overrides:
+     * those are read separately and are replaced by what this returns.
      *
      * @return the version to pin each npm package to, by package name
      * @throws IOException
