@@ -411,6 +411,7 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
 | 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()` | the PR that ports `InitialPropertiesHandler` | open |
+| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are omitted while 14 of their return types are unported, so `DependencyLoader`, `SystemErrorHandler`, `InitialPropertiesHandler`, `ExecuteJavaScriptProcessor` and `StateTree` still declare a local interface for the getters they call | the PR that ports the remaining services (`MessageSender`, `MessageHandler`, `ApplicationConnection`, …) | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on

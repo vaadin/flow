@@ -21,8 +21,13 @@ import { assert } from '../assert';
 // looked up by a key; some are resettable via a supplier so the whole set can be
 // recreated. The original Java class keyed by Class<?>; here a service is keyed
 // by an opaque token (a string, symbol or constructor) since some TS services
-// are functions, not classes. The concrete typed getters (getMessageSender, ...)
-// and the registration of all services live in the subclass.
+// are functions, not classes.
+//
+// Registry.java also declares 24 typed getters (getMessageSender, getStateTree,
+// ...). They are not ported yet because 14 of their return types are not: the
+// modules that need a service therefore still declare a local interface naming
+// the getters they call. Those stand-ins collapse into this class once the
+// remaining services land - see the retrofit backlog in PORTING.md.
 
 /** A token identifying a registered service (its class/constructor, a symbol, or a name). */
 export type ServiceKey = unknown;
