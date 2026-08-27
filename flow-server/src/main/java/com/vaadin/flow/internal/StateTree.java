@@ -249,6 +249,7 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
     @Override
@@ -484,6 +485,11 @@ public class StateTree implements NodeOwner {
     public void prepareForResync() {
         preparingForResync = true;
         try {
+            // The client rebuilds its state from scratch, and the components
+            // reinitialize it from the initial attach events that preparing
+            // dispatches. Anything still queued predates that, so it would run
+            // against a client side that no longer expects it.
+            uiInternals.discardPendingJavaScriptInvocations();
             rootNode.prepareForResync();
         } finally {
             preparingForResync = false;

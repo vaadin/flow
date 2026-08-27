@@ -434,7 +434,10 @@ public class InitParameters implements Serializable {
      * every scheme as safe, disabling scheme validation. URLs whose scheme is
      * not safe can still be set through the dedicated {@code setUnsafe*}
      * methods.
-     * 
+     * <p>
+     * The {@code about:blank} URL is considered safe regardless of this
+     * configuration since it shows an empty document and cannot run scripts.
+     *
      * @since 25.1.12
      */
     public static final String URL_SAFE_SCHEMES = "safeUrlSchemes";

@@ -841,7 +841,6 @@ public class FrontendTools {
                 getNpmCliToolExecutable(BuildTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
-        returnCommand.add("--scripts-prepend-node-path=true");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.

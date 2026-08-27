@@ -50,9 +50,9 @@ is a DX hazard: for example, `setGeolocationAvailability` lives on
 For tunable knobs (accuracy, timeout, cache age), prefer an immutable
 Java record over a long parameter list:
 
-- Public canonical constructor with `@Nullable` params and validation
-  (reject negative durations, etc.) — NullAway needs the canonical ctor
-  spelled out explicitly rather than the record-derived one.
+- Compact constructor with validation (reject negative durations, etc.).
+  NullAway reads `@Nullable` off the record components, so there is no
+  need to spell out the full canonical constructor.
 - Builder for ergonomics. Offer both `Duration` and `int`-ms overloads
   on time-related setters where the wire format is ms; applications get
   a fluent `Duration` API and the record stores the int.
@@ -148,9 +148,9 @@ public sealed interface Foo permits FooA, FooB, FooC {}
   fields may be `@Nullable` because the wire format permits omissions.
   Keep the wire record private and translate to a non-null public shape
   at the boundary.
-- NullAway requires `@Nullable` on constructor type arguments for
-  nullable-parameterised signals:
-  `new ValueSignal<@Nullable X>(null)`.
+- `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
+  and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
+  and `Signal.cached(...)` need no repeated type argument or type witness.
 
 ### Lifecycle and cleanup
 
