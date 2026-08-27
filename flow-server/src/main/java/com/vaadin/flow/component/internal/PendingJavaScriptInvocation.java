@@ -45,6 +45,14 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private boolean canceled = false;
 
     /**
+     * The UI internals whose undelivered invocation count includes this
+     * invocation, or <code>null</code> if it is not counted, either because no
+     * UI could be resolved when it was scheduled or because it is no longer
+     * waiting to be sent.
+     */
+    private UIInternals countedIn;
+
+    /**
      * Creates a new pending invocation for the given owner node and invocation.
      *
      * @param owner
@@ -60,6 +68,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
         this.owner = owner;
         this.invocation = invocation;
+
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     /**
@@ -122,6 +132,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return false;
         }
         canceled = true;
+        stopCounting();
 
         if (errorHandler != null) {
             errorHandler.accept(EXECUTION_CANCELED);
@@ -139,6 +150,19 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     void setSentToBrowser() {
         assert !sentToBrowser;
         sentToBrowser = true;
+        stopCounting();
+    }
+
+    private void stopCounting() {
+        if (countedIn == null) {
+            return;
+        }
+        if (countedIn.getSession() != null) {
+            countedIn.addUndeliveredJsInvocations(-1);
+        }
+        // A closed UI has no session to lock and its count is discarded with
+        // it, so there is nothing to update for one
+        countedIn = null;
     }
 
     @Override

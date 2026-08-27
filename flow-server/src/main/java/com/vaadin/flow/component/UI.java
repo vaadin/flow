@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -389,6 +390,38 @@ public class UI extends Component
             pushConnection.push();
         }
 
+    }
+
+    /**
+     * Gets the timestamp of when the updates pending for this UI were last
+     * purged into a response for the client, or the timestamp of when this UI
+     * was created if that has not happened yet.
+     * <p>
+     * Changes and JavaScript invocations that are scheduled for a UI are kept
+     * in memory until a response is written for the client, which requires
+     * either a request from the client or an open push connection. A background
+     * task that updates a UI at a regular interval can compare this timestamp
+     * against the current time to detect that its updates are only piling up,
+     * and stop scheduling new ones until the client catches up:
+     *
+     * <pre>
+     * if (Duration.between(ui.getLastUpdateSentTimestamp(), Instant.now())
+     *         .compareTo(STALE_THRESHOLD) &lt; 0) {
+     *     ui.access(() -&gt; binder.readBean(updatedBean));
+     * }
+     * </pre>
+     * <p>
+     * Note that this timestamp only tells when the updates were written towards
+     * the client, not that the client received them.
+     * <p>
+     * This method can be called from a background thread without holding the
+     * session lock, so that the thread can decide whether to update the UI
+     * before acquiring the lock.
+     *
+     * @return the time the pending updates were last purged
+     */
+    public Instant getLastUpdateSentTimestamp() {
+        return getInternals().getLastUpdateSentTimestamp();
     }
 
     /**

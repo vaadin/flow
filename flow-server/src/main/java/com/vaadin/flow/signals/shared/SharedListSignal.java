@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -156,7 +158,7 @@ public class SharedListSignal<T extends @Nullable Object>
         }
     }
 
-    private final Class<@NonNull T> elementType;
+    private final JavaType elementType;
 
     /**
      * Creates a new list signal with the given element type. The signal does
@@ -167,7 +169,22 @@ public class SharedListSignal<T extends @Nullable Object>
      */
     public SharedListSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                elementType);
+                constructType(elementType));
+    }
+
+    /**
+     * Creates a new list signal with the given element type. In contrast to
+     * {@link #SharedListSignal(Class)}, the type arguments of a parameterized
+     * element type such as <code>Set&lt;String&gt;</code> are retained. The
+     * signal does not support clustering.
+     *
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
+     */
+    public SharedListSignal(TypeReference<@NonNull T> elementType) {
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
+                constructType(elementType));
     }
 
     /**
@@ -185,9 +202,39 @@ public class SharedListSignal<T extends @Nullable Object>
      *            not <code>null</code>
      * @param elementType
      *            the element type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedListSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized element type such as
+     *             <code>Set&lt;String&gt;</code>
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected SharedListSignal(SignalTree tree, Id id,
             CommandValidator validator, Class<@NonNull T> elementType) {
+        this(tree, id, validator, constructType(elementType));
+    }
+
+    /**
+     * Creates a new list signal instance with the given id and validator for
+     * the given signal tree with the given element type. The type arguments of
+     * a parameterized element type such as <code>Set&lt;String&gt;</code> are
+     * retained.
+     *
+     * @param tree
+     *            the signal tree that contains the value for this signal, not
+     *            <code>null</code>
+     * @param id
+     *            the id of the signal node within the signal tree, not
+     *            <code>null</code>
+     * @param validator
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
+     */
+    protected SharedListSignal(SignalTree tree, Id id,
+            CommandValidator validator, JavaType elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
