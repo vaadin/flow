@@ -35,17 +35,6 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
    */
   static readonly #bound = new WeakMap<StateNode, boolean>();
 
-  /**
-   * Gets the tag value from the {@link NodeFeatures.ELEMENT_DATA} feature for
-   * the `node`.
-   *
-   * @param node - the state node
-   * @returns tag of the `node`
-   */
-  getTag(node: StateNode): string | null {
-    return polymerGetTag(node);
-  }
-
   create(_node: StateNode): Text {
     return document.createTextNode('');
   }
@@ -54,7 +43,7 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
     return node.hasFeature(NodeFeatures.TEXT_NODE);
   }
 
-  bind(stateNode: StateNode, htmlNode: Text, _context: BinderContext): void {
+  bind(stateNode: StateNode, htmlNode: Text, _nodeFactory: BinderContext): void {
     assert(stateNode.hasFeature(NodeFeatures.TEXT_NODE), 'Node must have the text feature');
     if (TextBindingStrategy.#bound.has(stateNode)) {
       return;
@@ -74,5 +63,16 @@ export class TextBindingStrategy implements BindingStrategy<Text> {
   #unbind(node: StateNode, computation: Computation): void {
     computation.stop();
     TextBindingStrategy.#bound.delete(node);
+  }
+
+  /**
+   * Gets the tag value from the {@link NodeFeatures.ELEMENT_DATA} feature for
+   * the `node`.
+   *
+   * @param node - the state node
+   * @returns tag of the `node`
+   */
+  getTag(node: StateNode): string | null {
+    return polymerGetTag(node);
   }
 }

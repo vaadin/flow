@@ -304,7 +304,7 @@ function checkParent(node: StateNode, supposedParent: Element): boolean {
     if (parent === null) {
       return false;
     }
-    if (supposedParent === parent.getDomNode()) {
+    if (supposedParent.isSameNode(parent.getDomNode())) {
       return true;
     }
   }
