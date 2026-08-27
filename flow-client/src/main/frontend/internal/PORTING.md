@@ -60,6 +60,21 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      owner's `.java` file (a Java inner/nested class): it has no file of its
      own, so it stays in the owner's module. None of the currently ported
      reactive / node-feature event/listener types are nested this way.
+   - **Suites may be organised by feature area.** The one-`*Test`-to-one-`*Tests.ts`
+     mapping above assumes a module's Java coverage lives in a single test class.
+     Where it is spread across several, the port may group its suites by what is
+     being exercised instead, provided **each suite names the Java classes it draws
+     from** in its header, so rule 13.9's counterpart question stays answerable.
+     `SimpleElementBindingStrategy` is the case in point: its attribute, children,
+     property, styling, visibility, shadow-root, virtual-children, event-listener,
+     ready-callback and model-handler suites draw between them from
+     `GwtBasicElementBinderTest`, `GwtMultipleBindingTest`, `GwtPolymerModelTest`
+     and `GwtPropertyElementBinderTest`, none of which is organised by feature.
+     Rule 13's case-level rules apply unchanged to the union of those classes.
+     _Introduced during #24949._ (False positive this prevents: a review reporting
+     ten rule-1 violations against a layout that is deliberate, and that the
+     alternative — six suites each mixing unrelated features because Java groups by
+     binder class — would make worse.)
 2. **Mirror the Java package path verbatim** under `internal/`, stripping only
    the `com.vaadin.` prefix:
 
@@ -260,7 +275,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        obvious, e.g. `setValue_updateFromServerIsApplied_syncToServerUpdatesValue`
        → `"setValue: update from server is applied, syncToServer updates
        value"`), and keep the `it()` blocks in the same order as the Java
-       `@Test` methods.
+       `@Test` methods. Where suites are organised by feature area (rule 1), the
+       order holds *within* each suite: the cases it ports keep their relative
+       order from the Java class they came from.
     8. **Import shared test helpers — never re-declare them.** When a Java test
        reuses a helper from another test (e.g. `MapPropertyTest`, `NodeMapTest`
        and `NodeListTest` all `import
