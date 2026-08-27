@@ -1,3 +1,6 @@
+// Beyond the Java suite: LitUtils has no Java test class in src/test/java or
+// src/test-gwt/java, so every case here is beyond the Java suite.
+
 import { expect } from '@open-wc/testing';
 import { isLitElement, whenRendered } from '../../../../main/frontend/internal/client/LitUtils';
 

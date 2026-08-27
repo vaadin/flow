@@ -1,3 +1,6 @@
+// Beyond the Java suite: ReactUtils has no Java test class in src/test/java or
+// src/test-gwt/java, so every case here is beyond the Java suite.
+
 import { expect } from '@open-wc/testing';
 import { addReadyCallback } from '../../../../main/frontend/internal/client/ReactUtils';
 
