@@ -71,6 +71,7 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
@@ -87,6 +88,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -171,6 +173,7 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("executeJs");
         // Returns Registration
         ignore.add("addJsInitializer");
+        ignore.add("whenAttached");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -2233,6 +2236,216 @@ class ElementTest extends AbstractNodeTest {
         assertFalse(child.isVirtualChild());
         assertEquals(0,
                 body.getNode().getFeature(VirtualChildrenList.class).size());
+    }
+
+    private static Registration logWhenAttached(Element element,
+            List<String> log, String prefix) {
+        return element.whenAttached(ui -> {
+            log.add(prefix + "attach");
+            return () -> log.add(prefix + "detach");
+        });
+    }
+
+    @Test
+    void whenAttached_notAttached_handlerNotRunUntilAttach() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        assertEquals(List.of(), log);
+
+        body.appendChild(child);
+        assertEquals(List.of("attach"), log);
+    }
+
+    @Test
+    void whenAttached_alreadyAttached_handlerRunImmediately() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+
+        logWhenAttached(child, log, "");
+        assertEquals(List.of("attach"), log);
+    }
+
+    @Test
+    void whenAttached_detach_cleanupRun() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromParent();
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_reattach_handlerRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        body.appendChild(child);
+        child.removeFromParent();
+        body.appendChild(child);
+
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_handlerReceivesCurrentUi() {
+        UI ui = new UI();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(child);
+
+        List<UI> seen = new ArrayList<>();
+        child.whenAttached(handlerUi -> {
+            seen.add(handlerUi);
+            return null;
+        });
+
+        assertEquals(1, seen.size());
+        assertSame(ui, seen.get(0));
+    }
+
+    @Test
+    void whenAttached_nullCleanup_accepted() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        child.whenAttached(ui -> null);
+
+        child.removeFromParent();
+        body.appendChild(child);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationWhileAttached_cleanupRunAndHandlerNotRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+
+        child.removeFromParent();
+        body.appendChild(child);
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationWhileDetached_noCleanupAndHandlerNotRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+        child.removeFromParent();
+
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+
+        body.appendChild(child);
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationTwice_cleanupRunOnce() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+
+        registration.remove();
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_multipleScopes_independent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration first = logWhenAttached(child, log, "first-");
+        logWhenAttached(child, log, "second-");
+
+        first.remove();
+        child.removeFromParent();
+
+        assertEquals(List.of("first-attach", "second-attach", "first-detach",
+                "second-detach"), log);
+    }
+
+    @Test
+    void whenAttached_movedToNewUi_cleanupAndHandlerRunOncePerUi() {
+        // Mimics UIInternalUpdater.moveToNewUI for @PreserveOnRefresh
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromTree(false);
+        assertEquals(List.of("attach", "detach"), log);
+
+        new UI().getElement().appendChild(child);
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_nodeReattachedWithoutDetachEvent_cleanupRunBeforeNewAttach() {
+        // A node can be reset and reattached without a detach event reaching
+        // its listeners. The cleanup must still run before the handler runs
+        // again, so that a scope never has two live cleanups at once.
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.getNode().removeFromTree(false);
+        assertEquals(List.of("attach"), log);
+
+        new UI().getElement().appendChild(child);
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_failingCleanup_reportedToErrorHandlerAndOtherCleanupsRun() {
+        UI ui = createUI();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(child);
+
+        List<ErrorEvent> errors = new ArrayList<>();
+        ui.getSession().setErrorHandler(errors::add);
+
+        child.whenAttached(ignored -> () -> {
+            throw new IllegalStateException("cleanup failed");
+        });
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromParent();
+
+        assertEquals(List.of("attach", "detach"), log);
+        assertEquals(1, errors.size());
+        assertEquals("cleanup failed",
+                errors.get(0).getThrowable().getMessage());
+    }
+
+    @Test
+    void whenAttached_nullHandler_throws() {
+        Element child = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> child.whenAttached(null));
     }
 
     private StreamResource createEmptyResource(String resName) {
