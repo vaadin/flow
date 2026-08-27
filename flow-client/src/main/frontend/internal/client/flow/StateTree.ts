@@ -136,6 +136,8 @@ export class StateTree {
    * @param node - the node to register
    */
   registerNode(node: StateNode): void {
+    // Java asserts node != null here; the parameter is non-nullable, so the
+    // check is unreachable and dropped.
     assert(node.getTree() === this, 'Node is not created for this tree');
     assert(!node.isUnregistered(), "Can't re-register a node");
     assert(!this.#idToNode.has(node.getId()), `Node ${node.getId()} is already registered`);
@@ -315,6 +317,8 @@ export class StateTree {
    *          server, not `null`
    */
   sendNodePropertySyncToServer(property: MapProperty): void {
+    // Java asserts property != null here; the parameter is non-nullable, so the
+    // check is unreachable and dropped.
     const nodeMap = property.getMap() as NodeMap;
     const node = nodeMap.getNode() as StateNode;
 
