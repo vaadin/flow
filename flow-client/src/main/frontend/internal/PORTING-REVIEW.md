@@ -110,13 +110,17 @@ From `flow-client/`:
 | `npm ci` | yes | install — run it first |
 | `npm run lint` | yes | eslint, including `tsdoc/syntax` and `no-console`. **Not** a type-check |
 | `npm test` | yes | the ported suites. `FlowTests.ts` **fails without a Maven build** — it imports the GWT-built `FlowClient.js`. Expected noise, not a regression |
+| `npm run typecheck-tests` | yes | `tsc` over `src/test/frontend/tsconfig.json`: the ported suites and every module they import. A **real type-check**, and the only one that needs no Maven build |
 | `npm run compile`, `npm run build` | **no** | both run `scripts/client.js`, which reads the GWT output under `target/classes/META-INF/resources/VAADIN/static/client/` and fails with `ENOENT` until Maven has built it |
-| `mvn -pl flow-client install` | yes, slow | the real type-check: GWT compile, then `tsc`, then lint |
+| `mvn -pl flow-client install` | yes, slow | everything: GWT compile, then `tsc` over `src/main/frontend`, then the test-tree check, then lint |
 
-`npx tsc --noEmit` is not available either. So lint and the suites are cheap and
-always available, while a type-check costs a full `mvn -pl flow-client install`.
-If you did not run one, write that the type-check is **unverified** and leave it to
-CI — "lint passed" is not "types check".
+So lint, the suites and the test-tree type-check are all cheap and always
+available. What still costs a full `mvn -pl flow-client install` is the whole-tree
+check of `src/main/frontend`: its `tsc` emits, and `npm run build` puts
+`scripts/client.js` in front of it. A module no suite imports is therefore only
+covered by that build, so state which of the two you ran. If you ran neither, write
+that the type-check is **unverified** and leave it to CI — "lint passed" is not
+"types check".
 
 Paste the real output of what you ran. If a command could not run, write that the
 work is **unverified** and why. There is no third state, and "should be clean" is
