@@ -317,7 +317,8 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_treePreparedForResync_retainedInvocationKept() {
+    void dumpPendingJavaScriptInvocations_treePreparedForResync_retainedInvocationDiscarded()
+            throws Exception {
         StateNode node = new StateNode(ElementData.class);
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -328,14 +329,15 @@ class UIInternalsTest {
         internals.addJavaScriptInvocation(invocation);
         internals.dumpPendingJavaScriptInvocations();
 
-        // Resynchronizing detaches nothing, it re-sends the tree with the same
-        // node ids, so the client still knows the owner afterwards
         internals.getStateTree().prepareForResync();
         node.getFeature(ElementData.class).setVisible(true);
 
-        assertEquals(List.of(invocation),
-                internals.dumpPendingJavaScriptInvocations(),
-                "Resynchronizing should not discard a retained invocation");
+        assertEquals(0, internals.dumpPendingJavaScriptInvocations().size(),
+                "Resynchronizing should discard what was queued before it, "
+                        + "since components reinitialize the client side from "
+                        + "the initial attach event");
+        assertEquals(0, invocationOwners(internals).size(),
+                "Resynchronizing should stop tracking the discarded owner");
     }
 
     @Test
