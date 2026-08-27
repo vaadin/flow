@@ -279,6 +279,113 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void execute_dependencyPinnedToDifferentMinor_warningLogged()
+            throws IOException {
+        // The project pins dialog in 'dependencies' to an older minor (25.1.0)
+        // than the platform expects (25.3.0-SNAPSHOT). The version locking
+        // respects this user pin, so the build should warn about it. A SNAPSHOT
+        // platform version is used to match the scenario in #24702.
+        createVaadinVersionsJson("25.3.0-SNAPSHOT",
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        writePinnedDependencyPackageJson("25.1.0");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger, Collections.emptyMap()).execute();
+
+        Mockito.verify(logger, Mockito.atLeastOnce()).warn(Mockito.anyString(),
+                Mockito.contains(VAADIN_DIALOG));
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_dependencyPinnedToMaintenanceRelease_noWarning()
+            throws IOException {
+        // The pin differs from the expected version only in the maintenance
+        // (patch) part, which is supported and should not warn.
+        createVaadinVersionsJson("25.1.4", PLATFORM_ELEMENT_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson("25.1.0", "25.1.4"));
+
+        Mockito.verifyNoInteractions(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_dependencyManagedByVaadin_noWarning()
+            throws IOException {
+        // The dependency matches the Vaadin-managed version, so it is not a
+        // user
+        // opt-out: the build updates it itself and no warning should be
+        // emitted,
+        // even though it is currently from an older minor than expected.
+        createVaadinVersionsJson("25.3.0", PLATFORM_ELEMENT_MIXIN_VERSION,
+                PLATFORM_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson("25.1.4", "25.1.4"));
+
+        Mockito.verifyNoInteractions(logger);
+    }
+
+    /**
+     * Builds a package.json where {@link #VAADIN_DIALOG} is declared in
+     * {@code dependencies} at {@code dependencyVersion} while the
+     * Vaadin-managed {@code vaadin.dependencies} section references
+     * {@code vaadinVersion}.
+     */
+    private ObjectNode dependencyPackageJson(String dependencyVersion,
+            String vaadinVersion) {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(VAADIN_DIALOG, dependencyVersion);
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        ObjectNode vaadinDependencies = JacksonUtils.createObjectNode();
+        vaadinDependencies.put(VAADIN_DIALOG, vaadinVersion);
+        vaadin.set(DEPENDENCIES, vaadinDependencies);
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+        return packageJson;
+    }
+
+    /**
+     * Writes a package.json where {@link #VAADIN_DIALOG} is pinned in
+     * {@code dependencies} to {@code dependencyVersion}, while the
+     * Vaadin-managed section still references 25.1.4 (simulating a project
+     * upgraded from 25.1 with a user pin).
+     */
+    private void writePinnedDependencyPackageJson(String dependencyVersion)
+            throws IOException {
+        ObjectNode packageJson = dependencyPackageJson(dependencyVersion,
+                "25.1.4");
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+    }
+
+    private TaskUpdatePackages createTaskWithLogger(Logger logger) {
+        return createTaskWithLogger(logger, createApplicationDependencies());
+    }
+
+    private TaskUpdatePackages createTaskWithLogger(Logger logger,
+            Map<String, String> applicationDependencies) {
+        final FrontendDependencies scanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(scanner.getPackages()).thenReturn(applicationDependencies);
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(false)
+                .withFrontendDependenciesScanner(scanner);
+        return new TaskUpdatePackages(options) {
+            @Override
+            Logger log() {
+                return logger;
+            }
+        };
+    }
+
+    @Test
     void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
             throws IOException {
         verifyPlatformDependenciesAreAdded(true);
