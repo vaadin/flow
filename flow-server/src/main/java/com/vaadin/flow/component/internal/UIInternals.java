@@ -730,29 +730,29 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Discards the pending JavaScript invocations owned by the given node. An
-     * invocation for a detached node can never be delivered, since the client
-     * no longer knows the node, so keeping it in the queue would only leak the
-     * node.
+     * Discards the pending JavaScript invocations owned by the given node,
+     * which are the ones waiting for the node to become visible again.
      * <p>
-     * Called by {@link StateTree} for every node that is detached, so it only
-     * scans the queue for the few nodes that {@link #pendingJsInvocationOwners}
-     * knows to have something queued.
+     * {@link StateTree} calls this for a node that is detached, since the
+     * client no longer knows the node, and for every node in the tree when
+     * resynchronizing, since the client rebuilds its state from scratch. Both
+     * run for many nodes at a time, so the owners are tracked separately to
+     * keep this to a single lookup for a node with nothing queued.
      *
-     * @param detachedNode
-     *            the node that was detached, not <code>null</code>
+     * @param owner
+     *            the node whose invocations to discard, not <code>null</code>
      */
-    public void discardPendingJavaScriptInvocations(StateNode detachedNode) {
+    public void discardPendingJavaScriptInvocations(StateNode owner) {
         if (session != null) {
             // Nodes are also detached from the tree of a UI that has not
             // been attached to a session, and there is no lock to check then
             session.checkHasLock();
         }
-        if (!pendingJsInvocationOwners.remove(detachedNode)) {
+        if (!pendingJsInvocationOwners.remove(owner)) {
             return;
         }
         pendingJsInvocations
-                .removeIf(invocation -> invocation.getOwner() == detachedNode);
+                .removeIf(invocation -> invocation.getOwner() == owner);
     }
 
     /**

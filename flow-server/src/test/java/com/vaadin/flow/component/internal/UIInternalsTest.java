@@ -341,6 +341,25 @@ class UIInternalsTest {
     }
 
     @Test
+    void prepareForResync_attachListenerAddsInvocation_invocationKept() {
+        StateNode node = new StateNode(ElementData.class);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation reinitialization = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation("reinitialize"));
+        node.addAttachListener(
+                () -> internals.addJavaScriptInvocation(reinitialization));
+
+        internals.getStateTree().prepareForResync();
+
+        assertEquals(List.of(reinitialization),
+                internals.dumpPendingJavaScriptInvocations(),
+                "What a component queues while reinitializing on the resync "
+                        + "attach event has to survive the discard");
+    }
+
+    @Test
     void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded()
             throws Exception {
         ElementChildrenList children = internals.getStateTree().getRootNode()
