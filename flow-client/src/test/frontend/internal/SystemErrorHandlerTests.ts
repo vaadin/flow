@@ -96,8 +96,21 @@ describe('SystemErrorHandler', () => {
       return new SystemErrorHandler({
         getApplicationConfiguration: () => ({
           isWebComponentMode: () => opts.webComponentMode ?? false,
-          getExportedWebComponents: () => opts.exported ?? []
-        })
+          getExportedWebComponents: () => opts.exported ?? [],
+          // The rest of the configuration contract; inert, as these cases only
+          // drive the two above.
+          getSessionExpiredError: () => null,
+          getServiceUrl: () => '',
+          getUIId: () => 0,
+          setUIId: () => {},
+          getHeartbeatInterval: () => 0
+        }),
+        getHeartbeat: () => ({ setInterval: () => {} }),
+        getPushConfiguration: () => ({ isPushEnabled: () => false }),
+        getMessageSender: () => ({ setPushEnabled: () => {} }),
+        getUILifecycle: () => ({ setState: () => {} }),
+        getMessageHandler: () => ({ handleMessage: () => {} }),
+        reset: () => {}
       });
     }
 
