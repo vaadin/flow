@@ -623,6 +623,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * <p>
      * <p>
      * The hotswapper is registered only in development mode.
+     * <p>
+     * Calling this more than once for the same service returns the hotswapper
+     * created by the first call rather than a second one. Two instances would
+     * double every refresh, and there are two callers: the dev-loop connector
+     * (see {@code com.vaadin.base.devserver.devloop.DevLoopRegistration}), and
+     * any hotswap tool that injects a call of its own.
      *
      * @param vaadinService
      *            the {@link VaadinService} instance for hotswapper
@@ -631,15 +637,74 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *         empty Optional if Vaadin is running in production mode.
      */
     public static Optional<Hotswapper> register(VaadinService vaadinService) {
-        if (!vaadinService.getDeploymentConfiguration().isProductionMode()) {
+        if (vaadinService.getDeploymentConfiguration().isProductionMode()) {
+            return Optional.empty();
+        }
+        RegistrationHolder holder = getRegistrationHolder(vaadinService);
+        synchronized (holder) {
+            Optional<Hotswapper> existing = holder.get(vaadinService);
+            if (existing.isPresent()) {
+                LOGGER.debug(
+                        "Hotswapper is already registered for this service; reusing it");
+                return existing;
+            }
             Hotswapper hotswapper = new Hotswapper(vaadinService);
             vaadinService.addUIInitListener(hotswapper);
             vaadinService.addSessionInitListener(hotswapper);
             vaadinService.addSessionDestroyListener(hotswapper);
             vaadinService.addServiceDestroyListener(hotswapper);
+            holder.set(vaadinService, hotswapper);
             return Optional.of(hotswapper);
         }
-        return Optional.empty();
+    }
+
+    /**
+     * Gets the hotswapper registered for the given service, if any.
+     * <p>
+     * Lets a component that needs the hotswapper - the dev loop's in-app
+     * connector, for one - find it without depending on having been the code
+     * that registered it, and therefore without depending on the order service
+     * init listeners happen to run in.
+     *
+     * @param vaadinService
+     *            the {@link VaadinService} instance, not {@literal null}.
+     * @return the registered hotswapper, or an empty Optional if none is
+     *         registered for this service.
+     */
+    public static Optional<Hotswapper> getRegistered(
+            VaadinService vaadinService) {
+        Objects.requireNonNull(vaadinService, "VaadinService cannot be null");
+        return getRegistrationHolder(vaadinService).get(vaadinService);
+    }
+
+    private static RegistrationHolder getRegistrationHolder(
+            VaadinService vaadinService) {
+        return vaadinService.getContext().getAttribute(RegistrationHolder.class,
+                RegistrationHolder::new);
+    }
+
+    /**
+     * Where the registered hotswapper is kept, so a second registration attempt
+     * can find the first.
+     * <p>
+     * Keyed by service identity as well: a context can in principle serve more
+     * than one {@link VaadinService}, and handing one service's hotswapper to
+     * another would refresh the wrong UIs.
+     */
+    private static class RegistrationHolder implements Serializable {
+
+        private transient VaadinService service;
+        private transient Hotswapper hotswapper;
+
+        synchronized Optional<Hotswapper> get(VaadinService forService) {
+            return service == forService ? Optional.ofNullable(hotswapper)
+                    : Optional.empty();
+        }
+
+        synchronized void set(VaadinService forService, Hotswapper instance) {
+            this.service = forService;
+            this.hotswapper = instance;
+        }
     }
 
     /**

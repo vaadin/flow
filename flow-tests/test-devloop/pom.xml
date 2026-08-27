@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.3-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop</artifactId>
+  <packaging>pom</packaging>
+  <name>Flow dev loop tests</name>
+  <!-- Kept to one paragraph: a blank line in a description becomes an empty
+       continuation line in the OSGi manifest bnd generates, and bnd then fails
+       the build with "invalid manifest format". -->
+  <description>End-to-end tests for the vaadin-dev CLI and the dev-loop daemon. This aggregator is the reactor under test, because the interesting case is multi-module and the application therefore needs a sibling library the daemon has to reach into. See README.md.</description>
+
+  <!-- Order matters for a plain `mvn install` here: the application resolves the
+       library. Maven reorders by the dependency graph anyway; this is for a reader. -->
+  <modules>
+    <module>devloop-shared</module>
+    <module>devloop-app</module>
+  </modules>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+</project>

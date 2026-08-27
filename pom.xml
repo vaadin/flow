@@ -46,6 +46,7 @@
     <module>flow-plugins</module>
     <module>flow-test-generic</module>
     <module>flow-bom</module>
+    <module>flow-devloop-daemon</module>
     <module>vaadin-dev-server</module>
     <module>flow-jandex</module>
     <module>vaadin-spring</module>

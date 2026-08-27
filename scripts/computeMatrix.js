@@ -136,6 +136,7 @@ const moduleWeights = {
   'flow-tests/test-pwa-disabled-offline': { weight: 6 },
   'flow-tests/test-eager-bootstrap': { weight: 6 },
   'flow-tests/test-ccdm-flow-navigation': { weight: 5 },
+  'flow-tests/test-devloop/devloop-app': { weight: 5 },
   'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory/pom-generatedTsDir.xml': { weight: 5 },
   'flow-tests/test-router-custom-context': { pos: 8 },
   'flow-tests/test-router-custom-context-encoded': { pos: 8 },

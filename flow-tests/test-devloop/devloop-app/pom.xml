@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop</artifactId>
+    <version>25.3-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-app</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow dev loop tests: application</name>
+  <!-- Kept to one paragraph: a blank line in a description becomes an empty
+       continuation line in the OSGi manifest bnd generates, and bnd then fails
+       the build with "invalid manifest format". -->
+  <description>The Vaadin application the dev-loop ITs drive. It stands in for a user application, so it carries its own Spring Boot configuration and depends on the sibling library like any other jar. The container is not started by a Maven plugin, because the daemon owns the application process. See ../README.md.</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- Not 8080: a developer running this on their own machine very likely has
+         something there already, and the daemon would report a port clash rather
+         than a test failure. Kept in step with src/main/resources/application.properties
+         by hand - it is one number in two files, and filtering the properties file
+         would make it a generated resource the dev loop then watches. -->
+    <server.port>8899</server.port>
+    <!-- Run the ITs on the JUnit Platform (JUnit 6), like test-default. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names, which
+         mean nothing to the JUnit Platform provider: as a tag expression the name
+         matches no test here, and under -Pslow-tests it would select none. Cleared so
+         this module runs its ITs the way every other flow-tests module does. -->
+    <groups/>
+    <excludedGroups/>
+    <!-- One daemon, one application process, one browser page kept open across
+         applies: nothing here is parallelizable. -->
+    <failsafe.parallel>none</failsafe.parallel>
+    <failsafe.perCoreThreadCount>false</failsafe.perCoreThreadCount>
+    <failsafe.threadCount>1</failsafe.threadCount>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- The dev loop travels in with the dev server, exactly as it does for a
+         user application that declares com.vaadin:vaadin-dev. Optional, so it can
+         never reach a production build: it only acts in dev mode, and only when
+         the daemon launched the JVM. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- The sibling library, depended on like any other jar. This is what makes
+         the application a multi-module one: an edit in devloop-shared has to reach
+         the running app, which needs the daemon to compile that module and the JVM
+         to load its classes from its own target/classes rather than from an
+         installed jar. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-shared</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
+         anchor is explicit because "</dependencies>" also closes the one inside
+         <dependencyManagement>, where a dependency without a version is an
+         invalid model rather than a classpath change. -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+          <!-- Dogfooding: the CLI the ITs drive is the one the goal installs,
+               so a change that breaks the installed layout breaks the ITs. -->
+          <execution>
+            <id>install-dev-cli</id>
+            <goals>
+              <goal>install-dev-cli</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- No spring-boot:start / jetty:start here: the daemon owns the
+           application process, and a second launcher would fight it for the port.
+           The IT lifecycle is `vaadin-dev start` and `vaadin-dev shutdown`, which
+           the ITs themselves drive so a failure to start is a test failure with
+           the daemon's own reason attached, rather than a build error. -->
+    </plugins>
+  </build>
+
+</project>

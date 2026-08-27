@@ -132,12 +132,30 @@ public final class PublicStyleSheetBundler {
         if (url.startsWith("/")) {
             url = url.substring(1);
         }
-        // Normalize separators
-        url = FrontendUtils.getUnixPath(new File(url).toPath());
+        url = toUnixSeparators(url);
         if (url.startsWith("./")) {
             url = url.substring(2);
         }
         return url;
+    }
+
+    /**
+     * Normalizes the separators of a stylesheet URL.
+     * <p>
+     * Done as string surgery rather than through {@code File}/{@code Path}: a
+     * stylesheet URL can still carry its scheme at this point
+     * ({@code base://css/app.css}), and a colon is illegal in a Windows path -
+     * so {@code new File(url).toPath()} threw {@code InvalidPathException} for
+     * every such URL there, which degraded an in-place CSS update to a full
+     * page reload. The result is what the path round-trip produced on a
+     * platform where it did not throw.
+     *
+     * @param url
+     *            the URL to normalize
+     * @return the URL with forward separators and no repeated slashes
+     */
+    static String toUnixSeparators(String url) {
+        return url.replace(File.separatorChar, '/').replaceAll("/{2,}", "/");
     }
 
     private static Logger getLogger() {

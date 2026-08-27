@@ -1,0 +1,86 @@
+import java.io.File;
+import java.nio.file.Files;
+
+// java.io.File for the existence checks: BeanShell cannot resolve the varargs
+// overloads of Files.isRegularFile / Files.exists.
+
+String read(File file) {
+    if (!file.isFile()) {
+        throw new RuntimeException("expected " + file + " to exist");
+    }
+    return new String(Files.readAllBytes(file.toPath()), "UTF-8");
+}
+
+// --- exactly the payload, and nothing else ----------------------------------
+String[] expected = new String[] { ".vaadin/vaadin-dev", ".vaadin/vaadin-dev.ps1",
+        ".vaadin/vaadin-dev.cmd", ".vaadin/.gitignore",
+        ".agents/skills/vaadin-devloop/SKILL.md",
+        ".agents/skills/vaadin-devloop/reference.md",
+        ".claude/skills/vaadin-devloop/SKILL.md" };
+for (int i = 0; i < expected.length; i++) {
+    File file = new File(basedir, expected[i]);
+    if (!file.isFile()) {
+        throw new RuntimeException("install-dev-cli did not create " + file);
+    }
+}
+// No daemon jar is staged into the project: the CLI resolves it from the
+// project's own dependencies at first use.
+File[] installed = new File(basedir, ".vaadin").listFiles();
+for (int i = 0; i < installed.length; i++) {
+    if (installed[i].getName().endsWith(".jar")) {
+        throw new RuntimeException("no jar should be staged, found "
+                + installed[i]);
+    }
+}
+
+// --- the handshake is ignored, the scripts are not --------------------------
+// .vaadin/ holds both now, and daemon.properties carries a per-run token that
+// authorizes commands to the local daemon.
+String ignore = read(new File(basedir, ".vaadin/.gitignore"));
+if (ignore.indexOf("daemon.properties") < 0) {
+    throw new RuntimeException(
+            ".vaadin/.gitignore should keep the handshake out of the repository");
+}
+
+// --- the Claude adapter's relative link resolves ----------------------------
+File adapter = new File(basedir, ".claude/skills/vaadin-devloop/SKILL.md");
+String adapterContent = read(adapter);
+String link = "../../../.agents/skills/vaadin-devloop/SKILL.md";
+if (adapterContent.indexOf(link) < 0) {
+    throw new RuntimeException(
+            "the Claude adapter should link to the shared instructions");
+}
+if (!new File(adapter.getParentFile(), link).getCanonicalFile().isFile()) {
+    throw new RuntimeException("the adapter's link to " + link
+            + " does not resolve; the two skill trees must install as siblings");
+}
+
+// --- the command examples name the installed location -----------------------
+String skill = read(new File(basedir, ".agents/skills/vaadin-devloop/SKILL.md"));
+if (skill.indexOf(".vaadin/vaadin-dev status") < 0) {
+    throw new RuntimeException(
+            "the skill should invoke the script where the goal installs it");
+}
+
+// --- run 1 replaced the edited file, run 2 wrote nothing --------------------
+// The project ships an edited SKILL.md. Replacing it is the whole promise: it is
+// the only way a shipped fix reaches a project that already installed once.
+String first = read(new File(basedir, "install-1.log"));
+if (first.indexOf("Installed .agents/skills/vaadin-devloop/SKILL.md") < 0) {
+    throw new RuntimeException(
+            "run 1 should have replaced the edited skill file: " + first);
+}
+if (first.indexOf("Installed .vaadin/vaadin-dev") < 0) {
+    throw new RuntimeException(
+            "run 1 should have installed the CLI: " + first);
+}
+if (skill.indexOf("LOCAL EDIT") >= 0) {
+    throw new RuntimeException(
+            "the edited copy should have been replaced by the shipped one");
+}
+
+String second = read(new File(basedir, "install-2.log"));
+if (second.indexOf("Installed ") >= 0) {
+    throw new RuntimeException(
+            "run 2 should have been a no-op, but wrote files: " + second);
+}

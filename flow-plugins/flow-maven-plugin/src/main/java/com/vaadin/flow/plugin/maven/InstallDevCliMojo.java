@@ -1,0 +1,71 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.plugin.maven;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import com.vaadin.flow.plugin.base.DevCliInstaller;
+
+/**
+ * Installs the {@code vaadin-dev} CLI and its agent skills into the project.
+ * <p>
+ * Creates {@code .vaadin/vaadin-dev} (plus the {@code .ps1} and {@code .cmd}
+ * launchers), the shared instructions under
+ * {@code .agents/skills/vaadin-devloop/} and the Claude adapter under
+ * {@code .claude/skills/vaadin-devloop/}. Nothing else: no jars are staged, and
+ * no agent configuration is touched - the CLI resolves the dev-loop daemon from
+ * the project's own dependencies at first use.
+ * <p>
+ * Everything it writes is meant to be committed, like {@code mvnw}: it is
+ * project tooling, and the point is that every developer and every agent on the
+ * repository gets the same instructions. It is also rewritten whenever it
+ * differs from the shipped copy, so a fix reaches a project by re-running the
+ * goal - add your own skill beside these rather than editing them.
+ * <p>
+ * Unbound, so it never runs as a side effect of a normal build. Run it on the
+ * application module: in a reactor that means {@code -pl :app}, which is also
+ * where the CLI's own {@code .vaadin/vaadin-dev} invocations are rooted.
+ */
+@Mojo(name = "install-dev-cli")
+public class InstallDevCliMojo extends FlowModeAbstractMojo {
+
+    /**
+     * Where to install. Defaults to the module the goal runs on, which is what
+     * puts the two skill trees beside each other so the Claude adapter's
+     * relative link to the shared instructions resolves. Point it at the
+     * reactor root if the agent trees belong there instead.
+     */
+    @Parameter(property = "vaadin.devcli.targetDirectory", defaultValue = "${project.basedir}")
+    private File targetDirectory;
+
+    @Override
+    protected void executeInternal() throws MojoFailureException {
+        Path target = targetDirectory.toPath();
+        try {
+            DevCliInstaller.report(DevCliInstaller.install(target), target,
+                    this);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Could not install the vaadin-dev CLI into " + target, e);
+        }
+    }
+}

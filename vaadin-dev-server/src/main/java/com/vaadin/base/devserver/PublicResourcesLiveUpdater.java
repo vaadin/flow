@@ -34,7 +34,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -111,9 +110,42 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }
     }
 
+    /**
+     * Stops this watcher from pushing CSS changes for the given context.
+     * <p>
+     * For a tool that owns the edit-to-running-app loop, watching on
+     * <em>save</em> is the wrong trigger: the loop decides when a change goes
+     * live, and a second watcher pushing on its own makes "what is the state of
+     * my last change?" unanswerable. Such a tool suspends this and performs the
+     * resource leg itself.
+     * <p>
+     * A context attribute rather than a field, so it can be set before or after
+     * the watcher is created - the check happens when a file changes.
+     *
+     * @param context
+     *            the current Vaadin context
+     */
+    public static void suspend(VaadinContext context) {
+        Objects.requireNonNull(context, "context cannot be null");
+        context.setAttribute(Suspended.class, new Suspended());
+        LoggerFactory.getLogger(PublicResourcesLiveUpdater.class).debug(
+                "Public resource live updates suspended; another tool owns the resource leg");
+    }
+
+    private static boolean isSuspended(VaadinContext context) {
+        return context.getAttribute(Suspended.class) != null;
+    }
+
+    /** Marker for {@link #suspend(VaadinContext)}. */
+    private static final class Suspended implements java.io.Serializable {
+    }
+
     private FileWatcher getFileWatcher(File root, BrowserLiveReload liveReload)
             throws IOException {
         FileWatcher watcher = new FileWatcher(file -> {
+            if (isSuspended(context)) {
+                return;
+            }
             if (file.isDirectory()) {
                 return;
             }
@@ -184,9 +216,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
     }
 
     private boolean isVaadinThemeUrl(String url) {
-        url = FrontendUtils.getUnixPath(new File(url).toPath());
         // all known urls from Aura and Lumo classes
-        return THEME_URLS_PATTERN.matcher(url).matches();
+        return THEME_URLS_PATTERN
+                .matcher(PublicStyleSheetBundler.toUnixSeparators(url))
+                .matches();
     }
 
     private Logger getLogger() {
