@@ -489,8 +489,7 @@ public class StateTree implements NodeOwner {
             // reinitialize it from the initial attach events that preparing
             // dispatches. Anything still queued predates that, so it would run
             // against a client side that no longer expects it.
-            rootNode.visitNodeTree(
-                    uiInternals::discardPendingJavaScriptInvocations);
+            uiInternals.discardPendingJavaScriptInvocations();
             rootNode.prepareForResync();
         } finally {
             preparingForResync = false;

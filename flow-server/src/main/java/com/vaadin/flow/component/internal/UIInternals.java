@@ -733,26 +733,44 @@ public class UIInternals implements Serializable {
      * Discards the pending JavaScript invocations owned by the given node,
      * which are the ones waiting for the node to become visible again.
      * <p>
-     * {@link StateTree} calls this for a node that is detached, since the
-     * client no longer knows the node, and for every node in the tree when
-     * resynchronizing, since the client rebuilds its state from scratch. Both
-     * run for many nodes at a time, so the owners are tracked separately to
-     * keep this to a single lookup for a node with nothing queued.
+     * {@link StateTree} calls this for every node that is detached, so the
+     * owners are tracked separately to keep it to a single lookup for a node
+     * with nothing queued.
      *
      * @param owner
      *            the node whose invocations to discard, not <code>null</code>
      */
     public void discardPendingJavaScriptInvocations(StateNode owner) {
-        if (session != null) {
-            // Nodes are also detached from the tree of a UI that has not
-            // been attached to a session, and there is no lock to check then
-            session.checkHasLock();
-        }
+        checkInvocationQueueLock();
         if (!pendingJsInvocationOwners.remove(owner)) {
             return;
         }
         pendingJsInvocations
                 .removeIf(invocation -> invocation.getOwner() == owner);
+    }
+
+    /**
+     * Discards every pending JavaScript invocation of the related UI.
+     * <p>
+     * Called by {@link StateTree} when resynchronizing, which reinitializes the
+     * whole client side, so the queue is emptied in one go rather than node by
+     * node.
+     */
+    public void discardPendingJavaScriptInvocations() {
+        checkInvocationQueueLock();
+        pendingJsInvocations.clear();
+        pendingJsInvocationOwners.clear();
+    }
+
+    /**
+     * Checks the session lock unless the related UI has never been attached to
+     * a session, since a state tree is also manipulated before its UI is
+     * initialized and there is no lock to check then.
+     */
+    private void checkInvocationQueueLock() {
+        if (session != null) {
+            session.checkHasLock();
+        }
     }
 
     /**
