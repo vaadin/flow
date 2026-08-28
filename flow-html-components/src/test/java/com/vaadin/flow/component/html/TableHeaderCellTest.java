@@ -30,6 +30,8 @@ class TableHeaderCellTest extends ComponentTest {
     protected void addProperties() {
         addProperty("colspan", int.class, 1, 2, false, false);
         addProperty("rowspan", int.class, 1, 2, false, false);
+        addProperty("headers", String[].class, null, new String[] { "a", "b" },
+                true, true);
     }
 
     @Test

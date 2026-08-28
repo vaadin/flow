@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.Component;
@@ -35,6 +41,7 @@ import com.vaadin.flow.component.HtmlContainer;
 @NullMarked
 public abstract class TableCell extends HtmlContainer {
 
+    private static final String ATTRIBUTE_HEADERS = "headers";
     private static final String ATTRIBUTE_COLSPAN = "colspan";
     private static final String ATTRIBUTE_ROWSPAN = "rowspan";
 
@@ -139,5 +146,98 @@ public abstract class TableCell extends HtmlContainer {
     private int getSpan(String attribute) {
         String span = getElement().getAttribute(attribute);
         return span == null ? 1 : Integer.parseInt(span);
+    }
+
+    /**
+     * Sets the {@code headers} attribute — a list of ids referring to the
+     * <code>&lt;th&gt;</code> cells that label this cell. Assistive
+     * technologies use it to read out the right headers when navigating complex
+     * tables, where {@link TableHeaderCell#setScope(TableHeaderCell.Scope)
+     * scope} alone isn't enough to disambiguate.
+     * <p>
+     * An empty array removes the attribute; call {@link #resetHeaders()} to do
+     * the same without an argument, as an empty call would be ambiguous between
+     * this overload and {@link #setHeaders(TableHeaderCell...)}.
+     *
+     * @param ids
+     *            the ids of the header cells, in any order.
+     */
+    public void setHeaders(String... ids) {
+        setHeaders(ids == null ? List.of() : Arrays.asList(ids));
+    }
+
+    /**
+     * List equivalent of {@link #setHeaders(String...)}. An empty list (or
+     * {@code null}) clears the attribute.
+     *
+     * @param ids
+     *            the ids of the header cells, in any order.
+     */
+    public void setHeaders(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            getElement().removeAttribute(ATTRIBUTE_HEADERS);
+            return;
+        }
+        for (String id : ids) {
+            Objects.requireNonNull(id, "header id must not be null");
+        }
+        getElement().setAttribute(ATTRIBUTE_HEADERS, String.join(" ", ids));
+    }
+
+    /**
+     * Convenience overload that takes header cells directly and uses their
+     * {@code id} attributes. Each cell must have an id set.
+     *
+     * @param headerCells
+     *            the header cells whose ids should be referenced.
+     * @throws IllegalArgumentException
+     *             if any of the given cells does not have an id set.
+     */
+    public void setHeaders(TableHeaderCell... headerCells) {
+        setHeadersByCells(
+                headerCells == null ? List.of() : Arrays.asList(headerCells));
+    }
+
+    /**
+     * List equivalent of {@link #setHeaders(TableHeaderCell...)}.
+     *
+     * @param headerCells
+     *            the header cells whose ids should be referenced.
+     * @throws IllegalArgumentException
+     *             if any of the given cells does not have an id set.
+     */
+    public void setHeadersByCells(List<? extends TableHeaderCell> headerCells) {
+        if (headerCells == null || headerCells.isEmpty()) {
+            getElement().removeAttribute(ATTRIBUTE_HEADERS);
+            return;
+        }
+        List<String> ids = new ArrayList<>(headerCells.size());
+        for (TableHeaderCell cell : headerCells) {
+            ids.add(cell.getId().orElseThrow(() -> new IllegalArgumentException(
+                    "Header cell must have an id to be referenced via the headers attribute")));
+        }
+        setHeaders(ids);
+    }
+
+    /**
+     * Returns the IDs of the header cells associated with this cell via the
+     * {@code headers} attribute, or an empty {@link Optional} if the attribute
+     * is not set.
+     *
+     * @return the parsed list of header IDs.
+     */
+    public Optional<String[]> getHeaders() {
+        String value = getElement().getAttribute(ATTRIBUTE_HEADERS);
+        if (value == null || value.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(value.split("\\s+"));
+    }
+
+    /**
+     * Removes the {@code headers} attribute from this cell.
+     */
+    public void resetHeaders() {
+        getElement().removeAttribute(ATTRIBUTE_HEADERS);
     }
 }

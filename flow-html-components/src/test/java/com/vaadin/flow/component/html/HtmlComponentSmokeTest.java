@@ -78,6 +78,7 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
+        testValues.put(String[].class, new String[] { "a", "b" });
         testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
     }
 
@@ -221,6 +222,17 @@ class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == HasAriaLabel.class
                 && method.getName().equals("setAriaLabelledBy")
                 && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
+        // setHeaders has three overloads. The String[] one is exercised
+        // normally to cover the bean property; the ones taking header cells
+        // resolve to the same attribute and have no matching getter, and are
+        // covered by focused unit tests.
+        if (method.getDeclaringClass() == TableCell.class && (method.getName()
+                .equals("setHeadersByCells")
+                || (method.getName().equals("setHeaders")
+                        && method.getParameterTypes()[0] != String[].class))) {
             return true;
         }
 
