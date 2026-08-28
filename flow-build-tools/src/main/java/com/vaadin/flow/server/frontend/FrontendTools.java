@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -604,7 +605,7 @@ public class FrontendTools {
 
     /**
      * Reads the registry URLs npm resolves for the given directory by running
-     * {@code npm config ls --json}. The returned map contains the global
+     * {@code npm config list --json}. The returned map contains the global
      * {@code registry} entry and every scoped {@code @scope:registry} entry, as
      * resolved by npm across all its configuration sources.
      *
@@ -614,26 +615,85 @@ public class FrontendTools {
      *         map if the configuration cannot be read
      */
     Map<String, String> getConfiguredRegistries(File workingDirectory) {
-        List<String> command = new ArrayList<>(getNpmExecutable(false));
-        command.add("config");
-        command.add("ls");
-        command.add("--json");
+        JsonNode config = getResolvedConfiguration(getNpmExecutable(false),
+                workingDirectory);
         Map<String, String> registries = new HashMap<>();
+        for (String key : config.propertyNames()) {
+            if ((key.equals("registry") || key.endsWith(":registry"))
+                    && config.get(key).isString()) {
+                registries.put(key, config.get(key).asString());
+            }
+        }
+        return registries;
+    }
+
+    /**
+     * Reads the value the given npm or pnpm command resolves for a
+     * configuration key.
+     * <p>
+     * Several keys can be given for a setting that the tool spells differently
+     * depending on its version; the first one that has a value is returned.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @param keys
+     *            the configuration keys to look for, in order of preference
+     * @return the configured value, or an empty optional if none of the keys
+     *         has a scalar value or the configuration cannot be read
+     */
+    Optional<String> getConfiguredSetting(List<String> toolCommand,
+            File workingDirectory, String... keys) {
+        JsonNode config = getResolvedConfiguration(toolCommand,
+                workingDirectory);
+        for (String key : keys) {
+            JsonNode value = config.get(key);
+            // npm lists every key it knows, using null for the ones that are
+            // not configured; pnpm lists only the configured ones. Settings
+            // that npm lists as an array, such as omit or noproxy, are not
+            // values this can return.
+            if (value != null && value.isValueNode() && !value.isNull()) {
+                return Optional.of(value.asString());
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Reads the configuration the given npm or pnpm command resolves for a
+     * directory by running {@code config list --json}.
+     * <p>
+     * The configuration is read from the tool itself, so it accounts for every
+     * configuration source and precedence rule the tool applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc} and,
+     * for pnpm, {@code pnpm-workspace.yaml}). The subcommand has to be spelled
+     * {@code list}, as pnpm does not know the {@code ls} alias npm accepts.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return the resolved configuration, or an empty object if it cannot be
+     *         read
+     */
+    JsonNode getResolvedConfiguration(List<String> toolCommand,
+            File workingDirectory) {
+        List<String> command = new ArrayList<>(toolCommand);
+        command.add("config");
+        command.add("list");
+        command.add("--json");
         try {
             String output = FrontendUtils.executeCommand(command,
                     builder -> builder.directory(workingDirectory));
-            JsonNode config = JacksonUtils.readTree(output);
-            for (String key : config.propertyNames()) {
-                if ((key.equals("registry") || key.endsWith(":registry"))
-                        && config.get(key).isString()) {
-                    registries.put(key, config.get(key).asString());
-                }
-            }
+            return JacksonUtils.readTree(output);
         } catch (CommandExecutionException | RuntimeException e) {
-            getLogger().debug("Could not read the npm registry configuration; "
-                    + "assuming the default registry.", e);
+            getLogger().debug("Could not read the configuration using '{}'",
+                    String.join(" ", command), e);
+            return JacksonUtils.createObjectNode();
         }
-        return registries;
     }
 
     /**
@@ -679,9 +739,9 @@ public class FrontendTools {
      * the {@code --min-release-age} install flag (see
      * {@link #MIN_NPM_VERSION_FOR_RELEASE_AGE}). Used when building the
      * {@code npm install} command for the minimum-package-age check (see
-     * {@link Options#withMinimumFrontendPackageAgeDays(int)}) to decide between
-     * {@code --min-release-age} and the {@code --before=<date>} fallback
-     * supported by older npm versions.
+     * {@link Options#withMinimumFrontendPackageAgeDays(Integer)}) to decide
+     * between {@code --min-release-age} and the {@code --before=<date>}
+     * fallback supported by older npm versions.
      *
      * @param npmCommand
      *            the npm command to invoke for {@code --version}
