@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.html.TableHeaderCell.Scope;
@@ -26,12 +29,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TableHeaderCellTest extends ComponentTest {
     // Actual test methods in super class
 
+    @BeforeEach
+    @Override
+    void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
+        // headers is a list of ids rather than a scalar property
+        whitelistProperty("headers");
+        super.setup();
+    }
+
     @Override
     protected void addProperties() {
         addProperty("colspan", int.class, 1, 2, false, false);
         addProperty("rowspan", int.class, 1, 2, false, false);
-        addProperty("headers", String[].class, null, new String[] { "a", "b" },
-                true, true);
     }
 
     @Test

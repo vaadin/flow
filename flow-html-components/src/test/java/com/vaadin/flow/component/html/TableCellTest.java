@@ -33,6 +33,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Exercises the constructors both {@link TableCell} subclasses inherit, through
@@ -156,5 +157,82 @@ class TableCellTest extends SignalsUnitTest {
         cell.setRowspan(0);
         assertEquals("0", cell.getElement().getAttribute("rowspan"));
         assertEquals(0, cell.getRowspan());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_writesSpaceJoinedAttributeAndReadsBack(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        assertTrue(cell.getHeaders().isEmpty());
+
+        cell.setHeaders("name", "age");
+
+        assertEquals("name age", cell.getElement().getAttribute("headers"));
+        assertEquals(List.of("name", "age"), cell.getHeaders());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_listEntryPointBehavesLikeTheVarargsOne(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+
+        cell.setHeaders(List.of("name", "age"));
+
+        assertEquals(List.of("name", "age"), cell.getHeaders());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_empty_clearsTheAttribute(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        cell.setHeaders("name");
+
+        cell.setHeaders(new String[0]);
+
+        assertNull(cell.getElement().getAttribute("headers"));
+        assertTrue(cell.getHeaders().isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_fromHeaderCells_usesTheirIds(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        TableHeaderCell name = new TableHeaderCell("Name");
+        TableHeaderCell age = new TableHeaderCell("Age");
+        name.setId("name-h");
+        age.setId("age-h");
+
+        cell.setHeaders(name, age);
+
+        assertEquals("name-h age-h", cell.getElement().getAttribute("headers"));
+
+        cell.setHeadersByCells(List.of(age, name));
+
+        assertEquals("age-h name-h", cell.getElement().getAttribute("headers"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_fromHeaderCellWithoutId_throws(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        TableHeaderCell withoutId = new TableHeaderCell("Name");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> cell.setHeaders(withoutId));
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void resetHeaders_removesTheAttribute(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        cell.setHeaders("name");
+
+        cell.resetHeaders();
+
+        assertNull(cell.getElement().getAttribute("headers"));
+        assertTrue(cell.getHeaders().isEmpty());
     }
 }

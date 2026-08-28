@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -220,18 +219,18 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Returns the IDs of the header cells associated with this cell via the
-     * {@code headers} attribute, or an empty {@link Optional} if the attribute
-     * is not set.
+     * Returns the ids of the header cells associated with this cell via the
+     * {@code headers} attribute, in the order they appear, or an empty list if
+     * the attribute is not set.
      *
-     * @return the parsed list of header IDs.
+     * @return the header ids, never {@code null}.
      */
-    public Optional<String[]> getHeaders() {
+    public List<String> getHeaders() {
         String value = getElement().getAttribute(ATTRIBUTE_HEADERS);
         if (value == null || value.isEmpty()) {
-            return Optional.empty();
+            return List.of();
         }
-        return Optional.of(value.split("\\s+"));
+        return List.of(value.split("\\s+"));
     }
 
     /**

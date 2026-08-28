@@ -15,79 +15,27 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.jupiter.api.Test;
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 
-import static com.vaadin.flow.component.html.AssertUtils.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 
 class TableDataCellTest extends ComponentTest {
     // Property tests in super class
+
+    @BeforeEach
+    @Override
+    void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
+        // headers is a list of ids rather than a scalar property
+        whitelistProperty("headers");
+        super.setup();
+    }
 
     @Override
     protected void addProperties() {
         addProperty("colspan", int.class, 1, 2, false, false);
         addProperty("rowspan", int.class, 1, 2, false, false);
-        addProperty("headers", String[].class, null, new String[] { "a", "b" },
-                true, true);
-    }
-
-    @Test
-    void setHeaders_writesSpaceJoinedAttributeAndReadsBack() {
-        TableDataCell cell = (TableDataCell) getComponent();
-        assertTrue(cell.getHeaders().isEmpty());
-
-        cell.setHeaders("name", "age");
-
-        assertEquals("name age", cell.getElement().getAttribute("headers"),
-                "headers should be space-joined");
-        assertArrayEquals(new String[] { "name", "age" },
-                cell.getHeaders().orElseThrow());
-    }
-
-    @Test
-    void setHeaders_empty_clearsTheAttribute() {
-        TableDataCell cell = (TableDataCell) getComponent();
-        cell.setHeaders("name");
-
-        cell.setHeaders(new String[0]);
-
-        assertNull(cell.getElement().getAttribute("headers"));
-        assertTrue(cell.getHeaders().isEmpty());
-    }
-
-    @Test
-    void setHeaders_fromHeaderCells_usesTheirIds() {
-        TableDataCell cell = (TableDataCell) getComponent();
-        TableHeaderCell name = new TableHeaderCell("Name");
-        TableHeaderCell age = new TableHeaderCell("Age");
-        name.setId("name-h");
-        age.setId("age-h");
-
-        cell.setHeaders(name, age);
-
-        assertEquals("name-h age-h", cell.getElement().getAttribute("headers"),
-                "headers should reference the cells' ids");
-    }
-
-    @Test
-    void setHeaders_fromHeaderCellWithoutId_throws() {
-        TableDataCell cell = (TableDataCell) getComponent();
-        TableHeaderCell withoutId = new TableHeaderCell("Name");
-
-        assertThrows(IllegalArgumentException.class,
-                () -> cell.setHeaders(withoutId));
-    }
-
-    @Test
-    void resetHeaders_removesTheAttribute() {
-        TableDataCell cell = (TableDataCell) getComponent();
-        cell.setHeaders("name");
-
-        cell.resetHeaders();
-
-        assertNull(cell.getElement().getAttribute("headers"));
     }
 }
