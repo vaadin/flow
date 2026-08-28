@@ -202,13 +202,26 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     finding. (A code span for a symbol that is not ported at all stays correct
     under rule 11, whichever branch it is in.)
 
-## References to not-yet-ported symbols
+## References to symbols the port does not have
 
 11. When Javadoc references a Java identifier that is **not yet ported**, keep
-    the reference as a code span (e.g. `` `ElementData` ``) rather than a
+    the reference as a code span (e.g. `` `ErrorMessage` ``) rather than a
     dangling `{@link}`, and add a `TODO(flow-client-ts)` note in the module so
     it is restored to a real `{@link …}` (with an import) in the follow-up PR
     that ports the referenced class.
+    - **A class outside the port's scope never gets that note.** This migration
+      covers the GWT client (`com.vaadin.client.*`) and the shared constants it
+      reads, so a reference into `flow-server` — `com.vaadin.flow.internal.JacksonCodec`,
+      `com.vaadin.flow.dom.DebouncePhase`, the node-feature classes such as
+      `ElementData` — will never resolve to a ported symbol. Its code span is
+      **permanent**: state that at the site, naming the class, and add no
+      `TODO(flow-client-ts)` and no retrofit-backlog row, because there is no
+      follow-up PR to wait for. Server-side constant *values* the port has to
+      duplicate rather than import (`ApplicationConstants`' `v-r` and `uiId` in
+      `SystemErrorHandler.ts`) are the same case: group them under a comment
+      naming the Java class. _Introduced during #24950._ (The distinction matters
+      because a `TODO` is a promise: four sites carried one for classes nobody
+      will ever port, so each review re-read them as open work.)
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
     future ported class will satisfy at cutover — see `Registry` /
