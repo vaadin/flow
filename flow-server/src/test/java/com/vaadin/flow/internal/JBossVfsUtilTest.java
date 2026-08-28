@@ -85,18 +85,6 @@ class JBossVfsUtilTest {
             materialized.add(file);
             return file;
         }
-
-        public String getName() {
-            return file.getName();
-        }
-
-        public boolean isFile() {
-            return file.isFile();
-        }
-
-        public InputStream openStream() throws IOException {
-            return new FileInputStream(file);
-        }
     }
 
     /**
@@ -226,45 +214,35 @@ class JBossVfsUtilTest {
 
         private final Object physicalFile;
 
-        private final Object name;
-
         private final RuntimeException failure;
 
         private MalformedVirtualFile(Object children, Object recursiveChildren,
-                Object physicalFile, Object name, RuntimeException failure) {
+                Object physicalFile, RuntimeException failure) {
             this.children = children;
             this.recursiveChildren = recursiveChildren;
             this.physicalFile = physicalFile;
-            this.name = name;
             this.failure = failure;
         }
 
         static MalformedVirtualFile withChildren(Object children) {
             return new MalformedVirtualFile(children, List.of(),
-                    new File("folder"), "folder", null);
+                    new File("folder"), null);
         }
 
         static MalformedVirtualFile withRecursiveChildren(
                 Object recursiveChildren) {
             return new MalformedVirtualFile(List.of(), recursiveChildren,
-                    new File("folder"), "folder", null);
+                    new File("folder"), null);
         }
 
         static MalformedVirtualFile withPhysicalFile(Object physicalFile) {
             return new MalformedVirtualFile(List.of(), List.of(), physicalFile,
-                    "folder", null);
-        }
-
-        static MalformedVirtualFile withName(Object name) {
-            MalformedVirtualFile file = new MalformedVirtualFile(List.of(),
-                    List.of(), new File("folder"), name, null);
-            return new MalformedVirtualFile(List.of(file), List.of(file),
-                    new File("folder"), "folder", null);
+                    null);
         }
 
         static MalformedVirtualFile failing(RuntimeException failure) {
             return new MalformedVirtualFile(List.of(), List.of(),
-                    new File("folder"), "folder", failure);
+                    new File("folder"), failure);
         }
 
         public Object getChildren() {
@@ -284,14 +262,6 @@ class JBossVfsUtilTest {
         public Object getPhysicalFile() {
             return physicalFile;
         }
-
-        public Object getName() {
-            return name;
-        }
-
-        public boolean isFile() {
-            return true;
-        }
     }
 
     /**
@@ -301,20 +271,20 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void listFiles_givesTheFilesOfTheFolderWithoutCreatingThem()
+    void materializeFiles_createsAndGivesTheFilesOfTheFolder()
             throws IOException {
         File folder = createFolder();
         List<File> materialized = new ArrayList<>();
 
-        List<JBossVfsUtil.VfsFile> files = JBossVfsUtil
-                .listFiles(vfsUrl(folder, materialized));
+        List<File> files = JBossVfsUtil
+                .materializeFiles(vfsUrl(folder, materialized));
 
-        // The folder inside the folder is not one of its files
-        assertEquals(List.of("one.txt"),
-                files.stream().map(JBossVfsUtil.VfsFile::getName).toList());
-        assertEquals("first", read(files.get(0).open()));
-        // Nothing was asked to be created on disk
-        assertEquals(List.of(), materialized);
+        // The files are given as the virtual file system created them, rather
+        // than being looked up in the folder afterwards
+        List<File> expected = List.of(new File(folder, "nested"),
+                new File(folder, "one.txt"));
+        assertEquals(expected, files.stream().sorted().toList());
+        assertEquals(expected, materialized.stream().sorted().toList());
     }
 
     @Test
@@ -436,24 +406,19 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void fileHasNoName_failsWithAnIOException() throws IOException {
-        URL url = vfsUrl(MalformedVirtualFile.withName(42));
-
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
-    }
-
-    @Test
     void notAVirtualFile_failsWithAnIOException() throws IOException {
         URL url = vfsUrl(new NotAVirtualFile());
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFiles(url));
     }
 
     @Test
     void nothingIsServed_failsWithAnIOException() throws IOException {
         URL url = vfsUrl(null);
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFiles(url));
     }
 
     @Test
@@ -461,7 +426,8 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(
                 MalformedVirtualFile.withChildren("not a list of children"));
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFiles(url));
     }
 
     @Test
@@ -472,7 +438,7 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(MalformedVirtualFile
                 .withRecursiveChildren("not a list of children"));
 
-        assertEquals(List.of(), JBossVfsUtil.listFiles(url));
+        assertEquals(List.of(), JBossVfsUtil.materializeFiles(url));
         assertThrows(IOException.class,
                 () -> JBossVfsUtil.materializeFolder(url));
     }
@@ -491,13 +457,8 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(MalformedVirtualFile
                 .failing(new IllegalStateException("Deployment closed")));
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
-    }
-
-    private static String read(InputStream content) throws IOException {
-        try (InputStream stream = content) {
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFiles(url));
     }
 
     private File createFolder() throws IOException {

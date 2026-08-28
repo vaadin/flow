@@ -18,6 +18,7 @@ package com.vaadin.flow.i18n;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,6 +29,7 @@ import java.net.URLStreamHandlerFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Locale;
@@ -473,10 +475,13 @@ class I18NUtilTest {
 
         private final JarEntry entry;
         private final JarFile jarFile;
+        private final Path physicalRoot;
 
-        private MockVirtualFile(JarFile jarFile, JarEntry entry) {
+        private MockVirtualFile(JarFile jarFile, JarEntry entry,
+                Path physicalRoot) {
             this.jarFile = jarFile;
             this.entry = entry;
+            this.physicalRoot = physicalRoot;
         }
 
         public List<MockVirtualFile> getChildren() {
@@ -485,22 +490,30 @@ class I18NUtilTest {
                     && e.getName().startsWith(entry.getName())
                     && (e.getName().endsWith("/") || !e.getName()
                             .substring(entry.getName().length()).contains("/")))
-                    .map(e -> new MockVirtualFile(jarFile, e)).toList();
+                    .map(e -> new MockVirtualFile(jarFile, e, physicalRoot))
+                    .toList();
         }
 
-        public String getName() {
-            String name = entry.getName();
-            name = name.endsWith("/") ? name.substring(0, name.length() - 1)
-                    : name;
-            return name.substring(name.lastIndexOf('/') + 1);
-        }
-
-        public boolean isFile() {
-            return !entry.isDirectory();
-        }
-
-        public InputStream openStream() throws IOException {
-            return jarFile.getInputStream(entry);
+        /**
+         * Creates the file on disk, which is what the JBoss virtual file does
+         * when it is asked for the physical file.
+         */
+        public File getPhysicalFile() {
+            Path physicalFile = physicalRoot.resolve(entry.getName());
+            try {
+                if (entry.isDirectory()) {
+                    Files.createDirectories(physicalFile);
+                } else {
+                    Files.createDirectories(physicalFile.getParent());
+                    try (InputStream content = jarFile.getInputStream(entry)) {
+                        Files.copy(content, physicalFile,
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return physicalFile.toFile();
         }
     }
 
@@ -511,8 +524,10 @@ class I18NUtilTest {
         Path path = generateZipArchive(temporaryFolder);
         JarFile jarFile = new JarFile(path.toFile());
         URLConnection urlConnection = Mockito.mock(URLConnection.class);
+        Path physicalRoot = Files.createTempDirectory(temporaryFolder,
+                "deployment");
         Mockito.when(urlConnection.getContent()).thenReturn(new MockVirtualFile(
-                jarFile, jarFile.getJarEntry("vaadin-i18n/")));
+                jarFile, jarFile.getJarEntry("vaadin-i18n/"), physicalRoot));
 
         URLStreamHandler vfsMockHandler = new URLStreamHandler() {
             @Override

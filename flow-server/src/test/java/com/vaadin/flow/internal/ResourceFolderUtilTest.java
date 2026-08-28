@@ -16,15 +16,16 @@
 package com.vaadin.flow.internal;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -104,7 +105,8 @@ class ResourceFolderUtilTest {
     }
 
     @Test
-    void vfsFolder_onlyItsFilesAreVisited() throws IOException {
+    void vfsFolder_isMaterializedAndOnlyItsFilesAreVisited()
+            throws IOException {
         File folder = new File(temporaryFolder, "deployment");
         File nested = new File(folder, "nested");
         Files.createDirectories(nested.toPath());
@@ -116,15 +118,34 @@ class ResourceFolderUtilTest {
         URL vfsFolder = new URL("vfs", "deployment", 0, "/my.war/classes/",
                 new VirtualFileHandler(folder));
 
-        List<String> contents = new ArrayList<>();
-        ResourceFolderUtil.visitFiles(vfsFolder, file -> {
-            contents.add(file.getName() + "=" + read(file.open()));
-            assertEquals(vfsFolder + file.getName(), file.getLocation(),
-                    "The location should point at the file in the folder");
-        });
+        List<String> names = new ArrayList<>();
+        ResourceFolderUtil.visitFiles(vfsFolder,
+                file -> names.add(file.getName()));
 
         // The folder inside it is not a file of the folder
-        assertEquals(List.of("one.txt=first"), contents);
+        assertEquals(List.of("one.txt"), names);
+    }
+
+    @Test
+    void vfsFileIsCreatedOutsideItsFolder_itIsStillVisited()
+            throws IOException {
+        File folder = new File(temporaryFolder, "deployment");
+        Files.createDirectories(folder.toPath());
+        Files.writeString(new File(folder, "one.txt").toPath(), "first",
+                StandardCharsets.UTF_8);
+        // A folder inside a mounted archive is created under a temp folder of
+        // its own, so its files are not below the folder they belong to
+        File elsewhere = new File(temporaryFolder, "mount");
+        Files.createDirectories(elsewhere.toPath());
+
+        URL vfsFolder = new URL("vfs", "deployment", 0, "/my.war/lib/fake.jar/",
+                new VirtualFileHandler(folder, elsewhere));
+
+        List<String> contents = new ArrayList<>();
+        ResourceFolderUtil.visitFiles(vfsFolder,
+                file -> contents.add(read(file.open())));
+
+        assertEquals(List.of("first"), contents);
     }
 
     @Test
@@ -160,8 +181,15 @@ class ResourceFolderUtilTest {
 
         private final File folder;
 
+        private final File physicalRoot;
+
         private VirtualFileHandler(File folder) {
+            this(folder, null);
+        }
+
+        private VirtualFileHandler(File folder, File physicalRoot) {
             this.folder = folder;
+            this.physicalRoot = physicalRoot;
         }
 
         @Override
@@ -174,7 +202,7 @@ class ResourceFolderUtilTest {
 
                 @Override
                 public Object getContent() {
-                    return new MockVirtualFile(folder);
+                    return new MockVirtualFile(folder, physicalRoot);
                 }
             };
         }
@@ -188,8 +216,15 @@ class ResourceFolderUtilTest {
 
         private final File file;
 
+        private final File physicalRoot;
+
         public MockVirtualFile(File file) {
+            this(file, null);
+        }
+
+        public MockVirtualFile(File file, File physicalRoot) {
             this.file = file;
+            this.physicalRoot = physicalRoot;
         }
 
         public List<MockVirtualFile> getChildren() {
@@ -197,22 +232,32 @@ class ResourceFolderUtilTest {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File child : files) {
-                    children.add(new MockVirtualFile(child));
+                    children.add(new MockVirtualFile(child, physicalRoot));
                 }
             }
             return children;
         }
 
-        public String getName() {
-            return file.getName();
-        }
-
-        public boolean isFile() {
-            return file.isFile();
-        }
-
-        public InputStream openStream() throws IOException {
-            return new FileInputStream(file);
+        /**
+         * Creates the file on disk, in a folder of its own when the mount has
+         * one, as the virtual file system of a mounted archive does.
+         */
+        public File getPhysicalFile() {
+            if (physicalRoot == null) {
+                return file;
+            }
+            File physicalFile = new File(physicalRoot, file.getName());
+            try {
+                if (file.isDirectory()) {
+                    Files.createDirectories(physicalFile.toPath());
+                } else {
+                    Files.copy(file.toPath(), physicalFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return physicalFile;
         }
     }
 
