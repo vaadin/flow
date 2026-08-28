@@ -63,6 +63,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JBossVfsUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -452,8 +453,7 @@ public class DevModeInitializer implements Serializable {
                             .create(urlString.substring(0,
                                     urlString.lastIndexOf(resourcesFolder)))
                             .toURL();
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                    frontendFiles.add(materializeJBossVfsFolder(vfsDirUrl));
                 } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if ("zip".equalsIgnoreCase(url.getProtocol())
@@ -479,39 +479,17 @@ public class DevModeInitializer implements Serializable {
         return frontendFiles;
     }
 
-    private static File getPhysicalFileOfJBossVfsDirectory(URL url)
-            throws IOException, VaadinInitializerException {
+    /**
+     * Gets a folder that WildFly serves through its virtual file system as a
+     * folder on disk, so that its frontend resources can be collected.
+     */
+    private static File materializeJBossVfsFolder(URL url)
+            throws VaadinInitializerException {
         try {
-            Object virtualFile = url.openConnection().getContent();
-            Class<?> virtualFileClass = virtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to
-            // WildFly or JBoss
-            Method getChildrenRecursivelyMethod = virtualFileClass
-                    .getMethod("getChildrenRecursively");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
-
-            // By calling getPhysicalFile, we make sure that the
-            // corresponding
-            // physical files/directories of the root directory and
-            // its children
-            // are created. Later, these physical files are scanned
-            // to collect
-            // their resources.
-            List<?> virtualFiles = (List<?>) getChildrenRecursivelyMethod
-                    .invoke(virtualFile);
-            File rootDirectory = (File) getPhysicalFileMethod
-                    .invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                getPhysicalFileMethod.invoke(child);
-            }
-            return rootDirectory;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
+            return JBossVfsUtil.materializeFolder(url);
+        } catch (IOException e) {
             throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
+                    "Failed to invoke JBoss VFS API.", e);
         }
     }
 
