@@ -1,8 +1,20 @@
 import { expect } from '@open-wc/testing';
+import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
 import { type ResourceLoadEvent, ResourceRegistry } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
+// The registry resolves its error handler through the registry, as Java does.
+function registryWith(handleError: (message: string) => void) {
+  return { getSystemErrorHandler: () => ({ handleError }) };
+}
+
+// The event carries the loader that did the work.
+const eventLoader = new ResourceLoader(
+  registryWith(() => {}),
+  false
+);
+
 function event(resourceData: string): ResourceLoadEvent {
-  return { getResourceLoader: () => null, getResourceData: () => resourceData };
+  return { getResourceLoader: () => eventLoader, getResourceData: () => resourceData };
 }
 
 function recordingListener() {
@@ -20,14 +32,14 @@ function recordingListener() {
 // ResourceLoader, which has no test class of its own.
 describe('ResourceRegistry', () => {
   it('reports the first listener for a key, but not later ones', () => {
-    const registry = new ResourceRegistry({ handleError: () => {} });
+    const registry = new ResourceRegistry(registryWith(() => {}));
     expect(registry.addListener('a.js', recordingListener().listener)).to.be.true;
     expect(registry.addListener('a.js', recordingListener().listener)).to.be.false;
   });
 
   it('fires load to all listeners, marks loaded, and clears them', () => {
     const errors: string[] = [];
-    const registry = new ResourceRegistry({ handleError: (m) => errors.push(m) });
+    const registry = new ResourceRegistry(registryWith((m) => errors.push(m)));
     const a = recordingListener();
     const b = recordingListener();
     registry.addListener('a.js', a.listener);
@@ -47,7 +59,7 @@ describe('ResourceRegistry', () => {
 
   it('fires error to all listeners and reports it, without marking loaded', () => {
     const errors: string[] = [];
-    const registry = new ResourceRegistry({ handleError: (m) => errors.push(m) });
+    const registry = new ResourceRegistry(registryWith((m) => errors.push(m)));
     const a = recordingListener();
     registry.addListener('bad.js', a.listener);
 
@@ -58,7 +70,7 @@ describe('ResourceRegistry', () => {
   });
 
   it('clears a loaded resource and its listeners by dependency id', () => {
-    const registry = new ResourceRegistry({ handleError: () => {} });
+    const registry = new ResourceRegistry(registryWith(() => {}));
     registry.markLoaded('theme.css');
     registry.registerDependencyId('dep-1', 'theme.css');
     registry.addListener('theme.css', recordingListener().listener);

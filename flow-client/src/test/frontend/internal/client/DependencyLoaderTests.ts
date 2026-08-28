@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
+import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -7,6 +8,8 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 // Registries created by the case that is running, completed afterwards so the
 // eager counter never leaks between cases.
 const active: Array<{ completeAll(): void }> = [];
+
+const eventLoader = new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
 
 function makeRegistry() {
   const calls: Array<{ method: string; args: unknown[]; listener: ResourceLoadListener }> = [];
@@ -30,7 +33,10 @@ function makeRegistry() {
     const pending = calls.splice(0, calls.length);
     for (const call of pending) {
       calls.push(call);
-      call.listener?.onLoad({ getResourceLoader: () => resourceLoader, getResourceData: () => String(call.args[0]) });
+      // The event carries the loader that did the work; the recorder above
+      // stands in for the loader's methods, so a real one is built for the
+      // event itself.
+      call.listener?.onLoad({ getResourceLoader: () => eventLoader, getResourceData: () => String(call.args[0]) });
     }
   };
   const registry = {

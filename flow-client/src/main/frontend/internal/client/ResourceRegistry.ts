@@ -14,6 +14,7 @@
  * the License.
  */
 
+import type { ResourceLoader } from './ResourceLoader';
 import { Console } from './Console';
 
 // The resource bookkeeping + listener-fanout kernel of
@@ -25,7 +26,7 @@ import { Console } from './Console';
 
 /** Information about a (loaded or failed) resource; mirrors ResourceLoadEvent. */
 export interface ResourceLoadEvent {
-  getResourceLoader(): unknown;
+  getResourceLoader(): ResourceLoader;
   /** The absolute URL, content, or import expression of the resource. */
   getResourceData(): string;
 }
@@ -37,8 +38,8 @@ export interface ResourceLoadListener {
 }
 
 /** Reports resource load errors. */
-interface ResourceErrorHandler {
-  handleError(message: string): void;
+interface ResourceRegistryRegistry {
+  getSystemErrorHandler(): { handleError(message: string): void };
 }
 
 /** Tracks loaded resources and their listeners; the dedup/fanout kernel of ResourceLoader. */
@@ -50,10 +51,10 @@ export class ResourceRegistry {
   // Maps a dependency id to its resource key (URL/content) for removal.
   readonly #dependencyIdToResourceKey = new Map<string, string>();
 
-  readonly #errorHandler: ResourceErrorHandler;
+  readonly #registry: ResourceRegistryRegistry;
 
-  constructor(errorHandler: ResourceErrorHandler) {
-    this.#errorHandler = errorHandler;
+  constructor(registry: ResourceRegistryRegistry) {
+    this.#registry = registry;
   }
 
   /** Whether the resource identified by the given key has finished loading. */
@@ -98,7 +99,9 @@ export class ResourceRegistry {
 
   /** Reports the error and notifies (then clears) the resource's listeners. Mirrors fireError. */
   fireError(event: ResourceLoadEvent): void {
-    this.#errorHandler.handleError(`Error loading ${event.getResourceData()}`);
+    // Java resolves the handler through the registry at each failure, so a
+    // registry reset is picked up rather than bound at construction.
+    this.#registry.getSystemErrorHandler().handleError(`Error loading ${event.getResourceData()}`);
     const resource = event.getResourceData();
     const listeners = this.#loadListeners.get(resource);
     this.#loadListeners.delete(resource);

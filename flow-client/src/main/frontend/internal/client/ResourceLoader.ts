@@ -129,9 +129,12 @@ function runPromiseExpression(
   }
 }
 
-/** Reports resource load errors (the SystemErrorHandler slice ResourceLoader needs). */
-interface ResourceErrorHandler {
-  handleError(message: string): void;
+/**
+ * The slice of Registry ResourceLoader uses. Registry's typed getters are not
+ * ported yet, so this names only the one it calls.
+ */
+interface ResourceLoaderRegistry {
+  getSystemErrorHandler(): { handleError(message: string): void };
 }
 
 /**
@@ -149,13 +152,12 @@ export class ResourceLoader {
    * Creates a new resource loader. You should not create you own resource
    * loader, but instead use `Registry.getResourceLoader()` to get an instance.
    *
-   * @param errorHandler - the handler notified of load failures; Java takes the
-   *          global registry and resolves the handler through it
+   * @param registry - the global registry
    * @param initFromDom - `true` if currently loaded resources should be marked
    *          as loaded, `false` to ignore currently loaded resources
    */
-  constructor(errorHandler: ResourceErrorHandler, initFromDom: boolean) {
-    this.#resources = new ResourceRegistry(errorHandler);
+  constructor(registry: ResourceLoaderRegistry, initFromDom: boolean) {
+    this.#resources = new ResourceRegistry(registry);
     if (initFromDom) {
       this.#initLoadedResourcesFromDom();
     }
