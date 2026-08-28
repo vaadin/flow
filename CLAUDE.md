@@ -50,14 +50,7 @@ React support).
 - `flow-data`: Data binding and validation
 - `flow-router`: Navigation and routing
 - `flow-html-components`: Basic HTML component wrappers
-- `flow-devloop-daemon`: The `vaadin-dev` dev loop's daemon — background
-  compilation, hot swap or restart, and the local RPC the CLI speaks. Zero
-  dependencies by design; see
-  [flow-devloop-daemon/README.md](flow-devloop-daemon/README.md). Its in-app half
-  is `vaadin-dev-server/.../devserver/devloop/`, the CLI and agent skills ship as
-  `flow-plugins/flow-plugin-base` resources installed by
-  `mvn vaadin:install-dev-cli`, and the end-to-end tests are in
-  `flow-tests/test-devloop`.
+- `flow-devloop-daemon`: Daemon for the `vaadin-dev` dev loop
 - `flow-tests/`: Extensive integration test suite
 - `vaadin-spring`: Spring Framework integration
 
