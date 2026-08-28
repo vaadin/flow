@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Named;
@@ -30,6 +31,7 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -92,5 +94,67 @@ class TableCellTest extends SignalsUnitTest {
     void signalConstructor_nullSignal_throws(
             Function<Signal<String>, TableCell> constructor) {
         assertThrows(NullPointerException.class, () -> constructor.apply(null));
+    }
+
+    static Stream<Named<Supplier<TableCell>>> cellKinds() {
+        return Stream.of(Named.of("td", TableDataCell::new),
+                Named.of("th", TableHeaderCell::new));
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void spansDefaultToOneAndReadBackWhatIsSet(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        assertEquals(1, cell.getColspan());
+        assertEquals(1, cell.getRowspan());
+
+        cell.setColspan(2);
+        cell.setRowspan(3);
+
+        assertEquals("2", cell.getElement().getAttribute("colspan"));
+        assertEquals("3", cell.getElement().getAttribute("rowspan"));
+        assertEquals(2, cell.getColspan());
+        assertEquals(3, cell.getRowspan());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void resetSpans_removeTheAttributes(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        cell.setColspan(2);
+        cell.setRowspan(3);
+
+        cell.resetColspan();
+        cell.resetRowspan();
+
+        assertNull(cell.getElement().getAttribute("colspan"));
+        assertNull(cell.getElement().getAttribute("rowspan"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void spans_rejectNegativeValues(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+
+        assertEquals("colspan must be a positive integer value",
+                assertThrows(IllegalArgumentException.class,
+                        () -> cell.setColspan(-1)).getMessage());
+        assertEquals("rowspan must be a non-negative integer value",
+                assertThrows(IllegalArgumentException.class,
+                        () -> cell.setRowspan(-1)).getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void zeroSpan_rejectedForColumnsButNotForRows(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+
+        // colspan=0 was dropped from HTML and browsers clamp it back to 1
+        assertThrows(IllegalArgumentException.class, () -> cell.setColspan(0));
+
+        // rowspan=0 still means "to the end of the row group"
+        cell.setRowspan(0);
+        assertEquals("0", cell.getElement().getAttribute("rowspan"));
+        assertEquals(0, cell.getRowspan());
     }
 }

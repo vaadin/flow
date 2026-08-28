@@ -21,6 +21,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Table;
 import com.vaadin.flow.component.html.TableColumn;
 import com.vaadin.flow.component.html.TableColumnGroup;
+import com.vaadin.flow.component.html.TableHeaderCell;
 import com.vaadin.flow.component.html.TableHeaderCell.Scope;
 import com.vaadin.flow.component.html.TableRow;
 import com.vaadin.flow.dom.Element;
@@ -31,9 +32,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Replicates the examples from the MDN "HTML table basics" tutorial:
  * https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_table_basics
  * <p>
- * The examples are added as the table API they need becomes available; the ones
- * still missing need {@code colspan}/{@code rowspan} on <code>&lt;th&gt;</code>
- * and caption content API.
+ * The examples are added as the table API they need becomes available; the one
+ * still missing needs caption content API.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.HtmlTableTutorialView", layout = ViewTestLayout.class)
 public class HtmlTableTutorialView extends Div {
@@ -84,6 +84,11 @@ public class HtmlTableTutorialView extends Div {
         dogs.setId("dogs-table");
         add(dogs);
 
+        add(new H3("3. Allowing cells to span multiple rows and columns"));
+        AnimalsTable animals = new AnimalsTable();
+        animals.setId("animals-table");
+        add(animals);
+
         add(new H3("5. School timetable styled with <colgroup>/<col>"));
         SchoolTimetable timetable = new SchoolTimetable();
         timetable.setId("school-timetable");
@@ -122,6 +127,30 @@ public class HtmlTableTutorialView extends Div {
             TableRow row = addRow();
             row.addHeaderCell(header).setScope(Scope.ROW);
             row.addDataCells(data);
+        }
+    }
+
+    /** Example 3: colspan / rowspan on both {@code <td>} and {@code <th>}. */
+    static class AnimalsTable extends Table {
+        {
+            addRow().addHeaderCell("Animals").setColspan(2);
+            addRow().addHeaderCell("Hippopotamus").setColspan(2);
+
+            TableRow horseRow = addRow();
+            TableHeaderCell horse = horseRow.addHeaderCell("Horse");
+            horse.setScope(Scope.ROW);
+            horse.setRowspan(2);
+            horseRow.addDataCell("Mare");
+            addRow("Stallion");
+
+            addRow().addHeaderCell("Crocodile").setColspan(2);
+
+            TableRow chickenRow = addRow();
+            TableHeaderCell chicken = chickenRow.addHeaderCell("Chicken");
+            chicken.setScope(Scope.ROW);
+            chicken.setRowspan(2);
+            chickenRow.addDataCell("Hen");
+            addRow("Rooster");
         }
     }
 

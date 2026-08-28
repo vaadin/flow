@@ -28,7 +28,8 @@ class TableHeaderCellTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        // Component defines no new properties
+        addProperty("colspan", int.class, 1, 2, false, false);
+        addProperty("rowspan", int.class, 1, 2, false, false);
     }
 
     @Test

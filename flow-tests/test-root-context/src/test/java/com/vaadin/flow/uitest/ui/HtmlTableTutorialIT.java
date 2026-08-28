@@ -80,6 +80,27 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void animalsTableSpansColumnsAndRowsOnHeaderCells() {
+        TableElement table = $(TableElement.class).id("animals-table");
+        List<TableRowElement> rows = table.$(TableRowElement.class).all();
+
+        TableHeaderCellElement animals = rows.get(0)
+                .$(TableHeaderCellElement.class).first();
+        Assert.assertEquals("Animals", animals.getText());
+        Assert.assertEquals("2", animals.getDomAttribute("colspan"));
+
+        TableHeaderCellElement horse = rows.get(2)
+                .$(TableHeaderCellElement.class).first();
+        Assert.assertEquals("Horse", horse.getText());
+        Assert.assertEquals("2", horse.getDomAttribute("rowspan"));
+        Assert.assertEquals("row", horse.getDomAttribute("scope"));
+
+        // The <th rowspan=2> means the following row holds only its own cell.
+        Assert.assertEquals(1,
+                rows.get(3).$(TableDataCellElement.class).all().size());
+    }
+
+    @Test
     public void colgroupRendered_withColumnsInDocumentOrder() {
         List<TableColumnGroupElement> groups = timetable.getColumnGroups();
         Assert.assertEquals(1, groups.size());
