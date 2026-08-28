@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -126,6 +127,64 @@ class JBossVfsUtilTest {
         public String getPathNameRelativeTo(MockVirtualJar parent) {
             return parent.file.toPath().relativize(file.toPath()).toString()
                     .replace(File.separatorChar, '/');
+        }
+    }
+
+    /**
+     * Stands in for a jar whose entries do not behave as the protocol promises.
+     */
+    public static class MalformedVirtualJar {
+
+        private final Object isFile;
+
+        private final Object stream;
+
+        private MalformedVirtualJar(Object isFile, Object stream) {
+            this.isFile = isFile;
+            this.stream = stream;
+        }
+
+        static MalformedVirtualJar withIsFile(Object isFile) {
+            return new MalformedVirtualJar(isFile,
+                    new ByteArrayInputStream(new byte[0]));
+        }
+
+        static MalformedVirtualJar withContent(Object stream) {
+            return new MalformedVirtualJar(true, stream);
+        }
+
+        public List<MalformedVirtualJar> getChildrenRecursively() {
+            return List.of(this);
+        }
+
+        public Object isFile() {
+            return isFile;
+        }
+
+        public Object openStream() {
+            return stream;
+        }
+
+        public String getPathNameRelativeTo(MalformedVirtualJar parent) {
+            return "one.txt";
+        }
+    }
+
+    /**
+     * Stands in for a jar that cannot say where its entries are.
+     */
+    public static class VirtualJarWithoutPaths {
+
+        public List<VirtualJarWithoutPaths> getChildrenRecursively() {
+            return List.of(this);
+        }
+
+        public boolean isFile() {
+            return true;
+        }
+
+        public InputStream openStream() {
+            return new ByteArrayInputStream(new byte[0]);
         }
     }
 
@@ -248,6 +307,41 @@ class JBossVfsUtilTest {
                                     .readAllBytes(),
                             StandardCharsets.UTF_8));
         }
+    }
+
+    @Test
+    void materializeJar_urlIsNotAJar_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(new MockVirtualJar(createFolder()),
+                "/my.war/lib/fake.zip");
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
+    }
+
+    @Test
+    void materializeJar_entryIsNeitherFileNorFolder_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(MalformedVirtualJar.withIsFile("not a boolean"),
+                "/my.war/lib/fake.jar");
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
+    }
+
+    @Test
+    void materializeJar_entryCannotBeRead_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(MalformedVirtualJar.withContent("not a stream"),
+                "/my.war/lib/fake.jar");
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
+    }
+
+    @Test
+    void materializeJar_entryHasNoPath_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(new VirtualJarWithoutPaths(), "/my.war/lib/fake.jar");
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
     }
 
     @Test

@@ -51,13 +51,14 @@ public final class JBossVfsUtil {
     }
 
     /**
-     * Gets the files of the given folder, creating them on disk.
+     * Gets the entries directly inside the given folder, files and folders
+     * alike, creating them on disk.
      * <p>
-     * The files of the folders inside the folder are not included.
+     * What is inside the folders of the folder is not included.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
-     * @return the files of the folder, in the places they were created
+     * @return the entries of the folder, in the places they were created
      * @throws IOException
      *             if the folder cannot be read
      */
@@ -95,11 +96,15 @@ public final class JBossVfsUtil {
      *             if the jar cannot be read or written
      */
     public static File materializeJar(URL jar) throws IOException {
-        Object virtualJar = getVirtualFile(jar);
         String jarPath = jar.toString();
+        int jarSuffix = jarPath.lastIndexOf(".jar");
+        if (jarSuffix == -1) {
+            throw new IOException("'" + jar + "' is not the URL of a jar");
+        }
+        Object virtualJar = getVirtualFile(jar);
         String fileNamePrefix = jarPath.substring(
                 jarPath.lastIndexOf(jarPath.contains("\\") ? '\\' : '/') + 1,
-                jarPath.lastIndexOf(".jar"));
+                jarSuffix);
         Path jarFile = Files.createTempFile(fileNamePrefix, ".jar");
         writeJar(virtualJar, jarFile);
         jarFile.toFile().deleteOnExit();
@@ -165,8 +170,13 @@ public final class JBossVfsUtil {
     }
 
     private static boolean isFile(Object virtualFile) throws IOException {
-        return Boolean.TRUE.equals(
-                invoke(virtualFile, "isFile", "tell files from folders"));
+        Object isFile = invoke(virtualFile, "isFile",
+                "tell files from folders");
+        if (!(isFile instanceof Boolean file)) {
+            throw new IOException("The JBoss virtual file '" + virtualFile
+                    + "' does not tell whether it is a file");
+        }
+        return file;
     }
 
     private static InputStream openStream(Object virtualFile)
