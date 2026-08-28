@@ -6,6 +6,7 @@ import { Console } from '../../../../main/frontend/internal/client/Console';
 type Level = 'debug' | 'log' | 'warn' | 'error';
 const LEVELS: Level[] = ['debug', 'log', 'warn', 'error'];
 
+// Beyond the Java suite: com.vaadin.client.Console has no test class of its own.
 describe('Console', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.Console has no Java test,
   // so there is nothing to port 1:1 and all coverage below is additional.

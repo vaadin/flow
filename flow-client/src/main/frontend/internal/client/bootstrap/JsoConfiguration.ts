@@ -32,6 +32,10 @@ interface ConfigObject {
  * @param name - name of the configuration parameter
  * @returns value of the configuration parameter, or <code>null</code> if not defined
  */
+// getConfigInteger, getAtmosphereJSVersion and getUIDL are not ported: their
+// only callers are in Bootstrapper, which lands in a later layer, so they are
+// ported with it.
+
 export function getConfigString(config: ConfigObject, name: string): string | null {
   const value = config.getConfig(name);
   return value === null || value === undefined ? null : `${value as string}`;

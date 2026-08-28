@@ -27,7 +27,7 @@ import { assert } from '../assert';
 // ...). They are not ported yet because 14 of their return types are not: the
 // modules that need a service therefore still declare a local interface naming
 // the getters they call. Those stand-ins collapse into this class once the
-// remaining services land - see the retrofit backlog in PORTING.md.
+// remaining services land.
 
 /** A token identifying a registered service (its class/constructor, a symbol, or a name). */
 export type ServiceKey = unknown;

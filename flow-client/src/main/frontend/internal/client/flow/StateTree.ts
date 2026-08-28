@@ -60,8 +60,9 @@ export interface InitialPropertiesHandler {
 }
 
 /**
- * The slice of ApplicationConfiguration the binding layer reads; the class
- * itself is not ported yet.
+ * The slice of ApplicationConfiguration the binding layer reads. The class is
+ * ported; the modules that only need these two members keep the narrower
+ * contract so their test fakes need not build the whole configuration.
  */
 export interface ApplicationConfiguration {
   isWebComponentMode(): boolean;
