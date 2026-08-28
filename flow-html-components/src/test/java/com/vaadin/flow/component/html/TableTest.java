@@ -243,17 +243,24 @@ class TableTest extends ComponentTest {
     }
 
     @Test
-    void addRows_appendPreBuiltRowsToTheMatchingSection() {
+    void addRows_listOverloadsAppendLikeTheVarargsOnes() {
         Table table = table();
         var head = new TableRow();
+        var headFromList = new TableRow();
         var body = new TableRow();
+        var bodyFromList = new TableRow();
         var foot = new TableRow();
+        var footFromList = new TableRow();
 
         table.addHeaderRows(head);
+        table.addHeaderRows(List.of(headFromList));
         table.addRows(body);
+        table.addRows(List.of(bodyFromList));
         table.addFooterRows(foot);
+        table.addFooterRows(List.of(footFromList));
 
-        assertEquals(List.of(head, body, foot), table.getRows());
+        assertEquals(List.of(head, headFromList, body, bodyFromList, foot,
+                footFromList), table.getRows());
     }
 
     @Test

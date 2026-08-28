@@ -63,6 +63,17 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     }
 
     /**
+     * List equivalent of {@link #TableRow(Component...)}.
+     *
+     * @param components
+     *            the cells, or the content to wrap in cells.
+     */
+    public TableRow(List<? extends Component> components) {
+        super();
+        addCells(components);
+    }
+
+    /**
      * Appends the given components to this row. A {@link TableCell} is added
      * as-is; anything else is wrapped in a new {@link TableDataCell}, since a
      * <code>&lt;tr&gt;</code> may only contain cells.

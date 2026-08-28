@@ -63,6 +63,16 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
+     * List equivalent of {@link #TableCell(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    protected TableCell(List<? extends Component> components) {
+        super(components.toArray(Component[]::new));
+    }
+
+    /**
      * Sets the {@code colspan} attribute — how many columns this cell spans.
      * The default is {@code 1}.
      * <p>

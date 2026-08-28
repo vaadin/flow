@@ -398,6 +398,16 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * List equivalent of {@link #addRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addRows(List<? extends TableRow> rows) {
+        getBody().addRows(rows);
+    }
+
+    /**
      * Appends a new empty row to this table's <code>&lt;thead&gt;</code>,
      * creating it if the table has none.
      *
@@ -441,6 +451,16 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * List equivalent of {@link #addHeaderRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addHeaderRows(List<? extends TableRow> rows) {
+        getHead().addRows(rows);
+    }
+
+    /**
      * Appends a new empty row to this table's <code>&lt;tfoot&gt;</code>,
      * creating it if the table has none.
      *
@@ -480,6 +500,16 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addFooterRows(TableRow... rows) {
+        getFoot().addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addFooterRows(List<? extends TableRow> rows) {
         getFoot().addRows(rows);
     }
 

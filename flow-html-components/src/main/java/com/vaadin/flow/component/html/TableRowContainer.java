@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
@@ -66,6 +67,16 @@ interface TableRowContainer extends HasElement {
      *            the rows to append.
      */
     default void addRows(TableRow... rows) {
+        addRows(Arrays.asList(rows));
+    }
+
+    /**
+     * List equivalent of {@link #addRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to append.
+     */
+    default void addRows(List<? extends TableRow> rows) {
         for (TableRow row : rows) {
             getElement().appendChild(row.getElement());
         }
@@ -104,6 +115,16 @@ interface TableRowContainer extends HasElement {
      *            the rows to remove.
      */
     default void removeRows(TableRow... rows) {
+        removeRows(Arrays.asList(rows));
+    }
+
+    /**
+     * List equivalent of {@link #removeRows(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to remove.
+     */
+    default void removeRows(List<? extends TableRow> rows) {
         for (TableRow row : rows) {
             getElement().removeChild(row.getElement());
         }

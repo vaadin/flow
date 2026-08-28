@@ -16,8 +16,15 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.vaadin.flow.component.Component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,14 +64,31 @@ class TableRowTest extends ComponentTest {
                 last), row.getCells());
     }
 
-    @Test
-    void constructorAndAddCells_attachPreBuiltCells() {
+    static Stream<Named<Function<List<Component>, TableRow>>> rowBuilders() {
+        return Stream.of(
+                Named.of("varargs constructor",
+                        c -> new TableRow(c.toArray(Component[]::new))),
+                Named.of("list constructor", TableRow::new),
+                Named.of("varargs addCells", c -> {
+                    TableRow row = new TableRow();
+                    row.addCells(c.toArray(Component[]::new));
+                    return row;
+                }), Named.of("list addCells", c -> {
+                    TableRow row = new TableRow();
+                    row.addCells(c);
+                    return row;
+                }));
+    }
+
+    @ParameterizedTest
+    @MethodSource("rowBuilders")
+    void constructorAndAddCells_attachPreBuiltCells(
+            Function<List<Component>, TableRow> builder) {
         TableHeaderCell th = new TableHeaderCell("Name");
         TableDataCell td = new TableDataCell("Mars");
         TableDataCell appended = new TableDataCell(new Span("rich"));
 
-        TableRow row = new TableRow(th, td);
-        row.addCells(appended);
+        TableRow row = builder.apply(List.of(th, td, appended));
 
         assertEquals(List.of(th, td, appended), row.getCells());
         assertEquals("Name", th.getText());

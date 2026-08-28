@@ -16,8 +16,13 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,14 +51,24 @@ class TableColumnGroupTest extends ComponentTest {
         assertEquals(2, spanning.getSpan());
     }
 
-    @Test
-    void constructorAndAddColumns_attachPreBuiltColumns() {
+    static Stream<Named<Function<List<TableColumn>, TableColumnGroup>>> groupConstructors() {
+        return Stream.of(
+                Named.of("varargs",
+                        c -> new TableColumnGroup(
+                                c.toArray(TableColumn[]::new))),
+                Named.of("list", TableColumnGroup::new));
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupConstructors")
+    void constructorAndAddColumns_attachPreBuiltColumns(
+            Function<List<TableColumn>, TableColumnGroup> constructor) {
         TableColumn first = new TableColumn();
         TableColumn second = new TableColumn(3);
         TableColumn third = new TableColumn();
 
-        TableColumnGroup group = new TableColumnGroup(first, second);
-        group.addColumns(third);
+        TableColumnGroup group = constructor.apply(List.of(first, second));
+        group.addColumns(List.of(third));
 
         assertEquals(List.of(first, second, third), group.getColumns());
     }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -52,6 +54,17 @@ public class TableBody extends HtmlComponent
      *            the rows to add.
      */
     public TableBody(TableRow... rows) {
+        super();
+        addRows(rows);
+    }
+
+    /**
+     * List equivalent of {@link #TableBody(TableRow...)}.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public TableBody(List<? extends TableRow> rows) {
         super();
         addRows(rows);
     }

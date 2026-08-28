@@ -41,19 +41,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TableCellTest extends SignalsUnitTest {
 
-    static Stream<Named<Function<Component[], TableCell>>> childrenConstructors() {
-        return Stream.of(Named.of("td", TableDataCell::new),
-                Named.of("th", TableHeaderCell::new));
+    static Stream<Named<Function<List<Component>, TableCell>>> childrenConstructors() {
+        return Stream.of(
+                Named.of("td varargs",
+                        c -> new TableDataCell(c.toArray(Component[]::new))),
+                Named.of("td list", TableDataCell::new),
+                Named.of("th varargs",
+                        c -> new TableHeaderCell(c.toArray(Component[]::new))),
+                Named.of("th list", TableHeaderCell::new));
     }
 
     @ParameterizedTest
     @MethodSource("childrenConstructors")
     void childrenConstructor_addsGivenChildren(
-            Function<Component[], TableCell> constructor) {
+            Function<List<Component>, TableCell> constructor) {
         Span span = new Span("a");
         Paragraph paragraph = new Paragraph("b");
 
-        TableCell cell = constructor.apply(new Component[] { span, paragraph });
+        TableCell cell = constructor.apply(List.of(span, paragraph));
 
         assertEquals(List.of(span, paragraph), cell.getChildren().toList());
     }

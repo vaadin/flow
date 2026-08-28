@@ -41,12 +41,15 @@ class TableRowContainerTest {
 
     static Stream<Named<Function<List<TableRow>, TableRowContainer>>> sectionConstructors() {
         return Stream.of(
-                Named.of("thead",
+                Named.of("thead varargs",
                         rows -> new TableHead(rows.toArray(TableRow[]::new))),
-                Named.of("tbody",
+                Named.of("thead list", TableHead::new),
+                Named.of("tbody varargs",
                         rows -> new TableBody(rows.toArray(TableRow[]::new))),
-                Named.of("tfoot",
-                        rows -> new TableFoot(rows.toArray(TableRow[]::new))));
+                Named.of("tbody list", TableBody::new),
+                Named.of("tfoot varargs",
+                        rows -> new TableFoot(rows.toArray(TableRow[]::new))),
+                Named.of("tfoot list", TableFoot::new));
     }
 
     @ParameterizedTest
@@ -127,6 +130,21 @@ class TableRowContainerTest {
         assertEquals(List.of(row1), section.getRows());
         assertTrue(row0.getParent().isEmpty());
         assertTrue(row2.getParent().isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("sections")
+    void addAndRemoveRowsWithLists(Supplier<TableRowContainer> factory) {
+        TableRowContainer section = factory.get();
+        TableRow row0 = new TableRow();
+        TableRow row1 = new TableRow();
+        TableRow row2 = new TableRow();
+
+        section.addRows(List.of(row0, row1, row2));
+        assertEquals(List.of(row0, row1, row2), section.getRows());
+
+        section.removeRows(List.of(row0, row2));
+        assertEquals(List.of(row1), section.getRows());
     }
 
     @ParameterizedTest
