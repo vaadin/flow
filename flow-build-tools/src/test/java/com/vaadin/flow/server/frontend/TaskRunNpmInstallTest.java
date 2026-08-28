@@ -856,4 +856,25 @@ class TaskRunNpmInstallTest {
                         .orElseThrow());
     }
 
+    @Test
+    void isNetworkFailure_connectionResetOutput_detected() {
+        assertTrue(TaskRunNpmInstall.isNetworkFailure(
+                """
+                        npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+                        npm error code ECONNRESET
+                        npm error network aborted
+                        npm error network This is a problem related to network connectivity.
+                        """));
+    }
+
+    @Test
+    void isNetworkFailure_missingDependencyOutput_notDetected() {
+        assertFalse(TaskRunNpmInstall.isNetworkFailure(
+                """
+                        npm error code E404
+                        npm error 404 Not Found - GET https://registry.npmjs.org/@vaadin/no-such-package
+                        npm error 404 '@vaadin/no-such-package@^1.0.0' is not in this registry.
+                        """));
+    }
+
 }

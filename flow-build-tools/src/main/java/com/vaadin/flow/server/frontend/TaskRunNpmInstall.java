@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -80,6 +81,27 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
             + "%n        node_modules, package-lock.json, vite.generated.ts, webpack.generated.js, pnpm-lock.yaml"
             + "%n======================================================================================================%n";
+
+    /**
+     * How many times the install command is run in total before the build
+     * fails, when the failure looks like a temporary network problem.
+     */
+    private static final int INSTALL_ATTEMPTS = 3;
+
+    private static final long RETRY_DELAY_MILLIS = 3000;
+
+    /**
+     * Markers that npm, pnpm and bun print when a package could not be fetched
+     * because of a connectivity problem rather than because the dependency
+     * itself is broken or missing.
+     */
+    private static final List<String> NETWORK_FAILURE_MARKERS = List.of(
+            "econnreset", "econnrefused", "etimedout", "eai_again", "enotfound",
+            "enetunreach", "ehostunreach", "epipe", "eproto",
+            "err_socket_timeout", "err_stream_premature_close",
+            "socket hang up", "network timeout", "npm error network",
+            "err_pnpm_meta_fetch_fail", "connectionclosed",
+            "failedtoopensocket");
 
     private final NodeUpdater packageUpdater;
 
@@ -329,23 +351,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "Please stand by...");
         }
 
-        Process process = null;
-        try {
-            process = runNpmCommand(npmInstallCommand, options.getNpmFolder());
+        for (int attempt = 1; attempt <= INSTALL_ATTEMPTS; attempt++) {
+            CommandOutcome outcome = runInstallCommand(npmInstallCommand,
+                    toolName);
 
-            logger.debug("Output of `{}`:", commandString);
-            StringBuilder toolOutput = new StringBuilder();
-            consumeProcessOutput(process, stdoutLine -> {
-                logger.debug(stdoutLine);
-                toolOutput.append(stdoutLine).append(System.lineSeparator());
-            });
+            if (outcome.exitCode() == 0) {
+                logger.info("Frontend dependencies resolved successfully.");
+                break;
+            }
 
-            int errorCode = process.waitFor();
+            // Echo the stdout from pnpm/npm to error level log
+            logger.error("Command `{}` failed:\n{}", commandString,
+                    outcome.output());
 
-            if (errorCode != 0) {
-                // Echo the stdout from pnpm/npm to error level log
-                logger.error("Command `{}` failed:\n{}", commandString,
-                        toolOutput);
+            if (attempt == INSTALL_ATTEMPTS
+                    || !isNetworkFailure(outcome.output())) {
                 logger.error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
@@ -355,26 +375,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + " install has exited with non zero status. "
                                 + "Some dependencies are not installed. Check "
                                 + toolName + " command output");
-            } else {
-                logger.info("Frontend dependencies resolved successfully.");
             }
-        } catch (InterruptedException | IOException | UncheckedIOException e) {
-            logger.error("Error when running `{} install`", toolName, e);
-            Throwable cause = e;
-            if (e instanceof InterruptedException) {
-                // Restore interrupted state
-                Thread.currentThread().interrupt();
-            }
-            if (e instanceof UncheckedIOException) {
-                cause = e.getCause();
-            }
-            throw new ExecutionFailedException(
-                    "Command '" + toolName + " install' failed to finish",
-                    cause);
-        } finally {
-            if (process != null) {
-                process.destroyForcibly();
-            }
+
+            long delayMillis = attempt * RETRY_DELAY_MILLIS;
+            logger.warn(
+                    "`{}` failed because of a network problem, retrying in {} seconds ({}/{})",
+                    commandString, delayMillis / 1000, attempt + 1,
+                    INSTALL_ATTEMPTS);
+            sleepBeforeRetry(delayMillis, toolName);
         }
 
         List<String> postinstallPackages = new ArrayList<>();
@@ -408,11 +416,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
 
             logger.debug("Running postinstall for '{}'", postinstallPackage);
+            Process postinstallProcess = null;
             try {
-                process = runNpmCommand(postinstallCommand, packageFolder);
+                postinstallProcess = runNpmCommand(postinstallCommand,
+                        packageFolder);
                 logger.debug("Output of postinstall `{}`:", postinstallPackage);
-                consumeProcessOutput(process, logger::debug);
-                process.waitFor();
+                consumeProcessOutput(postinstallProcess, logger::debug);
+                postinstallProcess.waitFor();
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
                     // Restore interrupted state
@@ -422,6 +432,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Error when running postinstall script for '"
                                 + postinstallPackage + "'",
                         e);
+            } finally {
+                if (postinstallProcess != null) {
+                    postinstallProcess.destroyForcibly();
+                }
             }
         }
     }
@@ -475,6 +489,84 @@ public class TaskRunNpmInstall implements FallibleCommand {
         // Older npm: --before takes any Date.parse-able string
         String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();
         return Optional.of("--before=" + before);
+    }
+
+    /**
+     * The exit code and the collected output of a finished command.
+     */
+    private record CommandOutcome(int exitCode, String output) {
+    }
+
+    /**
+     * Runs the given install command once and waits for it to finish.
+     *
+     * @param command
+     *            the install command to run
+     * @param toolName
+     *            the name of the package manager, used in error messages
+     * @return the exit code and the output of the command
+     * @throws ExecutionFailedException
+     *             if the command could not be run to completion
+     */
+    private CommandOutcome runInstallCommand(List<String> command,
+            String toolName) throws ExecutionFailedException {
+        Logger logger = packageUpdater.log();
+        Process process = null;
+        try {
+            process = runNpmCommand(command, options.getNpmFolder());
+
+            logger.debug("Output of `{}`:", String.join(" ", command));
+            StringBuilder output = new StringBuilder();
+            consumeProcessOutput(process, stdoutLine -> {
+                logger.debug(stdoutLine);
+                output.append(stdoutLine).append(System.lineSeparator());
+            });
+
+            return new CommandOutcome(process.waitFor(), output.toString());
+        } catch (InterruptedException | IOException | UncheckedIOException e) {
+            logger.error("Error when running `{} install`", toolName, e);
+            Throwable cause = e;
+            if (e instanceof InterruptedException) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+            }
+            if (e instanceof UncheckedIOException) {
+                cause = e.getCause();
+            }
+            throw new ExecutionFailedException(
+                    "Command '" + toolName + " install' failed to finish",
+                    cause);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
+        }
+    }
+
+    private void sleepBeforeRetry(long delayMillis, String toolName)
+            throws ExecutionFailedException {
+        try {
+            Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
+            throw new ExecutionFailedException(
+                    "Command '" + toolName + " install' failed to finish", e);
+        }
+    }
+
+    /**
+     * Checks whether the output of a failed install command indicates a
+     * temporary network problem, meaning that simply running the command again
+     * is likely to succeed.
+     *
+     * @param toolOutput
+     *            the combined output of the install command
+     * @return {@code true} if the failure looks like a network problem
+     */
+    static boolean isNetworkFailure(String toolOutput) {
+        String output = toolOutput.toLowerCase(Locale.ENGLISH);
+        return NETWORK_FAILURE_MARKERS.stream().anyMatch(output::contains);
     }
 
     private void consumeProcessOutput(Process process,
