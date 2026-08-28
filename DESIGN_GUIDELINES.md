@@ -178,17 +178,22 @@ later costs a deprecation cycle and a find-and-replace in every application.
 Decide it from the rules below rather than case by case.
 
 - **Default to the element's own name.** `<div>` → `Div`, `<section>` →
-  `Section`, `<table>` → the table component. Where the tag is an
-  abbreviation inherited from early HTML, spell it out: `<p>` →
-  `Paragraph`, `<a>` → `Anchor`, `<em>` → `Emphasis`, `<img>` → `Image`.
+  `Section`, `<table>` → the table component. Tags of one or two letters do
+  not read as words, so spell those out: `<p>` → `Paragraph`, `<a>` →
+  `Anchor`, `<em>` → `Emphasis`, `<img>` → `Image`. Longer shorthand tags
+  keep the name they already have in the package — `Div`, `Nav`, `Pre`,
+  `Abbr`, `Hr`, `Param` — expand one only if the short form would be
+  meaningless on its own.
   Drop the `HTML` prefix and `Element` suffix that the DOM interface names
   carry — the class for `<tr>` is named after "table row", not after
   `HTMLTableRowElement`.
 
 - **Add a prefix only for one of two reasons.**
-  - *The name is taken.* A Vaadin component already owns the plain name and
-    both classes have to be usable in the same file — `Button` and
-    `NativeButton`, `Details` and `NativeDetails`.
+  - *The name is taken.* A Vaadin component owns the plain name and both
+    classes have to be usable in the same file — `Button` and
+    `NativeButton`, `Details` and `NativeDetails`. A clash with a type that
+    is imported everywhere anyway counts too: `<object>` cannot be `Object`,
+    hence `HtmlObject`.
   - *The plain name invites a mistake that goes unnoticed.* `<label>` reads
     like the "short piece of text" widget of Swing and of Vaadin 8. Picking
     `Label` for that purpose compiles, looks right, and silently produces
@@ -202,10 +207,10 @@ Decide it from the rules below rather than case by case.
   `Grid` within a minute. A confusable name that fails loudly is a Javadoc
   problem, not a naming problem.
 
-- **The prefix is `Native`.** It is what the existing prefixed components
-  use, and one inconsistent-but-uniform prefix is worth more than a second,
-  better-reasoned one alongside it. Do not introduce `Html…` as a parallel
-  convention for new classes.
+- **The prefix is `Native`.** `HtmlObject` predates the convention and
+  keeps its name; everything prefixed since uses `Native`, and one uniform
+  prefix is worth more than a second, better-reasoned one alongside it. Do
+  not introduce further `Html…` names.
 
 - **Prefix the class that has the problem, not the whole family.** `<td>`
   and `<tr>` collide with nothing and mislead nobody; `NativeTableCell` and
