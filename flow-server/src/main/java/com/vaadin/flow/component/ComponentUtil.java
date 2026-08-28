@@ -826,6 +826,7 @@ public class ComponentUtil {
      * @param type
      *            the type the children must be instances of
      * @return the children of the given type, in child order
+     * @since 25.3
      */
     public static <T extends Component> Stream<T> getChildrenOfType(
             Component parent, Class<T> type) {
@@ -844,6 +845,7 @@ public class ComponentUtil {
      *            the type the child must be an instance of
      * @return the first child of the given type, or an empty optional if the
      *         parent has no such child
+     * @since 25.3
      */
     public static <T extends Component> Optional<T> getFirstChildOfType(
             Component parent, Class<T> type) {
