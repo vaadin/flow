@@ -16,16 +16,6 @@
 
 // Implementation migrated from ExecuteJavaScriptElementUtils.java.
 
-/**
- * Checks whether the node's element class declares the given property with a
- * default value (Polymer-style static `properties` with a `value`).
- */
-function isPropertyDefined(node: Node, property: string): boolean {
-  const ctor = (node as unknown as { constructor?: { properties?: Record<string, { value?: unknown }> } }).constructor;
-  const declared = ctor && ctor.properties && ctor.properties[property];
-  return !!declared && typeof declared.value !== 'undefined';
-}
-
 // The JS-initializer cleanup registry of ExecuteJavaScriptElementUtils. It
 // stores per-node cleanup callbacks for JS initializers
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
@@ -42,44 +32,11 @@ import { Console } from './Console';
 
 // NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES / NodeFeatures.ELEMENT_CHILDREN
 
-/**
- * Register the updatable model properties of the `node`.
- *
- * Only updates for the properties from the `properties` array will be
- * sent to the server without explicit synchronization. The
- * `properties` array includes all properties that are allowed to be
- * updated (including sub properties).
- *
- * @param node - the node whose updatable properties should be registered
- * @param properties - all updatable model properties
- */
-export function registerUpdatableModelProperties(node: StateNode, properties: string[]): void {
-  if (properties.length > 0) {
-    node.setNodeData(new UpdatableModelProperties(properties));
-  }
-}
+/** A JS cleanup callback for a registered initializer. */
+type JsCallback = () => void;
 
-function hasTag(node: Node, tag: string): boolean {
-  return node instanceof Element && tag.toLowerCase() === node.tagName.toLowerCase();
-}
-
-function getExistingIdOrUpdate(
-  parent: StateNode,
-  serverSideId: number,
-  existingElement: Element,
-  existingId: number | null
-): number {
-  if (existingId === null) {
-    const map = parent.getTree().getRegistry().getExistingElementMap();
-    const fromMap = map.getId(existingElement);
-    if (fromMap === null) {
-      map.add(serverSideId, existingElement);
-      return serverSideId;
-    }
-    return fromMap;
-  }
-  return existingId;
-}
+// Per-node map of initializer id -> cleanup callback.
+const initializerCleanups = new Map<StateNode, Map<number, JsCallback>>();
 
 /**
  * Calculate the data required for server side callback to attach existing
@@ -141,19 +98,8 @@ export function attachExistingElement(
   parent.getTree().sendExistingElementAttachToServer(parent, id, existingId, existingElement.tagName, childIndex);
 }
 
-function populateMapProperty(node: StateNode, map: NodeMap, property: string): void {
-  const domNode = node.getDomNode() as unknown as Node;
-  if (!isPropertyDefined(domNode, property)) {
-    if (!map.hasPropertyValue(property)) {
-      map.getProperty(property).setValue(null);
-    }
-  } else {
-    const updatableProperties = node.getNodeData(UpdatableModelProperties);
-    if (updatableProperties === null || !updatableProperties.isUpdatableProperty(property)) {
-      return;
-    }
-    map.getProperty(property).syncToServer(getJsProperty(domNode as unknown as Record<string, unknown>, property));
-  }
+function hasTag(node: Node, tag: string): boolean {
+  return node instanceof Element && tag.toLowerCase() === node.tagName.toLowerCase();
 }
 
 /**
@@ -178,27 +124,36 @@ export function populateModelProperties(node: StateNode, properties: string[]): 
   }
 }
 
-/** A JS cleanup callback for a registered initializer. */
-type JsCallback = () => void;
-
-// Per-node map of initializer id -> cleanup callback.
-const initializerCleanups = new Map<StateNode, Map<number, JsCallback>>();
-
-function invokeSafely(fn: JsCallback): void {
-  try {
-    fn();
-  } catch (error) {
-    Console.error(error instanceof Error ? error.message : String(error));
+function populateMapProperty(node: StateNode, map: NodeMap, property: string): void {
+  const domNode = node.getDomNode() as unknown as Node;
+  if (!isPropertyDefined(domNode, property)) {
+    if (!map.hasPropertyValue(property)) {
+      map.getProperty(property).setValue(null);
+    }
+  } else {
+    const updatableProperties = node.getNodeData(UpdatableModelProperties);
+    if (updatableProperties === null || !updatableProperties.isUpdatableProperty(property)) {
+      return;
+    }
+    map.getProperty(property).syncToServer(getJsProperty(domNode as unknown as Record<string, unknown>, property));
   }
 }
 
-function drainInitializers(node: StateNode): void {
-  const entry = initializerCleanups.get(node);
-  if (entry === undefined) {
-    return;
+/**
+ * Register the updatable model properties of the `node`.
+ *
+ * Only updates for the properties from the `properties` array will be
+ * sent to the server without explicit synchronization. The
+ * `properties` array includes all properties that are allowed to be
+ * updated (including sub properties).
+ *
+ * @param node - the node whose updatable properties should be registered
+ * @param properties - all updatable model properties
+ */
+export function registerUpdatableModelProperties(node: StateNode, properties: string[]): void {
+  if (properties.length > 0) {
+    node.setNodeData(new UpdatableModelProperties(properties));
   }
-  initializerCleanups.delete(node);
-  entry.forEach((fn) => invokeSafely(fn));
 }
 
 /**
@@ -247,4 +202,49 @@ export function disposeInitializer(node: StateNode, id: number): void {
   }
   entry.delete(id);
   invokeSafely(fn);
+}
+
+function drainInitializers(node: StateNode): void {
+  const entry = initializerCleanups.get(node);
+  if (entry === undefined) {
+    return;
+  }
+  initializerCleanups.delete(node);
+  entry.forEach((fn) => invokeSafely(fn));
+}
+
+function invokeSafely(fn: JsCallback): void {
+  try {
+    fn();
+  } catch (error) {
+    Console.error(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function getExistingIdOrUpdate(
+  parent: StateNode,
+  serverSideId: number,
+  existingElement: Element,
+  existingId: number | null
+): number {
+  if (existingId === null) {
+    const map = parent.getTree().getRegistry().getExistingElementMap();
+    const fromMap = map.getId(existingElement);
+    if (fromMap === null) {
+      map.add(serverSideId, existingElement);
+      return serverSideId;
+    }
+    return fromMap;
+  }
+  return existingId;
+}
+
+/**
+ * Checks whether the node's element class declares the given property with a
+ * default value (Polymer-style static `properties` with a `value`).
+ */
+function isPropertyDefined(node: Node, property: string): boolean {
+  const ctor = (node as unknown as { constructor?: { properties?: Record<string, { value?: unknown }> } }).constructor;
+  const declared = ctor && ctor.properties && ctor.properties[property];
+  return !!declared && typeof declared.value !== 'undefined';
 }
