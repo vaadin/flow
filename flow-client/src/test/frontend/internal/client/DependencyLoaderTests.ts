@@ -117,6 +117,54 @@ describe('DependencyLoader (class)', () => {
     expect(registry.calls.some((c) => c.args[0] === 'resolved:lazy.css')).to.be.true;
   });
 
+  it('processes dependencies of every load mode', async () => {
+    // Ported from GwtDependencyLoaderTest.testDependenciesWithAllLoadModesAreProcessed.
+    const registry = makeRegistry();
+    new DependencyLoader(registry).loadDependencies(
+      new Map([
+        [
+          'INLINE',
+          [
+            { type: 'JAVASCRIPT', contents: '/inline.js' },
+            { type: 'STYLESHEET', contents: '/inline.css' }
+          ]
+        ],
+        [
+          'LAZY',
+          [
+            { type: 'JAVASCRIPT', url: '/lazy.js' },
+            { type: 'STYLESHEET', url: '/lazy.css' }
+          ]
+        ],
+        [
+          'EAGER',
+          [
+            { type: 'JAVASCRIPT', url: '/eager.js' },
+            { type: 'STYLESHEET', url: '/eager.css' }
+          ]
+        ]
+      ])
+    );
+
+    // The lazy ones wait for the eager loads to finish.
+    registry.completeAll();
+    await settle();
+
+    // With several load modes no order is guaranteed, beyond the lazy ones
+    // coming last, so this asserts on the set.
+    const requested = (methods: string[]): string[] =>
+      registry.calls
+        .filter((c) => methods.includes(c.method))
+        .map((c) => String(c.args[0]))
+        .sort();
+    expect(requested(['loadScript', 'inlineScript'])).to.deep.equal(
+      ['/inline.js', 'resolved:/eager.js', 'resolved:/lazy.js'].sort()
+    );
+    expect(requested(['loadStylesheet', 'inlineStyleSheet'])).to.deep.equal(
+      ['/inline.css', 'resolved:/eager.css', 'resolved:/lazy.css'].sort()
+    );
+  });
+
   it('keeps eager dependencies in the order they were added', () => {
     // Ported from ensureEagerDependenciesLoadedInOrder and
     // GwtDependencyLoaderTest.testAllEagerDependenciesAreLoadedFirst.

@@ -57,9 +57,22 @@ For a **test** suite that mapping gives the file location, not the counterpart
 set: enumerate the Java test classes per rule 13.9 — the JRE-side `XTest`, the
 `GwtXTest` under `src/test-gwt`, a `JreXTest` where one exists, and the
 `flow-server` test for a class ported from `com.vaadin.flow.*` — and compare
-against the **union** of their `@Test` methods. *Decision procedure:* the report
-lists the counterparts found per suite and the union's case count, so a suite that
-claims to have none has demonstrably looked.
+against the **union** of their `@Test` methods.
+
+Compare it in **both directions**, and say so per direction. Checking that every
+`// Ported from X` names a real `@Test` proves the citations are honest; it does
+**not** prove the coverage is complete. Only the reverse — every `@Test` in the
+union appearing in some citation — finds a case nobody ported and nobody
+recorded. *Decision procedure:* the report gives two counts, citations that
+resolve to a Java `@Test` and union cases that appear in a citation, and names
+every case missing from the second.
+
+> Regression this prevents: a review reported test parity as clean with all 56
+> citations verified, while `GwtDependencyLoaderTest.testDependenciesWithAllLoadModesAreProcessed`
+> had no `it()` and no backlog row — the forward check cannot see an absence.
+
+*Decision procedure:* the report lists the counterparts found per suite and the
+union's case count, so a suite that claims to have none has demonstrably looked.
 
 **Report evidence, not verdicts.** The grid may be summarised **per rule** — never
 per module — and each rule row carries what established it: the counts compared,
