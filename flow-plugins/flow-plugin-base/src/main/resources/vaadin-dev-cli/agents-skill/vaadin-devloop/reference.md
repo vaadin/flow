@@ -26,7 +26,11 @@ compiling → Failed
   shared-lib/Bar.java:12:9  error: ...   ← a file outside this module is named by its module
   → check the name, or add the missing member/import          ← fix, re-apply; app keeps last good bytes
 app log: 1 error(s) since the change; see target/devloop/app.log
-  ERROR ... : There was an exception while trying to navigate  ← the change is live and the app threw
+  There was an exception while trying to navigate              ← the change is live and the app threw
+app log: 1 error(s) since the change; see target/devloop/app.log
+  [vite] Internal server error: Transform failed with 1 error: ← Vite mode: a TypeScript error
+    [PARSE_ERROR] Unexpected token
+    src/main/frontend/greeting.ts:1:26                         ← what and where, without opening the log
 ```
 
 A `no changes (... pom.xml changed; nothing to recompile or restart)` line is a *positive*

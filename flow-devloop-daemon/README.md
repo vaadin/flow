@@ -230,6 +230,24 @@ boundary (`Transaction.carriedLogErrors`, merged in `finish`). And when the brow
 module during the apply instead, the error lands asynchronously, so the frontend leg settles in
 Vite mode exactly as the redefine leg does.
 
+The quoted line is wrapped, not truncated, and its layout prefix is stripped first. Spring
+Boot spends about a hundred characters on a timestamp, a level, a pid, a thread and an
+abbreviated logger; truncating with that still attached spent the whole budget saying nothing
+and cut off the diagnosis. A compiler message is the one output whose tail matters as much as
+its head, so `TransactionEngine.quote` gives each segment its own row and wraps at 100 columns
+- letting a token longer than that overflow rather than splitting a path the reader wants to
+copy. `AppLog` carries two things out of the report, because "Transform failed with 1 error:"
+is neither: what went wrong, and where (minus the `?t=` cache-buster Vite hangs off every
+hot-updated module). The source excerpt, the caret row and the JavaScript stack are skipped
+(`REPORT_DECORATION`): the excerpt is the developer's own code, a caret diagram cannot line up
+inside an indented, wrapped summary, and the position above it is what they actually need.
+
+The parts of one error are joined with a unit separator rather than a `|`, because a report is
+full of pipes - when the renderer falls back to ASCII, a source excerpt is drawn as
+`1 | export function ...`, and splitting on that turned one line of the developer's code into
+two rows with the gutter missing. The separator never leaves the daemon: `--json` and the
+one-line reason both put ` | ` back.
+
 **Vite mode is verified by hand**, because `hotdeploy` is baked into the app JVM from the
 daemon's own system properties and `flow-tests/test-devloop` deliberately shares one
 long-lived daemon; switching modes there means a shutdown, a cold start and a pnpm install.

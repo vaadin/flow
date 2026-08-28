@@ -173,8 +173,10 @@ class AppLogTest {
                 """
                         INFO c.v.b.d.DevServerOutputTracker : [vite] Internal server error: Transform failed with 1 error:
                         INFO c.v.b.d.DevServerOutputTracker : [PARSE_ERROR] Expected `}` but found `EOF`
-                        INFO c.v.b.d.DevServerOutputTracker :    ╰─[ src/main/frontend/greeting.ts:1:55 ]
-                        INFO c.v.b.d.DevServerOutputTracker :   Plugin: vite:oxc
+                        INFO c.v.b.d.DevServerOutputTracker :    ╰─[ src/main/frontend/greeting.ts?t=1756384057:1:55 ]
+                        INFO c.v.b.d.DevServerOutputTracker :    |
+                        INFO c.v.b.d.DevServerOutputTracker :  1 | export function greeting(): string { return 'x'
+                        INFO c.v.b.d.DevServerOutputTracker :    |                                    ^
                         INFO c.v.b.d.DevServerOutputTracker :       at transformWithOxc (file:///node_modules/vite/dist/node.js:1:1)
                         """);
 
@@ -184,6 +186,41 @@ class AppLogTest {
         // excerpt, the caret diagram and the JavaScript stack are all detail.
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("Internal server error"));
+        // "Transform failed with 1 error" says something broke but not what.
+        // The line that names the syntax problem sits past a blank one, and
+        // carrying it is what makes the summary actionable on its own.
+        assertTrue(errors.get(0).contains("Expected `}` but found `EOF`"),
+                errors.get(0));
+        // And for a message like "Unexpected token" the position is the half
+        // that says which file to open, so it is carried too - without the
+        // ?t= cache-buster Vite hangs off every module it has hot-updated.
+        assertTrue(errors.get(0).contains("greeting.ts:1:55"), errors.get(0));
+        assertFalse(errors.get(0).contains("?t="), errors.get(0));
+        // The source excerpt stays out. It is the developer's own code, which
+        // they have in front of them, and a caret diagram cannot line up
+        // inside an indented, wrapped summary anyway - the position above is
+        // what they need. Its ASCII-fallback gutter is also a literal pipe,
+        // which is why the parts are not joined with one.
+        assertFalse(errors.get(0).contains("export function greeting"),
+                errors.get(0));
+        assertFalse(errors.get(0).contains("transformWithOxc"), errors.get(0));
+    }
+
+    @Test
+    void message_stripsTheLayoutBoilerplateAndNothingElse() {
+        // Roughly a hundred characters of prefix, which is most of the budget a
+        // one-line summary has to work with.
+        assertEquals("[vite] Internal server error: Transform failed",
+                AppLog.message(
+                        "2026-08-28T14:32:37.265+03:00  INFO 41096 --- [v-server-output]"
+                                + " c.v.b.devserver.DevServerOutputTracker   :"
+                                + " 14.32.37 [vite] Internal server error: Transform failed"));
+        // Plain Logback's layout too.
+        assertEquals("could not send the email", AppLog.message(
+                "14:32:37.265 [main] ERROR c.e.Foo - could not send the email"));
+        // A line with no prefix - a bare stack-trace header - is left alone.
+        assertEquals("java.lang.IllegalStateException: boom",
+                AppLog.message("java.lang.IllegalStateException: boom"));
     }
 
     @Test

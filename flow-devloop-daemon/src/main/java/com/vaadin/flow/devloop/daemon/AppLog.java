@@ -132,6 +132,81 @@ final class AppLog {
                     + "|NoClassDefFoundError|BeanCreationException"
                     + "|BeanInstantiationException|UnsatisfiedDependencyException");
 
+    /**
+     * The boilerplate in front of a log line's actual message.
+     * <p>
+     * Spring Boot's default layout spends about a hundred characters on a
+     * timestamp, a level, a pid, a thread name and an abbreviated logger before
+     * the message starts. When a one-line summary is quoted back, that is a
+     * hundred characters of the budget gone on saying nothing - the reader
+     * already knows which app logged it and that it was an error - and the part
+     * that would let them fix it without opening the log gets cut instead.
+     * <p>
+     * Both layouts a Vaadin application produces: Spring Boot's
+     * {@code --- [thread] logger : message} and plain Logback's
+     * {@code [thread] LEVEL logger - message}. A line matching neither is left
+     * exactly as it is, which is what keeps a bare stack-trace header intact.
+     */
+    private static final Pattern LOG_PREFIX = Pattern.compile("^\\S+\\s+"
+            + "(?:TRACE|DEBUG|INFO|WARN|ERROR|SEVERE|FATAL)\\s+\\d+\\s+---\\s+"
+            + "\\[[^\\]]*\\]\\s+\\S+\\s+:\\s?" + "|^\\S+\\s+\\[[^\\]]*\\]\\s+"
+            + "(?:TRACE|DEBUG|INFO|WARN|ERROR|SEVERE|FATAL)\\s+\\S+\\s+-\\s");
+
+    /**
+     * Vite stamps its own {@code 14.32.37} on the front of every line, which
+     * the logger has then stamped again.
+     */
+    private static final Pattern DEV_SERVER_TIMESTAMP = Pattern
+            .compile("^\\d{1,2}[.:]\\d{2}[.:]\\d{2}\\s+");
+
+    /**
+     * A source position inside a dev-server report, which is where the file
+     * name lives. Vite draws it in a box - {@code ╭─[ path/x.ts:1:25 ]} - so it
+     * is picked out by shape rather than by position, and constrained to a
+     * frontend file extension so a version number or a URL in the prose above
+     * cannot pass for one.
+     */
+    private static final Pattern SOURCE_LOCATION = Pattern.compile(
+            // The drive letter is part of the path, and a Windows path that
+            // arrives without it names nothing.
+            "((?:[A-Za-z]:)?[\\w./\\\\@-]+"
+                    + "\\.(?:ts|tsx|js|jsx|mjs|cjs|css|scss|less|html|json))"
+                    // Vite hangs a cache-busting ?t=<millis> off every module
+                    // it has hot-updated, so the query sits between the name
+                    // and the position. Matched so it does not break the
+                    // position off, and dropped so it does not reach the
+                    // reader, to whom it means nothing.
+                    + "(?:\\?[^\\s:\\]]*)?" + ":(\\d+(?::\\d+)?)");
+
+    /** How far under a dev-server error to look for its detail and location. */
+    private static final int DETAIL_SCAN_LINES = 8;
+
+    /**
+     * What one error's parts are joined with.
+     * <p>
+     * A unit separator rather than something like {@code " | "}, because the
+     * parts are split apart again for display and a compiler report is full of
+     * pipes: a source excerpt is drawn as {@code 1 | export function ...} when
+     * the renderer falls back to ASCII, and splitting on that turns one line of
+     * the developer's own code into two rows with the gutter missing. A control
+     * character cannot occur in log text, so the split can never be ambiguous.
+     */
+    static final String SEGMENT = "\u001f";
+
+    /**
+     * The parts of a report that are decoration rather than diagnosis: the
+     * line-number gutter and source excerpt, the caret row that points into it,
+     * the box rules around them, and JavaScript stack frames.
+     * <p>
+     * Never quoted back. The excerpt is the developer's own code, which they
+     * have in front of them, and rendering a caret diagram inside an indented,
+     * wrapped summary cannot line up with the source anyway - the file and
+     * position above it are what they actually need. The log keeps the rest.
+     */
+    private static final Pattern REPORT_DECORATION = Pattern
+            .compile("^\\s*\\d+\\s*[|│]" + "|^[\\s|│─┬╭╰"
+                    + "╯├┤┌┐└┘^~'`,.:*-]*$" + "|^at\\s");
+
     /** Errors kept per window; a reply quoting more than this helps nobody. */
     private static final int MAX_ERRORS = 5;
 
@@ -157,6 +232,19 @@ final class AppLog {
      */
     static boolean devServerError(String line) {
         return DEV_SERVER_ERROR.matcher(line).find();
+    }
+
+    /**
+     * A log line with its layout boilerplate removed, so what is left is what
+     * the code actually said.
+     *
+     * @param line
+     *            a log line
+     * @return the message, or the line unchanged if it carries no known prefix
+     */
+    static String message(String line) {
+        String stripped = LOG_PREFIX.matcher(line.strip()).replaceFirst("");
+        return DEV_SERVER_TIMESTAMP.matcher(stripped).replaceFirst("").strip();
     }
 
     /**
@@ -240,9 +328,56 @@ final class AppLog {
         private int count;
         private String failure;
         private boolean continuing;
+        /**
+         * Whether the last error was a dev-server one still missing its detail.
+         * <p>
+         * {@code [vite] Internal server error: Transform failed with 1 error:}
+         * says that something broke but not what; the line naming the syntax
+         * problem comes a line or two below, past a blank one. Attaching it is
+         * the difference between a summary a reader can act on and one that
+         * only tells them to go and open the log.
+         */
+        private int detailScan;
+        private boolean detailTaken;
+        private boolean locationTaken;
 
         Watch(Path log) {
             this.cursor = new Cursor(log);
+        }
+
+        /**
+         * Pulls what is worth keeping out of a line under a dev-server error.
+         * <p>
+         * Two things, because "Transform failed with 1 error:" is neither of
+         * them: what went wrong, and where. Vite puts them on separate lines
+         * and separates them with a blank one, and for a message like
+         * {@code Unexpected token} the location is not a nicety - it is the
+         * half that says which file to open. Everything after those two is a
+         * source excerpt, a caret diagram and a JavaScript stack, and the log
+         * is the right place for that.
+         */
+        private void takeDetail(String message) {
+            if (message.isEmpty()
+                    || REPORT_DECORATION.matcher(message).find()) {
+                // Layout and the developer's own source, not the diagnosis.
+                // Read past it: what is wanted may still be below.
+                return;
+            }
+            java.util.regex.Matcher location = SOURCE_LOCATION.matcher(message);
+            if (location.find()) {
+                if (!locationTaken) {
+                    append(location.group(1) + ":" + location.group(2));
+                    locationTaken = true;
+                }
+            } else if (!detailTaken) {
+                append(message);
+                detailTaken = true;
+            }
+        }
+
+        private void append(String text) {
+            int last = errors.size() - 1;
+            errors.set(last, errors.get(last) + SEGMENT + text);
         }
 
         /** New lines since the last look, errors among them recorded. */
@@ -258,6 +393,18 @@ final class AppLog {
                     if (continuing) {
                         errors.add(line);
                     }
+                    detailScan = continuing && devServerError(line)
+                            ? DETAIL_SCAN_LINES
+                            : 0;
+                    detailTaken = false;
+                    locationTaken = false;
+                } else if (detailScan > 0) {
+                    detailScan--;
+                    takeDetail(message(line));
+                    if (detailTaken && locationTaken) {
+                        detailScan = 0;
+                        continuing = false;
+                    }
                 } else if (continuing && header) {
                     // The throwable the line above was about. Kept with it
                     // rather
@@ -265,7 +412,7 @@ final class AppLog {
                     // and
                     // the half of it that names the type is this half.
                     int last = errors.size() - 1;
-                    errors.set(last, errors.get(last) + " | " + line.strip());
+                    errors.set(last, errors.get(last) + SEGMENT + line.strip());
                     continuing = false;
                 } else {
                     continuing = false;

@@ -137,7 +137,13 @@ final class TransactionEngine {
                     + Json.escape(frontend) + "\",\"frontendFiles\":"
                     + frontendFiles + ",\"themePushed\":" + themePushed
                     + ",\"frontendMode\":\"" + Json.escape(frontendMode)
-                    + "\",\"logErrors\":" + Json.strings(logErrors)
+                    // The internal separator never leaves the daemon: a control
+                    // character in a JSON string is legal but nothing a reader
+                    // or a jq expression expects.
+                    + "\",\"logErrors\":"
+                    + Json.strings(logErrors.stream()
+                            .map(line -> line.replace(AppLog.SEGMENT, " | "))
+                            .toList())
                     + ",\"timings\":{\"detectMs\":" + detectMs
                     + ",\"compileMs\":" + compileMs + ",\"runtimeMs\":"
                     + runtimeMs + ",\"totalMs\":" + totalMs
@@ -863,9 +869,74 @@ final class TransactionEngine {
 
     /** Enough of a log line to recognise it by, where there is room for one. */
     private static String brief(String line) {
-        String trimmed = line.strip();
+        // The layout boilerplate goes first, not last: a Spring Boot prefix is
+        // about a hundred characters of timestamp, level, pid, thread and
+        // abbreviated logger, and truncating with it still attached spends the
+        // whole budget saying nothing and cuts off the half that would let the
+        // reader fix the problem without opening the log at all.
+        String trimmed = AppLog.message(line).replace(AppLog.SEGMENT, " | ");
         return trimmed.length() <= 160 ? trimmed
                 : trimmed.substring(0, 157) + "...";
+    }
+
+    /**
+     * How wide a quoted log line gets before it is wrapped onto another row.
+     */
+    private static final int QUOTE_WIDTH = 100;
+
+    /** How many rows one quoted error may occupy before it is cut off. */
+    private static final int QUOTE_ROWS = 6;
+
+    /**
+     * One logged error, as the rows it needs.
+     * <p>
+     * Wrapped rather than truncated. A compiler's message is the one piece of
+     * output whose tail matters as much as its head - "Expected `}` but found
+     * `EOF`" is the whole diagnosis, and a summary that stops just before it
+     * only tells the reader to go and open the log, which is the work this line
+     * exists to save them. Segments joined by {@code |} - the opening line of a
+     * report and the detail underneath it - get a row each, because they are
+     * two separate facts.
+     */
+    private static List<String> quote(String line) {
+        List<String> rows = new ArrayList<>();
+        for (String segment : AppLog.message(line).split(AppLog.SEGMENT)) {
+            String rest = segment.strip();
+            while (!rest.isEmpty()) {
+                if (rows.size() == QUOTE_ROWS) {
+                    // Whatever is left is a stack or a source excerpt; the log
+                    // has it and the header already says where.
+                    rows.add("    ...");
+                    return rows;
+                }
+                int cut = breakAt(rest);
+                rows.add((rows.isEmpty() ? "  " : "    ")
+                        + rest.substring(0, cut).strip());
+                rest = rest.substring(cut).strip();
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * Where to wrap: the last space inside the width.
+     * <p>
+     * A single token longer than the width - an absolute path, a URL, a stack
+     * frame - overflows the row rather than being cut in half. The width is
+     * there to keep output readable, and a path broken across two rows is
+     * neither readable nor something the reader can copy into an editor, which
+     * is the one thing they want to do with it.
+     */
+    private static int breakAt(String text) {
+        if (text.length() <= QUOTE_WIDTH) {
+            return text.length();
+        }
+        int space = text.lastIndexOf(' ', QUOTE_WIDTH);
+        if (space > QUOTE_WIDTH / 2) {
+            return space;
+        }
+        int overflow = text.indexOf(' ', QUOTE_WIDTH);
+        return overflow < 0 ? text.length() : overflow;
     }
 
     /**
@@ -1123,7 +1194,7 @@ final class TransactionEngine {
         if (!tx.logErrors.isEmpty() && tx.outcome != Outcome.FAILED) {
             lines.add("app log: " + tx.logErrors.size()
                     + " error(s) since the change; see target/devloop/app.log");
-            lines.add("  " + brief(tx.logErrors.get(0)));
+            lines.addAll(quote(tx.logErrors.get(0)));
         }
         return lines;
     }
