@@ -35,6 +35,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JBossVfsUtilTest {
 
@@ -139,22 +140,32 @@ class JBossVfsUtilTest {
 
         private final Object stream;
 
-        private MalformedVirtualJar(Object isFile, Object stream) {
+        private final MalformedVirtualJar entry;
+
+        private MalformedVirtualJar(Object isFile, Object stream,
+                MalformedVirtualJar entry) {
             this.isFile = isFile;
             this.stream = stream;
+            this.entry = entry;
         }
 
         static MalformedVirtualJar withIsFile(Object isFile) {
-            return new MalformedVirtualJar(isFile,
-                    new ByteArrayInputStream(new byte[0]));
+            return withEntry(new MalformedVirtualJar(isFile,
+                    new ByteArrayInputStream(new byte[0]), null));
         }
 
         static MalformedVirtualJar withContent(Object stream) {
-            return new MalformedVirtualJar(true, stream);
+            return withEntry(new MalformedVirtualJar(true, stream, null));
+        }
+
+        private static MalformedVirtualJar withEntry(
+                MalformedVirtualJar entry) {
+            return new MalformedVirtualJar(false,
+                    new ByteArrayInputStream(new byte[0]), entry);
         }
 
         public List<MalformedVirtualJar> getChildrenRecursively() {
-            return List.of(this);
+            return entry == null ? List.of() : List.of(entry);
         }
 
         public Object isFile() {
@@ -166,7 +177,7 @@ class JBossVfsUtilTest {
         }
 
         public String getPathNameRelativeTo(MalformedVirtualJar parent) {
-            return parent == this ? "one.txt" : "nested/one.txt";
+            return parent.entry == this ? "one.txt" : "";
         }
     }
 
@@ -298,6 +309,10 @@ class JBossVfsUtilTest {
 
         File jar = JBossVfsUtil.materializeJar(url);
 
+        assertEquals("fake.jar", jar.getName());
+        assertTrue(jar.getParentFile().getName().startsWith("vaadin-jboss-vfs"),
+                "The jar should be written into a folder of its own, was "
+                        + jar);
         try (JarFile jarFile = new JarFile(jar)) {
             assertEquals(List.of("nested/two.txt", "one.txt"),
                     jarFile.stream().map(JarEntry::getName).sorted().toList());

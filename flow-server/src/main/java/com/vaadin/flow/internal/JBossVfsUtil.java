@@ -107,11 +107,14 @@ public final class JBossVfsUtil {
                 jarPath.lastIndexOf(jarPath.contains("\\") ? '\\' : '/') + 1,
                 jarSuffix);
         Path folder = Files.createTempDirectory("vaadin-jboss-vfs");
-        // The caller reads the jar for as long as the JVM runs
-        folder.toFile().deleteOnExit(); // NOSONAR
         Path jarFile = folder.resolve(fileNamePrefix + ".jar");
-        writeJar(virtualJar, jarFile);
+        // The caller reads the jar for as long as the JVM runs. Both are
+        // registered before the jar is written, as a folder is only deleted
+        // once what was registered after it is gone, and a jar that could not
+        // be written has to go as well
+        folder.toFile().deleteOnExit(); // NOSONAR
         jarFile.toFile().deleteOnExit(); // NOSONAR
+        writeJar(virtualJar, jarFile);
         return jarFile.toFile();
     }
 
