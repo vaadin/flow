@@ -86,11 +86,7 @@ public class TableDataCell extends TableCell
      *            a non-negative integer.
      */
     public void setColspan(int colspan) {
-        if (colspan < 0) {
-            throw new IllegalArgumentException(
-                    "colspan must be a non-negative integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_COLSPAN, String.valueOf(colspan));
+        setSpan(ATTRIBUTE_COLSPAN, colspan);
     }
 
     /**
@@ -99,11 +95,7 @@ public class TableDataCell extends TableCell
      * @return the current colspan. Default is 1.
      */
     public int getColspan() {
-        String colspan = getElement().getAttribute(ATTRIBUTE_COLSPAN);
-        if (colspan == null) {
-            colspan = "1";
-        }
-        return Integer.parseInt(colspan);
+        return getSpan(ATTRIBUTE_COLSPAN);
     }
 
     /**
@@ -121,11 +113,7 @@ public class TableDataCell extends TableCell
      *            a non-negative integer.
      */
     public void setRowspan(int rowspan) {
-        if (rowspan < 0) {
-            throw new IllegalArgumentException(
-                    "rowspan must be a non-negative integer value");
-        }
-        getElement().setAttribute(ATTRIBUTE_ROWSPAN, String.valueOf(rowspan));
+        setSpan(ATTRIBUTE_ROWSPAN, rowspan);
     }
 
     /**
@@ -134,11 +122,7 @@ public class TableDataCell extends TableCell
      * @return the current rowspan. Default is 1.
      */
     public int getRowspan() {
-        String rowspan = getElement().getAttribute(ATTRIBUTE_ROWSPAN);
-        if (rowspan == null) {
-            rowspan = "1";
-        }
-        return Integer.parseInt(rowspan);
+        return getSpan(ATTRIBUTE_ROWSPAN);
     }
 
     /**
@@ -146,5 +130,18 @@ public class TableDataCell extends TableCell
      */
     public void resetRowspan() {
         getElement().removeAttribute(ATTRIBUTE_ROWSPAN);
+    }
+
+    private void setSpan(String attribute, int span) {
+        if (span < 0) {
+            throw new IllegalArgumentException(
+                    attribute + " must be a non-negative integer value");
+        }
+        getElement().setAttribute(attribute, String.valueOf(span));
+    }
+
+    private int getSpan(String attribute) {
+        String span = getElement().getAttribute(attribute);
+        return span == null ? 1 : Integer.parseInt(span);
     }
 }

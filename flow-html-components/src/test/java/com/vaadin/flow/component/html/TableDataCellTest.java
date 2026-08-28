@@ -55,7 +55,11 @@ class TableDataCellTest extends ComponentTest {
     void spans_rejectNegativeValues() {
         TableDataCell cell = (TableDataCell) getComponent();
 
-        assertThrows(IllegalArgumentException.class, () -> cell.setColspan(-1));
-        assertThrows(IllegalArgumentException.class, () -> cell.setRowspan(-1));
+        assertEquals("colspan must be a non-negative integer value",
+                assertThrows(IllegalArgumentException.class,
+                        () -> cell.setColspan(-1)).getMessage());
+        assertEquals("rowspan must be a non-negative integer value",
+                assertThrows(IllegalArgumentException.class,
+                        () -> cell.setRowspan(-1)).getMessage());
     }
 }
