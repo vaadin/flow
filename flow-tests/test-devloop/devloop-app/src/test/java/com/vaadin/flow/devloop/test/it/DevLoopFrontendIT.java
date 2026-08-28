@@ -66,7 +66,8 @@ class DevLoopFrontendIT extends AbstractDevLoopIT {
         // or recompile anything.
         outcome.assertOutputDoesNotContain("restarting");
         outcome.assertOutputDoesNotContain("compiling");
-        outcome.assertOutputContains("src/main/frontend/themes/devloop/styles.css");
+        outcome.assertOutputContains(
+                "src/main/frontend/themes/devloop/styles.css");
     }
 
     @Test
@@ -89,8 +90,8 @@ class DevLoopFrontendIT extends AbstractDevLoopIT {
 
         // --no-restart stops at the verdict, so this asserts the decision
         // without paying for the Vite build the real restart would trigger.
-        VaadinDevCli.Outcome outcome = cli.run("apply", "--no-restart",
-                "--json").assertExitCode(0);
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
 
         outcome.assertOutputContains(
                 "\"escalation\":\"frontend changed (dev bundle rebuild)\"");
@@ -122,8 +123,7 @@ class DevLoopFrontendIT extends AbstractDevLoopIT {
         patch.replace(VIEW, "addClassName(\"task-list-view\")",
                 "addClassName(\"task-list-view-renamed\")");
 
-        cli.run("apply").assertExitCode(0)
-                .assertOutputContains("hot-reload:");
+        cli.run("apply").assertExitCode(0).assertOutputContains("hot-reload:");
     }
 
     @Test
