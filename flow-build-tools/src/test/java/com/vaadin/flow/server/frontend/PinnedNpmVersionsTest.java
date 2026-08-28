@@ -66,7 +66,13 @@ class PinnedNpmVersionsTest {
               "vaadin": {
                 "grid-pro": {
                   "npmName": "@vaadin/grid-pro",
-                  "jsVersion": "25.1.0"
+                  "jsVersion": "25.1.0",
+                  "exclusions": ["@vaadin/legacy-grid-pro"]
+                },
+                "board": {
+                  "npmName": "@vaadin/board",
+                  "jsVersion": "25.1.0",
+                  "mode": "react"
                 }
               }
             }
@@ -83,18 +89,6 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
-    void onlyCoreVersionsFile_onlyItsDependenciesArePinned()
-            throws IOException {
-        PinnedNpmVersions versions = createVersions(CORE_VERSIONS, null);
-
-        ObjectNode dependencies = versions.getDependencies(false, false,
-                keepEverything());
-        assertTrue(dependencies.has("@vaadin/button"));
-        assertFalse(dependencies.has("@vaadin/grid-pro"));
-        assertEquals(Optional.of("25.1.0"), versions.getVaadinVersion());
-    }
-
-    @Test
     void bothVersionsFiles_dependenciesOfBothArePinned() throws IOException {
         PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
                 VAADIN_VERSIONS);
@@ -103,8 +97,39 @@ class PinnedNpmVersionsTest {
                 keepEverything());
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid-pro"));
-        assertEquals("25.1.0",
-                versions.getAllDependencies().get("@vaadin/grid").asString());
+    }
+
+    @Test
+    void onlyTheCommercialVersionsFile_itsDependenciesArePinned()
+            throws IOException {
+        // Neither file is required, and vaadin-versions.json alone is enough
+        // for the packages it declares
+        PinnedNpmVersions versions = createVersions(null, VAADIN_VERSIONS);
+
+        assertFalse(versions.isEmpty());
+        assertTrue(versions.getDependencies(false, false, keepEverything())
+                .has("@vaadin/grid-pro"));
+        assertEquals(Optional.of("25.1.0"), versions.getVaadinVersion());
+    }
+
+    @Test
+    void vaadinVersionIsReadFromTheFileDeclaringIt() throws IOException {
+        assertEquals(Optional.of("25.1.0"),
+                createVersions(CORE_VERSIONS, null).getVaadinVersion());
+    }
+
+    @Test
+    void allDependenciesOfBothFilesAreCollected() throws IOException {
+        PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
+                VAADIN_VERSIONS);
+
+        ObjectNode dependencies = versions.getAllDependencies();
+
+        assertEquals("25.1.0", dependencies.get("@vaadin/grid").asString());
+        assertEquals("25.1.0", dependencies.get("@vaadin/grid-pro").asString());
+        // Regardless of the mode they apply to, as a package of another mode
+        // still has to be pinned when it is pulled in transitively
+        assertEquals("25.1.0", dependencies.get("@vaadin/board").asString());
     }
 
     @Test
@@ -112,7 +137,7 @@ class PinnedNpmVersionsTest {
         PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
                 VAADIN_VERSIONS);
 
-        assertEquals(Set.of("@vaadin/legacy-grid"),
+        assertEquals(Set.of("@vaadin/legacy-grid", "@vaadin/legacy-grid-pro"),
                 versions.getExclusions(false, false));
     }
 
