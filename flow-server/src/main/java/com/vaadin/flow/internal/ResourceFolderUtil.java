@@ -133,6 +133,19 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
+        visitFilesInFolder(toPath(folder), visitor);
+    }
+
+    private static void visitFilesInFolder(Path folder,
+            FolderFileVisitor visitor) throws IOException {
+        try (Stream<Path> files = Files.list(folder)) {
+            for (Path file : files.filter(Files::isRegularFile).toList()) {
+                visitor.visit(new FileSystemFile(file));
+            }
+        }
+    }
+
+    private static Path toPath(URL folder) throws IOException {
         Path path;
         try {
             path = Path.of(folder.toURI());
@@ -152,11 +165,7 @@ public final class ResourceFolderUtil {
                         pathException);
             }
         }
-        try (Stream<Path> files = Files.list(path)) {
-            for (Path file : files.filter(Files::isRegularFile).toList()) {
-                visitor.visit(new FileSystemFile(file));
-            }
-        }
+        return path;
     }
 
     private static void visitFilesInJar(URL folder, FolderFileVisitor visitor)
@@ -174,9 +183,10 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInVfsFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
-        for (File file : JBossVfsUtil.listFolder(folder)) {
-            visitor.visit(new FileSystemFile(file.toPath()));
-        }
+        // The folder only exists on disk once it has been materialized, and
+        // from there on it is a folder like any other
+        visitFilesInFolder(JBossVfsUtil.materializeFolder(folder).toPath(),
+                visitor);
     }
 
     /**

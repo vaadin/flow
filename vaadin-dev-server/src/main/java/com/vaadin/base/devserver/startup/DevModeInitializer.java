@@ -486,7 +486,7 @@ public class DevModeInitializer implements Serializable {
     private static File materializeJBossVfsFolder(URL url)
             throws VaadinInitializerException {
         try {
-            return JBossVfsUtil.materializeFolder(url);
+            return JBossVfsUtil.materializeFolderTree(url);
         } catch (IOException e) {
             throw new VaadinInitializerException(
                     "Failed to invoke JBoss VFS API.", e);

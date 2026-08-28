@@ -46,58 +46,93 @@ public final class JBossVfsUtil {
     }
 
     /**
-     * Gets the files of the given folder, creating them on disk.
-     *
-     * @param folder
-     *            the {@code vfs} URL of the folder
-     * @return the files of the folder
-     * @throws IOException
-     *             if the folder cannot be read
-     */
-    public static List<File> listFolder(URL folder) throws IOException {
-        Object virtualFolder = getVirtualFile(folder);
-        List<File> files = new ArrayList<>();
-        for (Object child : getChildren(virtualFolder, "getChildren")) {
-            // side effect: create real-world files
-            files.add(getPhysicalFile(child));
-        }
-        return files;
-    }
-
-    /**
-     * Gets the folder itself as a folder on disk, creating it and everything
-     * inside it, so that its contents can be read as regular files.
+     * Creates the folder and the files in it on disk.
+     * <p>
+     * The files are created inside the folder that is returned, so that they
+     * can be read through it.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
      * @return the folder on disk
      * @throws IOException
-     *             if the folder cannot be read
+     *             if the folder cannot be read, or its files are not created
+     *             inside it
      */
     public static File materializeFolder(URL folder) throws IOException {
+        return materialize(folder, "getChildren");
+    }
+
+    /**
+     * Creates the folder and everything below it on disk, so that the files of
+     * the folders in it can be read as well.
+     *
+     * @param folder
+     *            the {@code vfs} URL of the folder
+     * @return the folder on disk
+     * @throws IOException
+     *             if the folder cannot be read, or its files are not created
+     *             inside it
+     */
+    public static File materializeFolderTree(URL folder) throws IOException {
+        return materialize(folder, "getChildrenRecursively");
+    }
+
+    private static File materialize(URL folder, String childrenMethod)
+            throws IOException {
         Object virtualFolder = getVirtualFile(folder);
-        // The physical files of the children only exist once they have been
-        // asked for, and the caller reads them through the root folder
-        for (Object child : getChildren(virtualFolder,
-                "getChildrenRecursively")) {
-            getPhysicalFile(child);
+        // A virtual file only exists on disk once it has been asked for, so
+        // every child is asked for even though only the folder is returned
+        List<File> files = new ArrayList<>();
+        for (Object child : getChildren(virtualFolder, childrenMethod)) {
+            files.add(getPhysicalFile(child));
         }
-        return getPhysicalFile(virtualFolder);
+        File physicalFolder = getPhysicalFile(virtualFolder);
+        for (File file : files) {
+            // The caller reads the files through the folder, so a file that
+            // was created elsewhere would go unnoticed
+            if (!file.toPath().startsWith(physicalFolder.toPath())) {
+                throw new IOException("'" + folder + "' was created as '"
+                        + physicalFolder
+                        + "', which does not contain its file '" + file + "'");
+            }
+        }
+        return physicalFolder;
     }
 
     private static Object getVirtualFile(URL folder) throws IOException {
-        return folder.openConnection().getContent();
+        Object virtualFile = folder.openConnection().getContent();
+        if (virtualFile == null) {
+            throw new IOException(
+                    "'" + folder + "' does not serve a JBoss virtual file");
+        }
+        return virtualFile;
     }
 
     private static List<?> getChildren(Object virtualFile, String methodName)
             throws IOException {
-        return (List<?>) invoke(virtualFile, methodName);
+        Object children = invoke(virtualFile, methodName);
+        if (!(children instanceof List<?> childList)) {
+            throw new IOException("The JBoss VFS API method " + methodName
+                    + " of '" + virtualFile + "' did not return a list");
+        }
+        return childList;
     }
 
     private static File getPhysicalFile(Object virtualFile) throws IOException {
-        return (File) invoke(virtualFile, "getPhysicalFile");
+        Object physicalFile = invoke(virtualFile, "getPhysicalFile");
+        if (!(physicalFile instanceof File file)) {
+            throw new IOException(
+                    "The JBoss VFS API method getPhysicalFile of '"
+                            + virtualFile + "' did not return a file");
+        }
+        return file;
     }
 
+    /**
+     * Invokes a method of the virtual file, turning a call that does not get
+     * through into an {@link IOException}, as an object that is not the virtual
+     * file the protocol is expected to serve is a folder that cannot be read.
+     */
     private static Object invoke(Object virtualFile, String methodName)
             throws IOException {
         try {
