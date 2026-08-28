@@ -55,8 +55,8 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/deps/node_modules
           # Optional: without it the digest posts using commit types alone.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # A Workflow Builder webhook trigger, which takes a plain-text
-          # variable. Posting Block Kit instead needs a Slack app, which the
+          # A Workflow Builder webhook trigger, which takes one text
+          # variable. Richer Slack formatting would need an app, which the
           # workspace does not let us create.
           SLACK_TRIGGER_URL: ${{ secrets.SLACK_RELEASE_DIGEST_TRIGGER }}
           SLACK_TRIGGER_VARIABLE: digest
@@ -67,18 +67,18 @@ jobs:
           POST: ${{ github.event_name != 'workflow_dispatch' || inputs.post }}
         run: |
           [ "$POST" = 'true' ] || NO_POST=--no-post
-          node ./scripts/releaseDigest.js --in=release-check \
-            --save=release-check/digest.txt $NO_POST
+          node ./scripts/releaseDigest.js --in=release-check $NO_POST \
+            > release-check/digest.txt
 
       # The digest is written here whether or not it was posted, so a run that
-      # does not post still shows the exact message it built.
+      # does not post still shows the exact message it built. The branch table in
+      # release-check/summary.md is deliberately not repeated: the digest says
+      # the same thing, at more length.
       - name: Job summary
         if: always()
         run: |
-          cat release-check/summary.md >> "$GITHUB_STEP_SUMMARY"
-          if [ -f release-check/digest.txt ]; then
+          if [ -s release-check/digest.txt ]; then
             {
-              echo
               echo '## The Slack message'
               echo
               echo '```text'

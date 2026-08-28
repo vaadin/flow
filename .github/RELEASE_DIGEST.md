@@ -56,9 +56,8 @@ digest still posts using commit types alone.
 
 The digest posts through a **Slack Workflow Builder** webhook trigger, because
 the Vaadin workspace does not allow creating Slack apps. That trigger's message
-step inserts a variable's value as text, so this path uses the plain-text
-rendering; the Block Kit rendering stays in the script for the day an app
-becomes possible.
+step inserts a variable's value as text without parsing Slack markup, which is
+why the digest is plain text with literal emoji and bare URLs.
 
 In Slack: **Tools → Workflow Builder → New Workflow**, start it *From a webhook*,
 declare one variable named `digest` of type **text**, add a **Send a message**
@@ -85,11 +84,6 @@ Then one repository secret:
 The variable name is the workflow's `SLACK_TRIGGER_VARIABLE`; the payload keys
 must match the workflow's declared variables exactly or Slack rejects the post.
 
-Should a Slack app ever be possible, drop `SLACK_TRIGGER_URL` and set
-`SLACK_WEBHOOK_URL` to an incoming webhook instead — or `SLACK_BOT_TOKEN` with
-`SLACK_CHANNEL` (`C6RAXJATF` for #flow-dev) — and the same digest posts as Block
-Kit, no other change needed.
-
 ## Changing it
 
 - **Branches** — edit `on.push.branches` in `validation.yml`; the digest follows.
@@ -102,18 +96,16 @@ Kit, no other change needed.
 
 ```bash
 node ./scripts/checkReleases.js --out=release-check --include-main
-node ./scripts/releaseDigest.js --in=release-check --dry-run --text   # what Slack will show
-node ./scripts/releaseDigest.js --in=release-check --dry-run          # the Block Kit payload
-node ./scripts/releaseDigest.js --in=release-check --dry-run --no-ai  # skips the model call
+node ./scripts/releaseDigest.js --in=release-check --no-post
 ```
 
-`--no-post` renders and, with `--save=<file>`, writes the digest without posting
-— that is what a manual workflow run does.
+The digest goes to stdout either way, so `--no-post` prints exactly what would
+have been sent — that is what a manual workflow run does. Add `--no-fetch` to
+the first command to work from local refs instead of fetching, and unset
+`ANTHROPIC_API_KEY` to skip the model call.
 
-`--dry-run --text` prints exactly what the trigger would send. To post for real,
-set `SLACK_TRIGGER_URL` — point it at a test channel's own trigger first. The
-Block Kit payload can be previewed in [Block Kit
-Builder](https://app.slack.com/block-kit-builder).
+To post for real, drop `--no-post` and set `SLACK_TRIGGER_URL` — point it at a
+test channel's own trigger first.
 
 ## Cost and failure modes
 

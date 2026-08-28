@@ -11,15 +11,8 @@
  * pre-releases (`25.3.0-alphaN`) are cut from it.
  *
  * For each branch it finds the latest tag on that version line and classifies
- * every commit merged since then by its conventional-commit type:
- *
- *   releasable  feat / fix / perf / revert / any `!` — on their own justify a release
- *   deps        chore(deps) and similar scopes      — worth releasing in a batch
- *   internal    refactor / docs / test / ci / …     — do not justify a release
- *
- * The resulting verdict (`release` / `consider` / `skip`) depends only on commit
- * types. `releaseDigest.js` pairs it with a model-written recommendation that
- * reads what the commits actually do, and still posts without one.
+ * every commit merged since then by its conventional-commit type, into the
+ * verdict `release`, `consider` or `skip`.
  *
  * Usage:
  *   ./scripts/checkReleases.js [--out=release-check] [--no-fetch] [--include-main]
@@ -32,9 +25,9 @@
  *   - `report.json`   Full per-branch classification, consumed by the digest.
  *   - `summary.md`    Combined overview for the Actions job summary.
  *
- * `manifest.json` intentionally keeps counting only `feat:`/`fix:` commits, so
- * the issue-tracking workflow behaves exactly as before this classification was
- * added.
+ * `manifest.json` and the issue bodies stay about maintained-branch patch
+ * releases: `main` is left out, and only the commits classified as releasable
+ * are counted.
  *
  * The script fetches the branches and tags itself, so the workflow only needs a
  * shallow checkout.
@@ -162,26 +155,16 @@ function suggestNextVersion(version) {
  * an unparseable subject can never on its own trigger a release recommendation.
  */
 const RELEASABLE_TYPES = new Set(['feat', 'fix', 'perf', 'revert']);
-const CONVENTIONAL = /^(\w+)(?:\(([^)]*)\))?(!)?:\s*(.*)$/;
+const CONVENTIONAL = /^(\w+)(?:\(([^)]*)\))?(!)?:/;
 
-/** Splits a subject into `{type, scope, breaking, category}`. */
+/** The category a commit subject falls into. */
 function classify(subject) {
   const m = subject.match(CONVENTIONAL);
-  if (!m) {
-    return { type: null, scope: null, breaking: false, category: 'internal' };
-  }
-  const [, type, scope = null, bang] = m;
-  const lower = type.toLowerCase();
-  const breaking = Boolean(bang);
-  let category;
-  if (breaking || RELEASABLE_TYPES.has(lower)) {
-    category = 'releasable';
-  } else if (scope && /^deps/i.test(scope)) {
-    category = 'deps';
-  } else {
-    category = 'internal';
-  }
-  return { type: lower, scope, breaking, category };
+  if (!m) return 'internal';
+  const [, type, scope, breaking] = m;
+  if (breaking || RELEASABLE_TYPES.has(type.toLowerCase())) return 'releasable';
+  if (scope && /^deps/i.test(scope)) return 'deps';
+  return 'internal';
 }
 
 /** Every non-merge commit since `tag`, classified. */
@@ -192,9 +175,8 @@ function commitsSince(tag, branch) {
     .filter(Boolean)
     .map((line) => {
       const tab = line.indexOf('\t');
-      const sha = line.slice(0, tab);
       const subject = line.slice(tab + 1);
-      return { sha, subject, ...classify(subject) };
+      return { sha: line.slice(0, tab), subject, category: classify(subject) };
     });
 }
 
@@ -223,15 +205,16 @@ function issueTitle(branch) {
 /** Issue body for a single branch's pending release. */
 function branchBody(r, now) {
   const target = r.next ? `\`${r.next}\`` : 'the next pre-release';
-  const n = r.releasable.length;
+  const releasable = r.commits.filter((c) => c.category === 'releasable');
+  const n = releasable.length;
   const lines = [];
-  lines.push(`Branch \`${r.branch}\` has **${n}** unreleased \`feat:\`/\`fix:\` commit${n === 1 ? '' : 's'} since \`${r.lastTag || 'the start of the branch'}\`.`);
+  lines.push(`Branch \`${r.branch}\` has **${n}** unreleased commit${n === 1 ? '' : 's'} worth releasing since \`${r.lastTag || 'the start of the branch'}\`.`);
   lines.push('');
   lines.push(`Suggested next release: ${target}`);
   lines.push('');
   lines.push('### Changes to release');
   lines.push('');
-  for (const c of r.releasable) {
+  for (const c of releasable) {
     lines.push(`- ${c.subject} (${c.sha})`);
   }
   lines.push('');
@@ -283,29 +266,24 @@ function main() {
 
   const now = new Date().toISOString().slice(0, 10);
   const results = branches.map((branch) => {
-    const line = branch === MAIN_BRANCH ? readMainVersionLine() : branch;
-    const version = latestTagFor(line);
+    const version = latestTagFor(branch === MAIN_BRANCH ? readMainVersionLine() : branch);
     const lastTag = version ? version.tag : null;
     const commits = commitsSince(lastTag, branch);
     const counts = {
       releasable: commits.filter((c) => c.category === 'releasable').length,
       deps: commits.filter((c) => c.category === 'deps').length,
       internal: commits.filter((c) => c.category === 'internal').length,
-      total: commits.length,
     };
     return {
       branch,
-      line,
       lastTag,
       next: suggestNextVersion(version),
-      prerelease: Boolean(version && version.pre),
       counts,
       verdict: verdictFor(counts),
       compareUrl: lastTag
         ? `${REPO_URL}/compare/${lastTag}...${branch}`
         : `${REPO_URL}/commits/${branch}`,
       commits,
-      releasable: commits.filter((c) => c.category === 'releasable'),
     };
   });
 
@@ -316,28 +294,28 @@ function main() {
   const tracked = results.filter((r) => r.branch !== MAIN_BRANCH);
   const pending = [];
   for (const r of tracked) {
-    if (r.releasable.length === 0) continue;
+    if (r.counts.releasable === 0) continue;
     const bodyFile = `${opts.outDir}/${r.branch}.md`;
     fs.writeFileSync(bodyFile, branchBody(r, now) + '\n');
     pending.push({
       branch: r.branch,
       title: issueTitle(r.branch),
       next: r.next,
-      count: r.releasable.length,
+      count: r.counts.releasable,
       body: bodyFile,
     });
   }
-  const clean = tracked.filter((r) => r.releasable.length === 0).map((r) => issueTitle(r.branch));
+  const clean = tracked
+    .filter((r) => r.counts.releasable === 0)
+    .map((r) => issueTitle(r.branch));
 
   fs.writeFileSync(
     `${opts.outDir}/manifest.json`,
     JSON.stringify({ pending, clean }, null, 2) + '\n'
   );
-  // `releasable` is a working field; `commits` already carries each category.
-  const reported = results.map(({ releasable, ...branch }) => branch);
   fs.writeFileSync(
     `${opts.outDir}/report.json`,
-    JSON.stringify({ generated: now, repository: REPO_URL, branches: reported }, null, 2) + '\n'
+    JSON.stringify({ generated: now, branches: results }, null, 2) + '\n'
   );
   fs.writeFileSync(`${opts.outDir}/summary.md`, buildSummary(results, now) + '\n');
 
