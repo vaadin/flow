@@ -270,6 +270,16 @@ public final class ResourceFolderUtil {
         }
     }
 
+    /**
+     * Gets the location of a file of the given folder, for a folder that is not
+     * read through the file system.
+     */
+    private static String locationIn(URL folder, String name) {
+        String folderUrl = folder.toExternalForm();
+        return folderUrl.endsWith("/") ? folderUrl + name
+                : folderUrl + "/" + name;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ResourceFolderUtil.class);
     }
@@ -284,9 +294,7 @@ public final class ResourceFolderUtil {
 
         @Override
         public String getLocation() {
-            String folderUrl = folder.toExternalForm();
-            return folderUrl.endsWith("/") ? folderUrl + getName()
-                    : folderUrl + "/" + getName();
+            return locationIn(folder, getName());
         }
 
         @Override
@@ -323,9 +331,7 @@ public final class ResourceFolderUtil {
 
         @Override
         public String getLocation() {
-            String folderUrl = folder.toExternalForm();
-            return folderUrl.endsWith("/") ? folderUrl + getName()
-                    : folderUrl + "/" + getName();
+            return locationIn(folder, getName());
         }
 
         @Override

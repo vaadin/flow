@@ -226,35 +226,45 @@ class JBossVfsUtilTest {
 
         private final Object physicalFile;
 
+        private final Object name;
+
         private final RuntimeException failure;
 
         private MalformedVirtualFile(Object children, Object recursiveChildren,
-                Object physicalFile, RuntimeException failure) {
+                Object physicalFile, Object name, RuntimeException failure) {
             this.children = children;
             this.recursiveChildren = recursiveChildren;
             this.physicalFile = physicalFile;
+            this.name = name;
             this.failure = failure;
         }
 
         static MalformedVirtualFile withChildren(Object children) {
             return new MalformedVirtualFile(children, List.of(),
-                    new File("folder"), null);
+                    new File("folder"), "folder", null);
         }
 
         static MalformedVirtualFile withRecursiveChildren(
                 Object recursiveChildren) {
             return new MalformedVirtualFile(List.of(), recursiveChildren,
-                    new File("folder"), null);
+                    new File("folder"), "folder", null);
         }
 
         static MalformedVirtualFile withPhysicalFile(Object physicalFile) {
             return new MalformedVirtualFile(List.of(), List.of(), physicalFile,
-                    null);
+                    "folder", null);
+        }
+
+        static MalformedVirtualFile withName(Object name) {
+            MalformedVirtualFile file = new MalformedVirtualFile(List.of(),
+                    List.of(), new File("folder"), name, null);
+            return new MalformedVirtualFile(List.of(file), List.of(file),
+                    new File("folder"), "folder", null);
         }
 
         static MalformedVirtualFile failing(RuntimeException failure) {
             return new MalformedVirtualFile(List.of(), List.of(),
-                    new File("folder"), failure);
+                    new File("folder"), "folder", failure);
         }
 
         public Object getChildren() {
@@ -273,6 +283,14 @@ class JBossVfsUtilTest {
 
         public Object getPhysicalFile() {
             return physicalFile;
+        }
+
+        public Object getName() {
+            return name;
+        }
+
+        public boolean isFile() {
+            return true;
         }
     }
 
@@ -415,6 +433,13 @@ class JBossVfsUtilTest {
         assertTrue(logger.getLogs().contains(outside.toString()),
                 "The warning should name the file, logs were "
                         + logger.getLogs());
+    }
+
+    @Test
+    void fileHasNoName_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(MalformedVirtualFile.withName(42));
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.listFiles(url));
     }
 
     @Test
