@@ -153,8 +153,10 @@ export class InitialPropertiesHandler {
   }
 
   #collectInitialProperties(id: number, properties: Map<number, Map<string, unknown>>): void {
-    const node = this.#registry.getStateTree().getNode(id);
-    if (node !== null && node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+    // Java dereferences the looked-up node unguarded: a node that is gone must
+    // fail here rather than silently contribute no initial properties.
+    const node = this.#registry.getStateTree().getNode(id)!;
+    if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
       const map = new Map<string, unknown>();
       node
         .getMap(NodeFeatures.ELEMENT_PROPERTIES)

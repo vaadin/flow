@@ -55,7 +55,8 @@ export function addOnloadHandler(element: Element, onLoad: () => void, onError: 
   };
   el.onreadystatechange = () => {
     if (el.readyState === 'loaded' || el.readyState === 'complete') {
-      el.onload?.();
+      // Java calls element.onload unguarded; it is assigned just above.
+      el.onload!();
     }
   };
 }

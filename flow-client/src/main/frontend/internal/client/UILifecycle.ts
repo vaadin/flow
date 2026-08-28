@@ -60,7 +60,9 @@ export type StateChangeHandler = (event: StateChangeEvent) => void;
 export class UILifecycle {
   #state: UIState = UIState.INITIALIZING;
 
-  readonly #handlers = new Set<StateChangeHandler>();
+  // A list, not a set: GWT's SimpleEventBus registers the same handler twice if
+  // added twice, and one removal detaches one registration.
+  readonly #handlers: StateChangeHandler[] = [];
 
   /**
    * Gets the state of the UI.
@@ -87,7 +89,9 @@ export class UILifecycle {
     }
     this.#state = state;
     const event: StateChangeEvent = { getUiLifecycle: () => this };
-    this.#handlers.forEach((handler) => handler(event));
+    // Iterate a copy, as SimpleEventBus does, so a handler added or removed
+    // during dispatch does not change who is notified for this event.
+    [...this.#handlers].forEach((handler) => handler(event));
   }
 
   /**
@@ -118,10 +122,13 @@ export class UILifecycle {
    *          handler
    */
   addHandler(handler: StateChangeHandler): EventRemover {
-    this.#handlers.add(handler);
+    this.#handlers.push(handler);
     return {
       remove: () => {
-        this.#handlers.delete(handler);
+        const index = this.#handlers.indexOf(handler);
+        if (index >= 0) {
+          this.#handlers.splice(index, 1);
+        }
       }
     };
   }

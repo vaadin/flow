@@ -14,6 +14,8 @@
  * the License.
  */
 
+import { Console } from './Console';
+
 // The resource bookkeeping + listener-fanout kernel of
 // com.vaadin.client.ResourceLoader, extracted as a standalone, testable unit.
 // It dedupes resources by key (URL or content), fans load/error notifications
@@ -86,6 +88,7 @@ export class ResourceRegistry {
 
   /** Marks the resource loaded and notifies (then clears) its listeners. Mirrors fireLoad. */
   fireLoad(event: ResourceLoadEvent): void {
+    Console.debug(`Loaded ${event.getResourceData()}`);
     const resource = event.getResourceData();
     const listeners = this.#loadListeners.get(resource);
     this.#loadedResources.add(resource);

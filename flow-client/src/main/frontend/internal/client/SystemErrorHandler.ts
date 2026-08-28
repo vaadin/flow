@@ -64,7 +64,9 @@ function recreateNodes(elementName: string): void {
   for (const elem of elements) {
     // Mock the disconnected callback so it does not throw a TypeError.
     elem.$server.disconnected = () => {};
-    elem.parentNode?.replaceChild(elem.cloneNode(false), elem);
+    // Java dereferences parentNode unguarded, so a detached element fails here
+    // rather than silently keeping the stale node.
+    elem.parentNode!.replaceChild(elem.cloneNode(false), elem);
   }
 }
 
@@ -195,9 +197,20 @@ export class SystemErrorHandler {
     Console.error(errorMessage);
   }
 
-  /** Logs the message of the given error/throwable. Mirrors handleError(Throwable). */
+  /**
+   * Shows the given error message if not running in production mode and logs it
+   * to the console.
+   *
+   * @param error - the throwable which occurred
+   */
   handleErrorObject(error: unknown): void {
-    this.handleError(error instanceof Error ? error.message : String(error));
+    // Java distinguishes an AssertionError, whose message alone does not say
+    // what kind of failure it was.
+    if (error instanceof Error && error.name === 'AssertionError') {
+      this.handleError(`Assertion error: ${error.message}`);
+    } else {
+      this.handleError(error instanceof Error ? error.message : String(error));
+    }
   }
 
   /** Whether the application runs in web-component (embedded) mode. */
@@ -289,12 +302,27 @@ export class SystemErrorHandler {
    * @param details - message details or null if there are no details
    */
   handleSessionExpiredError(details: string | null): void {
-    const message = this.#registry.getApplicationConfiguration().getSessionExpiredError();
+    this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+  }
+
+  /**
+   * Shows an error notification for an error which is unrecoverable.
+   *
+   * Named apart from the caption/message/details overloads, which JavaScript
+   * cannot distinguish by arity alone.
+   *
+   * @param details - message details or null if there are no details
+   * @param message - an ErrorMessage describing the error
+   */
+  protected handleUnrecoverableErrorFor(details: string | null, message: SystemMessage | null): void {
+    // Java dereferences the message unguarded, so a missing session-expired
+    // message fails here rather than silently reloading the page.
+    const errorMessage = message!;
     this.handleUnrecoverableError(
-      message?.caption ?? null,
-      message?.message ?? null,
+      errorMessage.caption ?? null,
+      errorMessage.message ?? null,
       details,
-      message?.url ?? null,
+      errorMessage.url ?? null,
       null
     );
   }

@@ -27,6 +27,7 @@ import {
 } from './EagerDependencyTracker';
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
 import { Console } from './Console';
+import { getScheduler } from './TrackingScheduler';
 
 // com.vaadin.flow.shared.ui.Dependency
 const KEY_URL = 'url';
@@ -57,7 +58,7 @@ interface DependencyResourceLoader {
 
 /** The slice of Registry DependencyLoader uses. */
 interface DependencyLoaderRegistry {
-  getURIResolver(): { resolveVaadinUri(uri: string): string | null };
+  getURIResolver(): { resolveVaadinUri(uri: string): string };
   getResourceLoader(): DependencyResourceLoader;
 }
 
@@ -116,9 +117,10 @@ export class DependencyLoader {
     // event loop) so they don't block commands queued after the eager load.
     if (lazyDependencies.size > 0) {
       runWhenEagerDependenciesLoaded(() => {
-        setTimeout(() => {
+        getScheduler().scheduleDeferred(() => {
+          Console.debug('Finished loading eager dependencies, loading lazy.');
           lazyDependencies.forEach((loader, url) => this.#loadLazyDependency(url, loader));
-        }, 0);
+        });
       });
     }
   }
@@ -152,7 +154,7 @@ export class DependencyLoader {
   }
 
   #getDependencyUrl(dependency: Dependency): string {
-    return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string) ?? '';
+    return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string);
   }
 
   #getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {

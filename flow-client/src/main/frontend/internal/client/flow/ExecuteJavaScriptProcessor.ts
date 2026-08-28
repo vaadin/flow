@@ -119,15 +119,10 @@ function invokeJavaScript(
     const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
     fn.apply(context, parameters);
   } catch (exception) {
-    // The failure itself is surfaced even in production mode. Java did this via
-    // Console.reportStacktrace, which rethrows asynchronously and so is not
-    // subject to the production-mode log suppression; rethrowing here would
-    // instead reach the window 'error' listener and pop the system error
-    // notification, so the message is logged directly.
-    // eslint-disable-next-line no-console -- deliberately ungated, see above
-    console.error(exception instanceof Error ? exception.message : String(exception));
-    // The explanatory messages went through Console in Java, so they are
-    // suppressed in production mode.
+    // Reported through the ported Console, which rethrows asynchronously and so
+    // is not subject to the production-mode log suppression - keeping the stack
+    // that a logged message alone would lose.
+    Console.reportStacktrace(exception);
     Console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
     if (!productionMode) {
       Console.error(exception);
@@ -182,7 +177,7 @@ export class ExecuteJavaScriptProcessor {
 
       const stateNode = decodeStateNode(tree, parameterJson);
       if (stateNode !== null) {
-        if (this.#isVirtualChildAwaitingInitialization(stateNode) || !this.#isBound(stateNode)) {
+        if (this.#isVirtualChildAwaitingInitialization(stateNode) || !this.isBound(stateNode)) {
           // Defer until the node's DOM is set, then retry the whole invocation.
           stateNode.addDomNodeSetListener(() => {
             Reactive.addPostFlushListener(() => this.#handleInvocation(invocation));
@@ -195,7 +190,7 @@ export class ExecuteJavaScriptProcessor {
     }
 
     parameterNamesAndCode.push(invocation[invocation.length - 1] as string);
-    this.#invoke(parameterNamesAndCode, parameters, nodeParameters);
+    this.invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
   /**
@@ -209,7 +204,11 @@ export class ExecuteJavaScriptProcessor {
    * @param parameters - an array of parameter values
    * @param nodeParameters - the node parameters
    */
-  #invoke(parameterNamesAndCode: string[], parameters: unknown[], nodeParameters: Map<unknown, StateNode>): void {
+  protected invoke(
+    parameterNamesAndCode: string[],
+    parameters: unknown[],
+    nodeParameters: Map<unknown, StateNode>
+  ): void {
     const configuration = this.#registry.getApplicationConfiguration();
     const getNode = (element: unknown): unknown => {
       const node = nodeParameters.get(element);
@@ -240,13 +239,13 @@ export class ExecuteJavaScriptProcessor {
 
   // A node is bound once it has a DOM node that does not need rebinding, and so
   // is each of its ancestors.
-  #isBound(node: StateNode): boolean {
+  protected isBound(node: StateNode): boolean {
     const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
     const parent = node.getParent();
     if (!isNodeBound || parent === null) {
       return isNodeBound;
     }
-    return this.#isBound(parent);
+    return this.isBound(parent);
   }
 
   // A virtual child injected by id / as a sub-template is awaiting initialization
