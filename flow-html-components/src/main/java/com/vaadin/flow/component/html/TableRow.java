@@ -21,6 +21,7 @@ import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -173,7 +174,7 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     }
 
     private <T extends Component> List<T> cellsOfType(Class<T> type) {
-        return getChildren().filter(type::isInstance).map(type::cast).toList();
+        return ComponentUtil.getChildrenOfType(this, type).toList();
     }
 
     private <T extends TableCell> T append(T cell) {
