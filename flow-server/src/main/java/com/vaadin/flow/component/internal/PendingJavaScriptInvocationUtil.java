@@ -52,25 +52,26 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     /**
-     * Records that the given invocation has been scheduled, and logs a warning
-     * if its UI has an alarming number of undelivered invocations.
+     * Records that the given invocation is waiting to be sent, and logs a
+     * warning if its UI has an alarming number of undelivered invocations.
      * <p>
      * The count is kept per UI rather than per state node, since a running
      * application has far more state nodes than UIs and even a single field on
      * every node adds up.
      *
      * @param invocation
-     *            the scheduled invocation, not <code>null</code>
+     *            the invocation waiting to be sent, not <code>null</code>
      * @return the UI internals the invocation was counted in, or
-     *         <code>null</code> if no UI could be resolved for it
+     *         <code>null</code> if its owner does not belong to a UI
      */
     static UIInternals invocationScheduled(
             PendingJavaScriptInvocation invocation) {
         UIInternals internals = findInternals(invocation.getOwner());
         if (internals == null) {
-            // Invocations scheduled for a detached owner outside of any UI
-            // are not counted at all, which is accepted to keep this simple:
-            // they are only reachable through the owner that holds them
+            // An owner that has never been attached does not belong to any UI,
+            // so there is no count that the invocation could be part of. It is
+            // only reachable through that owner, which would in turn start
+            // referencing a UI of its own only because of the count
             return null;
         }
 
@@ -91,12 +92,10 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     private static UIInternals findInternals(StateNode owner) {
+        // A node keeps its state tree when it is detached, so this also
+        // resolves the UI of an owner that is currently detached but has been
+        // attached at some point
         UI ui = getUI(owner);
-        if (ui == null) {
-            // An invocation scheduled for a detached owner is counted in the UI
-            // that scheduled it, since that is the UI whose code keeps it alive
-            ui = UI.getCurrent();
-        }
         return ui == null ? null : ui.getInternals();
     }
 

@@ -200,16 +200,12 @@ public class UIInternals implements Serializable {
      * related UI without being sent to the client. Kept here instead of on the
      * individual state nodes to avoid growing the size of every node.
      * <p>
-     * Not serialized: the invocations restored with the related UI have lost
-     * the reference to the internals that counted them, so they would never
-     * bring this count back down again. Counting starts over from zero instead,
-     * which delays the warning for a UI that is deserialized with invocations
-     * already waiting to be sent - and silences it entirely in a deployment
-     * that serializes the session for every request, such as session
-     * replication in a cluster, since the count then restarts before it can
-     * ever reach the threshold.
+     * Serialized together with the invocations that make up the count, each of
+     * which references these internals until it stops being counted, so the
+     * count is still consistent for a UI that has been through a serialization
+     * round trip.
      */
-    private transient int undeliveredJsInvocations;
+    private int undeliveredJsInvocations;
 
     private boolean undeliveredJsInvocationsWarningLogged;
 

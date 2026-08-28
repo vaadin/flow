@@ -46,18 +46,16 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     /**
      * The UI internals whose undelivered invocation count includes this
-     * invocation, or <code>null</code> if it is not counted, either because no
-     * UI could be resolved when it was scheduled or because it is no longer
-     * waiting to be sent.
+     * invocation, or <code>null</code> if it is not counted, either because its
+     * owner does not belong to a UI or because it is no longer waiting to be
+     * sent.
      * <p>
-     * Not serialized: an invocation that is waiting to be sent is reachable
-     * from its owner node, so serializing a component that has scheduled one
-     * would otherwise pull in the whole UI and its session. A deserialized
-     * invocation is not counted anywhere, which matches
-     * {@link UIInternals#addUndeliveredJsInvocations(int)} starting over from
-     * zero for a deserialized UI.
+     * Only ever set to the internals of the UI that the owner belongs to, so
+     * this reaches nothing that the owner does not reach anyway. That also
+     * makes it safe to serialize: the count is restored together with the
+     * invocations that make it up.
      */
-    private transient UIInternals countedIn;
+    private UIInternals countedIn;
 
     /**
      * Creates a new pending invocation for the given owner node and invocation.
@@ -151,6 +149,23 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     @Override
     public boolean isSentToBrowser() {
         return sentToBrowser;
+    }
+
+    /**
+     * Counts this invocation as undelivered in the UI that its owner now
+     * belongs to, unless it is already counted or no longer waiting to be sent.
+     * <p>
+     * An invocation scheduled for an owner that was not attached to any UI is
+     * not counted when it is created, since there is no UI to count it in. It
+     * starts counting once the owner is attached, which is also when it starts
+     * being on its way to a client. Called by the framework when the owner is
+     * attached.
+     */
+    public void countWhenAttached() {
+        if (countedIn != null || sentToBrowser || canceled) {
+            return;
+        }
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     // Non-private for testing purposes

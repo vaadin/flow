@@ -114,28 +114,47 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void scheduleInvocationForDetachedOwner_countedInCurrentUI() {
+    void scheduleInvocationForOwnerOutsideAnyUI_notCounted() {
         MockUI ui = new MockUI();
-        StateNode detachedNode = new StateNode(ElementData.class);
+        StateNode neverAttachedNode = new StateNode(ElementData.class);
 
-        createInvocation(detachedNode);
+        PendingJavaScriptInvocation invocation = createInvocation(
+                neverAttachedNode);
 
-        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
-                "an invocation for a detached owner should be counted in the UI that scheduled it");
+        assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
+                "an invocation for an owner that does not belong to a UI should not be counted");
+        assertTrue(invocation.cancelExecution(),
+                "an uncounted invocation should still be cancelable");
     }
 
     @Test
-    void scheduleInvocationWithoutAnyUI_notCounted() {
+    void scheduleInvocationForDetachedOwner_countedInTheUIOfTheOwner() {
         MockUI ui = new MockUI();
-        StateNode detachedNode = new StateNode(ElementData.class);
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        ui.remove(component);
+        // A detached node keeps the state tree it was attached to
         CurrentInstance.clearAll();
 
-        PendingJavaScriptInvocation invocation = createInvocation(detachedNode);
+        createInvocation(component.getElement().getNode());
 
+        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
+                "an invocation for an owner that has been attached should be counted in the UI of that owner");
+    }
+
+    @Test
+    void executeJsForOwnerOutsideAnyUI_countedWhenTheOwnerIsAttached() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+
+        component.getElement().executeJs("this.foo = $0", "bar");
         assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
-                "an invocation scheduled without any UI should not be counted");
-        assertTrue(invocation.cancelExecution(),
-                "an uncounted invocation should still be cancelable");
+                "an invocation for an owner that does not belong to a UI should not be counted");
+
+        ui.add(component);
+
+        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
+                "attaching the owner should count the invocation waiting for it");
     }
 
     @Test
@@ -264,12 +283,12 @@ class PendingJavaScriptInvocationUtilTest {
     @Test
     void serializeOwnerOfScheduledInvocation_uiNotPartOfTheGraph()
             throws Exception {
-        MockUI ui = new MockUI();
+        // There is a current UI, but the owner does not belong to it: it
+        // holds on to the invocation until it is attached, and does not start
+        // referencing a UI because of it
+        new MockUI();
         TestComponent component = new TestComponent();
-        // A detached owner holds on to the invocation until it is attached
         component.getElement().executeJs("this.foo = $0", "bar");
-        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
-                "the invocation should be counted in the current UI");
 
         List<Object> serialized = new ArrayList<>();
         ObjectOutputStream stream = new ObjectOutputStream(
@@ -292,7 +311,7 @@ class PendingJavaScriptInvocationUtilTest {
                         PendingJavaScriptInvocation.class::isInstance),
                 "the scheduled invocation should be part of the serialized graph");
         assertTrue(serialized.stream().noneMatch(UIInternals.class::isInstance),
-                "serializing the owner of a scheduled invocation should not pull in the UI it was counted in");
+                "serializing the owner of a scheduled invocation should not pull in the current UI");
     }
 
     private static StateNode attachedNode(MockUI ui) {
