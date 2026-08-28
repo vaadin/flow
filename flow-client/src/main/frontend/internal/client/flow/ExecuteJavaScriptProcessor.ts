@@ -57,13 +57,14 @@ import { Console } from '../Console';
 // take a resolved StateNode (looked up via getNode); the rest take their
 // arguments directly.
 interface ContextCallbacks {
-  getNode: (element: unknown) => unknown;
-  attachExistingElement: (node: unknown, previousSibling: unknown, tagName: unknown, id: unknown) => void;
-  populateModelProperties: (node: unknown, properties: unknown) => void;
-  registerUpdatableModelProperties: (node: unknown, properties: unknown) => void;
+  getNode: (element: unknown) => StateNode;
+
+  attachExistingElement: (node: StateNode, previousSibling: Element | null, tagName: string, id: number) => void;
+  populateModelProperties: (node: StateNode, properties: string[]) => void;
+  registerUpdatableModelProperties: (node: StateNode, properties: string[]) => void;
   stopApplication: () => void;
-  registerInitializer: (node: unknown, id: unknown, cleanup: unknown) => void;
-  disposeInitializer: (node: unknown, id: unknown) => void;
+  registerInitializer: (node: StateNode, id: number, cleanup: () => void) => void;
+  disposeInitializer: (node: StateNode, id: number) => void;
 }
 
 /**
@@ -81,11 +82,16 @@ function getContextExecutionObject(
   object.$appId = appId.replace(/-\d+$/, '');
   object.registry = registry;
   object.attachExistingElement = (parent: unknown, previousSibling: unknown, tagName: unknown, id: unknown): void =>
-    callbacks.attachExistingElement(callbacks.getNode(parent), previousSibling, tagName, id);
+    callbacks.attachExistingElement(
+      callbacks.getNode(parent),
+      previousSibling as Element | null,
+      tagName as string,
+      id as number
+    );
   object.populateModelProperties = (element: unknown, properties: unknown): void =>
-    callbacks.populateModelProperties(callbacks.getNode(element), properties);
+    callbacks.populateModelProperties(callbacks.getNode(element), properties as string[]);
   object.registerUpdatableModelProperties = (element: unknown, properties: unknown): void =>
-    callbacks.registerUpdatableModelProperties(callbacks.getNode(element), properties);
+    callbacks.registerUpdatableModelProperties(callbacks.getNode(element), properties as string[]);
   object.stopApplication = callbacks.stopApplication;
   object.registerInitializer = callbacks.registerInitializer;
   object.disposeInitializer = callbacks.disposeInitializer;
@@ -212,7 +218,7 @@ export class ExecuteJavaScriptProcessor {
     nodeParameters: Map<unknown, StateNode>
   ): void {
     const configuration = this.#registry.getApplicationConfiguration();
-    const getNode = (element: unknown): unknown => {
+    const getNode = (element: unknown): StateNode => {
       const node = nodeParameters.get(element);
       if (node === undefined) {
         throw new ReferenceError('There is no a StateNode for the given argument.');
@@ -221,20 +227,17 @@ export class ExecuteJavaScriptProcessor {
     };
     const context = getContextExecutionObject(configuration.getApplicationId(), this.#registry, {
       getNode,
-      attachExistingElement: (node, previousSibling, tagName, id) =>
-        attachExistingElement(node as never, previousSibling as Element | null, tagName as string, id as number),
-      populateModelProperties: (node, properties) => populateModelProperties(node as never, properties as string[]),
-      registerUpdatableModelProperties: (node, properties) =>
-        registerUpdatableModelProperties(node as never, properties as string[]),
+      attachExistingElement,
+      populateModelProperties,
+      registerUpdatableModelProperties,
       stopApplication: () => {
         const lifecycle = this.#registry.getUILifecycle();
         if (!lifecycle.isTerminated()) {
           lifecycle.setState(UIState.TERMINATED);
         }
       },
-      registerInitializer: (node, id, cleanup) =>
-        registerInitializer(node as never, id as number, cleanup as () => void),
-      disposeInitializer: (node, id) => disposeInitializer(node as never, id as number)
+      registerInitializer,
+      disposeInitializer
     });
     invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
   }
