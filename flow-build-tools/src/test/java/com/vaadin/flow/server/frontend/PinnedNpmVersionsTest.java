@@ -144,6 +144,31 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void packageOfThePlatformItself_isNotPinnedAndDoesNotHideTheOthers()
+            throws IOException {
+        PinnedNpmVersions versions = createVersions("""
+                {
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "25.1.0"
+                    },
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, null);
+
+        ObjectNode dependencies = versions.getAllDependencies();
+
+        assertFalse(dependencies.has("@vaadin/vaadin-core"));
+        // The packages declared after it are collected all the same
+        assertTrue(dependencies.has("@vaadin/button"));
+    }
+
+    @Test
     void exclusionsOfBothVersionsFilesAreCollected() throws IOException {
         PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
                 VAADIN_VERSIONS);

@@ -180,7 +180,9 @@ class PinnedNpmVersions {
             if (value.has(NPM_NAME)) {
                 String npmName = value.get(NPM_NAME).asString();
                 if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
-                    return;
+                    // The package of the platform itself is not pinned, but
+                    // the packages declared next to it still are
+                    continue;
                 }
                 String version;
                 if (value.has(NPM_VERSION)) {
