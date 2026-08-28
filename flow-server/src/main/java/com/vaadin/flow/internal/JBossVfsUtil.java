@@ -86,25 +86,46 @@ public final class JBossVfsUtil {
     }
 
     private static Object getVirtualFile(URL folder) throws IOException {
-        return folder.openConnection().getContent();
+        Object virtualFile = folder.openConnection().getContent();
+        if (virtualFile == null) {
+            throw new IOException(
+                    "'" + folder + "' does not serve a JBoss virtual file");
+        }
+        return virtualFile;
     }
 
     private static List<?> getChildren(Object virtualFile, String methodName)
             throws IOException {
-        return (List<?>) invoke(virtualFile, methodName);
+        Object children = invoke(virtualFile, methodName);
+        if (!(children instanceof List<?> childList)) {
+            throw new IOException("The JBoss VFS API method " + methodName
+                    + " of '" + virtualFile + "' did not return a list");
+        }
+        return childList;
     }
 
     private static File getPhysicalFile(Object virtualFile) throws IOException {
-        return (File) invoke(virtualFile, "getPhysicalFile");
+        Object physicalFile = invoke(virtualFile, "getPhysicalFile");
+        if (!(physicalFile instanceof File file)) {
+            throw new IOException(
+                    "The JBoss VFS API method getPhysicalFile of '"
+                            + virtualFile + "' did not return a file");
+        }
+        return file;
     }
 
+    /**
+     * Invokes a method of the virtual file, turning anything that goes wrong
+     * into an {@link IOException}, as an object that is not the virtual file
+     * the protocol is expected to serve is a folder that cannot be read.
+     */
     private static Object invoke(Object virtualFile, String methodName)
             throws IOException {
         try {
             Method method = virtualFile.getClass().getMethod(methodName);
             return method.invoke(virtualFile);
         } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException e) {
+                | InvocationTargetException | RuntimeException e) {
             throw new IOException("Failed to invoke the JBoss VFS API method "
                     + methodName + " for '" + virtualFile + "'", e);
         }

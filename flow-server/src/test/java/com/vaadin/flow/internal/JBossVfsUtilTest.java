@@ -44,8 +44,11 @@ class JBossVfsUtilTest {
 
         private final File file;
 
-        public MockVirtualFile(File file) {
+        private final List<File> materialized;
+
+        public MockVirtualFile(File file, List<File> materialized) {
             this.file = file;
+            this.materialized = materialized;
         }
 
         public List<MockVirtualFile> getChildren() {
@@ -53,7 +56,7 @@ class JBossVfsUtilTest {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File child : files) {
-                    children.add(new MockVirtualFile(child));
+                    children.add(new MockVirtualFile(child, materialized));
                 }
             }
             return children;
@@ -66,6 +69,29 @@ class JBossVfsUtilTest {
                 children.addAll(child.getChildrenRecursively());
             }
             return children;
+        }
+
+        public File getPhysicalFile() {
+            // The real implementation creates the file on disk when asked for
+            materialized.add(file);
+            return file;
+        }
+    }
+
+    /**
+     * Serves a virtual file that only tells about the files of the folder
+     * itself.
+     */
+    public static class MockVirtualFileWithoutRecursion {
+
+        private final File file;
+
+        public MockVirtualFileWithoutRecursion(File file) {
+            this.file = file;
+        }
+
+        public List<MockVirtualFileWithoutRecursion> getChildren() {
+            return List.of();
         }
 
         public File getPhysicalFile() {
@@ -83,17 +109,38 @@ class JBossVfsUtilTest {
     void listFolder_givesTheFilesOfTheFolder() throws IOException {
         File folder = createFolder();
 
-        List<String> names = JBossVfsUtil.listFolder(vfsUrl(folder)).stream()
+        List<String> names = JBossVfsUtil
+                .listFolder(vfsUrl(folder, new ArrayList<>())).stream()
                 .map(File::getName).sorted().toList();
 
         assertEquals(List.of("nested", "one.txt"), names);
     }
 
     @Test
-    void materializeFolder_givesTheFolderItself() throws IOException {
+    void materializeFolder_givesTheFolderWithEverythingInItCreated()
+            throws IOException {
         File folder = createFolder();
+        List<File> materialized = new ArrayList<>();
 
-        assertEquals(folder, JBossVfsUtil.materializeFolder(vfsUrl(folder)));
+        assertEquals(folder,
+                JBossVfsUtil.materializeFolder(vfsUrl(folder, materialized)));
+
+        // Every file and folder inside it has to be created as well, as the
+        // caller reads them through the folder
+        assertEquals(
+                List.of(folder, new File(folder, "nested"),
+                        new File(new File(folder, "nested"), "two.txt"),
+                        new File(folder, "one.txt")),
+                materialized.stream().sorted().toList());
+    }
+
+    @Test
+    void virtualFileWithoutRecursiveChildren_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(new MockVirtualFileWithoutRecursion(createFolder()));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
@@ -114,8 +161,9 @@ class JBossVfsUtilTest {
         return folder;
     }
 
-    private URL vfsUrl(File folder) throws IOException {
-        return vfsUrl(new MockVirtualFile(folder));
+    private URL vfsUrl(File folder, List<File> materialized)
+            throws IOException {
+        return vfsUrl(new MockVirtualFile(folder, materialized));
     }
 
     private URL vfsUrl(Object content) throws IOException {
