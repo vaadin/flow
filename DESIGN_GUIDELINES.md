@@ -171,6 +171,61 @@ client-side subscriptions — must be tied to a component's lifecycle:
   — inert exists to prevent user actions while something else has
   focus; only bypass it for passive streams.
 
+### Naming components that wrap HTML elements
+
+A component class name in `flow-html-components` is public API: changing it
+later costs a deprecation cycle and a find-and-replace in every application.
+Decide it from the rules below rather than case by case.
+
+- **Default to the element's own name.** `<div>` → `Div`, `<section>` →
+  `Section`, `<table>` → the table component. Where the tag is an
+  abbreviation inherited from early HTML, spell it out: `<p>` →
+  `Paragraph`, `<a>` → `Anchor`, `<em>` → `Emphasis`, `<img>` → `Image`.
+  Drop the `HTML` prefix and `Element` suffix that the DOM interface names
+  carry — the class for `<tr>` is named after "table row", not after
+  `HTMLTableRowElement`.
+
+- **Add a prefix only for one of two reasons.**
+  - *The name is taken.* A Vaadin component already owns the plain name and
+    both classes have to be usable in the same file — `Button` and
+    `NativeButton`, `Details` and `NativeDetails`.
+  - *The plain name invites a mistake that goes unnoticed.* `<label>` reads
+    like the "short piece of text" widget of Swing and of Vaadin 8. Picking
+    `Label` for that purpose compiles, looks right, and silently produces
+    markup that misleads screen readers, so the class is `NativeLabel` and
+    the plain name is deliberately hard to find.
+
+  The second reason is narrow on purpose. It is about mistakes that stay
+  invisible, not about a name a user might reach for and then immediately
+  reject: someone who tries `Table` expecting Vaadin 8's data-bound table
+  finds no items, no columns and no data provider, and goes looking for
+  `Grid` within a minute. A confusable name that fails loudly is a Javadoc
+  problem, not a naming problem.
+
+- **The prefix is `Native`.** It is what the existing prefixed components
+  use, and one inconsistent-but-uniform prefix is worth more than a second,
+  better-reasoned one alongside it. Do not introduce `Html…` as a parallel
+  convention for new classes.
+
+- **Prefix the class that has the problem, not the whole family.** `<td>`
+  and `<tr>` collide with nothing and mislead nobody; `NativeTableCell` and
+  `NativeTableRow` are prefixed only because they arrived together with
+  `NativeTable`. A new family of related elements should prefix the members
+  that meet a criterion above and leave the rest alone.
+
+- **These are not reasons to prefix:** the element is low-level; the plain
+  name might be wanted for a component we may build one day (do not reserve
+  names for components that do not exist); the sibling classes are
+  prefixed; the prefix makes the class look more advanced. Every prefix
+  costs discoverability for the users who do want the element — pay it only
+  when one of the two reasons above applies.
+
+- **Renaming an existing component is a breaking change.** Do not rename
+  just to close the gap with this guidance. When a rename is worth it, add
+  the new class, deprecate the old one with a `@deprecated` pointer
+  explaining what to use instead, and remove it in the next major — the way
+  `Label` was replaced by `NativeLabel` in 24.1 and removed in 25.
+
 ## Browser / JavaScript integration
 
 ### Wrap thin; document thick
