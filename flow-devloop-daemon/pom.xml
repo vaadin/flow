@@ -9,7 +9,7 @@
   <artifactId>flow-devloop-daemon</artifactId>
   <packaging>jar</packaging>
   <name>Flow Dev Loop Daemon</name>
-  <description>Long-running daemon that owns one Vaadin application's edit-to-running-app loop: background compilation, hot swap or restart, and the local RPC the vaadin-dev CLI speaks. JDK-only by design, so it starts fast and never drags the application's classpath into the daemon JVM.</description>
+  <description>JDK-only daemon that runs the vaadin-dev dev loop.</description>
 
   <properties>
     <!-- Not an OSGi bundle: this jar is run, not imported. -->

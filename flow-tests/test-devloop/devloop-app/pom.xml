@@ -9,10 +9,7 @@
   <artifactId>flow-test-devloop-app</artifactId>
   <packaging>jar</packaging>
   <name>Flow dev loop tests: application</name>
-  <!-- Kept to one paragraph: a blank line in a description becomes an empty
-       continuation line in the OSGi manifest bnd generates, and bnd then fails
-       the build with "invalid manifest format". -->
-  <description>The Vaadin application the dev-loop ITs drive. It stands in for a user application, so it carries its own Spring Boot configuration and depends on the sibling library like any other jar. The container is not started by a Maven plugin, because the daemon owns the application process. See ../README.md.</description>
+  <description>The Vaadin application the dev-loop ITs drive.</description>
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>

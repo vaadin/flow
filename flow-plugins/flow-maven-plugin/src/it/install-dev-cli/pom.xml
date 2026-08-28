@@ -8,11 +8,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <description>
-        Tests that flow:install-dev-cli writes exactly the vaadin-dev CLI and the two
-        agent skill trees into the module it runs on, keeps a locally edited file, and
-        replaces it only when told to.
-    </description>
+    <description>Tests that flow:install-dev-cli installs the vaadin-dev CLI.</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
