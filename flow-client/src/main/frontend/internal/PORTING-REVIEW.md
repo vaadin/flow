@@ -82,9 +82,15 @@ produced a false clean:
   two comment lines; matching only the first line reports the second name as
   uncited.
 
-Filter to `@Test` methods as well: a JRE-side test class also declares its mock
+Filter to test methods as well: a JRE-side test class also declares its mock
 collaborators' methods (`sendNodeSyncMessage`, `inlineStyleSheet`, …), and
-counting those as cases invents uncited names.
+counting those as cases invents uncited names. A method counts when it is
+**`@Test`-annotated *or* named `test…`** — `src/test-gwt` mixes both conventions,
+`GwtClientJsonCodecTest` annotating its cases while `GwtDependencyLoaderTest`,
+`GwtExecuteJavaScriptElementUtilsTest` and `GwtStateTreeTest` rely on the JUnit 3
+naming their `GWTTestCase` base needs. Requiring the annotation alone drops those
+classes to zero cases, which reads as a clean reverse count over the part of the
+suite with the most coverage.
 
 > Regression this prevents: two `StateTreeTests` cases were labelled *Beyond the
 > Java suite* directly above a bare comment naming their `GwtStateTreeTest`
