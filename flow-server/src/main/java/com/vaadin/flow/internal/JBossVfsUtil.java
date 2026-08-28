@@ -86,8 +86,9 @@ public final class JBossVfsUtil {
      * Packs the given jar into a jar file on disk, as a jar of the virtual file
      * system is not a file the caller can open on its own.
      * <p>
-     * The jar is written to a temporary file that is deleted when the JVM
-     * exits.
+     * The jar is written into a temporary folder of its own, rather than into
+     * the temporary folder shared by everything on the machine, and both are
+     * deleted when the JVM exits.
      *
      * @param jar
      *            the {@code vfs} URL of the jar
@@ -105,9 +106,12 @@ public final class JBossVfsUtil {
         String fileNamePrefix = jarPath.substring(
                 jarPath.lastIndexOf(jarPath.contains("\\") ? '\\' : '/') + 1,
                 jarSuffix);
-        Path jarFile = Files.createTempFile(fileNamePrefix, ".jar");
+        Path folder = Files.createTempDirectory("vaadin-jboss-vfs");
+        // The caller reads the jar for as long as the JVM runs
+        folder.toFile().deleteOnExit(); // NOSONAR
+        Path jarFile = folder.resolve(fileNamePrefix + ".jar");
         writeJar(virtualJar, jarFile);
-        jarFile.toFile().deleteOnExit();
+        jarFile.toFile().deleteOnExit(); // NOSONAR
         return jarFile.toFile();
     }
 

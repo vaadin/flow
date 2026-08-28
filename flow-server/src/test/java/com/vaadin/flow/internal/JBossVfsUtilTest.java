@@ -166,7 +166,7 @@ class JBossVfsUtilTest {
         }
 
         public String getPathNameRelativeTo(MalformedVirtualJar parent) {
-            return "one.txt";
+            return parent == this ? "one.txt" : "nested/one.txt";
         }
     }
 
