@@ -117,8 +117,11 @@ class ResourceFolderUtilTest {
                 new VirtualFileHandler(folder));
 
         List<String> contents = new ArrayList<>();
-        ResourceFolderUtil.visitFiles(vfsFolder,
-                file -> contents.add(file.getName() + "=" + read(file.open())));
+        ResourceFolderUtil.visitFiles(vfsFolder, file -> {
+            contents.add(file.getName() + "=" + read(file.open()));
+            assertEquals(vfsFolder + file.getName(), file.getLocation(),
+                    "The location should point at the file in the folder");
+        });
 
         // The folder inside it is not a file of the folder
         assertEquals(List.of("one.txt=first"), contents);
