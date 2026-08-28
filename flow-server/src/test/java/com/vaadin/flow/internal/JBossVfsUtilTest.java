@@ -32,6 +32,9 @@ import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -369,20 +372,32 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void materializeFolder_fileIsCreatedOutsideTheFolder_theFolderIsStillGiven()
+    void materializeFolder_fileIsCreatedOutsideTheFolder_theFolderIsGivenAndItIsLogged()
             throws IOException {
         File folder = createFolder();
+        File outside = new File(temporaryFolder, "mount");
         // A mount inside the folder creates its files under a folder of its
         // own, which the caller reading the folder does not see
         URL url = vfsUrl(new MockVirtualFile(folder, new ArrayList<>()) {
             @Override
             public List<MockVirtualFile> getChildrenRecursively() {
-                return List.of(new MockVirtualFile(
-                        new File(temporaryFolder, "mount"), new ArrayList<>()));
+                return List.of(new MockVirtualFile(outside, new ArrayList<>()));
             }
         });
 
-        assertEquals(folder, JBossVfsUtil.materializeFolder(url));
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(JBossVfsUtil.class))
+                    .thenReturn(logger);
+
+            assertEquals(folder, JBossVfsUtil.materializeFolder(url));
+        }
+
+        assertTrue(logger.getLogs().contains(outside.toString()),
+                "Creating a file outside the folder should be logged, logs were "
+                        + logger.getLogs());
     }
 
     @Test
