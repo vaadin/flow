@@ -78,11 +78,6 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
-        // Table.setCaption/setHead/setFoot attach a child rather than write a
-        // property, but the setter/getter round trip still holds
-        testValues.put(TableCaption.class, new TableCaption("Caption"));
-        testValues.put(TableHead.class, new TableHead());
-        testValues.put(TableFoot.class, new TableFoot());
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -225,6 +220,14 @@ class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == HasAriaLabel.class
                 && method.getName().equals("setAriaLabelledBy")
                 && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
+        // Table.setCaption/setHead/setFoot attach a child rather than write a
+        // property; TableTest covers them, and feeding a shared component
+        // instance through this walk would leave it parented
+        if (method.getDeclaringClass() == Table.class && Component.class
+                .isAssignableFrom(method.getParameterTypes()[0])) {
             return true;
         }
 
