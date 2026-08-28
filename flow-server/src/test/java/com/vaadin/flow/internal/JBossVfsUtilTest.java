@@ -30,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JBossVfsUtilTest {
 
@@ -86,39 +87,53 @@ class JBossVfsUtilTest {
 
         private final Object children;
 
+        private final Object recursiveChildren;
+
         private final Object physicalFile;
 
         private final RuntimeException failure;
 
-        private MalformedVirtualFile(Object children, Object physicalFile,
-                RuntimeException failure) {
+        private MalformedVirtualFile(Object children, Object recursiveChildren,
+                Object physicalFile, RuntimeException failure) {
             this.children = children;
+            this.recursiveChildren = recursiveChildren;
             this.physicalFile = physicalFile;
             this.failure = failure;
         }
 
         static MalformedVirtualFile withChildren(Object children) {
-            return new MalformedVirtualFile(children, new File("folder"), null);
+            return new MalformedVirtualFile(children, List.of(),
+                    new File("folder"), null);
+        }
+
+        static MalformedVirtualFile withRecursiveChildren(
+                Object recursiveChildren) {
+            return new MalformedVirtualFile(List.of(), recursiveChildren,
+                    new File("folder"), null);
         }
 
         static MalformedVirtualFile withPhysicalFile(Object physicalFile) {
-            return new MalformedVirtualFile(List.of(), physicalFile, null);
+            return new MalformedVirtualFile(List.of(), List.of(), physicalFile,
+                    null);
         }
 
         static MalformedVirtualFile failing(RuntimeException failure) {
-            return new MalformedVirtualFile(List.of(), new File("folder"),
-                    failure);
+            return new MalformedVirtualFile(List.of(), List.of(),
+                    new File("folder"), failure);
         }
 
         public Object getChildren() {
-            return getChildrenRecursively();
+            if (failure != null) {
+                throw failure;
+            }
+            return children;
         }
 
         public Object getChildrenRecursively() {
             if (failure != null) {
                 throw failure;
             }
-            return children;
+            return recursiveChildren;
         }
 
         public Object getPhysicalFile() {
@@ -194,11 +209,28 @@ class JBossVfsUtilTest {
     @Test
     void recursiveChildrenAreNotFiles_failsWithAnIOException()
             throws IOException {
-        URL url = vfsUrl(
-                MalformedVirtualFile.withChildren("not a list of children"));
+        // Only the recursive children are malformed, so this fails for the
+        // folder tree and not for the folder itself
+        URL url = vfsUrl(MalformedVirtualFile
+                .withRecursiveChildren("not a list of children"));
 
+        assertEquals(new File("folder"), JBossVfsUtil.materializeFolder(url));
         assertThrows(IOException.class,
                 () -> JBossVfsUtil.materializeFolderTree(url));
+    }
+
+    @Test
+    void fileIsCreatedOutsideTheFolder_failsWithAnIOException()
+            throws IOException {
+        File folder = createFolder();
+        // A file of the folder that is created somewhere else could not be
+        // read through the folder
+        URL url = vfsUrl(MalformedVirtualFile.withChildren(List.of(
+                MalformedVirtualFile.withPhysicalFile(new File("elsewhere")))));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+        assertTrue(folder.isDirectory());
     }
 
     @Test

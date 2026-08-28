@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,12 +47,16 @@ public final class JBossVfsUtil {
 
     /**
      * Creates the folder and the files in it on disk.
+     * <p>
+     * The files are created inside the folder that is returned, so that they
+     * can be read through it.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
      * @return the folder on disk
      * @throws IOException
-     *             if the folder cannot be read
+     *             if the folder cannot be read, or its files are not created
+     *             inside it
      */
     public static File materializeFolder(URL folder) throws IOException {
         return materialize(folder, "getChildren");
@@ -65,7 +70,8 @@ public final class JBossVfsUtil {
      *            the {@code vfs} URL of the folder
      * @return the folder on disk
      * @throws IOException
-     *             if the folder cannot be read
+     *             if the folder cannot be read, or its files are not created
+     *             inside it
      */
     public static File materializeFolderTree(URL folder) throws IOException {
         return materialize(folder, "getChildrenRecursively");
@@ -75,11 +81,22 @@ public final class JBossVfsUtil {
             throws IOException {
         Object virtualFolder = getVirtualFile(folder);
         // A virtual file only exists on disk once it has been asked for, so
-        // every child is asked for even when only the folder is returned
+        // every child is asked for even though only the folder is returned
+        List<File> files = new ArrayList<>();
         for (Object child : getChildren(virtualFolder, childrenMethod)) {
-            getPhysicalFile(child);
+            files.add(getPhysicalFile(child));
         }
-        return getPhysicalFile(virtualFolder);
+        File physicalFolder = getPhysicalFile(virtualFolder);
+        for (File file : files) {
+            // The caller reads the files through the folder, so a file that
+            // was created elsewhere would go unnoticed
+            if (!file.toPath().startsWith(physicalFolder.toPath())) {
+                throw new IOException("'" + folder + "' was created as '"
+                        + physicalFolder
+                        + "', which does not contain its file '" + file + "'");
+            }
+        }
+        return physicalFolder;
     }
 
     private static Object getVirtualFile(URL folder) throws IOException {
