@@ -25,6 +25,7 @@ import com.vaadin.flow.server.VaadinService;
  * session error handler independently of this event.
  *
  * @see AbstractRpcInvocationEvent
+ * @since 25.3
  */
 public class RpcInvocationFailedEvent extends AbstractRpcInvocationEvent {
 

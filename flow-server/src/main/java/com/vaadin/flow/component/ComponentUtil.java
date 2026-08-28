@@ -890,6 +890,7 @@ public class ComponentUtil {
      *            not {@code null}
      * @param idConsumer
      *            receives the id referencing the target, not {@code null}
+     * @since 25.3
      */
     public static void resolveOrGenerateIdLater(Element sourceElement,
             Component targetComponent, String generatedIdPrefix,

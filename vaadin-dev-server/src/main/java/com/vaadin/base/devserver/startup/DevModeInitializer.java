@@ -95,7 +95,7 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 24.3.22
+ * @since 8.0
  */
 public class DevModeInitializer implements Serializable {
 
@@ -293,8 +293,13 @@ public class DevModeInitializer implements Serializable {
         boolean npmExcludeWebComponents = config
                 .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
 
-        int minimumFrontendPackageAgeDays = Integer.parseInt(config
-                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"));
+        // Left as null when not configured, so that the value configured for
+        // the package manager itself is used instead of being overridden
+        String minimumFrontendPackageAge = config
+                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, null);
+        Integer minimumFrontendPackageAgeDays = minimumFrontendPackageAge == null
+                ? null
+                : Integer.valueOf(minimumFrontendPackageAge);
 
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)

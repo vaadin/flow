@@ -31,6 +31,8 @@ import java.lang.annotation.Target;
  * state of an already shown view, implement {@link HasDynamicTitle}.
  *
  * @since 1.0
+ * @see DynamicPageTitle
+ * @see HasDynamicTitle
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

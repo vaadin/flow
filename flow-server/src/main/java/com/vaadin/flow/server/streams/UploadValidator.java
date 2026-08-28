@@ -55,6 +55,7 @@ import java.nio.ByteBuffer;
  *
  * @see AbstractUploadHandler#withValidator(UploadValidator)
  * @see UploadEvent#reject(String)
+ * @since 25.3
  */
 public interface UploadValidator extends Serializable {
 

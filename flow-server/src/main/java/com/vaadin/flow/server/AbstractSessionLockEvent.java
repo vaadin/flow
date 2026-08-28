@@ -34,6 +34,8 @@ import com.vaadin.flow.component.UI;
  * {@link SessionLockRequestedEvent}, {@link SessionLockAcquiredEvent} and
  * {@link SessionLockReleasedEvent}, since the event bus dispatches events by
  * their exact type.
+ * 
+ * @since 25.3
  */
 public abstract class AbstractSessionLockEvent extends EventObject {
 
