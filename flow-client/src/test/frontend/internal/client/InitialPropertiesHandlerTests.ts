@@ -1,16 +1,16 @@
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { InitialPropertiesHandler } from '../../../../main/frontend/internal/client/InitialPropertiesHandler';
 
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_PROPERTIES
-const ELEMENT_PROPERTIES = 1;
+// com.vaadin.flow.internal.nodefeature.NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES
 
-// A StateNode stand-in whose ELEMENT_PROPERTIES feature holds the given initial
-// server property values (undefined => no ELEMENT_PROPERTIES feature).
+// A StateNode stand-in whose NodeFeatures.ELEMENT_PROPERTIES feature holds the given initial
+// server property values (undefined => no NodeFeatures.ELEMENT_PROPERTIES feature).
 function fakeNode(id: number, initialProps?: Record<string, unknown>): any {
   return {
     getId: () => id,
-    hasFeature: (feature: number) => feature === ELEMENT_PROPERTIES && initialProps !== undefined,
+    hasFeature: (feature: number) => feature === NodeFeatures.ELEMENT_PROPERTIES && initialProps !== undefined,
     getMap: (_feature: number) => ({
       forEachProperty: (cb: (property: any, name: string) => void) =>
         Object.entries(initialProps ?? {}).forEach(([name, value]) =>

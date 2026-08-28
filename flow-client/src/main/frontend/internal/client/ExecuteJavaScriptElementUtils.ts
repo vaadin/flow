@@ -31,15 +31,14 @@ function isPropertyDefined(node: Node, property: string): boolean {
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
 // StateNode is a contract (addUnregisterListener / setNodeData).
 
+import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { getTag, invokeWhenDefined } from './PolymerUtils';
 import { Reactive } from './flow/reactive/Reactive';
 import { getJsProperty } from './WidgetUtil';
 import { UpdatableModelProperties } from './flow/model/UpdatableModelProperties';
 import { Console } from './Console';
 
-// NodeFeatures.ELEMENT_PROPERTIES / ELEMENT_CHILDREN
-const ELEMENT_PROPERTIES = 1;
-const ELEMENT_CHILDREN = 2;
+// NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES / NodeFeatures.ELEMENT_CHILDREN
 
 /** The slice of MapProperty populateModelProperties uses. */
 interface ModelProperty {
@@ -170,7 +169,7 @@ export function attachExistingElement(
     return;
   }
 
-  const list = parent.getList(ELEMENT_CHILDREN);
+  const list = parent.getList(NodeFeatures.ELEMENT_CHILDREN);
   let existingId: number | null = null;
   let childIndex = 0;
   for (let i = 0; i < list.length(); i++) {
@@ -207,7 +206,7 @@ function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, propert
 
 /**
  * Populate model `properties`: add them into
- * `NodeFeatures.ELEMENT_PROPERTIES` {@link NodeMap} if they are
+ * `NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES` {@link NodeMap} if they are
  * not defined by the client-side element or send their client-side value to
  * the server otherwise.
  *
@@ -215,7 +214,7 @@ function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, propert
  * @param properties - array of property names to populate
  */
 export function populateModelProperties(node: ModelNode, properties: string[]): void {
-  const map = node.getMap(ELEMENT_PROPERTIES);
+  const map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
   if (node.getDomNode() === null) {
     invokeWhenDefined(getTag(node as never), () =>
       Reactive.addPostFlushListener(() => populateModelProperties(node, properties))

@@ -32,6 +32,8 @@
 // getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
 // are contracts satisfied at cutover.
 
+import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
+import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { assert } from '../../assert';
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
@@ -48,12 +50,7 @@ import type { StateTree } from './StateTree';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
 
-// NodeFeatures.ELEMENT_DATA / NodeProperties
-const ELEMENT_DATA = 0;
-const PAYLOAD = 'payload';
-const TYPE_PROPERTY = 'type';
-const INJECT_BY_ID = '@id';
-const TEMPLATE_IN_TEMPLATE = 'subTemplate';
+// NodeFeatures.NodeFeatures.ELEMENT_DATA / NodeProperties
 
 // The $entry-wrapped callbacks the executed script invokes via its context.
 // attachExistingElement / populateModelProperties / registerUpdatableModelProperties
@@ -254,12 +251,12 @@ export class ExecuteJavaScriptProcessor {
     if (node.getDomNode() !== null || node.getTree().getNode(node.getId()) === null) {
       return false;
     }
-    const elementData = node.getMap(ELEMENT_DATA);
-    if (elementData.hasPropertyValue(PAYLOAD)) {
-      const value = elementData.getProperty(PAYLOAD).getValue();
+    const elementData = node.getMap(NodeFeatures.ELEMENT_DATA);
+    if (elementData.hasPropertyValue(NodeProperties.PAYLOAD)) {
+      const value = elementData.getProperty(NodeProperties.PAYLOAD).getValue();
       if (value !== null && typeof value === 'object') {
-        const type = (value as Record<string, unknown>)[TYPE_PROPERTY];
-        return type === INJECT_BY_ID || type === TEMPLATE_IN_TEMPLATE;
+        const type = (value as Record<string, unknown>)[NodeProperties.TYPE];
+        return type === NodeProperties.INJECT_BY_ID || type === NodeProperties.TEMPLATE_IN_TEMPLATE;
       }
     }
     return false;

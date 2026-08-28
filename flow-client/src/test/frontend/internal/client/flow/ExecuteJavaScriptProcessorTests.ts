@@ -1,7 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { ExecuteJavaScriptProcessor } from '../../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 
-// Ported from com.vaadin.client.flow.ExecuteJavaScriptProcessorTest.
+// Beyond the Java suite: none of ExecuteJavaScriptProcessorTest's twelve cases
+// is ported yet - its five execute_* and seven isBound_* cases each need state
+// nodes built for them, and are tracked in the retrofit backlog. The cases here
+// cover the expression execution and the context object instead.
 describe('ExecuteJavaScriptProcessor', () => {
   describe('class execute', () => {
     function makeRegistry() {

@@ -4,6 +4,10 @@ import type { ResourceLoadListener } from '../../../../main/frontend/internal/cl
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+// Registries created by the case that is running, completed afterwards so the
+// eager counter never leaks between cases.
+const active: Array<{ completeAll(): void }> = [];
+
 function makeRegistry() {
   const calls: Array<{ method: string; args: unknown[]; listener: ResourceLoadListener }> = [];
   const record =
@@ -11,9 +15,6 @@ function makeRegistry() {
     (...args: unknown[]) => {
       const listener = args.find((a) => a && typeof a === 'object' && 'onLoad' in a) as ResourceLoadListener;
       calls.push({ method, args, listener });
-      // A real ResourceLoader always notifies the listener; doing the same here
-      // keeps the eager-dependency counter balanced across cases.
-      listener?.onLoad({ getResourceLoader: () => resourceLoader, getResourceData: () => String(args[0]) });
     };
   const resourceLoader = {
     loadScript: record('loadScript'),
@@ -23,19 +24,31 @@ function makeRegistry() {
     inlineStyleSheet: record('inlineStyleSheet'),
     loadDynamicImport: record('loadDynamicImport')
   };
+  // Notifies every load started so far exactly once, the way a real
+  // ResourceLoader eventually does; that is what balances the eager counter.
+  const completeAll = (): void => {
+    const pending = calls.splice(0, calls.length);
+    for (const call of pending) {
+      calls.push(call);
+      call.listener?.onLoad({ getResourceLoader: () => resourceLoader, getResourceData: () => String(call.args[0]) });
+    }
+  };
   const registry = {
     calls,
+    completeAll,
     getURIResolver: () => ({ resolveVaadinUri: (uri: string) => `resolved:${uri}` }),
     getResourceLoader: () => resourceLoader
   };
+  active.push(registry);
   return registry;
 }
 
 // Ported from com.vaadin.client.DependencyLoaderTest and
 // com.vaadin.client.GwtDependencyLoaderTest.
 describe('DependencyLoader (class)', () => {
-  // Each case completes the loads it starts (see makeRegistry), so the eager
-  // counter is back to zero by the end of it - as it is after a real load.
+  afterEach(() => {
+    active.splice(0, active.length).forEach((registry) => registry.completeAll());
+  });
 
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
     const registry = makeRegistry();
@@ -82,11 +95,13 @@ describe('DependencyLoader (class)', () => {
         ['LAZY', [{ type: 'STYLESHEET', url: 'lazy.css' }]]
       ])
     );
-    // Eager loaded right away; lazy not yet (eager still in flight).
+    // The eager script was requested; the lazy one waits for it to finish.
+    expect(registry.calls.some((c) => c.args[0] === 'resolved:eager.js')).to.be.true;
+    await settle();
     expect(registry.calls.some((c) => c.args[0] === 'resolved:lazy.css')).to.be.false;
 
     // Complete the eager load, then let the deferred lazy loader run.
-    registry.calls.find((c) => c.method === 'loadScript')?.listener.onLoad({} as never);
+    registry.completeAll();
     await settle();
     expect(registry.calls.some((c) => c.args[0] === 'resolved:lazy.css')).to.be.true;
   });
