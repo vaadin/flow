@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Reads what WildFly and JBoss serve from their virtual file system, through
  * the {@code vfs} protocol.
@@ -46,6 +49,8 @@ public final class JBossVfsUtil {
      * The protocol WildFly and JBoss serve a deployed archive through.
      */
     public static final String PROTOCOL = "vfs";
+
+    private static final String JAR_SUFFIX = ".jar";
 
     private JBossVfsUtil() {
     }
@@ -69,6 +74,11 @@ public final class JBossVfsUtil {
     /**
      * Gets the given folder as a folder on disk, creating it and everything
      * inside it, so that the caller can read the folder as a whole.
+     * <p>
+     * The caller only gets what the virtual file system created inside the
+     * folder. A mount that creates something of its own elsewhere, such as a
+     * jar inside the folder, is not part of the folder that is returned, and is
+     * logged for whoever wonders where it went.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
@@ -78,8 +88,14 @@ public final class JBossVfsUtil {
      */
     public static File materializeFolder(URL folder) throws IOException {
         Object virtualFolder = getVirtualFile(folder);
-        materializeChildren(virtualFolder, true);
-        return getPhysicalFile(virtualFolder);
+        List<File> files = materializeChildren(virtualFolder, true);
+        File physicalFolder = getPhysicalFile(virtualFolder);
+        files.stream().filter(
+                file -> !file.toPath().startsWith(physicalFolder.toPath()))
+                .forEach(file -> getLogger().debug(
+                        "'{}' of '{}' was created as '{}', which is not inside the folder '{}' that is read",
+                        file.getName(), folder, file, physicalFolder));
+        return physicalFolder;
     }
 
     /**
@@ -98,17 +114,16 @@ public final class JBossVfsUtil {
      */
     public static File materializeJar(URL jar) throws IOException {
         String jarPath = jar.toString();
-        int jarSuffix = jarPath.lastIndexOf(".jar");
-        if (jarSuffix == -1) {
+        if (!jarPath.endsWith(JAR_SUFFIX)) {
             throw new IOException("'" + jar + "' is not the URL of a jar");
         }
         Object virtualJar = getVirtualFile(jar);
         String fileNamePrefix = jarPath.substring(
                 jarPath.lastIndexOf(jarPath.contains("\\") ? '\\' : '/') + 1,
-                jarSuffix);
+                jarPath.length() - JAR_SUFFIX.length());
         // A folder of its own inside the temporary folder of the machine,
-        // which nobody else can write into, as it is created for this jar only
-        // and with the permissions of its owner
+        // created for this jar alone, and with the permissions of its owner
+        // where the file system has them
         Path folder = Files.createTempDirectory("vaadin-jboss-vfs"); // NOSONAR
         Path jarFile = folder.resolve(fileNamePrefix + ".jar");
         // The caller reads the jar for as long as the JVM runs. Both are
@@ -236,5 +251,9 @@ public final class JBossVfsUtil {
             Exception cause) {
         return new IOException("Unable to " + what
                 + " of the JBoss virtual file '" + virtualFile + "'", cause);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JBossVfsUtil.class);
     }
 }

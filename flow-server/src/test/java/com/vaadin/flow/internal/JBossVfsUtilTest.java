@@ -334,6 +334,15 @@ class JBossVfsUtilTest {
     }
 
     @Test
+    void materializeJar_urlPointsInsideAJar_failsWithAnIOException()
+            throws IOException {
+        URL url = vfsUrl(new MockVirtualJar(createFolder()),
+                "/my.war/lib/fake.jar/nested");
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
+    }
+
+    @Test
     void materializeJar_entryIsNeitherFileNorFolder_failsWithAnIOException()
             throws IOException {
         URL url = vfsUrl(MalformedVirtualJar.withIsFile("not a boolean"),
@@ -357,6 +366,23 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(new VirtualJarWithoutPaths(), "/my.war/lib/fake.jar");
 
         assertThrows(IOException.class, () -> JBossVfsUtil.materializeJar(url));
+    }
+
+    @Test
+    void materializeFolder_fileIsCreatedOutsideTheFolder_theFolderIsStillGiven()
+            throws IOException {
+        File folder = createFolder();
+        // A mount inside the folder creates its files under a folder of its
+        // own, which the caller reading the folder does not see
+        URL url = vfsUrl(new MockVirtualFile(folder, new ArrayList<>()) {
+            @Override
+            public List<MockVirtualFile> getChildrenRecursively() {
+                return List.of(new MockVirtualFile(
+                        new File(temporaryFolder, "mount"), new ArrayList<>()));
+            }
+        });
+
+        assertEquals(folder, JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
