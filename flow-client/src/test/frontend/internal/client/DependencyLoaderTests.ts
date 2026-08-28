@@ -87,6 +87,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('routes a dynamic import to loadDynamicImport', () => {
+    // Beyond the Java suite: the dynamic-import type postdates the Java tests.
     const registry = makeRegistry();
     new DependencyLoader(registry).loadDependencies(
       new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: 'import("x")' }]]])
@@ -97,6 +98,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {
+    // Ported from GwtDependencyLoaderTest.testEnsureLazyDependenciesLoadedInOrder.
     const registry = makeRegistry();
     new DependencyLoader(registry).loadDependencies(
       new Map([

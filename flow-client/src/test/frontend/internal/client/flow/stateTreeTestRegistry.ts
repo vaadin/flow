@@ -42,6 +42,8 @@ export interface RecordedCalls {
   syncs: Map<number, Map<string, unknown>>;
   // The arguments of each sendExistingElementAttachToServer call.
   existingElementAttaches: Array<{ nodeId: number; id: number; existingId: number; tagName: string; index: number }>;
+  // The arguments of each sendReturnChannelMessage call.
+  returnChannelMessages: Array<{ nodeId: number; channelId: number; args: unknown[] }>;
 }
 
 /**
@@ -49,11 +51,14 @@ export interface RecordedCalls {
  * that assert on the round trip.
  */
 export function recordingRegistry(): { registry: Registry; recorded: RecordedCalls } {
-  const recorded: RecordedCalls = { syncs: new Map(), existingElementAttaches: [] };
+  const recorded: RecordedCalls = { syncs: new Map(), existingElementAttaches: [], returnChannelMessages: [] };
   const registry = inertRegistry();
   const base = registry.getServerConnector();
   registry.getServerConnector = () => ({
     ...base,
+    sendReturnChannelMessage: (nodeId: number, channelId: number, args: unknown[]) => {
+      recorded.returnChannelMessages.push({ nodeId, channelId, args });
+    },
     sendNodeSyncMessage: (node: { getId(): number }, _featureId: number, name: string, value: unknown) => {
       const byName = recorded.syncs.get(node.getId()) ?? new Map<string, unknown>();
       byName.set(name, value);

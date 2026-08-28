@@ -9,7 +9,9 @@ import {
 import { UpdatableModelProperties } from '../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { type RecordedCalls, recordingRegistry } from './flow/stateTreeTestRegistry';
 
 let nextId = 2;
@@ -60,6 +62,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     // leaks between them.
 
     it('invokes the cleanup when an initializer is disposed', () => {
+      // Beyond the Java suite: the initializer registry has no Java case.
       const node = makeNode();
       const cleaned: string[] = [];
       registerInitializer(node, 1, () => cleaned.push('a'));
@@ -72,6 +75,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('invokes the previous cleanup when the same id is re-registered', () => {
+      // Beyond the Java suite.
       const node = makeNode();
       const cleaned: string[] = [];
       registerInitializer(node, 1, () => cleaned.push('old'));
@@ -82,6 +86,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('drains all cleanups when the node is unregistered', () => {
+      // Beyond the Java suite.
       const node = makeNode();
       const cleaned: string[] = [];
       registerInitializer(node, 1, () => cleaned.push('1'));
@@ -94,6 +99,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('keeps draining even if a cleanup throws', () => {
+      // Beyond the Java suite.
       const node = makeNode();
       const cleaned: string[] = [];
       registerInitializer(node, 1, () => {
@@ -107,6 +113,8 @@ describe('ExecuteJavaScriptElementUtils', () => {
 
   describe('registerUpdatableModelProperties', () => {
     it('stores an UpdatableModelProperties node data for non-empty properties', () => {
+      // Beyond the Java suite: registerUpdatableModelProperties is covered only
+      // through populateModelProperties in Java.
       const node = makeNode();
       registerUpdatableModelProperties(node, ['first', 'item.value']);
 
@@ -117,6 +125,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('does nothing for an empty properties array', () => {
+      // Beyond the Java suite.
       const node = makeNode();
       registerUpdatableModelProperties(node, []);
       expect(node.getNodeData(UpdatableModelProperties)).to.equal(null);
@@ -125,6 +134,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
 
   describe('populateModelProperties', () => {
     it('sets null for an undeclared property without a value', () => {
+      // Ported from testPopulateModelProperties_propertyIsNotDefined_addIntoPropertiesMap.
       // Plain element: no declared property and no current value -> setValue(null).
       const node = makeModelNode(document.createElement('div'), null);
       populateModelProperties(node, ['caption']);
@@ -133,6 +143,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('sets null for a property declared without a value', () => {
+      // Beyond the Java suite: a property declared with no `value` entry.
       const element = document.createElement('div');
       // Declared Polymer-style but with no `value` entry, so it does not count
       // as defined and is treated like an undeclared property.
@@ -145,6 +156,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('syncs a declared, updatable property value to the server', () => {
+      // Ported from testPopulateModelProperties_propertyIsDefined_syncToServer.
       const element = document.createElement('div');
       // Declare the property (Polymer-style) and give it a runtime value.
       const ctor = { properties: { greeting: { value: '' } } };
@@ -157,6 +169,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     });
 
     it('does not sync a declared property that is not updatable', () => {
+      // Ported from testPopulateModelProperties_propertyIsDefinedAndNotUpodatable_noSyncToServer.
       const element = document.createElement('div');
       const ctor = { properties: { greeting: { value: '' } } };
       (element as unknown as { constructor: unknown }).constructor = ctor;
@@ -166,6 +179,69 @@ describe('ExecuteJavaScriptElementUtils', () => {
       populateModelProperties(node, ['greeting']);
       expect(syncedValue(node, 'greeting')).to.equal(undefined);
       // (constructor reassigned above via the shared ctor const)
+    });
+  });
+
+  describe('populateModelProperties when the element is not ready', () => {
+    // mockWhenDefined: the element is not upgraded yet, so populateModelProperties
+    // waits on customElements.whenDefined and retries after the flush.
+    let whenDefined: (tag: string) => Promise<unknown>;
+    let resolveDefined: () => void;
+
+    beforeEach(() => {
+      whenDefined = window.customElements.whenDefined.bind(window.customElements);
+      (window.customElements as unknown as Record<string, unknown>).whenDefined = () =>
+        new Promise<void>((resolve) => {
+          resolveDefined = resolve;
+        });
+    });
+
+    afterEach(() => {
+      (window.customElements as unknown as Record<string, unknown>).whenDefined = whenDefined;
+    });
+
+    // Lets the pending whenDefined settle and the retry run.
+    async function runWhenDefined(): Promise<void> {
+      resolveDefined();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      Reactive.flush();
+    }
+
+    it('adds the property once the element becomes ready', async () => {
+      // Ported from testPopulateModelProperties_elementIsNotReadyAndPropertyIsNotDefined_addIntoPropertiesMapAfterElementBecomesReady.
+      const node = makeNode();
+      node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('custom-not-ready');
+
+      populateModelProperties(node, ['bar']);
+      expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).hasPropertyValue('bar')).to.be.false;
+
+      node.setDomNode(document.createElement('custom-not-ready'));
+      await runWhenDefined();
+
+      expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).hasPropertyValue('bar')).to.be.true;
+    });
+
+    it('syncs a declared property once the element becomes ready', async () => {
+      // Ported from testPopulateModelProperties_elementIsNotReadyAndPropertyIsDefined_syncToServerWhenElementBecomesReady.
+      const node = makeNode();
+      node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG).setValue('custom-not-ready');
+      node.setNodeData(new UpdatableModelProperties(['foo']));
+
+      const element = document.createElement('custom-not-ready');
+      // Declared Polymer-style, with a runtime value the client set.
+      (element as unknown as { constructor: unknown }).constructor = { properties: { foo: { value: '' } } };
+      (element as unknown as Record<string, unknown>).foo = 'bar';
+
+      populateModelProperties(node, ['foo']);
+      expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).hasPropertyValue('foo')).to.be.false;
+
+      node.setDomNode(element);
+      await runWhenDefined();
+
+      expect(node.getMap(NodeFeatures.ELEMENT_PROPERTIES).hasPropertyValue('foo')).to.be.true;
+      expect(syncedValue(node, 'foo')).to.equal('bar');
     });
   });
 
@@ -186,6 +262,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
     }
 
     it('finds an existing element by tag after the previous sibling and reports it', () => {
+      // Ported from testAttachExistingElement_siblingIdProvided.
       const parentDom = document.createElement('div');
       const span = document.createElement('span');
       const button = document.createElement('button');
@@ -205,7 +282,67 @@ describe('ExecuteJavaScriptElementUtils', () => {
       });
     });
 
+    it('finds the first matching element when there is no previous sibling', () => {
+      // Ported from testAttachExistingElement_noSibling.
+      const parentDom = document.createElement('div');
+      const span = document.createElement('span');
+      const button = document.createElement('button');
+      parentDom.append(span, document.createElement('a'), button);
+
+      const parent = makeAttachParent(parentDom, [{ dom: span, id: 10 }]);
+      attachExistingElement(parent, null, 'button', 5);
+
+      expect(recorded.existingElementAttaches[0]).to.deep.equal({
+        nodeId: parent.getId(),
+        id: 5,
+        existingId: 5,
+        tagName: 'BUTTON',
+        index: 1
+      });
+    });
+
+    it('reports the state node id of an element that already has one', () => {
+      // Ported from testAttachExistingElement_elementHasServersideCounterpart.
+      const parentDom = document.createElement('div');
+      const span = document.createElement('span');
+      parentDom.append(span, document.createElement('button'));
+
+      const parent = makeAttachParent(parentDom, [{ dom: span, id: 10 }]);
+      attachExistingElement(parent, null, 'span', 5);
+
+      expect(recorded.existingElementAttaches[0]).to.deep.equal({
+        nodeId: parent.getId(),
+        id: 5,
+        existingId: 10,
+        tagName: 'SPAN',
+        index: 0
+      });
+    });
+
+    it('reports the associated id of an element already in the existing-element map', () => {
+      // Ported from testAttachExistingElement_elementIsAlreadyAssociated.
+      const parentDom = document.createElement('div');
+      const span = document.createElement('span');
+      const button = document.createElement('button');
+      parentDom.append(span, button);
+
+      const parent = makeAttachParent(parentDom, [{ dom: span, id: 10 }]);
+      const associatedId = 13;
+      tree.getRegistry().getExistingElementMap().add(associatedId, button);
+
+      attachExistingElement(parent, null, 'button', 5);
+
+      expect(recorded.existingElementAttaches[0]).to.deep.equal({
+        nodeId: parent.getId(),
+        id: 5,
+        existingId: associatedId,
+        tagName: 'BUTTON',
+        index: 1
+      });
+    });
+
     it('reports -1 when no matching element is found', () => {
+      // Ported from testAttachExistingElement_noRequestedElement.
       const parentDom = document.createElement('div');
       parentDom.append(document.createElement('span'));
       const parent = makeAttachParent(parentDom, []);
