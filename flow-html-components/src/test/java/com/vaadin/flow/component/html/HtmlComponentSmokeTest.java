@@ -78,6 +78,11 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
+        // Table.setCaption/setHead/setFoot attach a child rather than write a
+        // property, but the setter/getter round trip still holds
+        testValues.put(TableCaption.class, new TableCaption("Caption"));
+        testValues.put(TableHead.class, new TableHead());
+        testValues.put(TableFoot.class, new TableFoot());
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -425,7 +430,10 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        return HtmlComponent.class.isAssignableFrom(cls);
+        // Abstract bases such as TableCell cannot be instantiated; they are
+        // covered through their concrete subclasses
+        return HtmlComponent.class.isAssignableFrom(cls)
+                && !Modifier.isAbstract(cls.getModifiers());
     }
 
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(
