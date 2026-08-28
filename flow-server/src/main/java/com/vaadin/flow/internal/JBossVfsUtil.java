@@ -106,7 +106,10 @@ public final class JBossVfsUtil {
         String fileNamePrefix = jarPath.substring(
                 jarPath.lastIndexOf(jarPath.contains("\\") ? '\\' : '/') + 1,
                 jarSuffix);
-        Path folder = Files.createTempDirectory("vaadin-jboss-vfs");
+        // A folder of its own inside the temporary folder of the machine,
+        // which nobody else can write into, as it is created for this jar only
+        // and with the permissions of its owner
+        Path folder = Files.createTempDirectory("vaadin-jboss-vfs"); // NOSONAR
         Path jarFile = folder.resolve(fileNamePrefix + ".jar");
         // The caller reads the jar for as long as the JVM runs. Both are
         // registered before the jar is written, as a folder is only deleted
