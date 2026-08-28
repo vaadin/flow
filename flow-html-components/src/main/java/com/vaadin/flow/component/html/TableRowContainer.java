@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 
 /**
@@ -40,8 +41,7 @@ interface TableRowContainer extends HasElement {
      * @return the rows in this container.
      */
     default List<TableRow> getRows() {
-        return ((Component) this).getChildren()
-                .filter(TableRow.class::isInstance).map(TableRow.class::cast)
+        return ComponentUtil.getChildrenOfType((Component) this, TableRow.class)
                 .toList();
     }
 

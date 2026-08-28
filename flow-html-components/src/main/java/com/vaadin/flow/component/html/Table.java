@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
@@ -76,7 +77,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the table's {@code <caption>}, or an empty optional.
      */
     public Optional<TableCaption> findCaption() {
-        return findChild(TableCaption.class);
+        return ComponentUtil.getFirstChildOfType(this, TableCaption.class);
     }
 
     /**
@@ -135,7 +136,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the table's {@code <thead>}, or an empty optional.
      */
     public Optional<TableHead> findHead() {
-        return findChild(TableHead.class);
+        return ComponentUtil.getFirstChildOfType(this, TableHead.class);
     }
 
     /**
@@ -172,7 +173,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the table's {@code <tfoot>}, or an empty optional.
      */
     public Optional<TableFoot> findFoot() {
-        return findChild(TableFoot.class);
+        return ComponentUtil.getFirstChildOfType(this, TableFoot.class);
     }
 
     /**
@@ -201,8 +202,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the table's bodies.
      */
     public List<TableBody> getBodies() {
-        return getChildren().filter(TableBody.class::isInstance)
-                .map(TableBody.class::cast).toList();
+        return ComponentUtil.getChildrenOfType(this, TableBody.class).toList();
     }
 
     /**
@@ -212,7 +212,8 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      * @return the table's first body.
      */
     public TableBody getBody() {
-        return findChild(TableBody.class).orElseGet(this::addBody);
+        return ComponentUtil.getFirstChildOfType(this, TableBody.class)
+                .orElseGet(this::addBody);
     }
 
     /**
@@ -245,11 +246,6 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      */
     public void removeBody(TableBody body) {
         removeChild(body);
-    }
-
-    private <T extends Component> Optional<T> findChild(Class<T> type) {
-        return getChildren().filter(type::isInstance).map(type::cast)
-                .findFirst();
     }
 
     private void removeChild(Component child) {
