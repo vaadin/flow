@@ -56,19 +56,61 @@ public final class JBossVfsUtil {
     }
 
     /**
-     * Gets the entries directly inside the given folder, files and folders
-     * alike, creating them on disk.
+     * A file of the virtual file system, read without creating it on disk.
+     */
+    public interface VfsFile {
+
+        /**
+         * Gets the name of the file, without the folder it is in.
+         *
+         * @return the file name
+         */
+        String getName();
+
+        /**
+         * Opens the content of the file.
+         *
+         * @return the content of the file, to be closed by the caller
+         * @throws IOException
+         *             if the content cannot be read
+         */
+        InputStream open() throws IOException;
+    }
+
+    private record VirtualFileEntry(String name,
+            Object virtualFile) implements VfsFile {
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public InputStream open() throws IOException {
+            return openStream(virtualFile);
+        }
+    }
+
+    /**
+     * Gets the files directly inside the given folder, to be read as they are
+     * without creating anything on disk.
      * <p>
-     * What is inside the folders of the folder is not included.
+     * The folders of the folder and what is inside them are not included.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
-     * @return the entries of the folder, in the places they were created
+     * @return the files of the folder
      * @throws IOException
      *             if the folder cannot be read
      */
-    public static List<File> materializeFiles(URL folder) throws IOException {
-        return materializeChildren(getVirtualFile(folder), false);
+    public static List<VfsFile> listFiles(URL folder) throws IOException {
+        List<VfsFile> files = new ArrayList<>();
+        for (Object child : getChildren(getVirtualFile(folder), false)) {
+            if (isFile(child)) {
+                files.add(new VirtualFileEntry(getName(child), child));
+            }
+        }
+        return files;
     }
 
     /**
@@ -193,6 +235,15 @@ public final class JBossVfsUtil {
                     + " virtual file '" + virtualFile + "' is not a file");
         }
         return file;
+    }
+
+    private static String getName(Object virtualFile) throws IOException {
+        Object name = invoke(virtualFile, "getName", "read the name");
+        if (!(name instanceof String fileName)) {
+            throw new IOException("The name of the JBoss virtual file '"
+                    + virtualFile + "' is not a name");
+        }
+        return fileName;
     }
 
     private static boolean isFile(Object virtualFile) throws IOException {
