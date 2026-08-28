@@ -21,6 +21,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Table;
 import com.vaadin.flow.component.html.TableColumn;
 import com.vaadin.flow.component.html.TableColumnGroup;
+import com.vaadin.flow.component.html.TableHeaderCell.Scope;
 import com.vaadin.flow.component.html.TableRow;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -31,7 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_table_basics
  * <p>
  * The examples are added as the table API they need becomes available; the ones
- * still missing need {@code scope}, {@code colspan} on <code>&lt;th&gt;</code>
+ * still missing need {@code colspan}/{@code rowspan} on <code>&lt;th&gt;</code>
  * and caption content API.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.HtmlTableTutorialView", layout = ViewTestLayout.class)
@@ -78,6 +79,11 @@ public class HtmlTableTutorialView extends Div {
         basic.setId("basic-table");
         add(basic);
 
+        add(new H3("2. Adding headers with <th>"));
+        DogsTable dogs = new DogsTable();
+        dogs.setId("dogs-table");
+        add(dogs);
+
         add(new H3("5. School timetable styled with <colgroup>/<col>"));
         SchoolTimetable timetable = new SchoolTimetable();
         timetable.setId("school-timetable");
@@ -90,6 +96,32 @@ public class HtmlTableTutorialView extends Div {
             addRow("Hi, I'm your first cell.", "I'm your second cell.",
                     "I'm your third cell.", "I'm your fourth cell.");
             addRow("Second row, first cell.", "Cell 2.", "Cell 3.", "Cell 4.");
+        }
+    }
+
+    /** Example 2: row-headers and column-headers in the same table. */
+    static class DogsTable extends Table {
+        {
+            TableRow headerRow = addRow();
+            headerRow.addDataCell();
+            for (String name : new String[] { "Knocky", "Flor", "Ella",
+                    "Juan" }) {
+                headerRow.addHeaderCell(name).setScope(Scope.COL);
+            }
+            addRowWithRowHeader("Breed", "Jack Russell", "Poodle", "Streetdog",
+                    "Cocker Spaniel");
+            addRowWithRowHeader("Age", "16", "9", "10", "5");
+            addRowWithRowHeader("Owner", "Mother-in-law", "Me", "Me",
+                    "Sister-in-law");
+            addRowWithRowHeader("Eating habits", "Eats everyone's leftovers",
+                    "Nibbles at food", "Hearty eater",
+                    "Will eat till he explodes");
+        }
+
+        private void addRowWithRowHeader(String header, String... data) {
+            TableRow row = addRow();
+            row.addHeaderCell(header).setScope(Scope.ROW);
+            row.addDataCells(data);
         }
     }
 
@@ -126,9 +158,9 @@ public class HtmlTableTutorialView extends Div {
         }
 
         private void addPeriodRow(String period, String... days) {
-            // The MDN example also gives the row header a scope, which needs
-            // TableHeaderCell.setScope
-            addRow().addHeaderCells(period).addDataCells(days);
+            TableRow row = addRow();
+            row.addHeaderCell(period).setScope(Scope.ROW);
+            row.addDataCells(days);
         }
     }
 }

@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
+import com.vaadin.flow.component.html.testbench.TableHeaderCellElement;
 import com.vaadin.flow.component.html.testbench.TableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -60,6 +61,23 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         Assert.assertEquals("tbody",
                 table.getPropertyElement("firstElementChild").getTagName());
+    }
+
+    @Test
+    public void dogsTableHasColumnAndRowScopedHeaders() {
+        TableElement table = $(TableElement.class).id("dogs-table");
+        List<TableRowElement> rows = table.$(TableRowElement.class).all();
+
+        List<TableHeaderCellElement> columnHeaders = rows.get(0)
+                .$(TableHeaderCellElement.class).all();
+        Assert.assertEquals(4, columnHeaders.size());
+        columnHeaders.forEach(header -> Assert.assertEquals("col",
+                header.getDomAttribute("scope")));
+
+        TableHeaderCellElement rowHeader = rows.get(1)
+                .$(TableHeaderCellElement.class).first();
+        Assert.assertEquals("row", rowHeader.getDomAttribute("scope"));
+        Assert.assertEquals("Breed", rowHeader.getText());
     }
 
     @Test
