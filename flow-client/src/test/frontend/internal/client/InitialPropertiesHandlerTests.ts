@@ -1,97 +1,95 @@
-import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { InitialPropertiesHandler } from '../../../../main/frontend/internal/client/InitialPropertiesHandler';
-
-// com.vaadin.flow.internal.nodefeature.NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES
-
-// A StateNode stand-in whose NodeFeatures.ELEMENT_PROPERTIES feature holds the given initial
-// server property values (undefined => no NodeFeatures.ELEMENT_PROPERTIES feature).
-function fakeNode(id: number, initialProps?: Record<string, unknown>): any {
-  return {
-    getId: () => id,
-    hasFeature: (feature: number) => feature === NodeFeatures.ELEMENT_PROPERTIES && initialProps !== undefined,
-    getMap: (_feature: number) => ({
-      forEachProperty: (cb: (property: any, name: string) => void) =>
-        Object.entries(initialProps ?? {}).forEach(([name, value]) =>
-          cb({ getName: () => name, getValue: () => value }, name)
-        )
-    })
-  };
-}
-
-// A MapProperty stand-in recording setValue calls.
-function fakeProperty(node: any, name: string, value: unknown) {
-  const setCalls: unknown[] = [];
-  return {
-    setCalls,
-    getName: () => name,
-    getValue: () => value,
-    setValue: (v: unknown) => setCalls.push(v),
-    getMap: () => ({ getNode: () => node })
-  };
-}
-
-function fakeRegistry(nodesById: Record<number, any>, updateInProgress: boolean) {
-  const sent: string[] = [];
-  const tree = {
-    sent,
-    isUpdateInProgress: () => updateInProgress,
-    getNode: (id: number) => nodesById[id] ?? null,
-    sendNodePropertySyncToServer: (property: any) => sent.push(property.getName())
-  };
-  return { tree, registry: { getStateTree: () => tree } };
-}
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { type RecordedCalls, recordingRegistry } from './flow/stateTreeTestRegistry';
 
 // Ported from com.vaadin.client.InitialPropertiesHandlerTest.
 describe('InitialPropertiesHandler', () => {
+  let tree: StateTree;
+  let recorded: RecordedCalls;
+  let handler: InitialPropertiesHandler;
+  let updateInProgress: boolean;
+
+  beforeEach(() => {
+    Reactive.reset();
+    const built = recordingRegistry();
+    recorded = built.recorded;
+    tree = new StateTree(built.registry);
+    // The handler asks its registry for the tree; the tree is the real one, so
+    // the update-in-progress flag is set on it directly.
+    handler = new InitialPropertiesHandler({ getStateTree: () => tree });
+    updateInProgress = false;
+  });
+
+  // A node whose element-properties feature holds the given server values.
+  function makeNode(id: number, initialProps?: Record<string, unknown>): StateNode {
+    const node = new StateNode(id, tree);
+    tree.registerNode(node);
+    if (initialProps !== undefined) {
+      const map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+      Object.entries(initialProps).forEach(([name, value]) => map.getProperty(name).setValue(value));
+    }
+    return node;
+  }
+
+  function property(node: StateNode, name: string, value: unknown) {
+    const mapProperty = node.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(name);
+    mapProperty.setValue(value);
+    return mapProperty;
+  }
+
+  function setUpdateInProgress(value: boolean): void {
+    updateInProgress = value;
+    tree.setUpdateInProgress(value);
+  }
+
   it('queues property updates only for newly created nodes', () => {
     // Ported from flushPropertyUpdates_updateIsNotInProgress_collectInitialProperties.
-    const node = fakeNode(2, {});
-    const { registry } = fakeRegistry({ 2: node }, false);
-    const handler = new InitialPropertiesHandler(registry);
+    const node = makeNode(2, {});
 
-    // Not registered yet => handled normally by the caller.
-    expect(handler.handlePropertyUpdate(fakeProperty(node, 'foo', 'x'))).to.be.false;
+    // Not registered with the handler yet, so the caller sends it normally.
+    expect(handler.handlePropertyUpdate(property(node, 'foo', 'x'))).to.be.false;
 
     handler.nodeRegistered(node);
-    expect(handler.handlePropertyUpdate(fakeProperty(node, 'foo', 'x'))).to.be.true;
+    expect(handler.handlePropertyUpdate(property(node, 'foo', 'x'))).to.be.true;
   });
 
   it('does nothing while a server update is in progress', () => {
     // Ported from flushPropertyUpdates_updateInProgress_noInteractions.
-    const node = fakeNode(2, { color: 'red' });
-    const { tree, registry } = fakeRegistry({ 2: node }, true);
-    const handler = new InitialPropertiesHandler(registry);
+    setUpdateInProgress(true);
 
-    handler.nodeRegistered(node);
-    const property = fakeProperty(node, 'color', 'blue');
-    handler.handlePropertyUpdate(property);
     handler.flushPropertyUpdates();
     Reactive.flush();
 
-    expect(tree.sent).to.deep.equal([]);
-    expect(property.setCalls).to.deep.equal([]);
+    // Nothing was collected, so nothing is reset or sent.
+    expect(recorded.syncs.size).to.equal(0);
+    setUpdateInProgress(false);
   });
 
   it('resets properties with a server initial value and sends the rest', () => {
     // Ported from flushPropertyUpdates_updateIsNotInProgress_flushForEechProperty.
-    const node = fakeNode(2, { color: 'red' });
-    const { tree, registry } = fakeRegistry({ 2: node }, false);
-    const handler = new InitialPropertiesHandler(registry);
-
+    // Only 'color' arrives from the server.
+    const node = makeNode(2, { color: 'red' });
     handler.nodeRegistered(node);
-    const colorProperty = fakeProperty(node, 'color', 'blue');
-    const sizeProperty = fakeProperty(node, 'size', 'L');
+
+    // The initial values are collected here, before the client changes them.
+    handler.flushPropertyUpdates();
+
+    const colorProperty = property(node, 'color', 'blue');
+    const sizeProperty = property(node, 'size', 'L');
     handler.handlePropertyUpdate(colorProperty);
     handler.handlePropertyUpdate(sizeProperty);
 
-    handler.flushPropertyUpdates();
     Reactive.flush();
 
-    // 'color' had a server initial value => reset to it, not sent.
-    expect(colorProperty.setCalls).to.deep.equal(['red']);
-    // 'size' had no server initial value => sent to the server.
-    expect(tree.sent).to.deep.equal(['size']);
+    // 'color' had a server initial value, so it is reset to it and not sent.
+    expect(colorProperty.getValue()).to.equal('red');
+    // 'size' had none, so it goes to the server.
+    expect(recorded.syncs.get(node.getId())?.has('size')).to.equal(true);
+    expect(recorded.syncs.get(node.getId())?.has('color')).to.not.equal(true);
+    expect(updateInProgress).to.be.false;
   });
 });

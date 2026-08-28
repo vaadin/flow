@@ -26,39 +26,18 @@
 // cutover; this is the real implementation of the InitialPropertiesHandler
 // contract that StateTree.ts already declares.
 
+import type { MapProperty } from './flow/nodefeature/MapProperty';
+import type { StateNode } from './flow/StateNode';
+import type { StateTree } from './flow/StateTree';
 import { Reactive } from './flow/reactive/Reactive';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 
-/** The slice of MapProperty the handler reads and resets. */
-interface InitialPropertiesProperty {
-  getName(): string;
-  getValue(): unknown;
-  setValue(value: unknown): void;
-  getMap(): { getNode(): InitialPropertiesNode };
-}
-
-/** The slice of NodeMap the handler iterates. */
-interface InitialPropertiesMap {
-  forEachProperty(callback: (property: InitialPropertiesProperty, name: string) => void): void;
-}
-
-/** The slice of StateNode the handler reads. */
-interface InitialPropertiesNode {
-  getId(): number;
-  hasFeature(featureId: number): boolean;
-  getMap(featureId: number): InitialPropertiesMap;
-}
-
-/** The slice of StateTree the handler uses. */
-interface InitialPropertiesTree {
-  isUpdateInProgress(): boolean;
-  getNode(id: number): InitialPropertiesNode | null;
-  sendNodePropertySyncToServer(property: InitialPropertiesProperty): void;
-}
-
-/** The slice of Registry the handler uses. */
+/**
+ * The slice of Registry the handler uses. Registry's typed getters are not
+ * ported yet, so this narrow contract stands in for the one it needs.
+ */
 interface InitialPropertiesRegistry {
-  getStateTree(): InitialPropertiesTree;
+  getStateTree(): StateTree;
 }
 
 /**
@@ -70,7 +49,7 @@ export class InitialPropertiesHandler {
 
   readonly #newNodeDuringUpdate = new Set<number>();
 
-  readonly #propertyUpdateQueue: InitialPropertiesProperty[] = [];
+  readonly #propertyUpdateQueue: MapProperty[] = [];
 
   /**
    * Creates a new instance connected to the given registry.
@@ -101,7 +80,7 @@ export class InitialPropertiesHandler {
    *
    * @param node - the newly registered node
    */
-  nodeRegistered(node: InitialPropertiesNode): void {
+  nodeRegistered(node: StateNode): void {
     this.#newNodeDuringUpdate.add(node.getId());
   }
 
@@ -115,7 +94,7 @@ export class InitialPropertiesHandler {
    * @param property - property to handle
    * @returns `true` if property is handled by the handler, `false` otherwise
    */
-  handlePropertyUpdate(property: InitialPropertiesProperty): boolean {
+  handlePropertyUpdate(property: MapProperty): boolean {
     if (this.#isNodeNewlyCreated(property.getMap().getNode())) {
       this.#propertyUpdateQueue.push(property);
       return true;
@@ -123,7 +102,7 @@ export class InitialPropertiesHandler {
     return false;
   }
 
-  #resetProperty(property: InitialPropertiesProperty, properties: Map<number, Map<string, unknown>>): boolean {
+  #resetProperty(property: MapProperty, properties: Map<number, Map<string, unknown>>): boolean {
     const ignoreProperties = properties.get(property.getMap().getNode().getId());
     if (ignoreProperties !== undefined && ignoreProperties.has(property.getName())) {
       property.setValue(ignoreProperties.get(property.getName()));
@@ -132,7 +111,7 @@ export class InitialPropertiesHandler {
     return false;
   }
 
-  #isNodeNewlyCreated(node: InitialPropertiesNode): boolean {
+  #isNodeNewlyCreated(node: StateNode): boolean {
     return this.#newNodeDuringUpdate.has(node.getId());
   }
 
