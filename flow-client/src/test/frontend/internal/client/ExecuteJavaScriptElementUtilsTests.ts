@@ -7,45 +7,54 @@ import {
   registerUpdatableModelProperties
 } from '../../../../main/frontend/internal/client/ExecuteJavaScriptElementUtils';
 import { UpdatableModelProperties } from '../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { type RecordedCalls, recordingRegistry } from './flow/stateTreeTestRegistry';
 
-// A MapProperty/NodeMap/StateNode stand-in for populateModelProperties.
-function makeModelNode(domNode: unknown, updatable: UpdatableModelProperties | null) {
-  const props: Record<string, { value: unknown; hasValue: boolean; synced: unknown }> = {};
-  const map = {
-    hasPropertyValue: (name: string) => !!props[name]?.hasValue,
-    getProperty: (name: string) => {
-      props[name] ??= { value: undefined, hasValue: false, synced: undefined };
-      return {
-        setValue: (value: unknown) => {
-          props[name].value = value;
-          props[name].hasValue = true;
-        },
-        syncToServer: (newValue: unknown) => {
-          props[name].synced = newValue;
-        }
-      };
-    }
-  };
-  const node = {
-    props,
-    getDomNode: () => domNode as Node | null,
-    getMap: () => map,
-    getNodeData: <T>(_clazz: new (...args: never[]) => T) => updatable as unknown as T | null
-  };
+let nextId = 2;
+// The tree the current case works on, plus what it sent to the server.
+let tree: StateTree;
+let recorded: RecordedCalls;
+
+function makeNode(): StateNode {
+  const node = new StateNode(nextId++, tree);
+  tree.registerNode(node);
   return node;
 }
 
-function makeNode() {
-  const listeners: Array<() => void> = [];
-  return {
-    listeners,
-    addUnregisterListener: (listener: () => void) => listeners.push(listener),
-    fireUnregister: () => listeners.forEach((listener) => listener())
-  };
+// A node whose element properties and node data are set up the way
+// populateModelProperties reads them.
+function makeModelNode(domNode: Node | null, updatable: UpdatableModelProperties | null): StateNode {
+  const node = makeNode();
+  if (domNode !== null) {
+    node.setDomNode(domNode);
+  }
+  if (updatable !== null) {
+    node.setNodeData(updatable);
+  }
+  return node;
+}
+
+// What syncToServer sent, recorded through the tree's server connector.
+function syncedValue(node: StateNode, name: string): unknown {
+  return recorded.syncs.get(node.getId())?.get(name);
+}
+
+// The values populateModelProperties wrote, read back off the node.
+function propertyState(node: StateNode, name: string): { value: unknown; hasValue: boolean } {
+  const map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+  return { value: map.getProperty(name).getValue(), hasValue: map.hasPropertyValue(name) };
 }
 
 // Ported from com.vaadin.client.GwtExecuteJavaScriptElementUtilsTest.
 describe('ExecuteJavaScriptElementUtils', () => {
+  beforeEach(() => {
+    const built = recordingRegistry();
+    recorded = built.recorded;
+    tree = new StateTree(built.registry);
+  });
+
   describe('initializer cleanups', () => {
     // The registry is keyed by node and each case builds its own, so nothing
     // leaks between them.
@@ -77,7 +86,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
       const cleaned: string[] = [];
       registerInitializer(node, 1, () => cleaned.push('1'));
       registerInitializer(node, 2, () => cleaned.push('2'));
-      node.fireUnregister();
+      tree.unregisterNode(node);
       expect(cleaned.sort()).to.deep.equal(['1', '2']);
       // After draining, dispose is a no-op (node entry removed).
       disposeInitializer(node, 1);
@@ -91,27 +100,26 @@ describe('ExecuteJavaScriptElementUtils', () => {
         throw new Error('boom');
       });
       registerInitializer(node, 2, () => cleaned.push('2'));
-      expect(() => node.fireUnregister()).to.not.throw();
+      expect(() => tree.unregisterNode(node)).to.not.throw();
       expect(cleaned).to.deep.equal(['2']);
     });
   });
 
   describe('registerUpdatableModelProperties', () => {
     it('stores an UpdatableModelProperties node data for non-empty properties', () => {
-      const stored: object[] = [];
-      const node = { setNodeData: (object: object) => stored.push(object) };
+      const node = makeNode();
       registerUpdatableModelProperties(node, ['first', 'item.value']);
-      expect(stored).to.have.length(1);
-      const data = stored[0] as UpdatableModelProperties;
+
+      const data = node.getNodeData(UpdatableModelProperties);
       expect(data).to.be.instanceOf(UpdatableModelProperties);
-      expect(data.isUpdatableProperty('first')).to.be.true;
-      expect(data.isUpdatableProperty('other')).to.be.false;
+      expect(data!.isUpdatableProperty('first')).to.be.true;
+      expect(data!.isUpdatableProperty('other')).to.be.false;
     });
 
     it('does nothing for an empty properties array', () => {
-      const stored: object[] = [];
-      registerUpdatableModelProperties({ setNodeData: (object: object) => stored.push(object) }, []);
-      expect(stored).to.deep.equal([]);
+      const node = makeNode();
+      registerUpdatableModelProperties(node, []);
+      expect(node.getNodeData(UpdatableModelProperties)).to.equal(null);
     });
   });
 
@@ -120,8 +128,8 @@ describe('ExecuteJavaScriptElementUtils', () => {
       // Plain element: no declared property and no current value -> setValue(null).
       const node = makeModelNode(document.createElement('div'), null);
       populateModelProperties(node, ['caption']);
-      expect(node.props.caption.value).to.equal(null);
-      expect(node.props.caption.hasValue).to.be.true;
+      expect(propertyState(node, 'caption').value).to.equal(null);
+      expect(propertyState(node, 'caption').hasValue).to.be.true;
     });
 
     it('sets null for a property declared without a value', () => {
@@ -132,8 +140,8 @@ describe('ExecuteJavaScriptElementUtils', () => {
 
       const node = makeModelNode(element, null);
       populateModelProperties(node, ['caption']);
-      expect(node.props.caption.value).to.equal(null);
-      expect(node.props.caption.hasValue).to.be.true;
+      expect(propertyState(node, 'caption').value).to.equal(null);
+      expect(propertyState(node, 'caption').hasValue).to.be.true;
     });
 
     it('syncs a declared, updatable property value to the server', () => {
@@ -145,7 +153,7 @@ describe('ExecuteJavaScriptElementUtils', () => {
 
       const node = makeModelNode(element, new UpdatableModelProperties(['greeting']));
       populateModelProperties(node, ['greeting']);
-      expect(node.props.greeting.synced).to.equal('hi');
+      expect(syncedValue(node, 'greeting')).to.equal('hi');
     });
 
     it('does not sync a declared property that is not updatable', () => {
@@ -156,40 +164,25 @@ describe('ExecuteJavaScriptElementUtils', () => {
 
       const node = makeModelNode(element, new UpdatableModelProperties(['other']));
       populateModelProperties(node, ['greeting']);
-      expect(node.props.greeting?.synced).to.equal(undefined);
+      expect(syncedValue(node, 'greeting')).to.equal(undefined);
       // (constructor reassigned above via the shared ctor const)
     });
   });
 
   describe('attachExistingElement', () => {
-    // A parent state node over a real DOM element, with an element-children list
-    // and a tree that records the attach-to-server call.
-    function makeAttachParent(dom: Element, children: Array<{ dom: Node; id: number }>) {
-      const sent: unknown[] = [];
-      const elementMap = new Map<Element, number>();
-      const tree = {
-        sent,
-        // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the AttachTree contract
-        sendExistingElementAttachToServer: (
-          _parent: unknown,
-          id: number,
-          existingId: number,
-          tagName: string,
-          index: number
-        ) => sent.push({ id, existingId, tagName, index }),
-        getRegistry: () => ({
-          getExistingElementMap: () => ({
-            getId: (element: Element) => elementMap.get(element) ?? null,
-            add: (id: number, element: Element) => elementMap.set(element, id)
-          })
-        })
-      };
-      const list = {
-        length: () => children.length,
-        get: (index: number) => ({ getDomNode: () => children[index].dom, getId: () => children[index].id })
-      };
-      const parent = { getDomNode: () => dom, getList: () => list, getTree: () => tree };
-      return { parent, tree };
+    // A real parent node over a real DOM element, with a real element-children
+    // list holding a node per known child.
+    function makeAttachParent(dom: Element, children: Array<{ dom: Node; id: number }>): StateNode {
+      const parent = makeNode();
+      parent.setDomNode(dom);
+      const list = parent.getList(NodeFeatures.ELEMENT_CHILDREN);
+      children.forEach((child, index) => {
+        const childNode = new StateNode(child.id, tree);
+        tree.registerNode(childNode);
+        childNode.setDomNode(child.dom);
+        list.add(index, childNode);
+      });
+      return parent;
     }
 
     it('finds an existing element by tag after the previous sibling and reports it', () => {
@@ -199,19 +192,31 @@ describe('ExecuteJavaScriptElementUtils', () => {
       parentDom.append(span, button);
 
       // The span is a known child (state node id 10); the button is the new one.
-      const { parent, tree } = makeAttachParent(parentDom, [{ dom: span, id: 10 }]);
+      const parent = makeAttachParent(parentDom, [{ dom: span, id: 10 }]);
       attachExistingElement(parent, span, 'button', 5);
 
-      expect(tree.sent).to.have.length(1);
-      expect(tree.sent[0]).to.deep.equal({ id: 5, existingId: 5, tagName: 'BUTTON', index: 1 });
+      expect(recorded.existingElementAttaches).to.have.length(1);
+      expect(recorded.existingElementAttaches[0]).to.deep.equal({
+        nodeId: parent.getId(),
+        id: 5,
+        existingId: 5,
+        tagName: 'BUTTON',
+        index: 1
+      });
     });
 
     it('reports -1 when no matching element is found', () => {
       const parentDom = document.createElement('div');
       parentDom.append(document.createElement('span'));
-      const { parent, tree } = makeAttachParent(parentDom, []);
+      const parent = makeAttachParent(parentDom, []);
       attachExistingElement(parent, null, 'button', 7);
-      expect(tree.sent[0]).to.deep.equal({ id: 7, existingId: -1, tagName: 'button', index: -1 });
+      expect(recorded.existingElementAttaches[0]).to.deep.equal({
+        nodeId: parent.getId(),
+        id: 7,
+        existingId: -1,
+        tagName: 'button',
+        index: -1
+      });
     });
   });
 });

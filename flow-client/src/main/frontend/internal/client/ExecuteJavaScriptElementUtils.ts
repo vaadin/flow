@@ -31,6 +31,8 @@ function isPropertyDefined(node: Node, property: string): boolean {
 // (Element#addJsInitializer) and drains them when the node leaves the tree. The
 // StateNode is a contract (addUnregisterListener / setNodeData).
 
+import type { NodeMap } from './flow/nodefeature/NodeMap';
+import type { StateNode } from './flow/StateNode';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { getTag, invokeWhenDefined } from './PolymerUtils';
 import { Reactive } from './flow/reactive/Reactive';
@@ -39,30 +41,6 @@ import { UpdatableModelProperties } from './flow/model/UpdatableModelProperties'
 import { Console } from './Console';
 
 // NodeFeatures.NodeFeatures.ELEMENT_PROPERTIES / NodeFeatures.ELEMENT_CHILDREN
-
-/** The slice of MapProperty populateModelProperties uses. */
-interface ModelProperty {
-  setValue(value: unknown): void;
-  syncToServer(newValue: unknown): void;
-}
-
-/** The slice of NodeMap populateModelProperties uses. */
-interface ModelPropertiesMap {
-  hasPropertyValue(name: string): boolean;
-  getProperty(name: string): ModelProperty;
-}
-
-/** The slice of StateNode populateModelProperties uses. */
-interface ModelNode {
-  getDomNode(): Node | null;
-  getMap(featureId: number): ModelPropertiesMap;
-  getNodeData<T>(clazz: new (...args: never[]) => T): T | null;
-}
-
-/** The slice of StateNode registerUpdatableModelProperties uses. */
-interface UpdatablePropertiesNode {
-  setNodeData(object: object): void;
-}
 
 /**
  * Register the updatable model properties of the `node`.
@@ -75,37 +53,10 @@ interface UpdatablePropertiesNode {
  * @param node - the node whose updatable properties should be registered
  * @param properties - all updatable model properties
  */
-export function registerUpdatableModelProperties(node: UpdatablePropertiesNode, properties: string[]): void {
+export function registerUpdatableModelProperties(node: StateNode, properties: string[]): void {
   if (properties.length > 0) {
     node.setNodeData(new UpdatableModelProperties(properties));
   }
-}
-
-/** A child state node in the parent's element-children list. */
-interface AttachChildNode {
-  getDomNode(): Node;
-  getId(): number;
-}
-
-/** The state tree slice attachExistingElement uses. */
-interface AttachTree {
-  sendExistingElementAttachToServer(
-    parent: AttachParentNode,
-    id: number,
-    existingId: number,
-    tagName: string,
-    index: number
-  ): void;
-  getRegistry(): {
-    getExistingElementMap(): { getId(element: Element): number | null; add(id: number, element: Element): void };
-  };
-}
-
-/** The slice of StateNode attachExistingElement uses (the parent). */
-interface AttachParentNode {
-  getDomNode(): Node;
-  getList(featureId: number): { length(): number; get(index: number): AttachChildNode };
-  getTree(): AttachTree;
 }
 
 function hasTag(node: Node, tag: string): boolean {
@@ -113,7 +64,7 @@ function hasTag(node: Node, tag: string): boolean {
 }
 
 function getExistingIdOrUpdate(
-  parent: AttachParentNode,
+  parent: StateNode,
   serverSideId: number,
   existingElement: Element,
   existingId: number | null
@@ -140,13 +91,14 @@ function getExistingIdOrUpdate(
  * @param id - the identifier of the server side node which is requested to be a counterpart of the client side element
  */
 export function attachExistingElement(
-  parent: AttachParentNode,
+  parent: StateNode,
   previousSibling: Element | null,
   tagName: string,
   id: number
 ): void {
   let existingElement: Element | null = null;
-  const childNodes = parent.getDomNode().childNodes;
+  // Java dereferences the parent's DOM node unguarded.
+  const childNodes = parent.getDomNode()!.childNodes;
   const indices = new Map<Node, number>();
   let afterSibling = previousSibling === null;
   let elementIndex = -1;
@@ -173,9 +125,9 @@ export function attachExistingElement(
   let existingId: number | null = null;
   let childIndex = 0;
   for (let i = 0; i < list.length(); i++) {
-    const stateNode = list.get(i);
+    const stateNode = list.get(i) as StateNode;
     const domNode = stateNode.getDomNode();
-    const index = indices.get(domNode);
+    const index = indices.get(domNode!);
     if (index !== undefined && index < elementIndex) {
       childIndex++;
     }
@@ -189,7 +141,7 @@ export function attachExistingElement(
   parent.getTree().sendExistingElementAttachToServer(parent, id, existingId, existingElement.tagName, childIndex);
 }
 
-function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, property: string): void {
+function populateMapProperty(node: StateNode, map: NodeMap, property: string): void {
   const domNode = node.getDomNode() as unknown as Node;
   if (!isPropertyDefined(domNode, property)) {
     if (!map.hasPropertyValue(property)) {
@@ -213,7 +165,7 @@ function populateModelProperty(node: ModelNode, map: ModelPropertiesMap, propert
  * @param node - the node whose properties should be populated
  * @param properties - array of property names to populate
  */
-export function populateModelProperties(node: ModelNode, properties: string[]): void {
+export function populateModelProperties(node: StateNode, properties: string[]): void {
   const map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
   if (node.getDomNode() === null) {
     invokeWhenDefined(getTag(node as never), () =>
@@ -222,20 +174,15 @@ export function populateModelProperties(node: ModelNode, properties: string[]): 
     return;
   }
   for (const property of properties) {
-    populateModelProperty(node, map, property);
+    populateMapProperty(node, map, property);
   }
 }
 
 /** A JS cleanup callback for a registered initializer. */
 type JsCallback = () => void;
 
-/** The slice of StateNode the initializer registry uses. */
-interface InitializerNode {
-  addUnregisterListener(listener: () => void): unknown;
-}
-
 // Per-node map of initializer id -> cleanup callback.
-const initializerCleanups = new Map<InitializerNode, Map<number, JsCallback>>();
+const initializerCleanups = new Map<StateNode, Map<number, JsCallback>>();
 
 function invokeSafely(fn: JsCallback): void {
   try {
@@ -245,7 +192,7 @@ function invokeSafely(fn: JsCallback): void {
   }
 }
 
-function drainInitializers(node: InitializerNode): void {
+function drainInitializers(node: StateNode): void {
   const entry = initializerCleanups.get(node);
   if (entry === undefined) {
     return;
@@ -266,7 +213,7 @@ function drainInitializers(node: InitializerNode): void {
  * @param id - the UI-wide initializer id
  * @param cleanup - the JS cleanup function to invoke when disposing, not `null`
  */
-export function registerInitializer(node: InitializerNode, id: number, cleanup: JsCallback): void {
+export function registerInitializer(node: StateNode, id: number, cleanup: JsCallback): void {
   let entry = initializerCleanups.get(node);
   if (entry === undefined) {
     entry = new Map<number, JsCallback>();
@@ -289,7 +236,7 @@ export function registerInitializer(node: InitializerNode, id: number, cleanup: 
  * @param node - the state node owning the initializer, not `null`
  * @param id - the UI-wide initializer id
  */
-export function disposeInitializer(node: InitializerNode, id: number): void {
+export function disposeInitializer(node: StateNode, id: number): void {
   const entry = initializerCleanups.get(node);
   if (entry === undefined) {
     return;

@@ -36,6 +36,43 @@ export function inertRegistry(): Registry {
   };
 }
 
+/** What a recording registry collected from the server-facing calls. */
+export interface RecordedCalls {
+  // Per node id, the property name -> value pairs sent by sendNodeSyncMessage.
+  syncs: Map<number, Map<string, unknown>>;
+  // The arguments of each sendExistingElementAttachToServer call.
+  existingElementAttaches: Array<{ nodeId: number; id: number; existingId: number; tagName: string; index: number }>;
+}
+
+/**
+ * An inert registry that also records what was sent to the server, for suites
+ * that assert on the round trip.
+ */
+export function recordingRegistry(): { registry: Registry; recorded: RecordedCalls } {
+  const recorded: RecordedCalls = { syncs: new Map(), existingElementAttaches: [] };
+  const registry = inertRegistry();
+  const base = registry.getServerConnector();
+  registry.getServerConnector = () => ({
+    ...base,
+    sendNodeSyncMessage: (node: { getId(): number }, _featureId: number, name: string, value: unknown) => {
+      const byName = recorded.syncs.get(node.getId()) ?? new Map<string, unknown>();
+      byName.set(name, value);
+      recorded.syncs.set(node.getId(), byName);
+    },
+    // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the ServerConnector signature
+    sendExistingElementAttachToServer: (
+      node: { getId(): number },
+      id: number,
+      existingId: number,
+      tagName: string,
+      index: number
+    ) => {
+      recorded.existingElementAttaches.push({ nodeId: node.getId(), id, existingId, tagName, index });
+    }
+  });
+  return { registry, recorded };
+}
+
 /**
  * A registry whose every member throws: for suites that must fail loudly if the
  * code under test reaches the registry at all.
