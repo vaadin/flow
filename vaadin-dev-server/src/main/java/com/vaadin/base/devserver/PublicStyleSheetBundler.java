@@ -155,7 +155,7 @@ public final class PublicStyleSheetBundler {
      * @return the URL with forward separators and no repeated slashes
      */
     static String toUnixSeparators(String url) {
-        return url.replace(File.separatorChar, '/').replaceAll("/{2,}", "/");
+        return url.replace('\\', '/').replaceAll("/{2,}", "/");
     }
 
     private static Logger getLogger() {
