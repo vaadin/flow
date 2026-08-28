@@ -30,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JBossVfsUtilTest {
 
@@ -44,8 +45,11 @@ class JBossVfsUtilTest {
 
         private final File file;
 
-        public MockVirtualFile(File file) {
+        private final List<File> materialized;
+
+        public MockVirtualFile(File file, List<File> materialized) {
             this.file = file;
+            this.materialized = materialized;
         }
 
         public List<MockVirtualFile> getChildren() {
@@ -53,7 +57,7 @@ class JBossVfsUtilTest {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File child : files) {
-                    children.add(new MockVirtualFile(child));
+                    children.add(new MockVirtualFile(child, materialized));
                 }
             }
             return children;
@@ -69,7 +73,71 @@ class JBossVfsUtilTest {
         }
 
         public File getPhysicalFile() {
+            // The real implementation creates the file on disk when asked for
+            materialized.add(file);
             return file;
+        }
+    }
+
+    /**
+     * Stands in for a container that serves something else than the virtual
+     * file the protocol promises.
+     */
+    public static class MalformedVirtualFile {
+
+        private final Object children;
+
+        private final Object recursiveChildren;
+
+        private final Object physicalFile;
+
+        private final RuntimeException failure;
+
+        private MalformedVirtualFile(Object children, Object recursiveChildren,
+                Object physicalFile, RuntimeException failure) {
+            this.children = children;
+            this.recursiveChildren = recursiveChildren;
+            this.physicalFile = physicalFile;
+            this.failure = failure;
+        }
+
+        static MalformedVirtualFile withChildren(Object children) {
+            return new MalformedVirtualFile(children, List.of(),
+                    new File("folder"), null);
+        }
+
+        static MalformedVirtualFile withRecursiveChildren(
+                Object recursiveChildren) {
+            return new MalformedVirtualFile(List.of(), recursiveChildren,
+                    new File("folder"), null);
+        }
+
+        static MalformedVirtualFile withPhysicalFile(Object physicalFile) {
+            return new MalformedVirtualFile(List.of(), List.of(), physicalFile,
+                    null);
+        }
+
+        static MalformedVirtualFile failing(RuntimeException failure) {
+            return new MalformedVirtualFile(List.of(), List.of(),
+                    new File("folder"), failure);
+        }
+
+        public Object getChildren() {
+            if (failure != null) {
+                throw failure;
+            }
+            return children;
+        }
+
+        public Object getChildrenRecursively() {
+            if (failure != null) {
+                throw failure;
+            }
+            return recursiveChildren;
+        }
+
+        public Object getPhysicalFile() {
+            return physicalFile;
         }
     }
 
@@ -80,27 +148,107 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void listFolder_givesTheFilesOfTheFolder() throws IOException {
+    void materializeFolder_createsTheFolderAndTheFilesInIt()
+            throws IOException {
         File folder = createFolder();
+        List<File> materialized = new ArrayList<>();
 
-        List<String> names = JBossVfsUtil.listFolder(vfsUrl(folder)).stream()
-                .map(File::getName).sorted().toList();
+        assertEquals(folder,
+                JBossVfsUtil.materializeFolder(vfsUrl(folder, materialized)));
 
-        assertEquals(List.of("nested", "one.txt"), names);
+        // The files of the folder have to be created as well, as the caller
+        // reads them through the folder
+        assertEquals(
+                List.of(folder, new File(folder, "nested"),
+                        new File(folder, "one.txt")),
+                materialized.stream().sorted().toList());
     }
 
     @Test
-    void materializeFolder_givesTheFolderItself() throws IOException {
+    void materializeFolderTree_createsEverythingBelowTheFolder()
+            throws IOException {
         File folder = createFolder();
+        List<File> materialized = new ArrayList<>();
 
-        assertEquals(folder, JBossVfsUtil.materializeFolder(vfsUrl(folder)));
+        assertEquals(folder, JBossVfsUtil
+                .materializeFolderTree(vfsUrl(folder, materialized)));
+
+        // The files of the folders inside it are created as well
+        assertEquals(
+                List.of(folder, new File(folder, "nested"),
+                        new File(new File(folder, "nested"), "two.txt"),
+                        new File(folder, "one.txt")),
+                materialized.stream().sorted().toList());
     }
 
     @Test
     void notAVirtualFile_failsWithAnIOException() throws IOException {
         URL url = vfsUrl(new NotAVirtualFile());
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+    }
+
+    @Test
+    void nothingIsServed_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(null);
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+    }
+
+    @Test
+    void childrenAreNotFiles_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(
+                MalformedVirtualFile.withChildren("not a list of children"));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+    }
+
+    @Test
+    void recursiveChildrenAreNotFiles_failsWithAnIOException()
+            throws IOException {
+        // Only the recursive children are malformed, so this fails for the
+        // folder tree and not for the folder itself
+        URL url = vfsUrl(MalformedVirtualFile
+                .withRecursiveChildren("not a list of children"));
+
+        assertEquals(new File("folder"), JBossVfsUtil.materializeFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolderTree(url));
+    }
+
+    @Test
+    void fileIsCreatedOutsideTheFolder_failsWithAnIOException()
+            throws IOException {
+        File folder = createFolder();
+        // A file of the folder that is created somewhere else could not be
+        // read through the folder
+        URL url = vfsUrl(MalformedVirtualFile.withChildren(List.of(
+                MalformedVirtualFile.withPhysicalFile(new File("elsewhere")))));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+        assertTrue(folder.isDirectory());
+    }
+
+    @Test
+    void folderIsNotAFile_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(
+                MalformedVirtualFile.withPhysicalFile("not a file path"));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+    }
+
+    @Test
+    void virtualFileFails_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(MalformedVirtualFile
+                .failing(new IllegalStateException("Deployment closed")));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     private File createFolder() throws IOException {
@@ -114,8 +262,9 @@ class JBossVfsUtilTest {
         return folder;
     }
 
-    private URL vfsUrl(File folder) throws IOException {
-        return vfsUrl(new MockVirtualFile(folder));
+    private URL vfsUrl(File folder, List<File> materialized)
+            throws IOException {
+        return vfsUrl(new MockVirtualFile(folder, materialized));
     }
 
     private URL vfsUrl(Object content) throws IOException {

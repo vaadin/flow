@@ -37,6 +37,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -74,7 +75,7 @@ class PinnedNpmVersionsTest {
                 """);
 
         ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
-                false);
+                false, keepEverything());
 
         assertEquals("25.1.0", dependencies.get("@vaadin/button").asString());
         assertEquals("25.1.0", dependencies.get("@vaadin/grid").asString());
@@ -102,8 +103,10 @@ class PinnedNpmVersionsTest {
                 }
                 """);
 
-        assertEquals("25.1.2", pinnedNpmVersions.getDependencies(false, false)
-                .get("@vaadin/button").asString());
+        assertEquals("25.1.2",
+                pinnedNpmVersions
+                        .getDependencies(false, false, keepEverything())
+                        .get("@vaadin/button").asString());
         assertEquals("25.1.2", pinnedNpmVersions.getAllDependencies()
                 .get("@vaadin/button").asString());
     }
@@ -132,7 +135,7 @@ class PinnedNpmVersionsTest {
                 """);
 
         ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
-                false);
+                false, keepEverything());
 
         assertFalse(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid"));
@@ -203,7 +206,7 @@ class PinnedNpmVersionsTest {
             ClassFinder finder = new ClassFinder.DefaultClassFinder(
                     classLoader);
             dependencies = new PinnedNpmVersions(finder).getDependencies(false,
-                    false);
+                    false, keepEverything());
         }
 
         assertTrue(dependencies.has("@vaadin/button"));
@@ -235,7 +238,8 @@ class PinnedNpmVersionsTest {
                                 + Constants.PINNED_NPM_VERSIONS_FOLDER)
                         .toURL()));
 
-        assertTrue(new PinnedNpmVersions(finder).getDependencies(false, false)
+        assertTrue(new PinnedNpmVersions(finder)
+                .getDependencies(false, false, keepEverything())
                 .has("@vaadin/button"));
     }
 
@@ -272,6 +276,85 @@ class PinnedNpmVersionsTest {
                 jarStream.closeEntry();
             }
         }
+    }
+
+    @Test
+    void versionOfOneFileIsFilteredOut_theVersionOfTheOtherIsUsed()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "26.0.0-SNAPSHOT"
+                    }
+                  }
+                }
+                """);
+
+        // The filter drops a SNAPSHOT, and dropping it must not take the
+        // version another file declares with it
+        assertEquals("25.1.0",
+                pinnedNpmVersions
+                        .getDependencies(false, false, keepEverything())
+                        .get("@vaadin/button").asString());
+    }
+
+    @Test
+    void filterIsGivenTheFileTheVersionsCameFrom() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+        List<String> origins = new ArrayList<>();
+        VersionsJsonFilter filter = new VersionsJsonFilter(
+                JacksonUtils.createObjectNode(), NodeUpdater.DEPENDENCIES) {
+            @Override
+            ObjectNode getFilteredVersions(ObjectNode versionsJson,
+                    String versionOrigin) {
+                origins.add(versionOrigin);
+                return super.getFilteredVersions(versionsJson, versionOrigin);
+            }
+        };
+
+        pinnedNpmVersions.getDependencies(false, false, filter);
+
+        // Each file is filtered on its own, with the location it was read from
+        assertEquals(2, origins.size());
+        assertTrue(
+                origins.stream()
+                        .allMatch(origin -> origin.endsWith("/versions.json")),
+                "The filter should be given the location of each versions file, was "
+                        + origins);
+    }
+
+    private static VersionsJsonFilter keepEverything() {
+        return new VersionsJsonFilter(JacksonUtils.createObjectNode(),
+                NodeUpdater.DEPENDENCIES);
     }
 
     /**

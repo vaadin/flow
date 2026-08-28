@@ -103,6 +103,28 @@ class ResourceFolderUtilTest {
     }
 
     @Test
+    void vfsFolder_isMaterializedAndOnlyItsFilesAreVisited()
+            throws IOException {
+        File folder = new File(temporaryFolder, "deployment");
+        File nested = new File(folder, "nested");
+        Files.createDirectories(nested.toPath());
+        Files.writeString(new File(folder, "one.txt").toPath(), "first",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(nested, "two.txt").toPath(), "second",
+                StandardCharsets.UTF_8);
+
+        URL vfsFolder = new URL("vfs", "deployment", 0, "/my.war/classes/",
+                new VirtualFileHandler(folder));
+
+        List<String> names = new ArrayList<>();
+        ResourceFolderUtil.visitFiles(vfsFolder,
+                file -> names.add(file.getName()));
+
+        // The folder inside it is not a file of the folder
+        assertEquals(List.of("one.txt"), names);
+    }
+
+    @Test
     void folderDoesNotExist_failsWithAnIOException() throws IOException {
         URL missing = new File(temporaryFolder, "missing").toURI().toURL();
 
@@ -124,6 +146,61 @@ class ResourceFolderUtilTest {
     private static String read(InputStream content) throws IOException {
         try (InputStream stream = content) {
             return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    /**
+     * Stands in for the virtual file system of WildFly, which serves a folder
+     * of the deployment through the {@code vfs} protocol.
+     */
+    private static class VirtualFileHandler extends URLStreamHandler {
+
+        private final File folder;
+
+        private VirtualFileHandler(File folder) {
+            this.folder = folder;
+        }
+
+        @Override
+        protected URLConnection openConnection(URL url) {
+            return new URLConnection(url) {
+                @Override
+                public void connect() {
+                }
+
+                @Override
+                public Object getContent() {
+                    return new MockVirtualFile(folder);
+                }
+            };
+        }
+    }
+
+    /**
+     * Stands in for the virtual file of WildFly, which is only reachable
+     * through reflection and creates the files it is asked for.
+     */
+    public static class MockVirtualFile {
+
+        private final File file;
+
+        public MockVirtualFile(File file) {
+            this.file = file;
+        }
+
+        public List<MockVirtualFile> getChildren() {
+            List<MockVirtualFile> children = new ArrayList<>();
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    children.add(new MockVirtualFile(child));
+                }
+            }
+            return children;
+        }
+
+        public File getPhysicalFile() {
+            return file;
         }
     }
 

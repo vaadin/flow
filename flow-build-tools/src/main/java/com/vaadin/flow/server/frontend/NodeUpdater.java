@@ -138,13 +138,11 @@ public abstract class NodeUpdater implements FallibleCommand {
             return JacksonUtils.createObjectNode();
         }
 
-        ObjectNode versionsJson = pinnedNpmVersions.getDependencies(
+        return pinnedNpmVersions.getDependencies(
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
-                options.isNpmExcludeWebComponents());
-        return new VersionsJsonFilter(getPackageJson(), DEPENDENCIES)
-                .getFilteredVersions(versionsJson,
-                        Constants.PINNED_NPM_VERSIONS_FOLDER);
+                options.isNpmExcludeWebComponents(),
+                new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
