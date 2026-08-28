@@ -77,13 +77,22 @@ the app is gone — no polling, no port probing. The daemon sends commands down 
 same connection and reads one reply line:
 
 ```
-REDEFINE a.b.C,a.b.D   ->  OK redefined=2 notLoaded=0 dupes=0 completed=true …
+REDEFINE a.b.C,a.b.D   ->  OK redefined=2 notLoaded=0 dupes=0 completed=true frontendImports=MyView …
 RESOURCES /abs/a.css   ->  OK resources=1 pushed=1 browserReload=false ms=3
-FRONTEND               ->  OK frontend=up:57231
+THEME /abs/styles.css  ->  OK themes=1 pushed=1 reloaded=false ms=7
+RELOAD                 ->  OK reloaded=true
+FRONTEND [/abs/dir]    ->  OK frontend=up:57231 mode=DEVELOPMENT_BUNDLE themes=my-theme agree=true
 INFO                   ->  OK instrumentation=true redefineSupported=true …
 PING                   ->  OK pong
 anything that fails    ->  ERR kind=<kind> [class=…] message=<free text, last>
 ```
+
+`FRONTEND` takes the frontend folder the daemon settled on as an *argument* rather than
+returning it as a field, and for the same reason `message=` is last: a reply is split on
+whitespace and a Windows path can contain a space. The app answers `agree=true|false`, and a
+`false` is the first thing to look at when an edit is not being seen. `frontend=` keeps its
+original meaning and position, so the parts of the daemon that read only that field were
+untouched when the other fields were added.
 
 `message=` is always last and takes the rest of the line, because it carries the
 JVM's own words and those contain spaces (`Connector.fields`).
@@ -135,6 +144,7 @@ daemon was started with is also forwarded to the app JVM, which is how
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
+| `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
 | `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath |
 | `vaadin.dev.mavenArgs` | none | extra arguments for the resolve, e.g. `-P!some-profile` |
 | `vaadin.dev.javaHome` | a JBR if present, else this JVM | which JVM runs the app |
@@ -143,6 +153,95 @@ daemon was started with is also forwarded to the app JVM, which is how
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+## The frontend leg
+
+`Frontend` owns the whole of it: where the frontend folder is, and what a change under it
+means. It lives there and not in `TransactionEngine` for a practical reason — `Frontend` is
+constructible from a directory and a string, so every rule is unit-testable, while
+`TransactionEngine` needs a `Launch` and a running app and is only reachable from an IT.
+What is left in `TransactionEngine` is plumbing.
+
+**Finding the folder.** The zero-dependency rule means `FrontendUtils` is out of reach, so the
+precedence is `-Dvaadin.dev.frontend`, then `-Dvaadin.frontend.folder` (which `Launch` already
+forwards to the app, so the two agree by construction), then `frontendFolder` out of
+`target/classes/META-INF/VAADIN/config/flow-build-info.json`, then `src/main/frontend` and
+`frontend/`. The token is preferred over the convention because Flow wrote it after resolving
+both the legacy fallback and the plugin's `<frontendDirectory>`, which convention-matching
+cannot see — and it is readable before the app has ever started, because `prepare-frontend`
+runs at `process-resources` and the daemon's own resolve runs `compile`. Only
+`frontendFolder` is read from that file: it also records `frontend.hotdeploy`, and that one
+describes the *build*, not the mode the app is running in, which can be set in
+`application.properties` the build never read.
+
+**Deciding what to do.** Which mode the app is in is the whole question, and only the app can
+answer it, so `FRONTEND` is asked once per apply and reused by every leg.
+
+- **Vite mode** — Vite's root *is* the frontend folder, so it applied the edit when the file
+  was saved and the daemon cannot suspend it the way it suspends Flow's own watchers. Nothing
+  is pushed and nothing escalates; `apply` names the files and says Vite did it. Pretending
+  otherwise would be the one thing this daemon exists not to do.
+- **Dev-bundle mode** — theme CSS is pushed through `ThemeLiveUpdater.push`, the same call
+  Flow's own watcher makes on save (and which the connector suspends, as it does
+  `PublicResourcesLiveUpdater`). `index.html` and theme assets are already served from the
+  folder, so they need only a reload. Everything else is in the bundle, and only a Vite build
+  can fold it in — so `apply` restarts, and the app's own startup path
+  (`NodeTasks` → `BundleValidationUtil.needsBuild` → `TaskRunDevBundleBuild`) rebuilds. The
+  restart is the mechanism here, not a fallback.
+
+**A frontend annotation on a Java class escalates too.** `@JsModule`, `@JavaScript`,
+`@CssImport`, `@NpmPackage` and `@Theme` are read by the build, not at runtime: they end up in
+`generated-flow-imports.js`, which `TaskUpdateImports` writes during startup, and the browser
+reaches them through a bundle chunk keyed by class name. The redefine succeeds and the class
+really does carry the new annotation, so nothing looks wrong - but the import is in no chunk the
+client can load. `REDEFINE` therefore reports `frontendImports=<classes>`, compared before and
+after through `AnnotationReader` (a `Class` discards its cached annotation data when
+`classRedefinedCount` moves, so the comparison is real), and `blockedReason` escalates. Note
+that no file under the frontend folder need have changed for this - which is why the frontend
+tree alone cannot catch it. `@StyleSheet` is deliberately excluded: those are live already
+through `StyleSheetHotswapper`, and restarting for one would be a regression.
+
+**Every non-theme frontend file is treated as bundled**, whether or not anything imports it.
+The daemon cannot read `stats.json` — that would be a dependency — so it cannot know, and
+over-restarting is the honest error to make: the alternative is reporting a change live when
+it is not.
+
+Deletions are tracked for frontend files and not for Java sources, because `frontendNotified`
+is a complete inventory and there is no artifact to clean up. A removed module the bundle
+still imports breaks the next build, so it has to escalate.
+
+The baseline is re-seeded on every registration (`seedFromDisk` → `seedFrontend`), and that is
+load-bearing rather than tidiness: a bundled edit escalates to a restart, the restart
+re-registers, and without the re-seed the same file would be offered again after the restart
+that already folded it into the bundle — restarting the app for ever.
+
+**A Vite compile error is found through the log, not the protocol.** Flow pipes every line
+Vite writes through `DevServerOutputTracker` at `INFO`, so a TypeScript syntax error arrives
+looking like progress: the level says `INFO` and the word "error" is lower case, and even the
+detail line does not help because `[PARSE_ERROR]` has no word boundary before `ERROR`. `AppLog`
+matches those openers separately (`DEV_SERVER_ERROR`), on the first line of a report rather
+than on anything containing "error" - the report runs to a source excerpt, a caret diagram and
+a JavaScript stack, and counting each line would turn one broken file into a dozen errors.
+
+Two things follow from Vite compiling on **save** rather than on apply. The error is already in
+the log when `apply` starts, so `Watch.mark()` would drop it as somebody else's; only
+dev-server errors, and only when a frontend file actually changed, are carried across that
+boundary (`Transaction.carriedLogErrors`, merged in `finish`). And when the browser fetches the
+module during the apply instead, the error lands asynchronously, so the frontend leg settles in
+Vite mode exactly as the redefine leg does.
+
+**Vite mode is verified by hand**, because `hotdeploy` is baked into the app JVM from the
+daemon's own system properties and `flow-tests/test-devloop` deliberately shares one
+long-lived daemon; switching modes there means a shutdown, a cold start and a pnpm install.
+The decision logic is covered by `FrontendTest` in both modes. To check it end to end:
+
+```bash
+cd <app>
+VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev restart
+#   edit src/main/frontend/<something>.ts
+.vaadin/vaadin-dev apply
+#   expect: hmr: N frontend file(s), applied by Vite (dev server up:<port>)
+```
 
 ## Known limits
 

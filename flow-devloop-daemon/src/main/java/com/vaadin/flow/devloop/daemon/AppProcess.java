@@ -118,6 +118,26 @@ final class AppProcess {
                 : Optional.empty();
     }
 
+    /**
+     * When the running JVM started, in epoch milliseconds.
+     * <p>
+     * This is the frontend leg's substitute for a build artifact. A Java source
+     * is stale when it is newer than its {@code .class} and a resource when it
+     * is newer than its classpath copy, but a frontend file has neither - what
+     * read it was the application, at startup. So a frontend file newer than
+     * this has not been folded into anything yet, whatever the daemon's own
+     * fingerprints say.
+     *
+     * @return the start time, or empty when there is no process or the platform
+     *         does not report one
+     */
+    Optional<Long> startedAtMillis() {
+        Process current = process;
+        return current == null || !current.isAlive() ? Optional.empty()
+                : current.info().startInstant()
+                        .map(java.time.Instant::toEpochMilli);
+    }
+
     String mode() {
         return mode;
     }

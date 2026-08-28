@@ -43,13 +43,18 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * The runtime leg, in-process: one atomic redefine of every changed class,
@@ -180,9 +185,13 @@ final class DevLoopRedefiner {
         // rejected, but an enhanced-redefinition JVM accepts it - and that is
         // exactly when a Spring bean's live proxy stops matching the class.
         Map<String, String> before = new HashMap<>();
+        Map<String, String> frontendBefore = new HashMap<>();
         for (ClassDefinition definition : definitions) {
             before.putIfAbsent(definition.getDefinitionClass().getName(),
                     members(definition.getDefinitionClass()));
+            frontendBefore.putIfAbsent(
+                    definition.getDefinitionClass().getName(),
+                    frontendDependencies(definition.getDefinitionClass()));
         }
 
         long redefineStart = System.nanoTime();
@@ -200,11 +209,17 @@ final class DevLoopRedefiner {
 
         Set<String> structural = new LinkedHashSet<>();
         Set<String> proxied = new LinkedHashSet<>();
+        Set<String> frontend = new LinkedHashSet<>();
         for (ClassDefinition definition : definitions) {
             Class<?> type = definition.getDefinitionClass();
             String previous = before.get(type.getName());
             if (previous != null && !previous.equals(members(type))) {
                 structural.add(simple(type.getName()));
+            }
+            String previousFrontend = frontendBefore.get(type.getName());
+            if (previousFrontend != null
+                    && !previousFrontend.equals(frontendDependencies(type))) {
+                frontend.add(simple(type.getName()));
             }
             for (Class<?> proxy : proxies) {
                 if (type.isAssignableFrom(proxy)) {
@@ -227,8 +242,9 @@ final class DevLoopRedefiner {
                 + completed + " pageReload=" + pageReload + " entities="
                 + join(entities) + " beans=" + join(beans) + " proxied="
                 + join(proxied) + " structural=" + join(structural) + " ui="
-                + join(uiClasses) + " hotswapAgent=" + hotswapAgentLoaded()
-                + " redefineMs=" + redefineMs + " hotswapMs=" + hotswapMs;
+                + join(uiClasses) + " frontendImports=" + join(frontend)
+                + " hotswapAgent=" + hotswapAgentLoaded() + " redefineMs="
+                + redefineMs + " hotswapMs=" + hotswapMs;
     }
 
     /**
@@ -370,6 +386,145 @@ final class DevLoopRedefiner {
             }
         }
         return null;
+    }
+
+    /**
+     * The theme leg. Pushes each named theme's combined stylesheet into the
+     * open page.
+     * <p>
+     * Deduplicated by theme rather than pushed per file, because the update is
+     * the whole of {@code styles.css} with its imports inlined - pushing it
+     * once per changed file would send the same bytes several times over.
+     * <p>
+     * The combining itself is {@code ThemeLiveUpdater.push}, the same call
+     * Flow's own watcher makes on save. The daemon suspends that watcher and
+     * then makes the call at the moment {@code apply} decides the change goes
+     * live, so which of the two ran is invisible to the browser.
+     *
+     * @param csv
+     *            the changed theme CSS paths, comma-separated
+     * @return the reply line
+     */
+    static String theme(String csv) {
+        VaadinService service = DevLoopRegistration.service();
+        if (service == null) {
+            return "ERR kind=no-service message=service-not-registered";
+        }
+        Set<Path> folders = new LinkedHashSet<>();
+        for (String value : csv.split(",")) {
+            String trimmed = value.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            try {
+                Path parent = Paths.get(trimmed).getParent();
+                Path folder = themeFolderOf(parent);
+                if (folder != null) {
+                    folders.add(folder);
+                }
+            } catch (RuntimeException e) {
+                return "ERR kind=protocol message=bad-path:" + trimmed;
+            }
+        }
+        if (folders.isEmpty()) {
+            return "ERR kind=protocol message=no-paths";
+        }
+
+        long started = System.nanoTime();
+        int pushed = 0;
+        for (Path folder : folders) {
+            if (ThemeLiveUpdater.push(folder.toFile(), service.getContext())) {
+                pushed++;
+            }
+        }
+        // A theme whose stylesheet could not be combined has already asked for
+        // a reload; saying so is what stops apply claiming a silent success.
+        boolean reloaded = pushed == 0 && requestBrowserReload();
+        return "OK themes=" + folders.size() + " pushed=" + pushed
+                + " reloaded=" + reloaded + " ms="
+                + (System.nanoTime() - started) / 1_000_000;
+    }
+
+    /**
+     * The theme folder a file belongs to: the directory directly under
+     * {@code themes/}, however deep the file itself sits.
+     */
+    private static Path themeFolderOf(Path directory) {
+        for (Path at = directory; at != null; at = at.getParent()) {
+            Path parent = at.getParent();
+            if (parent != null && parent.getFileName() != null
+                    && parent.getFileName().toString().equals("themes")) {
+                return at;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Asks the browser to reload, for a file the server already serves from
+     * disk - {@code index.html} and theme assets - where there is nothing to
+     * push and nothing to rebuild, only a stale page.
+     *
+     * @return the reply line
+     */
+    static String reload() {
+        return "OK reloaded=" + requestBrowserReload();
+    }
+
+    /**
+     * What the daemon needs to know about this JVM's frontend, in one
+     * round-trip.
+     * <p>
+     * {@code frontend=} keeps its exact previous meaning and position so a
+     * daemon that only reads that field is unaffected. {@code mode=} is the
+     * live mode rather than the one the build recorded, which is the field that
+     * decides whether a frontend edit was already applied by Vite or needs the
+     * bundle rebuilt.
+     *
+     * @param daemonFolder
+     *            the frontend folder the daemon resolved, or {@code null} if it
+     *            did not say
+     * @return the reply line
+     */
+    static String frontend(String daemonFolder) {
+        VaadinService service = DevLoopRegistration.service();
+        String mode = service == null ? "unknown"
+                : DevLoopRegistration.modeOf(service);
+        return "OK frontend=" + frontendStatus() + " mode=" + mode + " themes="
+                + join(activeThemes(service)) + " agree="
+                + agreesOnFolder(service, daemonFolder);
+    }
+
+    private static Set<String> activeThemes(VaadinService service) {
+        if (service == null) {
+            return Set.of();
+        }
+        try {
+            return new LinkedHashSet<>(
+                    ThemeUtils.getActiveThemes(service.getContext()));
+        } catch (RuntimeException e) {
+            return Set.of();
+        }
+    }
+
+    /**
+     * Whether the daemon and the app mean the same directory. A mismatch is not
+     * an error here - the daemon logs it and carries on with its own answer -
+     * but it is the first thing to look at when an edit is not seen.
+     */
+    private static String agreesOnFolder(VaadinService service,
+            String daemonFolder) {
+        if (service == null || daemonFolder == null || daemonFolder.isEmpty()) {
+            return "?";
+        }
+        try {
+            Path app = service.getDeploymentConfiguration().getFrontendFolder()
+                    .toPath().toAbsolutePath().normalize();
+            return String.valueOf(app.equals(
+                    Paths.get(daemonFolder).toAbsolutePath().normalize()));
+        } catch (RuntimeException e) {
+            return "?";
+        }
     }
 
     private static boolean requestBrowserReload() {
@@ -565,6 +720,56 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(signatures);
         return String.join(";", signatures);
+    }
+
+    /**
+     * The frontend imports a class declares, as one comparable string.
+     * <p>
+     * These annotations are read by the build, not at runtime: {@code JsModule}
+     * and friends end up in {@code generated-flow-imports.js}, which
+     * {@code TaskUpdateImports} writes during startup, and the browser reaches
+     * them through a bundle chunk keyed by class name. So adding one to a
+     * running application cannot work however cleanly the class redefines - the
+     * chunk the client would load does not contain the new import. The daemon
+     * escalates to a restart on this, and the restart regenerates the imports
+     * and rebuilds the bundle.
+     * <p>
+     * Read through {@link AnnotationReader} rather than off the class directly,
+     * so an import inherited from a superclass or picked up through
+     * {@code @Uses} counts the same way the build counts it. Reflection is
+     * re-read after a redefine - {@code Class} discards its cached annotation
+     * data when {@code classRedefinedCount} moves - so calling this before and
+     * after is a real comparison.
+     * <p>
+     * {@code @StyleSheet} is deliberately absent: those are live already, added
+     * and removed by {@code StyleSheetHotswapper} without a rebuild, and
+     * restarting for one would be a regression.
+     */
+    private static String frontendDependencies(Class<?> type) {
+        if (!Component.class.isAssignableFrom(type)) {
+            return "";
+        }
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> componentType = (Class<? extends Component>) type;
+        List<String> imports = new ArrayList<>();
+        AnnotationReader.getJsModuleAnnotations(componentType)
+                .forEach(annotation -> imports.add("js:" + annotation.value()));
+        AnnotationReader.getJavaScriptAnnotations(componentType).forEach(
+                annotation -> imports.add("script:" + annotation.value()));
+        AnnotationReader.getCssImportAnnotations(componentType)
+                .forEach(annotation -> imports.add("css:" + annotation.value()
+                        + ":" + annotation.id() + ":" + annotation.themeFor()));
+        for (NpmPackage npmPackage : type
+                .getAnnotationsByType(NpmPackage.class)) {
+            imports.add(
+                    "npm:" + npmPackage.value() + "@" + npmPackage.version());
+        }
+        Theme theme = type.getAnnotation(Theme.class);
+        if (theme != null) {
+            imports.add("theme:" + theme.value());
+        }
+        java.util.Collections.sort(imports);
+        return String.join(";", imports);
     }
 
     private static String simple(String binaryName) {

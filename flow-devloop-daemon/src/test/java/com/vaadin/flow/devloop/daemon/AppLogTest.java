@@ -159,6 +159,52 @@ class AppLogTest {
     }
 
     @Test
+    void watch_viteCompileError_isFoundDespiteBeingLoggedAtInfo()
+            throws IOException {
+        Path log = log("INFO up\n");
+        AppLog.Watch watch = new AppLog.Watch(log);
+        watch.drain();
+
+        // Flow pipes Vite's output through DevServerOutputTracker at INFO, so
+        // nothing about the level says this is a failure - and the detail line
+        // does not help either, because [PARSE_ERROR] has no word boundary
+        // before ERROR. Verbatim from a real run, minus the timestamps.
+        append(log,
+                """
+                        INFO c.v.b.d.DevServerOutputTracker : [vite] Internal server error: Transform failed with 1 error:
+                        INFO c.v.b.d.DevServerOutputTracker : [PARSE_ERROR] Expected `}` but found `EOF`
+                        INFO c.v.b.d.DevServerOutputTracker :    ╰─[ src/main/frontend/greeting.ts:1:55 ]
+                        INFO c.v.b.d.DevServerOutputTracker :   Plugin: vite:oxc
+                        INFO c.v.b.d.DevServerOutputTracker :       at transformWithOxc (file:///node_modules/vite/dist/node.js:1:1)
+                        """);
+
+        List<String> errors = watch.errors();
+
+        // One broken file is one error, not one per line of the report: the
+        // excerpt, the caret diagram and the JavaScript stack are all detail.
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("Internal server error"));
+    }
+
+    @Test
+    void watch_viteProgressChatter_isNotAnError() throws IOException {
+        Path log = log("INFO up\n");
+        AppLog.Watch watch = new AppLog.Watch(log);
+        watch.drain();
+
+        // Every one of these is INFO and routine; a dev server that prints on
+        // every keystroke must not make apply cry wolf.
+        append(log,
+                """
+                        INFO c.v.b.d.DevServerOutputTracker :   VITE v8.2.2  ready in 452 ms
+                        INFO c.v.b.d.DevServerOutputTracker : [vite] page reload src/main/frontend/greeting.ts
+                        INFO c.v.b.d.DevServerOutputTracker :   ➜  Local:   http://127.0.0.1:49401/VAADIN/
+                        """);
+
+        assertEquals(List.of(), watch.errors());
+    }
+
+    @Test
     void watch_mark_dropsWhatCameBeforeTheChange() throws IOException {
         Path log = log("ERROR c.e.Foo - from a previous request\n");
         AppLog.Watch watch = new AppLog.Watch(log);

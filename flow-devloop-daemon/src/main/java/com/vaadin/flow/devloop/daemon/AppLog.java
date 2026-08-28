@@ -84,6 +84,31 @@ final class AppLog {
             .compile("\\b(ERROR|SEVERE|FATAL)\\b|^Exception in thread ");
 
     /**
+     * A failure from the dev server, which the level field does not reveal.
+     * <p>
+     * Flow pipes every line Vite writes through {@code DevServerOutputTracker}
+     * at {@code INFO}, so a TypeScript syntax error arrives looking exactly
+     * like a progress message: the level is {@code INFO}, and the word "error"
+     * is lower case where {@link #ERROR_LINE} wants {@code ERROR}. Even the
+     * detail line underneath does not match - {@code [PARSE_ERROR]} has no word
+     * boundary before {@code ERROR}, because an underscore is a word character.
+     * So without this the browser shows a red overlay, the log holds the whole
+     * diagnostic, and {@code apply} reports a clean {@code Stable}.
+     * <p>
+     * Matched on the opening line of a failure rather than on anything
+     * containing "error": the report is many lines long - a source excerpt, a
+     * caret diagram, a JavaScript stack - and counting each of them would turn
+     * one broken file into a dozen errors.
+     */
+    private static final Pattern DEV_SERVER_ERROR = Pattern
+            .compile("\\[vite\\] Internal server error"
+                    + "|\\[vite\\] error while updating dependencies"
+                    + "|Pre-transform error:"
+                    + "|Transform failed with \\d+ error"
+                    + "|Build failed with \\d+ error" + "|^error during build:"
+                    + "|Failed to resolve import ");
+
+    /**
      * The line that opens a stack trace - the exception's own type and message.
      * A logger prints its message first and the throwable on the line below, so
      * this is where the type is, and the type is what says whether a redefine
@@ -116,6 +141,22 @@ final class AppLog {
     /** Whether one log line says the app's web server is up. */
     static boolean serving(String line) {
         return SERVING.matcher(line).find();
+    }
+
+    /**
+     * Whether one log line is a failure the dev server reported.
+     * <p>
+     * Separable from the app's own errors because it is attributable in a way
+     * they are not: Vite compiles on save rather than on apply, so its errors
+     * are already in the log by the time an apply looks, and only these may be
+     * carried across the window boundary.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the dev server reported a failure on it
+     */
+    static boolean devServerError(String line) {
+        return DEV_SERVER_ERROR.matcher(line).find();
     }
 
     /**
@@ -209,7 +250,8 @@ final class AppLog {
             List<String> lines = cursor.drain();
             for (String line : lines) {
                 boolean header = THROWN_HEADER.matcher(line).find();
-                boolean logged = ERROR_LINE.matcher(line).find();
+                boolean logged = ERROR_LINE.matcher(line).find()
+                        || DEV_SERVER_ERROR.matcher(line).find();
                 if (logged) {
                     count++;
                     continuing = errors.size() < MAX_ERRORS;

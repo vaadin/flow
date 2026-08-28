@@ -62,4 +62,32 @@ class DevLoopRedefinerTest {
     void frontendStatus_withoutAService_isUnknown() {
         assertTrue("unknown".equals(DevLoopRedefiner.frontendStatus()));
     }
+
+    @Test
+    void theme_withoutAService_reportsIt() {
+        String reply = DevLoopRedefiner.theme("/tmp/themes/t/styles.css");
+
+        assertTrue(reply.startsWith("ERR kind=no-service"), reply);
+    }
+
+    @Test
+    void reload_withoutABrowser_stillAnswersInOneLine() {
+        String reply = DevLoopRedefiner.reload();
+
+        // No live reload to ask means no browser was reloaded, which is a fact
+        // the daemon reports rather than an error it fails on.
+        assertTrue(reply.equals("OK reloaded=false"), reply);
+    }
+
+    @Test
+    void frontend_carriesTheFieldsTheDaemonDecidesModeWith() {
+        String reply = DevLoopRedefiner.frontend(null);
+
+        // frontend= keeps its exact previous meaning and position, so a daemon
+        // reading only that field is unaffected by the added ones.
+        assertTrue(reply.startsWith("OK frontend=unknown"), reply);
+        assertTrue(reply.contains(" mode="), reply);
+        assertTrue(reply.contains(" themes="), reply);
+        assertTrue(reply.contains(" agree=?"), reply);
+    }
 }

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.PublicResourcesLiveUpdater;
+import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.server.VaadinService;
 
@@ -108,16 +109,33 @@ final class DevLoopRegistration {
         // live, and a second watcher pushing on its own makes "what is the
         // state of my last change?" unanswerable again.
         PublicResourcesLiveUpdater.suspend(vaadinService.getContext());
+        ThemeLiveUpdater.suspend(vaadinService.getContext());
 
-        String mode = vaadinService.getDeploymentConfiguration()
-                .isDevModeLiveReloadEnabled()
-                        ? "DEVELOPMENT_FRONTEND_LIVERELOAD"
-                        : "DEVELOPMENT_BUNDLE";
+        String mode = modeOf(vaadinService);
 
         Thread thread = new Thread(() -> hold(port, token, mode),
                 "devloop-registration");
         thread.setDaemon(true);
         thread.start();
+    }
+
+    /**
+     * Which dev mode the app is actually running in.
+     * <p>
+     * Not {@code isDevModeLiveReloadEnabled()}, which reads as if it answered
+     * this and does not: it is
+     * {@code isDevToolsEnabled() && devmode.liveReload} and both default to
+     * true, so it says {@code DEVELOPMENT_FRONTEND_LIVERELOAD} for a dev-bundle
+     * application as well. The daemon uses this to decide whether a frontend
+     * edit was already applied by Vite or needs the bundle rebuilt, and those
+     * are opposite answers.
+     *
+     * @param vaadinService
+     *            the dev-mode service
+     * @return the mode's name
+     */
+    static String modeOf(VaadinService vaadinService) {
+        return vaadinService.getDeploymentConfiguration().getMode().name();
     }
 
     /**
@@ -184,11 +202,25 @@ final class DevLoopRegistration {
                 return DevLoopRedefiner.resources(
                         request.substring("RESOURCES ".length()).trim());
             }
+            if (request.startsWith("THEME ")) {
+                return DevLoopRedefiner
+                        .theme(request.substring("THEME ".length()).trim());
+            }
+            if (request.equals("RELOAD")) {
+                return DevLoopRedefiner.reload();
+            }
             if (request.equals("INFO")) {
                 return DevLoopRedefiner.info();
             }
+            // The daemon's own answer for the frontend folder rides in as the
+            // argument rather than as a reply field: a reply is parsed on
+            // whitespace and a Windows path can contain a space.
+            if (request.startsWith("FRONTEND ")) {
+                return DevLoopRedefiner.frontend(
+                        request.substring("FRONTEND ".length()).trim());
+            }
             if (request.equals("FRONTEND")) {
-                return "OK frontend=" + DevLoopRedefiner.frontendStatus();
+                return DevLoopRedefiner.frontend(null);
             }
             if (request.equals("PING")) {
                 return "OK pong";

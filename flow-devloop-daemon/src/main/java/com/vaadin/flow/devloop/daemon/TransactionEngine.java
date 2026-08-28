@@ -88,8 +88,28 @@ final class TransactionEngine {
         volatile String escalation = "";
         volatile int resources;
         volatile String frontend = "";
+        /** Frontend files this change touched, however they were handled. */
+        volatile int frontendFiles;
+        /** Theme stylesheets pushed into the open page. */
+        volatile int themePushed;
+        /**
+         * Which frontend the app is running: {@code vite}, {@code dev-bundle}.
+         */
+        volatile String frontendMode = "";
         /** What the app logged while this change was going live. */
         volatile List<String> logErrors = List.of();
+        /**
+         * Dev-server errors the log already held when this apply started.
+         * <p>
+         * Every other leg makes its change during the apply, so anything older
+         * belongs to what came before and {@code mark()} drops it. Vite does
+         * not: it compiles on save, which is before the apply, so its errors
+         * are always older than the window and would be dropped along with them
+         * - leaving apply to report a clean Stable over a file the browser is
+         * refusing to load. For a frontend change the window has to start at
+         * the previous apply instead, and this is that carry-over.
+         */
+        volatile List<String> carriedLogErrors = List.of();
         long detectMs;
         long compileMs;
         long runtimeMs;
@@ -114,10 +134,13 @@ final class TransactionEngine {
                             : "\"" + Json.escape(escalation) + "\"")
                     + ",\"duplicateClassCopies\":" + duplicates
                     + ",\"resources\":" + resources + ",\"frontend\":\""
-                    + Json.escape(frontend) + "\",\"logErrors\":"
-                    + Json.strings(logErrors) + ",\"timings\":{\"detectMs\":"
-                    + detectMs + ",\"compileMs\":" + compileMs
-                    + ",\"runtimeMs\":" + runtimeMs + ",\"totalMs\":" + totalMs
+                    + Json.escape(frontend) + "\",\"frontendFiles\":"
+                    + frontendFiles + ",\"themePushed\":" + themePushed
+                    + ",\"frontendMode\":\"" + Json.escape(frontendMode)
+                    + "\",\"logErrors\":" + Json.strings(logErrors)
+                    + ",\"timings\":{\"detectMs\":" + detectMs
+                    + ",\"compileMs\":" + compileMs + ",\"runtimeMs\":"
+                    + runtimeMs + ",\"totalMs\":" + totalMs
                     + "},\"nextAction\":\"" + Json.escape(nextAction) + "\"}";
         }
 
@@ -177,7 +200,20 @@ final class TransactionEngine {
             log.line("module set changed; re-seeding the change baseline");
         }
         Compile fresh = new Compile(project);
-        fresh.seedFromDisk();
+        // A baseline built while the app is already running must not swallow a
+        // frontend edit made since it started - that is exactly the "start,
+        // edit, first apply" sequence, and answering "no changes" to it is the
+        // bug the frontend leg exists to fix. With no app running there is
+        // nothing to be newer than: starting it re-seeds through onConnector.
+        fresh.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE));
+        // Said once per baseline rather than per apply: "why did apply not see
+        // my edit?" is answerable from daemon.log only if the folder the daemon
+        // decided on is written down somewhere.
+        fresh.frontend().root().ifPresentOrElse(
+                root -> log.line("frontend folder: " + root + " (from "
+                        + fresh.frontend().source().label + ")"),
+                () -> log.line(
+                        "frontend folder: none found; frontend edits are not tracked"));
         compile = fresh;
         return fresh;
     }
@@ -287,6 +323,7 @@ final class TransactionEngine {
                 changes = merge(changes, forced);
             }
             List<Path> staleResources = compile.staleResources();
+            Compile.FrontendChanges frontendChanges = compile.staleFrontend();
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
@@ -294,6 +331,10 @@ final class TransactionEngine {
                     .add(compile.relative(path) + " (deleted)"));
             staleResources
                     .forEach(path -> tx.changeSet.add(compile.relative(path)));
+            frontendChanges.modified()
+                    .forEach(path -> tx.changeSet.add(compile.relative(path)));
+            frontendChanges.deleted().forEach(path -> tx.changeSet
+                    .add(compile.relative(path) + " (deleted)"));
 
             // A pom edit touches no source file, so the scan above cannot see
             // it -
@@ -323,6 +364,17 @@ final class TransactionEngine {
 
             // From here on, whatever the app logs belongs to this change. Read
             // past what is already there rather than blaming it on this apply.
+            //
+            // With one exception, taken before the window closes: a dev server
+            // compiles on save, so its complaint about a file in this very
+            // change-set is already in the log and would be dropped as
+            // somebody else's. Only dev-server errors, and only when a frontend
+            // file actually changed, so nothing else is carried across.
+            if (!frontendChanges.isEmpty()) {
+                tx.carriedLogErrors = app.watch().map(AppLog.Watch::errors)
+                        .orElse(List.of()).stream()
+                        .filter(AppLog::devServerError).toList();
+            }
             app.watch().ifPresent(AppLog.Watch::mark);
 
             // The resource leg. Runs first because a Java change may also need
@@ -343,9 +395,31 @@ final class TransactionEngine {
                 }
             }
 
-            if (changes.isEmpty() && !staleResources.isEmpty()
-                    && drift.isEmpty()) {
-                return finishResourceOnly(tx, log, staleResources, started);
+            // The frontend leg decides; it does not act. Which mode the app is
+            // in is what the whole decision turns on, and only the app can say,
+            // so the probe happens once here and is reused by every leg below.
+            String probe = probeFrontend(tx);
+            Frontend.Plan plan = compile.frontend().plan(
+                    frontendChanges.modified(), frontendChanges.deleted(),
+                    isVite(tx, probe, log));
+            tx.frontendFiles = plan.size();
+            tx.frontendMode = plan.hasWork()
+                    ? (plan.vite() ? "vite" : "dev-bundle")
+                    : "";
+            if (plan.hasWork()) {
+                describeFrontend(plan, tx, log);
+            }
+            if (!plan.escalation().isEmpty()) {
+                // Only a Vite build folds a frontend file into the dev bundle,
+                // and that runs at startup - so the restart is not a fallback
+                // here, it is the mechanism.
+                tx.escalation = plan.escalation();
+            }
+
+            if (changes.isEmpty() && drift.isEmpty() && tx.escalation.isEmpty()
+                    && (!staleResources.isEmpty() || plan.hasWork())) {
+                return finishFrontendOnly(tx, log, staleResources, plan,
+                        started);
             }
             if (!staleResources.isEmpty()) {
                 // Java and resources in one change-set: push the resources too,
@@ -353,8 +427,15 @@ final class TransactionEngine {
                 // unseen until something reloaded the page.
                 notifyResources(staleResources, log);
             }
+            if (tx.escalation.isEmpty()) {
+                // Skipped when a restart is coming: it re-reads every frontend
+                // file anyway, and pushing first would put a stylesheet on a
+                // page that is about to be reloaded.
+                notifyFrontend(plan, tx, log);
+            }
 
-            if (changes.isEmpty() && drift.isEmpty()) {
+            if (changes.isEmpty() && drift.isEmpty()
+                    && tx.escalation.isEmpty()) {
                 // "No changes" is about the disk, and on its own it reads as
                 // "all
                 // is well" - which it is not when the app is not running at
@@ -422,8 +503,14 @@ final class TransactionEngine {
             // cannot
             // stick. What actually happened is the authoritative answer; static
             // prediction is only ever a hint.
+            // An escalation already decided this cannot be redefined away -
+            // a drifted classpath, or a frontend change only a rebuild can
+            // fold in. Redefining first would report "hot-reload" and return
+            // Stable over a change that is not live, which is the one answer
+            // this daemon must never give.
             Connector connector = this.connector;
-            if (drift.isEmpty() && app.state() == AppProcess.State.RUNNING
+            if (tx.escalation.isEmpty()
+                    && app.state() == AppProcess.State.RUNNING
                     && connector != null && connector.isOpen()
                     && !tx.classes.isEmpty()) {
                 long runtimeStart = System.nanoTime();
@@ -514,12 +601,83 @@ final class TransactionEngine {
     }
 
     /**
-     * A resources-only change: never a restart. The frontend leg is blocked
+     * Asks the app about its frontend, once per apply.
+     * <p>
+     * Hoisted out of the fast path because the answer decides what the frontend
+     * leg does long before that path is reached, and asking twice would cost a
+     * second round-trip to learn the same thing.
+     *
+     * @return the {@code frontend=} field, or {@code unknown} when there is no
+     *         app to ask
+     */
+    private String probeFrontend(Transaction tx) {
+        Connector active = this.connector;
+        if (app.state() != AppProcess.State.RUNNING || active == null
+                || !active.isOpen()) {
+            return "unknown";
+        }
+        Map<String, String> fields = active
+                .command("FRONTEND " + compile.frontend().root()
+                        .map(Path::toString).orElse(""), 10)
+                .map(Connector::fields).orElse(Map.of());
+        tx.frontend = fields.getOrDefault("frontend", "unknown");
+        return fields.getOrDefault("mode", "") + " "
+                + fields.getOrDefault("frontend", "unknown");
+    }
+
+    /**
+     * Whether Vite is what applied a frontend edit.
+     * <p>
+     * The app's own mode and a live probe of the dev server can disagree - the
+     * mode was read at registration, the probe is measured now - and the probe
+     * wins, because a dev server that is answering is applying edits whatever
+     * the configuration said.
+     */
+    private boolean isVite(Transaction tx, String probe, Launch.Log log) {
+        String status = tx.frontend;
+        boolean byProbe = status.startsWith("up:")
+                || status.startsWith("starting(");
+        boolean byMode = probe.startsWith("DEVELOPMENT_FRONTEND_LIVERELOAD");
+        if (status.startsWith("no-dev-server(") && byMode) {
+            log.line("frontend: the app reports mode="
+                    + "DEVELOPMENT_FRONTEND_LIVERELOAD but no dev server is"
+                    + " running; treating it as a dev bundle");
+            return false;
+        }
+        if (byProbe && !byMode && !probe.isBlank()) {
+            log.line("frontend: the app reports a dev bundle but the dev server"
+                    + " answers " + status + "; trusting the dev server");
+        }
+        return byProbe;
+    }
+
+    /** The one line that says what was found and what will happen to it. */
+    private void describeFrontend(Frontend.Plan plan, Transaction tx,
+            Launch.Log log) {
+        String where = plan.vite() ? "Vite " + tx.frontend : "dev bundle";
+        String consequence;
+        if (plan.vite()) {
+            consequence = "Vite applied them on save";
+        } else if (!plan.escalation().isEmpty()) {
+            consequence = "a restart rebuilds the bundle";
+        } else if (plan.servedLive().isEmpty()) {
+            consequence = "pushed into the open page";
+        } else if (plan.themeCss().isEmpty()) {
+            consequence = "served from the frontend folder; reloading the page";
+        } else {
+            consequence = "pushed, and the page reloaded for the rest";
+        }
+        log.line("frontend: " + plan.size() + " file(s) changed (" + where
+                + "); " + consequence);
+    }
+
+    /**
+     * A change with no Java in it: never a restart. The frontend leg is blocked
      * rather than hung when Vite is down, so the agent gets a terminal answer
      * either way.
      */
-    private Transaction finishResourceOnly(Transaction tx, Launch.Log log,
-            List<Path> resources, long started) {
+    private Transaction finishFrontendOnly(Transaction tx, Launch.Log log,
+            List<Path> resources, Frontend.Plan plan, long started) {
         Connector active = this.connector;
         if (app.state() != AppProcess.State.RUNNING || active == null
                 || !active.isOpen()) {
@@ -529,10 +687,7 @@ final class TransactionEngine {
                     started);
         }
 
-        String frontend = active.command("FRONTEND", 10).map(reply -> Connector
-                .fields(reply).getOrDefault("frontend", "unknown"))
-                .orElse("unknown");
-        tx.frontend = frontend;
+        String frontend = tx.frontend;
         if (frontend.startsWith("down")) {
             return finish(tx, Outcome.FAILED,
                     "frontend-down: the Vite dev server is not answering on "
@@ -542,25 +697,104 @@ final class TransactionEngine {
         }
 
         long runtimeStart = System.nanoTime();
-        Optional<String> reply = notifyResources(resources, log);
-        tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
-        if (reply.isEmpty() || !reply.get().startsWith("OK")) {
-            return finish(tx, Outcome.FAILED,
-                    "resource notify: " + reply.orElse("no reply"), "hmr",
-                    "see target/devloop/app.log", started);
+        if (!resources.isEmpty()) {
+            Optional<String> reply = notifyResources(resources, log);
+            if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+                tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
+                return finish(tx, Outcome.FAILED,
+                        "resource notify: " + reply.orElse("no reply"), "hmr",
+                        "see target/devloop/app.log", started);
+            }
+            Map<String, String> resourceFields = Connector.fields(reply.get());
+            int pushed = parseInt(resourceFields.get("pushed"));
+            tx.hotswapDetail = pushed > 0
+                    ? "pushed " + pushed + " stylesheet(s) in place"
+                    : "true".equals(resourceFields.get("browserReload"))
+                            ? "browser reload requested"
+                            : "no browser connected";
         }
-        Map<String, String> resourceFields = Connector.fields(reply.get());
-        int pushed = parseInt(resourceFields.get("pushed"));
-        tx.hotswapDetail = pushed > 0
-                ? "pushed " + pushed + " stylesheet(s) in place"
-                : "true".equals(resourceFields.get("browserReload"))
-                        ? "browser reload requested"
-                        : "no browser connected";
-        // Reported, not waited for: CSS is the fastest leg there is and pushing
-        // a
-        // stylesheet cannot break a class, so this leg spends no time settling.
-        app.watch().ifPresent(watching -> tx.logErrors = watching.errors());
+        if (!notifyFrontend(plan, tx, log)) {
+            tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
+            return finish(tx, Outcome.FAILED, "frontend notify: no reply",
+                    "hmr", "see target/devloop/app.log", started);
+        }
+        tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
+        // A push the daemon performed itself is done when the connector
+        // answers, so there is nothing to wait for: a stylesheet cannot break a
+        // class, and this leg spends no time settling.
+        //
+        // Vite is the exception. It compiles in its own process, and a
+        // TypeScript error surfaces when the browser fetches the module - which
+        // is after the save that triggered the HMR push, not before. Returning
+        // the instant the probe answers reads an empty log and calls a broken
+        // file Stable, which is the same mistake the redefine leg settles to
+        // avoid.
+        app.watch()
+                .ifPresent(watching -> tx.logErrors = plan.vite()
+                        ? watching.settle(ERROR_SETTLE_MILLIS)
+                        : watching.errors());
         return finish(tx, Outcome.STABLE, "", "hmr", "", started);
+    }
+
+    /**
+     * Gets the frontend half of a change in front of the browser: theme
+     * stylesheets pushed as text, everything the server already serves from
+     * disk covered by one reload.
+     * <p>
+     * In Vite mode this does nothing at all, deliberately - Vite pushed the
+     * change when the file was saved, and a reload on top of that would throw
+     * away the state its hot update preserved.
+     *
+     * @return {@code false} only when the app was asked and did not answer
+     */
+    private boolean notifyFrontend(Frontend.Plan plan, Transaction tx,
+            Launch.Log log) {
+        Connector active = this.connector;
+        if (!plan.hasWork() || plan.vite() || active == null
+                || !active.isOpen()) {
+            // Nothing to do, but the bytes are accounted for either way: Vite
+            // already applied them, so offering them again would be a lie.
+            markFrontendApplied(plan);
+            return true;
+        }
+        if (!plan.themeCss().isEmpty()) {
+            Optional<String> reply = active
+                    .command("THEME " + join(plan.themeCss()), 30);
+            if (reply.isEmpty()) {
+                return false;
+            }
+            if (!reply.get().startsWith("OK")) {
+                log.line("theme push: " + reply.get());
+                return false;
+            }
+            tx.themePushed = parseInt(
+                    Connector.fields(reply.get()).get("pushed"));
+        }
+        if (!plan.servedLive().isEmpty()) {
+            // index.html and theme assets are read from the frontend folder per
+            // request, so the bytes are already right and only the open page is
+            // stale.
+            Optional<String> reply = active.command("RELOAD", 30);
+            if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+                return false;
+            }
+        }
+        markFrontendApplied(plan);
+        return true;
+    }
+
+    private void markFrontendApplied(Frontend.Plan plan) {
+        List<Path> applied = new ArrayList<>();
+        applied.addAll(plan.themeCss());
+        applied.addAll(plan.servedLive());
+        applied.addAll(plan.bundled());
+        compile.markFrontendNotified(
+                new Compile.FrontendChanges(applied, plan.deleted()));
+    }
+
+    private static String join(List<Path> paths) {
+        return paths.stream().map(Path::toString)
+                .collect(java.util.stream.Collectors.joining(","));
     }
 
     /**
@@ -679,6 +913,19 @@ final class TransactionEngine {
             return Optional.of("entity mapping cannot hot reload (" + entities
                     + "): Hibernate's metamodel and schema are fixed at startup");
         }
+        // @JsModule and friends are read by the build, not at runtime: they end
+        // up in generated-flow-imports.js, which is written during startup, and
+        // the browser reaches them through a bundle chunk keyed by class name.
+        // The redefine itself succeeds - the class really does carry the new
+        // annotation - but the import is in no chunk the client can load, so
+        // reporting hot-reload here would be reporting a change live that is
+        // not. Only a restart regenerates the imports.
+        String frontend = fields.getOrDefault("frontendImports", "-");
+        if (!"-".equals(frontend)) {
+            return Optional.of("frontend imports changed (" + frontend
+                    + "): @JsModule and friends are read at startup"
+                    + " (dev bundle rebuild)");
+        }
         // A method body inside a bean is fine: the proxy delegates to the
         // target
         // and the target's new body runs. What breaks is a change to the
@@ -738,11 +985,52 @@ final class TransactionEngine {
         tx.nextAction = nextAction;
         tx.state = outcome.name().toLowerCase();
         tx.totalMs = (System.nanoTime() - startedNanos) / 1_000_000;
+        // Merged here rather than at every assignment site, so no leg can
+        // report Stable while a dev-server error it inherited goes unmentioned.
+        if (!tx.carriedLogErrors.isEmpty()) {
+            List<String> merged = new ArrayList<>(tx.carriedLogErrors);
+            tx.logErrors.stream().filter(line -> !merged.contains(line))
+                    .forEach(merged::add);
+            tx.logErrors = List.copyOf(merged);
+        }
         // A superseded transaction is not the answer to "what is the state?".
         if (outcome != Outcome.SUPERSEDED) {
             last = tx;
         }
         return tx;
+    }
+
+    /**
+     * What an {@code hmr} outcome actually did, as the clauses that apply.
+     * <p>
+     * Composed rather than templated because one apply can carry a classpath
+     * resource, a theme stylesheet and a file the server reads from disk, and
+     * naming only one of them would leave a reader wondering about the rest.
+     * The resource clause stays first and stays word-for-word what it was.
+     */
+    private static String hmrDetail(Transaction tx) {
+        List<String> clauses = new ArrayList<>();
+        if (tx.resources > 0) {
+            clauses.add(tx.resources + " resource(s) copied");
+            if (!tx.hotswapDetail.isEmpty()) {
+                clauses.add(tx.hotswapDetail);
+            }
+        }
+        if (tx.themePushed > 0) {
+            clauses.add(tx.themePushed + " theme file(s) pushed in place");
+        }
+        if ("vite".equals(tx.frontendMode)) {
+            clauses.add(tx.frontendFiles
+                    + " frontend file(s), applied by Vite (dev server "
+                    + tx.frontend + ")");
+        } else if (tx.frontendFiles > tx.themePushed) {
+            clauses.add((tx.frontendFiles - tx.themePushed)
+                    + " frontend file(s) served live, browser reloaded");
+        }
+        if (clauses.isEmpty()) {
+            return tx.resources + " resource(s) copied, " + tx.hotswapDetail;
+        }
+        return String.join(", ", clauses);
     }
 
     /**
@@ -788,14 +1076,22 @@ final class TransactionEngine {
             }
         }
         case COMPILED -> {
-            lines.add("compiling → compiled   (" + seconds + ")");
-            lines.add(tx.classes.size() + " class(es); " + tx.nextAction);
+            // Nothing was compiled on a frontend-only change, and naming a
+            // phase that did not run sends the reader to the wrong place - the
+            // same reason the restart header is conditional.
+            boolean frontendOnly = tx.classes.isEmpty() && tx.frontendFiles > 0;
+            lines.add((frontendOnly ? "frontend" : "compiling")
+                    + " → compiled   (" + seconds + ")");
+            // "0 class(es)" is a misleading way to describe a frontend-only
+            // change that has not been made live yet; name what is actually
+            // waiting.
+            lines.add((frontendOnly ? tx.frontendFiles + " frontend file(s)"
+                    : tx.classes.size() + " class(es)") + "; " + tx.nextAction);
         }
         case STABLE -> {
             if ("hmr".equals(tx.classification)) {
                 lines.add("frontend → Stable   (" + seconds + ")");
-                lines.add("hmr: " + tx.resources + " resource(s) copied, "
-                        + tx.hotswapDetail);
+                lines.add("hmr: " + hmrDetail(tx));
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
                 lines.add("hot-reload: " + tx.hotswapDetail
@@ -808,8 +1104,11 @@ final class TransactionEngine {
                     lines.add("  → " + tx.nextAction);
                 }
             } else {
-                lines.add("compiling → runtime → restarting → Stable   ("
-                        + seconds + ")");
+                // Naming phases that did not happen sends the reader looking
+                // in the wrong place: a frontend-only or pom-only restart
+                // compiled nothing and redefined nothing.
+                lines.add((tx.classes.isEmpty() ? "" : "compiling → runtime → ")
+                        + "restarting → Stable   (" + seconds + ")");
                 lines.add("restart: " + tx.escalation);
             }
         }

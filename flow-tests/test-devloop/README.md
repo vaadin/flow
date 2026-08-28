@@ -59,6 +59,31 @@ Three things the ITs must pin, and all are set in `VaadinDevCli`:
 - **`VAADIN_DEV_PROGRESS=never`** — the output is read by assertions, not by a
   person.
 
+## The frontend fixtures, and what they deliberately are not
+
+`DevLoopFrontendIT` edits two fixtures under `devloop-app/src/main/frontend`: the theme
+`themes/devloop/` and the module `mutable-greeting.ts`. **Neither is wired into the
+application** — the theme is not activated with `@Theme`, and nothing imports the module.
+
+That is not an oversight, and the reason is specifically about the *edited* file. `DevLoopFrontendIT`
+patches `mutable-greeting.ts` on every run; if something imported it, that edit would change its
+entry in the bundle's `frontendHashes`, `BundleValidationUtil.needsBuild` would come back true,
+and **every run would pay a full Vite build**. Unimported, it costs nothing and the daemon still
+classifies it exactly the same way. (`src/main/bundles/` and `node_modules/` are git-ignored, so
+a fresh checkout builds the bundle once on the first app start either way — that part is not
+what the fixtures are avoiding.)
+
+Nothing is lost by leaving them unwired, because the daemon cannot tell the difference and must
+not try to: with no dependencies it cannot read `stats.json`, so it classifies every non-theme
+frontend file as bundled on its path alone, and it resolves a theme by folder rather than by
+what the page is using. The fixtures exercise exactly the code paths a wired-up project would.
+
+**There is no IT for the bundle rebuild itself.** What this module owns is the daemon's
+*decision*, and `apply --no-restart --json` reads that verdict in milliseconds; the rebuild it
+would trigger is Flow's own `needsBuild` / `TaskRunDevBundleBuild`, which is tested upstream
+and would cost this suite minutes. Vite mode is not run here either, for the reasons in
+`flow-devloop-daemon/README.md`, which also carries the manual sequence for checking it.
+
 ## Running them
 
 These are ordinary ITs: no tag, no profile, and CI runs them like any other
@@ -109,7 +134,8 @@ testable by changing what is on disk. Two rules keep it safe.
 
 1. **Only files that exist to be edited.** Java changes are confined to the
    `…app.mutable` package and to `devloop-shared`'s `DueDateFormatter`; the
-   stylesheet and the pom are named explicitly by the tests that edit them.
+   stylesheet, the frontend fixtures and the pom are named explicitly by the
+   tests that edit them.
 2. **Every edit is reverted from the original bytes.** `SourcePatch` remembers
    what it read and writes it back in `@AfterEach`, so a failed run never leaves
    the working tree dirty for the next one. If a run is killed mid-test, `git

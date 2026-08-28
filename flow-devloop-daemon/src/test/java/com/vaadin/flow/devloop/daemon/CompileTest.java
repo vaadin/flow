@@ -190,6 +190,90 @@ class CompileTest {
     }
 
     @Test
+    void staleFrontend_afterSeeding_isQuiet() throws IOException {
+        Compile compile = withFrontend("views/main.ts", "themes/t/styles.css");
+        compile.seedFromDisk();
+
+        assertTrue(compile.staleFrontend().isEmpty());
+    }
+
+    @Test
+    void staleFrontend_seesEditsAndAdditions() throws IOException {
+        Compile compile = withFrontend("views/main.ts");
+        compile.seedFromDisk();
+        Path added = write("app/src/main/frontend/views/extra.ts",
+                "export {};");
+        touch("app/src/main/frontend/views/main.ts");
+
+        Compile.FrontendChanges changes = compile.staleFrontend();
+
+        assertEquals(2, changes.modified().size());
+        assertTrue(changes.modified().contains(added));
+        assertTrue(changes.deleted().isEmpty());
+    }
+
+    @Test
+    void staleFrontend_reportsADeletionOnceAndThenForgetsIt()
+            throws IOException {
+        Compile compile = withFrontend("views/main.ts", "views/gone.ts");
+        compile.seedFromDisk();
+        Path gone = repo.resolve("app/src/main/frontend/views/gone.ts");
+        Files.delete(gone);
+
+        Compile.FrontendChanges first = compile.staleFrontend();
+        assertEquals(List.of(gone), first.deleted());
+
+        // Acting on it is what forgets it; otherwise every later apply would
+        // escalate again over a file nobody is going to restore.
+        compile.markFrontendNotified(first);
+        assertTrue(compile.staleFrontend().isEmpty());
+    }
+
+    @Test
+    void staleFrontend_seedingKeepsAnEditMadeSinceTheAppStarted()
+            throws IOException {
+        // The "start, edit, first apply" sequence. A frontend file has no
+        // artifact to be newer than, so a baseline taken while the app is
+        // already running would otherwise swallow the edit and answer "no
+        // changes" to the very change it was asked about.
+        Compile compile = withFrontend("views/main.ts", "views/settled.ts");
+        long appStarted = System.currentTimeMillis();
+        touch("app/src/main/frontend/views/main.ts");
+
+        compile.seedFromDisk(appStarted);
+
+        Compile.FrontendChanges changes = compile.staleFrontend();
+        assertEquals(
+                List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
+                changes.modified());
+    }
+
+    @Test
+    void staleFrontend_neverOffersBuildOutput() throws IOException {
+        // The one rule whose failure makes every single apply noisy: generated/
+        // is rewritten by the build, not by the developer.
+        Compile compile = withFrontend("views/main.ts");
+        compile.seedFromDisk();
+        write("app/src/main/frontend/generated/vaadin.ts", "export {};");
+        write("app/src/main/frontend/node_modules/dep/index.js",
+                "module.exports={};");
+
+        assertTrue(compile.staleFrontend().isEmpty());
+    }
+
+    @Test
+    void staleFrontend_withNoFrontendFolder_isEmpty() throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Compile compile = new Compile(project(app));
+        compile.seedFromDisk();
+
+        assertTrue(compile.staleFrontend().isEmpty());
+    }
+
+    @Test
     void tidy_collapsesJavacsRepetitionAndShortensNames() {
         // javac says "cannot find symbol symbol: method bar() location: class
         // com.example.Foo" over three lines; output length is a real cost for
@@ -197,6 +281,36 @@ class CompileTest {
         // agent reading this every apply.
         assertEquals("cannot find method bar() in class Foo", Compile.tidy(
                 "cannot find symbol symbol:   method bar() location:   class com.example.Foo"));
+    }
+
+    /** An application module with a frontend folder holding these files. */
+    private Compile withFrontend(String... frontendFiles) throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        for (String relative : frontendFiles) {
+            write("app/src/main/frontend/" + relative, "export {};");
+        }
+        return new Compile(project(app));
+    }
+
+    private Path write(String relative, String content) throws IOException {
+        Path file = repo.resolve(relative);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, content);
+        return file;
+    }
+
+    /**
+     * A fingerprint is modification time plus size, so a rewrite of the same
+     * length needs the timestamp moved to be visible - and a same-millisecond
+     * write would otherwise make this test flaky on a coarse clock.
+     */
+    private void touch(String relative) throws IOException {
+        Path file = repo.resolve(relative);
+        Files.setLastModifiedTime(file, java.nio.file.attribute.FileTime
+                .fromMillis(System.currentTimeMillis() + 2000));
     }
 
     private Reactor.Module module(String name, String simpleName, String source)

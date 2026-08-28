@@ -93,6 +93,25 @@ final class Compile {
         }
     }
 
+    /**
+     * Frontend changes. Separate from {@link Changes} because these never
+     * compile and are never copied anywhere - what happens to them is decided
+     * by {@link Frontend}, not by this class.
+     */
+    record FrontendChanges(List<Path> modified, List<Path> deleted) {
+
+        static final FrontendChanges EMPTY = new FrontendChanges(List.of(),
+                List.of());
+
+        boolean isEmpty() {
+            return modified.isEmpty() && deleted.isEmpty();
+        }
+
+        int size() {
+            return modified.size() + deleted.size();
+        }
+    }
+
     /** A file and the module it belongs to, which is all a walk ever needs. */
     private interface Visitor {
         void accept(Reactor.Module module, Path file, Stamp stamp);
@@ -106,8 +125,24 @@ final class Compile {
      */
     private final Map<Path, Stamp> notified = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /**
+     * Fingerprints of frontend files as of the last time the daemon acted on
+     * them.
+     * <p>
+     * There is deliberately no {@code copyIsCurrent} counterpart as there is
+     * for resources: a frontend file has no {@code target/classes} mirror and
+     * must not get one. In dev-bundle mode Flow reads the frontend folder from
+     * source per request, and in Vite mode Vite's root <em>is</em> that folder.
+     * So staleness here is the single question "has the daemon acted on these
+     * bytes yet?".
+     */
+    private final Map<Path, Stamp> frontendNotified = new java.util.concurrent.ConcurrentHashMap<>();
+
     /** The edit loop, application module first. */
     private final List<Reactor.Module> modules;
+
+    /** The application's frontend folder, and the rules about it. */
+    private final Frontend frontend;
 
     /**
      * The compile classpath each module was last compiled against.
@@ -124,6 +159,7 @@ final class Compile {
 
     Compile(Launch.Project project) {
         this.modules = List.copyOf(project.modules());
+        this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
             compiledAgainst.put(module.artifactId(),
                     Launch.membership(project.compileClasspath(module)));
@@ -132,6 +168,18 @@ final class Compile {
 
     List<Reactor.Module> modules() {
         return modules;
+    }
+
+    /**
+     * The application's frontend folder and what a change under it means.
+     * <p>
+     * Held here rather than on {@link Reactor.Module} because exactly one
+     * module in the loop has a frontend folder, and this instance is rebuilt
+     * precisely when the module set changes - the only event in a daemon's life
+     * that can move it.
+     */
+    Frontend frontend() {
+        return frontend;
     }
 
     /**
@@ -193,6 +241,121 @@ final class Compile {
     void seedResources() {
         notified.clear();
         forEachResource((module, source, stamp) -> notified.put(source, stamp));
+    }
+
+    /**
+     * Frontend files the daemon has not acted on yet, and tracked ones that are
+     * gone.
+     * <p>
+     * Deletions are reported here and not for Java sources because the
+     * inventory is complete - every frontend file the daemon has ever stamped
+     * is a key in the map - and because a deletion matters: a removed module
+     * the bundle still imports breaks the next build, and a removed stylesheet
+     * leaves what was already pushed on the page.
+     */
+    FrontendChanges staleFrontend() {
+        Path root = frontend.root().orElse(null);
+        if (root == null) {
+            return FrontendChanges.EMPTY;
+        }
+        List<Path> modified = new ArrayList<>();
+        java.util.Set<Path> seen = new java.util.HashSet<>();
+        forEachFrontendFile(root, (file, stamp) -> {
+            seen.add(file);
+            if (!stamp.equals(frontendNotified.get(file))) {
+                modified.add(file);
+            }
+        });
+        List<Path> deleted = frontendNotified.keySet().stream()
+                .filter(path -> !seen.contains(path))
+                .sorted(Comparator.naturalOrder()).toList();
+        modified.sort(Comparator.naturalOrder());
+        return new FrontendChanges(List.copyOf(modified), deleted);
+    }
+
+    /** Records that the app has been told about these frontend changes. */
+    void markFrontendNotified(FrontendChanges changes) {
+        for (Path file : changes.modified()) {
+            stampOf(file).ifPresent(stamp -> frontendNotified.put(file, stamp));
+        }
+        changes.deleted().forEach(frontendNotified::remove);
+    }
+
+    /**
+     * Seeds the fingerprints, so an untouched project reports no changes.
+     * <p>
+     * Files newer than the cutoff are deliberately left unstamped. A frontend
+     * file has no artifact to be compared against - no {@code .class}, no
+     * classpath copy - so without this a baseline taken while the app is
+     * already running would swallow an edit made since it started, and the very
+     * first apply after a cold daemon would answer "no changes" to the change
+     * it was asked about. The cutoff is the app's own start time, which is what
+     * read the frontend folder.
+     *
+     * @param cutoffMillis
+     *            the newest modification time still considered live;
+     *            {@code Long.MAX_VALUE} to accept everything on disk
+     */
+    void seedFrontend(long cutoffMillis) {
+        frontendNotified.clear();
+        frontend.root()
+                .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
+                    if (stamp.modified() <= cutoffMillis) {
+                        frontendNotified.put(file, stamp);
+                    }
+                }));
+    }
+
+    /** A frontend file and its fingerprint; there is no owning module. */
+    private interface FrontendVisitor {
+        void accept(Path file, Stamp stamp);
+    }
+
+    /**
+     * Walks the frontend tree, pruning rather than filtering.
+     * <p>
+     * {@code Files.walk} cannot skip a subtree, and both {@code generated/} and
+     * a project's {@code node_modules/} can hold tens of thousands of files
+     * that would be stat-ed on every apply only to be discarded. Kept separate
+     * from {@link #walk} rather than generalising it: that one is the compile
+     * leg's, it is tested, and it has no reason to grow a pruning concept.
+     */
+    private void forEachFrontendFile(Path root, FrontendVisitor action) {
+        try {
+            Files.walkFileTree(root, new java.nio.file.SimpleFileVisitor<>() {
+                @Override
+                public java.nio.file.FileVisitResult preVisitDirectory(Path dir,
+                        BasicFileAttributes attrs) {
+                    Path name = dir.getFileName();
+                    return name != null && !dir.equals(root)
+                            && Frontend.isPruned(name.toString())
+                                    ? java.nio.file.FileVisitResult.SKIP_SUBTREE
+                                    : java.nio.file.FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public java.nio.file.FileVisitResult visitFile(Path file,
+                        BasicFileAttributes attrs) {
+                    if (attrs.isRegularFile()
+                            && frontend.kindOf(file) != Frontend.Kind.IGNORED) {
+                        action.accept(file,
+                                new Stamp(attrs.lastModifiedTime().toMillis(),
+                                        attrs.size()));
+                    }
+                    return java.nio.file.FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public java.nio.file.FileVisitResult visitFileFailed(Path file,
+                        IOException exception) {
+                    // An unreadable file yields an empty change-set, not a
+                    // failed apply.
+                    return java.nio.file.FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ignored) {
+            // Same contract as the compile leg's walk.
+        }
     }
 
     private boolean copyIsCurrent(Reactor.Module module, Path source) {
@@ -329,9 +492,24 @@ final class Compile {
      * there.
      */
     void seedFromDisk() {
+        seedFromDisk(Long.MAX_VALUE);
+    }
+
+    /**
+     * @param frontendCutoffMillis
+     *            how new a frontend file may be and still count as live; see
+     *            {@link #seedFrontend(long)}
+     */
+    void seedFromDisk(long frontendCutoffMillis) {
         applied.clear();
         forEachSource((module, source, stamp) -> applied.put(source, stamp));
         seedResources();
+        // Load-bearing for the frontend leg, not just tidiness: a bundled
+        // frontend edit escalates to a restart, the restart re-registers, and
+        // this runs again. Without it the same file would be offered after the
+        // restart that already folded it into the bundle, and would restart the
+        // app for ever.
+        seedFrontend(frontendCutoffMillis);
     }
 
     private void forEachSource(Visitor action) {

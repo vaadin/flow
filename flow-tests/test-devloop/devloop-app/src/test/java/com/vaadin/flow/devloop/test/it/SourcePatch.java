@@ -64,6 +64,19 @@ final class SourcePatch implements AutoCloseable {
     }
 
     /**
+     * Adds text to the end of a file, which is the cheapest way to change its
+     * bytes when what the file says does not matter - only that it changed.
+     *
+     * @param file
+     *            the file to edit
+     * @param text
+     *            what to add
+     */
+    void append(Path file, String text) {
+        write(file, remember(file) + text);
+    }
+
+    /**
      * Inserts text before the last closing brace of a Java source, which is how
      * a member is added to a class.
      *

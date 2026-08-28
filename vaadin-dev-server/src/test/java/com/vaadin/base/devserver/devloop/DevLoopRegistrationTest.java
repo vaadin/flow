@@ -20,9 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -87,6 +89,30 @@ class DevLoopRegistrationTest {
         hotswapper.onInit(Mockito.mock(VaadinService.class));
 
         assertSame(hotswapper, DevLoopHotswapper.getActive());
+    }
+
+    @Test
+    void modeOf_distinguishesADevBundleFromAViteApplication() {
+        // The regression this guards: isDevModeLiveReloadEnabled() is
+        // isDevToolsEnabled() && devmode.liveReload, both true by default, so
+        // it reported DEVELOPMENT_FRONTEND_LIVERELOAD for a dev-bundle
+        // application too. The daemon decides whether a frontend edit was
+        // already applied by Vite or needs the bundle rebuilt from this, and
+        // those are opposite answers.
+        assertEquals("DEVELOPMENT_BUNDLE", DevLoopRegistration
+                .modeOf(serviceInMode(Mode.DEVELOPMENT_BUNDLE)));
+        assertEquals("DEVELOPMENT_FRONTEND_LIVERELOAD", DevLoopRegistration
+                .modeOf(serviceInMode(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)));
+    }
+
+    private static VaadinService serviceInMode(Mode mode) {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getMode()).thenReturn(mode);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        return service;
     }
 
     @Test
