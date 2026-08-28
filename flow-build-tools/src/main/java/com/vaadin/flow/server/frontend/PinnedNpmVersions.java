@@ -115,19 +115,26 @@ class PinnedNpmVersions {
 
     /**
      * Gets the npm packages and versions to pin, excluding the packages that
-     * are not used in the current mode and the ones excluded by another
-     * package.
+     * are not used in the current mode and the ones the given filter drops.
+     * <p>
+     * Each versions file is filtered on its own, before the files are merged,
+     * so that the filter reports the file a version came from, and so that a
+     * version it drops falls back to the one another file declares.
      *
      * @param reactEnabled
      *            whether React is enabled
      * @param excludeWebComponents
      *            whether to exclude web component npm packages
+     * @param filter
+     *            the filter that keeps the versions the user has not changed
      * @return the npm package names and versions to pin
      */
     ObjectNode getDependencies(boolean reactEnabled,
-            boolean excludeWebComponents) {
-        return merge(file -> new VersionsJsonConverter(file.content(),
-                reactEnabled, excludeWebComponents).getConvertedJson());
+            boolean excludeWebComponents, VersionsJsonFilter filter) {
+        return merge(file -> filter.getFilteredVersions(
+                new VersionsJsonConverter(file.content(), reactEnabled,
+                        excludeWebComponents).getConvertedJson(),
+                file.origin()));
     }
 
     /**

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -75,8 +78,8 @@ class PinnedNpmVersionsTest {
 
         assertTrue(versions.isEmpty());
         assertEquals(Optional.empty(), versions.getVaadinVersion());
-        assertTrue(
-                versions.getDependencies(false, false).properties().isEmpty());
+        assertTrue(versions.getDependencies(false, false, keepEverything())
+                .properties().isEmpty());
     }
 
     @Test
@@ -84,7 +87,8 @@ class PinnedNpmVersionsTest {
             throws IOException {
         PinnedNpmVersions versions = createVersions(CORE_VERSIONS, null);
 
-        ObjectNode dependencies = versions.getDependencies(false, false);
+        ObjectNode dependencies = versions.getDependencies(false, false,
+                keepEverything());
         assertTrue(dependencies.has("@vaadin/button"));
         assertFalse(dependencies.has("@vaadin/grid-pro"));
         assertEquals(Optional.of("25.1.0"), versions.getVaadinVersion());
@@ -95,7 +99,8 @@ class PinnedNpmVersionsTest {
         PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
                 VAADIN_VERSIONS);
 
-        ObjectNode dependencies = versions.getDependencies(false, false);
+        ObjectNode dependencies = versions.getDependencies(false, false,
+                keepEverything());
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(dependencies.has("@vaadin/grid-pro"));
         assertEquals("25.1.0",
@@ -109,6 +114,53 @@ class PinnedNpmVersionsTest {
 
         assertEquals(Set.of("@vaadin/legacy-grid"),
                 versions.getExclusions(false, false));
+    }
+
+    @Test
+    void versionOfOneFileIsFilteredOut_theVersionOfTheOtherIsUsed()
+            throws IOException {
+        PinnedNpmVersions versions = createVersions(CORE_VERSIONS, """
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "26.0.0-SNAPSHOT"
+                    }
+                  }
+                }
+                """);
+
+        // The filter drops a SNAPSHOT, and dropping it must not take the
+        // version the other file declares with it
+        assertEquals("25.1.0",
+                versions.getDependencies(false, false, keepEverything())
+                        .get("@vaadin/button").asString());
+    }
+
+    @Test
+    void filterIsGivenTheFileTheVersionsCameFrom() throws IOException {
+        PinnedNpmVersions versions = createVersions(CORE_VERSIONS,
+                VAADIN_VERSIONS);
+        List<String> origins = new ArrayList<>();
+        VersionsJsonFilter filter = new VersionsJsonFilter(
+                JacksonUtils.createObjectNode(), NodeUpdater.DEPENDENCIES) {
+            @Override
+            ObjectNode getFilteredVersions(ObjectNode versionsJson,
+                    String versionOrigin) {
+                origins.add(versionOrigin);
+                return super.getFilteredVersions(versionsJson, versionOrigin);
+            }
+        };
+
+        versions.getDependencies(false, false, filter);
+
+        assertEquals(List.of(Constants.VAADIN_CORE_VERSIONS_JSON,
+                Constants.VAADIN_VERSIONS_JSON), origins);
+    }
+
+    private static VersionsJsonFilter keepEverything() {
+        return new VersionsJsonFilter(JacksonUtils.createObjectNode(),
+                NodeUpdater.DEPENDENCIES);
     }
 
     private PinnedNpmVersions createVersions(String coreVersions,
