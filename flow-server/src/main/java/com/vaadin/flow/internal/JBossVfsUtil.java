@@ -77,8 +77,8 @@ public final class JBossVfsUtil {
      * <p>
      * The caller only gets what the virtual file system created inside the
      * folder. A mount that creates something of its own elsewhere, such as a
-     * jar inside the folder, is not part of the folder that is returned, and is
-     * logged for whoever wonders where it went.
+     * jar inside the folder, is not part of the folder that is returned, which
+     * is not expected to happen and is warned about.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
@@ -92,8 +92,9 @@ public final class JBossVfsUtil {
         File physicalFolder = getPhysicalFile(virtualFolder);
         files.stream().filter(
                 file -> !file.toPath().startsWith(physicalFolder.toPath()))
-                .forEach(file -> getLogger().debug(
-                        "'{}' of '{}' was created as '{}', which is not inside the folder '{}' that is read",
+                .forEach(file -> getLogger().warn(
+                        "'{}' of '{}' was created as '{}', which is not inside the folder '{}' that is read."
+                                + " What it contains is not seen by the build.",
                         file.getName(), folder, file, physicalFolder));
         return physicalFolder;
     }

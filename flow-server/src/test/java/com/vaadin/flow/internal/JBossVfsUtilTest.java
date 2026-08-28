@@ -372,7 +372,7 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void materializeFolder_fileIsCreatedOutsideTheFolder_theFolderIsGivenAndItIsLogged()
+    void materializeFolder_fileIsCreatedOutsideTheFolder_theFolderIsGivenAndItIsWarnedAbout()
             throws IOException {
         File folder = createFolder();
         File outside = new File(temporaryFolder, "mount");
@@ -395,8 +395,13 @@ class JBossVfsUtilTest {
             assertEquals(folder, JBossVfsUtil.materializeFolder(url));
         }
 
+        assertTrue(
+                logger.getLogs()
+                        .contains(MockLogger.WARN + "'" + outside.getName()),
+                "Creating a file outside the folder should be warned about, logs were "
+                        + logger.getLogs());
         assertTrue(logger.getLogs().contains(outside.toString()),
-                "Creating a file outside the folder should be logged, logs were "
+                "The warning should name the file, logs were "
                         + logger.getLogs());
     }
 
