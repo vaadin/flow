@@ -57,7 +57,7 @@ import com.vaadin.pro.licensechecker.Product;
  *
  * @author Vaadin Ltd
  *
- * @since 24.3.22
+ * @since 9.0
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 

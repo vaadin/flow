@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +46,7 @@ import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.internal.FrontendUtils.commandToString;
@@ -61,6 +63,14 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
  * @since 2.0
  */
 public class TaskRunNpmInstall implements FallibleCommand {
+
+    /**
+     * The minimum age, in days, a frontend package version must have before it
+     * is installed, used when neither Vaadin nor the package manager itself has
+     * been configured with a value. Mitigates supply-chain attacks where a
+     * compromised version is briefly available on the registry.
+     */
+    static final int DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = 1;
 
     private static final String MODULES_YAML = ".modules.yaml";
 
@@ -80,6 +90,27 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
             + "%n        node_modules, package-lock.json, vite.generated.ts, webpack.generated.js, pnpm-lock.yaml"
             + "%n======================================================================================================%n";
+
+    /**
+     * How many times the install command is run in total before the build
+     * fails, when the failure looks like a temporary network problem.
+     */
+    private static final int INSTALL_ATTEMPTS = 3;
+
+    private static final long RETRY_DELAY_MILLIS = 3000;
+
+    /**
+     * Markers that npm, pnpm and bun print when a package could not be fetched
+     * because of a connectivity problem rather than because the dependency
+     * itself is broken or missing.
+     */
+    private static final List<String> NETWORK_FAILURE_MARKERS = List.of(
+            "econnreset", "econnrefused", "etimedout", "eai_again", "enotfound",
+            "enetunreach", "ehostunreach", "epipe", "eproto",
+            "err_socket_timeout", "err_stream_premature_close",
+            "socket hang up", "network timeout", "npm error network",
+            "err_pnpm_meta_fetch_fail", "connectionclosed",
+            "failedtoopensocket");
 
     private final NodeUpdater packageUpdater;
 
@@ -292,12 +323,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        boolean npmSupportsMinReleaseAge = options
-                .getMinimumFrontendPackageAgeDays() > 0
-                && !options.isEnableBun() && !options.isEnablePnpm()
-                && tools.npmSupportsMinReleaseAge(npmExecutable);
-        getMinimumFrontendPackageAgeArgument(options, npmSupportsMinReleaseAge)
-                .ifPresent(npmInstallCommand::add);
+        resolveMinimumFrontendPackageAgeArgument(options, tools, npmExecutable,
+                logger).ifPresent(npmInstallCommand::add);
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
@@ -329,23 +356,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "Please stand by...");
         }
 
-        Process process = null;
-        try {
-            process = runNpmCommand(npmInstallCommand, options.getNpmFolder());
+        for (int attempt = 1; attempt <= INSTALL_ATTEMPTS; attempt++) {
+            CommandOutcome outcome = runInstallCommand(npmInstallCommand,
+                    toolName);
 
-            logger.debug("Output of `{}`:", commandString);
-            StringBuilder toolOutput = new StringBuilder();
-            consumeProcessOutput(process, stdoutLine -> {
-                logger.debug(stdoutLine);
-                toolOutput.append(stdoutLine).append(System.lineSeparator());
-            });
+            if (outcome.exitCode() == 0) {
+                logger.info("Frontend dependencies resolved successfully.");
+                break;
+            }
 
-            int errorCode = process.waitFor();
+            // Echo the stdout from pnpm/npm to error level log
+            logger.error("Command `{}` failed:\n{}", commandString,
+                    outcome.output());
 
-            if (errorCode != 0) {
-                // Echo the stdout from pnpm/npm to error level log
-                logger.error("Command `{}` failed:\n{}", commandString,
-                        toolOutput);
+            if (attempt == INSTALL_ATTEMPTS
+                    || !isNetworkFailure(outcome.output())) {
                 logger.error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
@@ -355,26 +380,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + " install has exited with non zero status. "
                                 + "Some dependencies are not installed. Check "
                                 + toolName + " command output");
-            } else {
-                logger.info("Frontend dependencies resolved successfully.");
             }
-        } catch (InterruptedException | IOException | UncheckedIOException e) {
-            logger.error("Error when running `{} install`", toolName, e);
-            Throwable cause = e;
-            if (e instanceof InterruptedException) {
-                // Restore interrupted state
-                Thread.currentThread().interrupt();
-            }
-            if (e instanceof UncheckedIOException) {
-                cause = e.getCause();
-            }
-            throw new ExecutionFailedException(
-                    "Command '" + toolName + " install' failed to finish",
-                    cause);
-        } finally {
-            if (process != null) {
-                process.destroyForcibly();
-            }
+
+            long delayMillis = attempt * RETRY_DELAY_MILLIS;
+            logger.warn(
+                    "`{}` failed because of a network problem, retrying in {} seconds ({}/{})",
+                    commandString, delayMillis / 1000, attempt + 1,
+                    INSTALL_ATTEMPTS);
+            sleepBeforeRetry(delayMillis, toolName);
         }
 
         List<String> postinstallPackages = new ArrayList<>();
@@ -408,11 +421,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
 
             logger.debug("Running postinstall for '{}'", postinstallPackage);
+            Process postinstallProcess = null;
             try {
-                process = runNpmCommand(postinstallCommand, packageFolder);
+                postinstallProcess = runNpmCommand(postinstallCommand,
+                        packageFolder);
                 logger.debug("Output of postinstall `{}`:", postinstallPackage);
-                consumeProcessOutput(process, logger::debug);
-                process.waitFor();
+                consumeProcessOutput(postinstallProcess, logger::debug);
+                postinstallProcess.waitFor();
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
                     // Restore interrupted state
@@ -422,6 +437,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Error when running postinstall script for '"
                                 + postinstallPackage + "'",
                         e);
+            } finally {
+                if (postinstallProcess != null) {
+                    postinstallProcess.destroyForcibly();
+                }
             }
         }
     }
@@ -437,44 +456,206 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Builds the install argument that prevents npm, pnpm or bun from
-     * installing frontend package versions newer than
-     * {@link Options#getMinimumFrontendPackageAgeDays()} days. Returns an empty
-     * optional when the check is disabled.
+     * Resolves the install argument that stops the active package manager from
+     * installing frontend package versions that are too new, or nothing if the
+     * age should not be restricted from here.
+     * <p>
+     * A value configured through Vaadin is always used as is, {@code 0}
+     * disabling the check. When nothing is configured, the package manager is
+     * asked what it resolves for its own minimum release age setting; if it
+     * already has one, no argument is passed so that the package manager
+     * applies its own configuration. Only when neither is configured does
+     * {@link #DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} apply.
      *
      * @param options
      *            current build options
+     * @param tools
+     *            the frontend tools used to read the package manager
+     *            configuration
+     * @param toolCommand
+     *            the npm, pnpm or bun command used for the install
+     * @param logger
+     *            the logger to report the resolved source of the value to
+     * @return the install argument, or an empty optional if none should be
+     *         passed
+     */
+    static Optional<String> resolveMinimumFrontendPackageAgeArgument(
+            Options options, FrontendTools tools, List<String> toolCommand,
+            Logger logger) {
+        Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
+        if (configuredDays != null && configuredDays == 0) {
+            return Optional.empty();
+        }
+        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(toolCommand);
+        int days;
+        if (configuredDays != null) {
+            days = configuredDays;
+        } else {
+            Optional<String> packageManagerValue = getPackageManagerConfiguredMinimumReleaseAge(
+                    options, tools, toolCommand, npmSupportsMinReleaseAge);
+            if (packageManagerValue.isPresent()) {
+                logger.info(
+                        "Keeping the minimum frontend package age configured for {} "
+                                + "({}) instead of applying the Vaadin default. Set the "
+                                + "'{}' parameter to override it.",
+                        getToolName(options), packageManagerValue.get(),
+                        InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
+                return Optional.empty();
+            }
+            days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
+        }
+        return Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
+                npmSupportsMinReleaseAge));
+    }
+
+    /**
+     * Reads the minimum release age the active package manager resolves from
+     * its own configuration, so that Vaadin does not override it with a command
+     * line argument.
+     * <p>
+     * Only npm and pnpm are asked, as bun has no command for printing its
+     * resolved configuration (see <a href=
+     * "https://github.com/oven-sh/bun/issues/7140">oven-sh/bun#7140</a>). The
+     * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
+     * therefore not taken into account.
+     */
+    private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
+            Options options, FrontendTools tools, List<String> toolCommand,
+            boolean npmSupportsMinReleaseAge) {
+        File npmFolder = options.getNpmFolder();
+        if (options.isEnableBun()) {
+            return Optional.empty();
+        }
+        if (options.isEnablePnpm()) {
+            // pnpm reads the setting from pnpm-workspace.yaml and, up to pnpm
+            // 10, from .npmrc as well, reporting it camel-cased since pnpm 11
+            return tools.getConfiguredSetting(toolCommand, npmFolder,
+                    "minimumReleaseAge", "minimum-release-age");
+        }
+        if (npmSupportsMinReleaseAge) {
+            return tools.getConfiguredSetting(toolCommand, npmFolder,
+                    "min-release-age");
+        }
+        // Older npm has no min-release-age setting, but the --before argument
+        // used as a fallback does have a configuration counterpart
+        return tools.getConfiguredSetting(toolCommand, npmFolder, "before");
+    }
+
+    /**
+     * Builds the install argument that prevents npm, pnpm or bun from
+     * installing frontend package versions newer than the given number of days.
+     *
+     * @param options
+     *            current build options
+     * @param days
+     *            the minimum age in days, always positive
      * @param npmSupportsMinReleaseAge
      *            {@code true} if the active npm understands
      *            {@code --min-release-age} (npm 11.10+); when {@code false} the
      *            legacy {@code --before=<date>} flag is used instead. Ignored
      *            when bun or pnpm is enabled.
      */
-    static Optional<String> getMinimumFrontendPackageAgeArgument(
-            Options options, boolean npmSupportsMinReleaseAge) {
-        int days = options.getMinimumFrontendPackageAgeDays();
-        if (days <= 0) {
-            return Optional.empty();
-        }
+    static String getMinimumFrontendPackageAgeArgument(Options options,
+            int days, boolean npmSupportsMinReleaseAge) {
         if (options.isEnableBun()) {
             // bun: --minimum-release-age takes a value in seconds
             long seconds = (long) days * 24 * 60 * 60;
-            return Optional.of("--minimum-release-age=" + seconds);
+            return "--minimum-release-age=" + seconds;
         }
         if (options.isEnablePnpm()) {
             // pnpm: minimumReleaseAge is a setting (in minutes), so it has
             // to be passed via the --config.<name> CLI form, not as a
             // top-level option
             long minutes = (long) days * 24 * 60;
-            return Optional.of("--config.minimum-release-age=" + minutes);
+            return "--config.minimum-release-age=" + minutes;
         }
         if (npmSupportsMinReleaseAge) {
             // npm 11.10+: --min-release-age takes a value in days
-            return Optional.of("--min-release-age=" + days);
+            return "--min-release-age=" + days;
         }
         // Older npm: --before takes any Date.parse-able string
         String before = Instant.now().minus(days, ChronoUnit.DAYS).toString();
-        return Optional.of("--before=" + before);
+        return "--before=" + before;
+    }
+
+    /**
+     * The exit code and the collected output of a finished command.
+     */
+    private record CommandOutcome(int exitCode, String output) {
+    }
+
+    /**
+     * Runs the given install command once and waits for it to finish.
+     *
+     * @param command
+     *            the install command to run
+     * @param toolName
+     *            the name of the package manager, used in error messages
+     * @return the exit code and the output of the command
+     * @throws ExecutionFailedException
+     *             if the command could not be run to completion
+     */
+    private CommandOutcome runInstallCommand(List<String> command,
+            String toolName) throws ExecutionFailedException {
+        Logger logger = packageUpdater.log();
+        Process process = null;
+        try {
+            process = runNpmCommand(command, options.getNpmFolder());
+
+            logger.debug("Output of `{}`:", String.join(" ", command));
+            StringBuilder output = new StringBuilder();
+            consumeProcessOutput(process, stdoutLine -> {
+                logger.debug(stdoutLine);
+                output.append(stdoutLine).append(System.lineSeparator());
+            });
+
+            return new CommandOutcome(process.waitFor(), output.toString());
+        } catch (InterruptedException | IOException | UncheckedIOException e) {
+            logger.error("Error when running `{} install`", toolName, e);
+            Throwable cause = e;
+            if (e instanceof InterruptedException) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+            }
+            if (e instanceof UncheckedIOException) {
+                cause = e.getCause();
+            }
+            throw new ExecutionFailedException(
+                    "Command '" + toolName + " install' failed to finish",
+                    cause);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
+        }
+    }
+
+    private void sleepBeforeRetry(long delayMillis, String toolName)
+            throws ExecutionFailedException {
+        try {
+            Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
+            throw new ExecutionFailedException(
+                    "Command '" + toolName + " install' failed to finish", e);
+        }
+    }
+
+    /**
+     * Checks whether the output of a failed install command indicates a
+     * temporary network problem, meaning that simply running the command again
+     * is likely to succeed.
+     *
+     * @param toolOutput
+     *            the combined output of the install command
+     * @return {@code true} if the failure looks like a network problem
+     */
+    static boolean isNetworkFailure(String toolOutput) {
+        String output = toolOutput.toLowerCase(Locale.ENGLISH);
+        return NETWORK_FAILURE_MARKERS.stream().anyMatch(output::contains);
     }
 
     private void consumeProcessOutput(Process process,

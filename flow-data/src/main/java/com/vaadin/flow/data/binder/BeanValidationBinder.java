@@ -158,6 +158,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @param validationGroups
      *            the validation groups to validate against, or none to use the
      *            {@linkplain Default default group}
+     * @since 25.3
      */
     public BeanValidationBinder(Class<BEAN> beanType,
             Class<?>... validationGroups) {
@@ -180,6 +181,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @param validationGroups
      *            the validation groups to validate against, or none to use the
      *            {@linkplain Default default group}
+     * @since 25.3
      */
     public BeanValidationBinder(Class<BEAN> beanType,
             boolean scanNestedDefinitions, Class<?>... validationGroups) {
@@ -214,6 +216,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      *            {@linkplain Default default group}
      * @throws IllegalArgumentException
      *             if any of the given validation groups is not an interface
+     * @since 25.3
      */
     public void setValidationGroups(Class<?>... validationGroups) {
         this.validationGroups = copyValidationGroups(validationGroups);
@@ -234,6 +237,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @see #setValidationGroups(Class...)
      *
      * @return the validation groups in effect, not {@code null}
+     * @since 25.3
      */
     public Class<?>[] getValidationGroups() {
         return oneShotValidationGroups == null ? validationGroups.clone()
@@ -272,6 +276,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @return validation status for the binder
      * @throws IllegalArgumentException
      *             if any of the given validation groups is not an interface
+     * @since 25.3
      */
     public BinderValidationStatus<BEAN> validate(Class<?>... validationGroups) {
         return validate(true, validationGroups);
@@ -300,6 +305,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @return whether this binder is in a valid state
      * @throws IllegalArgumentException
      *             if any of the given validation groups is not an interface
+     * @since 25.3
      */
     public boolean isValid(Class<?>... validationGroups) {
         return validate(false, validationGroups).isOk();
@@ -321,6 +327,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      * @return validation status for the binder
      * @throws IllegalArgumentException
      *             if any of the given validation groups is not an interface
+     * @since 25.3
      */
     protected BinderValidationStatus<BEAN> validate(boolean fireEvent,
             Class<?>... validationGroups) {

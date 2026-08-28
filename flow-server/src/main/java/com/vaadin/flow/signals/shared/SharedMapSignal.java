@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -50,7 +52,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
 public class SharedMapSignal<T extends @Nullable Object> extends
         AbstractSharedSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
-    private Class<@NonNull T> elementType;
+    private final JavaType elementType;
 
     /**
      * Creates a new map signal with the given element type. The signal does not
@@ -61,7 +63,22 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      */
     public SharedMapSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                elementType);
+                constructType(elementType));
+    }
+
+    /**
+     * Creates a new map signal with the given element type. In contrast to
+     * {@link #SharedMapSignal(Class)}, the type arguments of a parameterized
+     * element type such as <code>Set&lt;String&gt;</code> are retained. The
+     * signal does not support clustering.
+     *
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
+     */
+    public SharedMapSignal(TypeReference<@NonNull T> elementType) {
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
+                constructType(elementType));
     }
 
     /**
@@ -79,9 +96,39 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      *            not <code>null</code>
      * @param elementType
      *            the element type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedMapSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized element type such as
+     *             <code>Set&lt;String&gt;</code>
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected SharedMapSignal(SignalTree tree, Id id,
             CommandValidator validator, Class<@NonNull T> elementType) {
+        this(tree, id, validator, constructType(elementType));
+    }
+
+    /**
+     * Creates a new map signal instance with the given id and validator for the
+     * given signal tree with the given element type. The type arguments of a
+     * parameterized element type such as <code>Set&lt;String&gt;</code> are
+     * retained.
+     *
+     * @param tree
+     *            the signal tree that contains the value for this signal, not
+     *            <code>null</code>
+     * @param id
+     *            the id of the signal node within the signal tree, not
+     *            <code>null</code>
+     * @param validator
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
+     */
+    protected SharedMapSignal(SignalTree tree, Id id,
+            CommandValidator validator, JavaType elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }

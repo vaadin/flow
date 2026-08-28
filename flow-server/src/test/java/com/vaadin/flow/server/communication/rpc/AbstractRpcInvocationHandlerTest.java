@@ -39,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mockStatic;
@@ -228,26 +227,6 @@ class AbstractRpcInvocationHandlerTest {
             verify(logger, times(1)).warn(anyString());
             verify(logger, times(1)).debug(anyString(), (Object) any());
         }
-    }
-
-    @Test
-    void describeTarget_element_nodeIdAndTagIncluded() {
-        UI ui = new UI();
-        Element element = ElementFactory.createAnchor();
-        ui.getElement().appendChild(element);
-
-        String description = TestRpcInvocationHandler
-                .describeTarget(element.getNode());
-
-        assertTrue(description.contains("node id=" + element.getNode().getId()),
-                description);
-        assertTrue(description.contains("'a'"), description);
-    }
-
-    @Test
-    void describeTarget_noNode_describedAsUnknown() {
-        assertEquals("unknown node",
-                TestRpcInvocationHandler.describeTarget(null));
     }
 
     private Element createRpcInvocationData(UI ui,

@@ -691,12 +691,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // exposes the compiler API to Node, so the checker falls back to
           // running tsc as a separate process and resolves the config
           // strictly against this root without searching parent folders.
-          // The root is relative because the checker passes it to tsc as
-          // "-p <root>" in a command line that is split on spaces, which
-          // would break for a project directory containing a space. Vite is
-          // always spawned with the project root as its working directory,
-          // which is this directory, so "." resolves to the same tsconfig.
-          root: '.'
+          // The two commands need a different root because the checker
+          // starts tsc differently in each. A build assembles one command
+          // string and hands it to a shell, which splits it on spaces, so an
+          // absolute root breaks for a project directory containing a space.
+          // Vite is always spawned with the project root as its working
+          // directory, which is this directory, so "." resolves to the same
+          // tsconfig. The dev server instead locates the tsc binary with
+          // Node's require relative to this root, which only accepts an
+          // absolute path and otherwise silently falls back to running a bare
+          // "tsc" through a shell, which logs "tsc: command not found" and
+          // leaves the dev server without type checking.
+          root: env.command === 'build' ? '.' : dirname
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
