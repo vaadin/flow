@@ -84,6 +84,34 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void addCells_keepsCellsAsIsAndWrapsAnythingElse() {
+        TableRow row = new TableRow();
+        TableHeaderCell th = new TableHeaderCell("header");
+        TableDataCell td = new TableDataCell("data");
+        Span span = new Span("wrapped");
+
+        assertEquals(row, row.addCells(th, td, span));
+
+        List<TableCell> cells = row.getCells();
+        assertEquals(th, cells.get(0));
+        assertEquals(td, cells.get(1));
+        assertEquals(span,
+                cells.get(2).getChildren().findFirst().orElseThrow());
+    }
+
+    @Test
+    void addTextCells_appendOnePerText() {
+        TableRow row = new TableRow();
+
+        row.addHeaderCells("a", "b").addDataCells("c", "d");
+
+        assertEquals(List.of("a", "b"), row.getHeaderCells().stream()
+                .map(TableHeaderCell::getText).toList());
+        assertEquals(List.of("c", "d"), row.getDataCells().stream()
+                .map(TableDataCell::getText).toList());
+    }
+
+    @Test
     void removeCell_detachesItFromTheRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addHeaderCell();

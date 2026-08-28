@@ -190,6 +190,73 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addRow_appendsToTheBodyAndCreatesItIfMissing() {
+        Table table = table();
+
+        var row = table.addRow("a", "b");
+
+        assertEquals(List.of(row), table.getBody().getRows());
+        assertEquals(List.of("a", "b"), row.getDataCells().stream()
+                .map(TableDataCell::getText).toList());
+    }
+
+    @Test
+    void addHeaderAndFooterRows_landInTheirOwnSections() {
+        Table table = table();
+
+        var headerRow = table.addHeaderRow("h");
+        var footerRow = table.addFooterRow("f");
+
+        assertEquals(List.of(headerRow), table.getHead().getRows());
+        assertEquals(List.of(footerRow), table.getFoot().getRows());
+        assertEquals(List.of("h"), headerRow.getHeaderCells().stream()
+                .map(TableHeaderCell::getText).toList());
+        assertEquals(List.of("f"), footerRow.getDataCells().stream()
+                .map(TableDataCell::getText).toList());
+    }
+
+    @Test
+    void getRows_returnsHeadThenBodiesThenFootRows() {
+        Table table = table();
+        // Added out of document order to show the result follows the table,
+        // not the calls.
+        var footRow = table.addFooterRow();
+        var bodyRow = table.addRow();
+        var headRow = table.addHeaderRow();
+        var secondBodyRow = table.addBody().addRow();
+
+        assertEquals(List.of(headRow, bodyRow, secondBodyRow, footRow),
+                table.getRows());
+    }
+
+    @Test
+    void removeAllRows_keepsTheSections() {
+        Table table = table();
+        table.addHeaderRow();
+        table.addRow();
+        table.addFooterRow();
+
+        table.removeAllRows();
+
+        assertTrue(table.getRows().isEmpty());
+        assertEquals(3, table.getChildren().count());
+    }
+
+    @Test
+    void addRows_appendPreBuiltRowsToTheMatchingSection() {
+        Table table = table();
+        var head = new TableRow();
+        var body = new TableRow();
+        var foot = new TableRow();
+
+        table.addHeaderRows(head);
+        table.addRows(body);
+        table.addFooterRows(foot);
+
+        assertEquals(List.of(head, body, foot), table.getRows());
+    }
+
+    @Test
     void getSection_calledTwice_doesNotCreateASecondOne() {
         Table table = table();
 

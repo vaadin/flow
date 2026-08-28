@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -304,6 +306,166 @@ public class Table extends HtmlComponent
      */
     public void removeBody(TableBody body) {
         removeChild(body);
+    }
+
+    /**
+     * Returns every row of this table, in document order: the
+     * <code>&lt;thead&gt;</code> rows, then the rows of each
+     * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
+     *
+     * @return all the rows of this table.
+     */
+    public List<TableRow> getRows() {
+        return sections().flatMap(section -> section.getRows().stream())
+                .toList();
+    }
+
+    /**
+     * Removes every row from this table, leaving its sections in place.
+     */
+    public void removeAllRows() {
+        sections().forEach(TableRowContainer::removeAllRows);
+    }
+
+    /**
+     * Appends a new empty row to this table's <code>&lt;tbody&gt;</code>,
+     * creating the body if the table has none. This mirrors what a browser does
+     * with a <code>&lt;tr&gt;</code> written straight inside a
+     * <code>&lt;table&gt;</code>.
+     *
+     * @return the new row.
+     */
+    public TableRow addRow() {
+        return getBody().addRow();
+    }
+
+    /**
+     * Appends a row of data cells with the given texts to this table's
+     * <code>&lt;tbody&gt;</code>.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the new row.
+     */
+    public TableRow addRow(String... cellTexts) {
+        return addRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the new row.
+     */
+    public TableRow addRow(List<String> cellTexts) {
+        return addRow().addDataCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's <code>&lt;tbody&gt;</code>.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addRows(TableRow... rows) {
+        getBody().addRows(rows);
+    }
+
+    /**
+     * Appends a new empty row to this table's <code>&lt;thead&gt;</code>,
+     * creating it if the table has none.
+     *
+     * @return the new row.
+     */
+    public TableRow addHeaderRow() {
+        return getHead().addRow();
+    }
+
+    /**
+     * Appends a row of header cells with the given texts to this table's
+     * <code>&lt;thead&gt;</code>.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return the new row.
+     */
+    public TableRow addHeaderRow(String... cellTexts) {
+        return addHeaderRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return the new row.
+     */
+    public TableRow addHeaderRow(List<String> cellTexts) {
+        return addHeaderRow().addHeaderCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's <code>&lt;thead&gt;</code>.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addHeaderRows(TableRow... rows) {
+        getHead().addRows(rows);
+    }
+
+    /**
+     * Appends a new empty row to this table's <code>&lt;tfoot&gt;</code>,
+     * creating it if the table has none.
+     *
+     * @return the new row.
+     */
+    public TableRow addFooterRow() {
+        return getFoot().addRow();
+    }
+
+    /**
+     * Appends a row of data cells with the given texts to this table's
+     * <code>&lt;tfoot&gt;</code>.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the new row.
+     */
+    public TableRow addFooterRow(String... cellTexts) {
+        return addFooterRow(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addFooterRow(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return the new row.
+     */
+    public TableRow addFooterRow(List<String> cellTexts) {
+        return addFooterRow().addDataCells(cellTexts);
+    }
+
+    /**
+     * Appends the given rows to this table's <code>&lt;tfoot&gt;</code>.
+     *
+     * @param rows
+     *            the rows to add.
+     */
+    public void addFooterRows(TableRow... rows) {
+        getFoot().addRows(rows);
+    }
+
+    /**
+     * The row containers of this table — head, bodies and foot — in document
+     * order. TableRowContainer is not a Component subtype, so this cannot go
+     * through ComponentUtil.getChildrenOfType.
+     */
+    private Stream<TableRowContainer> sections() {
+        return getChildren().filter(TableRowContainer.class::isInstance)
+                .map(TableRowContainer.class::cast);
     }
 
     private void removeChild(Component child) {

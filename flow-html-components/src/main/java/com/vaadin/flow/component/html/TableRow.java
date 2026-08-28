@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
@@ -50,26 +51,94 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     }
 
     /**
-     * Creates a new row with the given cells.
+     * Creates a new row with the given content, following the rules of
+     * {@link #addCells(Component...)}.
      *
-     * @param cells
-     *            the cells to add.
+     * @param components
+     *            the cells, or the content to wrap in cells.
      */
-    public TableRow(TableCell... cells) {
+    public TableRow(Component... components) {
         super();
-        addCells(cells);
+        addCells(components);
     }
 
     /**
-     * Appends the given cells to this row.
+     * Appends the given components to this row. A {@link TableCell} is added
+     * as-is; anything else is wrapped in a new {@link TableDataCell}, since a
+     * <code>&lt;tr&gt;</code> may only contain cells.
      *
-     * @param cells
-     *            the cells to add.
+     * @param components
+     *            the cells, or the content to wrap in cells.
+     * @return this row, for fluent chaining.
      */
-    public void addCells(TableCell... cells) {
-        for (TableCell cell : cells) {
-            getElement().appendChild(cell.getElement());
+    public TableRow addCells(Component... components) {
+        return addCells(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCells(Component...)}.
+     *
+     * @param components
+     *            the cells, or the content to wrap in cells.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addCells(List<? extends Component> components) {
+        for (Component component : components) {
+            if (component instanceof TableCell cell) {
+                append(cell);
+            } else {
+                append(new TableDataCell(component));
+            }
         }
+        return this;
+    }
+
+    /**
+     * Appends a sequence of data cells (<code>&lt;td&gt;</code>) with the given
+     * text contents to this row.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addDataCells(String... cellTexts) {
+        return addDataCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addDataCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each data cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addDataCells(List<String> cellTexts) {
+        cellTexts.forEach(this::addDataCell);
+        return this;
+    }
+
+    /**
+     * Appends a sequence of header cells (<code>&lt;th&gt;</code>) with the
+     * given text contents to this row.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addHeaderCells(String... cellTexts) {
+        return addHeaderCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addHeaderCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content for each header cell.
+     * @return this row, for fluent chaining.
+     */
+    public TableRow addHeaderCells(List<String> cellTexts) {
+        cellTexts.forEach(this::addHeaderCell);
+        return this;
     }
 
     /**
@@ -95,6 +164,17 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     }
 
     /**
+     * Appends a new header cell with the given text to this row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>}.
+     */
+    public TableHeaderCell addHeaderCell(String text) {
+        return append(new TableHeaderCell(text));
+    }
+
+    /**
      * Inserts a new empty header cell at the given position.
      *
      * @param position
@@ -113,6 +193,17 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
      */
     public TableDataCell addDataCell() {
         return append(new TableDataCell());
+    }
+
+    /**
+     * Appends a new data cell with the given text to this row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <td>}.
+     */
+    public TableDataCell addDataCell(String text) {
+        return append(new TableDataCell(text));
     }
 
     /**
