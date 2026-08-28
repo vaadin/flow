@@ -79,23 +79,50 @@ class JBossVfsUtilTest {
     }
 
     /**
-     * Serves a virtual file that only tells about the files of the folder
-     * itself.
+     * Stands in for a container that serves something else than the virtual
+     * file the protocol promises.
      */
-    public static class MockVirtualFileWithoutRecursion {
+    public static class MalformedVirtualFile {
 
-        private final File file;
+        private final Object children;
 
-        public MockVirtualFileWithoutRecursion(File file) {
-            this.file = file;
+        private final Object physicalFile;
+
+        private final RuntimeException failure;
+
+        private MalformedVirtualFile(Object children, Object physicalFile,
+                RuntimeException failure) {
+            this.children = children;
+            this.physicalFile = physicalFile;
+            this.failure = failure;
         }
 
-        public List<MockVirtualFileWithoutRecursion> getChildren() {
-            return List.of();
+        static MalformedVirtualFile withChildren(Object children) {
+            return new MalformedVirtualFile(children, new File("folder"), null);
         }
 
-        public File getPhysicalFile() {
-            return file;
+        static MalformedVirtualFile withPhysicalFile(Object physicalFile) {
+            return new MalformedVirtualFile(List.of(), physicalFile, null);
+        }
+
+        static MalformedVirtualFile failing(RuntimeException failure) {
+            return new MalformedVirtualFile(List.of(), new File("folder"),
+                    failure);
+        }
+
+        public Object getChildren() {
+            return getChildrenRecursively();
+        }
+
+        public Object getChildrenRecursively() {
+            if (failure != null) {
+                throw failure;
+            }
+            return children;
+        }
+
+        public Object getPhysicalFile() {
+            return physicalFile;
         }
     }
 
@@ -135,17 +162,50 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void virtualFileWithoutRecursiveChildren_failsWithAnIOException()
+    void notAVirtualFile_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(new NotAVirtualFile());
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+    }
+
+    @Test
+    void nothingIsServed_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(null);
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+    }
+
+    @Test
+    void childrenAreNotFiles_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(
+                MalformedVirtualFile.withChildren("not a list of children"));
+
+        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+    }
+
+    @Test
+    void recursiveChildrenAreNotFiles_failsWithAnIOException()
             throws IOException {
-        URL url = vfsUrl(new MockVirtualFileWithoutRecursion(createFolder()));
+        URL url = vfsUrl(
+                MalformedVirtualFile.withChildren("not a list of children"));
 
         assertThrows(IOException.class,
                 () -> JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
-    void notAVirtualFile_failsWithAnIOException() throws IOException {
-        URL url = vfsUrl(new NotAVirtualFile());
+    void folderIsNotAFile_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(
+                MalformedVirtualFile.withPhysicalFile("not a file path"));
+
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
+    }
+
+    @Test
+    void virtualFileFails_failsWithAnIOException() throws IOException {
+        URL url = vfsUrl(MalformedVirtualFile
+                .failing(new IllegalStateException("Deployment closed")));
 
         assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
     }

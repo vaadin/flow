@@ -115,9 +115,9 @@ public final class JBossVfsUtil {
     }
 
     /**
-     * Invokes a method of the virtual file, turning anything that goes wrong
-     * into an {@link IOException}, as an object that is not the virtual file
-     * the protocol is expected to serve is a folder that cannot be read.
+     * Invokes a method of the virtual file, turning a call that does not get
+     * through into an {@link IOException}, as an object that is not the virtual
+     * file the protocol is expected to serve is a folder that cannot be read.
      */
     private static Object invoke(Object virtualFile, String methodName)
             throws IOException {
@@ -125,7 +125,7 @@ public final class JBossVfsUtil {
             Method method = virtualFile.getClass().getMethod(methodName);
             return method.invoke(virtualFile);
         } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException | RuntimeException e) {
+                | InvocationTargetException e) {
             throw new IOException("Failed to invoke the JBoss VFS API method "
                     + methodName + " for '" + virtualFile + "'", e);
         }
