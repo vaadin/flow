@@ -275,6 +275,7 @@ class JBossVfsUtilTest {
                         return new URLConnection(url) {
                             @Override
                             public void connect() {
+                                // The content is served without a connection
                             }
 
                             @Override
