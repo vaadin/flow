@@ -16,8 +16,9 @@
 
 // TypeScript port of com.vaadin.client.UILifecycle. It manages a UI's lifecycle
 // state, which may only advance forward INITIALIZING -> RUNNING -> TERMINATED,
-// firing a state-change event on each transition. The GWT EventBus is replaced by
-// a listener set.
+// firing a state-change event on each transition. GWT's EventBus is replaced by a
+// handler list, which keeps its registration semantics: the same handler added
+// twice is notified twice, and one removal detaches one registration.
 
 import type { EventRemover } from '../EventRemover';
 
