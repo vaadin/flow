@@ -19,10 +19,9 @@
  *
  * TypeScript port of ClientJsonCodec.java.
  *
- * TODO(flow-client-ts): the `JacksonCodec` references in the member docs below
- * are kept as code spans because `com.vaadin.flow.internal.JacksonCodec` is not
- * yet ported; restore them to real `{@link …}` references (with an import) when
- * it is.
+ * The `JacksonCodec` references in the member docs below stay code spans:
+ * `com.vaadin.flow.internal.JacksonCodec` is server-side and outside this
+ * port's scope, so there is no ported symbol for them to link to.
  */
 
 import type { StateNode } from '../StateNode';

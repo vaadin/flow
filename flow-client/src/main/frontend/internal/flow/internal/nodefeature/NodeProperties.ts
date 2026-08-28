@@ -23,10 +23,9 @@
  * containing only the entries the ported client code needs so far. Absent Java
  * keys (e.g. `JAVA_CLASS`, `ID`) are added as later ports start to require them.
  *
- * TODO(flow-client-ts): the per-member Javadoc below references server-side
- * classes (e.g. `ElementData`, `VirtualChildrenList`) that are not yet ported
- * to TypeScript. They are kept as code spans for now; restore them as
- * `{@link ...}` links once those classes are available in follow-up PRs.
+ * The per-member Javadoc below references server-side classes (e.g.
+ * `ElementData`, `VirtualChildrenList`) from `com.vaadin.flow.internal.nodefeature`,
+ * outside this port's scope, so those references stay code spans permanently.
  */
 export const NodeProperties = {
   /**

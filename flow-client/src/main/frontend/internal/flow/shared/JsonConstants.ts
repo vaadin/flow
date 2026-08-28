@@ -265,8 +265,8 @@ export const JsonConstants = {
    */
   EVENT_DATA_PHASE: 'for',
 
-  // TODO(flow-client-ts): restore the `{@link DebouncePhase}` links below once
-  // com.vaadin.flow.dom.DebouncePhase is ported.
+  // The `DebouncePhase` references below stay code spans: the enum is
+  // com.vaadin.flow.dom.DebouncePhase, server-side and outside this port's scope.
   /**
    * Character used for representing `DebouncePhase.LEADING`.
    */
