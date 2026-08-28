@@ -71,6 +71,25 @@ every case missing from the second.
 > citations verified, while `GwtDependencyLoaderTest.testDependenciesWithAllLoadModesAreProcessed`
 > had no `it()` and no backlog row — the forward check cannot see an absence.
 
+Two things make the reverse count easy to get wrong, and both have already
+produced a false clean:
+
+- **A mention is not a citation.** Match the Java name only where it appears in a
+  `// Ported from` line. A case whose name sits in a bare comment above the
+  `it()` — or in the suite's prose — reads as covered while the case itself is
+  labelled *Beyond the Java suite*.
+- **Citations wrap.** A citation naming two Java cases, or one long name, spans
+  two comment lines; matching only the first line reports the second name as
+  uncited.
+
+Filter to `@Test` methods as well: a JRE-side test class also declares its mock
+collaborators' methods (`sendNodeSyncMessage`, `inlineStyleSheet`, …), and
+counting those as cases invents uncited names.
+
+> Regression this prevents: two `StateTreeTests` cases were labelled *Beyond the
+> Java suite* directly above a bare comment naming their `GwtStateTreeTest`
+> counterpart, and a reverse check that accepted any mention read them as covered.
+
 *Decision procedure:* the report lists the counterparts found per suite and the
 union's case count, so a suite that claims to have none has demonstrably looked.
 

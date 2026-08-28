@@ -27,6 +27,18 @@ describe('Registry', () => {
     expect(registry.lookup('MessageSender')).to.equal(service);
   });
 
+  it('stores and looks up an instance by its class', () => {
+    // Ported from setAndGetCustom. Java keys by Class; the port's key is an
+    // opaque token, so a class constructor stands in for one here.
+    class MyClass {
+      readonly marker = 'my-class';
+    }
+    const registry = new TestRegistry();
+    const instance = new MyClass();
+    registry.register(MyClass, instance);
+    expect(registry.lookup(MyClass)).to.equal(instance);
+  });
+
   it('throws when registering the same type twice', () => {
     // Beyond the Java suite.
     const registry = new TestRegistry();
@@ -41,9 +53,7 @@ describe('Registry', () => {
   });
 
   it('recreates resettable instances on reset, leaving final ones untouched', () => {
-    // Beyond the Java suite: Registry.java has no resettable-supplier overload,
-    // so setAndGetCustom - which is setAndGet for a custom class - has no
-    // separate counterpart here.
+    // Beyond the Java suite: Registry.java has no resettable-supplier overload.
     const registry = new TestRegistry();
     const final = { id: 'final' };
     registry.register('Final', final);

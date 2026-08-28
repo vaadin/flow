@@ -21,10 +21,10 @@
 // update are queued, and on flush each is either reset to the server's initial
 // value or sent to the server (if the server had no initial value for it).
 //
-// The Registry/StateTree it talks to are not ported yet, so the slices it needs
-// are declared here as contracts the future TS Registry/StateTree satisfy at
-// cutover; this is the real implementation of the InitialPropertiesHandler
-// contract that StateTree.ts already declares.
+// The state tree it talks to is ported, so it is named directly; only Registry
+// is still a stand-in, because Registry.java's typed getters are unported. This
+// is the real implementation of the InitialPropertiesHandler contract that
+// StateTree.ts declares.
 
 import type { MapProperty } from './flow/nodefeature/MapProperty';
 import type { StateNode } from './flow/StateNode';

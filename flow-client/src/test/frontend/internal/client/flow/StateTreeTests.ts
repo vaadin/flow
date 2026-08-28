@@ -346,8 +346,7 @@ describe('StateTree', () => {
   // run under GWTTestCase and are ported 1:1 here.
   describe('GwtStateTreeTest', () => {
     it('delegates a template event to the server connector', () => {
-      // Beyond the Java suite.
-      // testSendTemplateEventToServer_delegateToServerConnector
+      // Ported from GwtStateTreeTest.testSendTemplateEventToServer_delegateToServerConnector.
       const { tree, templateEvents } = makeTree();
       const node = new StateNode(2, tree);
       tree.registerNode(node);
@@ -365,8 +364,7 @@ describe('StateTree', () => {
     });
 
     it('ignores a deferred template event once the node is unregistered', () => {
-      // Beyond the Java suite.
-      // testDeferredTemplateMessage_isIgnored
+      // Ported from GwtStateTreeTest.testDeferredTemplateMessage_isIgnored.
       const { tree, templateEvents } = makeTree();
       const node = new StateNode(2, tree);
       tree.registerNode(node);
