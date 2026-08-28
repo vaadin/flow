@@ -631,6 +631,16 @@ class UIInternalsTest {
     }
 
     @Test
+    void addUndeliveredJsInvocations_uncountingMoreThanCounted_clampedToZero() {
+        internals.addUndeliveredJsInvocations(1);
+
+        assertEquals(0, internals.addUndeliveredJsInvocations(-2),
+                "the count should never go negative");
+        assertEquals(1, internals.addUndeliveredJsInvocations(1),
+                "counting should continue from zero after being clamped");
+    }
+
+    @Test
     void markUndeliveredJsInvocationsWarningLogged_onlyTheFirstCallReturnsTrue() {
         assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
                 "the warning should be logged when the threshold is first exceeded");

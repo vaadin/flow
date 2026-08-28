@@ -1955,13 +1955,18 @@ public class Element extends Node<Element> {
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> {
+            // Counts the invocation if the node was not attached to any UI
+            // when it was scheduled, and there was no count to add it to
+            pending.countWhenAttached();
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    context -> {
+                        if (!pending.isCanceled()) {
+                            context.getUI().getInternals()
+                                    .addJavaScriptInvocation(pending);
+                        }
+                    });
+        });
 
         return pending;
     }
