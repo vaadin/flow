@@ -51,6 +51,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
+    // Ported from loadStylesheet.
     const registry = makeRegistry();
     new DependencyLoader(registry).loadDependencies(
       new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1' }]]])
@@ -62,6 +63,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('routes eager JavaScript to loadScript with defer=true', () => {
+    // Ported from loadScript.
     const registry = makeRegistry();
     new DependencyLoader(registry).loadDependencies(new Map([['EAGER', [{ type: 'JAVASCRIPT', url: 'app.js' }]]]));
     const call = registry.calls.find((c) => c.method === 'loadScript');
@@ -69,6 +71,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('routes inline JavaScript to inlineScript with the contents', () => {
+    // Ported from inlineScript.
     const registry = makeRegistry();
     new DependencyLoader(registry).loadDependencies(
       new Map([['INLINE', [{ type: 'JAVASCRIPT', contents: 'window.x=1' }]]])
@@ -106,7 +109,77 @@ describe('DependencyLoader (class)', () => {
     expect(registry.calls.some((c) => c.args[0] === 'resolved:lazy.css')).to.be.true;
   });
 
+  it('keeps eager dependencies in the order they were added', () => {
+    // Ported from ensureEagerDependenciesLoadedInOrder and
+    // GwtDependencyLoaderTest.testAllEagerDependenciesAreLoadedFirst.
+    const registry = makeRegistry();
+    new DependencyLoader(registry).loadDependencies(
+      new Map([
+        [
+          'EAGER',
+          [
+            { type: 'JAVASCRIPT', url: '/1.js' },
+            { type: 'JAVASCRIPT', url: '/2.js' },
+            { type: 'STYLESHEET', url: '/1.css' },
+            { type: 'STYLESHEET', url: '/2.css' }
+          ]
+        ]
+      ])
+    );
+
+    const urlsFor = (method: string): unknown[] =>
+      registry.calls.filter((c) => c.method === method).map((c) => c.args[0]);
+    expect(urlsFor('loadScript')).to.deep.equal(['resolved:/1.js', 'resolved:/2.js']);
+    expect(urlsFor('loadStylesheet')).to.deep.equal(['resolved:/1.css', 'resolved:/2.css']);
+  });
+
+  it('keeps inline dependencies in the order they were added', () => {
+    // Ported from ensureInlineDependenciesLoadedInOrder.
+    const registry = makeRegistry();
+    new DependencyLoader(registry).loadDependencies(
+      new Map([
+        [
+          'INLINE',
+          [
+            { type: 'JAVASCRIPT', contents: '/1.js' },
+            { type: 'JAVASCRIPT', contents: '/2.js' },
+            { type: 'STYLESHEET', contents: '/1.css' },
+            { type: 'STYLESHEET', contents: '/2.css' }
+          ]
+        ]
+      ])
+    );
+
+    const contentsFor = (method: string): unknown[] =>
+      registry.calls.filter((c) => c.method === method).map((c) => c.args[0]);
+    expect(contentsFor('inlineScript')).to.deep.equal(['/1.js', '/2.js']);
+    expect(contentsFor('inlineStyleSheet')).to.deep.equal(['/1.css', '/2.css']);
+  });
+
+  it('loads several eager dependencies of different types', () => {
+    // Ported from loadMultiple.
+    const registry = makeRegistry();
+    new DependencyLoader(registry).loadDependencies(
+      new Map([
+        [
+          'EAGER',
+          [
+            { type: 'JAVASCRIPT', url: 'http://foo.bar/baz.js' },
+            { type: 'JAVASCRIPT', url: '/my.js' },
+            { type: 'STYLESHEET', url: 'https://x.yz/styles.css' }
+          ]
+        ]
+      ])
+    );
+
+    const urlsFor = (method: string): unknown[] =>
+      registry.calls.filter((c) => c.method === method).map((c) => c.args[0]);
+    expect(urlsFor('loadScript')).to.deep.equal(['resolved:http://foo.bar/baz.js', 'resolved:/my.js']);
+    expect(urlsFor('loadStylesheet')).to.deep.equal(['resolved:https://x.yz/styles.css']);
+  });
+
   it('rejects inline JsModule', () => {
+    // Beyond the Java suite: the JsModule inline guard has no Java case.
     const registry = makeRegistry();
     expect(() =>
       new DependencyLoader(registry).loadDependencies(new Map([['INLINE', [{ type: 'JS_MODULE', contents: 'x' }]]]))
