@@ -199,6 +199,11 @@ public class UIInternals implements Serializable {
      * The number of JavaScript invocations that have been scheduled for the
      * related UI without being sent to the client. Kept here instead of on the
      * individual state nodes to avoid growing the size of every node.
+     * <p>
+     * Serialized together with the invocations that make up the count, each of
+     * which references these internals until it stops being counted, so a UI
+     * that has been through a serialization round trip keeps counting where it
+     * left off.
      */
     private int undeliveredJsInvocations;
 
@@ -482,13 +487,18 @@ public class UIInternals implements Serializable {
      * @param delta
      *            the number of invocations to add to the count, negative for
      *            invocations that are no longer waiting to be sent
-     * @return the number of undelivered JavaScript invocations after the change
+     * @return the number of undelivered JavaScript invocations after the
+     *         change, never negative
      */
     // Package private: only used through PendingJavaScriptInvocationUtil
     int addUndeliveredJsInvocations(int delta) {
         session.checkHasLock();
-        undeliveredJsInvocations += delta;
-        assert undeliveredJsInvocations >= 0;
+        // Only an invocation that this instance counted uncounts itself, so
+        // the count is not expected to go negative. Clamped rather than
+        // asserted since a slip in the bookkeeping behind a warning is not
+        // worth failing an application over
+        undeliveredJsInvocations = Math.max(0,
+                undeliveredJsInvocations + delta);
         return undeliveredJsInvocations;
     }
 
