@@ -155,6 +155,34 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void columnGroups_sitAfterTheCaptionAndBeforeTheHead() {
+        Table table = table();
+        var head = table.getHead();
+        var caption = table.getCaption();
+
+        var first = table.addColumnGroup();
+        var second = table.addColumnGroup(new TableColumn(2),
+                new TableColumn());
+
+        assertEquals(List.of(caption, first, second, head),
+                table.getChildren().toList());
+        assertEquals(List.of(first, second), table.getColumnGroups());
+        assertEquals(2, second.getColumns().size());
+    }
+
+    @Test
+    void removeColumnGroup_detachesOnlyThatGroup() {
+        Table table = table();
+        var first = table.addColumnGroup();
+        var second = table.addColumnGroup();
+
+        table.removeColumnGroup(first);
+
+        assertEquals(List.of(second), table.getColumnGroups());
+        assertTrue(first.getParent().isEmpty());
+    }
+
+    @Test
     void getSection_calledTwice_doesNotCreateASecondOne() {
         Table table = table();
 
