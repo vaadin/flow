@@ -34,9 +34,9 @@ import com.vaadin.flow.dom.Element;
  * Unlike the deprecated {@link NativeTable}, this component does not extend
  * {@link com.vaadin.flow.component.HtmlContainer}, so it has no generic
  * {@code add(Component)}. A <code>&lt;table&gt;</code> may only contain a
- * {@code <caption>}, {@code <thead>}, {@code <tbody>} and {@code <tfoot>}, and
- * those are reached through the accessors below, which also keep them in the
- * order the WHATWG HTML specification requires.
+ * {@code <caption>}, {@code <colgroup>}, {@code <thead>}, {@code <tbody>} and
+ * {@code <tfoot>}, and those are reached through the accessors below, which
+ * also keep them in the order the WHATWG HTML specification requires.
  *
  * @see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  *      HTML: Tabular data</a>
@@ -55,9 +55,10 @@ public class Table extends HtmlComponent
      * HTML specification requires them to appear.
      */
     private static final int RANK_CAPTION = 0;
-    private static final int RANK_HEAD = 1;
-    private static final int RANK_BODY = 2;
-    private static final int RANK_FOOT = 3;
+    private static final int RANK_COLUMN_GROUP = 1;
+    private static final int RANK_HEAD = 2;
+    private static final int RANK_BODY = 3;
+    private static final int RANK_FOOT = 4;
 
     /**
      * Creates a new empty table.
@@ -124,6 +125,58 @@ public class Table extends HtmlComponent
      */
     public void removeCaption() {
         findCaption().ifPresent(this::removeChild);
+    }
+
+    /**
+     * Appends a new empty {@code <colgroup>} to this table, after the caption
+     * and any column groups it already has, and before the {@code <thead>}.
+     *
+     * @return the new column group.
+     */
+    public TableColumnGroup addColumnGroup() {
+        return addColumnGroup(new TableColumnGroup());
+    }
+
+    /**
+     * Appends the given {@code <colgroup>} to this table.
+     *
+     * @param group
+     *            the column group to add.
+     * @return the given group, for chaining.
+     */
+    public TableColumnGroup addColumnGroup(TableColumnGroup group) {
+        return insert(group, RANK_COLUMN_GROUP);
+    }
+
+    /**
+     * Appends a new {@code <colgroup>} holding the given columns to this table.
+     *
+     * @param columns
+     *            the columns the new group should hold.
+     * @return the new column group.
+     */
+    public TableColumnGroup addColumnGroup(TableColumn... columns) {
+        return addColumnGroup(new TableColumnGroup(columns));
+    }
+
+    /**
+     * Returns the column groups of this table, in document order.
+     *
+     * @return the table's {@code <colgroup>} elements.
+     */
+    public List<TableColumnGroup> getColumnGroups() {
+        return ComponentUtil.getChildrenOfType(this, TableColumnGroup.class)
+                .toList();
+    }
+
+    /**
+     * Removes the given column group from this table.
+     *
+     * @param group
+     *            the column group to remove.
+     */
+    public void removeColumnGroup(TableColumnGroup group) {
+        removeChild(group);
     }
 
     /**
@@ -278,6 +331,9 @@ public class Table extends HtmlComponent
         Component component = child.getComponent().orElse(null);
         if (component instanceof TableCaption) {
             return RANK_CAPTION;
+        }
+        if (component instanceof TableColumnGroup) {
+            return RANK_COLUMN_GROUP;
         }
         if (component instanceof TableHead) {
             return RANK_HEAD;
