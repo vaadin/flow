@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class WriteToClipboardActionTest {
 
-    private static final String HELPER_BODY = "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))";
+    private static final String HELPER_BODY = "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))";
 
     @Test
     void fireAndForget_textOnly_callsHelperWithHtmlAndImageSlotsReturningNull() {
@@ -200,7 +200,7 @@ class WriteToClipboardActionTest {
         // calls writePayload — the action class itself does no string
         // assembly beyond the static body constant.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(HELPER_BODY, inner.getBody());
@@ -223,7 +223,7 @@ class WriteToClipboardActionTest {
         // The dedicated image observed constructor produces the same outer
         // shape as the text/html one — only the inner $2 (image) slot differs.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(HELPER_BODY, inner.getBody());

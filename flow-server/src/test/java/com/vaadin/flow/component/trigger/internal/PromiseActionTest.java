@@ -78,7 +78,7 @@ class PromiseActionTest {
         // $1 is the inner JsFunction returning the promise, $2 is the return
         // channel.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         List<@Nullable Object> captures = action.getCaptures();
         assertEquals(3, captures.size(),
