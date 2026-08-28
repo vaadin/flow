@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
+import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 
 // Beyond the Java suite: com.vaadin.client.ApplicationConfiguration has no test
 // class of its own.

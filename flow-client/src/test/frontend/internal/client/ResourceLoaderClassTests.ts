@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ResourceLoader } from '../../../main/frontend/internal/client/ResourceLoader';
+import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
 
 const settle = (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -69,11 +69,6 @@ export class Registry {
     return this.#lookupTable.get(type) as T;
   }
 
-  /** Whether an instance is registered for the given type. */
-  protected has(type: ServiceKey): boolean {
-    return this.#lookupTable.has(type);
-  }
-
   /**
    * Deletes and recreates resettable instances of registry singletons.
    */

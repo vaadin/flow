@@ -83,30 +83,18 @@ function getShadowRootElement(host: Element): ShadowRoot | null {
   return host.shadowRoot;
 }
 
-/**
- * Builds and shows the system error notification for an unrecoverable error.
- * Each provided part (caption, message, details) becomes a labelled div and is
- * also reported through the logError callback (which keeps the Java Console's
- * production-mode gating). When a querySelector is given the notification is
- * placed inside the matching element (its shadow root if it has one); otherwise
- * it is appended to the document body. The container is always shown and
- * returned, even when a querySelector matched no element (it is then left
- * unattached), matching the original behaviour the caller relies on.
- */
+// Builds and shows the system error notification for an unrecoverable error.
+// Java documents none of this (its private overload has no Javadoc): each
+// provided part becomes a labelled div and is also logged through Console, and
+// when a querySelector is given the notification goes inside the matching
+// element - its shadow root if it has one - rather than the body. The container
+// is returned even when the selector matched nothing, as the caller relies on.
 
-/**
- * Shows the given error message if not running in production mode and logs
- * it to the console if running in production mode.
- *
- * @param errorMessage - the error message to show
- */
-// eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java handleError signature
-export function handleError(
+function handleError(
   caption: string | null,
   message: string | null,
   details: string | null,
-  querySelector: string | null,
-  logError: (text: string) => void
+  querySelector: string | null
 ): Element {
   const systemErrorContainer = document.createElement('div');
   // Set the popover attribute for native popovers.
@@ -119,7 +107,7 @@ export function handleError(
       partDiv.className = partClassName;
       partDiv.textContent = text;
       systemErrorContainer.appendChild(partDiv);
-      logError(text);
+      Console.error(text);
     }
   };
   appendPart(caption, 'caption');
@@ -214,12 +202,12 @@ export class SystemErrorHandler {
   }
 
   /** Whether the application runs in web-component (embedded) mode. */
-  isWebComponentMode(): boolean {
+  #isWebComponentMode(): boolean {
     return this.#registry.getApplicationConfiguration().isWebComponentMode();
   }
 
   /** Recreates every exported web component's elements (detaching stale ones). */
-  recreateWebComponents(): void {
+  #recreateWebComponents(): void {
     for (const elementName of this.#registry.getApplicationConfiguration().getExportedWebComponents()) {
       recreateNodes(elementName);
     }
@@ -283,10 +271,10 @@ export class SystemErrorHandler {
           getScheduler().scheduleDeferred(() => {
             Console.debug('Re-establish PUSH connection');
             this.#registry.getMessageSender().setPushEnabled(true);
-            getScheduler().scheduleDeferred(() => this.recreateWebComponents());
+            getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
           });
         } else {
-          getScheduler().scheduleDeferred(() => this.recreateWebComponents());
+          getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
         }
       },
       (error) => {
@@ -349,7 +337,7 @@ export class SystemErrorHandler {
     querySelector: string | null
   ): void {
     if (caption === null && message === null && details === null) {
-      if (!this.isWebComponentMode()) {
+      if (!this.#isWebComponentMode()) {
         redirect(url);
       } else {
         this.#resynchronizeSession();
@@ -357,10 +345,8 @@ export class SystemErrorHandler {
       return;
     }
 
-    const systemErrorContainer = handleError(caption, message, details, querySelector, (text) =>
-      this.handleError(text)
-    );
-    if (!this.isWebComponentMode()) {
+    const systemErrorContainer = handleError(caption, message, details, querySelector);
+    if (!this.#isWebComponentMode()) {
       systemErrorContainer.addEventListener('click', () => redirect(url), false);
       document.addEventListener(
         'keydown',

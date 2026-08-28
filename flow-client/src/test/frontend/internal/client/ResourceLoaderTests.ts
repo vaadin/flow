@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { ResourceLoader, addOnloadHandler } from '../../../main/frontend/internal/client/ResourceLoader';
-import type { ResourceLoadListener } from '../../../main/frontend/internal/client/ResourceRegistry';
+import { ResourceLoader, addOnloadHandler } from '../../../../main/frontend/internal/client/ResourceLoader';
+import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 type HandlerEl = {
   onload: (() => void) | null;

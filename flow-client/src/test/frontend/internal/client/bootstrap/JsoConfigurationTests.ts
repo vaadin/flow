@@ -7,7 +7,7 @@ import {
   getConfigStringArray,
   getConfigValueMap,
   getVaadinVersion
-} from '../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
+} from '../../../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
 
 function config(values: Record<string, unknown>) {
   return { getConfig: (name: string) => values[name] };

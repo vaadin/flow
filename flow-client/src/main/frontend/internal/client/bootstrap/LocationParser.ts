@@ -14,9 +14,8 @@
  * the License.
  */
 
-// Utility for parsing the document URL, migrated wholesale from
-// LocationParser.java (which had no Java callers, so the class and its JUnit
-// test were removed rather than left as a delegating shell).
+// Utility for parsing the document URL; ported from LocationParser.java, whose
+// only caller is Bootstrapper, ported in a later layer.
 
 /**
  * Gets the value of the given parameter from the given search (query) string.

@@ -5,8 +5,8 @@ import {
   populateModelProperties,
   registerInitializer,
   registerUpdatableModelProperties
-} from '../../../main/frontend/internal/client/ExecuteJavaScriptElementUtils';
-import { UpdatableModelProperties } from '../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
+} from '../../../../main/frontend/internal/client/ExecuteJavaScriptElementUtils';
+import { UpdatableModelProperties } from '../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 
 // A MapProperty/NodeMap/StateNode stand-in for populateModelProperties.
 function makeModelNode(domNode: unknown, updatable: UpdatableModelProperties | null) {

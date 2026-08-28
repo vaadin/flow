@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { getParameter } from '../../../main/frontend/internal/client/bootstrap/LocationParser';
+import { getParameter } from '../../../../../main/frontend/internal/client/bootstrap/LocationParser';
 
 // Ported from com.vaadin.client.bootstrap.LocationParserTest.
 describe('LocationParser', () => {

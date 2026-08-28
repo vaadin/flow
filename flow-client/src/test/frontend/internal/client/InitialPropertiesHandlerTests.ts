@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Reactive } from '../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { InitialPropertiesHandler } from '../../../main/frontend/internal/client/InitialPropertiesHandler';
+import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { InitialPropertiesHandler } from '../../../../main/frontend/internal/client/InitialPropertiesHandler';
 
 // com.vaadin.flow.internal.nodefeature.NodeFeatures.ELEMENT_PROPERTIES
 const ELEMENT_PROPERTIES = 1;

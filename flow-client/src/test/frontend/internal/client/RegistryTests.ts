@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { Registry, type ServiceKey } from '../../../main/frontend/internal/client/Registry';
+import { Registry, type ServiceKey } from '../../../../main/frontend/internal/client/Registry';
 
 // Test subclass exposing the protected container API (the cutover subclass will
 // instead register concrete services and add typed getters).
@@ -15,10 +15,6 @@ class TestRegistry extends Registry {
   lookup<T>(type: ServiceKey): T {
     return this.get(type);
   }
-
-  contains(type: ServiceKey): boolean {
-    return this.has(type);
-  }
 }
 
 // Ported from com.vaadin.client.RegistryTest.
@@ -28,7 +24,6 @@ describe('Registry', () => {
     const registry = new TestRegistry();
     const service = { name: 'sender' };
     registry.register('MessageSender', service);
-    expect(registry.contains('MessageSender')).to.be.true;
     expect(registry.lookup('MessageSender')).to.equal(service);
   });
 
@@ -46,7 +41,9 @@ describe('Registry', () => {
   });
 
   it('recreates resettable instances on reset, leaving final ones untouched', () => {
-    // Ported from setAndGetCustom.
+    // Beyond the Java suite: Registry.java has no resettable-supplier overload,
+    // so setAndGetCustom - which is setAndGet for a custom class - has no
+    // separate counterpart here.
     const registry = new TestRegistry();
     const final = { id: 'final' };
     registry.register('Final', final);

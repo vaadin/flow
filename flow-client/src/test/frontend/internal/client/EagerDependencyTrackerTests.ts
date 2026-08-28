@@ -3,7 +3,7 @@ import {
   endEagerDependencyLoading,
   runWhenEagerDependenciesLoaded,
   startEagerDependencyLoading
-} from '../../../main/frontend/internal/client/EagerDependencyTracker';
+} from '../../../../main/frontend/internal/client/EagerDependencyTracker';
 
 // Beyond the Java suite: the eager-dependency gate is a TypeScript-only split of
 // DependencyLoader, so it has no Java test class of its own; the Java coverage

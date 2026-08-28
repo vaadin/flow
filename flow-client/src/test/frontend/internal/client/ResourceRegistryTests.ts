@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { type ResourceLoadEvent, ResourceRegistry } from '../../../main/frontend/internal/client/ResourceRegistry';
+import { type ResourceLoadEvent, ResourceRegistry } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 function event(resourceData: string): ResourceLoadEvent {
   return { getResourceLoader: () => null, getResourceData: () => resourceData };

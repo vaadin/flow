@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { UILifecycle, UIState } from '../../../main/frontend/internal/client/UILifecycle';
+import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
 
 // Ported from com.vaadin.client.UILifecycleTest.
 describe('UILifecycle', () => {

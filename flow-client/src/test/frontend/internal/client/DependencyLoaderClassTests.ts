@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { DependencyLoader } from '../../../main/frontend/internal/client/DependencyLoader';
-import type { ResourceLoadListener } from '../../../main/frontend/internal/client/ResourceRegistry';
+import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
+import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
