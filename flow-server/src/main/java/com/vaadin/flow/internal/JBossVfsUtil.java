@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,27 +45,7 @@ public final class JBossVfsUtil {
     }
 
     /**
-     * Gets the files of the given folder, creating them on disk.
-     *
-     * @param folder
-     *            the {@code vfs} URL of the folder
-     * @return the files of the folder
-     * @throws IOException
-     *             if the folder cannot be read
-     */
-    public static List<File> listFolder(URL folder) throws IOException {
-        Object virtualFolder = getVirtualFile(folder);
-        List<File> files = new ArrayList<>();
-        for (Object child : getChildren(virtualFolder, "getChildren")) {
-            // side effect: create real-world files
-            files.add(getPhysicalFile(child));
-        }
-        return files;
-    }
-
-    /**
-     * Gets the folder itself as a folder on disk, creating it and everything
-     * inside it, so that its contents can be read as regular files.
+     * Creates the folder and the files in it on disk.
      *
      * @param folder
      *            the {@code vfs} URL of the folder
@@ -75,11 +54,29 @@ public final class JBossVfsUtil {
      *             if the folder cannot be read
      */
     public static File materializeFolder(URL folder) throws IOException {
+        return materialize(folder, "getChildren");
+    }
+
+    /**
+     * Creates the folder and everything below it on disk, so that the files of
+     * the folders in it can be read as well.
+     *
+     * @param folder
+     *            the {@code vfs} URL of the folder
+     * @return the folder on disk
+     * @throws IOException
+     *             if the folder cannot be read
+     */
+    public static File materializeFolderTree(URL folder) throws IOException {
+        return materialize(folder, "getChildrenRecursively");
+    }
+
+    private static File materialize(URL folder, String childrenMethod)
+            throws IOException {
         Object virtualFolder = getVirtualFile(folder);
-        // The physical files of the children only exist once they have been
-        // asked for, and the caller reads them through the root folder
-        for (Object child : getChildren(virtualFolder,
-                "getChildrenRecursively")) {
+        // A virtual file only exists on disk once it has been asked for, so
+        // every child is asked for even when only the folder is returned
+        for (Object child : getChildren(virtualFolder, childrenMethod)) {
             getPhysicalFile(child);
         }
         return getPhysicalFile(virtualFolder);

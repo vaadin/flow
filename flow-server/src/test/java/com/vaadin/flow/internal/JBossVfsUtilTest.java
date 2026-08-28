@@ -133,18 +133,7 @@ class JBossVfsUtilTest {
     }
 
     @Test
-    void listFolder_givesTheFilesOfTheFolder() throws IOException {
-        File folder = createFolder();
-
-        List<String> names = JBossVfsUtil
-                .listFolder(vfsUrl(folder, new ArrayList<>())).stream()
-                .map(File::getName).sorted().toList();
-
-        assertEquals(List.of("nested", "one.txt"), names);
-    }
-
-    @Test
-    void materializeFolder_givesTheFolderWithEverythingInItCreated()
+    void materializeFolder_createsTheFolderAndTheFilesInIt()
             throws IOException {
         File folder = createFolder();
         List<File> materialized = new ArrayList<>();
@@ -152,8 +141,24 @@ class JBossVfsUtilTest {
         assertEquals(folder,
                 JBossVfsUtil.materializeFolder(vfsUrl(folder, materialized)));
 
-        // Every file and folder inside it has to be created as well, as the
-        // caller reads them through the folder
+        // The files of the folder have to be created as well, as the caller
+        // reads them through the folder
+        assertEquals(
+                List.of(folder, new File(folder, "nested"),
+                        new File(folder, "one.txt")),
+                materialized.stream().sorted().toList());
+    }
+
+    @Test
+    void materializeFolderTree_createsEverythingBelowTheFolder()
+            throws IOException {
+        File folder = createFolder();
+        List<File> materialized = new ArrayList<>();
+
+        assertEquals(folder, JBossVfsUtil
+                .materializeFolderTree(vfsUrl(folder, materialized)));
+
+        // The files of the folders inside it are created as well
         assertEquals(
                 List.of(folder, new File(folder, "nested"),
                         new File(new File(folder, "nested"), "two.txt"),
@@ -165,14 +170,16 @@ class JBossVfsUtilTest {
     void notAVirtualFile_failsWithAnIOException() throws IOException {
         URL url = vfsUrl(new NotAVirtualFile());
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
     void nothingIsServed_failsWithAnIOException() throws IOException {
         URL url = vfsUrl(null);
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
@@ -180,7 +187,8 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(
                 MalformedVirtualFile.withChildren("not a list of children"));
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     @Test
@@ -190,7 +198,7 @@ class JBossVfsUtilTest {
                 MalformedVirtualFile.withChildren("not a list of children"));
 
         assertThrows(IOException.class,
-                () -> JBossVfsUtil.materializeFolder(url));
+                () -> JBossVfsUtil.materializeFolderTree(url));
     }
 
     @Test
@@ -207,7 +215,8 @@ class JBossVfsUtilTest {
         URL url = vfsUrl(MalformedVirtualFile
                 .failing(new IllegalStateException("Deployment closed")));
 
-        assertThrows(IOException.class, () -> JBossVfsUtil.listFolder(url));
+        assertThrows(IOException.class,
+                () -> JBossVfsUtil.materializeFolder(url));
     }
 
     private File createFolder() throws IOException {
