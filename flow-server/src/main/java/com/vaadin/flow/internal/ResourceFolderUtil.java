@@ -174,12 +174,10 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInVfsFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
-        // The virtual file system says where it created each file, which is
-        // not necessarily inside the folder they belong to
-        for (File file : JBossVfsUtil.materializeFiles(folder)) {
-            if (file.isFile()) {
-                visitor.visit(new FileSystemFile(file.toPath()));
-            }
+        // Read as they are, so that the virtual file system does not have to
+        // create them on disk first
+        for (JBossVfsUtil.VfsFile file : JBossVfsUtil.listFiles(folder)) {
+            visitor.visit(new VfsFolderFile(folder, file));
         }
     }
 
@@ -274,6 +272,27 @@ public final class ResourceFolderUtil {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ResourceFolderUtil.class);
+    }
+
+    private record VfsFolderFile(URL folder,
+            JBossVfsUtil.VfsFile file) implements FolderFile {
+
+        @Override
+        public String getName() {
+            return file.getName();
+        }
+
+        @Override
+        public String getLocation() {
+            String folderUrl = folder.toExternalForm();
+            return folderUrl.endsWith("/") ? folderUrl + getName()
+                    : folderUrl + "/" + getName();
+        }
+
+        @Override
+        public InputStream open() throws IOException {
+            return file.open();
+        }
     }
 
     private record FileSystemFile(Path path) implements FolderFile {
