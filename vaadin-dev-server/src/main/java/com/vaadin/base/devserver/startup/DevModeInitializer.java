@@ -19,18 +19,13 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,8 +40,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -445,7 +438,7 @@ public class DevModeInitializer implements Serializable {
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
                     if (vfsJars.add(vfsJar)) { // NOSONAR
-                        frontendFiles.add(getPhysicalFileOfJBossVfsJar(
+                        frontendFiles.add(materializeJBossVfsJar(
                                 URI.create(vfsJar).toURL()));
                     }
                 } else if (dirVfsMatcher.find()) {
@@ -486,70 +479,24 @@ public class DevModeInitializer implements Serializable {
     private static File materializeJBossVfsFolder(URL url)
             throws VaadinInitializerException {
         try {
-            return JBossVfsUtil.materializeFolderTree(url);
+            return JBossVfsUtil.materializeFolder(url);
         } catch (IOException e) {
             throw new VaadinInitializerException(
                     "Failed to invoke JBoss VFS API.", e);
         }
     }
 
-    private static File getPhysicalFileOfJBossVfsJar(URL url)
-            throws IOException, VaadinInitializerException {
+    /**
+     * Gets a jar that WildFly serves through its virtual file system as a jar
+     * file on disk, so that its frontend resources can be collected.
+     */
+    private static File materializeJBossVfsJar(URL url)
+            throws VaadinInitializerException {
         try {
-            Object jarVirtualFile = url.openConnection().getContent();
-
-            // Creating a temporary jar file out of the vfs files
-            String vfsJarPath = url.toString();
-            String fileNamePrefix = vfsJarPath.substring(
-                    vfsJarPath.lastIndexOf(
-                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
-                    vfsJarPath.lastIndexOf(".jar"));
-            Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
-
-            generateJarFromJBossVfsFolder(jarVirtualFile, tempJar);
-
-            File tempJarFile = tempJar.toFile();
-            tempJarFile.deleteOnExit();
-            return tempJarFile;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
+            return JBossVfsUtil.materializeJar(url);
+        } catch (IOException e) {
             throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
-        }
-    }
-
-    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
-            Path tempJar) throws IOException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
-        // We should use reflection to use JBoss VFS API as we cannot
-        // afford a
-        // dependency to WildFly or JBoss
-        Class<?> virtualFileClass = jarVirtualFile.getClass();
-        Method getChildrenRecursivelyMethod = virtualFileClass
-                .getMethod("getChildrenRecursively");
-        Method openStreamMethod = virtualFileClass.getMethod("openStream");
-        Method isFileMethod = virtualFileClass.getMethod("isFile");
-        Method getPathNameRelativeToMethod = virtualFileClass
-                .getMethod("getPathNameRelativeTo", virtualFileClass);
-
-        List<?> jarVirtualChildren = (List<?>) getChildrenRecursivelyMethod
-                .invoke(jarVirtualFile);
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempJar))) {
-            for (Object child : jarVirtualChildren) {
-                if (!(Boolean) isFileMethod.invoke(child))
-                    continue;
-
-                String relativePath = (String) getPathNameRelativeToMethod
-                        .invoke(child, jarVirtualFile);
-                try (InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child)) {
-                    ZipEntry zipEntry = new ZipEntry(relativePath);
-                    zipOutputStream.putNextEntry(zipEntry);
-                    inputStream.transferTo(zipOutputStream);
-                    zipOutputStream.closeEntry();
-                }
-            }
+                    "Failed to invoke JBoss VFS API.", e);
         }
     }
 }

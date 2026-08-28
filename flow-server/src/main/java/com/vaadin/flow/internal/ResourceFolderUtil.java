@@ -183,10 +183,13 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInVfsFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
-        // The folder only exists on disk once it has been materialized, and
-        // from there on it is a folder like any other
-        visitFilesInFolder(JBossVfsUtil.materializeFolder(folder).toPath(),
-                visitor);
+        // The virtual file system says where it created each file, which is
+        // not necessarily inside the folder they belong to
+        for (File file : JBossVfsUtil.materializeFiles(folder)) {
+            if (file.isFile()) {
+                visitor.visit(new FileSystemFile(file.toPath()));
+            }
+        }
     }
 
     /**
