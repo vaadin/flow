@@ -20,9 +20,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.html.testbench.TableBodyElement;
+import com.vaadin.flow.component.html.testbench.TableCaptionElement;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
+import com.vaadin.flow.component.html.testbench.TableHeadElement;
 import com.vaadin.flow.component.html.testbench.TableHeaderCellElement;
 import com.vaadin.flow.component.html.testbench.TableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -95,6 +98,32 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         // The <th rowspan=2> means the following row holds only its own cell.
         Assert.assertEquals(1, rows.get(3).getDataCells().size());
+    }
+
+    @Test
+    public void planetsTableHasCaptionAndHeadWithRowgroupSpans() {
+        TableElement table = $(TableElement.class).id("planets-table");
+
+        TableCaptionElement caption = table.$(TableCaptionElement.class)
+                .first();
+        Assert.assertEquals("caption",
+                table.getPropertyElement("firstElementChild").getTagName());
+        Assert.assertTrue(caption.getText()
+                .startsWith("Data about the planets of our solar system"));
+        // The caption holds real markup, not just text.
+        Assert.assertEquals("Nasa's Planetary Fact Sheet - Metric",
+                caption.$("a").first().getText());
+
+        TableHeadElement head = table.$(TableHeadElement.class).first();
+        Assert.assertEquals(10,
+                head.$(TableHeaderCellElement.class).all().size());
+
+        TableHeaderCellElement terrestrial = table.$(TableBodyElement.class)
+                .first().$(TableHeaderCellElement.class).first();
+        Assert.assertEquals("Terrestrial planets", terrestrial.getText());
+        Assert.assertEquals("rowgroup", terrestrial.getDomAttribute("scope"));
+        Assert.assertEquals("4", terrestrial.getDomAttribute("rowspan"));
+        Assert.assertEquals("2", terrestrial.getDomAttribute("colspan"));
     }
 
     @Test

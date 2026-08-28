@@ -123,6 +123,31 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * Appends the given components to this table's caption, creating it if none
+     * exists yet. Useful for richer captions containing inline markup.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public TableCaption addCaption(Component... components) {
+        return addCaption(Arrays.asList(components));
+    }
+
+    /**
+     * List equivalent of {@link #addCaption(Component...)}.
+     *
+     * @param components
+     *            the components to append.
+     * @return the caption.
+     */
+    public TableCaption addCaption(List<? extends Component> components) {
+        TableCaption caption = getCaption();
+        caption.add(components.toArray(Component[]::new));
+        return caption;
+    }
+
+    /**
      * Removes this table's caption, if it has one.
      */
     public void removeCaption() {

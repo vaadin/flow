@@ -257,6 +257,18 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addCaption_appendsToTheCaptionAndCreatesItIfMissing() {
+        Table table = table();
+        var span = new Span("rich");
+
+        var caption = table.addCaption(span);
+
+        assertEquals(caption, table.getCaption());
+        assertEquals(List.of(span), caption.getChildren().toList());
+        assertEquals(List.of(caption), table.getChildren().toList());
+    }
+
+    @Test
     void getSection_calledTwice_doesNotCreateASecondOne() {
         Table table = table();
 

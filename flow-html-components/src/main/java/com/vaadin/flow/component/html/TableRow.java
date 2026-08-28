@@ -187,6 +187,23 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     }
 
     /**
+     * Appends a header cell to this row that labels the row itself, with
+     * {@code scope="row"} set on the resulting <code>&lt;th&gt;</code>. This is
+     * a shortcut for the common pattern of using a leading
+     * <code>&lt;th&gt;</code> as a row label, which assistive technologies
+     * announce as the header for the data cells in the same row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} with {@code scope="row"}.
+     */
+    public TableHeaderCell addRowHeaderCell(String text) {
+        TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROW);
+        return cell;
+    }
+
+    /**
      * Appends a new empty data cell to this row.
      *
      * @return the new {@code <td>}.

@@ -112,6 +112,17 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void addRowHeaderCell_setsRowScope() {
+        TableRow row = new TableRow();
+
+        TableHeaderCell cell = row.addRowHeaderCell("Breed");
+
+        assertEquals("Breed", cell.getText());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROW),
+                cell.getScope());
+    }
+
+    @Test
     void removeCell_detachesItFromTheRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addHeaderCell();
