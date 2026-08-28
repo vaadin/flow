@@ -16,6 +16,7 @@
 
 // Implementations migrated from SystemErrorHandler.java.
 
+import type { ErrorMessage } from './ApplicationConfiguration';
 import { addGetParameters } from '../flow/shared/util/SharedUtil';
 import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
@@ -139,19 +140,12 @@ function handleError(
 // (resynchronizeSession, XHR + heartbeat/push/reset) are DOM/network-bound and
 // IT-validated. The Registry is a contract satisfied at cutover.
 
-/** A system message (caption/message/url), as configured for unrecoverable errors. */
-interface SystemMessage {
-  caption?: string;
-  message?: string;
-  url?: string;
-}
-
 /** The slice of Registry SystemErrorHandler uses. */
 interface SystemErrorRegistry {
   getApplicationConfiguration(): {
     isWebComponentMode(): boolean;
     getExportedWebComponents(): string[];
-    getSessionExpiredError(): SystemMessage | null;
+    getSessionExpiredError(): ErrorMessage | null;
     getServiceUrl(): string;
     getUIId(): number;
     setUIId(uiId: number): void;
@@ -165,12 +159,19 @@ interface SystemErrorRegistry {
   reset(): void;
 }
 
-/** Handles system-level errors and web-component recreation; mirrors SystemErrorHandler.java. */
+/**
+ * Handles system errors in the application.
+ */
 export class SystemErrorHandler {
   readonly #registry: SystemErrorRegistry;
 
   #resyncInProgress = false;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: SystemErrorRegistry) {
     this.#registry = registry;
   }
@@ -302,7 +303,7 @@ export class SystemErrorHandler {
    * @param details - message details or null if there are no details
    * @param message - an ErrorMessage describing the error
    */
-  protected handleUnrecoverableErrorFor(details: string | null, message: SystemMessage | null): void {
+  protected handleUnrecoverableErrorFor(details: string | null, message: ErrorMessage | null): void {
     // Java dereferences the message unguarded, so a missing session-expired
     // message fails here rather than silently reloading the page.
     const errorMessage = message!;

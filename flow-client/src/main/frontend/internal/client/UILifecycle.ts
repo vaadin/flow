@@ -56,7 +56,9 @@ export interface StateChangeEvent {
 /** A listener for UI lifecycle state changes; mirrors StateChangeHandler. */
 export type StateChangeHandler = (event: StateChangeEvent) => void;
 
-/** Manages the lifecycle state of a UI; mirrors UILifecycle.java. */
+/**
+ * Manages the lifecycle of a UI.
+ */
 export class UILifecycle {
   #state: UIState = UIState.INITIALIZING;
 

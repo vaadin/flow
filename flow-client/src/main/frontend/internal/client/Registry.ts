@@ -32,7 +32,10 @@ import { assert } from '../assert';
 /** A token identifying a registered service (its class/constructor, a symbol, or a name). */
 export type ServiceKey = unknown;
 
-/** A holder of singleton services looked up by key; mirrors Registry.java's container. */
+/**
+ * A registry of singleton instances, such as `ServerRpcQueue`, which can be
+ * looked up based on their class.
+ */
 export class Registry {
   readonly #lookupTable = new Map<ServiceKey, unknown>();
 

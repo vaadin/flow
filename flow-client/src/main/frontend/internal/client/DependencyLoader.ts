@@ -62,7 +62,9 @@ interface DependencyLoaderRegistry {
   getResourceLoader(): DependencyResourceLoader;
 }
 
-/** Loads stylesheet/script dependencies; mirrors DependencyLoader.java. */
+/**
+ * Handles loading of dependencies (stylesheets and scripts) in the application.
+ */
 export class DependencyLoader {
   readonly #registry: DependencyLoaderRegistry;
 
@@ -85,6 +87,11 @@ export class DependencyLoader {
     }
   };
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: DependencyLoaderRegistry) {
     this.#registry = registry;
   }

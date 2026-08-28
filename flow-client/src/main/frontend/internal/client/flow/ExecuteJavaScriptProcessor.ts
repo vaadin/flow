@@ -140,6 +140,11 @@ interface ExecuteJsRegistry {
 export class ExecuteJavaScriptProcessor {
   readonly #registry: ExecuteJsRegistry;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: ExecuteJsRegistry) {
     this.#registry = registry;
   }

@@ -135,12 +135,25 @@ interface ResourceErrorHandler {
 }
 
 /**
- * Loads scripts and (later) stylesheets/HTML, deduping by key and notifying
- * listeners. Mirrors ResourceLoader.java; composes the ResourceRegistry kernel.
+ * ResourceLoader lets you dynamically include external scripts and styles on
+ * the page and lets you know when the resource has been loaded.
+ *
+ * You can also preload resources, allowing them to get cached by the browser
+ * without being evaluated. This enables downloading multiple resources at once
+ * while still controlling in which order e.g. scripts are executed.
  */
 export class ResourceLoader {
   readonly #resources: ResourceRegistry;
 
+  /**
+   * Creates a new resource loader. You should not create you own resource
+   * loader, but instead use `Registry.getResourceLoader()` to get an instance.
+   *
+   * @param errorHandler - the handler notified of load failures; Java takes the
+   *          global registry and resolves the handler through it
+   * @param initFromDom - `true` if currently loaded resources should be marked
+   *          as loaded, `false` to ignore currently loaded resources
+   */
   constructor(errorHandler: ResourceErrorHandler, initFromDom: boolean) {
     this.#resources = new ResourceRegistry(errorHandler);
     if (initFromDom) {

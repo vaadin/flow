@@ -24,6 +24,18 @@
 import { assert } from '../assert';
 import { Console } from './Console';
 
+/**
+ * The slice of the bootstrap error message this configuration carries.
+ *
+ * TODO(flow-client-ts): replace with ErrorMessage once
+ * com.vaadin.client.bootstrap.ErrorMessage is ported.
+ */
+export interface ErrorMessage {
+  caption?: string;
+  message?: string;
+  url?: string;
+}
+
 /** Holds the bootstrap configuration of a UI; mirrors ApplicationConfiguration.java. */
 export class ApplicationConfiguration {
   #applicationId = '';
@@ -34,7 +46,7 @@ export class ApplicationConfiguration {
 
   #uiId = 0;
 
-  #sessionExpiredError: unknown = null;
+  #sessionExpiredError: ErrorMessage | null = null;
 
   #heartbeatInterval = 0;
 
@@ -202,7 +214,7 @@ export class ApplicationConfiguration {
    *
    * @returns the session expiration error message
    */
-  getSessionExpiredError(): unknown {
+  getSessionExpiredError(): ErrorMessage | null {
     return this.#sessionExpiredError;
   }
 
@@ -211,7 +223,7 @@ export class ApplicationConfiguration {
    *
    * @param sessionExpiredError - the session expiration error message
    */
-  setSessionExpiredError(sessionExpiredError: unknown): void {
+  setSessionExpiredError(sessionExpiredError: ErrorMessage | null): void {
     this.#sessionExpiredError = sessionExpiredError;
   }
 
@@ -284,6 +296,15 @@ export class ApplicationConfiguration {
   }
 
   /**
+   * Checks if request timing info should be made available.
+   *
+   * @returns `true` if request timing info should be made availble, `false` otherwise
+   */
+  isRequestTiming(): boolean {
+    return this.#requestTiming;
+  }
+
+  /**
    * Sets whether we are running in production mode.
    *
    * With production mode disabled, a lot more information is logged to the
@@ -299,15 +320,6 @@ export class ApplicationConfiguration {
   }
 
   /**
-   * Checks if request timing info should be made available.
-   *
-   * @returns `true` if request timing info should be made availble, `false` otherwise
-   */
-  isRequestTiming(): boolean {
-    return this.#requestTiming;
-  }
-
-  /**
    * Sets whether request timing info should be made available.
    *
    * @param requestTiming - `true` if request timing info should be made available, `false` otherwise
@@ -317,21 +329,21 @@ export class ApplicationConfiguration {
   }
 
   /**
-   * Gets the exported web components.
-   *
-   * @returns the exported web components
-   */
-  getExportedWebComponents(): string[] {
-    return this.#exportedWebComponents;
-  }
-
-  /**
    * Sets the exported web components.
    *
    * @param exportedWebComponents - the exported web components
    */
   setExportedWebComponents(exportedWebComponents: string[]): void {
     this.#exportedWebComponents = exportedWebComponents;
+  }
+
+  /**
+   * Gets the exported web components.
+   *
+   * @returns the exported web components
+   */
+  getExportedWebComponents(): string[] {
+    return this.#exportedWebComponents;
   }
 
   /**

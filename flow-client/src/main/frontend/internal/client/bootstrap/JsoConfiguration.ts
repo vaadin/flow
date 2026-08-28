@@ -17,6 +17,10 @@
 // Bootstrap configuration readers migrated from JsoConfiguration.java. They read
 // from the configuration object (the value returned by
 // $wnd.Vaadin.Flow.getApp(appId), which exposes a getConfig(name) accessor).
+//
+// getConfigInteger, getAtmosphereJSVersion and getUIDL are not ported: their
+// only callers are in Bootstrapper, which lands in a later layer, so they are
+// ported with it.
 
 // The bootstrap configuration object exposes a getConfig(name) accessor over the
 // values the server injected into the page.
@@ -30,24 +34,20 @@ interface ConfigObject {
  * undefined exception may be thrown.
  *
  * @param name - name of the configuration parameter
- * @returns value of the configuration parameter, or <code>null</code> if not defined
+ * @returns value of the configuration parameter, or `null` if not defined
  */
-// getConfigInteger, getAtmosphereJSVersion and getUIDL are not ported: their
-// only callers are in Bootstrapper, which lands in a later layer, so they are
-// ported with it.
-
 export function getConfigString(config: ConfigObject, name: string): string | null {
   const value = config.getConfig(name);
   return value === null || value === undefined ? null : `${value as string}`;
 }
 
 /**
- * Reads a configuration parameter as a {@link ValueMap}. Please note that
+ * Reads a configuration parameter as a `ValueMap`. Please note that
  * the javascript value of the parameter should also be a javascript object,
  * or else an undefined exception may be thrown.
  *
  * @param name - name of the configuration parameter
- * @returns value of the configuration parameter, or <code>null</code>if not defined
+ * @returns value of the configuration parameter, or `null`if not defined
  */
 export function getConfigValueMap(config: ConfigObject, name: string): unknown {
   return config.getConfig(name);
@@ -57,7 +57,7 @@ export function getConfigValueMap(config: ConfigObject, name: string): unknown {
  * Reads a configuration parameter as a String array.
  *
  * @param name - name of the configuration parameter
- * @returns value of the configuration parameter, or <code>null</code>if not defined
+ * @returns value of the configuration parameter, or `null`if not defined
  */
 export function getConfigStringArray(config: ConfigObject, name: string): unknown {
   return config.getConfig(name);
@@ -78,13 +78,13 @@ export function getConfigBoolean(config: ConfigObject, name: string): boolean {
 }
 
 /**
- * Reads a configuration parameter as an {@link ErrorMessage} object. Please
+ * Reads a configuration parameter as an `ErrorMessage` object. Please
  * note that the javascript value of the parameter should also be an object
  * with appropriate fields, or else an undefined exception may be thrown
  * when calling this method or when calling methods on the returned object.
  *
  * @param name - name of the configuration parameter
- * @returns error message with the given name, or <code>null</code> if no value is defined
+ * @returns error message with the given name, or `null` if no value is defined
  */
 export function getConfigError(config: ConfigObject, name: string): unknown {
   return config.getConfig(name);

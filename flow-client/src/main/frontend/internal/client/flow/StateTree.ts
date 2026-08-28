@@ -52,7 +52,11 @@ export interface ServerConnector {
   sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void;
 }
 
-/** The slice of InitialPropertiesHandler that StateTree uses. */
+/**
+ * The slice of InitialPropertiesHandler that StateTree uses. The class is
+ * ported; the narrower contract stays so that the binding layer's test fakes
+ * need not build the whole handler.
+ */
 export interface InitialPropertiesHandler {
   flushPropertyUpdates(): void;
   nodeRegistered(node: StateNode): void;
