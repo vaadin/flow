@@ -291,26 +291,35 @@ jobs:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0  # Full history required to diff against the merge base
       - name: Decide whether to run
-        # The paths cover the plugin itself plus every module whose classes the
-        # plugin sources import: flow-plugin-base, flow-server, flow-build-tools
-        # and flow-polymer2lit. A change in any of them can break the Gradle
-        # plugin without touching the plugin itself. Push, merge_group and
-        # manual runs have no base to compare against, so they always build.
+        # An ignore list rather than an allow list. The job runs `gradlew
+        # build`, and check dependsOn functionalTest, so it also builds the
+        # sample applications under src/functionalTest - and those declare
+        # com.vaadin:flow, the aggregate that pulls in flow-client,
+        # flow-html-components, flow-data, flow-dnd and flow-push, plus
+        # vaadin-spring. Enumerating everything that can break the job is
+        # error prone and goes stale as modules are added, so anything that is
+        # not known to be irrelevant runs it: what is left out is the
+        # integration tests, documentation and the unrelated workflows.
+        # Push, merge_group and manual runs have no base to compare against,
+        # so they always build.
         id: decide
         run: |
           run=true
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             git fetch --no-tags origin "$_BASE_REF"
             MERGE_BASE=$(git merge-base HEAD "origin/$_BASE_REF")
-            if git diff --quiet "$MERGE_BASE" HEAD -- \
-                flow-plugins \
-                flow-server/src/main \
-                flow-build-tools/src/main \
-                flow-polymer2lit/src/main \
-                pom.xml \
-                .github/workflows/validation.yml; then
+            RELEVANT=$(git diff --name-only "$MERGE_BASE" HEAD | awk '
+              $0 == ".github/workflows/validation.yml" { print; next }
+              /^flow-tests\// { next }
+              /^\.github\// { next }
+              /\.md$/ { next }
+              { print }')
+            if [ -z "$RELEVANT" ]; then
               echo "No changes affecting the Gradle plugin, skipping."
               run=false
+            else
+              echo "Changes affecting the Gradle plugin:"
+              echo "$RELEVANT"
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
