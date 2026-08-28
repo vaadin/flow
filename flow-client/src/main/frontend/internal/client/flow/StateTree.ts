@@ -19,6 +19,8 @@
 // layer that StateTree needs are declared here as contracts that the
 // Registry/connector satisfy.
 
+export type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
 import { NodeList } from './nodefeature/NodeList';
@@ -54,23 +56,14 @@ export interface ServerConnector {
 
 /**
  * The slice of InitialPropertiesHandler that StateTree uses. The class is
- * ported; the narrower contract stays so that the binding layer's test fakes
- * need not build the whole handler.
+ * ported, but it resolves its state tree through the registry while the tree is
+ * built from that same registry, so wiring the two together needs the unported
+ * DefaultRegistry; until then the tree names only what it calls.
  */
 export interface InitialPropertiesHandler {
   flushPropertyUpdates(): void;
   nodeRegistered(node: StateNode): void;
   handlePropertyUpdate(property: MapProperty): boolean;
-}
-
-/**
- * The slice of ApplicationConfiguration the binding layer reads. The class is
- * ported; the modules that only need these two members keep the narrower
- * contract so their test fakes need not build the whole configuration.
- */
-export interface ApplicationConfiguration {
-  isWebComponentMode(): boolean;
-  getServiceUrl(): string;
 }
 
 /** The slice of Registry that StateTree and the binding layer use. */

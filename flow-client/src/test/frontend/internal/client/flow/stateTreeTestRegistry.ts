@@ -4,6 +4,7 @@
 
 import type { Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 
 /** A registry whose members are all present but inert. */
@@ -13,6 +14,8 @@ export function inertRegistry(): Registry {
   // written through an earlier call.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
+  // The real ApplicationConfiguration, which is ported and needs nothing else.
+  const applicationConfiguration = new ApplicationConfiguration();
   return {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {},
@@ -27,10 +30,7 @@ export function inertRegistry(): Registry {
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
     }),
-    getApplicationConfiguration: () => ({
-      isWebComponentMode: () => false,
-      getServiceUrl: () => ''
-    }),
+    getApplicationConfiguration: () => applicationConfiguration,
     getConstantPool: () => constantPool,
     getExistingElementMap: () => existingElementMap
   };

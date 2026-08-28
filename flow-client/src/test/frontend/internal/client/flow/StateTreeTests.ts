@@ -7,6 +7,8 @@ import { StateTree, type Registry } from '../../../../../main/frontend/internal/
 import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { get as getServerEventObject } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { InitialPropertiesHandler } from '../../../../../main/frontend/internal/client/InitialPropertiesHandler';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
@@ -25,6 +27,37 @@ interface TemplateEvent {
   promiseId: number;
 }
 
+// The real handler, with the three members these cases observe overridden; the
+// class is ported, so a stand-in would no longer satisfy the registry.
+class RecordingInitialPropertiesHandler extends InitialPropertiesHandler {
+  flushCount = 0;
+
+  readonly registeredNodes: StateNode[] = [];
+
+  readonly #propertyUpdateResult: boolean;
+
+  constructor(propertyUpdateResult: boolean) {
+    super({
+      getStateTree: () => {
+        throw new Error('state tree not available in this test');
+      }
+    });
+    this.#propertyUpdateResult = propertyUpdateResult;
+  }
+
+  override flushPropertyUpdates(): void {
+    this.flushCount++;
+  }
+
+  override nodeRegistered(node: StateNode): void {
+    this.registeredNodes.push(node);
+  }
+
+  override handlePropertyUpdate(): boolean {
+    return this.#propertyUpdateResult;
+  }
+}
+
 function makeTree(handlePropertyUpdateResult = false): {
   tree: StateTree;
   syncs: Sync[];
@@ -34,22 +67,13 @@ function makeTree(handlePropertyUpdateResult = false): {
 } {
   const syncs: Sync[] = [];
   const templateEvents: TemplateEvent[] = [];
-  let flushCount = 0;
-  const registeredNodes: StateNode[] = [];
+  const initialPropertiesHandler = new RecordingInitialPropertiesHandler(handlePropertyUpdateResult);
   // One instance each: the code under test reads these through several calls,
   // so a fresh instance per call would hide anything written by an earlier one.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
   const registry: Registry = {
-    getInitialPropertiesHandler: () => ({
-      flushPropertyUpdates: () => {
-        flushCount++;
-      },
-      nodeRegistered: (node) => {
-        registeredNodes.push(node);
-      },
-      handlePropertyUpdate: () => handlePropertyUpdateResult
-    }),
+    getInitialPropertiesHandler: () => initialPropertiesHandler,
     getServerConnector: () => ({
       sendEventMessage: () => {},
       sendNodeSyncMessage: (node, mapId, name, value) => syncs.push({ node, mapId, name, value }),
@@ -59,7 +83,7 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
     }),
-    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getApplicationConfiguration: () => new ApplicationConfiguration(),
     getConstantPool: () => constantPool,
     getExistingElementMap: () => existingElementMap
   };
@@ -67,8 +91,8 @@ function makeTree(handlePropertyUpdateResult = false): {
     tree: new StateTree(registry),
     syncs,
     templateEvents,
-    getFlushCount: () => flushCount,
-    getRegisteredNodes: () => registeredNodes
+    getFlushCount: () => initialPropertiesHandler.flushCount,
+    getRegisteredNodes: () => initialPropertiesHandler.registeredNodes
   };
 }
 

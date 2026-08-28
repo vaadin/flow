@@ -1,3 +1,4 @@
+import { inertRegistry } from '../stateTreeTestRegistry';
 import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { ExistingElementMap } from '../../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
@@ -22,12 +23,11 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
   // so a fresh instance per call would hide anything written by an earlier one.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
+  // The configuration and the initial-properties handler are the real classes,
+  // taken from the shared helper.
+  const shared = inertRegistry();
   const registry: Registry = {
-    getInitialPropertiesHandler: () => ({
-      flushPropertyUpdates: () => {},
-      nodeRegistered: () => {},
-      handlePropertyUpdate: () => false
-    }),
+    getInitialPropertiesHandler: () => shared.getInitialPropertiesHandler(),
     getServerConnector: () => ({
       sendEventMessage: () => {},
       sendNodeSyncMessage: () => {},
@@ -36,7 +36,7 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: (nodeId, channelId, args) => sent.push({ nodeId, channelId, args })
     }),
-    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getApplicationConfiguration: () => shared.getApplicationConfiguration(),
     getConstantPool: () => constantPool,
     getExistingElementMap: () => existingElementMap
   };
