@@ -26,110 +26,6 @@ import { getAbsoluteUrl } from './WidgetUtil';
 import { Console } from './Console';
 
 /**
- * Adds an onload listener to the given element, which should be a link or a
- * script tag. The listener is called whenever loading is complete or an
- * error occurred.
- *
- * @param element - the element to attach a listener to
- * @param listener - the listener to call
- * @param event - the event passed to the listener
- */
-export function addOnloadHandler(element: Element, onLoad: () => void, onError: () => void): void {
-  const el = element as unknown as {
-    onload: ((event?: unknown) => void) | null;
-    onerror: (() => void) | null;
-    onreadystatechange: (() => void) | null;
-    readyState?: string;
-  };
-  el.onload = () => {
-    el.onload = null;
-    el.onerror = null;
-    el.onreadystatechange = null;
-    onLoad();
-  };
-  el.onerror = () => {
-    el.onload = null;
-    el.onerror = null;
-    el.onreadystatechange = null;
-    onError();
-  };
-  el.onreadystatechange = () => {
-    if (el.readyState === 'loaded' || el.readyState === 'complete') {
-      // Java calls element.onload unguarded; it is assigned just above.
-      el.onload!();
-    }
-  };
-}
-
-/**
- * Returns the number of rules in the loaded stylesheet with the given href, 1
- * if loaded but the rules are inaccessible (cross-origin), or -1 if no matching
- * stylesheet is loaded yet.
- */
-function getStyleSheetLength(url: string): number {
-  for (const styleSheet of Array.from(document.styleSheets)) {
-    const sheet = styleSheet as StyleSheet & {
-      cssRules?: { length: number } | null;
-      rules?: { length: number } | null;
-    };
-    if (sheet.href === url) {
-      try {
-        let rules = sheet.cssRules;
-        if (rules === undefined) {
-          rules = sheet.rules;
-        }
-        if (rules === null || rules === undefined) {
-          // Loaded but rules are inaccessible (cross-origin) -> assume non-empty.
-          return 1;
-        }
-        return rules.length;
-      } catch {
-        return 1;
-      }
-    }
-  }
-  // No matching stylesheet found -> not yet loaded.
-  return -1;
-}
-
-/**
- * Invokes the promise-returning supplier and runs onSuccess/onError when it
- * settles. Runs onError synchronously if the supplier throws or does not return
- * a Promise.
- */
-function runPromiseExpression(
-  expression: string,
-  promiseSupplier: () => unknown,
-  onSuccess: () => void,
-  onError: () => void
-): void {
-  try {
-    const promise = promiseSupplier();
-    if (!(promise instanceof Promise)) {
-      throw new Error(`The expression "${expression}" result is not a Promise.`);
-    }
-    void promise.then(
-      () => {
-        onSuccess();
-      },
-      (error: unknown) => {
-        // Deliberately not Console.error: the Java version of this method was
-        // JSNI calling console.error directly, so a failing dynamic dependency
-        // is reported even in production mode.
-        // eslint-disable-next-line no-console -- see above
-        console.error(error);
-        onError();
-      }
-    );
-  } catch (error) {
-    // Not Console.error, as above.
-    // eslint-disable-next-line no-console -- see above
-    console.error(error);
-    onError();
-  }
-}
-
-/**
  * The slice of Registry ResourceLoader uses. Registry's typed getters are not
  * ported yet, so this names only the one it calls.
  */
@@ -167,6 +63,18 @@ export class ResourceLoader {
     return { getResourceLoader: () => this, getResourceData: () => resourceData };
   }
 
+  /**
+   * Clears a resource from the loaded resources set by its dependency ID.
+   *
+   * This is used when a resource is removed from the DOM using its dependency
+   * ID.
+   *
+   * @param dependencyId - the dependency ID of the resource to clear
+   */
+  clearLoadedResourceById(dependencyId: string): void {
+    this.#resources.clearLoadedResourceById(dependencyId);
+  }
+
   // Marks scripts/stylesheets already present in the document as loaded.
   #initLoadedResourcesFromDom(): void {
     for (const script of Array.from(document.getElementsByTagName('script'))) {
@@ -186,8 +94,6 @@ export class ResourceLoader {
       }
     }
   }
-
-  /** Loads an external script, notifying the listener when loaded (deduped). */
 
   /**
    * Load a script and notify a listener when the script is loaded. Calling
@@ -278,24 +184,6 @@ export class ResourceLoader {
       );
       document.head.appendChild(scriptElement);
     }
-  }
-
-  /**
-   * Loads a dynamic import via the provided JS `expression` and reports
-   * the result via the `resourceLoadListener`.
-   *
-   * @param expression - the JS expression which returns a Promise
-   * @param resourceLoadListener - a listener to report the Promise result exection
-   */
-  loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
-    const event = this.#makeEvent(expression);
-    const fn = new Function(expression) as () => unknown;
-    runPromiseExpression(
-      expression,
-      () => fn(),
-      () => resourceLoadListener.onLoad(event),
-      () => resourceLoadListener.onError(event)
-    );
   }
 
   /**
@@ -415,25 +303,6 @@ export class ResourceLoader {
     }
   }
 
-  #addCssLoadHandler(styleSheetContents: string, event: ResourceLoadEvent, styleElement: HTMLStyleElement): void {
-    if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
-      // Safari and Opera fire no events for style elements; assume done after 5s.
-      setTimeout(() => {
-        if (this.#resources.isLoaded(styleSheetContents)) {
-          this.#resources.fireLoad(event);
-        } else {
-          this.#resources.fireError(event);
-        }
-      }, 5000);
-    } else {
-      addOnloadHandler(
-        styleElement,
-        () => this.#resources.fireLoad(event),
-        () => this.#resources.fireError(event)
-      );
-    }
-  }
-
   // Inserts an element into <head> before the comment with the given text, or
   // appends it (with a warning) if the comment is not found.
   #addInHeadBeforeComment(element: Element, comment: string): void {
@@ -454,14 +323,149 @@ export class ResourceLoader {
   }
 
   /**
-   * Clears a resource from the loaded resources set by its dependency ID.
+   * Loads a dynamic import via the provided JS `expression` and reports
+   * the result via the `resourceLoadListener`.
    *
-   * This is used when a resource is removed from the DOM using its dependency
-   * ID.
-   *
-   * @param dependencyId - the dependency ID of the resource to clear
+   * @param expression - the JS expression which returns a Promise
+   * @param resourceLoadListener - a listener to report the Promise result exection
    */
-  clearLoadedResourceById(dependencyId: string): void {
-    this.#resources.clearLoadedResourceById(dependencyId);
+  loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
+    const event = this.#makeEvent(expression);
+    const fn = new Function(expression) as () => unknown;
+    runPromiseExpression(
+      expression,
+      () => fn(),
+      () => resourceLoadListener.onLoad(event),
+      () => resourceLoadListener.onError(event)
+    );
+  }
+
+  #addCssLoadHandler(styleSheetContents: string, event: ResourceLoadEvent, styleElement: HTMLStyleElement): void {
+    if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
+      // Safari and Opera fire no events for style elements; assume done after 5s.
+      setTimeout(() => {
+        if (this.#resources.isLoaded(styleSheetContents)) {
+          this.#resources.fireLoad(event);
+        } else {
+          this.#resources.fireError(event);
+        }
+      }, 5000);
+    } else {
+      addOnloadHandler(
+        styleElement,
+        () => this.#resources.fireLoad(event),
+        () => this.#resources.fireError(event)
+      );
+    }
+  }
+}
+
+// These three mirror private members of ResourceLoader.java, which declares
+// addOnloadHandler between inlineScript and loadStylesheet and the other two
+// last. A module function cannot sit between two class members, so all three
+// follow the class; the rest of the module is in Java declaration order.
+/**
+ * Adds an onload listener to the given element, which should be a link or a
+ * script tag. The listener is called whenever loading is complete or an
+ * error occurred.
+ *
+ * @param element - the element to attach a listener to
+ * @param onLoad - called when loading completed; Java passes a single listener
+ *          plus the event to hand it, which the port splits into the two
+ *          callbacks below
+ * @param onError - called when loading failed
+ */
+export function addOnloadHandler(element: Element, onLoad: () => void, onError: () => void): void {
+  const el = element as unknown as {
+    onload: ((event?: unknown) => void) | null;
+    onerror: (() => void) | null;
+    onreadystatechange: (() => void) | null;
+    readyState?: string;
+  };
+  el.onload = () => {
+    el.onload = null;
+    el.onerror = null;
+    el.onreadystatechange = null;
+    onLoad();
+  };
+  el.onerror = () => {
+    el.onload = null;
+    el.onerror = null;
+    el.onreadystatechange = null;
+    onError();
+  };
+  el.onreadystatechange = () => {
+    if (el.readyState === 'loaded' || el.readyState === 'complete') {
+      // Java calls element.onload unguarded; it is assigned just above.
+      el.onload!();
+    }
+  };
+}
+
+/**
+ * Returns the number of rules in the loaded stylesheet with the given href, 1
+ * if loaded but the rules are inaccessible (cross-origin), or -1 if no matching
+ * stylesheet is loaded yet.
+ */
+function getStyleSheetLength(url: string): number {
+  for (const styleSheet of Array.from(document.styleSheets)) {
+    const sheet = styleSheet as StyleSheet & {
+      cssRules?: { length: number } | null;
+      rules?: { length: number } | null;
+    };
+    if (sheet.href === url) {
+      try {
+        let rules = sheet.cssRules;
+        if (rules === undefined) {
+          rules = sheet.rules;
+        }
+        if (rules === null || rules === undefined) {
+          // Loaded but rules are inaccessible (cross-origin) -> assume non-empty.
+          return 1;
+        }
+        return rules.length;
+      } catch {
+        return 1;
+      }
+    }
+  }
+  // No matching stylesheet found -> not yet loaded.
+  return -1;
+}
+
+/**
+ * Invokes the promise-returning supplier and runs onSuccess/onError when it
+ * settles. Runs onError synchronously if the supplier throws or does not return
+ * a Promise.
+ */
+function runPromiseExpression(
+  expression: string,
+  promiseSupplier: () => unknown,
+  onSuccess: () => void,
+  onError: () => void
+): void {
+  try {
+    const promise = promiseSupplier();
+    if (!(promise instanceof Promise)) {
+      throw new Error(`The expression "${expression}" result is not a Promise.`);
+    }
+    void promise.then(
+      () => {
+        onSuccess();
+      },
+      (error: unknown) => {
+        // Deliberately not Console.error: the Java version of this method was
+        // JSNI calling console.error directly, so a failing dynamic dependency
+        // is reported even in production mode.
+        // eslint-disable-next-line no-console -- see above
+        console.error(error);
+        onError();
+      }
+    );
+  } catch (error) {
+    // Not Console.error, as above.
+    // eslint-disable-next-line no-console -- see above
+    console.error(error);
+    onError();
   }
 }

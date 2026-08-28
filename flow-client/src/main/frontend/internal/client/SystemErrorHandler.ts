@@ -50,88 +50,6 @@ function getWithCredentials(
   xhr.send();
 }
 
-/**
- * Replaces every element with the given tag name by a shallow clone, after
- * mocking its disconnected callback. Used to detach stale components without
- * triggering their server-side disconnect handling.
- */
-function recreateNodes(elementName: string): void {
-  // Snapshot the live collection before mutating it.
-  const elements = Array.from(document.getElementsByTagName(elementName)) as Array<
-    Element & {
-      $server: { disconnected: () => void };
-    }
-  >;
-  for (const elem of elements) {
-    // Mock the disconnected callback so it does not throw a TypeError.
-    elem.$server.disconnected = () => {};
-    // Java dereferences parentNode unguarded, so a detached element fails here
-    // rather than silently keeping the stale node.
-    elem.parentNode!.replaceChild(elem.cloneNode(false), elem);
-  }
-}
-
-/** Invokes the native showPopover() of the element if it supports it. */
-function showPopover(el: Element): void {
-  const fn = el && (el as Element & { showPopover?: () => void }).showPopover;
-  if (typeof fn === 'function') {
-    fn.call(el);
-  }
-}
-
-/** Returns the shadow root of the given host element, if any. */
-function getShadowRootElement(host: Element): ShadowRoot | null {
-  return host.shadowRoot;
-}
-
-// Builds and shows the system error notification for an unrecoverable error.
-// Java documents none of this (its private overload has no Javadoc): each
-// provided part becomes a labelled div and is also logged through Console, and
-// when a querySelector is given the notification goes inside the matching
-// element - its shadow root if it has one - rather than the body. The container
-// is returned even when the selector matched nothing, as the caller relies on.
-
-function handleError(
-  caption: string | null,
-  message: string | null,
-  details: string | null,
-  querySelector: string | null
-): Element {
-  const systemErrorContainer = document.createElement('div');
-  // Set the popover attribute for native popovers.
-  systemErrorContainer.setAttribute('popover', 'manual');
-  systemErrorContainer.className = 'v-system-error';
-
-  const appendPart = (text: string | null, partClassName: string): void => {
-    if (text !== null) {
-      const partDiv = document.createElement('div');
-      partDiv.className = partClassName;
-      partDiv.textContent = text;
-      systemErrorContainer.appendChild(partDiv);
-      Console.error(text);
-    }
-  };
-  appendPart(caption, 'caption');
-  appendPart(message, 'message');
-  appendPart(details, 'details');
-
-  if (querySelector !== null) {
-    const baseElement = document.querySelector(querySelector);
-    // If the querySelector matches no element on the page the notification is
-    // left unattached (and thus not displayed), but is still returned.
-    if (baseElement !== null) {
-      // If the base element has a shadow root, add the notification to the
-      // shadow root; otherwise add it to the base element.
-      (getShadowRootElement(baseElement) ?? baseElement).appendChild(systemErrorContainer);
-    }
-  } else {
-    document.body.appendChild(systemErrorContainer);
-  }
-  showPopover(systemErrorContainer);
-
-  return systemErrorContainer;
-}
-
 // The SystemErrorHandler class is the build-alongside TS port of the
 // orchestration in SystemErrorHandler.java, composing the DOM rendering above.
 // This installment covers the logging / web-component-mode / recreate-web-
@@ -174,115 +92,6 @@ export class SystemErrorHandler {
    */
   constructor(registry: SystemErrorRegistry) {
     this.#registry = registry;
-  }
-
-  /**
-   * Shows the given error message if not running in production mode and logs
-   * it to the console if running in production mode.
-   *
-   * @param errorMessage - the error message to show
-   */
-  handleError(errorMessage: string): void {
-    Console.error(errorMessage);
-  }
-
-  /**
-   * Shows the given error message if not running in production mode and logs it
-   * to the console.
-   *
-   * @param error - the throwable which occurred
-   */
-  handleErrorObject(error: unknown): void {
-    // Java distinguishes an AssertionError, whose message alone does not say
-    // what kind of failure it was.
-    if (error instanceof Error && error.name === 'AssertionError') {
-      this.handleError(`Assertion error: ${error.message}`);
-    } else {
-      this.handleError(error instanceof Error ? error.message : String(error));
-    }
-  }
-
-  /** Whether the application runs in web-component (embedded) mode. */
-  #isWebComponentMode(): boolean {
-    return this.#registry.getApplicationConfiguration().isWebComponentMode();
-  }
-
-  /** Recreates every exported web component's elements (detaching stale ones). */
-  #recreateWebComponents(): void {
-    for (const elementName of this.#registry.getApplicationConfiguration().getExportedWebComponents()) {
-      recreateNodes(elementName);
-    }
-    this.#resyncInProgress = false;
-  }
-
-  /**
-   * Resynchronizes a web-component (embedded) session after server-side session
-   * expiration: requests a fresh JSESSIONID, resets the registry, replays the
-   * returned UIDL and re-establishes push, then recreates the exported web
-   * components. Mirrors SystemErrorHandler.resynchronizeSession.
-   */
-  #resynchronizeSession(): void {
-    if (this.#resyncInProgress) {
-      Console.debug('Web components resynchronization already in progress');
-      return;
-    }
-    this.#resyncInProgress = true;
-
-    const configuration = this.#registry.getApplicationConfiguration();
-    const serviceUrl = `${configuration.getServiceUrl()}web-component/web-component-bootstrap.js`;
-
-    // Stop the heartbeat to prevent requests during resynchronization.
-    this.#registry.getHeartbeat().setInterval(-1);
-    if (this.#registry.getPushConfiguration().isPushEnabled()) {
-      this.#registry.getMessageSender().setPushEnabled(false, false);
-    }
-
-    const sessionResyncUri = addGetParameters(
-      serviceUrl,
-      `${REQUEST_TYPE_PARAMETER}=${REQUEST_TYPE_WEBCOMPONENT_RESYNC}`
-    );
-
-    getWithCredentials(
-      sessionResyncUri,
-      (responseText) => {
-        Console.log(`Received xhr HTTP session resynchronization message: ${responseText}`);
-
-        // Make sure the heartbeat has not been restarted; especially important
-        // if the uiId is reset after session expiration, to avoid multiple
-        // heartbeat requests for different UIs.
-        this.#registry.getHeartbeat().setInterval(-1);
-
-        const uiId = configuration.getUIId();
-        const json = JSON.parse(responseText) as Record<string, unknown>;
-        const newUiId = json[UI_ID] as number;
-        if (newUiId !== uiId) {
-          Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
-          configuration.setUIId(newUiId);
-        }
-        this.#registry.reset();
-
-        this.#registry.getUILifecycle().setState(UIState.RUNNING);
-        this.#registry.getMessageHandler().handleMessage(json);
-
-        if (this.#registry.getPushConfiguration().isPushEnabled()) {
-          // The push connection may have been closed in response to server
-          // session expiration. Reconnect before recreating the web components
-          // so connected events can reach the server. Deferred so the current
-          // request completes and the Set-Cookie header is processed first.
-          getScheduler().scheduleDeferred(() => {
-            Console.debug('Re-establish PUSH connection');
-            this.#registry.getMessageSender().setPushEnabled(true);
-            getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
-          });
-        } else {
-          getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
-        }
-      },
-      (error) => {
-        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
-        this.handleError(error.message);
-      }
-    );
   }
 
   /**
@@ -361,4 +170,198 @@ export class SystemErrorHandler {
       );
     }
   }
+
+  /**
+   * Resynchronizes a web-component (embedded) session after server-side session
+   * expiration: requests a fresh JSESSIONID, resets the registry, replays the
+   * returned UIDL and re-establishes push, then recreates the exported web
+   * components. Mirrors SystemErrorHandler.resynchronizeSession.
+   */
+  #resynchronizeSession(): void {
+    if (this.#resyncInProgress) {
+      Console.debug('Web components resynchronization already in progress');
+      return;
+    }
+    this.#resyncInProgress = true;
+
+    const configuration = this.#registry.getApplicationConfiguration();
+    const serviceUrl = `${configuration.getServiceUrl()}web-component/web-component-bootstrap.js`;
+
+    // Stop the heartbeat to prevent requests during resynchronization.
+    this.#registry.getHeartbeat().setInterval(-1);
+    if (this.#registry.getPushConfiguration().isPushEnabled()) {
+      this.#registry.getMessageSender().setPushEnabled(false, false);
+    }
+
+    const sessionResyncUri = addGetParameters(
+      serviceUrl,
+      `${REQUEST_TYPE_PARAMETER}=${REQUEST_TYPE_WEBCOMPONENT_RESYNC}`
+    );
+
+    getWithCredentials(
+      sessionResyncUri,
+      (responseText) => {
+        Console.log(`Received xhr HTTP session resynchronization message: ${responseText}`);
+
+        // Make sure the heartbeat has not been restarted; especially important
+        // if the uiId is reset after session expiration, to avoid multiple
+        // heartbeat requests for different UIs.
+        this.#registry.getHeartbeat().setInterval(-1);
+
+        const uiId = configuration.getUIId();
+        const json = JSON.parse(responseText) as Record<string, unknown>;
+        const newUiId = json[UI_ID] as number;
+        if (newUiId !== uiId) {
+          Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
+          configuration.setUIId(newUiId);
+        }
+        this.#registry.reset();
+
+        this.#registry.getUILifecycle().setState(UIState.RUNNING);
+        this.#registry.getMessageHandler().handleMessage(json);
+
+        if (this.#registry.getPushConfiguration().isPushEnabled()) {
+          // The push connection may have been closed in response to server
+          // session expiration. Reconnect before recreating the web components
+          // so connected events can reach the server. Deferred so the current
+          // request completes and the Set-Cookie header is processed first.
+          getScheduler().scheduleDeferred(() => {
+            Console.debug('Re-establish PUSH connection');
+            this.#registry.getMessageSender().setPushEnabled(true);
+            getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
+          });
+        } else {
+          getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
+        }
+      },
+      (error) => {
+        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
+        this.handleError(error.message);
+      }
+    );
+  }
+
+  /** Recreates every exported web component's elements (detaching stale ones). */
+  #recreateWebComponents(): void {
+    for (const elementName of this.#registry.getApplicationConfiguration().getExportedWebComponents()) {
+      recreateNodes(elementName);
+    }
+    this.#resyncInProgress = false;
+  }
+
+  /**
+   * Shows the given error message if not running in production mode and logs
+   * it to the console if running in production mode.
+   *
+   * @param errorMessage - the error message to show
+   */
+  handleError(errorMessage: string): void {
+    Console.error(errorMessage);
+  }
+
+  /**
+   * Shows the given error message if not running in production mode and logs it
+   * to the console.
+   *
+   * @param error - the throwable which occurred
+   */
+  handleErrorObject(error: unknown): void {
+    // Java distinguishes an AssertionError, whose message alone does not say
+    // what kind of failure it was.
+    if (error instanceof Error && error.name === 'AssertionError') {
+      this.handleError(`Assertion error: ${error.message}`);
+    } else {
+      this.handleError(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  /** Whether the application runs in web-component (embedded) mode. */
+  #isWebComponentMode(): boolean {
+    return this.#registry.getApplicationConfiguration().isWebComponentMode();
+  }
+}
+
+// These four mirror private members of SystemErrorHandler.java, which declares
+// recreateNodes, handleError and showPopover between recreateWebComponents and
+// isWebComponentMode. A module function cannot sit between two class members,
+// so they follow the class; the class itself is in Java declaration order.
+/**
+ * Replaces every element with the given tag name by a shallow clone, after
+ * mocking its disconnected callback. Used to detach stale components without
+ * triggering their server-side disconnect handling.
+ */
+function recreateNodes(elementName: string): void {
+  // Snapshot the live collection before mutating it.
+  const elements = Array.from(document.getElementsByTagName(elementName)) as Array<
+    Element & {
+      $server: { disconnected: () => void };
+    }
+  >;
+  for (const elem of elements) {
+    // Mock the disconnected callback so it does not throw a TypeError.
+    elem.$server.disconnected = () => {};
+    // Java dereferences parentNode unguarded, so a detached element fails here
+    // rather than silently keeping the stale node.
+    elem.parentNode!.replaceChild(elem.cloneNode(false), elem);
+  }
+}
+
+// Builds and shows the system error notification for an unrecoverable error.
+// Java documents none of this (its private overload has no Javadoc): each
+// provided part becomes a labelled div and is also logged through Console, and
+// when a querySelector is given the notification goes inside the matching
+// element - its shadow root if it has one - rather than the body. The container
+// is returned even when the selector matched nothing, as the caller relies on.
+function handleError(
+  caption: string | null,
+  message: string | null,
+  details: string | null,
+  querySelector: string | null
+): Element {
+  const systemErrorContainer = document.createElement('div');
+  // Set the popover attribute for native popovers.
+  systemErrorContainer.setAttribute('popover', 'manual');
+  systemErrorContainer.className = 'v-system-error';
+
+  const appendPart = (text: string | null, partClassName: string): void => {
+    if (text !== null) {
+      const partDiv = document.createElement('div');
+      partDiv.className = partClassName;
+      partDiv.textContent = text;
+      systemErrorContainer.appendChild(partDiv);
+      Console.error(text);
+    }
+  };
+  appendPart(caption, 'caption');
+  appendPart(message, 'message');
+  appendPart(details, 'details');
+
+  if (querySelector !== null) {
+    const baseElement = document.querySelector(querySelector);
+    // If the querySelector matches no element on the page the notification is
+    // left unattached (and thus not displayed), but is still returned.
+    if (baseElement !== null) {
+      // If the base element has a shadow root, add the notification to the
+      // shadow root; otherwise add it to the base element.
+      (getShadowRootElement(baseElement) ?? baseElement).appendChild(systemErrorContainer);
+    }
+  } else {
+    document.body.appendChild(systemErrorContainer);
+  }
+  showPopover(systemErrorContainer);
+
+  return systemErrorContainer;
+}
+
+/** Invokes the native showPopover() of the element if it supports it. */
+function showPopover(el: Element): void {
+  const fn = el && (el as Element & { showPopover?: () => void }).showPopover;
+  if (typeof fn === 'function') {
+    fn.call(el);
+  }
+}
+
+/** Returns the shadow root of the given host element, if any. */
+function getShadowRootElement(host: Element): ShadowRoot | null {
+  return host.shadowRoot;
 }

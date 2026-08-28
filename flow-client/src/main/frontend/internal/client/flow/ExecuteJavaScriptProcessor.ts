@@ -67,74 +67,6 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-/**
- * Builds the object the executed JavaScript runs against (its `this`). The
- * application id has its trailing per-UI suffix (`-<number>`) stripped so the
- * script sees the stable app id.
- */
-function getContextExecutionObject(
-  appId: string,
-  registry: unknown,
-  callbacks: ContextCallbacks
-): Record<string, unknown> {
-  const object: Record<string, unknown> = {};
-  object.getNode = callbacks.getNode;
-  object.$appId = appId.replace(/-\d+$/, '');
-  object.registry = registry;
-  object.attachExistingElement = (parent: unknown, previousSibling: unknown, tagName: unknown, id: unknown): void =>
-    callbacks.attachExistingElement(
-      callbacks.getNode(parent),
-      previousSibling as Element | null,
-      tagName as string,
-      id as number
-    );
-  object.populateModelProperties = (element: unknown, properties: unknown): void =>
-    callbacks.populateModelProperties(callbacks.getNode(element), properties as string[]);
-  object.registerUpdatableModelProperties = (element: unknown, properties: unknown): void =>
-    callbacks.registerUpdatableModelProperties(callbacks.getNode(element), properties as string[]);
-  object.stopApplication = callbacks.stopApplication;
-  object.registerInitializer = callbacks.registerInitializer;
-  object.disposeInitializer = callbacks.disposeInitializer;
-  return object;
-}
-
-/**
- * Manifests and runs a server-sent JavaScript invocation: builds a function from
- * the parameter names followed by the expression, then applies it with the given
- * context as `this` and the parameter values as arguments. Exceptions are caught
- * and reported (the failing code is logged outside production mode). Mirrors
- * ExecuteJavaScriptProcessor.invoke (the context object is assembled by
- * getContextExecutionObject).
- */
-function invokeJavaScript(
-  parameterNamesAndCode: string[],
-  parameters: unknown[],
-  context: object,
-  productionMode: boolean
-): void {
-  assert(
-    parameterNamesAndCode.length === parameters.length + 1,
-    'Expected one more entry in parameterNamesAndCode than there are parameters'
-  );
-
-  try {
-    // The last entry is the expression; the rest are parameter names.
-    const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
-    fn.apply(context, parameters);
-  } catch (exception) {
-    // Reported through the ported Console, which rethrows asynchronously and so
-    // is not subject to the production-mode log suppression - keeping the stack
-    // that a logged message alone would lose.
-    Console.reportStacktrace(exception);
-    Console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
-    if (!productionMode) {
-      Console.error(exception);
-      // Java brackets the snippets then strips the brackets, netting the join.
-      Console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
-    }
-  }
-}
-
 /** The slice of Registry ExecuteJavaScriptProcessor uses. */
 interface ExecuteJsRegistry {
   getStateTree(): StateTree;
@@ -201,6 +133,34 @@ export class ExecuteJavaScriptProcessor {
     this.invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
+  // A virtual child injected by id / as a sub-template is awaiting initialization
+  // until its DOM node is created.
+  #isVirtualChildAwaitingInitialization(node: StateNode): boolean {
+    if (node.getDomNode() !== null || node.getTree().getNode(node.getId()) === null) {
+      return false;
+    }
+    const elementData = node.getMap(NodeFeatures.ELEMENT_DATA);
+    if (elementData.hasPropertyValue(NodeProperties.PAYLOAD)) {
+      const value = elementData.getProperty(NodeProperties.PAYLOAD).getValue();
+      if (value !== null && typeof value === 'object') {
+        const type = (value as Record<string, unknown>)[NodeProperties.TYPE];
+        return type === NodeProperties.INJECT_BY_ID || type === NodeProperties.TEMPLATE_IN_TEMPLATE;
+      }
+    }
+    return false;
+  }
+
+  // A node is bound once it has a DOM node that does not need rebinding, and so
+  // is each of its ancestors.
+  protected isBound(node: StateNode): boolean {
+    const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
+    const parent = node.getParent();
+    if (!isNodeBound || parent === null) {
+      return isNodeBound;
+    }
+    return this.isBound(parent);
+  }
+
   /**
    * Executes the actual invocation.
    *
@@ -241,32 +201,72 @@ export class ExecuteJavaScriptProcessor {
     });
     invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
   }
+}
 
-  // A node is bound once it has a DOM node that does not need rebinding, and so
-  // is each of its ancestors.
-  protected isBound(node: StateNode): boolean {
-    const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
-    const parent = node.getParent();
-    if (!isNodeBound || parent === null) {
-      return isNodeBound;
-    }
-    return this.isBound(parent);
-  }
+/**
+ * Builds the object the executed JavaScript runs against (its `this`). The
+ * application id has its trailing per-UI suffix (`-<number>`) stripped so the
+ * script sees the stable app id.
+ */
+function getContextExecutionObject(
+  appId: string,
+  registry: unknown,
+  callbacks: ContextCallbacks
+): Record<string, unknown> {
+  const object: Record<string, unknown> = {};
+  object.getNode = callbacks.getNode;
+  object.$appId = appId.replace(/-\d+$/, '');
+  object.registry = registry;
+  object.attachExistingElement = (parent: unknown, previousSibling: unknown, tagName: unknown, id: unknown): void =>
+    callbacks.attachExistingElement(
+      callbacks.getNode(parent),
+      previousSibling as Element | null,
+      tagName as string,
+      id as number
+    );
+  object.populateModelProperties = (element: unknown, properties: unknown): void =>
+    callbacks.populateModelProperties(callbacks.getNode(element), properties as string[]);
+  object.registerUpdatableModelProperties = (element: unknown, properties: unknown): void =>
+    callbacks.registerUpdatableModelProperties(callbacks.getNode(element), properties as string[]);
+  object.stopApplication = callbacks.stopApplication;
+  object.registerInitializer = callbacks.registerInitializer;
+  object.disposeInitializer = callbacks.disposeInitializer;
+  return object;
+}
 
-  // A virtual child injected by id / as a sub-template is awaiting initialization
-  // until its DOM node is created.
-  #isVirtualChildAwaitingInitialization(node: StateNode): boolean {
-    if (node.getDomNode() !== null || node.getTree().getNode(node.getId()) === null) {
-      return false;
+/**
+ * Manifests and runs a server-sent JavaScript invocation: builds a function from
+ * the parameter names followed by the expression, then applies it with the given
+ * context as `this` and the parameter values as arguments. Exceptions are caught
+ * and reported (the failing code is logged outside production mode). Mirrors
+ * ExecuteJavaScriptProcessor.invoke (the context object is assembled by
+ * getContextExecutionObject).
+ */
+function invokeJavaScript(
+  parameterNamesAndCode: string[],
+  parameters: unknown[],
+  context: object,
+  productionMode: boolean
+): void {
+  assert(
+    parameterNamesAndCode.length === parameters.length + 1,
+    'Expected one more entry in parameterNamesAndCode than there are parameters'
+  );
+
+  try {
+    // The last entry is the expression; the rest are parameter names.
+    const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
+    fn.apply(context, parameters);
+  } catch (exception) {
+    // Reported through the ported Console, which rethrows asynchronously and so
+    // is not subject to the production-mode log suppression - keeping the stack
+    // that a logged message alone would lose.
+    Console.reportStacktrace(exception);
+    Console.error('Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.');
+    if (!productionMode) {
+      Console.error(exception);
+      // Java brackets the snippets then strips the brackets, netting the join.
+      Console.error(`The error has occurred in the JS code: '${parameterNamesAndCode.join(', ')}'`);
     }
-    const elementData = node.getMap(NodeFeatures.ELEMENT_DATA);
-    if (elementData.hasPropertyValue(NodeProperties.PAYLOAD)) {
-      const value = elementData.getProperty(NodeProperties.PAYLOAD).getValue();
-      if (value !== null && typeof value === 'object') {
-        const type = (value as Record<string, unknown>)[NodeProperties.TYPE];
-        return type === NodeProperties.INJECT_BY_ID || type === NodeProperties.TEMPLATE_IN_TEMPLATE;
-      }
-    }
-    return false;
   }
 }

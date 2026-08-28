@@ -39,24 +39,6 @@ const ORDINAL: Record<UIState, number> = {
 };
 
 /**
- * Event triggered when the lifecycle state of a UI is changed.
- *
- * To listen for the event add a {@link StateChangeHandler} using
- * {@link UILifecycle.addHandler}.
- */
-export interface StateChangeEvent {
-  /**
-   * Gets the {@link UILifecycle} instance which triggered this event.
-   *
-   * @returns the {@link UILifecycle} which triggered the event
-   */
-  getUiLifecycle(): UILifecycle;
-}
-
-/** A listener for UI lifecycle state changes; mirrors StateChangeHandler. */
-export type StateChangeHandler = (event: StateChangeEvent) => void;
-
-/**
  * Manages the lifecycle of a UI.
  */
 export class UILifecycle {
@@ -135,3 +117,21 @@ export class UILifecycle {
     };
   }
 }
+
+/**
+ * Event triggered when the lifecycle state of a UI is changed.
+ *
+ * To listen for the event add a {@link StateChangeHandler} using
+ * {@link UILifecycle.addHandler}.
+ */
+export interface StateChangeEvent {
+  /**
+   * Gets the {@link UILifecycle} instance which triggered this event.
+   *
+   * @returns the {@link UILifecycle} which triggered the event
+   */
+  getUiLifecycle(): UILifecycle;
+}
+
+/** A listener for UI lifecycle state changes; mirrors StateChangeHandler. */
+export type StateChangeHandler = (event: StateChangeEvent) => void;
