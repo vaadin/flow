@@ -201,9 +201,12 @@ public class UIInternals implements Serializable {
      * individual state nodes to avoid growing the size of every node.
      * <p>
      * Serialized together with the invocations that make up the count, each of
-     * which references these internals until it stops being counted, so the
-     * count is still consistent for a UI that has been through a serialization
-     * round trip.
+     * which references these internals until it stops being counted, so a UI
+     * that has been through a serialization round trip keeps counting where it
+     * left off. Note that the count is an upper bound rather than an exact
+     * number: an invocation that is discarded from
+     * {@link #pendingJsInvocations} without being sent or canceled stays
+     * counted, so the count can drift upwards over the lifetime of a UI.
      */
     private int undeliveredJsInvocations;
 

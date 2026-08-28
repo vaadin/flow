@@ -52,8 +52,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * <p>
      * Only ever set to the internals of the UI that the owner belongs to, so
      * this reaches nothing that the owner does not reach anyway. That also
-     * makes it safe to serialize: the count is restored together with the
-     * invocations that make it up.
+     * makes it safe to serialize: an invocation restored with its UI keeps
+     * updating the count that was restored with it.
      */
     private UIInternals countedIn;
 
