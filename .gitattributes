@@ -18,21 +18,9 @@
 
 .github/workflows/*.lock.yml linguist-generated=true merge=ours
 
-# The vaadin-dev CLI: shipped as flow-plugin-base resources and installed into a
-# project by `mvn vaadin:install-dev-cli`, so the line endings it is committed
-# with are the ones the installed copy gets. Bash and PowerShell must stay LF - a
-# CRLF shebang makes Linux and macOS fail with "bad interpreter" - and the batch
-# launcher stays CRLF. The same rules belong in the user's own repository.
 vaadin-dev text eol=lf
 *.ps1 text eol=lf
 *.cmd text eol=crlf
 
-# The same payload as it sits in this repository, where it is a Maven resource
-# rather than a script: maven-resources-plugin copies these bytes into the plugin
-# jar verbatim, and DevCliInstaller compares them against what is already in a
-# project to tell "up to date" from "you edited this". So a jar built on Windows
-# and one built on Linux must not disagree about line endings, which means these
-# files need one checkout form on every platform rather than the usual
-# text=auto. The .cmd stays CRLF because it is a batch file; the rest is LF.
 flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/** text eol=lf
 flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/*.cmd text eol=crlf
