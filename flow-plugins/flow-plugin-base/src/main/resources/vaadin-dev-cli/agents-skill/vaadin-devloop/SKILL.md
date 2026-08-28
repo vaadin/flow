@@ -1,6 +1,6 @@
 ---
 name: vaadin-devloop
-description: Applies to any edit of Vaadin application source under src/main/java or src/main/resources — a view, component, layout, theme or stylesheet — and makes that edit live in the already-running app, then verifies it in the browser. The edit itself is the trigger, not any particular wording: read this BEFORE touching such a file, and follow it again once the file is saved, because a source edit that has not been applied is not done, however small the edit looks. Also covers starting or restarting the app, checking whether a change is actually live, and any request to look at the app in a browser. Phrases like "make this live", "is the change running", "start the app", "reload", "hot reload", "apply my edits" and "why doesn't the page show my change" are explicit invocations, but none of them are required. A daemon owns the app process, so this replaces running the app through Maven.
+description: Requires Vaadin 25.3 or newer in the target application; on an older version the dev loop does not exist and none of this applies. Applies to any edit of Vaadin application source under src/main/java or src/main/resources — a view, component, layout, theme or stylesheet — and makes that edit live in the already-running app, then verifies it in the browser. The edit itself is the trigger, not any particular wording: read this BEFORE touching such a file, and follow it again once the file is saved, because a source edit that has not been applied is not done, however small the edit looks. Also covers starting or restarting the app, checking whether a change is actually live, and any request to look at the app in a browser. Phrases like "make this live", "is the change running", "start the app", "reload", "hot reload", "apply my edits" and "why doesn't the page show my change" are explicit invocations, but none of them are required. A daemon owns the app process, so this replaces running the app through Maven.
 ---
 
 # Vaadin dev loop
@@ -15,6 +15,16 @@ app's `pom.xml`, its Maven wrapper and its `.vaadin/` — and by default acts on
 from there as `.vaadin/vaadin-dev`, or from any directory with `--app <dir>` (or
 `VAADIN_DEV_APP=<dir>`), which is also how a single copy of the script drives another Vaadin
 application in the same reactor.
+
+## Requires Vaadin 25.3 or newer
+
+The dev loop ships with Vaadin 25.3. **Establish the target application's Vaadin version once,
+before the first command** — `vaadin.version` in its `pom.xml`, or
+`./mvnw -q help:evaluate -Dexpression=vaadin.version -DforceStdout` when the pom inherits it
+from a parent. On anything older nothing here applies: there is no `com.vaadin:vaadin-dev` to
+resolve a daemon from, so run the application the project's normal way and say that the loop is
+unavailable, rather than invoking `vaadin-dev` and reporting its failure. When a command names
+another application with `--app`, the version that counts is that application's.
 
 ## The cycle
 
