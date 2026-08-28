@@ -130,7 +130,13 @@ public final class JBossVfsUtil {
      */
     public static File materializeFolder(URL folder) throws IOException {
         Object virtualFolder = getVirtualFile(folder);
-        List<File> files = materializeChildren(virtualFolder, true);
+        // A virtual file only exists on disk once it has been asked for, so
+        // everything below the folder is asked for even though only the folder
+        // is returned
+        List<File> files = new ArrayList<>();
+        for (Object child : getChildren(virtualFolder, true)) {
+            files.add(getPhysicalFile(child));
+        }
         File physicalFolder = getPhysicalFile(virtualFolder);
         files.stream().filter(
                 file -> !file.toPath().startsWith(physicalFolder.toPath()))
@@ -195,15 +201,6 @@ public final class JBossVfsUtil {
                 jarStream.closeEntry();
             }
         }
-    }
-
-    private static List<File> materializeChildren(Object virtualFolder,
-            boolean recursive) throws IOException {
-        List<File> files = new ArrayList<>();
-        for (Object child : getChildren(virtualFolder, recursive)) {
-            files.add(getPhysicalFile(child));
-        }
-        return files;
     }
 
     private static Object getVirtualFile(URL url) throws IOException {
