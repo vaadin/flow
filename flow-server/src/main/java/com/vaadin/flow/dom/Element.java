@@ -1959,13 +1959,7 @@ public class Element extends Node<Element> {
             // Counts the invocation if the node was not attached to any UI
             // when it was scheduled, and there was no count to add it to
             pending.countWhenAttached();
-            ui.getInternals().getStateTree().beforeClientResponse(node,
-                    context -> {
-                        if (!pending.isCanceled()) {
-                            context.getUI().getInternals()
-                                    .addJavaScriptInvocation(pending);
-                        }
-                    });
+            ui.getInternals().queueJavaScriptInvocation(pending);
         });
 
         return pending;

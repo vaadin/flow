@@ -64,9 +64,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -169,6 +171,33 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+    }
+
+    /**
+     * Queues a scheduled JavaScript invocation into the pending invocations of
+     * the UI when a response is written for the tree of its owner.
+     * <p>
+     * A named type rather than a lambda so that the invocations waiting for a
+     * response can be found among the pending executions of their owner.
+     */
+    private static class QueueInvocation
+            implements SerializableConsumer<ExecutionContext> {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueInvocation(PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            // Counted again if the owner has been detached and attached again
+            // since the invocation was scheduled
+            invocation.countWhenAttached();
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
         }
     }
 
@@ -803,8 +832,23 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Queues the given invocation to be added to the pending invocations of the
+     * related UI when a response is next written for the tree of its owner.
+     *
+     * @param invocation
+     *            the invocation to queue, not <code>null</code>
+     */
+    public void queueJavaScriptInvocation(
+            PendingJavaScriptInvocation invocation) {
+        StateNode owner = invocation.getOwner();
+        stateTree.beforeClientResponse(owner, new QueueInvocation(invocation));
+    }
+
+    /**
      * Discards the pending JavaScript invocations owned by the given node,
-     * which are the ones waiting for the node to become visible again.
+     * which are the ones waiting for the node to become visible again, and
+     * stops counting the ones that were waiting for a response to be written
+     * for the node.
      * <p>
      * {@link StateTree} calls this for every node that is detached, so the
      * owners are tracked separately to keep it to a single lookup for a node
@@ -815,11 +859,17 @@ public class UIInternals implements Serializable {
      */
     public void discardPendingJavaScriptInvocations(StateNode owner) {
         checkInvocationQueueLock();
+        stopCountingInvocationsWaitingForResponse(owner);
         if (!pendingJsInvocationOwners.remove(owner)) {
             return;
         }
-        pendingJsInvocations
-                .removeIf(invocation -> invocation.getOwner() == owner);
+        pendingJsInvocations.removeIf(invocation -> {
+            if (invocation.getOwner() != owner) {
+                return false;
+            }
+            invocation.stopCounting();
+            return true;
+        });
     }
 
     /**
@@ -831,8 +881,26 @@ public class UIInternals implements Serializable {
      */
     public void discardPendingJavaScriptInvocations() {
         checkInvocationQueueLock();
+        pendingJsInvocations.forEach(PendingJavaScriptInvocation::stopCounting);
         pendingJsInvocations.clear();
         pendingJsInvocationOwners.clear();
+    }
+
+    /**
+     * Stops counting the invocations that are waiting for a response to be
+     * written for the given node, since a detached node is not getting one.
+     * They are left in place, as they are still delivered if the node is
+     * attached to this UI again, and counted again by then.
+     */
+    private void stopCountingInvocationsWaitingForResponse(StateNode owner) {
+        if (!owner.hasBeforeClientResponseEntries()) {
+            return;
+        }
+        owner.getBeforeClientResponseEntries().forEach(entry -> {
+            if (entry.getExecution() instanceof QueueInvocation queued) {
+                queued.invocation.stopCounting();
+            }
+        });
     }
 
     /**

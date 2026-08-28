@@ -287,6 +287,85 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void executeJsThenOwnerDetached_stopsBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        assertEquals(1, count(ui));
+
+        ui.remove(component);
+
+        assertEquals(0, count(ui),
+                "an invocation waiting for a response for a detached owner should not be counted");
+
+        ui.dumpPendingJsInvocations();
+
+        assertEquals(0, count(ui),
+                "writing a response should not bring the invocation back");
+    }
+
+    @Test
+    void retainedInvocationOwnerDetached_stopsBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setVisible(false);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        // An invisible owner keeps the invocation in the queue of the UI
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty());
+        assertEquals(1, count(ui));
+
+        ui.remove(component);
+
+        assertEquals(0, count(ui),
+                "an invocation discarded from the queue should not be counted");
+    }
+
+    @Test
+    void resynchronize_queuedInvocationsStopBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setVisible(false);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty());
+        assertEquals(1, count(ui));
+
+        ui.getInternals().getStateTree().prepareForResync();
+
+        assertEquals(0, count(ui),
+                "invocations discarded by a resynchronization should not be counted");
+    }
+
+    @Test
+    void detachedOwnerAttachedAgain_countedAgainAndStillDelivered() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.getElement().executeJs("this.foo = $0", "bar");
+        ui.remove(component);
+        assertEquals(0, count(ui));
+
+        component.setVisible(false);
+        ui.add(component);
+
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
+                "an invisible owner should still retain the invocation");
+        assertEquals(1, count(ui),
+                "an invocation waiting for a response again should be counted again");
+
+        component.setVisible(true);
+
+        assertEquals(1, ui.dumpPendingJsInvocations().size(),
+                "the invocation should still be delivered once the owner is visible");
+        assertEquals(0, count(ui));
+    }
+
+    @Test
     void serializeOwnerOfScheduledInvocation_uiNotPartOfTheGraph()
             throws Exception {
         // There is a current UI, but the owner does not belong to it: it
@@ -352,6 +431,10 @@ class PendingJavaScriptInvocationUtilTest {
 
         assertEquals(0, restored.getInternals().addUndeliveredJsInvocations(0),
                 "an invocation restored with its UI should stop being counted once it is sent");
+    }
+
+    private static int count(MockUI ui) {
+        return ui.getInternals().addUndeliveredJsInvocations(0);
     }
 
     private static StateNode attachedNode(MockUI ui) {

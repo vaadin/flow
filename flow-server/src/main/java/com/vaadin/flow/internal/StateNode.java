@@ -1197,6 +1197,19 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Gets the pending execution entries for this node without clearing them.
+     *
+     * @see StateTree#beforeClientResponse(StateNode,
+     *      com.vaadin.flow.function.SerializableConsumer)
+     *
+     * @return the pending entries, or an empty list if there are none
+     */
+    public List<StateTree.BeforeClientResponseEntry> getBeforeClientResponseEntries() {
+        return beforeClientResponseEntries == null ? Collections.emptyList()
+                : Collections.unmodifiableList(beforeClientResponseEntries);
+    }
+
+    /**
      * Gets the current list of pending execution entries for this node and
      * clears the current list.
      *

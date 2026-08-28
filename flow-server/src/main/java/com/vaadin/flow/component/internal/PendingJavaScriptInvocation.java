@@ -175,7 +175,15 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         stopCounting();
     }
 
-    private void stopCounting() {
+    /**
+     * Stops counting this invocation as undelivered in the UI it was counted
+     * in, without otherwise changing its state.
+     * <p>
+     * Called when the invocation stops waiting to be sent, either because it
+     * has been sent or canceled, or because the framework discards it, for
+     * instance when its owner is detached.
+     */
+    void stopCounting() {
         if (countedIn == null) {
             return;
         }
