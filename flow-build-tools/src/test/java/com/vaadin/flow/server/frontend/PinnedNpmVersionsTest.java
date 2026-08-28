@@ -114,8 +114,19 @@ class PinnedNpmVersionsTest {
 
     @Test
     void vaadinVersionIsReadFromTheFileDeclaringIt() throws IOException {
-        assertEquals(Optional.of("25.1.0"),
-                createVersions(CORE_VERSIONS, null).getVaadinVersion());
+        // The first file does not declare it, so it comes from the second
+        PinnedNpmVersions versions = createVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, VAADIN_VERSIONS);
+
+        assertEquals(Optional.of("25.1.0"), versions.getVaadinVersion());
     }
 
     @Test
