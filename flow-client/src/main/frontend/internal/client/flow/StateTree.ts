@@ -19,7 +19,6 @@
 // layer that StateTree needs are declared here as contracts that the
 // Registry/connector satisfy.
 
-export type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
