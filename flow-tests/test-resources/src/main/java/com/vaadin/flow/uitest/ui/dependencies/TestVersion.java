@@ -17,7 +17,14 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 public class TestVersion {
 
-    public static final String VAADIN = "25.3.0-alpha8";
+    /**
+     * Version of {@code @vaadin/vaadin-themable-mixin}, the only Vaadin npm
+     * package the tests are allowed to depend on. It is needed to resolve the
+     * {@code register-styles} import that Flow generates for per-component
+     * theme CSS; everything else is covered by faux elements, so no other
+     * Vaadin npm package should be added here.
+     */
+    public static final String THEMABLE_MIXIN = "25.3.0-alpha8";
     public static final String FONTAWESOME = "5.15.1";
 
 }

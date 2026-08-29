@@ -40,7 +40,7 @@ public class ThemeComponentsCssView extends Div {
     // present, the bundle will not be rebuilt. The themable mixin the faux
     // element imports is declared here so it is installed in this module.
     @JsModule("./faux-horizontal-layout.js")
-    @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
+    @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.THEMABLE_MIXIN)
     @Tag("vaadin-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {

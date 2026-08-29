@@ -35,7 +35,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
  * wherever that import is generated.
  */
 @JsModule("./themable-input.js")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.THEMABLE_MIXIN)
 @Tag("vaadin-text-field")
 public class ThemableTextField extends Component {
 
