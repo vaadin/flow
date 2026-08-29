@@ -178,6 +178,18 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addColumnGroup_listOverloadHoldsTheSameColumns() {
+        Table table = table();
+        var first = new TableColumn(2);
+        var second = new TableColumn();
+
+        var group = table.addColumnGroup(List.of(first, second));
+
+        assertEquals(List.of(group), table.getColumnGroups());
+        assertEquals(List.of(first, second), group.getColumns());
+    }
+
+    @Test
     void removeColumnGroup_detachesOnlyThatGroup() {
         Table table = table();
         var first = table.addColumnGroup();
