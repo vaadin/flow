@@ -12,7 +12,7 @@
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/vaadin-themable-mixin": "25.3.0-alpha8",
+    "@vaadin/vaadin-themable-mixin": "25.2.9",
     "lit": "3.3.3",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -44,7 +44,7 @@
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.23",
-      "@vaadin/vaadin-themable-mixin": "25.3.0-alpha8",
+      "@vaadin/vaadin-themable-mixin": "25.2.9",
       "lit": "3.3.3",
       "react": "19.2.7",
       "react-dom": "19.2.7",
