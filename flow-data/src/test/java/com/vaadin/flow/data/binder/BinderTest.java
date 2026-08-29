@@ -1654,6 +1654,27 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    void setBean_bindingReplacedInAnotherFieldsValueChangeListener_fieldInitializedWithoutException() {
+        // Rebinding a field while the binder is initializing the fields, see
+        // https://github.com/vaadin/flow/issues/24790
+        ageField.addValueChangeListener(event -> {
+            binder.removeBinding(nameField);
+            binder.forField(nameField).asRequired("Name is required")
+                    .bind(Person::getFirstName, Person::setFirstName);
+        });
+
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+
+        assertEquals(item.getFirstName(), nameField.getValue(),
+                "Replacement binding should have initialized the field");
+    }
+
+    @Test
     void replace_binding_previousBindingUnbound() {
         List<String> bindingCalls = new ArrayList<>();
         Binding<Person, Integer> binding1 = binder.forField(ageField)
