@@ -31,17 +31,18 @@ public class ThemeComponentsCssView extends Div {
         add(new MyComponent());
     }
 
-    // Backed by the faux faux-horizontal-layout.js custom element (a
-    // ThemableMixin element with a <slot>), registered under the
-    // vaadin-horizontal-layout tag so the <theme>/components/
-    // vaadin-horizontal-layout.css files keep matching. The per-component CSS
-    // uses ::slotted(...) to color the light-DOM children, so a <slot> is
-    // required. If no components/vaadin-horizontal-layout.css files are
-    // present, the bundle will not be rebuilt. The themable mixin the faux
-    // element imports is declared here so it is installed in this module.
+    // Backed by the faux-horizontal-layout.js custom element (a ThemableMixin
+    // element with a <slot>), matched by the <theme>/components/
+    // faux-horizontal-layout.css files. The tag is deliberately not that of a
+    // real Vaadin component, so nothing here can be confused with
+    // vaadin-horizontal-layout. The per-component CSS uses ::slotted(...) to
+    // color the light-DOM children, so a <slot> is required. If no
+    // components/faux-horizontal-layout.css files are present, the bundle will
+    // not be rebuilt. The themable mixin the faux element imports is declared
+    // here so it is installed in this module.
     @JsModule("./faux-horizontal-layout.js")
     @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.THEMABLE_MIXIN)
-    @Tag("vaadin-horizontal-layout")
+    @Tag("faux-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {
             getElement()
