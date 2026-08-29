@@ -21,22 +21,21 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 /**
- * Test-only stand-in for {@code vaadin-text-field} used to verify Flow's
- * per-component theming ({@code theme/components/vaadin-text-field.css}). It is
- * backed by the faux {@code themable-input.js} custom element — a
- * {@code ThemableMixin} element registered under the {@code vaadin-text-field}
- * tag — so the machinery can be exercised without depending on the real Vaadin
- * text field web component.
+ * Test-only field component used to verify Flow's per-component theming
+ * ({@code theme/components/faux-text-field.css}). It is backed by the
+ * {@code faux-text-field.js} custom element — a {@code ThemableMixin} element
+ * whose tag deliberately matches no real Vaadin component — so the machinery
+ * can be exercised without depending on a real Vaadin web component.
  * <p>
  * {@code @vaadin/vaadin-themable-mixin} is declared here rather than in a
  * shared module because every module that has {@code flow-test-resources} on
- * its class path picks up the {@code themable-input.js} import from this class.
- * Keeping the npm package on the same class guarantees the mixin is installed
- * wherever that import is generated.
+ * its class path picks up the {@code faux-text-field.js} import from this
+ * class. Keeping the npm package on the same class guarantees the mixin is
+ * installed wherever that import is generated.
  */
-@JsModule("./themable-input.js")
+@JsModule("./faux-text-field.js")
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.THEMABLE_MIXIN)
-@Tag("vaadin-text-field")
+@Tag("faux-text-field")
 public class ThemableTextField extends Component {
 
     /**
