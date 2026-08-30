@@ -105,6 +105,7 @@ public class VaadinAppShellInitializer
         }
 
         List<String> offendingAnnotations = new ArrayList<>();
+        List<String> offendingClassNames = new ArrayList<>();
         AppShellPredicate predicate = context.getAttribute(Lookup.class)
                 .lookup(AppShellPredicate.class);
 
@@ -124,22 +125,33 @@ public class VaadinAppShellInitializer
                         String error = registry.validateClass(clz);
                         if (error != null) {
                             offendingAnnotations.add(error);
+                            offendingClassNames.add(clz.getName());
                         }
                     }
                 });
 
         if (!offendingAnnotations.isEmpty()) {
+            String details = String.join("\n  ", offendingAnnotations);
+            String hint;
+            if (registry.getShell() != null) {
+                hint = String.format(
+                        AppShellRegistry.ERROR_HINT_EXISTING_SHELL,
+                        registry.getShell().getName());
+            } else {
+                hint = String.format(AppShellRegistry.ERROR_HINT_NO_SHELL,
+                        String.join(", ", offendingClassNames));
+            }
+            String payload = details + "\n" + hint;
             if (disregardOffendingAnnotations) {
                 boolean hasPwa = offendingAnnotations.stream()
                         .anyMatch(err -> err.matches(".*@PWA.*"));
                 String message = String.format(
                         hasPwa ? ERROR_HEADER_OFFENDING_PWA
                                 : ERROR_HEADER_NO_SHELL,
-                        String.join("\n  ", offendingAnnotations));
+                        payload);
                 getLogger().error(message);
             } else {
-                String message = String.format(ERROR_HEADER_NO_SHELL,
-                        String.join("\n  ", offendingAnnotations));
+                String message = String.format(ERROR_HEADER_NO_SHELL, payload);
                 throw new InvalidApplicationConfigurationException(message);
             }
         }

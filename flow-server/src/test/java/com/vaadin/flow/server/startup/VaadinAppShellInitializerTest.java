@@ -446,8 +446,30 @@ public class VaadinAppShellInitializerTest {
         assertTrue(thrown.getMessage()
                 .contains("Found app shell configuration annotations in non"));
         assertTrue(thrown.getMessage().contains(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
-                        + " from"));
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage().contains(
+                "Please move the annotations to the class "
+                        + MyAppShellWithoutAnnotations.class.getName()
+                        + " which already implements `AppShellConfigurator`"));
+    }
+
+    @Test
+    public void should_throw_when_offendingClass_and_noAppShell()
+            throws Exception {
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    classes.add(OffendingClass.class);
+                    initializer.process(classes, servletContext);
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Found app shell configuration annotations in non"));
+        assertTrue(thrown.getMessage().contains(
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage().contains("Please make "
+                + OffendingClass.class.getName()
+                + " implement `AppShellConfigurator`"));
     }
 
     @Test
