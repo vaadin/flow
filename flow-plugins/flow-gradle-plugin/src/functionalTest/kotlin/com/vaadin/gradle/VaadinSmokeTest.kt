@@ -18,6 +18,8 @@ package com.vaadin.flow.gradle
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
@@ -668,6 +670,44 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinBuildFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testBuildFrontend_configurationCache_fileDependency() {
+        // Regression test for the configuration cache failure on a project
+        // that declares a file-based dependency. Such a dependency makes
+        // Gradle keep the classpath artifact view's component filter alive in
+        // the serialized task graph instead of flattening it away, so the
+        // classpath filter predicate has to be storable. Built out of the
+        // Predicate.and()/or()/negate() combinators it was not: those return
+        // lambdas hosted in java.base/java.util.function, and the build failed
+        // with `module java.base does not "opens java.util.function"`.
+
+        // Create frontend folder, that will otherwise be created by the first
+        // execution, invalidating the cache on the second run
+        testProject.newFolder("src/main/frontend")
+
+        val localJar = testProject.newFile("libs/local.jar")
+        JarOutputStream(localJar.outputStream()).use { jar ->
+            jar.putNextEntry(JarEntry("marker.txt"))
+            jar.write("placeholder".toByteArray())
+            jar.closeEntry()
+        }
+        testProject.buildFile.writeText(
+            testProject.buildFile.readText().replace(
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")""",
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation(files("libs/local.jar"))"""
+            )
+        )
+
+        val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Configuration cache entry stored")
 
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
