@@ -44,6 +44,8 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * Unbound, so it never runs as a side effect of a normal build. Run it on the
  * application module: in a reactor that means {@code -pl :app}, which is also
  * where the CLI's own {@code .vaadin/vaadin-dev} invocations are rooted.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 @Mojo(name = "install-dev-cli")
 public class InstallDevCliMojo extends FlowModeAbstractMojo {

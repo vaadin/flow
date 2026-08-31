@@ -49,6 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@code restart}, {@code shutdown}. The transaction verbs come in P2/P3, which
  * is why the wire protocol already streams progress lines before a final exit
  * code: {@code apply} will need exactly that shape.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public final class Daemon {
 

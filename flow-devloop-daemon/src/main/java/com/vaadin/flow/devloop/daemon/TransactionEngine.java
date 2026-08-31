@@ -39,6 +39,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * P2 implements the compile leg. The runtime leg lands in P3; until then a
  * successful compile escalates straight to a restart when the app is running,
  * which is the honest way to make the change live with only P1+P2 machinery.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class TransactionEngine {
 

@@ -47,6 +47,8 @@ import java.util.stream.Stream;
  * Class files are read with a minimal constant-pool walk rather than loaded:
  * the daemon has neither the application's classpath nor any business putting
  * it on its own.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class MainClass {
 

@@ -20,6 +20,8 @@ import java.util.Optional;
 /**
  * Just enough JSON to emit the daemon's own output, and to read one string out
  * of somebody else's, without a dependency.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Json {
 

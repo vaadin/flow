@@ -36,6 +36,8 @@ import java.util.Optional;
  * contributes frontend assets through
  * {@code src/main/resources/META-INF/frontend}, which is already the resource
  * leg's business.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Frontend {
 

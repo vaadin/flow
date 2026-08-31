@@ -34,6 +34,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * Commands are serialised because at most one transaction is ever in flight;
  * anything else would make the reply ambiguous.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Connector {
 

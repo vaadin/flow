@@ -6,6 +6,9 @@ reporting. It answers, authoritatively, *"what is the state of my last
 change?"* — an agent batches edits, runs one `apply`, and reads a verdict from
 the exit code instead of rebuilding, relaunching and guessing from screenshots.
 
+Everything in this module is for internal use only. May be renamed or removed
+in a future release.
+
 The user-facing documentation is the `vaadin-devloop` skill installed by
 `mvn vaadin:install-dev-cli` (its resources live in
 `flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`). This file is

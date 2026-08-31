@@ -37,6 +37,8 @@ import java.util.regex.Pattern;
  * side of the process boundary. A failure that says only "exit code 1" and
  * leaves the cause in a file nobody was told to read is exactly what made a
  * port clash look like a regression in the tool.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class AppLog {
 

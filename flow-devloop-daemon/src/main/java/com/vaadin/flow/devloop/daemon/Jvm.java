@@ -43,6 +43,8 @@ import java.util.stream.Stream;
  * which is a worse outcome than losing enhanced redefinition. So the version is
  * read rather than assumed, from each candidate's own {@code release} file, and
  * compared against what the project needs.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Jvm {
 

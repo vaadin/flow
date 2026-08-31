@@ -36,6 +36,8 @@ import java.util.Properties;
  * needs to read the port and token without a JSON parser or a JVM start. It
  * carries the process start time alongside the pid so a recycled pid cannot be
  * mistaken for a live daemon.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Handshake {
 

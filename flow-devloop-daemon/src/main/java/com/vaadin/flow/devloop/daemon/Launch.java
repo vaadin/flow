@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * every redefine and its plugins degrade silently. Nine flags have to be right
  * and one wrong one fails quietly, which is exactly why the daemon composes
  * them rather than a human.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Launch {
 

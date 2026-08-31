@@ -52,6 +52,8 @@ import java.util.stream.Stream;
  * one answer. What every module multiplies is the <em>paths</em>, so each of
  * those is derived from the module that owns the file instead of from one fixed
  * root.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Compile {
 

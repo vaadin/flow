@@ -53,6 +53,8 @@ import org.w3c.dom.NodeList;
  * <p>
  * A project with no aggregator above it resolves to a reactor of one, which is
  * exactly the behaviour the daemon had before it knew about reactors.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class Reactor {
 

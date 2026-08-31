@@ -39,6 +39,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * connection held open by the in-app connector (its close means the app is
  * gone). Whether a stop was expected is what separates {@code stopped} from
  * {@code crashed}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class AppProcess {
 
