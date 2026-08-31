@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { fireReadyEvent } from '../../../../../../main/frontend/internal/client/PolymerUtils';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import {
   type CollectingTree,
@@ -13,15 +14,10 @@ import {
 // GwtBasicElementBinderTest. These bind a real host StateNode to a real element
 // with a real (open) shadow root and assert the sendExistingElementWithIdAttach
 // RPC arguments, mirroring the wrong-tag / no-corresponding-element /
-// duplicate-attach / success cases for both @id and indices-path addressing.
-//
-// Two Java cases are intentionally not ported yet:
-// testBindVirtualChild_withDeferredElementInShadowRoot_byId and
-// ..._byIndicesPath. Their central assertion is that a deferred bind reverts a
-// property value on flush, which is InitialPropertiesHandler behaviour; that
-// class is not ported yet (the test harness stubs it as a no-op), so a faithful
-// port has to wait for the InitialPropertiesHandler port rather than assert a
-// faked revert.
+// duplicate-attach / success cases for both @id and indices-path addressing,
+// plus the two deferred-attach cases, where the addressed element only appears
+// after the element becomes ready and InitialPropertiesHandler reverts a
+// property the client changed while the bind was pending.
 describe('SimpleElementBindingStrategy virtual children', () => {
   let harness: CollectingTree;
   let node: StateNode;
@@ -43,11 +39,11 @@ describe('SimpleElementBindingStrategy virtual children', () => {
   afterEach(() => Reactive.flush());
 
   // Mirrors addShadowRootElement: gives the element a real open shadow root and
-  // marks it Polymer-ready (element.root + element.$).
+  // sets element.root. Like the Java helper it does not set element.$, so the
+  // element only becomes Polymer-ready once a child is appended below.
   function addShadowRootElement(): ShadowRoot {
     const root = element.attachShadow({ mode: 'open' });
     (element as any).root = root;
-    (element as any).$ = {};
     return root;
   }
 
@@ -73,14 +69,17 @@ describe('SimpleElementBindingStrategy virtual children', () => {
   }
 
   // Mirrors createAndAppendElementToShadowRoot: creates a child in the shadow
-  // root (recording it under element.$[id] when an id is given).
-  function createAndAppendElementToShadowRoot(root: ShadowRoot, id: string | null, tagName: string): Element {
+  // root and, when an id is given, assigns element.$ a fresh object holding it
+  // — which is also what marks the element ready.
+  function createAndAppendElementToShadowRoot(root: ShadowRoot | Element, id: string | null, tagName: string): Element {
     const child = document.createElement(tagName);
     if (id !== null) {
       child.id = id;
-      (element as any).$[id] = child;
     }
     root.appendChild(child);
+    if (id !== null) {
+      (element as any).$ = { [id]: child };
+    }
     return child;
   }
 
@@ -223,6 +222,10 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     bind(node, element);
     Reactive.flush();
 
+    // Java publishes the already-bound child under element.$ here, which is also
+    // what marks the element ready for the inject-by-id lookup.
+    (element as any).$ = { [id]: childNode.getDomNode() };
+
     addVirtualChild(virtualChild, NodeProperties.INJECT_BY_ID, id);
     Reactive.flush();
 
@@ -297,5 +300,94 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     expect(shadowRoot.children.length).to.equal(1);
     expect(harness.existingElementRpcArgs).to.deep.equal([]);
     expect(childNode.getDomNode()).to.equal(addressedElement);
+  });
+  it('reverts a client-side property change when a deferred element is attached by id', () => {
+    // Ported from testBindVirtualChild_withDeferredElementInShadowRoot_byId.
+    const childId = 'childElement';
+    const tag = element.tagName;
+    const childNode = createChildNode(childId, tag);
+    const fooProperty = childNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+    fooProperty.setValue('bar');
+
+    addVirtualChild(childNode, NodeProperties.INJECT_BY_ID, childId);
+
+    // The element has a shadow root but no `$` yet, so isReady is false and the
+    // attach defers to a ready listener.
+    shadowRoot = addShadowRootElement();
+
+    bind(node, element);
+
+    Reactive.flush();
+
+    // Features that only appear after a successful bind: still deferred.
+    expect(childNode.hasFeature(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS)).to.equal(false);
+    expect(childNode.hasFeature(NodeFeatures.ELEMENT_CHILDREN)).to.equal(false);
+
+    const addressedElement = createAndAppendElementToShadowRoot(shadowRoot, childId, tag);
+
+    // Register the property to revert its initial value back if it has been
+    // changed during binding "from the client side", and do update the property
+    // emulating a client-side update. The property value should be reverted
+    // back in the end.
+    Reactive.addFlushListener(() => {
+      harness.initialPropertiesHandler.handlePropertyUpdate(fooProperty);
+      fooProperty.setValue('baz');
+    });
+
+    fireReadyEvent(element);
+
+    // The property value should be the same as initially.
+    expect(fooProperty.getValue()).to.equal('bar');
+
+    expect(childNode.hasFeature(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS)).to.equal(true);
+    expect(childNode.hasFeature(NodeFeatures.ELEMENT_CHILDREN)).to.equal(true);
+
+    // Nothing has changed: no new child.
+    expect(element.childElementCount).to.equal(0);
+    expect(shadowRoot.children.length).to.equal(1);
+    expect(shadowRoot.firstElementChild).to.equal(addressedElement);
+  });
+
+  it('reverts a client-side property change when a deferred element is attached by indices path', () => {
+    // Ported from testBindVirtualChild_withDeferredElementInShadowRoot_byIndicesPath.
+    const childId = 'childElement';
+    const tag = element.tagName;
+    const childNode = createChildNode(childId, tag);
+    const fooProperty = childNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
+    fooProperty.setValue('bar');
+
+    // Java also sets a no-op `ready` function on the element; the TypeScript
+    // ready machinery keeps its listeners in a WeakMap, so only the missing DOM
+    // root below decides that the attach defers.
+    bind(node, element);
+
+    addVirtualChild(childNode, NodeProperties.TEMPLATE_IN_TEMPLATE, [0]);
+
+    // Not yet the element's root, so getDomRoot is null and the attach defers.
+    const deferredRoot = document.createElement('div');
+
+    Reactive.flush();
+
+    expect(childNode.hasFeature(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS)).to.equal(false);
+    expect(childNode.hasFeature(NodeFeatures.ELEMENT_CHILDREN)).to.equal(false);
+
+    (element as any).root = deferredRoot;
+    const addressedElement = createAndAppendElementToShadowRoot(deferredRoot, childId, tag);
+
+    Reactive.addFlushListener(() => {
+      harness.initialPropertiesHandler.handlePropertyUpdate(fooProperty);
+      fooProperty.setValue('baz');
+    });
+
+    fireReadyEvent(element);
+
+    expect(fooProperty.getValue()).to.equal('bar');
+
+    expect(childNode.hasFeature(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS)).to.equal(true);
+    expect(childNode.hasFeature(NodeFeatures.ELEMENT_CHILDREN)).to.equal(true);
+
+    expect(element.childElementCount).to.equal(0);
+    expect(deferredRoot.children.length).to.equal(1);
+    expect(deferredRoot.firstElementChild).to.equal(addressedElement);
   });
 });

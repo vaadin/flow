@@ -5,6 +5,7 @@
 // StateTree, so this harness builds that same stack instead of the per-function
 // fakes used by the unit-level binding tests.
 
+import { InitialPropertiesHandler } from '../../../../../main/frontend/internal/client/InitialPropertiesHandler';
 import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
@@ -39,6 +40,9 @@ export interface CollectingTree {
   // sendTemplateEventToServer collected, mirrors serverMethods/serverRpcNodes/
   // serverPromiseIds in GwtEventHandlerTest.
   templateEvents: TemplateEvent[];
+  // The registry's real handler. Tests reach it here rather than through
+  // tree.getRegistry(), whose slice names only the two methods the binder calls.
+  initialPropertiesHandler: InitialPropertiesHandler;
   clearSynchronizedProperties(): void;
 }
 
@@ -66,11 +70,13 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
   const existingElementRpcArgs: ExistingElementRpcArg[] = [];
   const templateEvents: TemplateEvent[] = [];
 
-  const initialPropertiesHandler = {
-    flushPropertyUpdates: (): void => {},
-    nodeRegistered: (): void => {},
-    handlePropertyUpdate: (): boolean => false
-  };
+  // The real handler, not a stub: the deferred-attach cases assert that it
+  // reverts a property the client changed during binding. It resolves its tree
+  // through the registry while the tree is built from that registry, so the
+  // getter below reads the tree lazily to break the construction cycle.
+  const initialPropertiesHandler = new InitialPropertiesHandler({
+    getStateTree: () => tree
+  });
 
   const serverConnector = {
     sendEventMessage: (node: StateNode, _eventType: string, eventData: unknown): void => {
@@ -107,7 +113,7 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
     getApplicationConfiguration: () => applicationConfiguration
   };
 
-  const tree = new StateTree(registry);
+  const tree: StateTree = new StateTree(registry);
 
   return {
     tree,
@@ -118,6 +124,7 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
     synchronizedProperties,
     existingElementRpcArgs,
     templateEvents,
+    initialPropertiesHandler,
     clearSynchronizedProperties: () => synchronizedProperties.clear()
   };
 }
