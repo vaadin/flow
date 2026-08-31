@@ -278,6 +278,7 @@ jobs:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
   gradle-tests:
+    name: Gradle Tests
     # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
     # as a required check, but the expensive steps are gated on whether
     # anything the Gradle plugin builds on actually changed, so unrelated PRs
@@ -375,7 +376,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle.properties', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
@@ -404,7 +405,7 @@ jobs:
         # here rather than a published snapshot. The functionalTest task passes
         # it on; AbstractGradleTest fails the build if it ever stops arriving.
         run: |
-          ./gradlew build --stacktrace --no-daemon
+          ./gradlew build --stacktrace
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
