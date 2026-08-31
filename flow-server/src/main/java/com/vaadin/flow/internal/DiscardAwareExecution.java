@@ -43,13 +43,14 @@ public interface DiscardAwareExecution
     void executionDiscarded();
 
     /**
-     * Called when the state tree starts waiting to run this execution before a
-     * response, which happens when the node it was registered for is attached
-     * to the tree.
+     * Called when the node this execution was registered for is attached to the
+     * state tree, so that the tree waits to run it before the next response.
      * <p>
      * This is also called for an execution that has not been discarded, since
      * an execution can be registered for a node that is not attached to any
-     * tree yet.
+     * tree yet. It does not promise that the execution is run either: one that
+     * cannot run in the tree its node was attached to is discarded again when
+     * it is flushed.
      */
     void executionRestored();
 }

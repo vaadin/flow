@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -513,13 +512,18 @@ class StateTreeTest {
 
         StateNode child = new StateNode(ElementChildrenList.class);
 
-        AtomicBoolean isExecuted = new AtomicBoolean();
-        someTree.beforeClientResponse(child, context -> isExecuted.set(true));
+        TestExecution execution = new TestExecution();
+        someTree.beforeClientResponse(child, execution);
 
         StateNodeTest.setParent(child, tree.getRootNode());
+
+        assertEquals(1, execution.restored,
+                "attaching the node should report the execution as waited for, also without an earlier discard");
+        assertEquals(0, execution.discarded);
+
         tree.runExecutionsBeforeClientResponse();
 
-        assertTrue(isExecuted.get());
+        assertEquals(1, execution.executed);
     }
 
     @Test
