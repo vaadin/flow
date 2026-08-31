@@ -71,6 +71,26 @@ class DevLoopCssIT extends AbstractDevLoopIT {
                 "the served stylesheet should hold the edited value");
     }
 
+    @Test
+    void cssAndJavaInOneApply_pushTheStylesheetAndHotSwapTheClass()
+            throws Exception {
+        // The mixed change-set: the resource leg runs, and then the Java leg
+        // decides the outcome. The resource half has to be pushed all the same
+        // - a redefine that succeeds says nothing about a stylesheet the page
+        // never received, and the reply from that push is what says which
+        // happened.
+        patch.replace(STYLESHEET, "row-gap: 12px;", "row-gap: 55px;");
+        patch.replace(MUTABLE.resolve("TaskListView.java"), "\"Task List\"",
+                "\"Tasks, mixed\"");
+
+        VaadinDevCli.Outcome outcome = cli.run("apply").assertExitCode(0);
+
+        outcome.assertOutputContains("hot-reload:");
+        outcome.assertOutputDoesNotContain("restarting");
+        assertTrue(fetch("/task-list.css").contains("55px"),
+                "the served stylesheet should hold the edited value");
+    }
+
     private String fetch(String path) throws IOException, InterruptedException {
         HttpResponse<String> response = HttpClient
                 .newHttpClient().send(

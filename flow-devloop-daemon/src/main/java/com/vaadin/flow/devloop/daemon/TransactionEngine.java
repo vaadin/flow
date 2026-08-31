@@ -458,14 +458,33 @@ final class TransactionEngine {
                 // Java and resources in one change-set: push the resources too,
                 // otherwise the CSS half of the edit would sit on the classpath
                 // unseen until something reloaded the page.
-                notifyResources(staleResources.live().modified(), log);
-                notifyRemovedResources(staleResources.live().deleted(), log);
+                Optional<String> failure = pushResources(tx,
+                        staleResources.live(), log);
+                if (failure.isPresent()) {
+                    if (tx.escalation.isEmpty()) {
+                        // The push is the mechanism here, so a push that did
+                        // not land means the change is not on the page - the
+                        // same failure the frontend-only leg reports, and it
+                        // must not be hidden by a Java redefine that went on to
+                        // succeed.
+                        return finish(tx, Outcome.FAILED, failure.get(), "hmr",
+                                "see target/devloop/app.log", started);
+                    }
+                    // A restart is already coming, and it re-reads the
+                    // classpath and reloads the page, so what the push could
+                    // not do the restart does.
+                    log.line(failure.get() + "; the restart applies it");
+                }
             }
             if (tx.escalation.isEmpty()) {
                 // Skipped when a restart is coming: it re-reads every frontend
                 // file anyway, and pushing first would put a stylesheet on a
                 // page that is about to be reloaded.
-                notifyFrontend(plan, tx, log);
+                if (!notifyFrontend(plan, tx, log)) {
+                    return finish(tx, Outcome.FAILED,
+                            "frontend notify: no reply", "hmr",
+                            "see target/devloop/app.log", started);
+                }
             }
 
             if (changes.isEmpty() && drift.isEmpty()
@@ -769,28 +788,11 @@ final class TransactionEngine {
         }
 
         long runtimeStart = System.nanoTime();
-        if (!resources.modified().isEmpty()) {
-            Optional<String> reply = notifyResources(resources.modified(), log);
-            if (reply.isEmpty() || !reply.get().startsWith("OK")) {
-                tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
-                return finish(tx, Outcome.FAILED,
-                        "resource notify: " + reply.orElse("no reply"), "hmr",
-                        "see target/devloop/app.log", started);
-            }
-            Map<String, String> resourceFields = Connector.fields(reply.get());
-            int pushed = parseInt(resourceFields.get("pushed"));
-            tx.hotswapDetail = pushed > 0
-                    ? "pushed " + pushed + " stylesheet(s) in place"
-                    : "true".equals(resourceFields.get("browserReload"))
-                            ? "browser reload requested"
-                            : "no browser connected";
-        }
-        if (!notifyRemovedResources(resources.deleted(), log)) {
+        Optional<String> failure = pushResources(tx, resources, log);
+        if (failure.isPresent()) {
             tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
-            return finish(tx, Outcome.FAILED,
-                    "resource notify: the app did not answer for "
-                            + resources.deleted().size() + " removed file(s)",
-                    "hmr", "see target/devloop/app.log", started);
+            return finish(tx, Outcome.FAILED, failure.get(), "hmr",
+                    "see target/devloop/app.log", started);
         }
         if (!notifyFrontend(plan, tx, log)) {
             tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
@@ -901,6 +903,47 @@ final class TransactionEngine {
             log.line("resource notify: " + reply.get());
         }
         return reply;
+    }
+
+    /**
+     * The resource leg's runtime half: what the app has to be told once the
+     * classpath is right, and whether it took it.
+     * <p>
+     * Shared by both legs on purpose. The same push failing must mean the same
+     * thing whether or not a {@code .java} file happened to be in the
+     * change-set with it - a Java redefine that succeeds says nothing about a
+     * stylesheet the page never received, and a leg that discarded these
+     * replies would report {@code Stable} over exactly that.
+     *
+     * @return why this failed, or empty when the app took it all - including
+     *         when there is no app to tell, which is not a failure but the
+     *         {@code compiled} answer arrived at further down
+     */
+    private Optional<String> pushResources(Transaction tx,
+            Compile.Changes resources, Launch.Log log) {
+        Connector active = this.connector;
+        if (resources.isEmpty() || active == null || !active.isOpen()) {
+            return Optional.empty();
+        }
+        if (!resources.modified().isEmpty()) {
+            Optional<String> reply = notifyResources(resources.modified(), log);
+            if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+                return Optional
+                        .of("resource notify: " + reply.orElse("no reply"));
+            }
+            Map<String, String> fields = Connector.fields(reply.get());
+            int pushed = parseInt(fields.get("pushed"));
+            tx.hotswapDetail = pushed > 0
+                    ? "pushed " + pushed + " stylesheet(s) in place"
+                    : "true".equals(fields.get("browserReload"))
+                            ? "browser reload requested"
+                            : "no browser connected";
+        }
+        if (!notifyRemovedResources(resources.deleted(), log)) {
+            return Optional.of("resource notify: the app did not answer for "
+                    + resources.deleted().size() + " removed file(s)");
+        }
+        return Optional.empty();
     }
 
     /**

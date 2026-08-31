@@ -110,6 +110,9 @@ test can cover.
 - `frontend-down` — Vite stopped answering: `restart`.
 - `dev server: [vite] ...` — Vite refused to compile the change. Fix the file it names and
   re-apply; do not `restart`, which cannot compile a broken module either.
+- `resource notify:` or `frontend notify:` — the app did not take the push. It is the same
+  answer whether or not Java was in the same change-set: a redefine that worked says nothing
+  about a stylesheet the page never got. Check `status` — the app may have died mid-apply.
 - App failed to start (a taken port, a bad config) → `start` exits `1` and names the reason
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
   whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
