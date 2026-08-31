@@ -66,16 +66,15 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     @Test
     public void dogsTableHasColumnAndRowScopedHeaders() {
         TableElement table = $(TableElement.class).id("dogs-table");
-        List<TableRowElement> rows = table.$(TableRowElement.class).all();
+        List<TableRowElement> rows = table.getRows();
 
         List<TableHeaderCellElement> columnHeaders = rows.get(0)
-                .$(TableHeaderCellElement.class).all();
+                .getHeaderCells();
         Assert.assertEquals(4, columnHeaders.size());
         columnHeaders.forEach(header -> Assert.assertEquals("col",
                 header.getDomAttribute("scope")));
 
-        TableHeaderCellElement rowHeader = rows.get(1)
-                .$(TableHeaderCellElement.class).first();
+        TableHeaderCellElement rowHeader = rows.get(1).getHeaderCells().get(0);
         Assert.assertEquals("row", rowHeader.getDomAttribute("scope"));
         Assert.assertEquals("Breed", rowHeader.getText());
     }
