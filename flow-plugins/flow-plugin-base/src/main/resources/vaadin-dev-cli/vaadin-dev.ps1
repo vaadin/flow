@@ -350,6 +350,27 @@ function Step-Spinner {
 }
 
 # --- the daemon --------------------------------------------------------------
+# One argument, quoted the way the process that receives it will parse it back.
+#
+# Start-Process is handed a single command line rather than an array because an
+# array is joined with spaces and nothing else: a jar under "C:\Users\First
+# Last" or a project root under "C:\My Projects" arrives at the daemon as two
+# arguments, and the JVM then reads the second half of the path as the project
+# root. -FilePath is not affected - Start-Process quotes that itself - and
+# neither is the bash script, which quotes "$jar" and "$ROOT" already.
+#
+# The rules are CommandLineToArgvW's, which is what the JVM's C runtime uses:
+# backslashes are literal except in front of a quote, where each one has to be
+# doubled and the quote escaped. The second replace covers the trailing run,
+# which would otherwise escape the closing quote this adds.
+function Format-Argument([string] $value) {
+    if ($value -eq '') { return '""' }
+    if ($value -notmatch '[\s"]') { return $value }
+    $escaped = [regex]::Replace($value, '(\\*)"', '$1$1\"')
+    $escaped = [regex]::Replace($escaped, '(\\+)$', '$1$1')
+    return '"' + $escaped + '"'
+}
+
 function Start-Daemon {
     $jar = Get-DaemonJar
     if (-not $jar) { return $false }
@@ -370,7 +391,8 @@ function Start-Daemon {
     # pipe - a pipe nobody drains would wedge the daemon once its buffer filled.
     # Two files rather than one because Start-Process cannot merge the streams;
     # the daemon writes everything but an accept() failure to stdout.
-    Start-Process -FilePath (Get-JavaBinary) -ArgumentList $arguments `
+    $commandLine = ($arguments | ForEach-Object { Format-Argument $_ }) -join ' '
+    Start-Process -FilePath (Get-JavaBinary) -ArgumentList $commandLine `
         -WorkingDirectory $root -WindowStyle Hidden `
         -RedirectStandardOutput $daemonLog `
         -RedirectStandardError (Join-Path $workDir 'daemon-err.log') | Out-Null
