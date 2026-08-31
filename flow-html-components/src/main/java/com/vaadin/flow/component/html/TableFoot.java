@@ -20,7 +20,6 @@ import java.util.List;
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -38,8 +37,8 @@ import com.vaadin.flow.component.Tag;
  */
 @NullMarked
 @Tag(Tag.TFOOT)
-public class TableFoot extends HtmlComponent implements TableRowContainer,
-        HasComponentsOfType<TableRow>, ClickNotifier<TableFoot> {
+public class TableFoot extends HtmlComponent
+        implements TableRowContainer, ClickNotifier<TableFoot> {
 
     /**
      * Creates a new empty {@code <tfoot>}.
