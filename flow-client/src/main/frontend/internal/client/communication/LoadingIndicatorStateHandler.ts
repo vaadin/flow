@@ -55,6 +55,11 @@ export class LoadingIndicatorStateHandler {
 
   #showLoading = false;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: LoadingIndicatorRegistry) {
     this.#registry = registry;
   }

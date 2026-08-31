@@ -1,4 +1,8 @@
 import { expect } from '@open-wc/testing';
+import {
+  createReconnectionAttemptEvent,
+  type ReconnectionAttemptEventHandler
+} from '../../../../../main/frontend/internal/client/communication/ReconnectionAttemptEvent';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 
@@ -9,7 +13,7 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
     loadingStarts: 0
   };
   let activeRequest = false;
-  const reconnectionHandlers: Array<(attempt: number) => void> = [];
+  const reconnectionHandlers: ReconnectionAttemptEventHandler[] = [];
   const registry: any = {
     log,
     reconnectionHandlers,
@@ -23,7 +27,7 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
         activeRequest = true;
         log.startRequests++;
       },
-      addReconnectionAttemptHandler: (h: (attempt: number) => void) => reconnectionHandlers.push(h)
+      addReconnectionAttemptHandler: (h: ReconnectionAttemptEventHandler) => reconnectionHandlers.push(h)
     }),
     getServerRpcQueue: () => ({
       isEmpty: () => true,
@@ -98,7 +102,7 @@ describe('MessageSender (class)', () => {
       disconnect: (cb: () => void) => cb(),
       getTransportType: () => 'WEBSOCKET'
     };
-    const sender = new MessageSender(registry, { create: () => push });
+    const sender = new MessageSender(registry, () => push);
     expect(sender.getCommunicationMethodName()).to.contain('XHR');
 
     sender.setPushEnabled(true);
@@ -135,7 +139,7 @@ describe('MessageSender (class)', () => {
 
     // Simulate the request finishing, then a reconnection attempt.
     registry.setActiveRequest(false);
-    registry.reconnectionHandlers.forEach((h: (attempt: number) => void) => h(1));
+    registry.reconnectionHandlers.forEach((h: ReconnectionAttemptEventHandler) => h(createReconnectionAttemptEvent(1)));
     expect(registry.log.xhrSends).to.have.length(2); // queued message resent
   });
 });

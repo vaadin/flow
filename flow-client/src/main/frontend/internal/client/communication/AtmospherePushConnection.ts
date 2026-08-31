@@ -32,6 +32,7 @@ import { parseJson } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { PushConnection } from './PushConnection';
+import type { PushConnectionFactory } from './PushConnectionFactory';
 import { Console } from '../Console';
 
 // com.vaadin.flow.shared.communication.PushConstants
@@ -57,6 +58,11 @@ export class FragmentedMessage {
 
   #index = 0;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param message - the global registry
+   */
   constructor(message: string) {
     this.#message = message;
   }
@@ -69,7 +75,7 @@ export class FragmentedMessage {
   /**
    * Gets the following fragment and increments the internal fragment counter so the
    * following call to this method will return the following fragment. This method
-   * should not be called if all fragments have been received ({@link hasNextFragment}
+   * should not be called if all fragments have been received ({@link FragmentedMessage.hasNextFragment}
    * returns false).
    *
    * @returns the next fragment
@@ -119,42 +125,20 @@ function atmosphere(): Atmosphere | undefined {
 }
 
 /** Whether the Atmosphere push library is loaded. */
-export function isAtmosphereLoaded(): boolean {
+function isAtmosphereLoaded(): boolean {
   return !!atmosphere();
 }
 
-/**
- * Creates the default Atmosphere configuration object.
- *
- * @returns the Atmosphere configuration object
- */
-export function createConfig(messageDelimiter: number): Record<string, unknown> {
-  return {
-    transport: 'websocket',
-    maxStreamingLength: 1000000,
-    fallbackTransport: 'long-polling',
-    contentType: 'application/json; charset=UTF-8',
-    reconnectInterval: 5000,
-    withCredentials: true,
-    maxWebsocketErrorRetries: 12,
-    timeout: -1,
-    maxReconnectOnClose: 10000000,
-    trackMessageLength: true,
-    enableProtocol: true,
-    handleOnlineOffline: false,
-    executeCallbackBeforeReconnect: true,
-    messageDelimiter: String.fromCharCode(messageDelimiter)
-  };
-}
-
 /** Pushes a message over the given Atmosphere socket. */
-export function doPush(socket: unknown, message: string): void {
+function doPush(socket: unknown, message: string): void {
   (socket as { push: (message: string) => void }).push(message);
 }
 
 /** Unsubscribes the Atmosphere connection for the given url. */
-export function doDisconnect(url: string): void {
-  atmosphere()?.unsubscribeUrl(url);
+function doDisconnect(url: string): void {
+  // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
+  // connection only reaches a disconnect after the library has loaded.
+  atmosphere()!.unsubscribeUrl(url);
 }
 
 /**
@@ -163,7 +147,7 @@ export function doDisconnect(url: string): void {
  * read on every request, so it is wrapped in a function rather than assigned
  * once.
  */
-export function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
+function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
   config.url = uri;
   config.onOpen = callbacks.onOpen;
   config.onReopen = callbacks.onReopen;
@@ -258,7 +242,7 @@ export class AtmospherePushConnection implements PushConnection {
       }
     });
 
-    this.#config = createConfig(MESSAGE_DELIMITER.charCodeAt(0));
+    this.#config = this.createConfig();
     // Always debug for now.
     this.#config.logLevel = 'debug';
 
@@ -276,33 +260,6 @@ export class AtmospherePushConnection implements PushConnection {
     this.#url = this.#computePushUrl();
 
     this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
-  }
-
-  #computePushUrl(): string {
-    const pushConfiguration = this.#registry.getPushConfiguration();
-    const applicationConfiguration = this.#registry.getApplicationConfiguration();
-    const pushServletMapping = pushConfiguration.getPushServletMapping();
-
-    if (pushServletMapping === null || pushServletMapping.trim() === '' || pushServletMapping === '/') {
-      // Default push mapping + serviceUrl.
-      let url = PUSH_MAPPING;
-      let serviceUrl = applicationConfiguration.getServiceUrl();
-      if (serviceUrl !== '.') {
-        if (!serviceUrl.endsWith('/')) {
-          serviceUrl += '/';
-        }
-        url = serviceUrl + url;
-      }
-      return url;
-    }
-
-    // Append the specific mapping directly to the context root URL.
-    let mapping = pushServletMapping;
-    const contextRootUrl = applicationConfiguration.getContextRootUrl();
-    if (contextRootUrl.endsWith('/') && mapping.startsWith('/')) {
-      mapping = mapping.substring(1);
-    }
-    return contextRootUrl + mapping + PUSH_MAPPING;
   }
 
   #getConnectionStateHandler(): PushConnectionStateHandler {
@@ -333,8 +290,31 @@ export class AtmospherePushConnection implements PushConnection {
     });
   }
 
-  protected getConfig(): Record<string, unknown> {
-    return this.#config;
+  #computePushUrl(): string {
+    const pushConfiguration = this.#registry.getPushConfiguration();
+    const applicationConfiguration = this.#registry.getApplicationConfiguration();
+    const pushServletMapping = pushConfiguration.getPushServletMapping();
+
+    if (pushServletMapping === null || pushServletMapping.trim() === '' || pushServletMapping === '/') {
+      // Default push mapping + serviceUrl.
+      let url = PUSH_MAPPING;
+      let serviceUrl = applicationConfiguration.getServiceUrl();
+      if (serviceUrl !== '.') {
+        if (!serviceUrl.endsWith('/')) {
+          serviceUrl += '/';
+        }
+        url = serviceUrl + url;
+      }
+      return url;
+    }
+
+    // Append the specific mapping directly to the context root URL.
+    let mapping = pushServletMapping;
+    const contextRootUrl = applicationConfiguration.getContextRootUrl();
+    if (contextRootUrl.endsWith('/') && mapping.startsWith('/')) {
+      mapping = mapping.substring(1);
+    }
+    return contextRootUrl + mapping + PUSH_MAPPING;
   }
 
   isActive(): boolean {
@@ -353,10 +333,6 @@ export class AtmospherePushConnection implements PushConnection {
     // CONNECT_PENDING still reports bidirectional: the message is delayed until
     // the connection is established, when bidirectionality is re-checked.
     return true;
-  }
-
-  getTransportType(): string {
-    return this.#transport ?? '';
   }
 
   push(message: Record<string, unknown>): void {
@@ -382,21 +358,8 @@ export class AtmospherePushConnection implements PushConnection {
     throw new Error('Can not push after disconnecting');
   }
 
-  disconnect(command: () => void): void {
-    switch (this.#state) {
-      case State.CONNECT_PENDING:
-        // Let the connection callback initiate the disconnect once connected.
-        this.#state = State.DISCONNECT_PENDING;
-        this.#pendingDisconnectCommand = command;
-        break;
-      case State.CONNECTED:
-        doDisconnect(this.#pushUri!);
-        this.#state = State.DISCONNECTED;
-        command();
-        break;
-      default:
-        throw new Error('Can not disconnect more than once');
-    }
+  protected getConfig(): Record<string, unknown> {
+    return this.#config;
   }
 
   protected onReopen(response: AtmosphereResponse): void {
@@ -429,6 +392,23 @@ export class AtmospherePushConnection implements PushConnection {
         break;
       default:
         throw new Error(`Got onOpen event when connection state is ${this.#state}. This should never happen.`);
+    }
+  }
+
+  disconnect(command: () => void): void {
+    switch (this.#state) {
+      case State.CONNECT_PENDING:
+        // Let the connection callback initiate the disconnect once connected.
+        this.#state = State.DISCONNECT_PENDING;
+        this.#pendingDisconnectCommand = command;
+        break;
+      case State.CONNECTED:
+        doDisconnect(this.#pushUri!);
+        this.#state = State.DISCONNECTED;
+        command();
+        break;
+      default:
+        throw new Error('Can not disconnect more than once');
     }
   }
 
@@ -500,6 +480,30 @@ export class AtmospherePushConnection implements PushConnection {
     this.#getConnectionStateHandler().pushReconnectPending(this);
   }
 
+  /**
+   * Creates the default Atmosphere configuration object.
+   *
+   * @returns the Atmosphere configuration object
+   */
+  protected createConfig(): Record<string, unknown> {
+    return {
+      transport: 'websocket',
+      maxStreamingLength: 1000000,
+      fallbackTransport: 'long-polling',
+      contentType: 'application/json; charset=UTF-8',
+      reconnectInterval: 5000,
+      withCredentials: true,
+      maxWebsocketErrorRetries: 12,
+      timeout: -1,
+      maxReconnectOnClose: 10000000,
+      trackMessageLength: true,
+      enableProtocol: true,
+      handleOnlineOffline: false,
+      executeCallbackBeforeReconnect: true,
+      messageDelimiter: String.fromCharCode(MESSAGE_DELIMITER.charCodeAt(0))
+    };
+  }
+
   #runWhenAtmosphereLoaded(command: () => void): void {
     if (isAtmosphereLoaded()) {
       command();
@@ -525,8 +529,12 @@ export class AtmospherePushConnection implements PushConnection {
     };
     this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
   }
+
+  getTransportType(): string {
+    return this.#transport ?? '';
+  }
 }
 
 /** The default PushConnectionFactory: creates an AtmospherePushConnection. */
-export const atmospherePushConnectionFactory = (registry: unknown): PushConnection =>
+export const atmospherePushConnectionFactory: PushConnectionFactory = (registry: unknown): PushConnection =>
   new AtmospherePushConnection(registry as AtmospherePushRegistry);

@@ -22,30 +22,6 @@
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { VaadinUriResolver } from '../flow/shared/VaadinUriResolver';
 
-/**
- * Returns the given uri as relative to the given base uri.
- *
- * @param baseURI - the base uri of the document
- * @param uri - an absolute uri to transform
- * @returns the uri as relative to the document base uri, or the given uri * unmodified
- *          if it is for different context.
- */
-export function getBaseRelativeUri(baseURI: string, uri: string): string {
-  if (uri.startsWith(baseURI)) {
-    return uri.substring(baseURI.length);
-  }
-  return uri;
-}
-
-/**
- * Returns the current document location as relative to the base uri of the document.
- *
- * @returns the document current location as relative to the document base uri
- */
-export function getCurrentLocationRelativeToBaseUri(): string {
-  return getBaseRelativeUri(document.baseURI, window.location.href);
-}
-
 /** The slice of Registry that URIResolver uses. */
 interface URIResolverRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getContextRootUrl'>;
@@ -85,4 +61,28 @@ export class URIResolver extends VaadinUriResolver {
   protected getContextRootUrl(): string {
     return this.#registry.getApplicationConfiguration().getContextRootUrl();
   }
+}
+
+/**
+ * Returns the current document location as relative to the base uri of the document.
+ *
+ * @returns the document current location as relative to the document base uri
+ */
+export function getCurrentLocationRelativeToBaseUri(): string {
+  return getBaseRelativeUri(document.baseURI, window.location.href);
+}
+
+/**
+ * Returns the given uri as relative to the given base uri.
+ *
+ * @param baseURI - the base uri of the document
+ * @param uri - an absolute uri to transform
+ * @returns the uri as relative to the document base uri, or the given uri * unmodified
+ *          if it is for different context.
+ */
+export function getBaseRelativeUri(baseURI: string, uri: string): string {
+  if (uri.startsWith(baseURI)) {
+    return uri.substring(baseURI.length);
+  }
+  return uri;
 }

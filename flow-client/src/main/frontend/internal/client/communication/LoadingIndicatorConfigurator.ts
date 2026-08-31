@@ -34,6 +34,15 @@ const SECOND_DELAY_DEFAULT = 1500;
 const THIRD_DELAY_DEFAULT = 5000;
 const DEFAULT_THEME_APPLIED_DEFAULT = true;
 
+/**
+ * Binds change events for the property identified by the given key in the given
+ * feature to the given setter.
+ *
+ * @param map - the map containing the property
+ * @param key - the key of the property
+ * @param setter - the setter to invoke when the value changes
+ * @param defaultValue - the value to use if the property value is removed
+ */
 function bindInteger(map: NodeMap, key: string, setter: (delay: number) => void, defaultValue: number): void {
   map.getProperty(key).addChangeListener((event) => setter(event.getSource().getValueOrDefault(defaultValue)));
 }

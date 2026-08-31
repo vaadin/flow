@@ -38,6 +38,11 @@ export class Poller {
 
   readonly #registry: PollerRegistry;
 
+  /**
+   * Creates a new instance using the given registry.
+   *
+   * @param registry - the registry
+   */
   constructor(registry: PollerRegistry) {
     this.#registry = registry;
     registry.getUILifecycle().addHandler((event) => {

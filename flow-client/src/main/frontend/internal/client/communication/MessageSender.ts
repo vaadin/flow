@@ -45,16 +45,6 @@ const UNLOAD_BEACON = 'UNLOAD';
 
 type Payload = Record<string, unknown>;
 
-/**
- * Sends the `payload` to the `url` as a beacon, surviving page unload.
- *
- * @param url - the url to send the payload to
- * @param payload - the payload to send
- */
-export function sendBeacon(url: string, payload: string): void {
-  window.navigator.sendBeacon(url, payload);
-}
-
 /** The slice of Registry that MessageSender uses. */
 export interface MessageSenderRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
@@ -103,11 +93,16 @@ export class MessageSender {
 
   #resendMessageTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: MessageSenderRegistry, pushConnectionFactory: PushConnectionFactory | null = null) {
     this.#registry = registry;
     this.#pushConnectionFactory = pushConnectionFactory;
-    this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((attempt) => {
-      Console.debug(`Re-sending queued messages to the server (attempt ${attempt}) ...`);
+    this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((event) => {
+      Console.debug(`Re-sending queued messages to the server (attempt ${event.getAttempt()}) ...`);
       // Try to reconnect by sending queued messages; stop the resend timer since
       // it will not make any request during reconnection anyway.
       this.#resetTimer();
@@ -201,21 +196,6 @@ export class MessageSender {
     this.send(this.#preparePayload(reqInvocations, extraJson));
   }
 
-  #preparePayload(reqInvocations: unknown[], extraJson: Payload | null): Payload {
-    const payload: Payload = {};
-    const csrfToken = this.#registry.getMessageHandler().getCsrfToken();
-    if (csrfToken !== CSRF_TOKEN_DEFAULT_VALUE) {
-      payload[CSRF_TOKEN] = csrfToken;
-    }
-    payload[RPC_INVOCATIONS] = reqInvocations;
-    if (extraJson !== null) {
-      for (const key of Object.keys(extraJson)) {
-        payload[key] = extraJson[key];
-      }
-    }
-    return payload;
-  }
-
   /**
    * Sends an asynchronous or synchronous UIDL request to the server using the
    * given URI. Adds message to message queue and postpones sending if queue not
@@ -234,6 +214,21 @@ export class MessageSender {
     }
     this.#messageQueue.push(payload);
     this.#sendPayload(payload);
+  }
+
+  #preparePayload(reqInvocations: unknown[], extraJson: Payload | null): Payload {
+    const payload: Payload = {};
+    const csrfToken = this.#registry.getMessageHandler().getCsrfToken();
+    if (csrfToken !== CSRF_TOKEN_DEFAULT_VALUE) {
+      payload[CSRF_TOKEN] = csrfToken;
+    }
+    payload[RPC_INVOCATIONS] = reqInvocations;
+    if (extraJson !== null) {
+      for (const key of Object.keys(extraJson)) {
+        payload[key] = extraJson[key];
+      }
+    }
+    return payload;
   }
 
   /**
@@ -270,6 +265,13 @@ export class MessageSender {
     }
   }
 
+  #resetTimer(): void {
+    if (this.#resendMessageTimer !== null) {
+      clearTimeout(this.#resendMessageTimer);
+      this.#resendMessageTimer = null;
+    }
+  }
+
   // Resends the last payload if a response hasn't come in; reschedules itself.
   #scheduleResend(payload: Payload): void {
     const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout() + 500;
@@ -284,13 +286,6 @@ export class MessageSender {
     }, timeout);
   }
 
-  #resetTimer(): void {
-    if (this.#resendMessageTimer !== null) {
-      clearTimeout(this.#resendMessageTimer);
-      this.#resendMessageTimer = null;
-    }
-  }
-
   /**
    * Sets the status for the push connection.
    *
@@ -301,7 +296,7 @@ export class MessageSender {
    */
   setPushEnabled(enabled: boolean, reEnableIfNeeded = true): void {
     if (enabled && (this.#push === null || !this.#push.isActive())) {
-      this.#push = this.#pushConnectionFactory ? this.#pushConnectionFactory.create(this.#registry) : null;
+      this.#push = this.#pushConnectionFactory ? this.#pushConnectionFactory(this.#registry) : null;
     } else if (!enabled && this.#push !== null && this.#push.isActive()) {
       this.#push.disconnect(() => {
         this.#push = null;
@@ -430,4 +425,16 @@ export class MessageSender {
   hasQueuedMessages(): boolean {
     return this.#messageQueue.length !== 0;
   }
+}
+
+// Java declares sendBeacon right after sendUnloadBeacon; a module function
+// cannot live inside the class body, so it follows it here.
+/**
+ * Sends the `payload` to the `url` as a beacon, surviving page unload.
+ *
+ * @param url - the url to send the payload to
+ * @param payload - the payload to send
+ */
+export function sendBeacon(url: string, payload: string): void {
+  window.navigator.sendBeacon(url, payload);
 }

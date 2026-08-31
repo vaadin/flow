@@ -14,14 +14,17 @@
  * the License.
  */
 
-// TypeScript port of the com.vaadin.client.communication.PushConnectionFactory
-// functional interface.
-
-import type { PushConnection } from './PushConnection';
+// TypeScript port of com.vaadin.client.communication.RequestStartingEvent. The GWT
+// Event/EventBus plumbing it inherits (`getType`, `getAssociatedType`,
+// `dispatch`) has no counterpart here: RequestResponseTracker notifies its
+// handler lists directly, so only the event and its handler are ported.
 
 /**
- * Factory for {@link PushConnection}.
- *
- * Produces a {@link PushConnection} for the provided `Registry`.
+ * Event fired when a request starts.
  */
-export type PushConnectionFactory = (registry: unknown) => PushConnection;
+export type RequestStartingEvent = Record<string, never>;
+
+/**
+ * Handler for {@link RequestStartingEvent}s.
+ */
+export type RequestStartingEventHandler = (requestStartingEvent: RequestStartingEvent) => void;

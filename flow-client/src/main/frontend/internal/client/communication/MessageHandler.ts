@@ -82,27 +82,6 @@ function parseJSONResponse(jsonText: string): ValueMap {
   return JSON.parse(jsonText) as ValueMap;
 }
 
-/**
- * Parse the given wrapped JSON, received from the server, to a ValueMap.
- *
- * @param jsonText - The JSON to parse
- * @returns A ValueMap created from the JSON
- */
-export function parseJson(jsonText: string | null): ValueMap | null {
-  if (jsonText === null) {
-    return null;
-  }
-  const start = getRelativeTimeMillis();
-  try {
-    const json = parseJSONResponse(jsonText);
-    Console.debug(`JSON parsing took ${getRelativeTimeString(start)}ms`);
-    return json;
-  } catch {
-    Console.error(`Unable to parse JSON: ${jsonText}`);
-    return null;
-  }
-}
-
 /** The navigation fetchStart timestamp, or 0 if unknown. */
 function getFetchStartTime(): number {
   const perf = window.performance as (Performance & { timing?: { fetchStart?: number } }) | undefined;
@@ -186,8 +165,20 @@ export class MessageHandler {
 
   #nextResponseSessionExpiredHandler: (() => void) | null = null;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: MessageHandlerRegistry) {
     this.#registry = registry;
+  }
+
+  #resetForceHandleTimer(): void {
+    if (this.#forceHandleMessage !== null) {
+      clearTimeout(this.#forceHandleMessage);
+      this.#forceHandleMessage = null;
+    }
   }
 
   /**
@@ -316,6 +307,13 @@ export class MessageHandler {
     }
   }
 
+  /**
+   * Performs the actual processing of a server message when all dependencies
+   * have been loaded.
+   *
+   * @param valueMap - the message payload
+   * @param lock - the lock object for this response
+   */
   #processMessage(valueMap: ValueMap, lock: object): void {
     const start = performance.now();
     if ('timings' in valueMap) {
@@ -408,20 +406,21 @@ export class MessageHandler {
     }
   }
 
-  /**
-   * Profiling data for the last response: last and total processing time, the
-   * optional server timing info, and the bootstrap time. Mirrors the
-   * getProfilingData JSNI in ApplicationConnection.java.
-   */
-  getProfilingData(): number[] {
-    const data = [this.lastProcessingTime, this.totalProcessingTime];
-    if (this.#serverTimingInfo !== null) {
-      data.push(...this.#serverTimingInfo);
-    } else {
-      data.push(-1, -1);
+  #processStylesheetRemovals(removals: string[] | null): void {
+    if (removals === null || removals.length === 0) {
+      return;
     }
-    data.push(this.#bootstrapTime);
-    return data;
+
+    Console.debug(`Processing ${removals.length} stylesheet removals`);
+
+    for (const dependencyId of removals) {
+      this.#removeStylesheetById(dependencyId);
+    }
+  }
+
+  #removeStylesheetById(dependencyId: string): void {
+    removeStylesheetByIdFromDom(dependencyId);
+    this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);
   }
 
   #processChanges(json: ValueMap): void {
@@ -451,23 +450,6 @@ export class MessageHandler {
     }
   }
 
-  #removeStylesheetById(dependencyId: string): void {
-    removeStylesheetByIdFromDom(dependencyId);
-    this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);
-  }
-
-  #processStylesheetRemovals(removals: string[] | null): void {
-    if (removals === null || removals.length === 0) {
-      return;
-    }
-
-    Console.debug(`Processing ${removals.length} stylesheet removals`);
-
-    for (const dependencyId of removals) {
-      this.#removeStylesheetById(dependencyId);
-    }
-  }
-
   #endRequestIfResponse(json: ValueMap): void {
     if (this.#isResponse(json)) {
       this.#registry.getRequestResponseTracker().endRequest();
@@ -478,6 +460,25 @@ export class MessageHandler {
   #isResponse(json: ValueMap): boolean {
     const meta = json.meta as ValueMap | undefined;
     return !meta || !(META_ASYNC in meta);
+  }
+
+  #forceMessageHandling(): void {
+    this.#forceHandleMessage = null;
+    if (this.#responseHandlingLocks.size > 0) {
+      Console.warn('WARNING: response handling was never resumed, forcibly removing locks...');
+      this.#responseHandlingLocks.clear();
+    } else {
+      Console.warn(`Gave up waiting for message ${this.#ordering.getExpectedServerId()} from the server`);
+    }
+    if (!this.#handlePendingMessages() && !this.#ordering.isEmpty()) {
+      // Messages remain but the next id is missing (likely lost) -> resync.
+      this.#ordering.clear();
+      this.#registry.getMessageSender().requestResynchronize();
+      if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
+        this.#registry.getRequestResponseTracker().endRequest();
+      }
+      this.#registry.getMessageSender().resynchronize();
+    }
   }
 
   /**
@@ -508,32 +509,12 @@ export class MessageHandler {
     }
   }
 
-  #resetForceHandleTimer(): void {
-    if (this.#forceHandleMessage !== null) {
-      clearTimeout(this.#forceHandleMessage);
-      this.#forceHandleMessage = null;
-    }
-  }
-
-  #forceMessageHandling(): void {
-    this.#forceHandleMessage = null;
-    if (this.#responseHandlingLocks.size > 0) {
-      Console.warn('WARNING: response handling was never resumed, forcibly removing locks...');
-      this.#responseHandlingLocks.clear();
-    } else {
-      Console.warn(`Gave up waiting for message ${this.#ordering.getExpectedServerId()} from the server`);
-    }
-    if (!this.#handlePendingMessages() && !this.#ordering.isEmpty()) {
-      // Messages remain but the next id is missing (likely lost) -> resync.
-      this.#ordering.clear();
-      this.#registry.getMessageSender().requestResynchronize();
-      if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
-        this.#registry.getRequestResponseTracker().endRequest();
-      }
-      this.#registry.getMessageSender().resynchronize();
-    }
-  }
-
+  /**
+   * Finds the next pending UIDL message and handles it (next pending is decided
+   * based on the server id).
+   *
+   * @returns true if a message was handled, false otherwise
+   */
   #handlePendingMessages(): boolean {
     const index = this.#ordering.findNextHandlable();
     if (index !== -1) {
@@ -542,6 +523,22 @@ export class MessageHandler {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Profiling data for the last response: last and total processing time, the
+   * optional server timing info, and the bootstrap time. Mirrors the
+   * getProfilingData JSNI in ApplicationConnection.java.
+   */
+  getProfilingData(): number[] {
+    const data = [this.lastProcessingTime, this.totalProcessingTime];
+    if (this.#serverTimingInfo !== null) {
+      data.push(...this.#serverTimingInfo);
+    } else {
+      data.push(-1, -1);
+    }
+    data.push(this.#bootstrapTime);
+    return data;
   }
 
   /**
@@ -591,5 +588,29 @@ export class MessageHandler {
    */
   setNextResponseSessionExpiredHandler(handler: (() => void) | null): void {
     this.#nextResponseSessionExpiredHandler = handler;
+  }
+}
+
+// Java declares parseJson between isInitialUidlHandled and
+// setNextResponseSessionExpiredHandler; a module function cannot live inside the
+// class body, so it follows it here.
+/**
+ * Parse the given wrapped JSON, received from the server, to a ValueMap.
+ *
+ * @param jsonText - The JSON to parse
+ * @returns A ValueMap created from the JSON
+ */
+export function parseJson(jsonText: string | null): ValueMap | null {
+  if (jsonText === null) {
+    return null;
+  }
+  const start = getRelativeTimeMillis();
+  try {
+    const json = parseJSONResponse(jsonText);
+    Console.debug(`JSON parsing took ${getRelativeTimeString(start)}ms`);
+    return json;
+  } catch {
+    Console.error(`Unable to parse JSON: ${jsonText}`);
+    return null;
   }
 }

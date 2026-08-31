@@ -1,5 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { resendRequest, XhrConnection } from '../../../../../main/frontend/internal/client/communication/XhrConnection';
+import {
+  XhrConnection,
+  XhrResponseHandler
+} from '../../../../../main/frontend/internal/client/communication/XhrConnection';
 
 function makeRegistry() {
   const calls: string[] = [];
@@ -26,32 +29,6 @@ function makeRegistry() {
 }
 
 describe('XhrConnection', () => {
-  it('resendRequest re-sends a request still in the OPENED state', () => {
-    let sent = false;
-    const xhr = {
-      readyState: 1,
-      send: () => {
-        sent = true;
-      }
-    } as unknown as XMLHttpRequest;
-    expect(resendRequest(xhr)).to.be.true;
-    expect(sent).to.be.true;
-  });
-
-  it('resendRequest returns false when the request has progressed', () => {
-    const xhr = { readyState: 4, send: () => {} } as unknown as XMLHttpRequest;
-    expect(resendRequest(xhr)).to.be.false;
-  });
-
-  it('resendRequest returns false when send throws (running for real)', () => {
-    const xhr = {
-      readyState: 1,
-      send: () => {
-        throw new Error('running');
-      }
-    } as unknown as XMLHttpRequest;
-    expect(resendRequest(xhr)).to.be.false;
-  });
   describe('class', () => {
     it('builds the UIDL request URI from the configuration', () => {
       const connection = new XhrConnection(makeRegistry());
@@ -60,30 +37,34 @@ describe('XhrConnection', () => {
 
     it('routes a valid 200 response to the message handler', () => {
       const registry = makeRegistry();
-      const connection = new XhrConnection(registry);
-      connection.onResponseSuccess({ responseText: '{"syncId":3}' } as any, { rpc: [] });
+      const handler = new XhrResponseHandler(registry);
+      handler.setPayload({ rpc: [] });
+      handler.onSuccess({ responseText: '{"syncId":3}' } as any);
       expect(registry.calls).to.deep.equal(['ok', 'handled']);
       expect(registry.getHandled()).to.deep.equal({ syncId: 3 });
     });
 
     it('reports invalid content when the response is not JSON', () => {
       const registry = makeRegistry();
-      const connection = new XhrConnection(registry);
-      connection.onResponseSuccess({ responseText: 'not json' } as any, { rpc: [] });
+      const handler = new XhrResponseHandler(registry);
+      handler.setPayload({ rpc: [] });
+      handler.onSuccess({ responseText: 'not json' } as any);
       expect(registry.calls).to.deep.equal(['invalidContent']);
     });
 
     it('routes an invalid status code (no exception) to xhrInvalidStatusCode', () => {
       const registry = makeRegistry();
-      const connection = new XhrConnection(registry);
-      connection.onResponseFail({} as any, { rpc: [] }, null);
+      const handler = new XhrResponseHandler(registry);
+      handler.setPayload({ rpc: [] });
+      handler.onFail({} as any, null);
       expect(registry.calls).to.deep.equal(['invalidStatus']);
     });
 
     it('routes a network exception to xhrException', () => {
       const registry = makeRegistry();
-      const connection = new XhrConnection(registry);
-      connection.onResponseFail({} as any, { rpc: [] }, new Error('boom'));
+      const handler = new XhrResponseHandler(registry);
+      handler.setPayload({ rpc: [] });
+      handler.onFail({} as any, new Error('boom'));
       expect(registry.calls).to.deep.equal(['exception']);
     });
 

@@ -17,12 +17,19 @@
 // TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
 // It ensures a single active server request at a time and fires
 // request-starting / response-handling-started/ended and reconnection-attempt
-// events. The GWT EventBus is replaced by per-event-type listener sets.
+// events. The GWT EventBus is replaced by a per-event-type handler list, which
+// keeps its registration semantics: the same handler added twice is notified
+// twice, and one removal detaches one registration.
 
 import type { MessageSender } from './MessageSender';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { UILifecycle } from '../UILifecycle';
 import type { EventRemover } from '../../EventRemover';
+import type { ReconnectionAttemptEventHandler } from './ReconnectionAttemptEvent';
+import type { RequestStartingEventHandler } from './RequestStartingEvent';
+import type { ResponseHandlingEndedEventHandler } from './ResponseHandlingEndedEvent';
+import type { ResponseHandlingStartedEventHandler } from './ResponseHandlingStartedEvent';
+import { createReconnectionAttemptEvent } from './ReconnectionAttemptEvent';
 import { ResynchronizationState } from './MessageSender';
 
 /** The slice of Registry that RequestResponseTracker uses. */
@@ -35,14 +42,17 @@ interface RequestResponseRegistry {
   >;
 }
 
-type VoidListener = () => void;
-type ReconnectionAttemptListener = (attempt: number) => void;
+// The empty events carry no data, so a handler is invoked with one.
+const EVENT = {};
 
-function addListener<T>(listeners: Set<T>, listener: T): EventRemover {
-  listeners.add(listener);
+function addListener<T>(listeners: T[], listener: T): EventRemover {
+  listeners.push(listener);
   return {
     remove: () => {
-      listeners.delete(listener);
+      const index = listeners.indexOf(listener);
+      if (index !== -1) {
+        listeners.splice(index, 1);
+      }
     }
   };
 }
@@ -53,14 +63,19 @@ export class RequestResponseTracker {
 
   readonly #registry: RequestResponseRegistry;
 
-  readonly #requestStartingListeners = new Set<VoidListener>();
+  readonly #requestStartingHandlers: RequestStartingEventHandler[] = [];
 
-  readonly #responseHandlingStartedListeners = new Set<VoidListener>();
+  readonly #responseHandlingStartedHandlers: ResponseHandlingStartedEventHandler[] = [];
 
-  readonly #responseHandlingEndedListeners = new Set<VoidListener>();
+  readonly #responseHandlingEndedHandlers: ResponseHandlingEndedEventHandler[] = [];
 
-  readonly #reconnectionAttemptListeners = new Set<ReconnectionAttemptListener>();
+  readonly #reconnectionAttemptHandlers: ReconnectionAttemptEventHandler[] = [];
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: RequestResponseRegistry) {
     this.#registry = registry;
   }
@@ -71,7 +86,9 @@ export class RequestResponseTracker {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
-    this.#requestStartingListeners.forEach((listener) => listener());
+    // Iterate a copy, as SimpleEventBus does, so a handler added or removed
+    // during dispatch does not change who is notified for this event.
+    [...this.#requestStartingHandlers].forEach((handler) => handler(EVENT));
   }
 
   /**
@@ -103,17 +120,18 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    this.#responseHandlingEndedListeners.forEach((listener) => listener());
+    [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(EVENT));
   }
 
   /** Fires the response-handling-started event (called by the message handler). */
   fireResponseHandlingStarted(): void {
-    this.#responseHandlingStartedListeners.forEach((listener) => listener());
+    [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(EVENT));
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */
   fireReconnectionAttempt(attempt: number): void {
-    this.#reconnectionAttemptListeners.forEach((listener) => listener(attempt));
+    const event = createReconnectionAttemptEvent(attempt);
+    [...this.#reconnectionAttemptHandlers].forEach((handler) => handler(event));
   }
 
   /**
@@ -122,8 +140,8 @@ export class RequestResponseTracker {
    * @param handler - the handler to add
    * @returns a registration object which can be used to remove the handler
    */
-  addRequestStartingHandler(handler: VoidListener): EventRemover {
-    return addListener(this.#requestStartingListeners, handler);
+  addRequestStartingHandler(handler: RequestStartingEventHandler): EventRemover {
+    return addListener(this.#requestStartingHandlers, handler);
   }
 
   /**
@@ -132,8 +150,8 @@ export class RequestResponseTracker {
    * @param handler - the handler to add
    * @returns a registration object which can be used to remove the handler
    */
-  addResponseHandlingStartedHandler(handler: VoidListener): EventRemover {
-    return addListener(this.#responseHandlingStartedListeners, handler);
+  addResponseHandlingStartedHandler(handler: ResponseHandlingStartedEventHandler): EventRemover {
+    return addListener(this.#responseHandlingStartedHandlers, handler);
   }
 
   /**
@@ -142,8 +160,8 @@ export class RequestResponseTracker {
    * @param handler - the handler to add
    * @returns a registration object which can be used to remove the handler
    */
-  addResponseHandlingEndedHandler(handler: VoidListener): EventRemover {
-    return addListener(this.#responseHandlingEndedListeners, handler);
+  addResponseHandlingEndedHandler(handler: ResponseHandlingEndedEventHandler): EventRemover {
+    return addListener(this.#responseHandlingEndedHandlers, handler);
   }
 
   /**
@@ -152,7 +170,7 @@ export class RequestResponseTracker {
    * @param handler - the handler to add
    * @returns a registration object which can be used to remove the handler
    */
-  addReconnectionAttemptHandler(handler: ReconnectionAttemptListener): EventRemover {
-    return addListener(this.#reconnectionAttemptListeners, handler);
+  addReconnectionAttemptHandler(handler: ReconnectionAttemptEventHandler): EventRemover {
+    return addListener(this.#reconnectionAttemptHandlers, handler);
   }
 }

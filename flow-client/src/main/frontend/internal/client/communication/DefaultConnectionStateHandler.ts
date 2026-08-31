@@ -72,6 +72,11 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: DefaultConnectionStateRegistry) {
     this.#registry = registry;
     this.#machine = new ReconnectStateMachine(
@@ -91,6 +96,38 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     });
 
     this.#registerConnectionStateEventHandlers();
+  }
+
+  // --- ConnectionStateHandler: xhr ---
+
+  xhrException(xhrConnectionError: XhrConnectionError): void {
+    this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
+  }
+
+  // --- ConnectionStateHandler: heartbeat ---
+
+  heartbeatException(_request: XMLHttpRequest, exception: Error): void {
+    Console.error(`Heartbeat exception: ${exception.message}`);
+    this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+  }
+
+  heartbeatInvalidStatusCode(xhr: XMLHttpRequest): void {
+    const statusCode = xhr.status;
+    Console.warn(`Heartbeat request returned ${statusCode}`);
+    if (statusCode === SC_FORBIDDEN) {
+      this.#registry.getSystemErrorHandler().handleSessionExpiredError(null);
+      this.#stopApplication();
+    } else if (statusCode === SC_NOT_FOUND) {
+      // UI closed; do nothing (the UI reacts to this).
+    } else {
+      this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+    }
+  }
+
+  heartbeatOk(): void {
+    if (this.#machine.isReconnecting()) {
+      this.#machine.resolveTemporaryError(ConnectionMessageType.HEARTBEAT);
+    }
   }
 
   /**
@@ -141,36 +178,40 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
   }
 
-  // --- ConnectionStateHandler: heartbeat ---
+  // --- internal ---
 
-  heartbeatException(_request: XMLHttpRequest, exception: Error): void {
-    Console.error(`Heartbeat exception: ${exception.message}`);
-    this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+  /**
+   * Gets the text to show in the reconnect dialog after giving up (reconnect
+   * limit reached).
+   *
+   * @param reconnectAttempt - The number of the current reconnection attempt
+   * @returns The text to show in the reconnect dialog after giving up
+   */
+  protected getDialogTextGaveUp(reconnectAttempt: number): string {
+    return this.#registry.getReconnectConfiguration().getDialogTextGaveUp()!.replace('{0}', `${reconnectAttempt}`);
   }
 
-  heartbeatInvalidStatusCode(xhr: XMLHttpRequest): void {
-    const statusCode = xhr.status;
-    Console.warn(`Heartbeat request returned ${statusCode}`);
-    if (statusCode === SC_FORBIDDEN) {
-      this.#registry.getSystemErrorHandler().handleSessionExpiredError(null);
-      this.#stopApplication();
-    } else if (statusCode === SC_NOT_FOUND) {
-      // UI closed; do nothing (the UI reacts to this).
-    } else {
-      this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+  /**
+   * Gets the text to show in the reconnect dialog.
+   *
+   * @param reconnectAttempt - The number of the current reconnection attempt
+   * @returns The text to show in the reconnect dialog
+   */
+  protected getDialogText(reconnectAttempt: number): string {
+    return this.#registry.getReconnectConfiguration().getDialogText()!.replace('{0}', `${reconnectAttempt}`);
+  }
+
+  // --- ConnectionStateHandler: config ---
+
+  configurationUpdated(): void {
+    const dialogText = this.#registry.getReconnectConfiguration().getDialogText();
+    if (dialogText !== null) {
+      setProperty('reconnectingText', dialogText);
     }
-  }
-
-  heartbeatOk(): void {
-    if (this.#machine.isReconnecting()) {
-      this.#machine.resolveTemporaryError(ConnectionMessageType.HEARTBEAT);
+    const dialogTextGaveUp = this.#registry.getReconnectConfiguration().getDialogTextGaveUp();
+    if (dialogTextGaveUp !== null) {
+      setProperty('offlineText', dialogTextGaveUp);
     }
-  }
-
-  // --- ConnectionStateHandler: xhr ---
-
-  xhrException(xhrConnectionError: XhrConnectionError): void {
-    this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
   }
 
   xhrInvalidContent(xhrConnectionError: XhrConnectionError): void {
@@ -184,6 +225,15 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
   }
 
+  pushInvalidContent(pushConnection: PushConnection, message: string): void {
+    if (pushConnection.isBidirectional()) {
+      this.#registry.getRequestResponseTracker().endRequest();
+    }
+    if (!this.#redirectIfRefreshToken(message)) {
+      this.#handleUnrecoverableCommunicationError(`Invalid JSON from server: ${message}`, null);
+    }
+  }
+
   xhrInvalidStatusCode(xhrConnectionError: XhrConnectionError): void {
     const statusCode = xhrConnectionError.getXhr().status;
     Console.warn(`Server returned ${statusCode} for xhr`);
@@ -193,6 +243,45 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     } else {
       this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
     }
+  }
+
+  /**
+   * Called when the server returns 401 Unauthorized.
+   *
+   * @param xhrConnectionError - the error that occurred
+   */
+  protected handleUnauthorized(_xhrConnectionError: XhrConnectionError): void {
+    // 401: assume the session has timed out.
+    this.#registry.getSystemErrorHandler().handleSessionExpiredError('');
+    this.#stopApplication();
+  }
+
+  #stopApplication(): void {
+    const uiLifecycle = this.#registry.getUILifecycle();
+    if (uiLifecycle.getState() !== TERMINATED) {
+      uiLifecycle.setState(TERMINATED);
+    }
+  }
+
+  #handleUnrecoverableCommunicationError(details: string, xhrConnectionError: XhrConnectionError | null): void {
+    let statusCode = -1;
+    if (xhrConnectionError !== null) {
+      const xhr = xhrConnectionError.getXhr();
+      statusCode = xhr.status;
+    }
+    this.handleCommunicationError(details, statusCode);
+
+    this.#stopApplication();
+  }
+
+  /**
+   * Called when a communication error occurs and we cannot recover from it.
+   *
+   * @param details - message details or `null` if there are no details
+   * @param statusCode - the status code
+   */
+  protected handleCommunicationError(details: string, _statusCode: number): void {
+    this.#registry.getSystemErrorHandler().handleUnrecoverableError('', details, '', '', null);
   }
 
   xhrOk(): void {
@@ -243,88 +332,11 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     Console.debug('Push connection closed');
   }
 
-  pushInvalidContent(pushConnection: PushConnection, message: string): void {
-    if (pushConnection.isBidirectional()) {
-      this.#registry.getRequestResponseTracker().endRequest();
+  #resumeHeartbeats(): void {
+    // Resume only if not terminated (interval == -1).
+    if (this.#registry.getHeartbeat().getInterval() >= 0) {
+      this.#registry.getHeartbeat().setInterval(this.#registry.getApplicationConfiguration().getHeartbeatInterval());
     }
-    if (!this.#redirectIfRefreshToken(message)) {
-      this.#handleUnrecoverableCommunicationError(`Invalid JSON from server: ${message}`, null);
-    }
-  }
-
-  // --- ConnectionStateHandler: config ---
-
-  configurationUpdated(): void {
-    const dialogText = this.#registry.getReconnectConfiguration().getDialogText();
-    if (dialogText !== null) {
-      setProperty('reconnectingText', dialogText);
-    }
-    const dialogTextGaveUp = this.#registry.getReconnectConfiguration().getDialogTextGaveUp();
-    if (dialogTextGaveUp !== null) {
-      setProperty('offlineText', dialogTextGaveUp);
-    }
-  }
-
-  // --- internal ---
-
-  /**
-   * Gets the text to show in the reconnect dialog after giving up (reconnect
-   * limit reached).
-   *
-   * @param reconnectAttempt - The number of the current reconnection attempt
-   * @returns The text to show in the reconnect dialog after giving up
-   */
-  protected getDialogTextGaveUp(reconnectAttempt: number): string {
-    return this.#registry.getReconnectConfiguration().getDialogTextGaveUp()!.replace('{0}', `${reconnectAttempt}`);
-  }
-
-  /**
-   * Gets the text to show in the reconnect dialog.
-   *
-   * @param reconnectAttempt - The number of the current reconnection attempt
-   * @returns The text to show in the reconnect dialog
-   */
-  protected getDialogText(reconnectAttempt: number): string {
-    return this.#registry.getReconnectConfiguration().getDialogText()!.replace('{0}', `${reconnectAttempt}`);
-  }
-
-  /**
-   * Called when the server returns 401 Unauthorized.
-   *
-   * @param xhrConnectionError - the error that occurred
-   */
-  protected handleUnauthorized(_xhrConnectionError: XhrConnectionError): void {
-    // 401: assume the session has timed out.
-    this.#registry.getSystemErrorHandler().handleSessionExpiredError('');
-    this.#stopApplication();
-  }
-
-  #stopApplication(): void {
-    const uiLifecycle = this.#registry.getUILifecycle();
-    if (uiLifecycle.getState() !== TERMINATED) {
-      uiLifecycle.setState(TERMINATED);
-    }
-  }
-
-  #handleUnrecoverableCommunicationError(details: string, xhrConnectionError: XhrConnectionError | null): void {
-    let statusCode = -1;
-    if (xhrConnectionError !== null) {
-      const xhr = xhrConnectionError.getXhr();
-      statusCode = xhr.status;
-    }
-    this.handleCommunicationError(details, statusCode);
-
-    this.#stopApplication();
-  }
-
-  /**
-   * Called when a communication error occurs and we cannot recover from it.
-   *
-   * @param details - message details or `null` if there are no details
-   * @param statusCode - the status code
-   */
-  protected handleCommunicationError(details: string, _statusCode: number): void {
-    this.#registry.getSystemErrorHandler().handleUnrecoverableError('', details, '', '', null);
   }
 
   #redirectIfRefreshToken(message: string): boolean {
@@ -338,13 +350,6 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       return true;
     }
     return false;
-  }
-
-  #resumeHeartbeats(): void {
-    // Resume only if not terminated (interval == -1).
-    if (this.#registry.getHeartbeat().getInterval() >= 0) {
-      this.#registry.getHeartbeat().setInterval(this.#registry.getApplicationConfiguration().getHeartbeatInterval());
-    }
   }
 
   #registerConnectionStateEventHandlers(): void {

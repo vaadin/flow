@@ -20,7 +20,6 @@
 
 import { stringify } from '../WidgetUtil';
 import { Console } from '../Console';
-import type { ValueMap } from './MessageOrdering';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { MessageHandler } from './MessageHandler';
@@ -29,6 +28,7 @@ import { BrowserInfo } from '../BrowserInfo';
 import { XhrConnectionError } from './XhrConnectionError';
 import { parseJson } from './MessageHandler';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
+import { getRelativeTimeMillis, getRelativeTimeString } from '../Profiler';
 
 // com.vaadin.flow.shared.ApplicationConstants / JsonConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -41,7 +41,7 @@ const JSON_CONTENT_TYPE = 'application/json; charset=UTF-8';
  * 1) state. Returns true if the request was still blocked and got re-sent, or
  * false if it had already progressed or send() threw (it is running for real).
  */
-export function resendRequest(xhr: XMLHttpRequest): boolean {
+function resendRequest(xhr: XMLHttpRequest): boolean {
   if (xhr.readyState !== 1) {
     // Progressed to some other readyState -> no longer blocked
     return false;
@@ -68,6 +68,89 @@ export interface XhrConnectionRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getServiceUrl' | 'getUIId'>;
 }
 
+/**
+ * Handles the response from the server by forwarding the received message to
+ * {@link MessageHandler} or failures to the appropriate method in
+ * {@link ConnectionStateHandler}.
+ */
+export class XhrResponseHandler {
+  readonly #registry: XhrConnectionRegistry;
+
+  #payload: Payload | null = null;
+
+  #requestStartTime = 0;
+
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
+  constructor(registry: XhrConnectionRegistry) {
+    this.#registry = registry;
+  }
+
+  /**
+   * Sets the payload which was sent to the server.
+   *
+   * @param payload - the payload which was sent to the server
+   */
+  setPayload(payload: Payload): void {
+    this.#payload = payload;
+  }
+
+  /**
+   * Sets the relative time (see {@link getRelativeTimeMillis}) when the request
+   * was sent.
+   *
+   * @param requestStartTime - the relative time when the request was sent
+   */
+  setRequestStartTime(requestStartTime: number): void {
+    this.#requestStartTime = requestStartTime;
+  }
+
+  /**
+   * Reports a failed request to the connection-state handler.
+   *
+   * @param xhr - the request that failed
+   * @param error - the exception that a synchronous failure threw, or `null` for
+   *          a response other than 200
+   */
+  onFail(xhr: XMLHttpRequest, error: Error | null): void {
+    const errorEvent = new XhrConnectionError(xhr, this.#payload ?? {}, error);
+    if (error === null) {
+      // Response other than 200
+      this.#registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
+      return;
+    }
+    this.#registry.getConnectionStateHandler().xhrException(errorEvent);
+  }
+
+  /**
+   * Routes a successful response to the message handler, or reports invalid
+   * content when it does not parse.
+   *
+   * @param xhr - the request that succeeded
+   */
+  onSuccess(xhr: XMLHttpRequest): void {
+    Console.debug(`Server visit took ${getRelativeTimeString(this.#requestStartTime)}ms`);
+
+    const responseText = xhr.responseText;
+
+    const json = parseJson(responseText);
+    if (json === null) {
+      // Invalid JSON string
+      this.#registry
+        .getConnectionStateHandler()
+        .xhrInvalidContent(new XhrConnectionError(xhr, this.#payload ?? {}, null));
+      return;
+    }
+
+    this.#registry.getConnectionStateHandler().xhrOk();
+    Console.debug(`Received xhr message: ${responseText}`);
+    this.#registry.getMessageHandler().handleMessage(json);
+  }
+}
+
 /** Sends UIDL requests to the server over XHR; mirrors XhrConnection.java. */
 export class XhrConnection {
   // Webkit ignores outgoing requests while waiting for a navigation response
@@ -91,11 +174,24 @@ export class XhrConnection {
   }
 
   /**
+   * Creates the handler that routes this connection's responses.
+   *
+   * @returns the response handler
+   */
+  protected createResponseHandler(): XhrResponseHandler {
+    return new XhrResponseHandler(this.#registry);
+  }
+
+  /**
    * Sends an asynchronous UIDL request to the server using the given URI.
    *
    * @param payload - The URI to use for the request. May includes GET parameters
    */
   send(payload: Payload): void {
+    const responseHandler = this.createResponseHandler();
+    responseHandler.setPayload(payload);
+    responseHandler.setRequestStartTime(getRelativeTimeMillis());
+
     const payloadJson = stringify(payload);
     const xhr = new XMLHttpRequest();
     // Mirrors Xhr.request and its Handler: the ready-state handler is the only
@@ -107,11 +203,11 @@ export class XhrConnection {
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          this.onResponseSuccess(xhr, payload);
+          responseHandler.onSuccess(xhr);
           xhr.onreadystatechange = null;
           return;
         }
-        this.onResponseFail(xhr, payload, null);
+        responseHandler.onFail(xhr, null);
         xhr.onreadystatechange = null;
       }
     };
@@ -124,9 +220,11 @@ export class XhrConnection {
       xhr.send(payloadJson);
     } catch (error) {
       Console.error(error);
-      this.onResponseFail(xhr, payload, error as Error);
+      responseHandler.onFail(xhr, error as Error);
       xhr.onreadystatechange = null;
     }
+
+    Console.debug(`Sending xhr message to server: ${payloadJson}`);
 
     if (this.#webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
       const retryTimeout = 250;
@@ -136,28 +234,6 @@ export class XhrConnection {
         }
       };
       setTimeout(retry, retryTimeout);
-    }
-  }
-
-  /** Routes a successful response to the MessageHandler (or invalid-content failure). */
-  onResponseSuccess(xhr: XMLHttpRequest, payload: Payload): void {
-    const json = parseJson(xhr.responseText);
-    if (json === null) {
-      this.#registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, payload, null));
-      return;
-    }
-    this.#registry.getConnectionStateHandler().xhrOk();
-    this.#registry.getMessageHandler().handleMessage(json as ValueMap);
-  }
-
-  /** Routes a failed response to the connection-state handler. */
-  onResponseFail(xhr: XMLHttpRequest, payload: Payload, error: Error | null): void {
-    const errorEvent = new XhrConnectionError(xhr, payload, error);
-    if (error === null) {
-      // Response other than 200.
-      this.#registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
-    } else {
-      this.#registry.getConnectionStateHandler().xhrException(errorEvent);
     }
   }
 

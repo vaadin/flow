@@ -40,6 +40,29 @@ export function isResynchronize(json: ValueMap): boolean {
   return RESYNCHRONIZE_ID in json;
 }
 
+/** Data structure holding information about pending UIDL messages. */
+class PendingUIDLMessage {
+  readonly #json: ValueMap;
+
+  /**
+   * Creates a new instance based on the given JSON.
+   *
+   * @param json - the JSON to wrap
+   */
+  constructor(json: ValueMap) {
+    this.#json = json;
+  }
+
+  /**
+   * The wrapped JSON.
+   *
+   * @returns the JSON this message was created from
+   */
+  getJson(): ValueMap {
+    return this.#json;
+  }
+}
+
 /**
  * Tracks the last seen server sync id and the queue of pending (out-of-order or
  * locked) UIDL messages, deciding which to handle next. Mirrors the ordering
@@ -48,7 +71,7 @@ export function isResynchronize(json: ValueMap): boolean {
 export class PendingMessageQueue {
   #lastSeenServerSyncId = UNDEFINED_SYNC_ID;
 
-  #pending: ValueMap[] = [];
+  #pending: PendingUIDLMessage[] = [];
 
   /** The last seen server sync id; -1 before any response has been processed. */
   getLastSeenServerSyncId(): number {
@@ -82,7 +105,7 @@ export class PendingMessageQueue {
   }
 
   push(json: ValueMap): void {
-    this.#pending.push(json);
+    this.#pending.push(new PendingUIDLMessage(json));
   }
 
   isEmpty(): boolean {
@@ -100,7 +123,7 @@ export class PendingMessageQueue {
   /** The index of the next pending message that can be handled now, or -1. */
   findNextHandlable(): number {
     for (let i = 0; i < this.#pending.length; i++) {
-      if (this.isNextExpectedMessage(getServerId(this.#pending[i]))) {
+      if (this.isNextExpectedMessage(getServerId(this.#pending[i].getJson()))) {
         return i;
       }
     }
@@ -109,13 +132,13 @@ export class PendingMessageQueue {
 
   /** Removes and returns the pending message at the given index. */
   remove(index: number): ValueMap {
-    return this.#pending.splice(index, 1)[0];
+    return this.#pending.splice(index, 1)[0].getJson();
   }
 
   /** Drops pending messages whose server id is older than the expected one. */
   removeOld(): void {
     for (let i = 0; i < this.#pending.length; i++) {
-      const serverId = getServerId(this.#pending[i]);
+      const serverId = getServerId(this.#pending[i].getJson());
       if (serverId !== -1 && serverId < this.getExpectedServerId()) {
         this.#pending.splice(i, 1);
         i--;

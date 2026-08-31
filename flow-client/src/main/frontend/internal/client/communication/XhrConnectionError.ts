@@ -26,6 +26,14 @@ export class XhrConnectionError {
 
   readonly #error: Error | null;
 
+  /**
+   * Creates a XhrConnectionError for the given request using the given payload.
+   *
+   * @param xhr - the request which caused the error
+   * @param payload - the payload which was on its way to the server
+   * @param error - the exception which caused the error or null if the error was
+   *          not caused by an exception
+   */
   constructor(xhr: XMLHttpRequest, payload: Record<string, unknown>, error: Error | null) {
     this.#xhr = xhr;
     this.#payload = payload;

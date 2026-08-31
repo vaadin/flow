@@ -43,6 +43,11 @@ interface ReconnectRegistry {
 export class ReconnectConfiguration {
   readonly #registry: ReconnectRegistry;
 
+  /**
+   * Creates a new instance using the given registry.
+   *
+   * @param registry - the registry
+   */
   constructor(registry: ReconnectRegistry) {
     this.#registry = registry;
   }
@@ -68,7 +73,9 @@ export class ReconnectConfiguration {
   }
 
   /**
-   * The text to show in the reconnect dialog.
+   * Gets the text to show in the reconnect dialog.
+   *
+   * @returns the text to show in the reconnect dialog.
    *
    * @deprecated The API for configuring the connection indicator has changed.
    */
@@ -77,8 +84,11 @@ export class ReconnectConfiguration {
   }
 
   /**
-   * The text to show in the reconnect dialog when no longer trying to
+   * Gets the text to show in the reconnect dialog when no longer trying to
    * reconnect.
+   *
+   * @returns the text to show in the reconnect dialog when no longer trying to
+   *          reconnect
    *
    * @deprecated The API for configuring the connection indicator has changed.
    */

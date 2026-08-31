@@ -85,7 +85,8 @@ describe('RequestResponseTracker', () => {
     const tracker = new RequestResponseTracker(registry);
     const events: unknown[] = [];
     tracker.addResponseHandlingStartedHandler(() => events.push('started'));
-    const remover = tracker.addReconnectionAttemptHandler((attempt) => events.push(attempt));
+    // The handler receives the event object, which carries the attempt count.
+    const remover = tracker.addReconnectionAttemptHandler((event) => events.push(event.getAttempt()));
 
     tracker.fireResponseHandlingStarted();
     tracker.fireReconnectionAttempt(3);

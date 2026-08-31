@@ -44,6 +44,11 @@ interface ServerConnectorRegistry {
 export class ServerConnector {
   readonly #registry: ServerConnectorRegistry;
 
+  /**
+   * Creates a new server connector.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: ServerConnectorRegistry) {
     this.#registry = registry;
   }

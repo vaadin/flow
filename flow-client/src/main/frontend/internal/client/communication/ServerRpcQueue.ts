@@ -44,6 +44,11 @@ export class ServerRpcQueue {
 
   #doFlushStrategy: () => void = NO_OP;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: ServerRpcQueueRegistry) {
     this.#registry = registry;
   }

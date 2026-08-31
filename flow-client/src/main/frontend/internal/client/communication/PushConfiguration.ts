@@ -53,6 +53,11 @@ function isPushModeEnabled(propertyValue: unknown): boolean {
 export class PushConfiguration {
   readonly #registry: PushConfigRegistry;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: PushConfigRegistry) {
     this.#registry = registry;
     this.#getConfigurationMap()
@@ -60,6 +65,11 @@ export class PushConfiguration {
       .addChangeListener((event) => this.#onPushModeChange(event));
   }
 
+  /**
+   * Called whenever the push mode is changed.
+   *
+   * @param event - the value change event for push mode
+   */
   #onPushModeChange(event: { getOldValue(): unknown; getNewValue(): unknown }): void {
     const oldModeEnabled = isPushModeEnabled(event.getOldValue());
     const newModeEnabled = isPushModeEnabled(event.getNewValue());

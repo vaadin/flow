@@ -28,6 +28,12 @@ export const ConnectionMessageType = {
 export type ConnectionMessageType = (typeof ConnectionMessageType)[keyof typeof ConnectionMessageType];
 
 // Priorities matching the Java enum ordinals: HEARTBEAT(0) < PUSH(1) < XHR(2).
+//
+// The enum is nested inside DefaultConnectionStateHandler in Java and would
+// normally live in that module here too, but it cannot: ReconnectStateMachine — the part of the handler that
+// compares these priorities — needs the values at runtime, and
+// DefaultConnectionStateHandler constructs the state machine, so keeping the
+// enum in the owner would make the two modules circular at load time.
 const PRIORITY: Record<ConnectionMessageType, number> = {
   HEARTBEAT: 0,
   PUSH: 1,

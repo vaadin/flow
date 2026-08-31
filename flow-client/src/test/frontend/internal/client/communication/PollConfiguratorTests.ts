@@ -16,6 +16,7 @@ function makeNode(): StateNode {
 
 describe('PollConfigurator', () => {
   it('configures the poller on each poll interval change but not on registration', () => {
+    // Ported from listensToProperty.
     const node = makeNode();
     const property = node.getMap(NodeFeatures.POLL_CONFIGURATION).getProperty('pollInterval');
     const intervals: number[] = [];

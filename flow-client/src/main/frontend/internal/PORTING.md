@@ -110,10 +110,12 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      `…flow.nodefeature.MapPropertyTest` →
      `src/test/frontend/internal/client/flow/nodefeature/MapPropertyTests.ts`. The test
      runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
-     `eslint.config.mjs` lists each test subdirectory in
-     `projectService.allowDefaultProject` (its globs do not support the `**`
-     multi-level wildcard, so add one entry per level when introducing a new
-     test subdirectory). This mapping fixes where the suite **lives**; which Java
+     a new subdirectory needs no lint configuration: the eslint project service
+     walks up from each file to `src/test/frontend/tsconfig.json`, and
+     `allowDefaultProject` in `eslint.config.mjs` now lists only the root-level
+     suites that predate the port. _(This bullet used to say every test
+     subdirectory had to be listed there; that stopped being true when the test
+     tree got its own `tsconfig.json`.)_ This mapping fixes where the suite **lives**; which Java
      test classes it must cover is rule 13.9, and there is often more than one.
 
 ## Visibility parity
@@ -439,7 +441,8 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
 | 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are still omitted, now blocked on `ApplicationConnection` alone (the other 23 return types are ported). Twenty-two modules therefore still declare a local registry interface, though every member of those now derives from the ported class via `Pick<…>`, so only the container is local. They collapse into the real `Registry` once `DefaultRegistry` can assemble one, so a suite can build it | the PR that ports `ApplicationConnection` and `DefaultRegistry` | open |
-| 13.1 | `MessageHandlerTests` has no `it()` for `GwtMessageHandlerTest`'s two dependency-ordering cases (`testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree` / `..._dynamicDependencyIsHandledBeforeApplyingChangesToTree`). Both assert that a dependency load completes before tree changes are applied, which needs a real `StateTree` in the handler's registry; the suite stubs the tree, and building a real one there means the whole binding graph | the PR that ports `DefaultRegistry` | open |
+| 13.1 | `MessageHandlerTests` has no `it()` for `GwtMessageHandlerTest`'s two dependency-ordering cases (`testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree` / `testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree`). Both assert that a dependency load completes before tree changes are applied, which needs a real `StateTree` in the handler's registry; the suite stubs the tree, and building a real one there means the whole binding graph | the PR that ports `DefaultRegistry` | open |
+| 13.1 | `LoadingIndicatorStateHandlerTests` has no `it()` for `GwtLoadingIndicatorStateHandlerTest`'s `test_clickEventRpc_loadingVisible` / `test_mousemoveEventRpc_loadingMuted`: both drive the indicator through a real event RPC round trip (`StateTree.sendEventToServer` → `ServerConnector` → `ServerRpcQueue` → `MessageSender` → `MessageHandler`), which needs the whole service graph in one registry | the PR that ports `DefaultRegistry` | open |
 | 13.1 | `MessageHandler`'s private `callAfterServerUpdates` has no coverage: it only runs for a state node with a DOM node after a tree change, so reaching it through `handleMessage` needs the same real tree | the PR that ports `DefaultRegistry` | open |
 | 13.9 | The network suites carry cases beyond their Java counterparts that are not all grouped under `describe('beyond the Java suite')`, so the 13.1 counterpart enumeration is not yet checkable suite by suite | the next review pass over this layer | open |
 | 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |

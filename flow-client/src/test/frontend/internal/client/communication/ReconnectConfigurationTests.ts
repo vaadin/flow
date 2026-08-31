@@ -52,6 +52,7 @@ describe('ReconnectConfiguration', () => {
   afterEach(() => Reactive.flush());
 
   it('defaults to null dialog texts and default attempts/interval', () => {
+    // Ported from defaults.
     expect(config.getDialogText()).to.equal(null);
     expect(config.getDialogTextGaveUp()).to.equal(null);
     expect(config.getReconnectAttempts()).to.equal(RECONNECT_ATTEMPTS_DEFAULT);
@@ -59,6 +60,8 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the dialog text', () => {
+    // Ported from setGetDialogText, whose assertions come from
+    // AbstractConfigurationTest.testString.
     registry.getProperty(DIALOG_TEXT_KEY).setValue('foo');
     expect(config.getDialogText()).to.equal('foo');
     registry.getProperty(DIALOG_TEXT_KEY).setValue('bar');
@@ -66,6 +69,7 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the gave-up dialog text', () => {
+    // Ported from setGetDialogTextGaveUp (AbstractConfigurationTest.testString).
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('foo');
     expect(config.getDialogTextGaveUp()).to.equal('foo');
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('bar');
@@ -73,6 +77,7 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the reconnect attempts', () => {
+    // Ported from setGetReconnectAttempts (AbstractConfigurationTest.testInt).
     // Numbers are always passed as doubles from the server.
     registry.getProperty(RECONNECT_ATTEMPTS_KEY).setValue(1234.0);
     expect(config.getReconnectAttempts()).to.equal(1234);
@@ -81,6 +86,7 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the reconnect interval', () => {
+    // Ported from setGetReconnectInterval (AbstractConfigurationTest.testInt).
     // Numbers are always passed as doubles from the server.
     registry.getProperty(RECONNECT_INTERVAL_KEY).setValue(1234.0);
     expect(config.getReconnectInterval()).to.equal(1234);
@@ -89,6 +95,7 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('reacts to changes, reporting each flushed change once', () => {
+    // Ported from reactsToChanges.
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('bar');
     Reactive.flush();
     expect(configurationUpdatedCalled).to.equal(1);
@@ -99,6 +106,7 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('reports several changes made before a flush in one batch', () => {
+    // Ported from changesReportedInOneBatch.
     registry.getProperty(RECONNECT_INTERVAL_KEY).setValue(13.0);
     registry.getProperty(RECONNECT_ATTEMPTS_KEY).setValue(13.0);
     registry.getProperty(DIALOG_TEXT_KEY).setValue('abc');
