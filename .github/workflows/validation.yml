@@ -23,6 +23,7 @@ env:
   _HEAD_REF: ${{ github.head_ref }}
   _REF_NAME: ${{ github.ref_name }}
   _MERGE_GROUP_SHA: ${{ github.event.merge_group.head_sha }}
+  _MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -300,15 +301,37 @@ jobs:
         # error prone and goes stale as modules are added, so anything that is
         # not known to be irrelevant runs it: what is left out is the
         # integration tests, documentation and the unrelated workflows.
-        # Push, merge_group and manual runs have no base to compare against,
-        # so they always build.
+        # Merge groups carry a base_sha, so they are filtered the same way; a
+        # push or a manual run has nothing to compare against and always
+        # builds. run stays true whenever the comparison cannot be made: a gate
+        # that does not know what changed has to run the job, not report green.
         id: decide
         run: |
+          set -euo pipefail
           run=true
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags origin "$_BASE_REF"
-            MERGE_BASE=$(git merge-base HEAD "origin/$_BASE_REF")
-            RELEVANT=$(git diff --name-only "$MERGE_BASE" HEAD | awk '
+          DIFF_BASE=
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              # The checkout is by sha, which leaves no remote-tracking branch
+              # for the base, so fetch one explicitly rather than relying on
+              # whatever refs happen to be present.
+              if git fetch --no-tags origin \
+                  "+refs/heads/$_BASE_REF:refs/remotes/origin/$_BASE_REF"; then
+                DIFF_BASE=$(git merge-base HEAD "refs/remotes/origin/$_BASE_REF" || true)
+              fi
+              ;;
+            merge_group)
+              # The merge group branch is built on top of base_sha, so it is
+              # already in the history checked out here.
+              DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+              ;;
+          esac
+          if [ -z "$DIFF_BASE" ]; then
+            echo "No base to compare against, running the job."
+          elif ! CHANGED=$(git diff --name-only "$DIFF_BASE" HEAD); then
+            echo "Could not diff against $DIFF_BASE, running the job."
+          else
+            RELEVANT=$(printf '%s\n' "$CHANGED" | awk '
               $0 == ".github/workflows/validation.yml" { print; next }
               /^flow-tests\// { next }
               /^\.github\// { next }
@@ -319,7 +342,7 @@ jobs:
               run=false
             else
               echo "Changes affecting the Gradle plugin:"
-              echo "$RELEVANT"
+              printf '%s\n' "$RELEVANT"
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
@@ -375,8 +398,15 @@ jobs:
       - name: Run Gradle build and functionalTests
         if: ${{ steps.decide.outputs.run == 'true' }}
         working-directory: flow-plugins/flow-gradle-plugin
+        # The sample applications the functional tests build resolve
+        # com.vaadin:flow from the vaadin.version environment variable
+        # (AbstractGradleTest), which otherwise falls back to the released
+        # snapshot - the tests would then pass without ever exercising the code
+        # in this branch. The name contains dots, so it cannot be set as a
+        # shell variable assignment and is passed through env(1) instead.
         run: |
-          ./gradlew build --stacktrace --no-daemon -Pvaadin.require.home.node=true
+          env "vaadin.version=999.99-SNAPSHOT" \
+            ./gradlew build --stacktrace --no-daemon
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
