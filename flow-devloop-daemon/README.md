@@ -311,6 +311,19 @@ its answer rather than claiming success.
   inventory is also what bounds this: a resource created and deleted without the
   application restarting in between was never seeded, so its copy is left for
   the next build to clear.
+- **A deleted Java source has to be un-compiled, and then restarted.** Found the
+  same way a deleted resource is — against the fingerprint inventory, since a
+  walk sees only what is there — and it is the change with the loudest failure
+  mode if it is missed: a removed route, bean or entity goes on answering out of
+  its stale `.class`, and `apply` reports `no changes` with exit 0 over it. The
+  artifact is removed (`Foo.class` and the `Foo$…class` files javac names after
+  it; a second top-level class in the same file is left for the next full
+  build), and then the apply escalates unconditionally — a JVM cannot un-define
+  a class it has loaded, so the type is live until the application starts again,
+  whatever else the change-set carries. Removing the artifact is what stops the
+  restart loading it straight back. Unlike a live resource the deletion is not
+  forgotten when it is acted on: it stays in the change-set until a restart
+  re-seeds the inventory from disk.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
   fires a competing full page reload; the Spring ones were measured to lose the

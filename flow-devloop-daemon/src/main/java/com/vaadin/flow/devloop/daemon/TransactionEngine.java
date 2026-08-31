@@ -89,6 +89,10 @@ final class TransactionEngine {
         volatile int resources;
         /** Classpath copies removed because their source is gone. */
         volatile int resourcesRemoved;
+        /**
+         * Class files removed because the source that produced them is gone.
+         */
+        volatile int classesRemoved;
         volatile String frontend = "";
         /** Frontend files this change touched, however they were handled. */
         volatile int frontendFiles;
@@ -136,10 +140,11 @@ final class TransactionEngine {
                             : "\"" + Json.escape(escalation) + "\"")
                     + ",\"duplicateClassCopies\":" + duplicates
                     + ",\"resources\":" + resources + ",\"resourcesRemoved\":"
-                    + resourcesRemoved + ",\"frontend\":\""
-                    + Json.escape(frontend) + "\",\"frontendFiles\":"
-                    + frontendFiles + ",\"themePushed\":" + themePushed
-                    + ",\"frontendMode\":\"" + Json.escape(frontendMode)
+                    + resourcesRemoved + ",\"classesRemoved\":" + classesRemoved
+                    + ",\"frontend\":\"" + Json.escape(frontend)
+                    + "\",\"frontendFiles\":" + frontendFiles
+                    + ",\"themePushed\":" + themePushed + ",\"frontendMode\":\""
+                    + Json.escape(frontendMode)
                     // The internal separator never leaves the daemon: a control
                     // character in a JSON string is legal but nothing a reader
                     // or a jq expression expects.
@@ -450,6 +455,31 @@ final class TransactionEngine {
                 tx.escalation = plan.escalation();
             }
 
+            if (!changes.deleted().isEmpty()) {
+                try {
+                    // The .class is what a restart would load the removed type
+                    // back from, so leaving it there deletes nothing: the route
+                    // goes on answering and the bean goes on being found until
+                    // the next full Maven build.
+                    tx.classesRemoved = compile
+                            .removeClassArtifacts(changes.deleted()).size();
+                } catch (java.io.IOException e) {
+                    return finish(tx, Outcome.FAILED,
+                            "class removal: " + e.getMessage(), "none",
+                            "check file permissions under target/classes",
+                            started);
+                }
+                // Last of the escalation legs and an unconditional assignment,
+                // because this is the one no mechanism short of a restart can
+                // apply: a JVM cannot un-define a class it has loaded, so
+                // whatever else this change-set carries, the removed type is
+                // still live until the application starts again.
+                tx.escalation = sourceEscalation(changes.deleted());
+                log.line("sources: " + tx.escalation + "; removed "
+                        + tx.classesRemoved
+                        + " class file(s); only a restart can apply that");
+            }
+
             if (changes.isEmpty() && drift.isEmpty() && tx.escalation.isEmpty()
                     && (!staleResources.isEmpty() || plan.hasWork())) {
                 // Reached only with the escalation empty, so there are no
@@ -516,7 +546,7 @@ final class TransactionEngine {
                 return tx;
             }
 
-            if (!changes.isEmpty()) {
+            if (!changes.modified().isEmpty()) {
                 tx.state = "compiling";
 
                 Compile.Result result;
@@ -684,6 +714,19 @@ final class TransactionEngine {
             what = startup.size() + " resource(s) changed or removed";
         }
         return what + " (read only while the app starts)";
+    }
+
+    /**
+     * Why a deleted source cannot be made live in the running application.
+     * <p>
+     * The file is named when it is the only one, for the same reason a resource
+     * is: "OrderView.java deleted" is the whole explanation and a count is not.
+     */
+    private String sourceEscalation(List<Path> deleted) {
+        String what = deleted.size() == 1
+                ? compile.relative(deleted.get(0)) + " deleted"
+                : deleted.size() + " source(s) deleted";
+        return what + " (a loaded class cannot be un-defined)";
     }
 
     /**

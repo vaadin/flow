@@ -619,12 +619,26 @@ final class Compile {
      * A failed compile still stays in the change-set until it succeeds, which
      * is what "only the latest bytes on disk matter" requires.
      * <p>
-     * Deleted sources are not detected yet; removing a class needs the stale
-     * artifact cleaned up too, which is P3 work alongside class removal.
+     * Deletions are the third question, and the walk cannot answer it: a file
+     * that is gone is not visited. The fingerprint map is the inventory that
+     * can - every source live in the JVM is a key in it - and a deletion has to
+     * be noticed, because a deleted route, bean or entity goes on answering
+     * from its stale {@code .class} otherwise, and apply would report "no
+     * changes" over it.
+     * <p>
+     * A deleted source is not forgotten when it is acted on, which is where
+     * this differs from a live resource and matches a startup-only one: a class
+     * the JVM has loaded stays loaded whatever happens to the file, so the
+     * deletion goes on being reported until the application restarts and
+     * {@link #seedFromDisk()} re-reads what is actually there. The inventory
+     * also bounds this - a source created and deleted without a restart in
+     * between was never seeded, so its artifact is left for the next build.
      */
     Changes stale() {
         List<Path> modified = new ArrayList<>();
+        java.util.Set<Path> seen = new java.util.HashSet<>();
         forEachSource((module, source, stamp) -> {
+            seen.add(source);
             // Two questions again, and for the same reason as resources. The
             // artifact check answers "does this need compiling?"; it cannot
             // answer "is this live in the running JVM?" - an IDE building on
@@ -635,8 +649,86 @@ final class Compile {
                 modified.add(source);
             }
         });
+        List<Path> deleted = applied.keySet().stream()
+                .filter(source -> !seen.contains(source))
+                .sorted(Comparator.naturalOrder()).toList();
         modified.sort(Comparator.naturalOrder());
-        return new Changes(modified, List.of());
+        return new Changes(modified, deleted);
+    }
+
+    /**
+     * Deletes the class files a removed source produced, and returns what went.
+     * <p>
+     * The source is gone, so what it declared can only be read back off the
+     * output directory: {@code Foo.class} and the {@code Foo$...class} files
+     * javac names after it for its nested and anonymous classes. A second
+     * top-level class declared in the same file is not covered - nothing left
+     * on disk ties it to the file that went - and the next full build clears
+     * that one.
+     * <p>
+     * Removing the artifact is not the same as the change being live. The
+     * running JVM has the class loaded and keeps it, which is why a deletion
+     * escalates to a restart; what this prevents is that restart loading the
+     * removed type straight back off the classpath.
+     */
+    List<Path> removeClassArtifacts(List<Path> sources) throws IOException {
+        List<Path> removed = new ArrayList<>();
+        for (Path source : sources) {
+            Optional<Reactor.Module> owner = sourceOwner(source);
+            if (owner.isEmpty()) {
+                continue;
+            }
+            Path artifact = owner.get().artifactFor(source);
+            Path directory = artifact.getParent();
+            Path fileName = artifact.getFileName();
+            if (directory == null || fileName == null) {
+                continue;
+            }
+            if (Files.deleteIfExists(artifact)) {
+                removed.add(artifact);
+            }
+            String nestedPrefix = fileName.toString().substring(0,
+                    fileName.toString().length() - ".class".length()) + "$";
+            for (Path nested : nestedClasses(directory, nestedPrefix)) {
+                if (Files.deleteIfExists(nested)) {
+                    removed.add(nested);
+                }
+            }
+        }
+        removed.sort(Comparator.naturalOrder());
+        return removed;
+    }
+
+    /**
+     * The listing is collected before anything is deleted: a stream over a
+     * directory is not defined against concurrent removal from it.
+     */
+    private static List<Path> nestedClasses(Path directory, String prefix) {
+        if (!Files.isDirectory(directory)) {
+            return List.of();
+        }
+        try (Stream<Path> entries = Files.list(directory)) {
+            return entries.filter(path -> {
+                Path name = path.getFileName();
+                return name != null && name.toString().startsWith(prefix)
+                        && name.toString().endsWith(".class");
+            }).toList();
+        } catch (IOException e) {
+            return List.of();
+        }
+    }
+
+    /**
+     * The module whose source tree a file belongs to.
+     * <p>
+     * Prefix-matched rather than {@link #moduleOf} so it answers for a path
+     * that no longer exists, which is what a deletion is, and so a resource can
+     * never be mistaken for a Java source.
+     */
+    private Optional<Reactor.Module> sourceOwner(Path source) {
+        return modules.stream()
+                .filter(module -> source.startsWith(module.sourceDir()))
+                .findFirst();
     }
 
     /**

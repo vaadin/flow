@@ -21,8 +21,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Edits real source files and puts them back.
@@ -38,6 +40,12 @@ final class SourcePatch implements AutoCloseable {
 
     /** The original bytes, keyed by file, in the order they were patched. */
     private final Map<Path, String> originals = new LinkedHashMap<>();
+
+    /**
+     * Files the patch itself added, which are removed rather than restored: a
+     * file that was not there has no original bytes to put back.
+     */
+    private final Set<Path> created = new LinkedHashSet<>();
 
     /**
      * Replaces the first occurrence of a literal in a file.
@@ -95,6 +103,43 @@ final class SourcePatch implements AutoCloseable {
                 + content.substring(at));
     }
 
+    /**
+     * Writes a file that is not there, which is how a test adds a class. The
+     * revert removes it again.
+     *
+     * @param file
+     *            the file to add
+     * @param content
+     *            what to write into it
+     */
+    void create(Path file, String content) {
+        if (Files.exists(file)) {
+            throw new AssertionError(
+                    "the fixture already has this file: " + file);
+        }
+        created.add(file);
+        write(file, content);
+    }
+
+    /**
+     * Removes a file, which is the one edit a dev loop cannot make by writing
+     * bytes. A file this patch created is simply gone after the revert;
+     * anything else is remembered first and written back.
+     *
+     * @param file
+     *            the file to remove
+     */
+    void delete(Path file) {
+        if (!created.contains(file)) {
+            remember(file);
+        }
+        try {
+            Files.delete(file);
+        } catch (IOException e) {
+            throw new AssertionError("could not delete " + file, e);
+        }
+    }
+
     private String remember(Path file) {
         try {
             String content = Files.readString(file, StandardCharsets.UTF_8);
@@ -129,6 +174,14 @@ final class SourcePatch implements AutoCloseable {
             }
         });
         originals.clear();
+        created.forEach(file -> {
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException e) {
+                failures.add(file + ": " + e);
+            }
+        });
+        created.clear();
         if (!failures.isEmpty()) {
             throw new AssertionError(
                     "could not revert " + String.join(", ", failures));

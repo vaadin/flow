@@ -137,6 +137,64 @@ class CompileTest {
     }
 
     @Test
+    void stale_reportsADeletedSourceAgainstTheInventory() throws IOException {
+        // A walk only sees what is there, so the fingerprint map is what
+        // answers: a deleted route or bean would otherwise be a silent "no
+        // changes" over a class the JVM is still serving.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path gone = source(app, "Main");
+        compile.compile(List.of(gone), project);
+        compile.seedFromDisk();
+        Files.delete(gone);
+
+        Compile.Changes changes = compile.stale();
+
+        assertEquals(List.of(gone), changes.deleted());
+        assertTrue(changes.modified().isEmpty());
+        // Not forgotten when it is acted on: the class stays loaded until the
+        // application restarts, and only the restart's re-seed clears it.
+        assertEquals(List.of(gone), compile.stale().deleted());
+        compile.seedFromDisk();
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void removeClassArtifacts_takesTheClassAndItsNestedClassesOff()
+            throws IOException {
+        // The .class is what a restart would load the removed type back from.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                    static class Inner { }
+                    Runnable r = new Runnable() { public void run() { } };
+                }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path gone = source(app, "Main");
+        compile.compile(List.of(gone), project);
+        Path classes = app.classesDir().resolve("app");
+        assertTrue(Files.isRegularFile(classes.resolve("Main.class")));
+        assertTrue(Files.isRegularFile(classes.resolve("Main$Inner.class")));
+        assertTrue(Files.isRegularFile(classes.resolve("Main$1.class")));
+        Files.delete(gone);
+
+        List<Path> removed = compile.removeClassArtifacts(List.of(gone));
+
+        assertEquals(List.of(classes.resolve("Main$1.class"),
+                classes.resolve("Main$Inner.class"),
+                classes.resolve("Main.class")), removed);
+        assertFalse(Files.exists(classes.resolve("Main.class")));
+        assertFalse(Files.exists(classes.resolve("Main$Inner.class")));
+        assertFalse(Files.exists(classes.resolve("Main$1.class")));
+    }
+
+    @Test
     void seedFromDisk_makesAnUntouchedProjectReportNoChanges()
             throws IOException {
         Reactor.Module app = module("app", "Main", """
