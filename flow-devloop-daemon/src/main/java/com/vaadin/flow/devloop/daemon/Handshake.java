@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -95,9 +96,10 @@ final class Handshake {
         if (!Files.isRegularFile(file)) {
             return Optional.empty();
         }
-        try {
+        try (BufferedReader in = Files.newBufferedReader(file,
+                StandardCharsets.UTF_8)) {
             Properties props = new Properties();
-            props.load(Files.newBufferedReader(file, StandardCharsets.UTF_8));
+            props.load(in);
             return Optional.of(new Handshake(
                     Long.parseLong(props.getProperty("pid", "-1")),
                     Long.parseLong(props.getProperty("startEpochMillis", "-1")),

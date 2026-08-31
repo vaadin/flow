@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -876,16 +877,27 @@ final class Compile {
      * agent reading this every apply, so collapse the duplication and shorten
      * fully-qualified names to simple ones.
      */
+    private static final Pattern WHITESPACE_RUN = Pattern.compile("\\s+");
+
+    private static final Pattern SYMBOL_LABEL = Pattern
+            .compile("\\s+symbol:\\s+");
+
+    private static final Pattern LOCATION_LABEL = Pattern
+            .compile("\\s+location:\\s+");
+
+    /** A qualified name, whose package part is what gets dropped. */
+    private static final Pattern QUALIFIED_NAME = Pattern
+            .compile("\\b(?:\\p{Lower}\\w*\\.)+(\\p{Upper}\\w*)");
+
     static String tidy(String raw) {
-        String text = raw == null ? "" : raw.replaceAll("\\s+", " ").trim();
+        String text = raw == null ? ""
+                : WHITESPACE_RUN.matcher(raw).replaceAll(" ").trim();
         text = text.replace("cannot find symbol symbol:",
                 "cannot find symbol:");
-        text = text.replaceAll("\\s+symbol:\\s+", " ");
-        text = text.replaceAll("\\s+location:\\s+", " in ");
+        text = SYMBOL_LABEL.matcher(text).replaceAll(" ");
+        text = LOCATION_LABEL.matcher(text).replaceAll(" in ");
         // com.example.foo.Bar -> Bar, but leave lowercase-only words alone.
-        text = text.replaceAll(
-                "\\b(?:[a-z][a-zA-Z0-9_]*\\.)+([A-Z][a-zA-Z0-9_]*)", "$1");
-        return text;
+        return QUALIFIED_NAME.matcher(text).replaceAll("$1");
     }
 
     /**

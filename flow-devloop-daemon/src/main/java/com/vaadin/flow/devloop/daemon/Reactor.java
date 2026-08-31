@@ -98,8 +98,11 @@ final class Reactor {
 
         /** The {@code .class} file a source compiles to. */
         Path artifactFor(Path source) {
-            return classesDir.resolve(sourceDir.relativize(source).toString()
-                    .replaceAll("\\.java$", ".class"));
+            String relative = sourceDir.relativize(source).toString();
+            return classesDir.resolve(relative.endsWith(".java")
+                    ? relative.substring(0,
+                            relative.length() - ".java".length()) + ".class"
+                    : relative);
         }
 
         /** The classpath copy of a resource. */
@@ -110,9 +113,11 @@ final class Reactor {
 
         /** The binary name of a class file under this module's output. */
         String binaryNameOf(Path classFile) {
-            return classesDir.relativize(classFile).toString()
-                    .replace(File.separatorChar, '.')
-                    .replaceAll("\\.class$", "");
+            String name = classesDir.relativize(classFile).toString()
+                    .replace(File.separatorChar, '.');
+            return name.endsWith(".class")
+                    ? name.substring(0, name.length() - ".class".length())
+                    : name;
         }
 
         /**

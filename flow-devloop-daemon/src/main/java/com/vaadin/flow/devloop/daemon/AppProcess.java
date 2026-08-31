@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Owns the app process. The daemon launches the app JVM directly rather than
@@ -98,6 +99,16 @@ final class AppProcess {
     private volatile AppLog.Watch watch;
     private final AtomicBoolean stopExpected = new AtomicBoolean();
     private volatile CountDownLatch registrationLatch = new CountDownLatch(1);
+
+    /**
+     * Serialises start against stop. A lock rather than the instance monitor
+     * because a start blocks for as long as the app takes to come up, and the
+     * daemon runs every command on a virtual thread: blocking inside
+     * {@code synchronized} pins the carrier thread for that whole time, while
+     * blocking under a {@link ReentrantLock} lets the carrier run other
+     * commands.
+     */
+    private final ReentrantLock lifecycle = new ReentrantLock();
 
     AppProcess(Path root, Launch launch) {
         this.root = root;
@@ -201,117 +212,133 @@ final class AppProcess {
         return List.of(command.get(0), "@" + file);
     }
 
-    synchronized Startup start(Launch.Log log) throws IOException {
-        if (state == State.RUNNING || state == State.STARTING) {
-            return Startup.ok(state == State.STARTING ? "already starting"
-                    : "already running");
-        }
-        List<String> command = launch.command(Daemon.currentPort(),
-                Daemon.currentToken());
-        Path appLog = Launch.workDir(root).resolve("app.log");
-        Files.createDirectories(appLog.getParent());
-
-        stopExpected.set(false);
-        registered = false;
-        failureReason = null;
-        exitCode = null;
-        logFile = appLog;
-        registrationLatch = new CountDownLatch(1);
-        state = State.STARTING;
-
-        log.line("launching " + command.get(0));
-        // The launch line is worth showing - nine flags that all have to be
-        // right
-        // - but the auth token must not be echoed to stdout or into a log.
-        String flags = command.subList(1, Math.max(1, command.indexOf("-cp")))
-                .stream()
-                .map(flag -> flag.startsWith("-Dvaadin.devloop.token=")
-                        ? "-Dvaadin.devloop.token=<redacted>"
-                        : flag)
-                .collect(java.util.stream.Collectors.joining(" "));
-        log.line("flags: " + flags);
-
-        Process started = new ProcessBuilder(viaArgFile(command))
-                .directory(root.toFile()).redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.to(appLog.toFile()))
-                .start();
-        this.process = started;
-        log.line("app pid " + started.pid() + ", log " + appLog);
-
-        started.onExit().thenAccept(this::handleExit);
-
-        // Redirect.to truncates, so this run's output starts at offset zero.
-        // The
-        // watch outlives the start: the errors a change provokes are logged
-        // long
-        // after the app came up, and this is the only reader of that log.
-        AppLog.Watch watching = new AppLog.Watch(appLog);
-        this.watch = watching;
-        CountDownLatch latch = registrationLatch;
-        long registerBy = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
-        long settleBy = 0;
-        boolean up = false;
-        boolean serving = false;
-
-        while (true) {
-            serving = serving
-                    || watching.drain().stream().anyMatch(AppLog::serving);
-            if (up && (serving || System.nanoTime() >= settleBy)) {
-                state = State.RUNNING;
-                return Startup.ok(serving ? "running"
-                        : "running (registered; the app logged no server port)");
+    Startup start(Launch.Log log) throws IOException {
+        lifecycle.lock();
+        try {
+            if (state == State.RUNNING || state == State.STARTING) {
+                return Startup.ok(state == State.STARTING ? "already starting"
+                        : "already running");
             }
-            if (!started.isAlive()) {
-                // The authoritative signal, and the only one carrying a code.
-                return failed("app exited with code " + started.exitValue()
-                        + (up ? " right after registering, before it was serving"
-                                : " before registering"),
-                        appLog);
-            }
-            if (!up && System.nanoTime() >= registerBy) {
-                return failed(
-                        "app did not register within "
-                                + STARTUP_TIMEOUT.toMinutes() + " minutes",
-                        appLog);
-            }
-            try {
-                // The latch also fires when the process exits, so registration
-                // is
-                // decided by the flag the connector sets, not by the wake-up.
-                if (up) {
-                    Thread.sleep(POLL_MILLIS);
-                } else if (latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
-                        && registered) {
-                    up = true;
-                    settleBy = System.nanoTime() + SETTLE.toNanos();
-                    log.line("registered; waiting for the web server to bind");
+            List<String> command = launch.command(Daemon.currentPort(),
+                    Daemon.currentToken());
+            Path appLog = Launch.workDir(root).resolve("app.log");
+            Files.createDirectories(appLog.getParent());
+
+            stopExpected.set(false);
+            registered = false;
+            failureReason = null;
+            exitCode = null;
+            logFile = appLog;
+            registrationLatch = new CountDownLatch(1);
+            state = State.STARTING;
+
+            log.line("launching " + command.get(0));
+            // The launch line is worth showing - nine flags that all have to be
+            // right
+            // - but the auth token must not be echoed to stdout or into a log.
+            String flags = command
+                    .subList(1, Math.max(1, command.indexOf("-cp"))).stream()
+                    .map(flag -> flag.startsWith("-Dvaadin.devloop.token=")
+                            ? "-Dvaadin.devloop.token=<redacted>"
+                            : flag)
+                    .collect(java.util.stream.Collectors.joining(" "));
+            log.line("flags: " + flags);
+
+            Process started = new ProcessBuilder(viaArgFile(command))
+                    .directory(root.toFile()).redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.to(appLog.toFile()))
+                    .start();
+            this.process = started;
+            log.line("app pid " + started.pid() + ", log " + appLog);
+
+            started.onExit().thenAccept(this::handleExit);
+
+            // Redirect.to truncates, so this run's output starts at offset
+            // zero.
+            // The
+            // watch outlives the start: the errors a change provokes are logged
+            // long
+            // after the app came up, and this is the only reader of that log.
+            AppLog.Watch watching = new AppLog.Watch(appLog);
+            this.watch = watching;
+            CountDownLatch latch = registrationLatch;
+            long registerBy = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
+            long settleBy = 0;
+            boolean up = false;
+            boolean serving = false;
+
+            while (true) {
+                serving = serving
+                        || watching.drain().stream().anyMatch(AppLog::serving);
+                if (up && (serving || System.nanoTime() >= settleBy)) {
+                    state = State.RUNNING;
+                    return Startup.ok(serving ? "running"
+                            : "running (registered; the app logged no server port)");
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return failed("interrupted while waiting for the app to start",
-                        appLog);
+                if (!started.isAlive()) {
+                    // The authoritative signal, and the only one carrying a
+                    // code.
+                    return failed("app exited with code " + started.exitValue()
+                            + (up ? " right after registering, before it was serving"
+                                    : " before registering"),
+                            appLog);
+                }
+                if (!up && System.nanoTime() >= registerBy) {
+                    return failed(
+                            "app did not register within "
+                                    + STARTUP_TIMEOUT.toMinutes() + " minutes",
+                            appLog);
+                }
+                try {
+                    // The latch also fires when the process exits, so
+                    // registration
+                    // is
+                    // decided by the flag the connector sets, not by the
+                    // wake-up.
+                    if (up) {
+                        Thread.sleep(POLL_MILLIS);
+                    } else if (latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
+                            && registered) {
+                        up = true;
+                        settleBy = System.nanoTime() + SETTLE.toNanos();
+                        log.line(
+                                "registered; waiting for the web server to bind");
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return failed(
+                            "interrupted while waiting for the app to start",
+                            appLog);
+                }
             }
+        } finally {
+            lifecycle.unlock();
         }
     }
 
-    synchronized String stop() {
-        Process current = process;
-        if (current == null || !current.isAlive()) {
-            state = State.STOPPED;
-            return "not running";
-        }
-        stopExpected.set(true);
-        current.destroy();
+    String stop() {
+        lifecycle.lock();
         try {
-            if (!current.waitFor(10, TimeUnit.SECONDS)) {
-                current.destroyForcibly();
-                current.waitFor(10, TimeUnit.SECONDS);
+            Process current = process;
+            if (current == null || !current.isAlive()) {
+                state = State.STOPPED;
+                return "not running";
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            stopExpected.set(true);
+            current.destroy();
+            try {
+                if (!current.waitFor(10, TimeUnit.SECONDS)) {
+                    current.destroyForcibly();
+                    current.waitFor(10, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            state = State.STOPPED;
+            return "stopped";
+        } finally {
+            lifecycle.unlock();
         }
-        state = State.STOPPED;
-        return "stopped";
     }
 
     /**

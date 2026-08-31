@@ -157,6 +157,11 @@ public final class DevCliInstaller {
      * A resource stream does not carry the executable bit, and a
      * {@code vaadin-dev} nobody can run is a confusing way to fail. A no-op on
      * a file system without POSIX permissions, which is every Windows one.
+     * <p>
+     * The owner bit only. That is the one the developer who ran the install
+     * needs, and it is also the only one Git records: a checkout of the
+     * committed script gets its execute bits from the cloning user's umask, so
+     * widening them here would grant nothing that lasts.
      */
     private static void setExecutableIfNeeded(String relative, Path target) {
         if (!EXECUTABLE.contains(relative)) {
@@ -166,8 +171,6 @@ public final class DevCliInstaller {
             Set<PosixFilePermission> permissions = new java.util.HashSet<>(
                     Files.getPosixFilePermissions(target));
             permissions.add(PosixFilePermission.OWNER_EXECUTE);
-            permissions.add(PosixFilePermission.GROUP_EXECUTE);
-            permissions.add(PosixFilePermission.OTHERS_EXECUTE);
             Files.setPosixFilePermissions(target, permissions);
         } catch (UnsupportedOperationException | IOException e) {
             LOGGER.debug("Could not set the executable bit on {}", target, e);

@@ -61,6 +61,9 @@ final class AppLog {
     private static final Pattern DESCRIPTION = Pattern
             .compile("^Description:\\s*$");
 
+    /** Spring Boot's banner rule around a failure report. */
+    private static final Pattern BANNER_RULE = Pattern.compile("\\*{3,}");
+
     private static final Pattern THROWN = Pattern
             .compile("\\S*(Exception|Error)(:|\\s|$)");
 
@@ -467,7 +470,7 @@ final class AppLog {
          * which is what makes it something to tune rather than something to
          * wonder about.
          */
-        synchronized List<String> settle(long millis) {
+        List<String> settle(long millis) {
             long deadline = System.nanoTime() + millis * 1_000_000L;
             while (true) {
                 drain();
@@ -476,13 +479,16 @@ final class AppLog {
                     break;
                 }
                 try {
+                    // Outside the monitor: the log is read from a file, so
+                    // nothing here needs the lock to make progress, and holding
+                    // it across the window would block a concurrent status.
                     Thread.sleep(Math.min(QUIET_MILLIS, remaining));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
                 }
             }
-            return List.copyOf(errors);
+            return errors();
         }
 
         /** The errors in this window, without waiting for more. */
@@ -604,7 +610,7 @@ final class AppLog {
             String trimmed = line.stripTrailing();
             // Spring Boot's banner rules around a failure report carry nothing
             // and would spend three of the lines available.
-            if (!trimmed.isBlank() && !trimmed.matches("\\*{3,}")) {
+            if (!trimmed.isBlank() && !BANNER_RULE.matcher(trimmed).matches()) {
                 lines.add(trimmed);
             }
         }

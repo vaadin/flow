@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,10 @@ final class DevLoopRegistration {
 
     static final String DAEMON_PORT_PROPERTY = "vaadin.devloop.daemonPort";
     static final String TOKEN_PROPERTY = "vaadin.devloop.token";
+
+    /** Whitespace and C0 controls, which is everything that breaks a line. */
+    private static final Pattern CONTROL_OR_SPACE_RUN = Pattern
+            .compile("[\\s\\p{Cntrl}]+");
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(DevLoopRegistration.class);
@@ -171,7 +176,7 @@ final class DevLoopRegistration {
             out.println(token + " register " + mode + " "
                     + ProcessHandle.current().pid());
             LOGGER.info("Registered with the dev-loop daemon on port {} ({})",
-                    port, in.readLine());
+                    port, oneLine(in.readLine()));
             // Block for the app's lifetime, serving commands on the same
             // connection. Reaching the end of the stream means the daemon went
             // away; the JVM exiting closes this socket, which is how the daemon
@@ -228,8 +233,17 @@ final class DevLoopRegistration {
             return "ERR kind=protocol message=unknown-request";
         } catch (Throwable t) {
             return "ERR kind=internal class=" + t.getClass().getName()
-                    + " message="
-                    + String.valueOf(t.getMessage()).replaceAll("\\s+", " ");
+                    + " message=" + oneLine(t.getMessage());
         }
+    }
+
+    /**
+     * One log- and protocol-safe line. Both directions of this socket end up in
+     * a log or in a single-line reply, so a value that carries a line break -
+     * or any other control character - would split one record into two.
+     */
+    private static String oneLine(String value) {
+        return value == null ? "null"
+                : CONTROL_OR_SPACE_RUN.matcher(value).replaceAll(" ").trim();
     }
 }

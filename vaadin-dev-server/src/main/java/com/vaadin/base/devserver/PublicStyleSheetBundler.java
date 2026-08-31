@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 25.0
  */
 public final class PublicStyleSheetBundler {
+
+    /** Collapsed so a joined path never reads as a protocol-relative URL. */
+    private static final Pattern DUPLICATE_SLASHES = Pattern.compile("/{2,}");
 
     private final List<File> sourceRoots;
 
@@ -155,7 +159,8 @@ public final class PublicStyleSheetBundler {
      * @return the URL with forward separators and no repeated slashes
      */
     static String toUnixSeparators(String url) {
-        return url.replace('\\', '/').replaceAll("/{2,}", "/");
+        return DUPLICATE_SLASHES.matcher(url.replace('\\', '/'))
+                .replaceAll("/");
     }
 
     private static Logger getLogger() {

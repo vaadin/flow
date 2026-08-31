@@ -71,6 +71,9 @@ public final class Daemon {
     private final AtomicInteger liveClients = new AtomicInteger();
     private volatile Instant lastActivity = Instant.now();
     private volatile boolean shuttingDown;
+
+    /** Kept so the shutdown hook can stop it rather than leaving it running. */
+    private volatile ScheduledExecutorService idleWatchdog;
     private ServerSocket serverSocket;
 
     private final Duration idleTimeout = Duration
@@ -166,6 +169,7 @@ public final class Daemon {
                 requestShutdown();
             }
         }, 5, 5, TimeUnit.SECONDS);
+        idleWatchdog = scheduler;
     }
 
     private void handle(Socket client) {
@@ -499,6 +503,10 @@ public final class Daemon {
     }
 
     private void cleanup() {
+        ScheduledExecutorService watchdog = idleWatchdog;
+        if (watchdog != null) {
+            watchdog.shutdownNow();
+        }
         // Shutting down the daemon stops the app it owns, per the ownership
         // model.
         if (!app.isIdle()) {

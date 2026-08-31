@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -124,7 +125,7 @@ final class Launch {
     private volatile String launchedClasspath;
 
     /** How many times Maven has actually been run, so a caller can tell. */
-    private volatile long resolutions;
+    private final AtomicLong resolutions = new AtomicLong();
 
     /**
      * The discovered application class, so a restart does not rediscover it.
@@ -359,7 +360,7 @@ final class Launch {
                 reactor = Reactor.discover(root, tee);
                 runMaven(tee);
                 writeStamp();
-                resolutions++;
+                resolutions.incrementAndGet();
             }
             Project resolved = read();
             project = resolved;
@@ -698,7 +699,7 @@ final class Launch {
      * well short of a frontend build.
      */
     long resolutions() {
-        return resolutions;
+        return resolutions.get();
     }
 
     /** The poms that changed the last time this daemon re-resolved. */
