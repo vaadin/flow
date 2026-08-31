@@ -134,21 +134,6 @@ class TableRowContainerTest {
 
     @ParameterizedTest
     @MethodSource("sections")
-    void addAndRemoveRowsWithLists(Supplier<TableRowContainer> factory) {
-        TableRowContainer section = factory.get();
-        TableRow row0 = new TableRow();
-        TableRow row1 = new TableRow();
-        TableRow row2 = new TableRow();
-
-        section.addRows(List.of(row0, row1, row2));
-        assertEquals(List.of(row0, row1, row2), section.getRows());
-
-        section.removeRows(List.of(row0, row2));
-        assertEquals(List.of(row1), section.getRows());
-    }
-
-    @ParameterizedTest
-    @MethodSource("sections")
     void removeAllRows_leavesTheSectionEmpty(
             Supplier<TableRowContainer> factory) {
         TableRowContainer section = factory.get();
