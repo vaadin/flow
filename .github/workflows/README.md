@@ -16,10 +16,34 @@ files directly — edit the source `.md` file and regenerate.
 | Source (edit this) | Generated (do not edit) | Purpose |
 |---|---|---|
 | `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes PRs and proposes documentation updates in `vaadin/docs`. |
+| `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
 Pinned action versions and SHAs used by the generated workflows are
 tracked in [`../aw/actions-lock.json`](../aw/actions-lock.json).
+
+### Diagram Bot
+
+`diagram-bot.md` runs once per pull request, on `opened` and on
+`ready_for_review`. It reads the diff and the surrounding code, then
+decides for itself whether a picture would help the reviewer. Most pull
+requests do not get one: the bot only draws when the change is about
+structure, flow, or ordering — a rerouted call path, a changed lifecycle,
+a hop added or removed, a different shape of data crossing the
+client/server boundary. When it decides against a diagram it records the
+reason in the run log and leaves the pull request untouched.
+
+The diagram is a Mermaid block, which GitHub renders inline in the
+comment. A re-run hides the previous comment instead of stacking another
+diagram onto the conversation.
+
+To ask for a diagram on a pull request the bot passed over, add the
+`diagram` label. That skips the decision and draws the most useful figure
+the change supports.
+
+Like every agentic workflow, it runs only for pull requests from branches
+in this repository, opened by users with write access — `gh-aw` gates
+both. Pull requests from forks never trigger it.
 
 ### When regeneration happens
 

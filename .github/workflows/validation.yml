@@ -50,7 +50,7 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.19.0'
+          node-version: '24.20.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -195,7 +195,7 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.19.0'
+          node-version: '24.20.0'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           version: '11.21.0'
@@ -414,16 +414,30 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      # A run triggered by Dependabot is given the Dependabot secret store
+      # instead of the Actions one, so this secret is empty there. The secrets
+      # context cannot be read from an if: condition, but env can, so the token
+      # is bound here and every step that needs it is guarded on it.
+      VAADIN_BOT_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
     steps:
+      - name: Skip auto-merge without a bot token
+        if: ${{ env.VAADIN_BOT_TOKEN == '' }}
+        run: |
+          echo "⏭️ **VAADIN_BOT_TOKEN** is not available to this run, skipping auto-merge" \
+            | tee -a $GITHUB_STEP_SUMMARY
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
           repository: vaadin/platform-build-script
           ref: main
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '24.19.0'
+          node-version: '24.20.0'
       - name: Auto-merge PR
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
           GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN }}

@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -127,6 +132,33 @@ class ClassFinderTest {
         expected.add(NodeTestComponents.TranslatedImports.class);
         expected.add(NodeTestComponents.VaadinBowerComponent.class);
         assertEquals(expected, allClasses);
+    }
+
+    @Test
+    void getResources_returnsTheResourceOfEveryClasspathRoot(
+            @TempDir File temporaryFolder) throws IOException {
+        List<URL> roots = new ArrayList<>();
+        for (String name : List.of("first", "second")) {
+            File root = new File(temporaryFolder, name);
+            File folder = new File(root, "META-INF/example");
+            folder.mkdirs();
+            Files.writeString(new File(folder, "one.json").toPath(), "{}");
+            roots.add(root.toURI().toURL());
+        }
+
+        try (URLClassLoader classLoader = new URLClassLoader(
+                roots.toArray(URL[]::new), null)) {
+            DefaultClassFinder finder = new DefaultClassFinder(classLoader);
+
+            // getResource only reports the first match
+            assertEquals(roots.get(0).toString() + "META-INF/example/",
+                    finder.getResource("META-INF/example/").toString());
+            assertEquals(
+                    roots.stream().map(root -> root + "META-INF/example/")
+                            .toList(),
+                    finder.getResources("META-INF/example/").stream()
+                            .map(URL::toString).toList());
+        }
     }
 
     public static class TestClass1 {
