@@ -46,7 +46,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     @Test
     public void basicTableRendersRowsAndCells() {
         TableElement table = $(TableElement.class).id("basic-table");
-        List<TableRowElement> rows = table.getRows();
+        List<TableRowElement> rows = table.getAllRows();
 
         Assert.assertEquals(2, rows.size());
         Assert.assertEquals(4, rows.get(0).getDataCells().size());
@@ -67,7 +67,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     @Test
     public void dogsTableHasColumnAndRowScopedHeaders() {
         TableElement table = $(TableElement.class).id("dogs-table");
-        List<TableRowElement> rows = table.getRows();
+        List<TableRowElement> rows = table.getAllRows();
 
         List<TableHeaderCellElement> columnHeaders = rows.get(0)
                 .getHeaderCells();
@@ -83,7 +83,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     @Test
     public void animalsTableSpansColumnsAndRowsOnHeaderCells() {
         TableElement table = $(TableElement.class).id("animals-table");
-        List<TableRowElement> rows = table.getRows();
+        List<TableRowElement> rows = table.getAllRows();
 
         TableHeaderCellElement animals = rows.get(0).getHeaderCells().get(0);
         Assert.assertEquals("Animals", animals.getText());
@@ -123,7 +123,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
                 table.getBodies().get(0).getRows().size());
         Assert.assertEquals(
                 table.getHeaderRows().size() + table.getBodyRows().size(),
-                table.getRows().size());
+                table.getAllRows().size());
 
         TableHeaderCellElement terrestrial = table.getBodyRows().get(0)
                 .getHeaderCells().get(0);
@@ -184,7 +184,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
     @Test
     public void tableBodyHasOneRowPerPeriodPlusTheHeaderRow() {
-        Assert.assertEquals(5, timetable.getRows().size());
+        Assert.assertEquals(5, timetable.getAllRows().size());
         Assert.assertEquals(7, firstPeriodRow().getDataCells().size());
         // The row leads with a <th> for the period, so the mixed list is one
         // longer than the data cells alone

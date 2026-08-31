@@ -37,27 +37,32 @@ public class TableElement extends TestBenchElement {
      * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows; on
      * a page that writes the sections in some other order, the result follows
      * the markup rather than that order.
+     * <p>
+     * The name matches {@code Table.getAllRows()}: this is the only row
+     * accessor here that crosses sections, where
+     * {@link TableSectionElement#getRows()} returns the rows of one.
      *
-     * @return the rows of this table.
+     * @return all the rows of this table.
      */
-    public List<TableRowElement> getRows() {
+    public List<TableRowElement> getAllRows() {
         return rowsOf(sections("thead", "tbody", "tfoot"));
     }
 
     /**
-     * Returns the row at the given position among all the rows of this table.
+     * Returns the row at the given position in {@link #getAllRows()}, so the
+     * index runs across the sections rather than within one.
      *
      * @param index
      *            the position of the row.
      * @return the row at that position.
      */
     public TableRowElement getRow(int index) {
-        return getRows().get(index);
+        return getAllRows().get(index);
     }
 
     /**
-     * Returns the cell at the given row and column of this table, counting
-     * across all its rows.
+     * Returns the cell at the given row and column of this table, with the row
+     * index running across the sections as in {@link #getAllRows()}.
      *
      * @param row
      *            the position of the row.
