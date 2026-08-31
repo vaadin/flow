@@ -149,6 +149,24 @@ describe('AtmospherePushConnection', () => {
       expect(connection.getTransportType()).to.equal('');
     });
 
+    it('subscribes with the default config and a sync-id supplier', async () => {
+      const { registry, capture } = setupPush();
+      new AtmospherePushConnection(registry as never);
+      await tick();
+
+      const config = capture.config!;
+      expect(config.url).to.equal('/app/VAADIN/push?v-r=push&v-uiId=1');
+      expect(config.transport).to.equal('websocket');
+      expect(config.fallbackTransport).to.equal('long-polling');
+      expect(config.trackMessageLength).to.be.true;
+      expect(config.messageDelimiter).to.equal('|');
+
+      // The header is a supplier, so the id is re-read on every request rather
+      // than frozen when the connection was made.
+      const headers = config.headers as unknown as Record<string, () => unknown>;
+      expect(headers['X-Vaadin-LastSeenServerSyncId']()).to.equal(5);
+    });
+
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {
       const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry as never);

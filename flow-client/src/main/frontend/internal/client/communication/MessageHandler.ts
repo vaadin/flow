@@ -542,10 +542,18 @@ export class MessageHandler {
   }
 
   /**
-   * Finds the next pending UIDL message and handles it (next pending is decided based
-   * on the server id).
+   * Gets the server id included in the last received response.
    *
-   * @returns true if a message was handled, false otherwise
+   * This id can be used by connectors to determine whether new data has been
+   * received from the server to avoid doing the same calculations multiple times.
+   *
+   * No guarantees are made for the structure of the id other than that there will
+   * be a new unique value every time a new response with data from the server is
+   * received.
+   *
+   * The initial id when no request has yet been processed is -1.
+   *
+   * @returns an id identifying the response
    */
   getLastSeenServerSyncId(): number {
     return this.#ordering.getLastSeenServerSyncId();

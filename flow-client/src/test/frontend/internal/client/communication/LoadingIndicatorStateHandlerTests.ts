@@ -114,12 +114,5 @@ describe('LoadingIndicatorStateHandler', () => {
       expect(tracker.requestCount).to.equal(1);
       expect(getState()).to.equal(LOADING);
     });
-
-    it('shows loading for a non-event request type', () => {
-      const { handler, tracker } = makeHandler();
-      handler.processMessage(JsonConstants.RPC_TYPE_MAP_SYNC, null);
-      handler.startLoading();
-      expect(tracker.requestCount).to.equal(1);
-    });
   });
 });

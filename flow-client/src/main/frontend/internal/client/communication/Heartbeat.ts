@@ -49,9 +49,9 @@ class HeartbeatTimer {
   readonly #task: () => void;
 
   /**
-   * Creates a new instance connected to the given registry.
+   * Creates a timer that runs the given task when it fires.
    *
-   * @param task - the global registry
+   * @param task - the task to run
    */
   constructor(task: () => void) {
     this.#task = task;

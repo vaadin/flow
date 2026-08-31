@@ -6,11 +6,17 @@ import {
 
 function makeRegistry() {
   const calls: string[] = [];
+  const endedHandlers: Array<() => void> = [];
   let handled: unknown = undefined;
   const registry: any = {
     calls,
+    endedHandlers,
     getHandled: () => handled,
-    getRequestResponseTracker: () => ({ addResponseHandlingEndedHandler: () => {} }),
+    getRequestResponseTracker: () => ({
+      addResponseHandlingEndedHandler: (handler: () => void) => {
+        endedHandlers.push(handler);
+      }
+    }),
     getConnectionStateHandler: () => ({
       xhrInvalidStatusCode: () => calls.push('invalidStatus'),
       xhrException: () => calls.push('exception'),
@@ -72,7 +78,7 @@ describe('XhrConnection', () => {
       // A fake XMLHttpRequest standing in for the real one, so send() can be
       // driven without a server. It records whether an "error" listener was
       // registered, which is what would report a network failure twice.
-      function fakeXhr(behaviour: { throwOnSend?: boolean; status?: number }) {
+      function fakeXhr(behaviour: { throwOnSend?: boolean; status?: number; stayOpened?: boolean }) {
         const state = { errorListener: false, opened: '', sent: 0 };
         const xhr = {
           readyState: 0,
@@ -91,6 +97,11 @@ describe('XhrConnection', () => {
             state.sent += 1;
             if (behaviour.throwOnSend === true) {
               throw new Error('blocked by the browser');
+            }
+            if (behaviour.stayOpened === true) {
+              // OPENED: the request was never actually dispatched.
+              xhr.readyState = 1;
+              return;
             }
             xhr.readyState = 4;
             xhr.status = behaviour.status ?? 0;
@@ -133,6 +144,39 @@ describe('XhrConnection', () => {
         const fake = fakeXhr({ throwOnSend: true });
         withFakeXhr(fake, () => new XhrConnection(registry).send({ rpc: [] }));
         expect(registry.calls).to.deep.equal(['exception']);
+      });
+
+      it('re-sends a request WebKit may have ignored during navigation', async () => {
+        // A request that never leaves readyState OPENED is re-sent every 250 ms
+        // while the beforeunload flag is set, which is the browser bug this
+        // retry loop works around. The test browser reports the WebKit engine,
+        // so the branch is reachable.
+        const registry = makeRegistry();
+        const fake = fakeXhr({ stayOpened: true });
+        const connection = new XhrConnection(registry);
+        // beforeunload sets the flag that arms the retry.
+        window.dispatchEvent(new Event('beforeunload'));
+
+        withFakeXhr(fake, () => connection.send({ rpc: [] }));
+        expect(fake.state.sent).to.equal(1);
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        expect(fake.state.sent).to.be.greaterThan(1);
+
+        // Ending the response handling clears the flag, which stops the loop.
+        // The retry already scheduled still re-sends once — it checks the flag
+        // only after resending, as Java does — and no further one is scheduled.
+        registry.endedHandlers.forEach((handler: () => void) => handler());
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        const sentWhenStopped = fake.state.sent;
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        expect(fake.state.sent).to.equal(sentWhenStopped);
       });
 
       it('refuses to send a payload holding a dom node reference', () => {

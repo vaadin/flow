@@ -59,9 +59,9 @@ export class FragmentedMessage {
   #index = 0;
 
   /**
-   * Creates a new instance connected to the given registry.
+   * Creates a new instance based on the given message.
    *
-   * @param message - the global registry
+   * @param message - the message to wrap
    */
   constructor(message: string) {
     this.#message = message;
