@@ -181,9 +181,10 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * <p>
      * Called when the invocation stops waiting to be sent, either because it
      * has been sent or canceled, or because the framework discards it, for
-     * instance when its owner is detached.
+     * instance when its owner is detached. It is counted again through
+     * {@link #countWhenAttached()} if it ends up waiting to be sent again.
      */
-    void stopCounting() {
+    public void stopCounting() {
         if (countedIn == null) {
             return;
         }

@@ -469,16 +469,38 @@ class StateTreeTest {
         StateNode child = new StateNode(ElementChildrenList.class);
         StateNodeTest.setParent(child, initialTree.getRootNode());
 
-        AtomicBoolean isExecuted = new AtomicBoolean();
-        initialTree.beforeClientResponse(child,
-                context -> isExecuted.set(true));
+        TestExecution execution = new TestExecution();
+        initialTree.beforeClientResponse(child, execution);
 
         child.removeFromTree();
 
         StateNodeTest.setParent(child, tree.getRootNode());
         tree.runExecutionsBeforeClientResponse();
 
-        assertFalse(isExecuted.get());
+        assertEquals(0, execution.executed);
+        assertTrue(execution.discarded > 0,
+                "an execution that cannot be run in the tree of its node should be reported as discarded");
+    }
+
+    @Test
+    void beforeClientResponse_ownerDetached_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        tree.beforeClientResponse(child, execution);
+
+        StateNodeTest.setParent(child, null);
+
+        assertEquals(0, execution.executed);
+        assertEquals(1, execution.discarded,
+                "detaching the node of an execution should report it as discarded");
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.executed,
+                "a detached node keeps its pending executions, so the execution should still be run");
     }
 
     @Test
@@ -822,5 +844,20 @@ class StateTreeTest {
         initialTree.runExecutionsBeforeClientResponse();
         assertEquals(1,
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
+    }
+
+    private static class TestExecution implements DiscardAwareExecution {
+        private int executed;
+        private int discarded;
+
+        @Override
+        public void accept(ExecutionContext context) {
+            executed++;
+        }
+
+        @Override
+        public void executionDiscarded() {
+            discarded++;
+        }
     }
 }

@@ -249,6 +249,9 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        // The executions stay on the node, but no response is written for a
+        // node that is not in the tree
+        node.getBeforeClientResponseEntries().forEach(StateTree::discard);
         uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
@@ -390,22 +393,35 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
-                    .forEach(entry -> {
-                        try {
-                            ExecutionContext context = new ExecutionContext(
-                                    getUI(), entry.getStateNode()
-                                            .isClientSideInitialized());
-                            entry.getExecution().accept(context);
-                        } catch (Exception e) {
-                            if (getErrorHandlerClass()
-                                    .equals(DefaultErrorHandler.class)) {
-                                throw e;
-                            }
-                            getUI().getSession().getErrorHandler().error(
-                                    new ErrorEvent(e, entry.getStateNode()));
-                        }
-                    });
+            callbacks.forEach(entry -> {
+                if (!entry.canExecute(getUI())) {
+                    // Flushed off its node for a tree it cannot run in
+                    discard(entry);
+                    return;
+                }
+                try {
+                    ExecutionContext context = new ExecutionContext(getUI(),
+                            entry.getStateNode().isClientSideInitialized());
+                    entry.getExecution().accept(context);
+                } catch (Exception e) {
+                    if (getErrorHandlerClass()
+                            .equals(DefaultErrorHandler.class)) {
+                        throw e;
+                    }
+                    getUI().getSession().getErrorHandler()
+                            .error(new ErrorEvent(e, entry.getStateNode()));
+                }
+            });
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree has stopped waiting
+     * to run it, if it wants to know.
+     */
+    private static void discard(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionDiscarded();
         }
     }
 

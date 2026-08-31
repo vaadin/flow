@@ -1204,7 +1204,7 @@ public class StateNode implements Serializable {
      *
      * @return the pending entries, or an empty list if there are none
      */
-    public List<StateTree.BeforeClientResponseEntry> getBeforeClientResponseEntries() {
+    List<StateTree.BeforeClientResponseEntry> getBeforeClientResponseEntries() {
         return beforeClientResponseEntries == null ? Collections.emptyList()
                 : Collections.unmodifiableList(beforeClientResponseEntries);
     }

@@ -54,6 +54,8 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.DiscardAwareExecution;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -1959,10 +1961,42 @@ public class Element extends Node<Element> {
             // Counts the invocation if the node was not attached to any UI
             // when it was scheduled, and there was no count to add it to
             pending.countWhenAttached();
-            ui.getInternals().queueJavaScriptInvocation(pending);
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    new QueueJavaScriptInvocation(pending));
         });
 
         return pending;
+    }
+
+    /**
+     * Queues a scheduled invocation for the client when a response is written
+     * for the tree of its owner, and keeps the invocation out of the count of
+     * undelivered invocations while no response is coming for it.
+     */
+    private static class QueueJavaScriptInvocation
+            implements DiscardAwareExecution {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            // Counted again if it stopped being counted while the owner was
+            // detached
+            invocation.countWhenAttached();
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
+        }
+
+        @Override
+        public void executionDiscarded() {
+            invocation.stopCounting();
+        }
     }
 
     /**
