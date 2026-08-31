@@ -21,6 +21,8 @@
 // dependencies are loaded). The resource loading itself lives in the rest of
 // DependencyLoader, on ResourceLoader.
 
+import type { Command } from './Command';
+
 // Number of eager dependencies currently loading.
 let eagerDependenciesLoading = 0;
 
@@ -32,7 +34,7 @@ let callbacks: Array<() => void> = [];
  * immediately if none are loading. Mirrors
  * DependencyLoader.runWhenEagerDependenciesLoaded.
  */
-export function runWhenEagerDependenciesLoaded(command: () => void): void {
+export function runWhenEagerDependenciesLoaded(command: Command): void {
   if (eagerDependenciesLoading === 0) {
     command();
   } else {

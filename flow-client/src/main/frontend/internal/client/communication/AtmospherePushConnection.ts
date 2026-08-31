@@ -236,7 +236,7 @@ export class AtmospherePushConnection implements PushConnection {
 
   #url = '';
 
-  #pendingDisconnectCommand: (() => void) | null = null;
+  #pendingDisconnectCommand: Command | null = null;
 
   constructor(registry: AtmospherePushRegistry) {
     this.#registry = registry;
@@ -511,7 +511,7 @@ export class AtmospherePushConnection implements PushConnection {
     };
   }
 
-  #runWhenAtmosphereLoaded(command: () => void): void {
+  #runWhenAtmosphereLoaded(command: Command): void {
     if (isAtmosphereLoaded()) {
       command();
       return;

@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import type { Command } from '../Command';
 import { getScheduler } from '../TrackingScheduler';
 import {
   getRelativeTimeMillis,
@@ -103,7 +104,6 @@ const META_ASYNC = 'async';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
-/** A parsed UIDL message. */
 /** The slice of Registry MessageHandler uses. */
 interface MessageHandlerRegistry {
   getUILifecycle(): Pick<UILifecycle, 'getState' | 'setState'>;
@@ -162,7 +162,7 @@ export class MessageHandler {
 
   #forceHandleMessage: ReturnType<typeof setTimeout> | null = null;
 
-  #nextResponseSessionExpiredHandler: (() => void) | null = null;
+  #nextResponseSessionExpiredHandler: Command | null = null;
 
   /**
    * Creates a new instance connected to the given registry.

@@ -99,54 +99,52 @@ describe('RequestResponseTracker', () => {
     tracker.fireReconnectionAttempt(4);
     expect(events).to.deep.equal(['started', 3]);
   });
-  describe('beyond the Java suite', () => {
-    // The handler list keeps SimpleEventBus's registration semantics, which a
-    // Set would silently change.
-    it('notifies a handler once per registration and detaches one at a time', () => {
-      const { registry } = makeRegistry();
-      const tracker = new RequestResponseTracker(registry);
-      let notified = 0;
-      const handler = (): void => {
-        notified += 1;
-      };
-      tracker.addResponseHandlingStartedHandler(handler);
-      const second = tracker.addResponseHandlingStartedHandler(handler);
+  // The handler list keeps SimpleEventBus's registration semantics, which a
+  // Set would silently change.
+  it('notifies a handler once per registration and detaches one at a time', () => {
+    const { registry } = makeRegistry();
+    const tracker = new RequestResponseTracker(registry);
+    let notified = 0;
+    const handler = (): void => {
+      notified += 1;
+    };
+    tracker.addResponseHandlingStartedHandler(handler);
+    const second = tracker.addResponseHandlingStartedHandler(handler);
 
-      tracker.fireResponseHandlingStarted();
-      expect(notified).to.equal(2);
+    tracker.fireResponseHandlingStarted();
+    expect(notified).to.equal(2);
 
-      // One removal detaches one registration, leaving the other in place.
-      second.remove();
-      tracker.fireResponseHandlingStarted();
-      expect(notified).to.equal(3);
+    // One removal detaches one registration, leaving the other in place.
+    second.remove();
+    tracker.fireResponseHandlingStarted();
+    expect(notified).to.equal(3);
+  });
+
+  it('dispatches to the handlers registered when the event fired', () => {
+    const { registry } = makeRegistry();
+    const tracker = new RequestResponseTracker(registry);
+    const order: string[] = [];
+    let lateRemover: { remove(): void } | null = null;
+    tracker.addResponseHandlingStartedHandler(() => {
+      order.push('first');
+      // Added during dispatch: not notified for this event.
+      lateRemover = tracker.addResponseHandlingStartedHandler(() => order.push('late'));
+    });
+    const removedDuringDispatch = tracker.addResponseHandlingStartedHandler(() => order.push('second'));
+    tracker.addResponseHandlingStartedHandler(() => {
+      // Removed during dispatch: still notified for this event.
+      removedDuringDispatch.remove();
+      order.push('third');
     });
 
-    it('dispatches to the handlers registered when the event fired', () => {
-      const { registry } = makeRegistry();
-      const tracker = new RequestResponseTracker(registry);
-      const order: string[] = [];
-      let lateRemover: { remove(): void } | null = null;
-      tracker.addResponseHandlingStartedHandler(() => {
-        order.push('first');
-        // Added during dispatch: not notified for this event.
-        lateRemover = tracker.addResponseHandlingStartedHandler(() => order.push('late'));
-      });
-      const removedDuringDispatch = tracker.addResponseHandlingStartedHandler(() => order.push('second'));
-      tracker.addResponseHandlingStartedHandler(() => {
-        // Removed during dispatch: still notified for this event.
-        removedDuringDispatch.remove();
-        order.push('third');
-      });
+    tracker.fireResponseHandlingStarted();
+    expect(order).to.deep.equal(['first', 'second', 'third']);
 
-      tracker.fireResponseHandlingStarted();
-      expect(order).to.deep.equal(['first', 'second', 'third']);
-
-      // The handler added during the first dispatch is notified from the second
-      // one on, and the one removed during it is gone.
-      order.length = 0;
-      tracker.fireResponseHandlingStarted();
-      expect(order).to.deep.equal(['first', 'third', 'late']);
-      lateRemover!.remove();
-    });
+    // The handler added during the first dispatch is notified from the second
+    // one on, and the one removed during it is gone.
+    order.length = 0;
+    tracker.fireResponseHandlingStarted();
+    expect(order).to.deep.equal(['first', 'third', 'late']);
+    lateRemover!.remove();
   });
 });

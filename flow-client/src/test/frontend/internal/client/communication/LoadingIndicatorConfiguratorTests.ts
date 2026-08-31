@@ -44,19 +44,17 @@ describe('LoadingIndicatorConfigurator', () => {
     });
   });
 
-  describe('beyond the Java suite', () => {
-    it('falls back to the default when a property is cleared', () => {
-      const indicator: Record<string, unknown> = {};
-      (window as { Vaadin?: unknown }).Vaadin = { connectionIndicator: indicator };
+  it('falls back to the default when a property is cleared', () => {
+    const indicator: Record<string, unknown> = {};
+    (window as { Vaadin?: unknown }).Vaadin = { connectionIndicator: indicator };
 
-      const node = makeNode();
-      const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
-      observeLoadingIndicator(node);
+    const node = makeNode();
+    const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
+    observeLoadingIndicator(node);
 
-      configMap.getProperty('first').setValue(100);
-      configMap.getProperty('first').removeValue();
+    configMap.getProperty('first').setValue(100);
+    configMap.getProperty('first').removeValue();
 
-      expect(indicator.firstDelay).to.equal(450);
-    });
+    expect(indicator.firstDelay).to.equal(450);
   });
 });

@@ -18,6 +18,8 @@
 // interface. AtmospherePushConnection implements it; MessageSender and
 // ConnectionStateHandler reference the contract.
 
+import type { Command } from '../Command';
+
 /**
  * Represents the client-side endpoint of a bidirectional ("push") communication
  * channel. Can be used to send UIDL request messages to the server and to
@@ -67,7 +69,7 @@ export interface PushConnection {
    *          disconnected
    * @throws Error if this connection is not active
    */
-  disconnect(command: () => void): void;
+  disconnect(command: Command): void;
 
   /**
    * Returns a human readable string representation of the transport type used to

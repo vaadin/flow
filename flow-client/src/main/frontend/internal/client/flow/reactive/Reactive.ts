@@ -17,6 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.reactive.Reactive. The static
 // fields of Reactive.java are kept as module-level state here.
 
+import type { Command } from '../../Command';
 import type { EventRemover } from '../../../EventRemover';
 import { Computation } from './Computation';
 import type { FlushListener } from './FlushListener';
@@ -131,7 +132,7 @@ export const Reactive = {
    * @param computation - the computation to set as current
    * @param command - the command to run while the computation is set as current
    */
-  runWithComputation(computation: Computation | null, command: () => void): void {
+  runWithComputation(computation: Computation | null, command: Command): void {
     const oldComputation = currentComputation;
     currentComputation = computation;
     try {
@@ -177,7 +178,7 @@ export const Reactive = {
    * @returns A {@link Computation} object which can be used to control the
    *   evaluation
    */
-  runWhenDependenciesChange(command: () => void): Computation {
+  runWhenDependenciesChange(command: Command): Computation {
     return new Computation(command);
   },
 
