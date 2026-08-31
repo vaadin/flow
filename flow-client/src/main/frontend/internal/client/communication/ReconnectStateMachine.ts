@@ -64,10 +64,10 @@ export class ReconnectStateMachine {
    * Creates a new instance connected to the given registry, driving the retry
    * mechanics the full handler owns.
    *
-   * @param registry - the global registry
-   * @param scheduleReconnect - schedules the next reconnect attempt for the
-   *          payload that did not reach the server, or `null` when the failure
-   *          was detected by a heartbeat
+   * @param registry - the registry, narrowed to the members this machine reads
+   * @param scheduleReconnect - schedules the next reconnect attempt, receiving
+   *          the message which did not reach the server, or null if no message
+   *          was involved (heartbeat or push connection failed)
    * @param cancelScheduledReconnect - cancels a reconnect this machine has
    *          already scheduled; defaults to doing nothing, for a caller that
    *          schedules nothing cancellable
