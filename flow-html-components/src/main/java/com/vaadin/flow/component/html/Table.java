@@ -360,9 +360,11 @@ public class Table extends HtmlComponent
      * the <code>&lt;thead&gt;</code> rows, then the rows of each
      * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
      * Note the asymmetry with {@link #addRow()}, which appends to the body:
-     * this returns the header and footer rows as well. Reach for
-     * {@link TableHead#getRows()} or {@link TableBody#getRows()} when only one
-     * section is of interest.
+     * this returns the header and footer rows as well. That is the same split
+     * the DOM makes — {@code HTMLTableElement.rows} spans every section while
+     * {@code insertRow()} targets a {@code <tbody>} — which is why both keep
+     * the shorter name here. Reach for {@link TableHead#getRows()} or
+     * {@link TableBody#getRows()} when only one section is of interest.
      *
      * @return all the rows of this table.
      */
