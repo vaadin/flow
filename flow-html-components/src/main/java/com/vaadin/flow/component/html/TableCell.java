@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
@@ -161,7 +162,7 @@ public abstract class TableCell extends HtmlContainer {
      * @param ids
      *            the ids of the header cells, in any order.
      */
-    public void setHeaders(String... ids) {
+    public void setHeaders(String @Nullable... ids) {
         setHeaders(ids == null ? List.of() : Arrays.asList(ids));
     }
 
@@ -172,7 +173,7 @@ public abstract class TableCell extends HtmlContainer {
      * @param ids
      *            the ids of the header cells, in any order.
      */
-    public void setHeaders(List<String> ids) {
+    public void setHeaders(@Nullable List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
             return;
@@ -192,7 +193,7 @@ public abstract class TableCell extends HtmlContainer {
      * @throws IllegalArgumentException
      *             if any of the given cells does not have an id set.
      */
-    public void setHeaders(TableHeaderCell... headerCells) {
+    public void setHeaders(TableHeaderCell @Nullable... headerCells) {
         setHeadersByCells(
                 headerCells == null ? List.of() : Arrays.asList(headerCells));
     }
@@ -205,7 +206,8 @@ public abstract class TableCell extends HtmlContainer {
      * @throws IllegalArgumentException
      *             if any of the given cells does not have an id set.
      */
-    public void setHeadersByCells(List<? extends TableHeaderCell> headerCells) {
+    public void setHeadersByCells(
+            @Nullable List<? extends TableHeaderCell> headerCells) {
         if (headerCells == null || headerCells.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
             return;
