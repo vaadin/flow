@@ -180,7 +180,13 @@ answer it, so `FRONTEND` is asked once per apply and reused by every leg.
 - **Vite mode** — Vite's root *is* the frontend folder, so it applied the edit when the file
   was saved and the daemon cannot suspend it the way it suspends Flow's own watchers. Nothing
   is pushed and nothing escalates; `apply` names the files and says Vite did it. Pretending
-  otherwise would be the one thing this daemon exists not to do.
+  otherwise would be the one thing this daemon exists not to do — which is also why a Vite
+  compile error is a `FAILED` apply and not a footnote under `Stable`. That error exists only
+  in the app log: the push succeeded, the app is running and no class failed to redefine, so
+  every other signal the daemon has says the change is live while the browser shows a red
+  overlay. `devServerFailure` is the rule, reading both the settled window and the errors
+  carried across from save time, and it does not escalate — a restart cannot compile a broken
+  module.
 - **Dev-bundle mode** — theme CSS is pushed through `ThemeLiveUpdater.push`, the same call
   Flow's own watcher makes on save (and which the connector suspends, as it does
   `PublicResourcesLiveUpdater`). `index.html` and theme assets are already served from the

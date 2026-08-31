@@ -103,6 +103,7 @@ target/devloop/app.log, daemon.log          logs, under the target application
 | `hmr: … pushed 1 stylesheet(s) in place` | CSS is live in the open page, no reload |
 | `hmr: N theme file(s) pushed in place` | theme CSS is live in the open page, no reload |
 | `hmr: N frontend file(s), applied by Vite (dev server up:…)` | Vite mode: the edit went live when you saved it |
+| `frontend → Failed` with `dev server: [vite] …` | Vite mode: Vite refused to compile the edit — exit `1`. Fix the file it names and re-apply; a restart cannot compile it either |
 | `hot-reload: redefineClasses(1); onHotswap completed=true` | Java hot-swapped, UI refreshed |
 | `→ live, but no Vaadin component was redefined` | bytes are live; interact with the view or reload to see it. **Do not re-apply** |
 | `compiling → runtime → restarting → Stable` | the app restarted — reload the page |

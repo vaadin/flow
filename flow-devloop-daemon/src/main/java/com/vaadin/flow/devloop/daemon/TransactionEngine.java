@@ -550,14 +550,25 @@ final class TransactionEngine {
                             blocker = loggedFailure(tx, log);
                         }
                         if (blocker.isEmpty()) {
-                            tx.hotswapDetail = "redefineClasses("
-                                    + fields.getOrDefault("redefined", "0")
-                                    + "); onHotswap completed="
-                                    + fields.getOrDefault("completed", "?");
                             // These sources are now live in the JVM, so the
                             // next
                             // apply should not offer them again.
                             compile.markSourcesApplied(changes.modified());
+                            // The Java half held; the dev server says the
+                            // frontend half of the same change did not. Not an
+                            // escalation - a restart cannot compile a broken
+                            // module - so the apply fails with what the dev
+                            // server said instead of claiming Stable.
+                            Optional<String> broken = devServerFailure(tx);
+                            if (broken.isPresent()) {
+                                return finish(tx, Outcome.FAILED,
+                                        "dev server: " + brief(broken.get()),
+                                        "hmr", DEV_SERVER_NEXT_ACTION, started);
+                            }
+                            tx.hotswapDetail = "redefineClasses("
+                                    + fields.getOrDefault("redefined", "0")
+                                    + "); onHotswap completed="
+                                    + fields.getOrDefault("completed", "?");
                             return finish(tx, Outcome.STABLE, "", "hot-reload",
                                     visibilityAdvice(fields), started);
                         }
@@ -766,6 +777,12 @@ final class TransactionEngine {
                 .ifPresent(watching -> tx.logErrors = plan.vite()
                         ? watching.settle(ERROR_SETTLE_MILLIS)
                         : watching.errors());
+        Optional<String> broken = devServerFailure(tx);
+        if (broken.isPresent()) {
+            return finish(tx, Outcome.FAILED,
+                    "dev server: " + brief(broken.get()), "hmr",
+                    DEV_SERVER_NEXT_ACTION, started);
+        }
         return finish(tx, Outcome.STABLE, "", "hmr", "", started);
     }
 
@@ -892,6 +909,42 @@ final class TransactionEngine {
                     + " error(s) since the redefine");
         }
         return watching.failure().map(line -> "the app logged " + brief(line));
+    }
+
+    /** What to do about a change the dev server refused to compile. */
+    private static final String DEV_SERVER_NEXT_ACTION = "fix the frontend"
+            + " error the dev server reported; see target/devloop/app.log";
+
+    /**
+     * The dev server's own verdict on this change, if it gave one.
+     * <p>
+     * Vite compiles in its own process and reports a broken module to the app
+     * log and to the browser's overlay - never to the connector. Every signal
+     * the daemon has therefore says the change is live: the push succeeded, the
+     * app is running, no class failed to redefine. So the log is the only place
+     * this failure exists, and an apply that reads it and still returns Stable
+     * hands an agent a green answer for a file the browser cannot load, which
+     * is the one answer this daemon must never give.
+     * <p>
+     * Both windows are read. An error Vite logged when the file was saved sits
+     * in {@code carriedLogErrors} - it happened before this apply started,
+     * which is precisely why it was carried across - and one logged while the
+     * apply ran is in what settling collected.
+     * <p>
+     * Package-visible for the tests: this is the whole of the rule, and a
+     * transaction is the only thing it needs.
+     */
+    static Optional<String> devServerFailure(Transaction tx) {
+        if (tx.frontendFiles == 0) {
+            // Only a change that touched a frontend file can be the one the dev
+            // server is complaining about. Anything else in the log belongs to
+            // an edit this apply was not asked about, and failing over it would
+            // be a worse answer than the truth.
+            return Optional.empty();
+        }
+        return java.util.stream.Stream
+                .concat(tx.carriedLogErrors.stream(), tx.logErrors.stream())
+                .filter(AppLog::devServerError).findFirst();
     }
 
     /** Enough of a log line to recognise it by, where there is room for one. */

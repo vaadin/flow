@@ -27,10 +27,9 @@ compiling → Failed
   → check the name, or add the missing member/import          ← fix, re-apply; app keeps last good bytes
 app log: 1 error(s) since the change; see target/devloop/app.log
   There was an exception while trying to navigate              ← the change is live and the app threw
-app log: 1 error(s) since the change; see target/devloop/app.log
-  [vite] Internal server error: Transform failed with 1 error: ← Vite mode: a TypeScript error
-    [PARSE_ERROR] Unexpected token
-    src/main/frontend/greeting.ts:1:26                         ← what and where, without opening the log
+frontend → Failed                                             ← Vite mode: a TypeScript error
+dev server: [vite] Internal server error: Transform failed with 1 error: | [PARSE_ERROR] Unexpected token | src/main/frontend/greeting.ts:1:26
+                                                              ← what and where, without opening the log
 ```
 
 A `no changes (... pom.xml changed; nothing to recompile or restart)` line is a *positive*
@@ -44,11 +43,14 @@ rendered on the server and pushed once. The change is real — interact with the
 that refreshes the data provider) or reload the page to see it. Do not re-apply; there is
 nothing left to compile.
 
-In **Vite mode** an `app log:` line is also how a TypeScript or JavaScript compile error
-reaches you. Vite compiles on save rather than on apply, so its errors are in the log before
-`apply` runs and before the browser shows its red overlay; `apply` carries them into its own
-window and reports them rather than answering a clean `Stable` over a file the browser is
-refusing to load. Fix the file and re-apply — the next apply is clean.
+In **Vite mode** a TypeScript or JavaScript compile error reaches you as a `frontend → Failed`
+with `dev server:` under it, and `apply` exits `1`. Vite compiles on save rather than on apply,
+so its errors are in the log before `apply` runs and before the browser shows its red overlay;
+`apply` carries them into its own window and fails on them rather than answering a clean
+`Stable` over a file the browser is refusing to load. This is the one failure the daemon
+reports without escalating — a restart cannot compile a broken module. Fix the file and
+re-apply — the next apply is clean. A Java edit that arrived in the same change-set is already
+live; the dev server's error is about the frontend half.
 
 An `app log:` line means the app logged an error while the change went live — the bytes are
 live, the code did something wrong. `Stable` with this line under it is not a green result:
@@ -71,7 +73,7 @@ the app turns up.
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
 | `src/main/frontend/themes/<theme>/**.css` | pushed in place, **no reload** — `apply` combines the theme and sends it |
 | `src/main/frontend/index.html`, theme assets (images, fonts) | already served from disk; `apply` **reloads the page** |
-| Any other `src/main/frontend/` file — `.ts`, `.tsx`, `.js`, `.css`, `theme.json` | in **dev-bundle mode** only a Vite build can fold it into the bundle, so `apply` **restarts**, and the restart rebuilds the bundle (slow — tens of seconds). In **Vite mode** Vite applied it when you saved; `apply` says so and does nothing |
+| Any other `src/main/frontend/` file — `.ts`, `.tsx`, `.js`, `.css`, `theme.json` | in **dev-bundle mode** only a Vite build can fold it into the bundle, so `apply` **restarts**, and the restart rebuilds the bundle (slow — tens of seconds). In **Vite mode** Vite applied it when you saved; `apply` says so and does nothing — unless Vite could not compile it, in which case `apply` **fails** and quotes what Vite said |
 | A deleted `src/main/frontend/` file | same as an edit: restart in dev-bundle mode, nothing in Vite mode |
 | `src/main/frontend/generated/` | never in the change-set; the build owns it |
 | `package.json`, `vite.config.ts`, `tsconfig.json` at the project root | **not tracked** — they need `npm install` or a Vite restart, so edit them and run `restart`, not `apply` |
@@ -105,6 +107,8 @@ test can cover.
 
 - `compiling → Failed` — diagnostics name file, line, column. Fix and re-apply.
 - `frontend-down` — Vite stopped answering: `restart`.
+- `dev server: [vite] ...` — Vite refused to compile the change. Fix the file it names and
+  re-apply; do not `restart`, which cannot compile a broken module either.
 - App failed to start (a taken port, a bad config) → `start` exits `1` and names the reason
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
   whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
