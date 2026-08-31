@@ -2663,7 +2663,17 @@ public class Binder<BEAN> implements Serializable {
         } else {
             doRemoveBean(false);
             this.bean = bean;
-            getBindings().forEach(b -> b.initFieldValue(bean, true));
+            getBindings().forEach(binding -> {
+                /*
+                 * Some bindings may have been removed from the binder during
+                 * setBean. We should skip those bindings to avoid NPE inside
+                 * initFieldValue. It happens e.g. when we unbind a binding in
+                 * valueChangeListener of another field.
+                 */
+                if (binding.getField() != null) {
+                    binding.initFieldValue(bean, true);
+                }
+            });
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
             var status = BinderValidationStatus.createUnresolvedStatus(this);
@@ -3297,9 +3307,16 @@ public class Binder<BEAN> implements Serializable {
      * Clear all the bound fields for this binder.
      */
     private void clearFields() {
-        bindings.forEach(binding -> {
-            binding.getField().clear();
-            clearError(binding.getField());
+        /*
+         * Iterate over a copy and skip already unbound bindings, as clearing a
+         * field may trigger a valueChangeListener that removes a binding.
+         */
+        getBindings().forEach(binding -> {
+            HasValue<?, ?> field = binding.getField();
+            if (field != null) {
+                field.clear();
+                clearError(field);
+            }
         });
         if (hasChanges()) {
             fireStatusChangeEvent(false);
