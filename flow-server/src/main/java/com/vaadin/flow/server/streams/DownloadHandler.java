@@ -88,6 +88,11 @@ import com.vaadin.flow.server.VaadinSession;
  * tab that started it has been closed. This is intentional and supported
  * behavior, so that a download the user has already started is not lost when
  * the view that started it goes away.
+ * <p>
+ * The exception is a handler with transfer progress listeners: notifying them
+ * uses the UI that started the download, so the transfer is interrupted if that
+ * UI has been detached from the session by the time the next notification is
+ * sent, see {@link TransferProgressListener}.
  *
  * @since 24.8
  */

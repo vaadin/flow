@@ -33,9 +33,15 @@ import java.io.Serializable;
  * Since detaching the owner component does not interrupt an ongoing transfer,
  * listeners are also notified for a transfer that outlives its owner. The UI
  * used for the {@code UI.access} call is the one that was active when the
- * transfer started; if that UI is no longer available, for example because the
- * browser tab was closed, the UI changes are silently discarded while the
- * transfer itself still runs to completion.
+ * transfer started. If the client is gone but that UI is still attached, for
+ * example right after the browser tab has been closed, the UI changes are
+ * queued in the session but never reach the client. If the UI has already been
+ * detached from the session, for example after UI cleanup or session
+ * expiration, {@code UI.access} throws
+ * {@link com.vaadin.flow.component.UIDetachedException}, which propagates out
+ * of the listener notification and interrupts the ongoing transfer. A transfer
+ * that has to run to the end regardless of its UI should therefore not rely on
+ * progress listeners.
  *
  * @since 24.8
  */
