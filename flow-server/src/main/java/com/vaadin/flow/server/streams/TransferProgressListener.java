@@ -37,11 +37,8 @@ import java.io.Serializable;
  * example right after the browser tab has been closed, the UI changes are
  * queued in the session but never reach the client. If the UI has already been
  * detached from the session, for example after UI cleanup or session
- * expiration, {@code UI.access} throws
- * {@link com.vaadin.flow.component.UIDetachedException}, which propagates out
- * of the listener notification and interrupts the ongoing transfer. A transfer
- * that has to run to the end regardless of its UI should therefore not rely on
- * progress listeners.
+ * expiration, the listener is not notified at all, while the transfer itself
+ * still runs to completion.
  *
  * @since 24.8
  */

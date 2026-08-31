@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -111,10 +114,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                if (ui == null) {
-                    setTransferUI(context.getUI());
-                }
-                ui.access(startHandler::run);
+                uiAccess(context, startHandler::run);
             }
         });
         return (R) this;
@@ -412,7 +412,33 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         if (ui == null) {
             setTransferUI(context.getUI());
         }
-        ui.access(command);
+        accessIgnoringDetachedUI(ui, command);
+    }
+
+    /**
+     * Runs the given command through {@link UI#access(Command)}, ignoring the
+     * command in case the given UI has already been detached.
+     * <p>
+     * Detaching the owner component or closing the browser tab does not
+     * interrupt an ongoing transfer, so the UI that the transfer was started
+     * with may already be gone when a progress event is sent. There is then
+     * nothing to update, so the update is skipped instead of failing the
+     * transfer with the {@link UIDetachedException} that
+     * {@link UI#access(Command)} would throw.
+     *
+     * @param ui
+     *            the UI that the transfer was started with
+     * @param command
+     *            the command that updates the UI
+     */
+    private static void accessIgnoringDetachedUI(UI ui, Command command) {
+        try {
+            ui.access(command);
+        } catch (UIDetachedException e) {
+            LoggerFactory.getLogger(TransferProgressAwareHandler.class).debug(
+                    "Skipping a transfer progress update since the UI that the transfer was started with has been detached",
+                    e);
+        }
     }
 
     /**
@@ -467,7 +493,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             if (ui == null) {
                 setTransferUI(context.getUI());
             }
-            ui.access(command);
+            accessIgnoringDetachedUI(ui, command);
         }
     }
 }

@@ -34,6 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -162,6 +163,32 @@ class AbstractDownloadHandlerTest {
         });
         Mockito.verify(completeHandler).accept(true);
         Mockito.verify(completeHandler).accept(false);
+    }
+
+    @Test
+    void uiDetached_transferCompletes_progressListenersNotNotified()
+            throws IOException {
+        Mockito.doThrow(new UIDetachedException()).when(ui)
+                .access(Mockito.any(Command.class));
+        SerializableRunnable startHandler = Mockito
+                .mock(SerializableRunnable.class);
+        SerializableConsumer<Boolean> completeHandler = Mockito
+                .mock(SerializableConsumer.class);
+        handler.whenStart(startHandler);
+        handler.whenComplete(completeHandler);
+        handler.addTransferProgressListener(listener);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "Hello".getBytes(StandardCharsets.UTF_8));
+
+        long transferred = TransferUtil.transfer(inputStream, outputStream,
+                mockContext, handler.getListeners());
+
+        assertEquals(5, transferred);
+        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
+        Mockito.verifyNoInteractions(startHandler, completeHandler);
+        Mockito.verify(listener, Mockito.never()).onStart(mockContext);
+        Mockito.verify(listener, Mockito.never()).onComplete(mockContext,
+                transferred);
     }
 
     @Test
