@@ -39,8 +39,12 @@ public class TableElement extends TestBenchElement {
      * the markup rather than that order.
      * <p>
      * The name matches {@code Table.getAllRows()}: this is the only row
-     * accessor here that crosses sections, where
-     * {@link TableSectionElement#getRows()} returns the rows of one.
+     * accessor here that spans every kind of section. {@link #getHeaderRows()},
+     * {@link #getBodyRows()} and {@link #getFooterRows()} each stay within one
+     * kind — though a table may have several <code>&lt;tbody&gt;</code>
+     * elements, so {@code getBodyRows} flattens those — and
+     * {@link TableSectionElement#getRows()} returns the rows of a single
+     * element.
      *
      * @return all the rows of this table.
      */
