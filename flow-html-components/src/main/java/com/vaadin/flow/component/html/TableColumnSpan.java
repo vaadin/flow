@@ -28,8 +28,6 @@ import com.vaadin.flow.component.HasElement;
 @NullMarked
 interface TableColumnSpan extends HasElement {
 
-    String ATTRIBUTE_SPAN = "span";
-
     /**
      * Sets the {@code span} attribute — how many consecutive columns this
      * element covers. The default is {@code 1}. Use it to apply the same
@@ -44,7 +42,7 @@ interface TableColumnSpan extends HasElement {
             throw new IllegalArgumentException(
                     "span must be a positive integer value");
         }
-        getElement().setAttribute(ATTRIBUTE_SPAN, String.valueOf(span));
+        getElement().setAttribute(spanAttribute(), String.valueOf(span));
     }
 
     /**
@@ -53,7 +51,7 @@ interface TableColumnSpan extends HasElement {
      * @return the current span. Default is 1.
      */
     default int getSpan() {
-        String span = getElement().getAttribute(ATTRIBUTE_SPAN);
+        String span = getElement().getAttribute(spanAttribute());
         if (span == null) {
             span = "1";
         }
@@ -64,6 +62,10 @@ interface TableColumnSpan extends HasElement {
      * Removes the {@code span} attribute, restoring the default value of 1.
      */
     default void resetSpan() {
-        getElement().removeAttribute(ATTRIBUTE_SPAN);
+        getElement().removeAttribute(spanAttribute());
+    }
+
+    private static String spanAttribute() {
+        return "span";
     }
 }
