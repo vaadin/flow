@@ -75,7 +75,7 @@ public class Table extends HtmlComponent implements ClickNotifier<Table> {
      *
      * @return the table's {@code <caption>}, or an empty optional.
      */
-    public Optional<TableCaption> findCaption() {
+    private Optional<TableCaption> findCaption() {
         return findChild(TableCaption.class);
     }
 
