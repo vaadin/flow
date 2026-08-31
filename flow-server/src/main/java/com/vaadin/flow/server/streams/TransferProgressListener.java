@@ -29,6 +29,13 @@ import java.io.Serializable;
  * to send UI changes from progress listeners when the download or upload
  * request is being handled. Thus, it needs
  * {@link com.vaadin.flow.component.page.Push} to be enabled in the application.
+ * <p>
+ * Since detaching the owner component does not interrupt an ongoing transfer,
+ * listeners are also notified for a transfer that outlives its owner. The UI
+ * used for the {@code UI.access} call is the one that was active when the
+ * transfer started; if that UI is no longer available, for example because the
+ * browser tab was closed, the UI changes are silently discarded while the
+ * transfer itself still runs to completion.
  *
  * @since 24.8
  */
