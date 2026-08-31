@@ -367,7 +367,15 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        at the site. (Regression this prevents: eight structural asserts were
        dropped from `StateTree` / `TreeChangeProcessor` while the
        null-precondition ones were correctly dropped, so the omission read as
-       deliberate.)
+       deliberate.) One further exception, and it needs the same note at the site:
+       where the asserted invariant is one the running client can legitimately
+       break — and Java, whose assertions production strips, therefore continues
+       and recovers — the check stays as a `Console.warn` rather than a throw.
+       `MessageHandler.processMessage` is the case in point: it runs deferred
+       until the message's eager dependencies load, and `forceMessageHandling`
+       can clear the response locks and handle a newer message meanwhile, moving
+       the last seen server id past the one being processed. _Introduced during
+       #24951._
     5. **A GWT-compiler-only construct has no port** — `crazyJsCast`,
        `crazyJsoCast`, deferred binding — and its absence is documented at the
        site that would have called it.

@@ -176,13 +176,11 @@ describe('SimpleElementBindingStrategy virtual children', () => {
 
     // The path points to index 1, but only index 0 exists.
     addVirtualChild(child, NodeProperties.TEMPLATE_IN_TEMPLATE, [1]);
-    // Java creates this one with the child's own tag and still asserts the tag
-    // differs: getTagName reports it upper-cased, as tagName does here.
-    const elementWithSameTag = createAndAppendElementToShadowRoot(shadowRoot, null, childTag);
-    expect(
-      elementWithSameTag.tagName,
-      'Element added to shadow root should not have same tag name as virtual child node'
-    ).to.not.equal(childTag);
+    createAndAppendElementToShadowRoot(shadowRoot, null, childTag);
+    // Java's assertNotSame here compares the child's tag with the tag of an
+    // element it just created from that same tag, so it only passes on reference
+    // identity; what the case turns on is that index 1 has no element.
+    expect(shadowRoot.children.length).to.equal(1);
 
     Reactive.flush();
 

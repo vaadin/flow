@@ -25,7 +25,6 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
-import { assert } from '../../assert';
 import type { Command } from '../Command';
 import { getScheduler } from '../TrackingScheduler';
 import {
@@ -319,10 +318,16 @@ export class MessageHandler {
    * @param lock - the lock object for this response
    */
   #processMessage(valueMap: ValueMap, lock: object): void {
-    assert(
-      getServerId(valueMap) === UNDEFINED_SYNC_ID || getServerId(valueMap) === this.getLastSeenServerSyncId(),
-      'Message being processed is neither unversioned nor the last seen one'
-    );
+    // Java asserts this, and its assertions are stripped from production. Here it
+    // stays a warning: processing is deferred until the message's eager
+    // dependencies load, and forceMessageHandling can clear the response locks
+    // and handle a newer message meanwhile, which advances the last seen id. Java
+    // then continues out of order and recovers, so throwing would be worse than
+    // the behaviour being ported.
+    const serverId = getServerId(valueMap);
+    if (serverId !== UNDEFINED_SYNC_ID && serverId !== this.getLastSeenServerSyncId()) {
+      Console.warn(`Processing message ${serverId} after the last seen id moved to ${this.getLastSeenServerSyncId()}`);
+    }
 
     const start = performance.now();
     if ('timings' in valueMap) {
