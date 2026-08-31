@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
@@ -36,12 +38,12 @@ public class NativeTable extends HtmlContainer
     /**
      * The table's caption.
      */
-    private NativeTableCaption caption;
+    private @Nullable NativeTableCaption caption;
 
     /**
      * The {@code <thead>} element of this table.
      */
-    private NativeTableHeader head;
+    private @Nullable NativeTableHeader head;
 
     /**
      * The list of {@code <tbody>} elements of the table.
@@ -51,7 +53,7 @@ public class NativeTable extends HtmlContainer
     /**
      * The {@code <tfoot>} element of this table.
      */
-    private NativeTableFooter foot;
+    private @Nullable NativeTableFooter foot;
 
     /**
      * Creates a new empty table.
