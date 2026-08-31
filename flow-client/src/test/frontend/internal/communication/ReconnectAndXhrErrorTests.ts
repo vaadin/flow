@@ -1,11 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { ReconnectConfiguration } from '../../../../main/frontend/internal/client/communication/ReconnectConfiguration';
 import { XhrConnectionError } from '../../../../main/frontend/internal/client/communication/XhrConnectionError';
-import {
-  MapProperty,
-  type MapPropertyOwner
-} from '../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
 
 const RECONNECT_DIALOG_CONFIGURATION = 9;
 
@@ -21,17 +20,10 @@ const RECONNECT_INTERVAL_DEFAULT = 5000;
 // reactive dependencies and setValue fires reactive changes, exactly like the
 // Java test that binds ReconnectConfiguration to a StateTree root node.
 function makeRegistry() {
-  const properties: Record<string, MapProperty> = {};
-  // setValue never touches the tree, so a minimal owner is enough here.
-  const owner: MapPropertyOwner = {
-    getNode: () => ({ getTree: () => ({ isActive: () => true, sendNodePropertySyncToServer: () => {} }) })
-  };
-  const map = {
-    getProperty: (key: string) => {
-      properties[key] ??= new MapProperty(key, owner);
-      return properties[key];
-    }
-  };
+  const tree = new StateTree(inertRegistry());
+  const node = new StateNode(2, tree);
+  tree.registerNode(node);
+  const map = node.getMap(RECONNECT_DIALOG_CONFIGURATION);
   return {
     getProperty: (key: string) => map.getProperty(key),
     getStateTree: () => ({

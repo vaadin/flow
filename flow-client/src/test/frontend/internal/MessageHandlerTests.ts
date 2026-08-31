@@ -1,5 +1,4 @@
 import { expect } from '@open-wc/testing';
-import { resetForTesting } from '../../../main/frontend/internal/client/EagerDependencyTracker';
 import {
   calculateBootstrapTime,
   callAfterServerUpdates,
@@ -94,7 +93,9 @@ describe('MessageHandler', () => {
   });
 
   describe('class', () => {
-    beforeEach(() => resetForTesting());
+    // The handler defers message processing through the eager-dependency
+    // tracker, but the fake dependency loader starts no load, so the counter
+    // stays at zero and the deferred work runs straight away.
 
     it('starts in an undefined sync-id state with default csrf and no push id', () => {
       const handler = new MessageHandler(makeRegistry() as never);
