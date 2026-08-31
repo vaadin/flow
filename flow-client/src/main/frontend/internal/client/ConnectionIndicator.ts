@@ -64,7 +64,11 @@ function vaadin(): {
   ).Vaadin;
 }
 
-/** Sets the connection state displayed by the loading indicator. */
+/**
+ * GWT interface to ConnectionIndicator.ts
+ *
+ * @param state - the connection state
+ */
 export function setState(state: string): void {
   const connectionState = vaadin().connectionState;
   if (connectionState) {
@@ -78,7 +82,12 @@ export function getState(): string | null {
   return connectionState ? connectionState.state : null;
 }
 
-/** Sets a property of the connection indicator component. */
+/**
+ * Set a property of the connection indicator component.
+ *
+ * @param property - the property to set
+ * @param value - the value to set
+ */
 export function setProperty(property: string, value: unknown): void {
   const connectionIndicator = vaadin().connectionIndicator;
   if (connectionIndicator) {

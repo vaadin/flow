@@ -32,17 +32,29 @@ export class XhrConnectionError {
     this.#error = error;
   }
 
-  /** The error that caused the problem, or null if not available. */
+  /**
+   * Returns the exception which caused the problem, if available.
+   *
+   * @returns the exception which caused the problem, or null if not available
+   */
   getException(): Error | null {
     return this.#error;
   }
 
-  /** The request that failed to reach the server. */
+  /**
+   * Returns {@link XMLHttpRequest} which failed to reach the server.
+   *
+   * @returns the request which failed
+   */
   getXhr(): XMLHttpRequest {
     return this.#xhr;
   }
 
-  /** The payload that was sent to the server, never null. */
+  /**
+   * Returns the payload which was sent to the server.
+   *
+   * @returns the payload which was sent, never null
+   */
   getPayload(): Record<string, unknown> {
     return this.#payload;
   }

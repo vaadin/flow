@@ -30,7 +30,8 @@ import type { RequestResponseTracker } from './RequestResponseTracker';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { UILifecycle } from '../UILifecycle';
 import type { XhrConnection } from './XhrConnection';
-import type { PushConnection, PushConnectionFactory } from './PushConnection';
+import type { PushConnection } from './PushConnection';
+import type { PushConnectionFactory } from './PushConnectionFactory';
 import { ResynchronizationState } from './ResynchronizationState';
 import { Console } from '../Console';
 
@@ -70,7 +71,12 @@ export interface MessageSenderRegistry {
   getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
 }
 
-/** Sends messages to the server over XHR and/or push; mirrors MessageSender.java. */
+/**
+ * MessageSender is responsible for sending messages to the server.
+ *
+ * Internally uses {@link XhrConnection} and/or {@link PushConnection} for
+ * delivering messages, depending on the application configuration.
+ */
 export class MessageSender {
   // Counter for the messages sent to the server. First sent message has id 0.
   #clientToServerMessageId = 0;
@@ -168,10 +174,22 @@ export class MessageSender {
       extraJson[RESYNCHRONIZE_ID] = true;
     }
     this.#registry.getLoadingIndicatorStateHandler().startLoading();
-    this.#sendRequest(reqJson, extraJson);
+    this.sendRequest(reqJson, extraJson);
   }
 
-  #sendRequest(reqInvocations: unknown[], extraJson: Payload): void {
+  /**
+   * Sends an asynchronous or synchronous UIDL request to the server using the
+   * given URI.
+   *
+   * Java overloads `send` for this, one overload `protected` and the other
+   * `public`; TypeScript cannot give two overloads different visibility, so the
+   * protected one keeps this name.
+   *
+   * @param reqInvocations - Data containing RPC invocations and all related
+   *          information.
+   * @param extraJson - Parameters that are added to the payload
+   */
+  protected sendRequest(reqInvocations: unknown[], extraJson: Payload | null): void {
     this.send(this.#preparePayload(reqInvocations, extraJson));
   }
 
@@ -191,8 +209,11 @@ export class MessageSender {
   }
 
   /**
-   * Sends a UIDL request to the server. Adds the message to the queue and
-   * postpones sending if the queue is not empty.
+   * Sends an asynchronous or synchronous UIDL request to the server using the
+   * given URI. Adds message to message queue and postpones sending if queue not
+   * empty.
+   *
+   * @param payload - The contents of the request to send
    */
   send(payload: Payload): void {
     if (this.hasQueuedMessages()) {
@@ -207,6 +228,12 @@ export class MessageSender {
     this.#sendPayload(payload);
   }
 
+  /**
+   * Sends an asynchronous or synchronous UIDL request to the server using the
+   * given URI.
+   *
+   * @param payload - The contents of the request to send
+   */
   #sendPayload(payload: Payload): void {
     // Do not update server sync id for enqueued messages.
     if (!(SERVER_SYNC_ID in payload)) {
@@ -256,10 +283,17 @@ export class MessageSender {
     }
   }
 
-  /** Enables or disables the push connection. */
+  /**
+   * Sets the status for the push connection.
+   *
+   * @param enabled - `true` to enable the push connection; `false` to disable
+   *          the push connection.
+   * @param reEnableIfNeeded - whether a disable that finds the configuration
+   *          still enabling push may re-enable it; `false` on the recursive call
+   */
   setPushEnabled(enabled: boolean, reEnableIfNeeded = true): void {
     if (enabled && (this.#push === null || !this.#push.isActive())) {
-      this.#push = this.#pushConnectionFactory ? this.#pushConnectionFactory(this.#registry) : null;
+      this.#push = this.#pushConnectionFactory ? this.#pushConnectionFactory.create(this.#registry) : null;
     } else if (!enabled && this.#push !== null && this.#push.isActive()) {
       this.#push.disconnect(() => {
         this.#push = null;
@@ -275,7 +309,12 @@ export class MessageSender {
     }
   }
 
-  /** A human-readable description of the current transport. */
+  /**
+   * Returns a human readable string representation of the method used to
+   * communicate with the server.
+   *
+   * @returns A string representation of the current transport type
+   */
   getCommunicationMethodName(): string {
     let clientToServer = 'XHR';
     let serverToClient = '-';
@@ -288,7 +327,10 @@ export class MessageSender {
     return `Client to server: ${clientToServer}, server to client: ${serverToClient}`;
   }
 
-  /** Resynchronizes the client side from the server. */
+  /**
+   * Resynchronize the client side, i.e. reload all component hierarchy and state
+   * from the server
+   */
   resynchronize(): void {
     if (this.requestResynchronize()) {
       this.#messageQueue = [];
@@ -297,7 +339,12 @@ export class MessageSender {
     }
   }
 
-  /** Updates the id the server expects, reconciling the queue. */
+  /**
+   * Used internally to update what id the server expects.
+   *
+   * @param nextExpectedId - the new client id to set
+   * @param force - true if the id must be updated, false otherwise
+   */
   setClientToServerMessageId(nextExpectedId: number, force: boolean): void {
     if (nextExpectedId === this.#clientToServerMessageId) {
       // Remove a pending PUSH message already seen by the server.
@@ -341,7 +388,13 @@ export class MessageSender {
     // else the server has not yet seen all our messages; they will arrive.
   }
 
-  /** Marks that a resynchronization is desired; returns whether it still needs sending. */
+  /**
+   * Modifies the resynchronize state to indicate that resynchronization is
+   * desired
+   *
+   * @returns true if the resynchronize request still needs to be sent; false
+   *          otherwise
+   */
   requestResynchronize(): boolean {
     switch (this.#resynchronizationState) {
       case ResynchronizationState.NOT_ACTIVE:

@@ -48,8 +48,12 @@ export class ReconnectConfiguration {
   }
 
   /**
-   * Re-runs the handler's configurationUpdated() whenever the reconnect
-   * configuration changes. Mirrors ReconnectConfiguration.bind.
+   * Binds this ReconnectDialogConfiguration to the given
+   * {@link ConnectionStateHandler} so that
+   * {@link ConnectionStateHandler.configurationUpdated} is run whenever a
+   * relevant part of {@link ReconnectConfiguration} changes.
+   *
+   * @param connectionStateHandler - the connection state handler to bind to
    */
   static bind(connectionStateHandler: ConnectionStateHandler): void {
     Reactive.runWhenDependenciesChange(() => connectionStateHandler.configurationUpdated());
@@ -82,12 +86,20 @@ export class ReconnectConfiguration {
     return (this.#getProperty(DIALOG_TEXT_GAVE_UP_KEY).getValue() as string | null) ?? null;
   }
 
-  /** The number of reconnect attempts before giving up. */
+  /**
+   * Gets the text to show in the reconnect dialog.
+   *
+   * @returns the text to show in the reconnect dialog.
+   */
   getReconnectAttempts(): number {
     return this.#getProperty(RECONNECT_ATTEMPTS_KEY).getValueOrDefault(RECONNECT_ATTEMPTS_DEFAULT);
   }
 
-  /** The interval (ms) between reconnect attempts. */
+  /**
+   * Gets the interval in milliseconds to wait between reconnect attempts.
+   *
+   * @returns the interval in milliseconds to wait between reconnect attempts
+   */
   getReconnectInterval(): number {
     return this.#getProperty(RECONNECT_INTERVAL_KEY).getValueOrDefault(RECONNECT_INTERVAL_DEFAULT);
   }

@@ -25,6 +25,15 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import { getScheduler } from '../TrackingScheduler';
+import {
+  getRelativeTimeMillis,
+  getRelativeTimeString,
+  isEnabled,
+  logBootstrapTimings,
+  logTimings,
+  reset as resetProfiler
+} from '../Profiler';
 import { redirect } from '../WidgetUtil';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConstantPool } from '../flow/ConstantPool';
@@ -45,7 +54,7 @@ import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
 
 /** Removes the link and style elements with the given dependency id. */
-export function removeStylesheetByIdFromDom(dependencyId: string): void {
+function removeStylesheetByIdFromDom(dependencyId: string): void {
   const elements = document.querySelectorAll(`link[data-id="${dependencyId}"], style[data-id="${dependencyId}"]`);
   for (const element of Array.from(elements)) {
     element.remove();
@@ -53,7 +62,7 @@ export function removeStylesheetByIdFromDom(dependencyId: string): void {
 }
 
 /** Invokes the element's afterServerUpdate callback if it defines one. */
-export function callAfterServerUpdates(node: Node): void {
+function callAfterServerUpdates(node: Node): void {
   const target = node as unknown as { afterServerUpdate?: () => void };
   if (node && target.afterServerUpdate) {
     target.afterServerUpdate();
@@ -61,7 +70,7 @@ export function callAfterServerUpdates(node: Node): void {
 }
 
 /** Milliseconds from the navigation response start to now, or -1 if unknown. */
-export function calculateBootstrapTime(): number {
+function calculateBootstrapTime(): number {
   const perf = window.performance as (Performance & { timing?: { responseStart: number } }) | undefined;
   if (perf && perf.timing) {
     return Date.now() - perf.timing.responseStart;
@@ -69,13 +78,33 @@ export function calculateBootstrapTime(): number {
   return -1;
 }
 
-/** Parses a JSON UIDL response into a ValueMap-compatible object. */
-export function parseJSONResponse(jsonText: string): unknown {
-  return JSON.parse(jsonText);
+function parseJSONResponse(jsonText: string): ValueMap {
+  return JSON.parse(jsonText) as ValueMap;
+}
+
+/**
+ * Parse the given wrapped JSON, received from the server, to a ValueMap.
+ *
+ * @param jsonText - The JSON to parse
+ * @returns A ValueMap created from the JSON
+ */
+export function parseJson(jsonText: string | null): ValueMap | null {
+  if (jsonText === null) {
+    return null;
+  }
+  const start = getRelativeTimeMillis();
+  try {
+    const json = parseJSONResponse(jsonText);
+    Console.debug(`JSON parsing took ${getRelativeTimeString(start)}ms`);
+    return json;
+  } catch {
+    Console.error(`Unable to parse JSON: ${jsonText}`);
+    return null;
+  }
 }
 
 /** The navigation fetchStart timestamp, or 0 if unknown. */
-export function getFetchStartTime(): number {
+function getFetchStartTime(): number {
   const perf = window.performance as (Performance & { timing?: { fetchStart?: number } }) | undefined;
   if (perf && perf.timing && perf.timing.fetchStart) {
     return perf.timing.fetchStart;
@@ -145,9 +174,9 @@ export class MessageHandler {
   #bootstrapTime = 0;
 
   // Profiling timings (ms), exposed via getProfilingData / client.getProfilingData.
-  #lastProcessingTime = 0;
+  protected lastProcessingTime = 0;
 
-  #totalProcessingTime = 0;
+  protected totalProcessingTime = 0;
 
   #serverTimingInfo: number[] | null = null;
 
@@ -161,7 +190,12 @@ export class MessageHandler {
     this.#registry = registry;
   }
 
-  /** Handles a received UIDL message, starting the UI on the first one. */
+  /**
+   * Handles a received UIDL JSON text, parsing it, and passing it on to the
+   * appropriate handlers, while logging timing information.
+   *
+   * @param json - The JSON to handle
+   */
   handleMessage(json: ValueMap): void {
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
@@ -179,13 +213,13 @@ export class MessageHandler {
       this.#registry.getUILifecycle().setState(state);
     }
     if (state === UIState.RUNNING) {
-      this.#handleJSON(json);
+      this.handleJSON(json);
     } else {
       Console.warn('Ignored received message because application has already been stopped');
     }
   }
 
-  #handleJSON(valueMap: ValueMap): void {
+  protected handleJSON(valueMap: ValueMap): void {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
 
@@ -343,14 +377,34 @@ export class MessageHandler {
       // the message threw. In GWT the equivalent work ran inside $entry, so an
       // uncaught error never left the client perpetually "active"; here we
       // guarantee the same by not gating these on successful processing.
+      this.lastProcessingTime = Math.round(performance.now() - start);
+      this.totalProcessingTime += this.lastProcessingTime;
       if (!this.#initialMessageHandled) {
         this.#initialMessageHandled = true;
+
+        const fetchStart = getFetchStartTime();
+        if (fetchStart !== 0) {
+          const time = Math.round(Date.now() - fetchStart);
+          Console.debug(`First response processed ${time} ms after fetchStart`);
+        }
+
         this.#bootstrapTime = calculateBootstrapTime();
+        if (isEnabled() && this.#bootstrapTime !== -1) {
+          logBootstrapTimings();
+        }
       }
-      this.#lastProcessingTime = Math.round(performance.now() - start);
-      this.#totalProcessingTime += this.#lastProcessingTime;
+
+      Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
+
       this.#endRequestIfResponse(valueMap);
       this.resumeResponseHandling(lock);
+
+      if (isEnabled()) {
+        getScheduler().scheduleDeferred(() => {
+          logTimings();
+          resetProfiler();
+        });
+      }
     }
   }
 
@@ -360,7 +414,7 @@ export class MessageHandler {
    * getProfilingData JSNI in ApplicationConnection.java.
    */
   getProfilingData(): number[] {
-    const data = [this.#lastProcessingTime, this.#totalProcessingTime];
+    const data = [this.lastProcessingTime, this.totalProcessingTime];
     if (this.#serverTimingInfo !== null) {
       data.push(...this.#serverTimingInfo);
     } else {
@@ -380,7 +434,11 @@ export class MessageHandler {
     // The StateTree satisfies TreeChangeProcessor's contract.
     const updatedNodes = applyTreeChanges(tree as never, changes);
     Reactive.addPostFlushListener(() =>
-      setTimeout(() => updatedNodes.forEach((node) => this.#afterServerUpdates(node as unknown as UpdatedNode)), 0)
+      // Through the tracking scheduler, as Scheduler.get().scheduleDeferred is,
+      // so the pending callbacks keep the application active.
+      getScheduler().scheduleDeferred(() =>
+        updatedNodes.forEach((node) => this.#afterServerUpdates(node as unknown as UpdatedNode))
+      )
     );
   }
 
@@ -393,6 +451,11 @@ export class MessageHandler {
     }
   }
 
+  #removeStylesheetById(dependencyId: string): void {
+    removeStylesheetByIdFromDom(dependencyId);
+    this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);
+  }
+
   #processStylesheetRemovals(removals: string[] | null): void {
     if (removals === null || removals.length === 0) {
       return;
@@ -401,8 +464,7 @@ export class MessageHandler {
     Console.debug(`Processing ${removals.length} stylesheet removals`);
 
     for (const dependencyId of removals) {
-      removeStylesheetByIdFromDom(dependencyId);
-      this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);
+      this.#removeStylesheetById(dependencyId);
     }
   }
 
@@ -419,14 +481,23 @@ export class MessageHandler {
   }
 
   /**
-   * Postpones response rendering until the lock is released. The Java method
-   * name is misspelled; it is kept verbatim to preserve public API parity.
+   * This method can be used to postpone rendering of a response for a short
+   * period of time (e.g. to avoid the rendering process during animation).
+   *
+   * The Java method name is misspelled; it is kept verbatim to preserve public
+   * API parity.
+   *
+   * @param lock - the lock
    */
   suspendReponseHandling(lock: object): void {
     this.#responseHandlingLocks.add(lock);
   }
 
-  /** Resumes rendering once all locks have been removed. */
+  /**
+   * Resumes the rendering process once all locks have been removed.
+   *
+   * @param lock - the lock
+   */
   resumeResponseHandling(lock: object): void {
     this.#responseHandlingLocks.delete(lock);
     if (this.#responseHandlingLocks.size === 0) {
@@ -467,33 +538,57 @@ export class MessageHandler {
     const index = this.#ordering.findNextHandlable();
     if (index !== -1) {
       const message = this.#ordering.remove(index);
-      this.#handleJSON(message);
+      this.handleJSON(message);
       return true;
     }
     return false;
   }
 
-  /** The last server sync id seen, or -1 before any response. */
+  /**
+   * Finds the next pending UIDL message and handles it (next pending is decided based
+   * on the server id).
+   *
+   * @returns true if a message was handled, false otherwise
+   */
   getLastSeenServerSyncId(): number {
     return this.#ordering.getLastSeenServerSyncId();
   }
 
-  /** The CSRF token, or the default until one is received. */
+  /**
+   * Gets the token (synchronizer token pattern) that the server uses to protect against
+   * CSRF (Cross Site Request Forgery) attacks.
+   *
+   * @returns the CSRF token string
+   */
   getCsrfToken(): string {
     return this.#csrfToken;
   }
 
-  /** The push connection id, or null until received. */
+  /**
+   * Gets the push connection identifier for this session. Used when establishing a push
+   * connection with the client.
+   *
+   * @returns the push connection identifier string
+   */
   getPushId(): string | null {
     return this.#pushId;
   }
 
-  /** Whether the initial UIDL has been handled. */
+  /**
+   * Checks if the first UIDL has been handled.
+   *
+   * @returns true if the initial UIDL has already been processed, false * otherwise
+   */
   isInitialUidlHandled(): boolean {
     return this.#bootstrapTime !== 0;
   }
 
-  /** Sets a one-shot handler for the next session-expiration response. */
+  /**
+   * Sets a temporary handler for session expiration. This handler will be triggered if
+   * and only if the next server message tells that the session has expired.
+   *
+   * @param handler - the handler to use or null to remove a previously set handler
+   */
   setNextResponseSessionExpiredHandler(handler: (() => void) | null): void {
     this.#nextResponseSessionExpiredHandler = handler;
   }

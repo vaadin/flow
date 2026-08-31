@@ -39,8 +39,10 @@ function bindInteger(map: NodeMap, key: string, setter: (delay: number) => void,
 }
 
 /**
- * Observes the node's loading-indicator configuration and applies it to the
- * connection indicator. Mirrors LoadingIndicatorConfigurator.observe.
+ * Observes the loading indicator configuration stored in the given node and configures
+ * the loading indicator accordingly.
+ *
+ * @param node - the node containing the loading indicator configuration
  */
 export function observe(node: StateNode): void {
   const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);

@@ -76,7 +76,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     this.#registry = registry;
     this.#machine = new ReconnectStateMachine(
       registry,
-      (payload) => this.#scheduleReconnect(payload),
+      (payload) => this.scheduleReconnect(payload),
       () => this.#cancelScheduledReconnect()
     );
 
@@ -93,14 +93,23 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     this.#registerConnectionStateEventHandlers();
   }
 
-  #scheduleReconnect(payload: unknown): void {
+  /**
+   * Called after a problem occurred.
+   *
+   * This method is responsible for re-sending the payload to the server (if not
+   * null) or re-send a heartbeat request at some point
+   *
+   * @param payload - the payload that did not reach the server, null if the
+   *          problem was detected by a heartbeat
+   */
+  protected scheduleReconnect(payload: unknown): void {
     if (this.#machine.getReconnectAttempt() === 1) {
       // Try once immediately.
-      this.#doReconnect(payload);
+      this.doReconnect(payload);
     } else {
       this.#scheduledReconnect = setTimeout(() => {
         this.#scheduledReconnect = null;
-        this.#doReconnect(payload);
+        this.doReconnect(payload);
       }, this.#registry.getReconnectConfiguration().getReconnectInterval());
     }
   }
@@ -112,7 +121,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
   }
 
-  #doReconnect(payload: unknown): void {
+  /**
+   * Re-sends the payload to the server (if not null) or re-sends a heartbeat
+   * request immediately.
+   *
+   * @param payload - the payload that did not reach the server, null if the
+   *          problem was detected by a heartbeat
+   */
+  protected doReconnect(payload: unknown): void {
     if (!this.#registry.getUILifecycle().isRunning()) {
       Console.warn('Trying to reconnect after application has been stopped. Giving up');
       return;
@@ -173,7 +189,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     Console.warn(`Server returned ${statusCode} for xhr`);
     if (statusCode === SC_UNAUTHORIZED) {
       this.#registry.getRequestResponseTracker().endRequest();
-      this.#handleUnauthorized();
+      this.handleUnauthorized(xhrConnectionError);
     } else {
       this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
     }
@@ -200,7 +216,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushScriptLoadError(resourceUrl: string): void {
-    this.#handleCommunicationError(`${resourceUrl} could not be loaded. Push will not work.`);
+    this.handleCommunicationError(`${resourceUrl} could not be loaded. Push will not work.`, 0);
   }
 
   pushNotConnected(payload: Record<string, unknown>): void {
@@ -216,11 +232,11 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushError(_pushConnection: PushConnection, response: unknown): void {
     const transport = (response as { transport?: string }).transport ?? 'unknown';
-    this.#handleCommunicationError(`Push connection using ${transport} failed!`);
+    this.handleCommunicationError(`Push connection using ${transport} failed!`, -1);
   }
 
   pushClientTimeout(_pushConnection: PushConnection, _response: unknown): void {
-    this.#handleCommunicationError('Client unexpectedly disconnected. Ensure client timeout is disabled.');
+    this.handleCommunicationError('Client unexpectedly disconnected. Ensure client timeout is disabled.', -1);
   }
 
   pushClosed(_pushConnection: PushConnection, _response: unknown): void {
@@ -251,7 +267,33 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   // --- internal ---
 
-  #handleUnauthorized(): void {
+  /**
+   * Gets the text to show in the reconnect dialog after giving up (reconnect
+   * limit reached).
+   *
+   * @param reconnectAttempt - The number of the current reconnection attempt
+   * @returns The text to show in the reconnect dialog after giving up
+   */
+  protected getDialogTextGaveUp(reconnectAttempt: number): string {
+    return this.#registry.getReconnectConfiguration().getDialogTextGaveUp()!.replace('{0}', `${reconnectAttempt}`);
+  }
+
+  /**
+   * Gets the text to show in the reconnect dialog.
+   *
+   * @param reconnectAttempt - The number of the current reconnection attempt
+   * @returns The text to show in the reconnect dialog
+   */
+  protected getDialogText(reconnectAttempt: number): string {
+    return this.#registry.getReconnectConfiguration().getDialogText()!.replace('{0}', `${reconnectAttempt}`);
+  }
+
+  /**
+   * Called when the server returns 401 Unauthorized.
+   *
+   * @param xhrConnectionError - the error that occurred
+   */
+  protected handleUnauthorized(_xhrConnectionError: XhrConnectionError): void {
     // 401: assume the session has timed out.
     this.#registry.getSystemErrorHandler().handleSessionExpiredError('');
     this.#stopApplication();
@@ -264,12 +306,24 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
   }
 
-  #handleUnrecoverableCommunicationError(details: string, _xhrConnectionError: XhrConnectionError | null): void {
-    this.#handleCommunicationError(details);
+  #handleUnrecoverableCommunicationError(details: string, xhrConnectionError: XhrConnectionError | null): void {
+    let statusCode = -1;
+    if (xhrConnectionError !== null) {
+      const xhr = xhrConnectionError.getXhr();
+      statusCode = xhr.status;
+    }
+    this.handleCommunicationError(details, statusCode);
+
     this.#stopApplication();
   }
 
-  #handleCommunicationError(details: string): void {
+  /**
+   * Called when a communication error occurs and we cannot recover from it.
+   *
+   * @param details - message details or `null` if there are no details
+   * @param statusCode - the status code
+   */
+  protected handleCommunicationError(details: string, _statusCode: number): void {
     this.#registry.getSystemErrorHandler().handleUnrecoverableError('', details, '', '', null);
   }
 

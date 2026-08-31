@@ -77,7 +77,12 @@ export class PushConfiguration {
     return this.#registry.getStateTree().getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
   }
 
-  /** The push servlet mapping configured on the server, or null if none. */
+  /**
+   * Gets the push servlet mapping configured or determined on the server.
+   *
+   * @returns the push servlet mapping configured or determined on the server or
+   *          null if none has been configured
+   */
   getPushServletMapping(): string | null {
     const map = this.#getConfigurationMap();
     if (map.hasPropertyValue(PUSH_SERVLET_MAPPING_KEY)) {
@@ -86,13 +91,24 @@ export class PushConfiguration {
     return null;
   }
 
-  /** Whether XHR should always be used for client→server messages even with bidirectional push. */
+  /**
+   * Checks if XHR should be used for client -\> server messages even though we are using
+   * a bidirectional push transport such as websockets.
+   *
+   * @returns true if XHR should always be used, false otherwise
+   */
   isAlwaysXhrToServer(): boolean {
     // The only possible value is "true".
     return this.#getConfigurationMap().hasPropertyValue(ALWAYS_USE_XHR_TO_SERVER);
   }
 
-  /** All push parameters configured on the server (including transports). */
+  /**
+   * Gets all configured push parameters.
+   *
+   * The parameters configured on the server, including transports.
+   *
+   * @returns a map of all parameters configured on the server
+   */
   getParameters(): Map<string, string> {
     const parametersNode = this.#getConfigurationMap().getProperty(PARAMETERS_KEY).getValue() as StateNode;
     const parametersMap = parametersNode.getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
@@ -104,7 +120,11 @@ export class PushConfiguration {
     return parameters;
   }
 
-  /** Whether push is enabled. */
+  /**
+   * Checks if push is enabled.
+   *
+   * @returns true if push is enabled, false otherwise
+   */
   isPushEnabled(): boolean {
     return isPushModeEnabled(this.#getConfigurationMap().getProperty(PUSHMODE_KEY).getValue());
   }

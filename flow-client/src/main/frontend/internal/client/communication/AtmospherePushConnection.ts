@@ -28,7 +28,7 @@ import type { MessageHandler } from './MessageHandler';
 import type { PushConfiguration } from './PushConfiguration';
 import type { ResourceLoader } from '../ResourceLoader';
 import type { URIResolver } from '../URIResolver';
-import { parseJSONResponse } from './MessageHandler';
+import { parseJson } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { PushConnection } from './PushConnection';
@@ -66,7 +66,14 @@ export class FragmentedMessage {
     return this.#index < this.#message.length;
   }
 
-  /** Returns the next fragment, advancing the internal cursor. */
+  /**
+   * Gets the following fragment and increments the internal fragment counter so the
+   * following call to this method will return the following fragment. This method
+   * should not be called if all fragments have been received ({@link hasNextFragment}
+   * returns false).
+   *
+   * @returns the next fragment
+   */
   getNextFragment(): string {
     let result: string;
     if (this.#index === 0) {
@@ -117,9 +124,9 @@ export function isAtmosphereLoaded(): boolean {
 }
 
 /**
- * Builds the default Atmosphere configuration. The message delimiter character
- * code is supplied from the Java PushConstants.MESSAGE_DELIMITER constant so
- * that it stays the single source of truth.
+ * Creates the default Atmosphere configuration object.
+ *
+ * @returns the Atmosphere configuration object
  */
 export function createConfig(messageDelimiter: number): Record<string, unknown> {
   return {
@@ -181,11 +188,14 @@ const State = {
 } as const;
 type State = (typeof State)[keyof typeof State];
 
+/** The atmosphere configuration/response key holding the transport name. */
+export const TRANSPORT_KEY = 'transport';
+
 /** An Atmosphere response object (the subset used here). atmosphere.js exposes
  * these as plain properties, not the getX() overlay methods GWT's JSNI wrapped
  * them in. */
 interface AtmosphereResponse {
-  transport: string;
+  [TRANSPORT_KEY]: string;
   responseBody: string;
 }
 
@@ -311,16 +321,20 @@ export class AtmospherePushConnection implements PushConnection {
 
     this.#pushUri = pushUrl;
     this.#socket = doConnect(pushUrl, this.#config, {
-      onOpen: (response) => this.#onOpen(response as AtmosphereResponse),
-      onReopen: (response) => this.#onReopen(response as AtmosphereResponse),
-      onMessage: (response) => this.#onMessage(response as AtmosphereResponse),
-      onError: (response) => this.#onError(response as AtmosphereResponse),
-      onTransportFailure: () => this.#onTransportFailure(),
-      onClose: (response) => this.#onClose(response as AtmosphereResponse),
-      onReconnect: (request, response) => this.#onReconnect(request, response as AtmosphereResponse),
-      onClientTimeout: (response) => this.#onClientTimeout(response as AtmosphereResponse),
+      onOpen: (response) => this.onOpen(response as AtmosphereResponse),
+      onReopen: (response) => this.onReopen(response as AtmosphereResponse),
+      onMessage: (response) => this.onMessage(response as AtmosphereResponse),
+      onError: (response) => this.onError(response as AtmosphereResponse),
+      onTransportFailure: () => this.onTransportFailure(),
+      onClose: (response) => this.onClose(response as AtmosphereResponse),
+      onReconnect: (request, response) => this.onReconnect(request, response as AtmosphereResponse),
+      onClientTimeout: (response) => this.onClientTimeout(response as AtmosphereResponse),
       getLastSeenServerSyncId: () => this.#registry.getMessageHandler().getLastSeenServerSyncId()
     });
+  }
+
+  protected getConfig(): Record<string, unknown> {
+    return this.#config;
   }
 
   isActive(): boolean {
@@ -385,15 +399,20 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
-  #onReopen(response: AtmosphereResponse): void {
-    this.#onConnect(response);
+  protected onReopen(response: AtmosphereResponse): void {
+    this.onConnect(response);
   }
 
-  #onOpen(response: AtmosphereResponse): void {
-    this.#onConnect(response);
+  protected onOpen(response: AtmosphereResponse): void {
+    this.onConnect(response);
   }
 
-  #onConnect(response: AtmosphereResponse): void {
+  /**
+   * Called whenever a server push connection is established (or re-established).
+   *
+   * @param response - the response
+   */
+  protected onConnect(response: AtmosphereResponse): void {
     this.#transport = response.transport;
     switch (this.#state) {
       case State.CONNECT_PENDING:
@@ -413,15 +432,14 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
-  #onMessage(response: AtmosphereResponse): void {
+  /**
+   * Called whenever a message is received by Atmosphere.
+   *
+   * @param response - the Atmosphere response object, which contains the message
+   */
+  protected onMessage(response: AtmosphereResponse): void {
     const message = response.responseBody;
-    // Like MessageHandler.parseJson, treat unparseable content as null.
-    let json: Record<string, unknown> | null;
-    try {
-      json = parseJSONResponse(message) as Record<string, unknown> | null;
-    } catch {
-      json = null;
-    }
+    const json = parseJson(message);
     if (json === null) {
       this.#getConnectionStateHandler().pushInvalidContent(this, message);
     } else {
@@ -429,26 +447,53 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
-  #onTransportFailure(): void {
+  protected onTransportFailure(): void {
     Console.warn('Push connection using the primary method failed. Trying the fallback transport.');
   }
 
-  #onError(response: AtmosphereResponse): void {
+  /**
+   * Called if the push connection fails. Atmosphere will automatically retry the
+   * connection until successful.
+   *
+   * @param response - the Atmosphere response for the failed connection
+   */
+  protected onError(response: AtmosphereResponse): void {
     this.#state = State.DISCONNECTED;
     this.#getConnectionStateHandler().pushError(this, response);
   }
 
-  #onClose(response: AtmosphereResponse): void {
+  /**
+   * Called when the push connection has been closed. This does not necessarily indicate
+   * an error and Atmosphere might try to reconnect or downgrade to the fallback
+   * transport automatically.
+   *
+   * @param response - the Atmosphere response which was closed
+   */
+  protected onClose(response: AtmosphereResponse): void {
     this.#state = State.CONNECT_PENDING;
     this.#getConnectionStateHandler().pushClosed(this, response);
   }
 
-  #onClientTimeout(response: AtmosphereResponse): void {
+  /**
+   * Called when the Atmosphere client side timeout occurs. The connection will be
+   * closed at this point and reconnect will not happen automatically.
+   *
+   * @param response - the Atmosphere response which was used when the timeout
+   *          occurred
+   */
+  protected onClientTimeout(response: AtmosphereResponse): void {
     this.#state = State.DISCONNECTED;
     this.#getConnectionStateHandler().pushClientTimeout(this, response);
   }
 
-  #onReconnect(_request: unknown, _response: AtmosphereResponse): void {
+  /**
+   * Called when the push connection has lost the connection to the server and will
+   * proceed to try to re-establish the connection.
+   *
+   * @param request - the Atmosphere request
+   * @param response - the Atmosphere response
+   */
+  protected onReconnect(_request: unknown, _response: AtmosphereResponse): void {
     if (this.#state === State.CONNECTED) {
       this.#state = State.CONNECT_PENDING;
     }

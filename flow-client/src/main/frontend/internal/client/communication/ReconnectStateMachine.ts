@@ -85,9 +85,13 @@ export class ReconnectStateMachine {
   }
 
   /**
-   * Handles a recoverable communication error of the given type, scheduling a
-   * reconnect or giving up after the configured maximum attempts. Mirrors
-   * handleRecoverableError.
+   * Called whenever an error occurs in communication which should be handled by
+   * showing the reconnect dialog and retrying communication until successful
+   * again.
+   *
+   * @param type - The type of failure detected
+   * @param payload - The message which did not reach the server, or null if no
+   *          message was involved (heartbeat or push connection failed)
    */
   handleRecoverableError(type: ConnectionMessageType, payload: unknown): void {
     if (!this.#registry.getUILifecycle().isRunning()) {

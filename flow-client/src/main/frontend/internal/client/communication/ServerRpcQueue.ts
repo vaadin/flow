@@ -48,7 +48,11 @@ export class ServerRpcQueue {
     this.#registry = registry;
   }
 
-  /** Adds an RPC invocation to the queue (ignored if the UI is not running). */
+  /**
+   * Adds an explicit RPC method invocation to the send queue.
+   *
+   * @param invocation - RPC method invocation
+   */
   add(invocation: unknown): void {
     if (!this.#registry.getUILifecycle().isRunning()) {
       Console.warn('Trying to invoke method on not yet started or stopped application');
@@ -64,12 +68,20 @@ export class ServerRpcQueue {
     this.#doFlushStrategy = NO_OP;
   }
 
-  /** The number of queued invocations. */
+  /**
+   * Returns the current size of the queue.
+   *
+   * @returns the number of invocations in the queue
+   */
   size(): number {
     return this.#pendingInvocations.length;
   }
 
-  /** Whether the queue is empty. */
+  /**
+   * Checks if the queue is empty.
+   *
+   * @returns true if the queue is empty, false otherwise
+   */
   isEmpty(): boolean {
     return this.size() === 0;
   }
@@ -90,17 +102,30 @@ export class ServerRpcQueue {
     getScheduler().scheduleDeferred(() => this.#doFlushStrategy());
   }
 
-  /** Whether a flush is pending. */
+  /**
+   * Checks if a flush operation is pending.
+   *
+   * @returns true if a flush is pending, false otherwise
+   */
   isFlushPending(): boolean {
     return this.#flushPending;
   }
 
-  /** Whether a loading indicator should be shown while awaiting the response. */
+  /**
+   * Checks if a loading indicator should be shown when the RPCs have been sent to the
+   * server and we are waiting for a response.
+   *
+   * @returns true if a loading indicator should be shown, false otherwise
+   */
   showLoadingIndicator(): boolean {
     return true;
   }
 
-  /** The queued invocations as a JSON array ready to send. */
+  /**
+   * Returns the current invocations as JSON.
+   *
+   * @returns the current invocations in a JSON format ready to be sent to the * server
+   */
   toJson(): unknown[] {
     return this.#pendingInvocations;
   }

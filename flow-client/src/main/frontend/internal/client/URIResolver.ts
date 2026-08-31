@@ -33,8 +33,11 @@ function processProtocol(protocol: string, replacement: string, vaadinUri: strin
 }
 
 /**
- * Resolves the context:// and base:// protocols in a Vaadin URI against the
- * given context root. Mirrors VaadinUriResolver.resolveVaadinUri.
+ * Client side URL resolver for vaadin protocols.
+ *
+ * @param uri - the global registry
+ * @param servletToContextRoot - the URI to resolve
+ * @returns the resolved URI
  */
 export function resolveVaadinUri(uri: string | null, servletToContextRoot: string): string | null {
   if (uri === null) {
@@ -46,8 +49,12 @@ export function resolveVaadinUri(uri: string | null, servletToContextRoot: strin
 }
 
 /**
- * Returns the given uri relative to the given base uri, or the uri unchanged if
- * it is for a different context. Mirrors URIResolver.getBaseRelativeUri.
+ * Returns the given uri as relative to the given base uri.
+ *
+ * @param baseURI - the base uri of the document
+ * @param uri - an absolute uri to transform
+ * @returns the uri as relative to the document base uri, or the given uri * unmodified
+ *          if it is for different context.
  */
 export function getBaseRelativeUri(baseURI: string, uri: string): string {
   if (uri.startsWith(baseURI)) {
@@ -56,7 +63,11 @@ export function getBaseRelativeUri(baseURI: string, uri: string): string {
   return uri;
 }
 
-/** The current document location relative to the document base URI. */
+/**
+ * Returns the current document location as relative to the base uri of the document.
+ *
+ * @returns the document current location as relative to the document base * uri
+ */
 export function getCurrentLocationRelativeToBaseUri(): string {
   return getBaseRelativeUri(document.baseURI, window.location.href);
 }

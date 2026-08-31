@@ -151,7 +151,11 @@ export class Heartbeat {
     }
   }
 
-  /** The heartbeat interval in seconds. */
+  /**
+   * Gets the heartbeat interval.
+   *
+   * @returns the interval at which heartbeat requests are sent.
+   */
   getInterval(): number {
     return this.#interval;
   }
@@ -167,7 +171,11 @@ export class Heartbeat {
     }
   }
 
-  /** Changes the heartbeat interval (seconds) at runtime and applies it. */
+  /**
+   * Changes the heartbeatInterval in runtime and applies it.
+   *
+   * @param heartbeatInterval - new interval in seconds.
+   */
   setInterval(heartbeatInterval: number): void {
     Console.debug(`Setting heartbeat interval to ${heartbeatInterval}sec.`);
     this.#interval = heartbeatInterval;

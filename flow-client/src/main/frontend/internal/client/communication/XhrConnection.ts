@@ -27,7 +27,7 @@ import type { MessageHandler } from './MessageHandler';
 import type { RequestResponseTracker } from './RequestResponseTracker';
 import { BrowserInfo } from '../BrowserInfo';
 import { XhrConnectionError } from './XhrConnectionError';
-import { parseJSONResponse } from './MessageHandler';
+import { parseJson } from './MessageHandler';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 
 // com.vaadin.flow.shared.ApplicationConstants / JsonConstants
@@ -68,16 +68,6 @@ export interface XhrConnectionRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getServiceUrl' | 'getUIId'>;
 }
 
-// Parses a server response, returning null if it is not valid JSON. Mirrors
-// MessageHandler.parseJson.
-function parseJson(responseText: string): unknown {
-  try {
-    return parseJSONResponse(responseText);
-  } catch {
-    return null;
-  }
-}
-
 /** Sends UIDL requests to the server over XHR; mirrors XhrConnection.java. */
 export class XhrConnection {
   // Webkit ignores outgoing requests while waiting for a navigation response
@@ -100,7 +90,11 @@ export class XhrConnection {
     });
   }
 
-  /** Sends an asynchronous UIDL request to the server. */
+  /**
+   * Sends an asynchronous UIDL request to the server using the given URI.
+   *
+   * @param payload - The URI to use for the request. May includes GET parameters
+   */
   send(payload: Payload): void {
     const payloadJson = stringify(payload);
     const xhr = new XMLHttpRequest();
@@ -167,7 +161,11 @@ export class XhrConnection {
     }
   }
 
-  /** The URI to use when sending RPCs to the server. */
+  /**
+   * Retrieves the URI to use when sending RPCs to the server
+   *
+   * @returns The URI to use for server messages.
+   */
   getUri(): string {
     const configuration = this.#registry.getApplicationConfiguration();
     return addGetParameter(

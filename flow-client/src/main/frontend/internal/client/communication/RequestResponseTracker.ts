@@ -74,7 +74,11 @@ export class RequestResponseTracker {
     this.#requestStartingListeners.forEach((listener) => listener());
   }
 
-  /** Whether there is an active UIDL request. */
+  /**
+   * Checks is there is an active UIDL request.
+   *
+   * @returns true if there is an active request, false otherwise
+   */
   hasActiveRequest(): boolean {
     return this.#hasActiveRequestState;
   }
@@ -112,18 +116,42 @@ export class RequestResponseTracker {
     this.#reconnectionAttemptListeners.forEach((listener) => listener(attempt));
   }
 
+  /**
+   * Adds a handler for {@link RequestStartingEvent}s.
+   *
+   * @param handler - the handler to add
+   * @returns a registration object which can be used to remove the handler
+   */
   addRequestStartingHandler(handler: VoidListener): EventRemover {
     return addListener(this.#requestStartingListeners, handler);
   }
 
+  /**
+   * Adds a handler for {@link ResponseHandlingStartedEvent}s.
+   *
+   * @param handler - the handler to add
+   * @returns a registration object which can be used to remove the handler
+   */
   addResponseHandlingStartedHandler(handler: VoidListener): EventRemover {
     return addListener(this.#responseHandlingStartedListeners, handler);
   }
 
+  /**
+   * Adds a handler for {@link ResponseHandlingEndedEvent}s.
+   *
+   * @param handler - the handler to add
+   * @returns a registration object which can be used to remove the handler
+   */
   addResponseHandlingEndedHandler(handler: VoidListener): EventRemover {
     return addListener(this.#responseHandlingEndedListeners, handler);
   }
 
+  /**
+   * Adds a handler for {@link ReconnectionAttemptEvent}s.
+   *
+   * @param handler - the handler to add
+   * @returns a registration object which can be used to remove the handler
+   */
   addReconnectionAttemptHandler(handler: ReconnectionAttemptListener): EventRemover {
     return addListener(this.#reconnectionAttemptListeners, handler);
   }

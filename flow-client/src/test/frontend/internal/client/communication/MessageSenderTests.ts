@@ -98,7 +98,7 @@ describe('MessageSender (class)', () => {
       disconnect: (cb: () => void) => cb(),
       getTransportType: () => 'WEBSOCKET'
     };
-    const sender = new MessageSender(registry, () => push);
+    const sender = new MessageSender(registry, { create: () => push });
     expect(sender.getCommunicationMethodName()).to.contain('XHR');
 
     sender.setPushEnabled(true);

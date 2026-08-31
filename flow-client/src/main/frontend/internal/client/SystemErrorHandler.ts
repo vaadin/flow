@@ -16,6 +16,7 @@
 
 // Implementations migrated from SystemErrorHandler.java.
 
+import { parseJson } from './communication/MessageHandler';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import type { Heartbeat } from './communication/Heartbeat';
 import type { MessageHandler } from './communication/MessageHandler';
@@ -216,7 +217,7 @@ export class SystemErrorHandler {
         this.#registry.getHeartbeat().setInterval(-1);
 
         const uiId = configuration.getUIId();
-        const json = JSON.parse(responseText) as Record<string, unknown>;
+        const json = parseJson(responseText)!;
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);

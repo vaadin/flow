@@ -35,7 +35,7 @@ import type { XhrConnectionError } from './XhrConnectionError';
  * if (sessionExpired) {
  *     response.setHeader("Content-Type", "text/html");
  *     response.getWriter().write(myLoginPageHtml + "<!-- Vaadin-Refresh: "
- *             + request.getContextPath() + " -->");
+ *             + request.getContextPath() + " --\>");
  * }
  * ```
  */

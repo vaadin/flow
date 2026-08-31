@@ -31,8 +31,11 @@ const POLL_INTERVAL_KEY = 'pollInterval';
 type ConfigurablePoller = Pick<Poller, 'setInterval'>;
 
 /**
- * Observes the node's poll configuration and configures the poller on change.
- * Mirrors PollConfigurator.observe.
+ * Observes the poll configuration stored in the given node and configures polling
+ * accordingly.
+ *
+ * @param node - the node containing the poll configuration
+ * @param poller - the poller to configure
  */
 export function observe(node: StateNode, poller: ConfigurablePoller): void {
   const pollIntervalProperty = node.getMap(NodeFeatures.POLL_CONFIGURATION).getProperty(POLL_INTERVAL_KEY);

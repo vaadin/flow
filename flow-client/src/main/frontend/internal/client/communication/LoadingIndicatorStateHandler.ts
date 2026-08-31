@@ -83,8 +83,11 @@ export class LoadingIndicatorStateHandler {
   }
 
   /**
-   * Processes an RPC message to decide whether the next request should show the
-   * loading indicator (muted for high-frequency event requests).
+   * Processes an RPC message to determine if a loading indicator should be displayed.
+   *
+   * @param rpcType - the type of RPC request being processed
+   * @param eventType - for event RPC requests, the name of the event, otherwise
+   *          `null`
    */
   processMessage(rpcType: string | null, eventType: string | null): void {
     const silent = rpcType === JsonConstants.RPC_TYPE_EVENT && eventType !== null && SILENT_EVENT_TYPES.has(eventType);

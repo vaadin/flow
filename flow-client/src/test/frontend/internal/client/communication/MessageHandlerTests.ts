@@ -1,12 +1,5 @@
 import { expect } from '@open-wc/testing';
-import {
-  calculateBootstrapTime,
-  callAfterServerUpdates,
-  getFetchStartTime,
-  MessageHandler,
-  parseJSONResponse,
-  removeStylesheetByIdFromDom
-} from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 
 function makeRegistry() {
   const log = {
@@ -14,7 +7,8 @@ function makeRegistry() {
     executed: [] as unknown[],
     endRequests: 0,
     stopLoadings: 0,
-    states: [] as string[]
+    states: [] as string[],
+    clearedResources: [] as string[]
   };
   let state = 'INITIALIZING';
   const registry = {
@@ -46,52 +40,16 @@ function makeRegistry() {
     getDependencyLoader: () => ({ loadDependencies: () => {} }),
     getSystemErrorHandler: () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} }),
     getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => 10000 }),
-    getResourceLoader: () => ({ clearLoadedResourceById: () => {} })
+    getResourceLoader: () => ({ clearLoadedResourceById: (id: string) => log.clearedResources.push(id) })
   };
   return registry;
 }
 
 describe('MessageHandler', () => {
-  it('removeStylesheetByIdFromDom removes link and style elements by data-id', () => {
-    const link = document.createElement('link');
-    link.setAttribute('data-id', 'dep-x');
-    const style = document.createElement('style');
-    style.setAttribute('data-id', 'dep-x');
-    const keep = document.createElement('style');
-    keep.setAttribute('data-id', 'dep-y');
-    document.head.append(link, style, keep);
-
-    removeStylesheetByIdFromDom('dep-x');
-
-    expect(document.querySelector('[data-id="dep-x"]')).to.equal(null);
-    expect(document.querySelector('[data-id="dep-y"]')).to.not.equal(null);
-    keep.remove();
-  });
-
-  it('callAfterServerUpdates invokes afterServerUpdate when present', () => {
-    let called = false;
-    const node = {
-      afterServerUpdate: () => {
-        called = true;
-      }
-    } as unknown as Node;
-    callAfterServerUpdates(node);
-    expect(called).to.be.true;
-  });
-
-  it('callAfterServerUpdates is a no-op without the callback', () => {
-    expect(() => callAfterServerUpdates(document.createElement('div'))).to.not.throw();
-  });
-
-  it('parseJSONResponse parses JSON text', () => {
-    expect(parseJSONResponse('{"a":1,"b":"x"}')).to.eql({ a: 1, b: 'x' });
-  });
-
-  it('calculateBootstrapTime and getFetchStartTime return finite timings', () => {
-    // A missing navigation-timing entry would yield NaN, which .a('number') accepts.
-    expect(getFetchStartTime()).to.be.finite;
-    expect(getFetchStartTime()).to.be.at.least(0);
-    expect(calculateBootstrapTime()).to.be.finite;
+  it('parseJson parses JSON text, and reports unparseable or missing text as null', () => {
+    expect(parseJson('{"a":1,"b":"x"}')).to.eql({ a: 1, b: 'x' });
+    expect(parseJson('not json')).to.equal(null);
+    expect(parseJson(null)).to.equal(null);
   });
 
   describe('class', () => {
@@ -160,6 +118,36 @@ describe('MessageHandler', () => {
     });
 
     describe('beyond the Java suite', () => {
+      it('removes the stylesheet elements a message lists, and clears them from the loader', () => {
+        const link = document.createElement('link');
+        link.setAttribute('data-id', 'dep-x');
+        const style = document.createElement('style');
+        style.setAttribute('data-id', 'dep-x');
+        const keep = document.createElement('style');
+        keep.setAttribute('data-id', 'dep-y');
+        document.head.append(link, style, keep);
+
+        const registry = makeRegistry();
+        new MessageHandler(registry as never).handleMessage({ syncId: 0, stylesheetRemovals: ['dep-x'] });
+
+        expect(document.querySelector('[data-id="dep-x"]')).to.equal(null);
+        expect(document.querySelector('[data-id="dep-y"]')).to.not.equal(null);
+        expect(registry.log.clearedResources).to.deep.equal(['dep-x']);
+        keep.remove();
+      });
+
+      it('reports finite processing and bootstrap timings after a message', () => {
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry as never);
+        handler.handleMessage({ syncId: 0 });
+
+        // [lastProcessingTime, totalProcessingTime, ...serverTimings?, bootstrapTime].
+        const profiling = handler.getProfilingData();
+        expect(profiling.length).to.be.at.least(3);
+        profiling.forEach((value) => expect(value).to.be.finite);
+        expect(profiling[0]).to.be.at.least(0);
+      });
+
       it('keeps processing a message whose stylesheetRemovals is null', () => {
         const registry = makeRegistry();
         const handler = new MessageHandler(registry as never);

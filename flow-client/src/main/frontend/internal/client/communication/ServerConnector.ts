@@ -48,7 +48,14 @@ export class ServerConnector {
     this.#registry = registry;
   }
 
-  /** Sends a navigation message to the server. */
+  /**
+   * Sends a navigation message to server.
+   *
+   * @param location - the relative location of the navigation
+   * @param stateObject - the state object or `null` if none applicable
+   * @param routerLinkEvent - `true` if this event was triggered by interaction
+   *          with a router link; `false` if triggered by history navigation
+   */
   sendNavigationMessage(location: string, stateObject: unknown, routerLinkEvent: boolean): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_TYPE_NAVIGATION;
@@ -64,9 +71,11 @@ export class ServerConnector {
   }
 
   /**
-   * Sends an event message to the server. Accepts either a state node or its id,
-   * mirroring the two `sendEventMessage` overloads in ServerConnector.java (the
-   * id form is used by the published client API and connectWebComponent).
+   * Sends an event message to the server.
+   *
+   * @param nodeOrId - the node that listened to the event
+   * @param eventType - the type of event
+   * @param eventData - extra data associated with the event
    */
   sendEventMessage(nodeOrId: StateNode | number, eventType: string, eventData: unknown): void {
     const nodeId = typeof nodeOrId === 'number' ? nodeOrId : nodeOrId.getId();
@@ -80,7 +89,15 @@ export class ServerConnector {
     this.#sendMessage(message);
   }
 
-  /** Sends a template (published-server-event-handler) event message to the server. */
+  /**
+   * Sends a template event message to the server.
+   *
+   * @param node - the node that listened to the event
+   * @param methodName - the event handler method name to execute on the server side
+   * @param argsArray - the arguments array for the method
+   * @param promiseId - the promise id to use for getting the result back, or -1 if no
+   *          * result is expected
+   */
   sendTemplateEventMessage(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER;
@@ -93,7 +110,14 @@ export class ServerConnector {
     this.#sendMessage(message);
   }
 
-  /** Sends a node map-property value sync message to the server. */
+  /**
+   * Sends a node value sync message to the server.
+   *
+   * @param node - the node to update
+   * @param feature - the id of the node map feature to update
+   * @param key - the map key to update
+   * @param value - the new value
+   */
   sendNodeSyncMessage(node: StateNode, feature: number, key: string, value: unknown): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_TYPE_MAP_SYNC;
@@ -105,7 +129,18 @@ export class ServerConnector {
   }
 
   /** Sends an attach-existing-element callback to the server. */
-  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java sendExistingElementAttachToServer signature
+
+  /**
+   * Sends a data for attach existing element server side callback.
+   *
+   * @param parent - parent of the node to attach
+   * @param requestedId - originally requested id of a server side node
+   * @param assignedId - identifier which should be used on the server side for the
+   *          element (instead of requestedId)
+   * @param tagName - the requested tagName
+   * @param index - the index of the element on the server side
+   */
+  // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java signature
   sendExistingElementAttachToServer(
     parent: StateNode,
     requestedId: number,
@@ -123,7 +158,15 @@ export class ServerConnector {
     this.#sendMessage(message);
   }
 
-  /** Sends an attach-existing-element-by-id callback to the server. */
+  /**
+   * Sends a data for attach existing element with id server side callback.
+   *
+   * @param parent - parent of the node to attach
+   * @param requestedId - originally requested id of a server side node
+   * @param assignedId - identifier which should be used on the server side for the
+   *          element (instead of requestedId)
+   * @param id - id of requested element
+   */
   sendExistingElementWithIdAttachToServer(
     parent: StateNode,
     requestedId: number,
@@ -141,7 +184,13 @@ export class ServerConnector {
     this.#sendMessage(message);
   }
 
-  /** Sends a return-channel message to the server. */
+  /**
+   * Sends a return channel message to the server.
+   *
+   * @param stateNodeId - the id of the state node that owns the channel.
+   * @param channelId - the id of the channel.
+   * @param args - array of arguments passed to the channel, not * `null`.
+   */
   sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_TYPE_CHANNEL;

@@ -15,29 +15,78 @@
  */
 
 // TypeScript port of the com.vaadin.client.communication.PushConnection
-// interface and its PushConnectionFactory.
-// A PushConnection delivers messages to the server over a bidirectional (or
-// one-way) push transport; AtmospherePushConnection implements it. The factory
-// produces one for the registry. MessageSender and ConnectionStateHandler
-// reference these contracts.
+// interface. AtmospherePushConnection implements it; MessageSender and
+// ConnectionStateHandler reference the contract.
 
-/** A push connection to the server; mirrors PushConnection.java. */
+/**
+ * Represents the client-side endpoint of a bidirectional ("push") communication
+ * channel. Can be used to send UIDL request messages to the server and to
+ * receive UIDL messages from the server (either asynchronously or as a response
+ * to a UIDL request).
+ */
 export interface PushConnection {
-  /** Pushes the given payload to the server. */
+  /**
+   * Pushes a message to the server. Will throw an exception if the connection is
+   * not active (see {@link PushConnection.isActive}).
+   *
+   * Implementation detail: If the push connection is not connected and the
+   * message can thus not be sent, the implementation must call
+   * {@link ConnectionStateHandler.pushNotConnected}, which will retry the send
+   * later.
+   *
+   * This method must not be called if the push connection is not bidirectional
+   * (if {@link PushConnection.isBidirectional} returns false)
+   *
+   * @param payload - the payload to push
+   * @throws Error if this connection is not active
+   */
   push(payload: Record<string, unknown>): void;
 
-  /** Whether the connection is active (connected, or connecting). */
+  /**
+   * Checks whether this push connection is in a state where it can push messages
+   * to the server. A connection is active until
+   * {@link PushConnection.disconnect} has been called.
+   *
+   * @returns `true` if this connection can accept new messages; `false` if this
+   *          connection is disconnected or disconnecting.
+   */
   isActive(): boolean;
 
-  /** Closes the connection, running the command once disconnected. */
+  /**
+   * Closes the push connection. To ensure correct message delivery order, new
+   * messages should not be sent using any other channel until it has been
+   * confirmed that all messages pending for this connection have been delivered.
+   * The provided command callback is invoked when messages can be passed using
+   * some other communication channel.
+   *
+   * After this method has been called, {@link PushConnection.isActive} returns
+   * `false`. Calling this method for a connection that is no longer active will
+   * throw an exception.
+   *
+   * @param command - command to invoke when the connection has been properly
+   *          disconnected
+   * @throws Error if this connection is not active
+   */
   disconnect(command: () => void): void;
 
-  /** The transport type in use (e.g. WEBSOCKET, LONG_POLLING). */
+  /**
+   * Returns a human readable string representation of the transport type used to
+   * communicate with the server.
+   *
+   * @returns A human readable string representation of the transport type
+   */
   getTransportType(): string;
 
-  /** Whether the transport is bidirectional (client→server over the same channel). */
+  /**
+   * Checks whether this push connection should be used for communication in both
+   * directions or if an XHR should be used for client to server communication.
+   *
+   * A bidirectional push connection must be able to reliably inform about its
+   * connection state.
+   *
+   * @returns true if the push connection should be used for messages in both
+   *          directions, false if it should only be used for server to client
+   *          messages
+   */
   isBidirectional(): boolean;
 }
-
-/** Creates a PushConnection for the given registry; mirrors PushConnectionFactory. */
-export type PushConnectionFactory = (registry: unknown) => PushConnection;

@@ -55,8 +55,12 @@ export class Poller {
   }
 
   /**
-   * Sets the polling interval (ms). A non-negative interval (re)starts polling;
-   * a negative interval stops it. Mirrors setInterval.
+   * Sets the polling interval.
+   *
+   * Changing the polling interval will stop any current polling and schedule a
+   * new poll to happen after the given interval.
+   *
+   * @param interval - The interval to use
    */
   setInterval(interval: number): void {
     this.#stop();
