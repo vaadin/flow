@@ -35,8 +35,9 @@ public class TableColumnGroupElement extends TestBenchElement {
      * @return the columns of this group.
      */
     public List<TableColumnElement> getColumns() {
-        // direct children only, like the rest of the family: a descendant
-        // query would also reach into a table nested inside a cell
+        // direct children only, for consistency with the rest of the family.
+        // Nothing can nest inside a <colgroup>, whose content model is void
+        // <col> elements, so unlike TableElement there is no hazard here
         return getChildren().stream()
                 .filter(child -> "col".equalsIgnoreCase(child.getTagName()))
                 .map(child -> child.wrap(TableColumnElement.class)).toList();

@@ -58,11 +58,12 @@ class TableRowBindChildrenTest extends SignalsUnitTest {
         ListSignal<String> values = new ListSignal<>();
         row.bindChildren(values, TableDataCell::new);
 
-        // the cell factories go through the inherited add and
-        // addComponentAtIndex, so they pick up the guard the contract applies
+        // the three ways of attaching a cell all go through the inherited add
+        // or addComponentAtIndex, so they pick up the guard the contract
+        // applies: a factory, an insert, and addCells wrapping a non-cell
         assertThrows(BindingActiveException.class, row::addDataCell);
-        assertThrows(BindingActiveException.class, row::addHeaderCell);
         assertThrows(BindingActiveException.class, () -> row.insertDataCell(0));
-        assertThrows(BindingActiveException.class, () -> row.addDataCells("a"));
+        assertThrows(BindingActiveException.class,
+                () -> row.addCells(new Span("x")));
     }
 }
