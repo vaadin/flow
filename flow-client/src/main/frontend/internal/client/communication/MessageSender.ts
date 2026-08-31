@@ -149,6 +149,7 @@ export class MessageSender {
     } else if (this.hasQueuedMessages()) {
       Console.debug('Sending queued messages to server');
       if (this.#resendMessageTimer !== null) {
+        // Stopping resend timer and re-send immediately
         this.#resetTimer();
       }
       this.#sendPayload(this.#messageQueue[0]);
@@ -164,7 +165,8 @@ export class MessageSender {
     serverRpcQueue.clear();
 
     if (reqJson.length === 0 && this.#resynchronizationState !== ResynchronizationState.SEND_TO_SERVER) {
-      // Nothing to send, all invocations were filtered out.
+      // Nothing to send, all invocations were filtered out (for non-existing
+      // connectors)
       Console.warn('All RPCs filtered out, not sending anything to the server');
       return;
     }
@@ -353,7 +355,8 @@ export class MessageSender {
    */
   setClientToServerMessageId(nextExpectedId: number, force: boolean): void {
     if (nextExpectedId === this.#clientToServerMessageId) {
-      // Remove a pending PUSH message already seen by the server.
+      // Everything matches the way it should. Remove a potential pending PUSH
+      // message if it has already been seen by the server.
       if (
         this.#pushPendingMessage !== null &&
         (this.#pushPendingMessage[CLIENT_TO_SERVER_ID] as number) < nextExpectedId

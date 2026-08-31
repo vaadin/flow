@@ -87,6 +87,7 @@ export class LoadingIndicatorStateHandler {
       // Some request is in progress, skip the current stop.
       return;
     }
+    // Reset the loading state
     this.#showLoading = false;
     // Debounce the update so a follow-up request keeps the indicator shown.
     // Through the shared TrackingScheduler (mirrors GWT's Scheduler.get()) so
@@ -103,6 +104,8 @@ export class LoadingIndicatorStateHandler {
    *          `null`
    */
   processMessage(rpcType: string | null, eventType: string | null): void {
+    // Require at least one non-silent message to indicate loading for the next
+    // request.
     const silent = rpcType === JsonConstants.RPC_TYPE_EVENT && eventType !== null && SILENT_EVENT_TYPES.has(eventType);
     if (!silent) {
       this.#showLoading = true;

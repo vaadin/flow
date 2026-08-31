@@ -119,11 +119,13 @@ export class ReconnectStateMachine {
     setState(RECONNECTING);
 
     if (!this.isReconnecting()) {
-      // First problem encountered.
+      // First problem encounter
       this.#reconnectionCause = type;
     } else if (isHigherPriorityThan(type, this.#reconnectionCause!)) {
-      // A higher-priority failure (HEARTBEAT < PUSH < XHR) takes over; resolving
-      // it implies the lower-priority one is resolved too.
+      // We are currently trying to reconnect
+      // Priority is HEARTBEAT -> PUSH -> XHR
+      // If a higher priority issues is resolved, we can assume the lower one
+      // will be also
       this.#reconnectionCause = type;
     }
 
@@ -134,7 +136,7 @@ export class ReconnectStateMachine {
     this.#reconnectAttempt++;
     Console.debug(`Reconnect attempt ${this.#reconnectAttempt} for ${type}`);
     if (this.#reconnectAttempt >= this.#registry.getReconnectConfiguration().getReconnectAttempts()) {
-      // Max attempts reached -> give up (CONNECTION_LOST).
+      // Max attempts reached, stop trying and go back to CONNECTION_LOST
       this.giveUp();
     } else {
       this.#scheduleReconnect(payload);
@@ -144,16 +146,19 @@ export class ReconnectStateMachine {
   /** Resolves the temporary error for the given type if it is the active cause. Mirrors resolveTemporaryError. */
   resolveTemporaryError(type: ConnectionMessageType): void {
     if (this.#reconnectionCause !== type) {
-      // Waiting for some other (higher-priority) problem to be resolved.
+      // Waiting for some other problem to be resolved
       return;
     }
     this.#reconnectionCause = null;
     this.#reconnectAttempt = 0;
     this.#cancelScheduledReconnect();
     if (type === ConnectionMessageType.HEARTBEAT) {
-      // Heartbeat has no loading indication; safe to set CONNECTED directly.
+      // Heartbeat never has loading indication, it is safe to assume that no
+      // other requests are in progress and set the `CONNECTED` state directly.
       setState(CONNECTED);
     } else {
+      // Let the loading indicator state handler check and remove the prior
+      // loading state indication if necessary.
       this.#registry.getLoadingIndicatorStateHandler().stopLoading();
     }
     Console.debug('Re-established connection to server');

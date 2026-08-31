@@ -110,7 +110,8 @@ export class RequestResponseTracker {
     if (!this.#hasActiveRequestState) {
       throw new Error('endRequest called when no request is active');
     }
-    // sendInvocationsToServer() may start a new request, so clear the flag first.
+    // After sendInvocationsToServer() there may be a new active request, so the
+    // flag must be cleared before, not after, the call.
     this.#hasActiveRequestState = false;
 
     const messageSender = this.#registry.getMessageSender();
@@ -119,6 +120,9 @@ export class RequestResponseTracker {
       messageSender.getResynchronizationState() === ResynchronizationState.SEND_TO_SERVER ||
       messageSender.hasQueuedMessages()
     ) {
+      // Send the pending RPCs immediately. This might be an unnecessary
+      // optimization, as ServerRpcQueue has a finally-scheduled command which
+      // triggers the send if we do not do it here.
       messageSender.sendInvocationsToServer();
     }
 

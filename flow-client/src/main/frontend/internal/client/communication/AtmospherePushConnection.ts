@@ -308,8 +308,10 @@ export class AtmospherePushConnection implements PushConnection {
     const pushServletMapping = pushConfiguration.getPushServletMapping();
 
     if (pushServletMapping === null || pushServletMapping.trim() === '' || pushServletMapping === '/') {
-      // Default push mapping + serviceUrl.
+      // Handle null, empty and "/" mapping using just default push mapping and
+      // serviceUrl.
       let url = PUSH_MAPPING;
+      // If a specific serviceUrl is defined, prepend pushUrl with it.
       let serviceUrl = applicationConfiguration.getServiceUrl();
       if (serviceUrl !== '.') {
         if (!serviceUrl.endsWith('/')) {
@@ -418,6 +420,7 @@ export class AtmospherePushConnection implements PushConnection {
         this.#pendingDisconnectCommand = command;
         break;
       case State.CONNECTED:
+        // Normal disconnect
         doDisconnect(this.#pushUri!);
         this.#state = State.DISCONNECTED;
         command();
@@ -436,6 +439,7 @@ export class AtmospherePushConnection implements PushConnection {
     const message = response.responseBody;
     const json = parseJson(message);
     if (json === null) {
+      // Invalid JSON string
       this.#getConnectionStateHandler().pushInvalidContent(this, message);
     } else {
       this.#registry.getMessageHandler().handleMessage(json);

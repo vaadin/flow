@@ -101,6 +101,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       }
     });
 
+    // Register online / offline handlers
     this.#registerConnectionStateEventHandlers();
   }
 
@@ -121,10 +122,12 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     const statusCode = xhr.status;
     Console.warn(`Heartbeat request returned ${statusCode}`);
     if (statusCode === SC_FORBIDDEN) {
+      // Session expired
       this.#registry.getSystemErrorHandler().handleSessionExpiredError(null);
       this.#stopApplication();
     } else if (statusCode === SC_NOT_FOUND) {
-      // UI closed; do nothing (the UI reacts to this).
+      // UI closed, do nothing as the UI will react to this
+      // Should not trigger reconnect dialog as this will prevent user input
     } else {
       this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
     }
@@ -146,8 +149,12 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
    *          problem was detected by a heartbeat
    */
   protected scheduleReconnect(payload: unknown): void {
+    // Here and not in the timer to avoid TestBench getting in between.
+    //
+    // The request is still open at this point to avoid interference, so we do
+    // not need to start a new one.
     if (this.#machine.getReconnectAttempt() === 1) {
-      // Try once immediately.
+      // Try once immediately
       this.doReconnect(payload);
     } else {
       this.#scheduledReconnect = setTimeout(() => {
@@ -173,6 +180,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
    */
   protected doReconnect(payload: unknown): void {
     if (!this.#registry.getUILifecycle().isRunning()) {
+      // This should not happen as nobody should call this if the application has
+      // been stopped
       Console.warn('Trying to reconnect after application has been stopped. Giving up');
       return;
     }
@@ -180,6 +189,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // Re-send the queued UIDL via the reconnection-attempt listener.
       this.#registry.getRequestResponseTracker().fireReconnectionAttempt(this.#machine.getReconnectAttempt());
     } else {
+      // Use heartbeat
       this.#registry.getHeartbeat().send();
     }
   }
@@ -210,6 +220,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: config ---
 
   configurationUpdated(): void {
+    // All other properties are fetched directly from the state when needed
     const dialogText = this.#registry.getReconnectConfiguration().getDialogText();
     if (dialogText !== null) {
       setProperty('reconnectingText', dialogText);
@@ -233,6 +244,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushInvalidContent(pushConnection: PushConnection, message: string): void {
     if (pushConnection.isBidirectional()) {
+      // We can't be sure that what was pushed was actually a response but at
+      // this point it should not really matter, as something is seriously
+      // broken.
       this.#registry.getRequestResponseTracker().endRequest();
     }
     if (!this.#redirectIfRefreshToken(message)) {
@@ -244,9 +258,13 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     const statusCode = xhrConnectionError.getXhr().status;
     Console.warn(`Server returned ${statusCode} for xhr`);
     if (statusCode === SC_UNAUTHORIZED) {
+      // Authentication/authorization failed, no need to re-try
       this.#registry.getRequestResponseTracker().endRequest();
       this.handleUnauthorized(xhrConnectionError);
     } else {
+      // 404, 408 and other 4xx codes CAN be temporary when you have a proxy
+      // between the client and the server and e.g. restart the server
+      // 5xx codes may or may not be temporary
       this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
     }
   }
@@ -257,12 +275,13 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
    * @param xhrConnectionError - the error that occurred
    */
   protected handleUnauthorized(_xhrConnectionError: XhrConnectionError): void {
-    // 401: assume the session has timed out.
+    // Authorization has failed (401). Assume that the session has timed out.
     this.#registry.getSystemErrorHandler().handleSessionExpiredError('');
     this.#stopApplication();
   }
 
   #stopApplication(): void {
+    // Consider application not running any more and prevent all future requests
     const uiLifecycle = this.#registry.getUILifecycle();
     if (uiLifecycle.getState() !== TERMINATED) {
       uiLifecycle.setState(TERMINATED);
@@ -303,6 +322,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
         this.#registry.getRequestResponseTracker().endRequest();
+        // For a bidirectional transport the pending message is not sent as the
+        // reconnection payload, so push the pending changes immediately on
+        // reconnect.
         if (pushConnection.isBidirectional()) {
           this.#registry.getMessageSender().sendInvocationsToServer();
         }
@@ -320,9 +342,13 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushReconnectPending(pushConnection: PushConnection): void {
     if (pushConnection.isBidirectional()) {
+      // Lost connection for a connection which will tell us when the connection
+      // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
     }
-    // Otherwise wait; the reconnect dialog shows on the next failing XHR.
+    // Lost connection for a connection we do not necessarily know when it is
+    // available again (long polling behind proxy). Do nothing and show the
+    // reconnect dialog if the user does something and the XHR fails.
   }
 
   pushError(_pushConnection: PushConnection, response: unknown): void {
@@ -331,6 +357,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushClientTimeout(_pushConnection: PushConnection, _response: unknown): void {
+    // TODO Reconnect, allowing client timeout to be set
+    // https://dev.vaadin.com/ticket/18429
     this.handleCommunicationError('Client unexpectedly disconnected. Ensure client timeout is disabled.', -1);
   }
 
