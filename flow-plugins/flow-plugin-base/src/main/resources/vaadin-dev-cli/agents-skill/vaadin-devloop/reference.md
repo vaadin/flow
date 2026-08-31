@@ -69,7 +69,7 @@ the app turns up.
 | Java in a **component/view** class (method bodies, string literals, most view code) | updates in place, **no reload** |
 | Java in a **plain class** (formatter, mapper, helper) called from a renderer | live immediately, but already-rendered output keeps its old values — `apply` says so and tells you to interact with the view or reload |
 | Structural Java (new fields/beans, new repository methods, changed routes or annotations) | restart → **reload the page** |
-| A JPA entity's mapping | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
+| A JPA entity's mapping, or adding `@Entity` to a class | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
 | A deleted `src/main/resources/` file | the copy under `target/classes` is removed too, or the app would go on serving it; a public one then **reloads the page**, a startup one **restarts** |
 | `src/main/frontend/themes/<theme>/**.css` | pushed in place, **no reload** — `apply` combines the theme and sends it |

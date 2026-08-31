@@ -1080,8 +1080,12 @@ final class Launch {
         if (supportsEnhancedRedefinition(java)) {
             cmd.add("-XX:+AllowEnhancedClassRedefinition");
         }
-        // Vaadin: its plugin targets the 24.x package and would fire a second,
-        // competing browser refresh.
+        // Vaadin: the plugin declares itself for Vaadin 23-24, though 2.0.3
+        // does look for the 25 Hotswapper as well - so the reason it stays off
+        // is not that it would fail. It is that it would work: a second driver
+        // of onHotswap and BrowserLiveReload, on its own file-watch schedule
+        // and outside this transaction, so an apply could no longer say what it
+        // did.
         // Spring/SpringBoot: measured to corrupt the context under repeated
         // redefinitions on this stack - HA's scanner loses the Spring Data
         // repository bean ("basePackage not associated with any scannerAgent"),

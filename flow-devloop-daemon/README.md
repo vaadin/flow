@@ -275,7 +275,14 @@ its answer rather than claiming success.
 
 - **JPA entity mappings do not hot-reload**, with or without HotswapAgent.
   Hibernate's metamodel and schema are fixed at startup. The connector reports
-  the entity classes involved and `apply` refuses to call the change live.
+  the entity classes involved and `apply` refuses to call the change live. That
+  includes a class that is only now being given `@Entity`, and the annotation is
+  read out of the compiled bytes for it rather than off the class once it is
+  loaded: on a JVM with enhanced class redefinition the class is replaced rather
+  than edited in place, and its reflective view is refreshed by HotswapAgent's
+  own cache clearing, which is not ordered against the reply. Measured, that
+  made the answer depend on another thread's timing — the bytes say the same
+  thing on every JVM.
 - **A structural change to a proxied Spring bean must restart.** A method-body
   change inside a bean is fine — the proxy delegates and the new body runs. A
   change to the class's *shape* is not: the live proxy was generated against the

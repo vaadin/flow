@@ -156,19 +156,25 @@ final class DevLoopRedefiner {
                 duplicates += targets.size() - 1;
             }
             Class<?> first = targets.get(0);
-            if (isEntity(first)) {
-                entities.add(simple(name));
-            }
-            if (isSpringBean(first)) {
-                beans.add(simple(name));
-            }
-            if (isUiRefreshed(first)) {
-                uiClasses.add(simple(name));
-            }
+            // The class as the application has been running it, which answers
+            // for an annotation the change is taking away: a type that stops
+            // being an entity was still mapped by the metamodel the application
+            // started with.
+            classify(first, entities, beans, uiClasses);
             byte[] bytes = readClassBytes(classesDirs, name);
             if (bytes == null) {
                 return "ERR kind=missing-class-file searched="
                         + classesDirs.size() + " message=" + name;
+            }
+            // And the class the JVM is about to be given. A type that is only
+            // now being made an entity is not one yet in the loop above, and
+            // Hibernate mapped neither version: the metamodel and the schema
+            // were fixed at startup. Asked of the bytes rather than of the
+            // class after the redefine, because the loaded class is not a
+            // reliable witness to what it has just been given - see
+            // declaresEntity.
+            if (declaresEntity(bytes)) {
+                entities.add(simple(name));
             }
             for (Class<?> target : targets) {
                 definitions.add(new ClassDefinition(target, bytes));
@@ -644,10 +650,67 @@ final class DevLoopRedefiner {
                 "com.vaadin.flow.router.Layout");
     }
 
+    /**
+     * Sorts one class into the sets the daemon decides on, by simple name.
+     * <p>
+     * Asked of the class the application is running, before the redefine
+     * replaces it. What the new bytes add is a separate question, and
+     * {@link #declaresEntity} is where it is asked.
+     */
+    private static void classify(Class<?> type, Set<String> entities,
+            Set<String> beans, Set<String> uiClasses) {
+        if (isEntity(type)) {
+            entities.add(simple(type.getName()));
+        }
+        if (isSpringBean(type)) {
+            beans.add(simple(type.getName()));
+        }
+        if (isUiRefreshed(type)) {
+            uiClasses.add(simple(type.getName()));
+        }
+    }
+
     private static boolean isEntity(Class<?> type) {
         return hasAnnotation(type, "jakarta.persistence.Entity",
                 "jakarta.persistence.MappedSuperclass",
                 "jakarta.persistence.Embeddable");
+    }
+
+    /** The same annotations, as they are spelled in a class file. */
+    private static final List<String> ENTITY_DESCRIPTORS = List.of(
+            "Ljakarta/persistence/Entity;",
+            "Ljakarta/persistence/MappedSuperclass;",
+            "Ljakarta/persistence/Embeddable;");
+
+    /**
+     * Whether the compiled bytes carry a JPA annotation, read from the class
+     * file rather than from the class once it is loaded.
+     * <p>
+     * The loaded class cannot answer this. {@link #isEntity} reports what the
+     * application has been running with, which is the right question for an
+     * annotation being taken away and the wrong one for an annotation being
+     * added. Asking it again after the redefine looks like the fix and is not:
+     * on a JVM with enhanced class redefinition the class is replaced rather
+     * than edited in place, and the reflective view of it - annotations
+     * included - is refreshed by HotswapAgent's own cache clearing, which is
+     * not ordered against this reply. Measured here, that made the answer
+     * depend on the timing of another thread. The bytes are what the JVM was
+     * handed, they say the same thing on every JVM, and they are already in
+     * hand.
+     * <p>
+     * A descriptor in the constant pool is not proof that the annotation is on
+     * the class - it could sit on a member, or be a type the class merely
+     * mentions - so this over-reports rather than under-reports. That is the
+     * right way round: the cost of a false positive is a restart that was not
+     * needed, and the cost of a false negative is {@code Stable} over a mapping
+     * the application never had.
+     */
+    private static boolean declaresEntity(byte[] bytes) {
+        // ISO-8859-1 maps every byte to the char of the same value, so a
+        // substring search over it is an exact byte search - and a descriptor
+        // is ASCII, which the class file's modified UTF-8 encodes unchanged.
+        String constants = new String(bytes, StandardCharsets.ISO_8859_1);
+        return ENTITY_DESCRIPTORS.stream().anyMatch(constants::contains);
     }
 
     /**

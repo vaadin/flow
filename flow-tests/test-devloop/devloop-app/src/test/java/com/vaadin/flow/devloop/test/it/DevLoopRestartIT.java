@@ -15,17 +15,20 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
 
 /**
- * A structural change to a proxied Spring bean escalates to a restart, and says
- * why.
+ * The changes a redefine cannot make live, and the reason each one gives.
  * <p>
- * This is the case that used to be reported as live: the JVM accepts the
- * redefine, and the bean's existing proxy - generated from the old shape when
- * the context started - silently no longer matches.
+ * Both cases here are ones that used to be reported as live: the JVM accepts
+ * the redefine, and what the application built from the old class at startup -
+ * a bean's proxy, an ORM's metamodel - silently no longer matches.
  */
 class DevLoopRestartIT extends AbstractDevLoopIT {
+
+    private static final Path VIEW = MUTABLE.resolve("TaskListView.java");
 
     @Test
     void newMemberOnAProxiedBean_restartsAndStaysUp() {
@@ -41,6 +44,26 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         outcome.assertOutputContains("restart:");
 
         cli.run("status").assertExitCode(0).assertOutputContains("running");
+    }
+
+    @Test
+    void addingAnEntityAnnotation_escalatesEvenThoughTheClassRedefines() {
+        // A class-level annotation is an attribute rather than a member, so the
+        // redefine is accepted and the class really does come back carrying
+        // @Entity. Hibernate mapped neither version, though - the metamodel and
+        // schema were fixed at startup - so this has to escalate. Asked only of
+        // the class the application is running, the annotation is not there
+        // yet, and the apply reports as live the very change that is not.
+        patch.replace(VIEW, "public class TaskListView extends Div {",
+                "@jakarta.persistence.Entity\npublic class TaskListView extends Div {");
+
+        // --no-restart stops at the verdict, which is what is under test; the
+        // restart itself is the case above.
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains(
+                "entity mapping cannot hot reload (TaskListView)");
     }
 
     @Test

@@ -91,6 +91,17 @@
       <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
 
+    <!-- The annotations only, so a test can make a loaded class an entity and
+         check that the apply refuses to call that live. No ORM: with no
+         DataSource and no Hibernate on the classpath Spring Boot's JPA
+         auto-configuration backs off, so the application starts exactly as it
+         did and @Entity is inert metadata - which is the point, since what is
+         under test is how the connector classifies the annotation. -->
+    <dependency>
+      <groupId>jakarta.persistence</groupId>
+      <artifactId>jakarta.persistence-api</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
