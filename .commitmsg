@@ -1,0 +1,21 @@
+fix: build the Gradle functional tests against the version under test
+
+Passing vaadin.version through env(1) on the gradlew command line does
+not work: Gradle drops environment variables whose names are not valid
+identifiers, so the variable never reaches the build JVM, let alone the
+test workers. A probe in the build script shows System.getenv() has no
+such key even though the same variable is visible to bash and to a plain
+java process started the same way.
+
+Set it on the functionalTest task instead, from the version being built.
+That version already comes from the root pom, which CI rewrites to
+999.99-SNAPSHOT, so the generated test projects now resolve com.vaadin:flow
+from the workspace the job restores and the workflow needs no plumbing of
+its own. -Pvaadin.version still overrides both, as before.
+
+AbstractGradleTest keeps a guard for the case where that wiring is
+removed or renamed: the fallback to the published snapshot is silent, so
+without it the functional tests would go on passing while testing a
+released version rather than the branch. It now fails when CI is set and
+the variable is missing, and the resolved version is printed for every
+test so the log says what was actually built against.

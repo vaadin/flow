@@ -399,14 +399,12 @@ jobs:
         if: ${{ steps.decide.outputs.run == 'true' }}
         working-directory: flow-plugins/flow-gradle-plugin
         # The sample applications the functional tests build resolve
-        # com.vaadin:flow from the vaadin.version environment variable
-        # (AbstractGradleTest), which otherwise falls back to the released
-        # snapshot - the tests would then pass without ever exercising the code
-        # in this branch. The name contains dots, so it cannot be set as a
-        # shell variable assignment and is passed through env(1) instead.
+        # com.vaadin:flow from the version of the Gradle build, which the poms
+        # set to 999.99-SNAPSHOT above, so they exercise the workspace restored
+        # here rather than a published snapshot. The functionalTest task passes
+        # it on; AbstractGradleTest fails the build if it ever stops arriving.
         run: |
-          env "vaadin.version=999.99-SNAPSHOT" \
-            ./gradlew build --stacktrace --no-daemon
+          ./gradlew build --stacktrace --no-daemon
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
