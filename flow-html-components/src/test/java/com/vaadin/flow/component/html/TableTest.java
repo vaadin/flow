@@ -228,7 +228,7 @@ class TableTest extends ComponentTest {
     }
 
     @Test
-    void getRows_returnsHeadThenBodiesThenFootRows() {
+    void getAllRows_returnsHeadThenBodiesThenFootRows() {
         Table table = table();
         // Added out of document order to show the result follows the table,
         // not the calls.
@@ -238,7 +238,7 @@ class TableTest extends ComponentTest {
         var secondBodyRow = table.addBody().addRow();
 
         assertEquals(List.of(headRow, bodyRow, secondBodyRow, footRow),
-                table.getRows());
+                table.getAllRows());
     }
 
     @Test
@@ -250,7 +250,7 @@ class TableTest extends ComponentTest {
 
         table.removeAllRows();
 
-        assertTrue(table.getRows().isEmpty());
+        assertTrue(table.getAllRows().isEmpty());
         assertEquals(3, table.getChildren().count());
     }
 
@@ -272,7 +272,7 @@ class TableTest extends ComponentTest {
         table.addFooterRows(List.of(footFromList));
 
         assertEquals(List.of(head, headFromList, body, bodyFromList, foot,
-                footFromList), table.getRows());
+                footFromList), table.getAllRows());
     }
 
     @Test

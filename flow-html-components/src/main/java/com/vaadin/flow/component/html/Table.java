@@ -359,16 +359,15 @@ public class Table extends HtmlComponent
      * Returns every row of this table, walking its sections in document order:
      * the <code>&lt;thead&gt;</code> rows, then the rows of each
      * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
-     * Note the asymmetry with {@link #addRow()}, which appends to the body:
-     * this returns the header and footer rows as well. That is the same split
-     * the DOM makes — {@code HTMLTableElement.rows} spans every section while
-     * {@code insertRow()} targets a {@code <tbody>} — which is why both keep
-     * the shorter name here. Reach for {@link TableHead#getRows()} or
-     * {@link TableBody#getRows()} when only one section is of interest.
+     * <p>
+     * The name says {@code All} because this is the only row accessor that
+     * crosses sections: {@link TableHead#getRows()},
+     * {@link TableBody#getRows()} and {@link TableFoot#getRows()} each return
+     * the rows of one container, and {@link #addRow()} appends to the body.
      *
      * @return all the rows of this table.
      */
-    public List<TableRow> getRows() {
+    public List<TableRow> getAllRows() {
         return sections().flatMap(section -> section.getRows().stream())
                 .toList();
     }
@@ -386,7 +385,7 @@ public class Table extends HtmlComponent
      * with a <code>&lt;tr&gt;</code> written straight inside a
      * <code>&lt;table&gt;</code>. Use {@link #addHeaderRow()} or
      * {@link #addFooterRow()} for the other sections; note that
-     * {@link #getRows()} spans all three.
+     * {@link #getAllRows()} spans all three.
      *
      * @return the new row.
      */
