@@ -353,10 +353,12 @@ class PendingJavaScriptInvocationUtilTest {
         component.setVisible(false);
         ui.add(component);
 
-        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
-                "an invisible owner should still retain the invocation");
         assertEquals(1, count(ui),
                 "an invocation waiting for a response again should be counted again");
+
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
+                "an invisible owner should still retain the invocation");
+        assertEquals(1, count(ui));
 
         component.setVisible(true);
 

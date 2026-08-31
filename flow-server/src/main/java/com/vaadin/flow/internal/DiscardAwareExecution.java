@@ -20,11 +20,12 @@ import com.vaadin.flow.function.SerializableConsumer;
 /**
  * An execution registered through
  * {@link StateTree#beforeClientResponse(StateNode, SerializableConsumer)} that
- * wants to know when the tree stops waiting to run it.
+ * wants to know when the tree stops and starts waiting to run it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see #executionDiscarded()
+ * @see #executionRestored()
  */
 public interface DiscardAwareExecution
         extends SerializableConsumer<ExecutionContext> {
@@ -40,4 +41,15 @@ public interface DiscardAwareExecution
      * same tree again.
      */
     void executionDiscarded();
+
+    /**
+     * Called when the state tree starts waiting to run this execution before a
+     * response, which happens when the node it was registered for is attached
+     * to the tree.
+     * <p>
+     * This is also called for an execution that has not been discarded, since
+     * an execution can be registered for a node that is not attached to any
+     * tree yet.
+     */
+    void executionRestored();
 }

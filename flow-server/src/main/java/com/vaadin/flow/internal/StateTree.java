@@ -225,6 +225,8 @@ public class StateTree implements NodeOwner {
 
         if (node.hasBeforeClientResponseEntries()) {
             pendingExecutionNodes.add(node);
+            // A response is written for the node again
+            node.getBeforeClientResponseEntries().forEach(StateTree::restore);
         }
 
         return nodeId;
@@ -422,6 +424,16 @@ public class StateTree implements NodeOwner {
     private static void discard(BeforeClientResponseEntry entry) {
         if (entry.getExecution() instanceof DiscardAwareExecution execution) {
             execution.executionDiscarded();
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree is waiting to run it
+     * again, if it wants to know.
+     */
+    private static void restore(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionRestored();
         }
     }
 

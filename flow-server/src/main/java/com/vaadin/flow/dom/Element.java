@@ -1987,15 +1987,17 @@ public class Element extends Node<Element> {
             if (invocation.isCanceled()) {
                 return;
             }
-            // Counted again if it stopped being counted while the owner was
-            // detached
-            invocation.countWhenAttached();
             context.getUI().getInternals().addJavaScriptInvocation(invocation);
         }
 
         @Override
         public void executionDiscarded() {
             invocation.stopCounting();
+        }
+
+        @Override
+        public void executionRestored() {
+            invocation.countWhenAttached();
         }
     }
 

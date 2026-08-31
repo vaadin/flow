@@ -497,6 +497,10 @@ class StateTreeTest {
                 "detaching the node of an execution should report it as discarded");
 
         StateNodeTest.setParent(child, tree.getRootNode());
+
+        assertEquals(1, execution.restored,
+                "attaching the node again should report the execution as waited for again");
+
         tree.runExecutionsBeforeClientResponse();
 
         assertEquals(1, execution.executed,
@@ -849,6 +853,7 @@ class StateTreeTest {
     private static class TestExecution implements DiscardAwareExecution {
         private int executed;
         private int discarded;
+        private int restored;
 
         @Override
         public void accept(ExecutionContext context) {
@@ -858,6 +863,11 @@ class StateTreeTest {
         @Override
         public void executionDiscarded() {
             discarded++;
+        }
+
+        @Override
+        public void executionRestored() {
+            restored++;
         }
     }
 }
