@@ -1,10 +1,10 @@
 import { expect } from '@open-wc/testing';
-import { PushConfiguration } from '../../../../main/frontend/internal/client/communication/PushConfiguration';
-import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
-import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
+import { PushConfiguration } from '../../../../../main/frontend/internal/client/communication/PushConfiguration';
+import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { inertRegistry } from '../flow/stateTreeTestRegistry';
 
 // PushConfiguration reads the root node's push configuration through a real
 // StateTree, so the configuration is written as the server writes it: values set

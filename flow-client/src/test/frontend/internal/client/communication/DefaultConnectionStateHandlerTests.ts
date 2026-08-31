@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { DefaultConnectionStateHandler } from '../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
-import { XhrConnectionError } from '../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
+import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
 
 function makeRegistry(reconnectAttempts = 3) {
   const log = {

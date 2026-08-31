@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { RequestResponseTracker } from '../../../../main/frontend/internal/client/communication/RequestResponseTracker';
-import { ResynchronizationState } from '../../../../main/frontend/internal/client/communication/ResynchronizationState';
+import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
+import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/ResynchronizationState';
 
 function makeRegistry(
   opts: {

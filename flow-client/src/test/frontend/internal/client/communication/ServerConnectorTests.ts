@@ -1,8 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { ServerConnector } from '../../../../main/frontend/internal/client/communication/ServerConnector';
-import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
-import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
+import { ServerConnector } from '../../../../../main/frontend/internal/client/communication/ServerConnector';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { inertRegistry } from '../flow/stateTreeTestRegistry';
 
 // Captures enqueued messages and processMessage calls.
 function makeRegistry() {

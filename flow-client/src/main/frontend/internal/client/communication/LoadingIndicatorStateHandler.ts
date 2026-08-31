@@ -19,6 +19,7 @@
 // types, muting it for high-frequency UI events (mousemove etc.). The
 // connection-indicator calls go through ConnectionIndicator.
 
+import { getScheduler } from '../TrackingScheduler';
 import type { RequestResponseTracker } from './RequestResponseTracker';
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
@@ -75,7 +76,10 @@ export class LoadingIndicatorStateHandler {
     }
     this.#showLoading = false;
     // Debounce the update so a follow-up request keeps the indicator shown.
-    setTimeout(() => this.#update(), 0);
+    // Through the shared TrackingScheduler (mirrors GWT's Scheduler.get()) so
+    // the pending update keeps the application active for TestBench's
+    // waitForVaadin, as ServerRpcQueue's deferred flush does.
+    getScheduler().scheduleDeferred(() => this.#update());
   }
 
   /**

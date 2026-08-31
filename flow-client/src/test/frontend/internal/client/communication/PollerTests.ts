@@ -1,8 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { Poller } from '../../../../main/frontend/internal/client/communication/Poller';
-import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
-import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
-import { recordingRegistry } from '../client/flow/stateTreeTestRegistry';
+import { Poller } from '../../../../../main/frontend/internal/client/communication/Poller';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
+import { recordingRegistry } from '../flow/stateTreeTestRegistry';
 
 // Poller reaches the server through a real StateTree, and its lifecycle handler
 // through the real UILifecycle, so both are built here rather than faked.

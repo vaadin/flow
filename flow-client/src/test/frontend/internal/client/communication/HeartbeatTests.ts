@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { Heartbeat } from '../../../../main/frontend/internal/client/communication/Heartbeat';
-import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
+import { Heartbeat } from '../../../../../main/frontend/internal/client/communication/Heartbeat';
+import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(heartbeatInterval: number) {
   // Heartbeat registers its handler on the real UILifecycle, which is ported.

@@ -30,7 +30,6 @@ import type { RequestResponseTracker } from './RequestResponseTracker';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { UILifecycle } from '../UILifecycle';
 import type { XhrConnection } from './XhrConnection';
-import { sendBeacon } from '../../MessageSender';
 import type { PushConnection, PushConnectionFactory } from './PushConnection';
 import { ResynchronizationState } from './ResynchronizationState';
 import { Console } from '../Console';
@@ -45,6 +44,16 @@ const RESYNCHRONIZE_ID = 'resynchronize';
 const UNLOAD_BEACON = 'UNLOAD';
 
 type Payload = Record<string, unknown>;
+
+/**
+ * Sends the `payload` to the `url` as a beacon, surviving page unload.
+ *
+ * @param url - the url to send the payload to
+ * @param payload - the payload to send
+ */
+export function sendBeacon(url: string, payload: string): void {
+  window.navigator.sendBeacon(url, payload);
+}
 
 /** The slice of Registry that MessageSender uses. */
 export interface MessageSenderRegistry {

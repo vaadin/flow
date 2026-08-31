@@ -21,6 +21,7 @@
 // the heartbeat/xhr/push handler methods, online/offline handling, the reconnect
 // dialog text, and unrecoverable-error handling.
 
+import { redirect } from '../WidgetUtil';
 import type { UILifecycle } from '../UILifecycle';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { Heartbeat } from './Heartbeat';
@@ -29,16 +30,15 @@ import type { MessageSender } from './MessageSender';
 import type { ReconnectConfiguration } from './ReconnectConfiguration';
 import type { RequestResponseTracker } from './RequestResponseTracker';
 import type { SystemErrorHandler } from '../SystemErrorHandler';
-import { setProperty, setState } from '../ConnectionIndicator';
+import { setProperty } from '../ConnectionIndicator';
 import { ConnectionMessageType } from './ConnectionMessageType';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { PushConnection } from './PushConnection';
+import { UIDL_REFRESH_TOKEN } from './ConnectionStateHandler';
 import { ReconnectStateMachine } from './ReconnectStateMachine';
 import type { XhrConnectionError } from './XhrConnectionError';
 import { Console } from '../Console';
 
-const CONNECTION_LOST = 'connection-lost';
-const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
 const SC_FORBIDDEN = 403;
 const SC_NOT_FOUND = 404;
 const SC_UNAUTHORIZED = 401;
@@ -278,10 +278,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     // response carries the magic token, redirect.
     const match = new RegExp(`${UIDL_REFRESH_TOKEN}(:\\s*(.*?))?(\\s|$)`).exec(message);
     if (match !== null) {
-      const url = match[2];
-      if (url) {
-        window.location.href = url;
-      }
+      // redirect() reloads the page when the token carries no url, which is the
+      // session-expired case.
+      redirect(match[2] ?? null);
       return true;
     }
     return false;
@@ -296,9 +295,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #registerConnectionStateEventHandlers(): void {
     window.addEventListener('offline', () => {
-      // Offline: CONNECTION_LOST and stop heartbeats.
+      // Offline: CONNECTION_LOST and stop heartbeats — giveUp does both.
       this.#machine.giveUp();
-      setState(CONNECTION_LOST);
     });
     window.addEventListener('online', () => {
       // Back online: verify the server connection via a heartbeat.

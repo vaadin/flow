@@ -21,6 +21,7 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import { stringify } from '../WidgetUtil';
 import type { UILifecycle } from '../UILifecycle';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { MessageHandler } from './MessageHandler';
@@ -349,7 +350,7 @@ export class AtmospherePushConnection implements PushConnection {
       throw new Error('This server to client push connection should not be used to send client to server messages');
     }
     if (this.#state === State.CONNECTED) {
-      const messageJson = JSON.stringify(message);
+      const messageJson = stringify(message);
       if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
         while (fragmented.hasNextFragment()) {

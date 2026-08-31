@@ -61,6 +61,11 @@ export class Poller {
   setInterval(interval: number): void {
     this.#stop();
     if (interval >= 0) {
+      if (interval === 0) {
+        // GWT's Timer.scheduleRepeating(0) throws, so a zero interval never
+        // starts a timer in Java either; setInterval(fn, 0) would busy-poll.
+        throw new Error('must be positive');
+      }
       this.#pollHandle = setInterval(() => this.poll(), interval);
     }
   }

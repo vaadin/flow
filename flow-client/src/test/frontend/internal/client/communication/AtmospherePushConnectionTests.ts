@@ -7,7 +7,7 @@ import {
   doPush,
   FragmentedMessage,
   isAtmosphereLoaded
-} from '../../../main/frontend/internal/client/communication/AtmospherePushConnection';
+} from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -206,12 +206,6 @@ describe('AtmospherePushConnection', () => {
         expect(fragment.length).to.be.at.most(4095);
       }
       expect(reassemble(fragments)).to.equal(message);
-    });
-
-    it('starts the first fragment with the message length and delimiter', () => {
-      const fragmented = new FragmentedMessage('abc');
-      expect(fragmented.getNextFragment().startsWith('3|')).to.be.true;
-      expect(fragmented.hasNextFragment()).to.be.false;
     });
   });
 

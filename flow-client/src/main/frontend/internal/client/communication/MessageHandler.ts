@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import { redirect } from '../WidgetUtil';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConstantPool } from '../flow/ConstantPool';
 import type { Dependency, DependencyLoader, LoadMode } from '../DependencyLoader';
@@ -253,7 +254,8 @@ export class MessageHandler {
 
     if ('redirect' in valueMap) {
       const url = (valueMap.redirect as ValueMap).url as string;
-      window.location.href = url;
+      Console.debug(`redirecting to ${url}`);
+      redirect(url);
       return;
     }
     if (UIDL_SECURITY_TOKEN_ID in valueMap) {
@@ -293,7 +295,7 @@ export class MessageHandler {
         this.#processChanges(valueMap);
       }
       if ('stylesheetRemovals' in valueMap) {
-        this.#processStylesheetRemovals(valueMap.stylesheetRemovals as string[]);
+        this.#processStylesheetRemovals(valueMap.stylesheetRemovals as string[] | null);
       }
       if (UIDL_KEY_EXECUTE in valueMap) {
         // Invoke JS only after all tree changes and post-flush listeners added
@@ -391,7 +393,13 @@ export class MessageHandler {
     }
   }
 
-  #processStylesheetRemovals(removals: string[]): void {
+  #processStylesheetRemovals(removals: string[] | null): void {
+    if (removals === null || removals.length === 0) {
+      return;
+    }
+
+    Console.debug(`Processing ${removals.length} stylesheet removals`);
+
     for (const dependencyId of removals) {
       removeStylesheetByIdFromDom(dependencyId);
       this.#registry.getResourceLoader().clearLoadedResourceById(dependencyId);

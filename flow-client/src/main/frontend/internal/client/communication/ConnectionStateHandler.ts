@@ -23,6 +23,24 @@
 import type { PushConnection } from './PushConnection';
 import type { XhrConnectionError } from './XhrConnectionError';
 
+/**
+ * A string that, if found in a non-JSON response to a UIDL request, will cause
+ * the browser to refresh the page. If followed by a colon, optional whitespace,
+ * and a URI, causes the browser to synchronously load the URI.
+ *
+ * This allows, for instance, a servlet filter to redirect the application to a
+ * custom login page when the session expires. For example:
+ *
+ * ```
+ * if (sessionExpired) {
+ *     response.setHeader("Content-Type", "text/html");
+ *     response.getWriter().write(myLoginPageHtml + "<!-- Vaadin-Refresh: "
+ *             + request.getContextPath() + " -->");
+ * }
+ * ```
+ */
+export const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
+
 /** Reacts to connection successes/failures and reconnect-config changes. */
 export interface ConnectionStateHandler {
   /** A heartbeat request failed with an exception. */

@@ -6,7 +6,7 @@ import {
   MessageHandler,
   parseJSONResponse,
   removeStylesheetByIdFromDom
-} from '../../../main/frontend/internal/client/communication/MessageHandler';
+} from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 
 function makeRegistry() {
   const log = {
@@ -87,9 +87,11 @@ describe('MessageHandler', () => {
     expect(parseJSONResponse('{"a":1,"b":"x"}')).to.eql({ a: 1, b: 'x' });
   });
 
-  it('calculateBootstrapTime and getFetchStartTime return numbers', () => {
-    expect(calculateBootstrapTime()).to.be.a('number');
-    expect(getFetchStartTime()).to.be.a('number');
+  it('calculateBootstrapTime and getFetchStartTime return finite timings', () => {
+    // A missing navigation-timing entry would yield NaN, which .a('number') accepts.
+    expect(getFetchStartTime()).to.be.finite;
+    expect(getFetchStartTime()).to.be.at.least(0);
+    expect(calculateBootstrapTime()).to.be.finite;
   });
 
   describe('class', () => {
@@ -155,6 +157,19 @@ describe('MessageHandler', () => {
       handler.setNextResponseSessionExpiredHandler(() => expiredHandled++);
       handler.handleMessage({ syncId: 0, meta: { sessionExpired: true } });
       expect(expiredHandled).to.equal(1);
+    });
+
+    describe('beyond the Java suite', () => {
+      it('keeps processing a message whose stylesheetRemovals is null', () => {
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry as never);
+        // Java early-returns on a null/empty array; iterating it here would throw
+        // inside the processing try and skip everything after it.
+        handler.handleMessage({ syncId: 0, stylesheetRemovals: null, constants: { c: 1 } });
+
+        expect(registry.log.constants).to.deep.equal([{ c: 1 }]);
+        expect(registry.log.endRequests).to.equal(1);
+      });
     });
   });
 });

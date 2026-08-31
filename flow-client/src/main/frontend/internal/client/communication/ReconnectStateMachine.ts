@@ -28,14 +28,9 @@ import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandle
 import type { ReconnectConfiguration } from './ReconnectConfiguration';
 import type { RequestResponseTracker } from './RequestResponseTracker';
 import type { UILifecycle } from '../UILifecycle';
-import { setState } from '../ConnectionIndicator';
+import { CONNECTED, CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
-
-// com.vaadin.client.ConnectionIndicator states
-const RECONNECTING = 'reconnecting';
-const CONNECTED = 'connected';
-const CONNECTION_LOST = 'connection-lost';
 
 /** The slice of Registry the reconnect state machine uses. */
 interface ReconnectRegistry {

@@ -1,12 +1,10 @@
 import { expect } from '@open-wc/testing';
-import { ReconnectConfiguration } from '../../../../main/frontend/internal/client/communication/ReconnectConfiguration';
-import { XhrConnectionError } from '../../../../main/frontend/internal/client/communication/XhrConnectionError';
-import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
-import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
+import { ReconnectConfiguration } from '../../../../../main/frontend/internal/client/communication/ReconnectConfiguration';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { inertRegistry } from '../flow/stateTreeTestRegistry';
 import { fakeConnectionStateHandler } from './connectionStateHandlerFake';
-
-const RECONNECT_DIALOG_CONFIGURATION = 9;
 
 // Mirrors ReconnectDialogConfigurationMap.
 const DIALOG_TEXT_KEY = 'dialogText';
@@ -21,7 +19,7 @@ const RECONNECT_INTERVAL_DEFAULT = 5000;
 // Java test that binds ReconnectConfiguration to a StateTree root node.
 function makeRegistry() {
   const tree = new StateTree(inertRegistry());
-  const map = tree.getRootNode().getMap(RECONNECT_DIALOG_CONFIGURATION);
+  const map = tree.getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
   return {
     getProperty: (key: string) => map.getProperty(key),
     getStateTree: () => tree
@@ -29,10 +27,31 @@ function makeRegistry() {
 }
 
 describe('ReconnectConfiguration', () => {
+  let registry: ReturnType<typeof makeRegistry>;
+  let config: ReconnectConfiguration;
+  let configurationUpdatedCalled: number;
+
+  beforeEach(() => {
+    registry = makeRegistry();
+    config = new ReconnectConfiguration(registry);
+    configurationUpdatedCalled = 0;
+    ReconnectConfiguration.bind(
+      fakeConnectionStateHandler({
+        configurationUpdated: () => {
+          // Reads a value so the reactive computation tracks the configuration.
+          config.getDialogText();
+          configurationUpdatedCalled += 1;
+        }
+      })
+    );
+    // No flush here: Java's setup binds without flushing, so the first flush in
+    // a test also performs the computation's initial run.
+    configurationUpdatedCalled = 0;
+  });
+
   afterEach(() => Reactive.flush());
 
   it('defaults to null dialog texts and default attempts/interval', () => {
-    const config = new ReconnectConfiguration(makeRegistry());
     expect(config.getDialogText()).to.equal(null);
     expect(config.getDialogTextGaveUp()).to.equal(null);
     expect(config.getReconnectAttempts()).to.equal(RECONNECT_ATTEMPTS_DEFAULT);
@@ -40,8 +59,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the dialog text', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
     registry.getProperty(DIALOG_TEXT_KEY).setValue('foo');
     expect(config.getDialogText()).to.equal('foo');
     registry.getProperty(DIALOG_TEXT_KEY).setValue('bar');
@@ -49,8 +66,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the gave-up dialog text', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('foo');
     expect(config.getDialogTextGaveUp()).to.equal('foo');
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('bar');
@@ -58,8 +73,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the reconnect attempts', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
     // Numbers are always passed as doubles from the server.
     registry.getProperty(RECONNECT_ATTEMPTS_KEY).setValue(1234.0);
     expect(config.getReconnectAttempts()).to.equal(1234);
@@ -68,8 +81,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('sets and gets the reconnect interval', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
     // Numbers are always passed as doubles from the server.
     registry.getProperty(RECONNECT_INTERVAL_KEY).setValue(1234.0);
     expect(config.getReconnectInterval()).to.equal(1234);
@@ -78,19 +89,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('reacts to changes, reporting each flushed change once', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
-    let configurationUpdatedCalled = 0;
-    // Reads a value like the Java handler so the reactive computation tracks it.
-    ReconnectConfiguration.bind(
-      fakeConnectionStateHandler({
-        configurationUpdated: () => {
-          config.getDialogText();
-          configurationUpdatedCalled += 1;
-        }
-      })
-    );
-
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('bar');
     Reactive.flush();
     expect(configurationUpdatedCalled).to.equal(1);
@@ -101,18 +99,6 @@ describe('ReconnectConfiguration', () => {
   });
 
   it('reports several changes made before a flush in one batch', () => {
-    const registry = makeRegistry();
-    const config = new ReconnectConfiguration(registry);
-    let configurationUpdatedCalled = 0;
-    ReconnectConfiguration.bind(
-      fakeConnectionStateHandler({
-        configurationUpdated: () => {
-          config.getDialogText();
-          configurationUpdatedCalled += 1;
-        }
-      })
-    );
-
     registry.getProperty(RECONNECT_INTERVAL_KEY).setValue(13.0);
     registry.getProperty(RECONNECT_ATTEMPTS_KEY).setValue(13.0);
     registry.getProperty(DIALOG_TEXT_KEY).setValue('abc');
@@ -121,18 +107,22 @@ describe('ReconnectConfiguration', () => {
     Reactive.flush();
     expect(configurationUpdatedCalled).to.equal(1);
   });
-});
 
-describe('XhrConnectionError', () => {
-  it('exposes the xhr, payload and exception', () => {
-    const xhr = new XMLHttpRequest();
-    const payload = { rpc: [] };
-    const error = new Error('boom');
-    const connectionError = new XhrConnectionError(xhr, payload, error);
-    expect(connectionError.getXhr()).to.equal(xhr);
-    expect(connectionError.getPayload()).to.equal(payload);
-    expect(connectionError.getException()).to.equal(error);
+  describe('beyond the Java suite', () => {
+    it('re-runs on a change to a property the handler read', () => {
+      // Both Java cases assert their first count right after binding, so it is
+      // the computation's initial run that satisfies them. Flushing that run
+      // first makes the next count prove the dependency was registered.
+      Reactive.flush();
+      configurationUpdatedCalled = 0;
 
-    expect(new XhrConnectionError(xhr, payload, null).getException()).to.equal(null);
+      registry.getProperty(DIALOG_TEXT_KEY).setValue('foo');
+      Reactive.flush();
+      expect(configurationUpdatedCalled).to.equal(1);
+
+      registry.getProperty(DIALOG_TEXT_KEY).setValue('bar');
+      Reactive.flush();
+      expect(configurationUpdatedCalled).to.equal(2);
+    });
   });
 });

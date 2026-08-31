@@ -106,29 +106,49 @@ export class Heartbeat {
     Console.debug('Sending heartbeat request...');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', this.#uri, true);
-    // Mirror Java's Xhr.post, which always sends credentials so cross-origin/CORS
-    // deployments keep their cookies and authentication headers.
-    xhr.withCredentials = true;
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        if (xhr.status === 200) {
-          this.#registry.getConnectionStateHandler().heartbeatOk();
-        } else if (this.#interval < 0) {
+
+    // Mirrors Xhr.Callback.onFail: a null exception is a non-200 response, a
+    // non-null one a synchronous throw from open()/send().
+    const onFail = (error: Error | null): void => {
+      if (error === null) {
+        if (this.#interval < 0) {
           // Heartbeat terminated before response processing (likely a session
           // expiration already handled elsewhere).
           Console.debug('Heartbeat terminated, ignoring failure.');
         } else {
           this.#registry.getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
         }
-        this.schedule();
+      } else {
+        this.#registry.getConnectionStateHandler().heartbeatException(xhr, error);
       }
-    };
-    xhr.onerror = () => {
-      this.#registry.getConnectionStateHandler().heartbeatException(xhr, new Error('Heartbeat request failed'));
       this.schedule();
     };
-    xhr.send();
+
+    // Cleared once fired, and no "error" listener: that event follows the DONE
+    // ready-state change, so a network failure would be reported twice.
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          this.#registry.getConnectionStateHandler().heartbeatOk();
+          this.schedule();
+          xhr.onreadystatechange = null;
+          return;
+        }
+        onFail(null);
+        xhr.onreadystatechange = null;
+      }
+    };
+    try {
+      xhr.open('POST', this.#uri, true);
+      // Java's Xhr always sends credentials so cross-origin/CORS deployments
+      // keep their cookies and authentication headers.
+      xhr.withCredentials = true;
+      xhr.send();
+    } catch (error) {
+      Console.error(error);
+      onFail(error as Error);
+      xhr.onreadystatechange = null;
+    }
   }
 
   /** The heartbeat interval in seconds. */

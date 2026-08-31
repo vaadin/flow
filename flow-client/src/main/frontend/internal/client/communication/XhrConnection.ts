@@ -18,6 +18,8 @@
 // requests to the server over XHR and routes the response to the MessageHandler
 // or, on failure, to the ConnectionStateHandler.
 
+import { stringify } from '../WidgetUtil';
+import { Console } from '../Console';
 import type { ValueMap } from './MessageOrdering';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
@@ -100,24 +102,37 @@ export class XhrConnection {
 
   /** Sends an asynchronous UIDL request to the server. */
   send(payload: Payload): void {
-    const payloadJson = JSON.stringify(payload);
+    const payloadJson = stringify(payload);
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', this.getUri(), true);
-    // Mirror Java's Xhr.post, which always sends credentials so cross-origin/CORS
-    // deployments keep their cookies and authentication headers.
-    xhr.withCredentials = true;
-    xhr.setRequestHeader('Content-Type', JSON_CONTENT_TYPE);
+    // Mirrors Xhr.request and its Handler: the ready-state handler is the only
+    // asynchronous failure path and reports a null exception, and it is cleared
+    // once it has fired (clearOnReadyStateChange). A non-null exception comes
+    // only from a synchronous throw in open()/send(), hence the catch below —
+    // listening for the "error" event instead would report a network failure
+    // twice, because that event follows the DONE ready-state change.
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           this.onResponseSuccess(xhr, payload);
-        } else {
-          this.onResponseFail(xhr, payload, null);
+          xhr.onreadystatechange = null;
+          return;
         }
+        this.onResponseFail(xhr, payload, null);
+        xhr.onreadystatechange = null;
       }
     };
-    xhr.onerror = () => this.onResponseFail(xhr, payload, new Error('XHR request failed'));
-    xhr.send(payloadJson);
+    try {
+      xhr.open('POST', this.getUri(), true);
+      xhr.setRequestHeader('Content-Type', JSON_CONTENT_TYPE);
+      // Java's Xhr always sends credentials so cross-origin/CORS deployments
+      // keep their cookies and authentication headers.
+      xhr.withCredentials = true;
+      xhr.send(payloadJson);
+    } catch (error) {
+      Console.error(error);
+      this.onResponseFail(xhr, payload, error as Error);
+      xhr.onreadystatechange = null;
+    }
 
     if (this.#webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
       const retryTimeout = 250;

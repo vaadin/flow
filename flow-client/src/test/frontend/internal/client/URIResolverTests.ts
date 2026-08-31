@@ -4,7 +4,7 @@ import {
   getCurrentLocationRelativeToBaseUri,
   resolveVaadinUri,
   URIResolver
-} from '../../../main/frontend/internal/client/URIResolver';
+} from '../../../../main/frontend/internal/client/URIResolver';
 
 describe('URIResolver', () => {
   it('resolves the context:// protocol against the context root', () => {
@@ -25,8 +25,16 @@ describe('URIResolver', () => {
     expect(getBaseRelativeUri('http://h/app/', 'http://other/x')).to.equal('http://other/x');
   });
 
-  it('returns the current location relative to the base uri as a string', () => {
-    expect(getCurrentLocationRelativeToBaseUri()).to.be.a('string');
+  it('returns the current location relative to the base uri', () => {
+    // The test page is served from the base uri, so the result is the page's own
+    // path relative to it — never absolute, and never the whole href.
+    const relative = getCurrentLocationRelativeToBaseUri();
+    expect(relative).to.be.a('string');
+    expect(relative.startsWith('http')).to.be.false;
+    // The query string is not part of the resolved path.
+    expect(`${document.baseURI.replace(/[^/]*$/, '')}${relative}`).to.equal(
+      `${window.location.origin}${window.location.pathname}`
+    );
   });
 
   it('resolves via the class against the configured context root', () => {
