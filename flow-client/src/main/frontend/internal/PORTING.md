@@ -449,6 +449,47 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     #24949._ (Regression this prevents: `BinderContext.getStrategies` invited a
     mid-series signature change that would have diverged from `BinderContext.java`
     while both trees were still being reviewed against each other.)
+17. **Carry the implementation comments, not only the Javadoc.** The in-body
+    `//` comments of a Java method are part of what is ported: they record why a
+    branch exists, what the server does that forces an ordering, which bug a line
+    works around, why a wait is where it is. Carry each one to the statement it
+    annotates, at the same point in the method and in the source wording — a port
+    that keeps every Javadoc block but drops the body comments loses precisely the
+    knowledge that cannot be re-derived from the code. Rewrapping to the
+    TypeScript print width is fine, and two Java comments may merge into one
+    sentence where the port merges the statements they annotate; dropping the
+    substance is not.
+    - **The exceptions are the ones the code itself has.** A comment explaining a
+      construct the port does not have is not missing: `// prevent direct
+      instantiation` / `// Only static stuff in this class` above a private
+      utility constructor (a module of functions has none), `// JSO Constructor`,
+      `// $entry not needed as function is not exported`, `// Crazy cast since
+      otherwise SDM fails`, a comment on an unported private helper. Where the
+      port *replaces* the mechanic rather than dropping it, the comment is
+      replaced too — say what the TypeScript does instead, at that site.
+    - **A carried Java `TODO` stays a plain `TODO`,** with its original text and
+      ticket link — `DefaultConnectionStateHandler.pushClientTimeout` keeps
+      `// TODO Reconnect, allowing client timeout to be set` and its
+      `dev.vaadin.com/ticket/18429` link. It is the Java author's open item, not
+      porting debt, so it takes neither the rule-11 `TODO(flow-client-ts)` marker
+      nor a retrofit-backlog row.
+    - *Verification:* compare the comment-line counts per module
+      (`grep -c '^[ \t]\+//'` over the `.java` and its `.ts`) and read the Java
+      comments against the port wherever the port has fewer. The count only
+      points at modules to read: a port that condenses three Java lines into one
+      sentence is complete at a lower count, and one that adds port-specific
+      notes can sit at a higher count while still having dropped something.
+      Indentation-scoped counts mislead badly — measuring only 8-space Java
+      against 4-space TypeScript comments read `SimpleElementBindingStrategy` as
+      short by 49 lines when it is short by 2, and reported no gap at all for
+      `JsoConfiguration`, whose port carries none of its original three.
+    _Introduced during #24951._ (Regression this prevents:
+    `DefaultConnectionStateHandler` carried 12 of its original's 50 comment lines,
+    losing among others why `scheduleReconnect` fires the first retry outside the
+    timer, why 4xx status codes are treated as possibly temporary, and why a
+    bidirectional transport pushes pending changes immediately on reconnect; the
+    sweep it prompted found comments missing in eight of this PR's modules and
+    eleven more in the layers below.)
 
 ## Retrofit backlog
 
@@ -463,6 +504,7 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 | --- | --- | --- | --- |
 | 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are still omitted, now blocked on `ApplicationConnection` alone (the other 23 return types are ported). Twenty-two modules therefore still declare a local registry interface, though every member of those now derives from the ported class via `Pick<…>`, so only the container is local. They collapse into the real `Registry` once `DefaultRegistry` can assemble one, so a suite can build it | the PR that ports `ApplicationConnection` and `DefaultRegistry` | open |
 | 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
+| 17 | Eleven base-layer modules measure short of their Java original's comment lines: `Console` (2/7), `SharedUtil` (10/13), `TreeChangeProcessor` (4/6), `JsArray` (0/2), `BrowserDetails` (34/36), `ExistingElementMap` (1/2), `MapProperty` (14/15), `ClientJsonCodec` (9/10), `SimpleElementBindingStrategy` (107/109), `ServerEventHandlerBinder` (0/1), `NodeFeatures` (0/1). Each needs the read-through the count only points at, since part of the gap is the GWT mechanics the rule exempts (`Console`'s `$entry` deferral, `JsArray`'s private constructor) and part is genuinely dropped (`ClientJsonCodec` has none of the five `// Check for @v-node format` branch markers; `MapProperty` carries one of the two `// mark as server update is in progress` sites) | a follow-up on the state-tree and support-services layers | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on
