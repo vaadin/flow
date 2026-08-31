@@ -22,8 +22,7 @@ import com.vaadin.testbench.TestBenchElement;
  * <code>&lt;td&gt;</code> or a <code>&lt;th&gt;</code>. It carries no
  * {@code @Element} annotation of its own: it is the type
  * {@link TableRowElement#getCells()} speaks in when the kind of cell does not
- * matter, mirroring {@link com.vaadin.flow.component.html.TableCell} on the
- * component side.
+ * matter, mirroring {@code TableCell} on the component side.
  *
  * @since 25.3
  */
