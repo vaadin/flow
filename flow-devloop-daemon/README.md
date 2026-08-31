@@ -53,6 +53,13 @@ clean` must not orphan a running daemon and leave the next command spawning a
 second one to fight for port 8080. The recorded start time is what stops a
 recycled pid from passing for a live daemon.
 
+Beside it, `.vaadin/daemon.lock` is held as an OS file lock for as long as the
+daemon runs. Reading the record, binding a port and writing the record back is
+three steps, and two simultaneous first invocations would otherwise each get
+through them and each start an application on the same port. The lock makes it
+one step, and the kernel releases it if the daemon dies, so there is nothing to
+reap.
+
 `install-dev-cli` puts the `vaadin-dev` scripts in that same directory, so
 `.vaadin/` holds both committed tooling and per-run state. The token in the
 handshake authorizes commands to the daemon, so the goal also installs
@@ -355,6 +362,22 @@ its answer rather than claiming success.
   restart loading it straight back. Unlike a live resource the deletion is not
   forgotten when it is acted on: it stays in the change-set until a restart
   re-seeds the inventory from disk.
+- **An edit that changes what a class promises its callers is not supported.**
+  `Compile` passes only the change-set to javac, so callers nobody edited keep
+  the bytecode they were compiled with. Rename or re-sign a method, move a
+  supertype, or change a `static final` constant, and those callers are stale —
+  a `NoSuchMethodError` at runtime, or for an inlined constant no error at all
+  and the old value — while `apply` reports `Stable`. The restart does not fix
+  it either: it loads the same class files. Recompile with Maven after such an
+  edit. A dependency-aware compile (or a whole-module recompile when the
+  compiled API changes) is the fix, and is not implemented.
+- **Annotation processors are not run.** The compile passes `-proc:none`, so a
+  Lombok-, MapStruct- or Dagger-backed source recompiled here loses every member
+  and every class the processor would have generated, and the redefine or the
+  restart then works from bytecode a normal Maven build would never have
+  produced. Such a project needs `mvn compile` rather than `apply`; honouring
+  the module's `proc` and `annotationProcessorPaths` configuration is not
+  implemented.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
   fires a competing full page reload; the Spring ones were measured to lose the

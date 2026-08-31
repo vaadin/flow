@@ -17,10 +17,14 @@ package com.vaadin.flow.devloop.daemon;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -36,6 +40,8 @@ import java.util.Properties;
 final class Handshake {
 
     static final String FILE_NAME = "daemon.properties";
+
+    static final String LOCK_NAME = "daemon.lock";
 
     final long pid;
     final long startEpochMillis;
@@ -54,6 +60,83 @@ final class Handshake {
 
     static Path path(Path projectRoot) {
         return projectRoot.resolve(".vaadin").resolve(FILE_NAME);
+    }
+
+    static Path lockPath(Path projectRoot) {
+        return projectRoot.resolve(".vaadin").resolve(LOCK_NAME);
+    }
+
+    /**
+     * The right to be this project's daemon, held as long as the daemon runs.
+     * <p>
+     * The record below cannot decide this on its own. Reading it, seeing
+     * nothing, binding a port and writing it is three steps, and two
+     * simultaneous first invocations - an agent and a developer, or two agents
+     * - can both take the first step before either takes the last. Both would
+     * then start a daemon, the second record would overwrite the first, and
+     * whichever daemon each client reached would try to launch the application
+     * on the same port.
+     * <p>
+     * An OS file lock is what makes it one step: exactly one process holds it,
+     * and it is released by the kernel if that process dies, so a crashed
+     * daemon leaves nothing to reap.
+     */
+    static final class Claim implements AutoCloseable {
+
+        private final FileChannel channel;
+
+        private final FileLock lock;
+
+        private Claim(FileChannel channel, FileLock lock) {
+            this.channel = channel;
+            this.lock = lock;
+        }
+
+        @Override
+        public void close() {
+            try {
+                lock.release();
+            } catch (IOException ignored) {
+                // Releasing is best effort: closing the channel below, and
+                // process exit after it, release the lock anyway.
+            }
+            try {
+                channel.close();
+            } catch (IOException ignored) {
+                // As above - nothing a shutting-down daemon can act on.
+            }
+        }
+    }
+
+    /**
+     * Claims the project's daemon slot, or reports empty when another process
+     * already holds it.
+     * <p>
+     * The lock file is left behind on purpose: on Windows it cannot be deleted
+     * while a handle is open, and an empty file is not state - the lock, not
+     * the file, is what is held.
+     */
+    static Optional<Claim> claim(Path projectRoot) throws IOException {
+        Path file = lockPath(projectRoot);
+        Files.createDirectories(file.getParent());
+        FileChannel channel = FileChannel.open(file, StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE);
+        try {
+            FileLock lock = channel.tryLock();
+            if (lock == null) {
+                channel.close();
+                return Optional.empty();
+            }
+            return Optional.of(new Claim(channel, lock));
+        } catch (OverlappingFileLockException e) {
+            // Another thread of this same JVM holds it. Only reachable in a
+            // test, and the answer is the same one another process gets.
+            channel.close();
+            return Optional.empty();
+        } catch (IOException e) {
+            channel.close();
+            throw e;
+        }
     }
 
     /** Written temp-then-move so a reader never sees a half-written file. */

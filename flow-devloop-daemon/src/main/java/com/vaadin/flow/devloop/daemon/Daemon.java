@@ -75,6 +75,9 @@ public final class Daemon {
 
     /** Kept so the shutdown hook can stop it rather than leaving it running. */
     private volatile ScheduledExecutorService idleWatchdog;
+
+    /** Held for as long as this daemon runs; see {@link Handshake.Claim}. */
+    private volatile Handshake.Claim claim;
     private ServerSocket serverSocket;
 
     private final Duration idleTimeout = Duration
@@ -97,6 +100,20 @@ public final class Daemon {
     }
 
     private void run() throws IOException {
+        // One daemon per project, decided before anything is read or written:
+        // checking the record, binding a port and writing the record back is
+        // not one step, and two first invocations at once would otherwise both
+        // get through it and both start an application.
+        Optional<Handshake.Claim> claimed = Handshake.claim(root);
+        if (claimed.isEmpty()) {
+            System.out.println(Handshake.read(root)
+                    .map(other -> "daemon already running on port " + other.port
+                            + " (pid " + other.pid + ")")
+                    .orElse("another daemon is starting for " + root));
+            return;
+        }
+        claim = claimed.get();
+
         // Stale-instance takeover, decided by process liveness rather than by
         // probing a socket. A live predecessor wins and we exit quietly.
         Optional<Handshake> existing = Handshake.read(root);
@@ -542,5 +559,11 @@ public final class Daemon {
         }
         Handshake.read(root).filter(h -> h.pid == ProcessHandle.current().pid())
                 .ifPresent(h -> Handshake.delete(root));
+        // Last: the claim is what keeps the next invocation from starting while
+        // this one is still stopping the application it owns.
+        Handshake.Claim held = claim;
+        if (held != null) {
+            held.close();
+        }
     }
 }

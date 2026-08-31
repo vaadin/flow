@@ -66,6 +66,21 @@ class HandshakeTest {
     }
 
     @Test
+    void claim_isHeldByOneProcessAtATime() throws IOException {
+        // Two first invocations at once would otherwise both read no record,
+        // both bind a port and both start the application.
+        Optional<Handshake.Claim> first = Handshake.claim(root);
+        assertTrue(first.isPresent());
+
+        assertTrue(Handshake.claim(root).isEmpty());
+
+        first.get().close();
+        Optional<Handshake.Claim> after = Handshake.claim(root);
+        assertTrue(after.isPresent(), "a released claim is available again");
+        after.get().close();
+    }
+
+    @Test
     void read_noFile_isEmpty() {
         assertTrue(Handshake.read(root).isEmpty());
     }
