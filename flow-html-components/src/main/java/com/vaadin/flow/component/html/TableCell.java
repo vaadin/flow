@@ -30,8 +30,8 @@ import com.vaadin.flow.component.HtmlContainer;
  * Base class for the two kinds of cell a {@link TableRow} can hold: a
  * {@link TableDataCell} (<code>&lt;td&gt;</code>) and a {@link TableHeaderCell}
  * (<code>&lt;th&gt;</code>). It exists so that operations that do not care
- * which kind a cell is — {@link TableRow#getCells()} and
- * {@link TableRow#removeCell(TableCell)} — have a type to speak in.
+ * which kind a cell is — {@link TableRow#getCells()} and the row's inherited
+ * {@code add} and {@code remove} — have a type to speak in.
  * <p>
  * Cells hold flow content, so this class does extend {@link HtmlContainer}:
  * anything may go inside a cell.

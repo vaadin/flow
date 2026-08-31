@@ -23,6 +23,7 @@ import org.jspecify.annotations.NullMarked;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -31,8 +32,13 @@ import com.vaadin.flow.component.Tag;
  * {@link Table}.
  * <p>
  * A <code>&lt;tr&gt;</code> may only contain <code>&lt;td&gt;</code> and
- * <code>&lt;th&gt;</code> cells, so this component has no generic
- * {@code add(Component)}; put content inside the cells instead.
+ * <code>&lt;th&gt;</code> cells, which is what {@link HasComponentsOfType}
+ * expresses: the standard {@code add}, {@code remove}, {@code replace} and
+ * {@link HasComponentsOfType#bindChildren(com.vaadin.flow.signals.Signal, com.vaadin.flow.function.SerializableFunction)
+ * bindChildren} operations are all available, but only for {@link TableCell},
+ * so anything else is rejected at compile time. What this class adds on top are
+ * the cell factories, which create a cell and attach it in one call. To put
+ * arbitrary content in a row, put it inside a cell.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tr">MDN:
@@ -41,7 +47,8 @@ import com.vaadin.flow.component.Tag;
  */
 @NullMarked
 @Tag(Tag.TR)
-public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
+public class TableRow extends HtmlComponent
+        implements HasComponentsOfType<TableCell>, ClickNotifier<TableRow> {
 
     /**
      * Creates a new empty row.
@@ -76,7 +83,9 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     /**
      * Appends the given components to this row. A {@link TableCell} is added
      * as-is; anything else is wrapped in a new {@link TableDataCell}, since a
-     * <code>&lt;tr&gt;</code> may only contain cells.
+     * <code>&lt;tr&gt;</code> may only contain cells. This is the lenient
+     * counterpart of the inherited {@code add(TableCell...)}, which takes cells
+     * only and rejects anything else at compile time.
      *
      * @param components
      *            the cells, or the content to wrap in cells.
@@ -96,9 +105,9 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     public TableRow addCells(List<? extends Component> components) {
         for (Component component : components) {
             if (component instanceof TableCell cell) {
-                append(cell);
+                add(cell);
             } else {
-                append(new TableDataCell(component));
+                add(new TableDataCell(component));
             }
         }
         return this;
@@ -150,19 +159,6 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
     public TableRow addHeaderCells(List<String> cellTexts) {
         cellTexts.forEach(this::addHeaderCell);
         return this;
-    }
-
-    /**
-     * Inserts the given cell at the given position.
-     *
-     * @param position
-     *            the position to insert the cell at, between 0 and the number
-     *            of cells in this row.
-     * @param cell
-     *            the cell to insert.
-     */
-    public void insertCell(int position, TableCell cell) {
-        getElement().insertChild(position, cell.getElement());
     }
 
     /**
@@ -266,7 +262,8 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
 
     /**
      * Returns every cell of this row, in document order, both kinds combined.
-     * For kind-specific lists use {@link #getHeaderCells()} or
+     * This is the typed counterpart of {@link #getChildren()}. For
+     * kind-specific lists use {@link #getHeaderCells()} or
      * {@link #getDataCells()}.
      *
      * @return this row's cells.
@@ -275,34 +272,17 @@ public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
         return cellsOfType(TableCell.class);
     }
 
-    /**
-     * Removes the given cell from this row.
-     *
-     * @param cell
-     *            the cell to remove.
-     */
-    public void removeCell(TableCell cell) {
-        getElement().removeChild(cell.getElement());
-    }
-
-    /**
-     * Removes every cell from this row.
-     */
-    public void removeAllCells() {
-        getElement().removeAllChildren();
-    }
-
     private <T extends Component> List<T> cellsOfType(Class<T> type) {
         return ComponentUtil.getChildrenOfType(this, type).toList();
     }
 
     private <T extends TableCell> T append(T cell) {
-        getElement().appendChild(cell.getElement());
+        add(cell);
         return cell;
     }
 
     private <T extends TableCell> T insert(T cell, int position) {
-        getElement().insertChild(position, cell.getElement());
+        addComponentAtIndex(position, cell);
         return cell;
     }
 }

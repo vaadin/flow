@@ -96,13 +96,13 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
-    void insertCell_placesAPreBuiltCellAtTheGivenPosition() {
+    void addComponentAtIndex_placesAPreBuiltCellAtTheGivenPosition() {
         TableRow row = new TableRow();
         TableDataCell first = row.addDataCell();
         TableDataCell last = row.addDataCell();
         TableHeaderCell inserted = new TableHeaderCell("Name");
 
-        row.insertCell(1, inserted);
+        row.addComponentAtIndex(1, inserted);
 
         assertEquals(List.of(first, inserted, last), row.getCells());
     }
@@ -147,24 +147,24 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
-    void removeCell_detachesItFromTheRow() {
+    void remove_detachesTheCellFromTheRow() {
         TableRow row = new TableRow();
         TableHeaderCell th = row.addHeaderCell();
         TableDataCell td = row.addDataCell();
 
-        row.removeCell(th);
+        row.remove(th);
 
         assertEquals(List.of(td), row.getCells());
         assertTrue(th.getParent().isEmpty());
     }
 
     @Test
-    void removeAllCells_leavesTheRowEmpty() {
+    void removeAll_leavesTheRowEmpty() {
         TableRow row = new TableRow();
         row.addHeaderCell();
         row.addDataCell();
 
-        row.removeAllCells();
+        row.removeAll();
 
         assertTrue(row.getCells().isEmpty());
         assertEquals(0, row.getChildren().count());
