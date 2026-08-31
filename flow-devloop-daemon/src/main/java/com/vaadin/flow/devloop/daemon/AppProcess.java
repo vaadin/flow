@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,16 +90,37 @@ final class AppProcess {
     private final Path root;
     private final Launch launch;
 
+    /**
+     * One launch and the state that belongs to that launch alone.
+     * <p>
+     * The exit callback runs asynchronously, so a restart can have replaced the
+     * process before a predecessor's callback fires. Anything the callback
+     * reads has to be the dead process's own, and anything it reports has to be
+     * ignored once the run is no longer {@link AppProcess#run the current one}
+     * - otherwise a corpse's exit code marks the app that replaced it as
+     * crashed, clears its registration and releases its startup latch.
+     */
+    static final class Run {
+        final Process process;
+        final Path logFile;
+        final CountDownLatch registrationLatch = new CountDownLatch(1);
+        final AtomicBoolean stopExpected = new AtomicBoolean();
+
+        Run(Process process, Path logFile) {
+            this.process = process;
+            this.logFile = logFile;
+        }
+    }
+
     private volatile State state = State.STOPPED;
-    private volatile Process process;
     private volatile Integer exitCode;
     private volatile String mode = "unknown";
     private volatile boolean registered;
     private volatile String failureReason;
-    private volatile Path logFile;
     private volatile AppLog.Watch watch;
-    private final AtomicBoolean stopExpected = new AtomicBoolean();
-    private volatile CountDownLatch registrationLatch = new CountDownLatch(1);
+
+    /** The current launch, or {@code null} before the first one. */
+    private volatile Run run;
 
     /**
      * Serialises start against stop. A lock rather than the instance monitor
@@ -124,8 +146,9 @@ final class AppProcess {
     }
 
     Optional<Long> pid() {
-        Process current = process;
-        return current != null && current.isAlive() ? Optional.of(current.pid())
+        Run current = run;
+        return current != null && current.process.isAlive()
+                ? Optional.of(current.process.pid())
                 : Optional.empty();
     }
 
@@ -143,9 +166,9 @@ final class AppProcess {
      *         does not report one
      */
     Optional<Long> startedAtMillis() {
-        Process current = process;
-        return current == null || !current.isAlive() ? Optional.empty()
-                : current.info().startInstant()
+        Run current = run;
+        return current == null || !current.process.isAlive() ? Optional.empty()
+                : current.process.info().startInstant()
                         .map(java.time.Instant::toEpochMilli);
     }
 
@@ -224,12 +247,9 @@ final class AppProcess {
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
 
-            stopExpected.set(false);
             registered = false;
             failureReason = null;
             exitCode = null;
-            logFile = appLog;
-            registrationLatch = new CountDownLatch(1);
             state = State.STARTING;
 
             log.line("launching " + command.get(0));
@@ -248,10 +268,10 @@ final class AppProcess {
                     .directory(root.toFile()).redirectErrorStream(true)
                     .redirectOutput(ProcessBuilder.Redirect.to(appLog.toFile()))
                     .start();
-            this.process = started;
+            Run current = beginRun(started, appLog);
             log.line("app pid " + started.pid() + ", log " + appLog);
 
-            started.onExit().thenAccept(this::handleExit);
+            started.onExit().thenAccept(exited -> handleExit(current));
 
             // Redirect.to truncates, so this run's output starts at offset
             // zero.
@@ -261,7 +281,7 @@ final class AppProcess {
             // after the app came up, and this is the only reader of that log.
             AppLog.Watch watching = new AppLog.Watch(appLog);
             this.watch = watching;
-            CountDownLatch latch = registrationLatch;
+            CountDownLatch latch = current.registrationLatch;
             long registerBy = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
             long settleBy = 0;
             boolean up = false;
@@ -319,17 +339,20 @@ final class AppProcess {
     String stop() {
         lifecycle.lock();
         try {
-            Process current = process;
-            if (current == null || !current.isAlive()) {
+            Run current = run;
+            if (current == null || !current.process.isAlive()) {
                 state = State.STOPPED;
                 return "not running";
             }
-            stopExpected.set(true);
-            current.destroy();
+            // The flag belongs to this run, so a later start cannot clear it
+            // before this process's exit callback has read it.
+            current.stopExpected.set(true);
+            Process victim = current.process;
+            victim.destroy();
             try {
-                if (!current.waitFor(10, TimeUnit.SECONDS)) {
-                    current.destroyForcibly();
-                    current.waitFor(10, TimeUnit.SECONDS);
+                if (!victim.waitFor(10, TimeUnit.SECONDS)) {
+                    victim.destroyForcibly();
+                    victim.waitFor(10, TimeUnit.SECONDS);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -372,14 +395,33 @@ final class AppProcess {
         return new Startup(false, full, detail);
     }
 
-    private void handleExit(Process exited) {
-        exitCode = exited.exitValue();
+    /**
+     * Publishes a launch as the current run, which is what makes its exit
+     * callback authoritative and every earlier one obsolete.
+     */
+    Run beginRun(Process started, Path appLog) {
+        Run current = new Run(started, appLog);
+        this.run = current;
+        return current;
+    }
+
+    void handleExit(Run exited) {
+        // Release anyone waiting on this run's startup so a failed launch
+        // returns at once. Its own latch, so a restart's waiter is untouched.
+        exited.registrationLatch.countDown();
+        if (run != exited) {
+            // A restart already replaced this process. The state on show
+            // belongs to its successor, and a dead predecessor may not speak
+            // for it.
+            return;
+        }
+        exitCode = exited.process.exitValue();
         registered = false;
-        if (stopExpected.get()) {
+        if (exited.stopExpected.get()) {
             state = State.STOPPED;
         } else {
             state = State.CRASHED;
-            Path appLog = logFile;
+            Path appLog = exited.logFile;
             // The reason, not just the code: an "exit=1" whose cause stays
             // buried
             // in a log file is what made a port clash look like a tool bug.
@@ -388,27 +430,52 @@ final class AppProcess {
                             : AppLog.cause(appLog).map(c -> ": " + c).orElse("")
                                     + " (see " + appLog + ")");
         }
-        // Release anyone waiting on startup so a failed launch returns at once.
-        registrationLatch.countDown();
     }
 
     /**
      * Called when the in-app connector registers over its long-lived socket.
+     * <p>
+     * The connector reports its own pid, and that is what ties a registration
+     * to one launch. Without it a predecessor still winding down after a
+     * restart would speak for the app that replaced it.
+     *
+     * @param reportedMode
+     *            the mode the app reports for itself
+     * @param pid
+     *            the registering JVM's pid, empty when the connector reports
+     *            none, in which case the current launch is assumed
+     * @return the run the registration belongs to, or empty when it belongs to
+     *         no launch this daemon is reporting on
      */
-    void onRegistered(String reportedMode) {
+    Optional<Run> onRegistered(String reportedMode, OptionalLong pid) {
+        Run current = run;
+        if (current == null || (pid.isPresent()
+                && pid.getAsLong() != current.process.pid())) {
+            return Optional.empty();
+        }
         this.mode = reportedMode;
         this.registered = true;
         this.state = State.RUNNING;
-        registrationLatch.countDown();
+        current.registrationLatch.countDown();
+        return Optional.of(current);
     }
 
     /**
      * Called when the registration connection closes. The process exit is the
      * authoritative signal, so this only records the loss of the app-side
      * channel; it does not by itself declare a crash.
+     * <p>
+     * The socket of a superseded app closes on its own schedule, which can be
+     * after a restart is already registered, so only the run still current may
+     * clear the flag.
+     *
+     * @param registration
+     *            the run the closing connection registered for
      */
-    void onUnregistered() {
-        registered = false;
+    void onUnregistered(Run registration) {
+        if (run == registration) {
+            registered = false;
+        }
     }
 
     boolean isIdle() {

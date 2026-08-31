@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -33,6 +37,28 @@ class TransactionEngineTest {
 
     private static final String VITE_ERROR = "14.32.37 [vite] Internal server"
             + " error: Transform failed with 1 error:";
+
+    @Test
+    void onConnectorClosed_willNotClearAConnectorARestartReplaced() {
+        // The predecessor's socket closes on its own schedule, which can be
+        // after the new app has registered; clearing then would leave the
+        // daemon unable to reach a live app.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        Connector previous = new Connector(
+                new PrintWriter(Writer.nullWriter()));
+        Connector restarted = new Connector(
+                new PrintWriter(Writer.nullWriter()));
+        engine.onConnector(previous);
+        engine.onConnector(restarted);
+
+        engine.onConnectorClosed(previous);
+
+        assertSame(restarted, engine.connector());
+
+        engine.onConnectorClosed(restarted);
+
+        assertNull(engine.connector());
+    }
 
     @Test
     void finish_willNotReportSuccessForATransactionANewerApplyTookOver() {
@@ -105,4 +131,5 @@ class TransactionEngineTest {
         tx.frontendFiles = 1;
         return tx;
     }
+
 }

@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -215,8 +216,19 @@ public final class Daemon {
     private void handleRegistration(List<String> args, BufferedReader in,
             PrintWriter out) throws IOException {
         String mode = args.isEmpty() ? "unknown" : args.get(0);
+        OptionalLong pid = reportedPid(args);
+        AppProcess.Run registration = app.onRegistered(mode, pid).orElse(null);
+        if (registration == null) {
+            // A connector for a process the daemon is no longer reporting on -
+            // a predecessor still winding down while its replacement is up.
+            // Letting it in would hand the running app's state to a corpse.
+            out.println("> ignored: not the current app");
+            System.out.println("ignored a registration from pid "
+                    + (pid.isPresent() ? pid.getAsLong() : "unknown")
+                    + ": not the current app");
+            return;
+        }
         Connector connector = new Connector(out);
-        app.onRegistered(mode);
         transactions.onConnector(connector);
         out.println("> registered");
         // Issued off-thread: the reply is only readable once the pump below is
@@ -232,9 +244,25 @@ public final class Daemon {
             Connector.pump(in, connector, () -> lastActivity = Instant.now());
         } finally {
             connector.close();
-            transactions.onConnector(null);
-            app.onUnregistered();
+            transactions.onConnectorClosed(connector);
+            app.onUnregistered(registration);
             System.out.println("app registration closed");
+        }
+    }
+
+    /**
+     * The pid the connector reports for its own JVM, empty when it reports none
+     * that can be read. Empty is a registration taken at face value, so an
+     * unparseable pid can never lock the app out of its own daemon.
+     */
+    private static OptionalLong reportedPid(List<String> args) {
+        if (args.size() < 2) {
+            return OptionalLong.empty();
+        }
+        try {
+            return OptionalLong.of(Long.parseLong(args.get(1)));
+        } catch (NumberFormatException e) {
+            return OptionalLong.empty();
         }
     }
 

@@ -997,6 +997,21 @@ final class TransactionEngine {
         }
     }
 
+    /**
+     * Called when a registration connection closes. A superseded app's socket
+     * can close after a restart has already installed the new app's connector,
+     * and clearing that one would leave the daemon with no way to reach a
+     * perfectly live app, so only the connector still in place clears itself.
+     *
+     * @param closing
+     *            the connector whose connection ended
+     */
+    void onConnectorClosed(Connector closing) {
+        if (connector == closing) {
+            connector = null;
+        }
+    }
+
     Connector connector() {
         return connector;
     }
