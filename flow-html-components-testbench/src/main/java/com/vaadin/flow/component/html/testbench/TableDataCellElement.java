@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
 /**
@@ -24,5 +23,5 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 25.3
  */
 @Element("td")
-public class TableDataCellElement extends TestBenchElement {
+public class TableDataCellElement extends TableCellElement {
 }

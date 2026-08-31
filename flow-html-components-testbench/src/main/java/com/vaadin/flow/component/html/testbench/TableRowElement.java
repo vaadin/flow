@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import java.util.List;
+
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
@@ -25,4 +27,49 @@ import com.vaadin.testbench.elementsbase.Element;
  */
 @Element("tr")
 public class TableRowElement extends TestBenchElement {
+
+    /**
+     * Returns every cell of this row, in document order, both
+     * <code>&lt;td&gt;</code> and <code>&lt;th&gt;</code>.
+     *
+     * @return the cells of this row.
+     */
+    public List<TableCellElement> getCells() {
+        return getChildren().stream().filter(TableRowElement::isCell)
+                .map(child -> child.wrap(TableCellElement.class)).toList();
+    }
+
+    /**
+     * Returns the cell at the given position among all the cells of this row.
+     *
+     * @param index
+     *            the position of the cell.
+     * @return the cell at that position.
+     */
+    public TableCellElement getCell(int index) {
+        return getCells().get(index);
+    }
+
+    /**
+     * Returns the data cells of this row, in document order.
+     *
+     * @return this row's <code>&lt;td&gt;</code> cells.
+     */
+    public List<TableDataCellElement> getDataCells() {
+        return $(TableDataCellElement.class).all();
+    }
+
+    /**
+     * Returns the header cells of this row, in document order.
+     *
+     * @return this row's <code>&lt;th&gt;</code> cells.
+     */
+    public List<TableHeaderCellElement> getHeaderCells() {
+        return $(TableHeaderCellElement.class).all();
+    }
+
+    private static boolean isCell(TestBenchElement child) {
+        String tag = child.getTagName();
+        return "td".equalsIgnoreCase(tag) || "th".equalsIgnoreCase(tag);
+    }
 }

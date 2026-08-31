@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import com.vaadin.testbench.elementsbase.Element;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
- * A TestBench element representing a <code>&lt;th&gt;</code> element.
+ * A TestBench element representing either kind of table cell, a
+ * <code>&lt;td&gt;</code> or a <code>&lt;th&gt;</code>. It carries no
+ * {@code @Element} annotation of its own: it is the type
+ * {@link TableRowElement#getCells()} speaks in when the kind of cell does not
+ * matter, mirroring {@link com.vaadin.flow.component.html.TableCell} on the
+ * component side.
  *
  * @since 25.3
  */
-@Element("th")
-public class TableHeaderCellElement extends TableCellElement {
+public class TableCellElement extends TestBenchElement {
 }

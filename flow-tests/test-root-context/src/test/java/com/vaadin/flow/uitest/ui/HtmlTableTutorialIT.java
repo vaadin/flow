@@ -22,7 +22,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
-import com.vaadin.flow.component.html.testbench.TableDataCellElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
 import com.vaadin.flow.component.html.testbench.TableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -44,8 +43,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
     @Test
     public void colgroupRendered_withColumnsInDocumentOrder() {
-        List<TableColumnGroupElement> groups = timetable
-                .$(TableColumnGroupElement.class).all();
+        List<TableColumnGroupElement> groups = timetable.getColumnGroups();
         Assert.assertEquals(1, groups.size());
 
         List<TableColumnElement> columns = groups.get(0).getColumns();
@@ -94,17 +92,16 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
     @Test
     public void tableBodyHasOneRowPerPeriodPlusTheHeaderRow() {
-        Assert.assertEquals(5, timetable.$(TableRowElement.class).all().size());
-        Assert.assertEquals(7,
-                firstPeriodRow().$(TableDataCellElement.class).all().size());
+        Assert.assertEquals(5, timetable.getRows().size());
+        Assert.assertEquals(7, firstPeriodRow().getDataCells().size());
     }
 
     private List<TableColumnElement> columns() {
-        return timetable.$(TableColumnGroupElement.class).first().getColumns();
+        return timetable.getColumnGroups().get(0).getColumns();
     }
 
     private TableRowElement firstPeriodRow() {
         // Row 0 is the Mon..Sun header row, row 1 is "1st period".
-        return timetable.$(TableRowElement.class).all().get(1);
+        return timetable.getRow(1);
     }
 }
