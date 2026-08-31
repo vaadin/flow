@@ -115,7 +115,11 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     const childId = 'childElement';
     const child = createChildNode(childId, 'a');
     addVirtualChild(child, NodeProperties.INJECT_BY_ID, childId);
-    createAndAppendElementToShadowRoot(shadowRoot, 'otherId', 'div');
+    const elementWithDifferentId = createAndAppendElementToShadowRoot(shadowRoot, 'otherId', 'div');
+    expect(
+      elementWithDifferentId.id,
+      'Element added to shadow root should not have same id as virtual child node'
+    ).to.not.equal(childId);
 
     bind(node, element);
     Reactive.flush();
@@ -130,7 +134,11 @@ describe('SimpleElementBindingStrategy virtual children', () => {
     const child = createChildNode(childId, 'a');
     addVirtualChild(child, NodeProperties.INJECT_BY_ID, childId);
     // An element with the right tag but a different id: still not found by id.
-    createAndAppendElementToShadowRoot(shadowRoot, 'otherId', 'a');
+    const elementWithDifferentId = createAndAppendElementToShadowRoot(shadowRoot, 'otherId', 'a');
+    expect(
+      elementWithDifferentId.id,
+      'Element added to shadow root should not have same id as virtual child node'
+    ).to.not.equal(childId);
 
     bind(node, element);
     Reactive.flush();
@@ -141,12 +149,17 @@ describe('SimpleElementBindingStrategy virtual children', () => {
   it('reports a wrong-tag element found by indices path as a failed attach', () => {
     // Ported from testVirtualBindChild_wrongTag_searchByIndicesPath.
     shadowRoot = addShadowRootElement();
-    const child = createChildNode(null, 'span');
+    const childTag = 'span';
+    const child = createChildNode(null, childTag);
 
     bind(node, element);
 
     addVirtualChild(child, NodeProperties.TEMPLATE_IN_TEMPLATE, [0]);
-    createAndAppendElementToShadowRoot(shadowRoot, null, 'div');
+    const elementWithDifferentTag = createAndAppendElementToShadowRoot(shadowRoot, null, 'div');
+    expect(
+      elementWithDifferentTag.tagName,
+      'Element added to shadow root should not have same tag name as virtual child node'
+    ).to.not.equal(childTag);
 
     Reactive.flush();
 
@@ -156,13 +169,20 @@ describe('SimpleElementBindingStrategy virtual children', () => {
   it('reports a missing element found by indices path as a failed attach', () => {
     // Ported from testBindVirtualChild_noCorrespondingElementInShadowRoot_searchByIndicesPath.
     shadowRoot = addShadowRootElement();
-    const child = createChildNode(null, 'span');
+    const childTag = 'span';
+    const child = createChildNode(null, childTag);
 
     bind(node, element);
 
     // The path points to index 1, but only index 0 exists.
     addVirtualChild(child, NodeProperties.TEMPLATE_IN_TEMPLATE, [1]);
-    createAndAppendElementToShadowRoot(shadowRoot, null, 'span');
+    // Java creates this one with the child's own tag and still asserts the tag
+    // differs: getTagName reports it upper-cased, as tagName does here.
+    const elementWithSameTag = createAndAppendElementToShadowRoot(shadowRoot, null, childTag);
+    expect(
+      elementWithSameTag.tagName,
+      'Element added to shadow root should not have same tag name as virtual child node'
+    ).to.not.equal(childTag);
 
     Reactive.flush();
 

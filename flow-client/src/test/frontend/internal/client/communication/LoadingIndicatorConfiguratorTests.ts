@@ -3,19 +3,8 @@
 import { expect } from '@open-wc/testing';
 import { observe as observeLoadingIndicator } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorConfigurator';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { inertRegistry } from '../flow/stateTreeTestRegistry';
-
-// Both configurators observe a real StateNode: the change events they react to
-// are the ones a real MapProperty fires when the server sets a value.
-function makeNode(): StateNode {
-  const tree = new StateTree(inertRegistry());
-  const node = new StateNode(2, tree);
-  tree.registerNode(node);
-  return node;
-}
+import { inertNode } from '../flow/stateTreeTestRegistry';
 
 describe('LoadingIndicatorConfigurator', () => {
   afterEach(() => {
@@ -27,7 +16,7 @@ describe('LoadingIndicatorConfigurator', () => {
     const indicator: Record<string, unknown> = {};
     (window as { Vaadin?: unknown }).Vaadin = { connectionIndicator: indicator };
 
-    const node = makeNode();
+    const node = inertNode();
     const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
     observeLoadingIndicator(node);
 
@@ -48,7 +37,7 @@ describe('LoadingIndicatorConfigurator', () => {
     const indicator: Record<string, unknown> = {};
     (window as { Vaadin?: unknown }).Vaadin = { connectionIndicator: indicator };
 
-    const node = makeNode();
+    const node = inertNode();
     const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
     observeLoadingIndicator(node);
 

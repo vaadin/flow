@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import { assert } from '../../assert';
 import type { Command } from '../Command';
 import { getScheduler } from '../TrackingScheduler';
 import {
@@ -47,7 +48,7 @@ import type { ResourceLoader } from '../ResourceLoader';
 import type { SystemErrorHandler } from '../SystemErrorHandler';
 import type { UILifecycle } from '../UILifecycle';
 import type { ValueMap } from '../ValueMap';
-import { getServerId, isResynchronize, PendingMessageQueue } from './MessageOrdering';
+import { getServerId, isResynchronize, PendingMessageQueue, UNDEFINED_SYNC_ID } from './MessageOrdering';
 import { ResynchronizationState } from './MessageSender';
 import { runWhenEagerDependenciesLoaded } from '../EagerDependencyTracker';
 import { Reactive } from '../flow/reactive/Reactive';
@@ -318,6 +319,11 @@ export class MessageHandler {
    * @param lock - the lock object for this response
    */
   #processMessage(valueMap: ValueMap, lock: object): void {
+    assert(
+      getServerId(valueMap) === UNDEFINED_SYNC_ID || getServerId(valueMap) === this.getLastSeenServerSyncId(),
+      'Message being processed is neither unversioned nor the last seen one'
+    );
+
     const start = performance.now();
     if ('timings' in valueMap) {
       this.#serverTimingInfo = valueMap.timings as number[];

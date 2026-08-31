@@ -2,8 +2,10 @@
 // through it to the server or the binding layer. Kept in one module so a member
 // added to Registry is filled in once rather than in every suite.
 
-import type { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import type { UILifecycle } from '../../../../../main/frontend/internal/client/UILifecycle';
 import type { Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
@@ -104,4 +106,42 @@ export function unavailableRegistry(): Registry {
     getConstantPool: unavailable,
     getExistingElementMap: unavailable
   };
+}
+
+/**
+ * A registered node on an inert tree, for the suites that only need a node whose
+ * maps fire real reactive change events.
+ */
+export function inertNode(id = 2): StateNode {
+  const tree = new StateTree(inertRegistry());
+  const node = new StateNode(id, tree);
+  tree.registerNode(node);
+  return node;
+}
+
+/**
+ * The stateless members every hand-wired registry needs, for the suites that
+ * assemble real services in one registry the way DefaultRegistry will. The
+ * caller adds the services it drives, and the UI is already running.
+ *
+ * @param uiLifecycle - the lifecycle to expose, already in the state the suite needs
+ * @returns the registry, to be extended with the services under test
+ */
+
+export function wiredRegistryBase(uiLifecycle: UILifecycle): any {
+  const configuration = new ApplicationConfiguration();
+  const constantPool = new ConstantPool();
+  const existingElementMap = new ExistingElementMap();
+
+  const registry: any = {};
+  registry.getUILifecycle = () => uiLifecycle;
+  registry.getApplicationConfiguration = () => configuration;
+  registry.getConstantPool = () => constantPool;
+  registry.getExistingElementMap = () => existingElementMap;
+  registry.getInitialPropertiesHandler = () => ({
+    flushPropertyUpdates: () => {},
+    nodeRegistered: () => {},
+    handlePropertyUpdate: () => false
+  });
+  return registry;
 }

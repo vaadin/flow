@@ -1,23 +1,12 @@
 import { expect } from '@open-wc/testing';
 import { observe as observePoll } from '../../../../../main/frontend/internal/client/communication/PollConfigurator';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
-import { inertRegistry } from '../flow/stateTreeTestRegistry';
-
-// Both configurators observe a real StateNode: the change events they react to
-// are the ones a real MapProperty fires when the server sets a value.
-function makeNode(): StateNode {
-  const tree = new StateTree(inertRegistry());
-  const node = new StateNode(2, tree);
-  tree.registerNode(node);
-  return node;
-}
+import { inertNode } from '../flow/stateTreeTestRegistry';
 
 describe('PollConfigurator', () => {
   it('configures the poller on each poll interval change but not on registration', () => {
     // Ported from listensToProperty.
-    const node = makeNode();
+    const node = inertNode();
     const property = node.getMap(NodeFeatures.POLL_CONFIGURATION).getProperty('pollInterval');
     const intervals: number[] = [];
     observePoll(node, { setInterval: (i) => intervals.push(i) });

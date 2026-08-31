@@ -21,6 +21,7 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import type { UILifecycle } from '../UILifecycle';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
@@ -88,6 +89,7 @@ export class FragmentedMessage {
    * @returns the next fragment
    */
   getNextFragment(): string {
+    assert(this.hasNextFragment(), 'No fragments left');
     let result: string;
     if (this.#index === 0) {
       const header = `${this.#message.length}${MESSAGE_DELIMITER}`;
@@ -394,6 +396,7 @@ export class AtmospherePushConnection implements PushConnection {
       case State.DISCONNECT_PENDING:
         // Connected so the pending disconnect can actually close the connection.
         this.#state = State.CONNECTED;
+        assert(this.#pendingDisconnectCommand !== null, 'No pending disconnect command');
         this.disconnect(this.#pendingDisconnectCommand!);
         break;
       case State.CONNECTED:
@@ -405,6 +408,8 @@ export class AtmospherePushConnection implements PushConnection {
   }
 
   disconnect(command: Command): void {
+    // Java asserts command != null; the parameter is non-nullable here, so the
+    // check is unreachable and dropped.
     switch (this.#state) {
       case State.CONNECT_PENDING:
         // Let the connection callback initiate the disconnect once connected.

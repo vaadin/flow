@@ -1,9 +1,7 @@
+import { wiredRegistryBase } from '../flow/stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
-import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
-import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
-import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
@@ -82,20 +80,9 @@ function makeWiredRegistry() {
   const order: string[] = [];
   const scriptUrls: string[] = [];
 
-  const registry: any = {};
   const uiLifecycle = new UILifecycle();
   uiLifecycle.setState(UIState.RUNNING);
-  const configuration = new ApplicationConfiguration();
-
-  registry.getUILifecycle = () => uiLifecycle;
-  registry.getApplicationConfiguration = () => configuration;
-  registry.getConstantPool = () => new ConstantPool();
-  registry.getExistingElementMap = () => new ExistingElementMap();
-  registry.getInitialPropertiesHandler = () => ({
-    flushPropertyUpdates: () => {},
-    nodeRegistered: () => {},
-    handlePropertyUpdate: () => false
-  });
+  const registry = wiredRegistryBase(uiLifecycle);
   registry.getServerConnector = () => ({
     sendEventMessage: () => {},
     sendNodeSyncMessage: () => {},
@@ -264,6 +251,59 @@ describe('MessageHandler', () => {
         setTimeout(resolve, 300);
       });
 
+    it('handles a module dependency before applying changes to the tree', async () => {
+      // Ported from testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree.
+      const wired = makeWiredRegistry();
+      // An empty changes list still starts change processing, which must happen
+      // after the dependency has loaded.
+      wired.messageHandler.callHandleJSON({
+        syncId: 0,
+        changes: [],
+        EAGER: [{ type: 'JS_MODULE', url: 'foo' }]
+      });
+      await afterDeferred();
+
+      expect(wired.scriptUrls).to.contain('foo');
+      expect(wired.order.length).to.be.at.least(2);
+      expect(wired.order[0]).to.equal('ResourceLoader');
+      expect(wired.order[1]).to.equal('StateTree');
+    });
+
+    it('handles a dynamic dependency before applying changes to the tree', async () => {
+      // Ported from testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree.
+      const wired = makeWiredRegistry();
+      (window as { testEvents?: string[] }).testEvents = [];
+      wired.messageHandler.callHandleJSON({
+        syncId: 0,
+        changes: [],
+        LAZY: [{ type: 'DYNAMIC_IMPORT', url: "window.testEvents.push('test-dependency');" }]
+      });
+      await afterDeferred();
+
+      // The dependency's own script ran, and it did so before the changes
+      // reached the tree — the Java case asserts the same two events in order.
+      const events = (window as { testEvents?: string[] }).testEvents!;
+      expect(events[0]).to.equal('test-dependency');
+      expect(wired.order).to.deep.equal(['ResourceLoader', 'StateTree']);
+      delete (window as { testEvents?: string[] }).testEvents;
+    });
+
+    it('requests a resync when an out-of-order message is not resolved in time', async () => {
+      // Ported from testForceHandleMessage_resyncIsRequested. The configuration
+      // allows 200 ms of message suspension.
+      const registry = makeRegistry(200);
+      const handler = new MessageHandler(registry as never);
+
+      handler.handleMessage({ syncId: 1 });
+      handler.handleMessage({ syncId: 3 });
+
+      expect(registry.log.resynchronized).to.be.false;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 300);
+      });
+      expect(registry.log.resynchronized).to.be.true;
+    });
+
     it('shows no session-expired message when the UI is already terminated', async () => {
       // Ported from testHandleJSON_uiTerminated_sessionExpiredMessageNotShown.
       const registry = makeRegistry();
@@ -322,59 +362,6 @@ describe('MessageHandler', () => {
       expect(registry.log.unrecoverableErrorHandled).to.be.true;
       expect(registry.log.sessionExpiredHandled).to.be.false;
       expect(registry.getState()).to.equal('TERMINATED');
-    });
-
-    it('requests a resync when an out-of-order message is not resolved in time', async () => {
-      // Ported from testForceHandleMessage_resyncIsRequested. The configuration
-      // allows 200 ms of message suspension.
-      const registry = makeRegistry(200);
-      const handler = new MessageHandler(registry as never);
-
-      handler.handleMessage({ syncId: 1 });
-      handler.handleMessage({ syncId: 3 });
-
-      expect(registry.log.resynchronized).to.be.false;
-      await new Promise((resolve) => {
-        setTimeout(resolve, 300);
-      });
-      expect(registry.log.resynchronized).to.be.true;
-    });
-
-    it('handles a module dependency before applying changes to the tree', async () => {
-      // Ported from testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree.
-      const wired = makeWiredRegistry();
-      // An empty changes list still starts change processing, which must happen
-      // after the dependency has loaded.
-      wired.messageHandler.callHandleJSON({
-        syncId: 0,
-        changes: [],
-        EAGER: [{ type: 'JS_MODULE', url: 'foo' }]
-      });
-      await afterDeferred();
-
-      expect(wired.scriptUrls).to.contain('foo');
-      expect(wired.order.length).to.be.at.least(2);
-      expect(wired.order[0]).to.equal('ResourceLoader');
-      expect(wired.order[1]).to.equal('StateTree');
-    });
-
-    it('handles a dynamic dependency before applying changes to the tree', async () => {
-      // Ported from testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree.
-      const wired = makeWiredRegistry();
-      (window as { testEvents?: string[] }).testEvents = [];
-      wired.messageHandler.callHandleJSON({
-        syncId: 0,
-        changes: [],
-        LAZY: [{ type: 'DYNAMIC_IMPORT', url: "window.testEvents.push('test-dependency');" }]
-      });
-      await afterDeferred();
-
-      // The dependency's own script ran, and it did so before the changes
-      // reached the tree — the Java case asserts the same two events in order.
-      const events = (window as { testEvents?: string[] }).testEvents!;
-      expect(events[0]).to.equal('test-dependency');
-      expect(wired.order).to.deep.equal(['ResourceLoader', 'StateTree']);
-      delete (window as { testEvents?: string[] }).testEvents;
     });
 
     it('calls afterServerUpdate on the DOM node of an updated state node', async () => {

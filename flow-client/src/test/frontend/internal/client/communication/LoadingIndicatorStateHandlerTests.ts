@@ -1,10 +1,8 @@
+import { wiredRegistryBase } from '../flow/stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { CONNECTED, getState, LOADING } from '../../../../../main/frontend/internal/client/ConnectionIndicator';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
 import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
-import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
-import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
-import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { MessageHandler } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
@@ -56,24 +54,11 @@ const afterDeferred = (): Promise<void> => new Promise((resolve) => setTimeout(r
 function makeWiredRegistry() {
   const tracker = installConnectionState();
 
-  const registry: any = {};
   const uiLifecycle = new UILifecycle();
   uiLifecycle.setState(UIState.RUNNING);
-  const configuration = new ApplicationConfiguration();
-  configuration.setServiceUrl('');
-  configuration.setContextRootUrl('/');
-  const constantPool = new ConstantPool();
-  const existingElementMap = new ExistingElementMap();
-
-  registry.getUILifecycle = () => uiLifecycle;
-  registry.getApplicationConfiguration = () => configuration;
-  registry.getConstantPool = () => constantPool;
-  registry.getExistingElementMap = () => existingElementMap;
-  registry.getInitialPropertiesHandler = () => ({
-    flushPropertyUpdates: () => {},
-    nodeRegistered: () => {},
-    handlePropertyUpdate: () => false
-  });
+  const registry = wiredRegistryBase(uiLifecycle);
+  registry.getApplicationConfiguration().setServiceUrl('');
+  registry.getApplicationConfiguration().setContextRootUrl('/');
 
   const tree = new StateTree(registry);
   registry.getStateTree = () => tree;

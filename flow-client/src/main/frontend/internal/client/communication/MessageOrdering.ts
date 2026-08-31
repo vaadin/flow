@@ -27,7 +27,7 @@ const SERVER_SYNC_ID = 'syncId';
 const RESYNCHRONIZE_ID = 'resynchronize';
 
 // The value of an undefined sync id (must be -1 per getLastSeenServerSyncId).
-const UNDEFINED_SYNC_ID = -1;
+export const UNDEFINED_SYNC_ID = -1;
 
 // Re-exported so the modules this kernel serves keep importing the message type
 // from here.
