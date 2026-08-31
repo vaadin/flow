@@ -204,6 +204,31 @@ class TableCellTest extends SignalsUnitTest {
 
     @ParameterizedTest
     @MethodSource("cellKinds")
+    void setHeaders_null_clearsTheAttribute(Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        TableHeaderCell header = new TableHeaderCell("Name");
+        header.setId("name-h");
+
+        // every overload documents null as "clear the attribute"
+        cell.setHeaders("name");
+        cell.setHeaders((String[]) null);
+        assertTrue(cell.getHeaders().isEmpty());
+
+        cell.setHeaders("name");
+        cell.setHeaders((List<String>) null);
+        assertTrue(cell.getHeaders().isEmpty());
+
+        cell.setHeaders("name");
+        cell.setHeaders((TableHeaderCell[]) null);
+        assertTrue(cell.getHeaders().isEmpty());
+
+        cell.setHeaders(header);
+        cell.setHeadersByCells(null);
+        assertTrue(cell.getHeaders().isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
     void setHeaders_rejectsIdsThatWouldNotSurviveTheRoundTrip(
             Supplier<TableCell> factory) {
         TableCell cell = factory.get();
