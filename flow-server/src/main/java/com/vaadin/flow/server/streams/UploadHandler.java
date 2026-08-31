@@ -92,6 +92,57 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  *     }
  * };
  * </pre>
+ * <p>
+ * <b>Upload callbacks and a detached UI</b>
+ * <p>
+ * Receiving an upload is not bound to the lifecycle of its owner: once the
+ * request has been passed to {@link #handleUploadRequest(UploadEvent)}, the
+ * data is read to the end even if the owner element is detached in the
+ * meantime, see
+ * {@link ElementRequestHandler#handleRequest(VaadinRequest, VaadinResponse, VaadinSession, Element)}.
+ * What the handler variants differ in is whether the application callback that
+ * is meant to receive the completed upload is still invoked when the UI is gone
+ * by then.
+ * <p>
+ * Detaching the owner component, for example by navigating to another view, is
+ * not enough to lose that callback: the UI itself is still attached to the
+ * session and all the callbacks below are invoked normally. The UI is detached
+ * when it is removed from the session, for example by
+ * {@link com.vaadin.flow.component.UI#close()}, by session expiration or by the
+ * UI cleanup that follows closing the browser tab.
+ * <ul>
+ * <li>{@link #toFile(FileUploadCallback, FileFactory)} and
+ * {@link #toTempFile(FileUploadCallback)} hand the received file over to the
+ * callback through
+ * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)
+ * UI.access}. If the UI has been detached by the time the upload completes, the
+ * callback is never invoked and the fully received file is left on disk without
+ * the application ever learning about it, including the temporary file created
+ * by {@code toTempFile}, which nothing else deletes.</li>
+ * <li>{@link #inMemory(InMemoryUploadCallback)} hands the received bytes over
+ * the same way, so with a detached UI the callback is not invoked and the bytes
+ * are discarded.</li>
+ * <li>Implementing {@link #handleUploadRequest(UploadEvent)} directly, as a
+ * lambda expression or in a subclass, does not involve {@code UI.access} at
+ * all: the method is always called, on the request thread, and runs to the end
+ * regardless of the state of the UI. Any UI update it makes has to be wrapped
+ * in {@code UI.access} by the implementation itself, which then also decides
+ * what to do with the received data if that throws
+ * {@link com.vaadin.flow.component.UIDetachedException}. This is the variant to
+ * use for uploads that have to be stored even when the user has already closed
+ * the tab.</li>
+ * </ul>
+ * When handing an upload over to a detached UI fails, the resulting
+ * {@link com.vaadin.flow.component.UIDetachedException} propagates out of
+ * {@code handleUploadRequest} and is treated like any other upload failure: it
+ * is logged, the remaining files of a multipart request are not processed, and
+ * {@link #responseHandled(UploadResult)} is called with the exception, which by
+ * default responds with 500 Internal Server Error. {@code responseHandled}
+ * itself, and the {@link UploadValidator}s of the pre-made handlers, always run
+ * on the request thread and are not affected by the state of the UI.
+ * <p>
+ * Transfer progress listeners added to any of these handlers have their own
+ * detach semantics, see {@link TransferProgressListener}.
  *
  * @since 24.8
  */
@@ -104,6 +155,14 @@ public interface UploadHandler extends ElementRequestHandler {
      * <p>
      * After upload of all files is done the method
      * {@link #responseHandled(UploadResult)} will be called.
+     * <p>
+     * This method is called on the request thread and runs to the end also when
+     * the owner component or its UI has been detached after the upload started.
+     * An implementation that updates the UI has to wrap those updates in
+     * {@code UI.access} itself and handle a possible
+     * {@link com.vaadin.flow.component.UIDetachedException}, unlike the
+     * pre-made handlers returned by the factory methods, see the
+     * {@link UploadHandler class-level documentation}.
      *
      * @param event
      *            upload event containing the necessary data for getting the
@@ -235,6 +294,11 @@ public interface UploadHandler extends ElementRequestHandler {
 
     /**
      * Generate an upload handler for storing upload stream into a file.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the received file is left on disk, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes
@@ -250,6 +314,11 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate an upload handler for storing upload stream into a file with
      * progress handling.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the received file is left on disk, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes
@@ -270,6 +339,11 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate an upload handler for storing upload stream into a temporary
      * file.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the temporary file is left behind, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes
@@ -283,6 +357,11 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate an upload handler for storing upload stream into a temporary
      * file with progress handling.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the temporary file is left behind, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes
@@ -302,6 +381,11 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate upload handler for storing download into in-memory
      * {@code byte[]}.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the received bytes are discarded, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes
@@ -315,6 +399,11 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * Generate upload handler for storing download into in-memory
      * {@code byte[]} with progress handling.
+     * <p>
+     * The success callback is invoked through {@code UI.access}: if the UI has
+     * been detached before the upload completes, the callback is not invoked
+     * and the received bytes are discarded, see the {@link UploadHandler
+     * class-level documentation}.
      *
      * @param successCallback
      *            consumer to be called when upload successfully completes

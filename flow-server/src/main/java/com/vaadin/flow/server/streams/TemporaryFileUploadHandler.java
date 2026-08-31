@@ -18,6 +18,11 @@ package com.vaadin.flow.server.streams;
 /**
  * Upload handler that stores the data into a temporary file. Stored temporary
  * file is returned in the successHandler for further use.
+ * <p>
+ * The success handler is invoked through {@code UI.access} and is therefore
+ * skipped, leaving the temporary file behind, if the UI has been detached
+ * before the upload completes, see the {@link UploadHandler class-level
+ * documentation}.
  *
  * @since 24.8
  */

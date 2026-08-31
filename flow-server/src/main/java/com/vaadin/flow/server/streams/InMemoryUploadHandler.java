@@ -25,6 +25,11 @@ import com.vaadin.flow.server.communication.TransferUtil;
 /**
  * Upload handler for storing the upload in-memory. Data is returned as a
  * {@code byte[]} to the given successHandler.
+ * <p>
+ * The success handler is invoked through {@code UI.access} and is therefore
+ * skipped, with the received bytes discarded, if the UI has been detached
+ * before the upload completes, see the {@link UploadHandler class-level
+ * documentation}.
  *
  * @since 24.8
  */
