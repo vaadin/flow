@@ -17,6 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.util.List;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
@@ -43,6 +45,7 @@ import com.vaadin.flow.component.Tag;
  *      &lt;colgroup&gt; — The Table Column Group element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.COLGROUP)
 public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
 

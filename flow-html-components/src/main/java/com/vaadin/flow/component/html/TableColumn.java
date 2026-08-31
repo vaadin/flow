@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -38,6 +40,7 @@ import com.vaadin.flow.component.Tag;
  *      &lt;col&gt; — The Table Column element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.COL)
 public class TableColumn extends HtmlComponent implements TableColumnSpan {
 
