@@ -19,7 +19,7 @@ type Win = { Vaadin?: { connectionState?: unknown } };
 
 // Stands in for the connection-state web component the Java suite installs: it
 // counts the requests in flight and reports the state the indicator shows.
-function makeHandler(hasActiveRequest = false) {
+function installConnectionState() {
   const tracker = { requestCount: 0 };
   const connectionState = {
     state: CONNECTED,
@@ -35,6 +35,11 @@ function makeHandler(hasActiveRequest = false) {
     }
   };
   (window as Win).Vaadin = { connectionState };
+  return tracker;
+}
+
+function makeHandler(hasActiveRequest = false) {
+  const tracker = installConnectionState();
   const registry = { getRequestResponseTracker: () => ({ hasActiveRequest: () => hasActiveRequest }) };
   return { handler: new LoadingIndicatorStateHandler(registry), tracker };
 }
@@ -49,21 +54,7 @@ const afterDeferred = (): Promise<void> => new Promise((resolve) => setTimeout(r
 // MessageSender.send() reduced to starting the request (as the Java suite's
 // TestMessageSender does) so no request leaves the browser.
 function makeWiredRegistry() {
-  const tracker = { requestCount: 0 };
-  const connectionState = {
-    state: CONNECTED,
-    loadingStarted: () => {
-      tracker.requestCount += 1;
-      connectionState.state = LOADING;
-    },
-    loadingFinished: () => {
-      tracker.requestCount = Math.max(0, tracker.requestCount - 1);
-      if (tracker.requestCount === 0) {
-        connectionState.state = CONNECTED;
-      }
-    }
-  };
-  (window as Win).Vaadin = { connectionState };
+  const tracker = installConnectionState();
 
   const registry: any = {};
   const uiLifecycle = new UILifecycle();
@@ -200,17 +191,6 @@ describe('LoadingIndicatorStateHandler', () => {
     }
   });
 
-  describe('beyond the Java suite', () => {
-    it('does not stop loading while a request is still active', async () => {
-      const { handler, tracker } = makeHandler(true);
-      handler.processMessage(JsonConstants.RPC_TYPE_MAP_SYNC, null);
-      handler.startLoading();
-      handler.stopLoading();
-      await afterDeferred();
-      expect(tracker.requestCount).to.equal(1);
-      expect(getState()).to.equal(LOADING);
-    });
-  });
   it('shows loading for a click event RPC', async () => {
     // Ported from test_clickEventRpc_loadingVisible. The Java suite installs a
     // scheduler that runs deferred work synchronously; here the queue flush and
@@ -243,5 +223,17 @@ describe('LoadingIndicatorStateHandler', () => {
 
     expect(wired.tracker.requestCount).to.equal(0);
     expect(getState()).to.equal(CONNECTED);
+  });
+
+  describe('beyond the Java suite', () => {
+    it('does not stop loading while a request is still active', async () => {
+      const { handler, tracker } = makeHandler(true);
+      handler.processMessage(JsonConstants.RPC_TYPE_MAP_SYNC, null);
+      handler.startLoading();
+      handler.stopLoading();
+      await afterDeferred();
+      expect(tracker.requestCount).to.equal(1);
+      expect(getState()).to.equal(LOADING);
+    });
   });
 });

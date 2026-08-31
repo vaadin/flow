@@ -1,5 +1,13 @@
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
+import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
+import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
+import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 
 function makeRegistry(maxMessageSuspendTimeout = 10000) {
   const log = {
@@ -64,6 +72,113 @@ class TestMessageHandler extends MessageHandler {
     this.handleJSON(json);
   }
 }
+
+// The dependency-ordering cases assert that a dependency finishes loading before
+// tree changes are applied, so they need the real DependencyLoader and StateTree
+// wired into one registry the way the Java suite assembles its Registry. Both
+// record into a shared list — the Java suite subclasses ResourceLoader and
+// StateTree for exactly that — so the order can be compared.
+function makeWiredRegistry() {
+  const order: string[] = [];
+  const scriptUrls: string[] = [];
+
+  const registry: any = {};
+  const uiLifecycle = new UILifecycle();
+  uiLifecycle.setState(UIState.RUNNING);
+  const configuration = new ApplicationConfiguration();
+
+  registry.getUILifecycle = () => uiLifecycle;
+  registry.getApplicationConfiguration = () => configuration;
+  registry.getConstantPool = () => new ConstantPool();
+  registry.getExistingElementMap = () => new ExistingElementMap();
+  registry.getInitialPropertiesHandler = () => ({
+    flushPropertyUpdates: () => {},
+    nodeRegistered: () => {},
+    handlePropertyUpdate: () => false
+  });
+  registry.getServerConnector = () => ({
+    sendEventMessage: () => {},
+    sendNodeSyncMessage: () => {},
+    sendTemplateEventMessage: () => {},
+    sendExistingElementAttachToServer: () => {},
+    sendExistingElementWithIdAttachToServer: () => {},
+    sendReturnChannelMessage: () => {}
+  });
+
+  // Records when changes reach the tree, as the Java suite's TestStateTree does.
+  class RecordingStateTree extends StateTree {
+    override setUpdateInProgress(updateInProgress: boolean): void {
+      if (updateInProgress) {
+        order.push('StateTree');
+      }
+      super.setUpdateInProgress(updateInProgress);
+    }
+  }
+  const tree = new RecordingStateTree(registry);
+  registry.getStateTree = () => tree;
+
+  // Records the load, as the Java suite's TestResourceLoader does, and completes
+  // it on a later task: a real load is asynchronous, and only then does the
+  // eager-dependency gate — the thing these cases assert — decide the order.
+  // loadDynamicImport runs the expression, which is what the real loader does
+  // and what the dynamic-import case asserts on.
+  const event = { getResourceUrl: () => '' };
+  // The Java fake records the load when it is requested; recording it when it
+  // completes is what makes "handled before applying changes" checkable, since a
+  // real load finishes on a later task.
+  const complete = (listener: { onLoad(e: unknown): void }) => {
+    setTimeout(() => {
+      order.push('ResourceLoader');
+      listener.onLoad(event);
+    }, 0);
+  };
+  const recordScript = (url: string, listener: { onLoad(e: unknown): void }) => {
+    scriptUrls.push(url);
+    complete(listener);
+  };
+  registry.getResourceLoader = () => ({
+    loadJsModule: recordScript,
+    loadScript: recordScript,
+    loadDynamicImport: (expression: string, listener: { onLoad(e: unknown): void }) => {
+      setTimeout(() => {
+        new Function(expression)();
+        order.push('ResourceLoader');
+        listener.onLoad(event);
+      }, 0);
+    },
+    clearLoadedResourceById: () => {}
+  });
+  registry.getURIResolver = () => ({ resolveVaadinUri: (uri: string) => uri });
+  registry.getDependencyLoader = () => dependencyLoader;
+  const dependencyLoader = new DependencyLoader(registry);
+
+  registry.getRequestResponseTracker = () => ({
+    fireResponseHandlingStarted: () => {},
+    // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
+    endRequest: () => {},
+    hasActiveRequest: () => false
+  });
+  registry.getLoadingIndicatorStateHandler = () => ({ stopLoading: () => {} });
+  registry.getMessageSender = () => ({
+    getResynchronizationState: () => 'NOT_ACTIVE',
+    clearResynchronizationState: () => {},
+    setClientToServerMessageId: () => {},
+    requestResynchronize: () => true,
+    resynchronize: () => {}
+  });
+  registry.getExecuteJavaScriptProcessor = () => ({ execute: () => {} });
+  registry.getSystemErrorHandler = () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} });
+
+  const messageHandler = new TestMessageHandler(registry);
+  return { order, scriptUrls, tree, messageHandler };
+}
+
+// The handler defers dependency loading, change processing and the after-update
+// callbacks; these await them.
+const afterDeferred = (): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, 50);
+  });
 
 describe('MessageHandler', () => {
   it('parseJson parses JSON text, and reports unparseable or missing text as null', () => {
@@ -223,6 +338,65 @@ describe('MessageHandler', () => {
         setTimeout(resolve, 300);
       });
       expect(registry.log.resynchronized).to.be.true;
+    });
+
+    it('handles a module dependency before applying changes to the tree', async () => {
+      // Ported from testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree.
+      const wired = makeWiredRegistry();
+      // An empty changes list still starts change processing, which must happen
+      // after the dependency has loaded.
+      wired.messageHandler.callHandleJSON({
+        syncId: 0,
+        changes: [],
+        EAGER: [{ type: 'JS_MODULE', url: 'foo' }]
+      });
+      await afterDeferred();
+
+      expect(wired.scriptUrls).to.contain('foo');
+      expect(wired.order.length).to.be.at.least(2);
+      expect(wired.order[0]).to.equal('ResourceLoader');
+      expect(wired.order[1]).to.equal('StateTree');
+    });
+
+    it('handles a dynamic dependency before applying changes to the tree', async () => {
+      // Ported from testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree.
+      const wired = makeWiredRegistry();
+      (window as { testEvents?: string[] }).testEvents = [];
+      wired.messageHandler.callHandleJSON({
+        syncId: 0,
+        changes: [],
+        LAZY: [{ type: 'DYNAMIC_IMPORT', url: "window.testEvents.push('test-dependency');" }]
+      });
+      await afterDeferred();
+
+      // The dependency's own script ran, and it did so before the changes
+      // reached the tree — the Java case asserts the same two events in order.
+      const events = (window as { testEvents?: string[] }).testEvents!;
+      expect(events[0]).to.equal('test-dependency');
+      expect(wired.order).to.deep.equal(['ResourceLoader', 'StateTree']);
+      delete (window as { testEvents?: string[] }).testEvents;
+    });
+
+    it('calls afterServerUpdate on the DOM node of an updated state node', async () => {
+      // Beyond the Java suite: GwtMessageHandlerTest asserts the ordering of
+      // dependency loading and tree updates, not the after-update callback.
+      const wired = makeWiredRegistry();
+      const node = new StateNode(2, wired.tree);
+      wired.tree.registerNode(node);
+      const element = document.createElement('div');
+      let called = 0;
+      (element as unknown as { afterServerUpdate: () => void }).afterServerUpdate = () => {
+        called += 1;
+      };
+      node.setDomNode(element);
+
+      wired.messageHandler.callHandleJSON({
+        syncId: 0,
+        changes: [{ node: 2, type: 'put', feat: NodeFeatures.ELEMENT_PROPERTIES, key: 'foo', value: 'bar' }]
+      });
+      await afterDeferred();
+
+      expect(called).to.equal(1);
     });
 
     describe('beyond the Java suite', () => {
