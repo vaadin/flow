@@ -58,8 +58,6 @@ import com.vaadin.flow.signals.Signal;
 public class TableColumnGroup extends HtmlComponent
         implements TableColumnSpan, HasComponentsOfType<TableColumn> {
 
-    private static final String ATTRIBUTE_SPAN = "span";
-
     /**
      * Creates a new empty column group.
      */
@@ -163,7 +161,7 @@ public class TableColumnGroup extends HtmlComponent
     }
 
     private void rejectColumnsWhileSpanIsSet() {
-        if (getElement().hasAttribute(ATTRIBUTE_SPAN)) {
+        if (hasSpan()) {
             throw new IllegalStateException(
                     "A <colgroup> carrying a span attribute may not have <col> "
                             + "children. Call resetSpan() first.");
@@ -175,6 +173,16 @@ public class TableColumnGroup extends HtmlComponent
         return column;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A {@code <colgroup>} carrying a {@code span} may not also have
+     * {@code <col>} children, so this refuses a group that already has some.
+     *
+     * @throws IllegalStateException
+     *             if this group has {@code <col>} children. Call
+     *             {@link #removeAll()} first.
+     */
     @Override
     public void setSpan(int span) {
         if (getElement().getChildCount() > 0) {

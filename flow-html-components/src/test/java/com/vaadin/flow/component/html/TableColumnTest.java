@@ -18,8 +18,10 @@ package com.vaadin.flow.component.html;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableColumnTest extends ComponentTest {
     // Property tests in super class
@@ -43,6 +45,18 @@ class TableColumnTest extends ComponentTest {
 
         assertEquals("3", col.getElement().getAttribute("span"));
         assertEquals(3, col.getSpan());
+    }
+
+    @Test
+    void hasSpan_tellsAnExplicitSpanFromTheDefault() {
+        TableColumn col = (TableColumn) getComponent();
+        assertFalse(col.hasSpan());
+
+        col.setSpan(1);
+        assertTrue(col.hasSpan());
+
+        col.resetSpan();
+        assertFalse(col.hasSpan());
     }
 
     @Test

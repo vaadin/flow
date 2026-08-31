@@ -36,6 +36,8 @@ interface TableColumnSpan extends HasElement {
      *
      * @param span
      *            a positive integer.
+     * @throws IllegalArgumentException
+     *             if {@code span} is less than 1.
      */
     default void setSpan(int span) {
         if (span < 1) {
@@ -65,6 +67,23 @@ interface TableColumnSpan extends HasElement {
         getElement().removeAttribute(spanAttribute());
     }
 
+    /**
+     * Reports whether this element carries an explicit {@code span}, as opposed
+     * to falling back to the default of 1.
+     *
+     * @return {@code true} if the attribute is set.
+     */
+    default boolean hasSpan() {
+        return getElement().hasAttribute(spanAttribute());
+    }
+
+    /**
+     * The attribute name, as a method rather than a constant: a field here
+     * would be implicitly {@code public static final} and inherited by the
+     * public classes implementing this interface, which would make
+     * {@code TableColumn.ATTRIBUTE_SPAN} part of the API. An interface cannot
+     * declare a private field.
+     */
     private static String spanAttribute() {
         return "span";
     }
