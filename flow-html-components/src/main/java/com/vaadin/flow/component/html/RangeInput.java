@@ -18,8 +18,6 @@ package com.vaadin.flow.component.html;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.jspecify.annotations.Nullable;
-
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -75,7 +73,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
-    private @Nullable ValueChangeMode currentMode;
+    private ValueChangeMode currentMode;
 
     /**
      * Creates a new slider, with {@link ValueChangeMode#ON_CHANGE ON_CHANGE}
@@ -105,12 +103,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     @Override
-    public @Nullable ValueChangeMode getValueChangeMode() {
+    public ValueChangeMode getValueChangeMode() {
         return currentMode;
     }
 
     @Override
-    public void setValueChangeMode(@Nullable ValueChangeMode valueChangeMode) {
+    public void setValueChangeMode(ValueChangeMode valueChangeMode) {
         currentMode = valueChangeMode;
         setSynchronizedEvent(
                 ValueChangeMode.eventForMode(valueChangeMode, "input"));
@@ -254,7 +252,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      *
      * @return the current step value, defaults to 1.
      */
-    public @Nullable Double getStep() {
+    public Double getStep() {
         final String step = get(stepDescriptor);
         return "any".equals(step) ? null : Double.parseDouble(step);
     }

@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.jspecify.annotations.Nullable;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
@@ -135,7 +133,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      *
      * @return the legend component.
      */
-    public @Nullable Legend getLegend() {
+    public Legend getLegend() {
         return findLegend();
     }
 
@@ -164,7 +162,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      *
      * @return the text of the legend, or null if no legend is present.
      */
-    public @Nullable String getLegendText() {
+    public String getLegendText() {
         Legend legend = findLegend();
         return (legend != null) ? legend.getText() : null;
     }
@@ -236,7 +234,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         add(content);
     }
 
-    private @Nullable Legend findLegend() {
+    private Legend findLegend() {
         Optional<Component> legend = getChildren()
                 .filter(c -> c instanceof Legend).findFirst();
         return (Legend) legend.orElse(null);
