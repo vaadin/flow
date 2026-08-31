@@ -213,6 +213,25 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addRowWithHeader_leadsWithARowScopedHeaderCell() {
+        Table table = table();
+
+        var row = table.addRowWithHeader("Breed", "Poodle", "Beagle");
+        var fromList = table.addRowWithHeader("Age", List.of("9", "10"));
+
+        assertEquals(List.of(row, fromList), table.getBody().getRows());
+        for (var each : List.of(row, fromList)) {
+            assertEquals(1, each.getHeaderCells().size());
+            assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROW),
+                    each.getHeaderCells().get(0).getScope());
+            assertEquals(2, each.getDataCells().size());
+        }
+        assertEquals("Breed", row.getHeaderCells().get(0).getText());
+        assertEquals(List.of("Poodle", "Beagle"), row.getDataCells().stream()
+                .map(TableDataCell::getText).toList());
+    }
+
+    @Test
     void addHeaderAndFooterRows_landInTheirOwnSections() {
         Table table = table();
 

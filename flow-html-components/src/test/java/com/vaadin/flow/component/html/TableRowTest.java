@@ -136,6 +136,37 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void addColumnHeaderCell_setsColScope() {
+        TableRow row = new TableRow();
+
+        TableHeaderCell fromText = row.addColumnHeaderCell("Name");
+        Span content = new Span("Mass");
+        TableHeaderCell fromContent = row.addColumnHeaderCell(content);
+
+        assertEquals("Name", fromText.getText());
+        // getText is the element's own text, so a content cell reads as empty
+        assertEquals(List.of(content), fromContent.getChildren().toList());
+        for (TableHeaderCell cell : List.of(fromText, fromContent)) {
+            assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COL),
+                    cell.getScope());
+        }
+    }
+
+    @Test
+    void componentTakingCellFactories_holdTheGivenContent() {
+        TableRow row = new TableRow();
+        Span headerContent = new Span("Name");
+        Span dataContent = new Span("Mars");
+
+        TableHeaderCell th = row.addHeaderCell(headerContent);
+        TableDataCell td = row.addDataCell(dataContent);
+
+        assertEquals(List.of(headerContent), th.getChildren().toList());
+        assertEquals(List.of(dataContent), td.getChildren().toList());
+        assertEquals(List.of(th, td), row.getCells());
+    }
+
+    @Test
     void addRowHeaderCell_setsRowScope() {
         TableRow row = new TableRow();
 

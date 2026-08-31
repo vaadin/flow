@@ -182,6 +182,18 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a new header cell holding the given content to this row, for a
+     * header that is more than plain text.
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <th>}.
+     */
+    public TableHeaderCell addHeaderCell(Component... content) {
+        return append(new TableHeaderCell(content));
+    }
+
+    /**
      * Inserts a new empty header cell at the given position.
      *
      * @param position
@@ -211,6 +223,37 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell labelling the column it sits in, with
+     * {@code scope="col"} set on the resulting <code>&lt;th&gt;</code>. This is
+     * the counterpart of {@link #addRowHeaderCell(String)} and the usual shape
+     * of a cell in a {@link TableHead}.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} with {@code scope="col"}.
+     */
+    public TableHeaderCell addColumnHeaderCell(String text) {
+        TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.COL);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell holding the given content and labelling the column
+     * it sits in, with {@code scope="col"} set on the resulting
+     * <code>&lt;th&gt;</code>.
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <th>} with {@code scope="col"}.
+     */
+    public TableHeaderCell addColumnHeaderCell(Component... content) {
+        TableHeaderCell cell = addHeaderCell(content);
+        cell.setScope(TableHeaderCell.Scope.COL);
+        return cell;
+    }
+
+    /**
      * Appends a new empty data cell to this row.
      *
      * @return the new {@code <td>}.
@@ -228,6 +271,18 @@ public class TableRow extends HtmlComponent
      */
     public TableDataCell addDataCell(String text) {
         return append(new TableDataCell(text));
+    }
+
+    /**
+     * Appends a new data cell holding the given content to this row, for a cell
+     * that is more than plain text.
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <td>}.
+     */
+    public TableDataCell addDataCell(Component... content) {
+        return append(new TableDataCell(content));
     }
 
     /**

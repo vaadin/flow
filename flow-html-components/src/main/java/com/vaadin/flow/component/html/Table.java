@@ -417,6 +417,37 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * Appends a row led by a header cell labelling it, followed by data cells
+     * with the given texts. The leading cell is a
+     * <code>&lt;th scope="row"&gt;</code>, which is what lets assistive
+     * technology announce the right label for each data cell in the row.
+     *
+     * @param header
+     *            the text of the leading header cell.
+     * @param cellTexts
+     *            the text content for each data cell after it.
+     * @return the new row.
+     */
+    public TableRow addRowWithHeader(String header, String... cellTexts) {
+        return addRowWithHeader(header, Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addRowWithHeader(String, String...)}.
+     *
+     * @param header
+     *            the text of the leading header cell.
+     * @param cellTexts
+     *            the text content for each data cell after it.
+     * @return the new row.
+     */
+    public TableRow addRowWithHeader(String header, List<String> cellTexts) {
+        TableRow row = addRow();
+        row.addRowHeaderCell(header);
+        return row.addDataCells(cellTexts);
+    }
+
+    /**
      * Appends the given rows to this table's <code>&lt;tbody&gt;</code>.
      *
      * @param rows

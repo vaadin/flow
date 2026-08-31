@@ -85,22 +85,16 @@ public class HtmlTableTutorialView extends Div {
             headerRow.addDataCell();
             for (String name : new String[] { "Knocky", "Flor", "Ella",
                     "Juan" }) {
-                headerRow.addHeaderCell(name).setScope(Scope.COL);
+                headerRow.addColumnHeaderCell(name);
             }
-            addRowWithRowHeader("Breed", "Jack Russell", "Poodle", "Streetdog",
+            addRowWithHeader("Breed", "Jack Russell", "Poodle", "Streetdog",
                     "Cocker Spaniel");
-            addRowWithRowHeader("Age", "16", "9", "10", "5");
-            addRowWithRowHeader("Owner", "Mother-in-law", "Me", "Me",
+            addRowWithHeader("Age", "16", "9", "10", "5");
+            addRowWithHeader("Owner", "Mother-in-law", "Me", "Me",
                     "Sister-in-law");
-            addRowWithRowHeader("Eating habits", "Eats everyone's leftovers",
+            addRowWithHeader("Eating habits", "Eats everyone's leftovers",
                     "Nibbles at food", "Hearty eater",
                     "Will eat till he explodes");
-        }
-
-        private void addRowWithRowHeader(String header, String... data) {
-            TableRow row = addRow();
-            row.addRowHeaderCell(header);
-            row.addDataCells(data);
         }
     }
 
@@ -139,22 +133,17 @@ public class HtmlTableTutorialView extends Div {
             TableHead head = getHead();
             TableRow headerRow = head.addRow();
             headerRow.addDataCell().setColspan(2);
-            addColHeader(headerRow, new Html("<span>Name</span>"));
-            addColHeader(headerRow,
-                    new Html("<span>Mass (10<sup>24</sup>kg)</span>"));
-            addColHeader(headerRow, new Html("<span>Diameter (km)</span>"));
-            addColHeader(headerRow,
-                    new Html("<span>Density (kg/m<sup>3</sup>)</span>"));
-            addColHeader(headerRow,
-                    new Html("<span>Gravity (m/s<sup>2</sup>)</span>"));
-            addColHeader(headerRow,
-                    new Html("<span>Length of day (hours)</span>"));
-            addColHeader(headerRow, new Html(
+            headerRow.addColumnHeaderCell(new Html("<span>Name</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Mass (10<sup>24</sup>kg)</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Diameter (km)</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Density (kg/m<sup>3</sup>)</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Gravity (m/s<sup>2</sup>)</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Length of day (hours)</span>"));
+            headerRow.addColumnHeaderCell(new Html(
                     "<span>Distance from Sun (10<sup>6</sup>km)</span>"));
-            addColHeader(headerRow,
-                    new Html("<span>Mean temperature (\u00b0C)</span>"));
-            addColHeader(headerRow, new Html("<span>Number of moons</span>"));
-            addColHeader(headerRow, new Html("<span>Notes</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Mean temperature (\u00b0C)</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Number of moons</span>"));
+            headerRow.addColumnHeaderCell(new Html("<span>Notes</span>"));
 
             TableRow mercury = addRow();
             TableHeaderCell terrestrial = mercury
@@ -162,22 +151,22 @@ public class HtmlTableTutorialView extends Div {
             terrestrial.setScope(Scope.ROWGROUP);
             terrestrial.setColspan(2);
             terrestrial.setRowspan(4);
-            addRowHeader(mercury, "Mercury");
+            mercury.addRowHeaderCell("Mercury");
             mercury.addDataCells("0.330", "4,879", "5427", "3.7", "4222.6",
                     "57.9", "167", "0", "Closest to the Sun");
 
             TableRow venus = addRow();
-            addRowHeader(venus, "Venus");
+            venus.addRowHeaderCell("Venus");
             venus.addDataCells("4.87", "12,104", "5243", "8.9", "2802.0",
                     "108.2", "464", "0", "");
 
             TableRow earth = addRow();
-            addRowHeader(earth, "Earth");
+            earth.addRowHeaderCell("Earth");
             earth.addDataCells("5.97", "12,756", "5514", "9.8", "24.0",
                     "149.6", "15", "1", "Our world");
 
             TableRow mars = addRow();
-            addRowHeader(mars, "Mars");
+            mars.addRowHeaderCell("Mars");
             mars.addDataCells("0.642", "6,792", "3933", "3.7", "24.7", "227.9",
                     "-65", "2", "The red planet");
 
@@ -190,12 +179,12 @@ public class HtmlTableTutorialView extends Div {
                     .addHeaderCell("Gas giants");
             gasGiants.setScope(Scope.ROWGROUP);
             gasGiants.setRowspan(2);
-            addRowHeader(jupiter, "Jupiter");
+            jupiter.addRowHeaderCell("Jupiter");
             jupiter.addDataCells("1898", "142,984", "1326", "23.1", "9.9",
                     "778.6", "-110", "67", "The largest planet");
 
             TableRow saturn = addRow();
-            addRowHeader(saturn, "Saturn");
+            saturn.addRowHeaderCell("Saturn");
             saturn.addDataCells("568", "120,536", "687", "9.0", "10.7",
                     "1433.5", "-140", "62", "");
 
@@ -204,12 +193,12 @@ public class HtmlTableTutorialView extends Div {
                     .addHeaderCell("Ice giants");
             iceGiants.setScope(Scope.ROWGROUP);
             iceGiants.setRowspan(2);
-            addRowHeader(uranus, "Uranus");
+            uranus.addRowHeaderCell("Uranus");
             uranus.addDataCells("86.8", "51,118", "1271", "8.7", "17.2",
                     "2872.5", "-195", "27", "");
 
             TableRow neptune = addRow();
-            addRowHeader(neptune, "Neptune");
+            neptune.addRowHeaderCell("Neptune");
             neptune.addDataCells("102", "49,528", "1638", "11.0", "16.1",
                     "4495.1", "-200", "14", "");
 
@@ -218,21 +207,12 @@ public class HtmlTableTutorialView extends Div {
                     .addHeaderCell("Dwarf planets");
             dwarf.setScope(Scope.ROWGROUP);
             dwarf.setColspan(2);
-            addRowHeader(pluto, "Pluto");
+            pluto.addRowHeaderCell("Pluto");
             pluto.addDataCells("0.0146", "2,370", "2095", "0.7", "153.3",
                     "5906.4", "-225", "5", "Declassified as a planet in 2006,"
                             + " but this remains controversial.");
         }
 
-        private static void addColHeader(TableRow row, Html content) {
-            TableHeaderCell th = row.addHeaderCell();
-            th.setScope(Scope.COL);
-            th.add(content);
-        }
-
-        private static void addRowHeader(TableRow row, String text) {
-            row.addRowHeaderCell(text);
-        }
     }
     /**
      * Example 5: school timetable, demonstrating column-level styling via
@@ -256,20 +236,14 @@ public class HtmlTableTutorialView extends Div {
             header.addHeaderCells("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat",
                     "Sun");
 
-            addPeriodRow("1st period", "English", "", "", "German", "Dutch", "",
-                    "");
-            addPeriodRow("2nd period", "English", "English", "", "German",
+            addRowWithHeader("1st period", "English", "", "", "German",
                     "Dutch", "", "");
-            addPeriodRow("3rd period", "", "German", "German", "", "Dutch", "",
-                    "");
-            addPeriodRow("4th period", "", "English", "English", "", "Dutch",
+            addRowWithHeader("2nd period", "English", "English", "", "German",
+                    "Dutch", "", "");
+            addRowWithHeader("3rd period", "", "German", "German", "", "Dutch",
                     "", "");
-        }
-
-        private void addPeriodRow(String period, String... days) {
-            TableRow row = addRow();
-            row.addRowHeaderCell(period);
-            row.addDataCells(days);
+            addRowWithHeader("4th period", "", "English", "English", "",
+                    "Dutch", "", "");
         }
     }
 }
