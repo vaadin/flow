@@ -212,8 +212,8 @@ public class HtmlTableTutorialView extends Div {
                     "5906.4", "-225", "5", "Declassified as a planet in 2006,"
                             + " but this remains controversial.");
         }
-
     }
+
     /**
      * Example 5: school timetable, demonstrating column-level styling via
      * {@code <colgroup>}/{@code <col>}.
