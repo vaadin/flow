@@ -1,21 +1,20 @@
 import { expect } from '@open-wc/testing';
 import { Heartbeat } from '../../../../main/frontend/internal/client/communication/Heartbeat';
+import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(heartbeatInterval: number) {
-  const lifecycleHandlers: Array<(event: { getUiLifecycle(): { isTerminated(): boolean } }) => void> = [];
+  // Heartbeat registers its handler on the real UILifecycle, which is ported.
+  const uiLifecycle = new UILifecycle();
   const connectionCalls: string[] = [];
   const registry = {
-    lifecycleHandlers,
+    uiLifecycle,
     connectionCalls,
     getApplicationConfiguration: () => ({
       getHeartbeatInterval: () => heartbeatInterval,
       getServiceUrl: () => '/app',
       getUIId: () => 7
     }),
-    getUILifecycle: () => ({
-      addHandler: (handler: (event: { getUiLifecycle(): { isTerminated(): boolean } }) => void) =>
-        lifecycleHandlers.push(handler)
-    }),
+    getUILifecycle: () => uiLifecycle,
     getConnectionStateHandler: () => ({
       heartbeatOk: () => connectionCalls.push('ok'),
       heartbeatInvalidStatusCode: () => connectionCalls.push('invalid'),
@@ -41,7 +40,9 @@ describe('Heartbeat', () => {
   it('disables the heartbeat when the UI lifecycle terminates', () => {
     const registry = makeRegistry(300);
     const heartbeat = new Heartbeat(registry);
-    registry.lifecycleHandlers.forEach((h) => h({ getUiLifecycle: () => ({ isTerminated: () => true }) }));
+    // Only single forward steps are allowed, so run the UI before terminating it.
+    registry.uiLifecycle.setState(UIState.RUNNING);
+    registry.uiLifecycle.setState(UIState.TERMINATED);
     expect(heartbeat.getInterval()).to.equal(-1);
   });
 

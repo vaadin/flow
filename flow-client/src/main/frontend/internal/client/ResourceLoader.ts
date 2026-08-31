@@ -20,6 +20,7 @@
 // and clear-by-id, as well as the stylesheet loaders (which need the
 // BrowserInfo Safari/Opera quirks).
 
+import type { SystemErrorHandler } from './SystemErrorHandler';
 import { BrowserInfo } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
@@ -30,7 +31,7 @@ import { Console } from './Console';
  * ported yet, so this names only the one it calls.
  */
 interface ResourceLoaderRegistry {
-  getSystemErrorHandler(): { handleError(message: string): void };
+  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleError'>;
 }
 
 /**

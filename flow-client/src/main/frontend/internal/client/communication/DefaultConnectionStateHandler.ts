@@ -21,6 +21,14 @@
 // the heartbeat/xhr/push handler methods, online/offline handling, the reconnect
 // dialog text, and unrecoverable-error handling.
 
+import type { UILifecycle } from '../UILifecycle';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { Heartbeat } from './Heartbeat';
+import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
+import type { MessageSender } from './MessageSender';
+import type { ReconnectConfiguration } from './ReconnectConfiguration';
+import type { RequestResponseTracker } from './RequestResponseTracker';
+import type { SystemErrorHandler } from '../SystemErrorHandler';
 import { setProperty, setState } from '../ConnectionIndicator';
 import { ConnectionMessageType } from './ConnectionMessageType';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
@@ -40,37 +48,20 @@ const TERMINATED = 'TERMINATED';
 
 /** The slice of Registry DefaultConnectionStateHandler uses. */
 interface DefaultConnectionStateRegistry {
-  getUILifecycle(): {
-    isRunning(): boolean;
-    getState(): string;
-    setState(state: string): void;
-    addHandler(handler: (event: { getUiLifecycle(): { isTerminated(): boolean } }) => void): unknown;
-  };
-  getReconnectConfiguration(): {
-    getReconnectAttempts(): number;
-    getReconnectInterval(): number;
-    getDialogText(): string | null;
-    getDialogTextGaveUp(): string | null;
-  };
-  getRequestResponseTracker(): {
-    hasActiveRequest(): boolean;
-    endRequest(): void;
-    fireReconnectionAttempt(attempt: number): void;
-  };
-  getLoadingIndicatorStateHandler(): { stopLoading(): void };
-  getHeartbeat(): { setInterval(interval: number): void; getInterval(): number; send(): void };
-  getApplicationConfiguration(): { getHeartbeatInterval(): number };
-  getMessageSender(): { sendInvocationsToServer(): void };
-  getSystemErrorHandler(): {
-    handleSessionExpiredError(details: string | null): void;
-    handleUnrecoverableError(
-      caption: string,
-      message: string,
-      details: string,
-      url: string,
-      querySelector: string | null
-    ): void;
-  };
+  getUILifecycle(): Pick<UILifecycle, 'isRunning' | 'getState' | 'setState' | 'addHandler'>;
+  getReconnectConfiguration(): Pick<
+    ReconnectConfiguration,
+    'getReconnectAttempts' | 'getReconnectInterval' | 'getDialogText' | 'getDialogTextGaveUp'
+  >;
+  getRequestResponseTracker(): Pick<
+    RequestResponseTracker,
+    'hasActiveRequest' | 'endRequest' | 'fireReconnectionAttempt'
+  >;
+  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
+  getHeartbeat(): Pick<Heartbeat, 'setInterval' | 'getInterval' | 'send'>;
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getHeartbeatInterval'>;
+  getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;
+  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleSessionExpiredError' | 'handleUnrecoverableError'>;
 }
 
 /** Handles connection state and reconnection; mirrors DefaultConnectionStateHandler.java. */

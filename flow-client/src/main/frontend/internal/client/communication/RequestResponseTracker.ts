@@ -19,18 +19,20 @@
 // request-starting / response-handling-started/ended and reconnection-attempt
 // events. The GWT EventBus is replaced by per-event-type listener sets.
 
+import type { MessageSender } from './MessageSender';
+import type { ServerRpcQueue } from './ServerRpcQueue';
+import type { UILifecycle } from '../UILifecycle';
 import type { EventRemover } from '../../EventRemover';
 import { ResynchronizationState } from './ResynchronizationState';
 
 /** The slice of Registry that RequestResponseTracker uses. */
 interface RequestResponseRegistry {
-  getUILifecycle(): { isRunning(): boolean };
-  getServerRpcQueue(): { isFlushPending(): boolean };
-  getMessageSender(): {
-    getResynchronizationState(): ResynchronizationState;
-    hasQueuedMessages(): boolean;
-    sendInvocationsToServer(): void;
-  };
+  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
+  getServerRpcQueue(): Pick<ServerRpcQueue, 'isFlushPending'>;
+  getMessageSender(): Pick<
+    MessageSender,
+    'getResynchronizationState' | 'hasQueuedMessages' | 'sendInvocationsToServer'
+  >;
 }
 
 type VoidListener = () => void;

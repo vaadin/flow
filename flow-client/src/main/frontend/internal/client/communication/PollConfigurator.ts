@@ -18,31 +18,23 @@
 // alongside the Java version. It observes the poll-interval property in the
 // node's POLL_CONFIGURATION feature and reconfigures the poller on change.
 
+import type { StateNode } from '../flow/StateNode';
+import type { Poller } from './Poller';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 
 // com.vaadin.flow.internal.nodefeature.PollConfigurationMap.POLL_INTERVAL_KEY
 const POLL_INTERVAL_KEY = 'pollInterval';
 
-/** The slice of MapProperty PollConfigurator observes. */
-interface PollIntervalProperty {
-  addChangeListener(listener: (event: { getNewValue(): unknown }) => void): unknown;
-}
-
-/** The slice of StateNode PollConfigurator reads. */
-interface PollConfigNode {
-  getMap(featureId: number): { getProperty(name: string): PollIntervalProperty };
-}
-
-/** The slice of Poller PollConfigurator drives. */
-interface ConfigurablePoller {
-  setInterval(interval: number): void;
-}
+// The poller is named by the method it is driven through rather than as a whole
+// Poller, so a suite can observe the configured interval directly; the type is
+// still derived from the ported class, so it cannot drift from it.
+type ConfigurablePoller = Pick<Poller, 'setInterval'>;
 
 /**
  * Observes the node's poll configuration and configures the poller on change.
  * Mirrors PollConfigurator.observe.
  */
-export function observe(node: PollConfigNode, poller: ConfigurablePoller): void {
+export function observe(node: StateNode, poller: ConfigurablePoller): void {
   const pollIntervalProperty = node.getMap(NodeFeatures.POLL_CONFIGURATION).getProperty(POLL_INTERVAL_KEY);
   pollIntervalProperty.addChangeListener((event) => {
     poller.setInterval(Math.trunc(Number(event.getNewValue())));

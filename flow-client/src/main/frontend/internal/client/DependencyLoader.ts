@@ -20,6 +20,7 @@
 // dependency type, and resolves Vaadin URIs via the URIResolver. Composes the
 // ported EagerDependencyTracker (eager-load gate) and ResourceLoader.
 
+import type { URIResolver } from './URIResolver';
 import {
   endEagerDependencyLoading,
   runWhenEagerDependenciesLoaded,
@@ -35,11 +36,13 @@ const KEY_TYPE = 'type';
 const KEY_CONTENTS = 'contents';
 const KEY_ID = 'id';
 
-// com.vaadin.flow.shared.ui.Dependency.Type / LoadMode
+// com.vaadin.flow.shared.ui.Dependency.Type / LoadMode. LoadMode and Dependency
+// are exported because MessageHandler builds the map this class consumes, just as
+// the Java pair shares the flow-server enum.
 type DependencyType = 'STYLESHEET' | 'JAVASCRIPT' | 'JS_MODULE' | 'DYNAMIC_IMPORT';
-type LoadMode = 'INLINE' | 'EAGER' | 'LAZY';
+export type LoadMode = 'INLINE' | 'EAGER' | 'LAZY';
 
-type Dependency = Record<string, unknown>;
+export type Dependency = Record<string, unknown>;
 type Loader = (data: string, listener: ResourceLoadListener) => void;
 
 /** The ResourceLoader methods DependencyLoader drives. */
@@ -58,7 +61,7 @@ interface DependencyResourceLoader {
 
 /** The slice of Registry DependencyLoader uses. */
 interface DependencyLoaderRegistry {
-  getURIResolver(): { resolveVaadinUri(uri: string): string };
+  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
   getResourceLoader(): DependencyResourceLoader;
 }
 
@@ -161,7 +164,9 @@ export class DependencyLoader {
   }
 
   #getDependencyUrl(dependency: Dependency): string {
-    return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string);
+    // Java passes the resolver result straight on; resolveVaadinUri only returns
+    // null for a null uri, and a dependency always carries its url.
+    return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string)!;
   }
 
   #getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {

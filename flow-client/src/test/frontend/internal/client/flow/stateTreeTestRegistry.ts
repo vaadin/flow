@@ -2,6 +2,7 @@
 // through it to the server or the binding layer. Kept in one module so a member
 // added to Registry is filled in once rather than in every suite.
 
+import type { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
@@ -44,6 +45,8 @@ export interface RecordedCalls {
   existingElementAttaches: Array<{ nodeId: number; id: number; existingId: number; tagName: string; index: number }>;
   // The arguments of each sendReturnChannelMessage call.
   returnChannelMessages: Array<{ nodeId: number; channelId: number; args: unknown[] }>;
+  // The arguments of each sendEventMessage call.
+  events: Array<{ nodeId: number; eventType: string; eventData: unknown }>;
 }
 
 /**
@@ -51,15 +54,23 @@ export interface RecordedCalls {
  * that assert on the round trip.
  */
 export function recordingRegistry(): { registry: Registry; recorded: RecordedCalls } {
-  const recorded: RecordedCalls = { syncs: new Map(), existingElementAttaches: [], returnChannelMessages: [] };
+  const recorded: RecordedCalls = {
+    syncs: new Map(),
+    existingElementAttaches: [],
+    returnChannelMessages: [],
+    events: []
+  };
   const registry = inertRegistry();
   const base = registry.getServerConnector();
   registry.getServerConnector = () => ({
     ...base,
+    sendEventMessage: (node: StateNode, eventType: string, eventData: unknown) => {
+      recorded.events.push({ nodeId: node.getId(), eventType, eventData });
+    },
     sendReturnChannelMessage: (nodeId: number, channelId: number, args: unknown[]) => {
       recorded.returnChannelMessages.push({ nodeId, channelId, args });
     },
-    sendNodeSyncMessage: (node: { getId(): number }, _featureId: number, name: string, value: unknown) => {
+    sendNodeSyncMessage: (node: StateNode, _featureId: number, name: string, value: unknown) => {
       const byName = recorded.syncs.get(node.getId()) ?? new Map<string, unknown>();
       byName.set(name, value);
       recorded.syncs.set(node.getId(), byName);

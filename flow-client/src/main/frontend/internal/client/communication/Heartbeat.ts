@@ -21,6 +21,9 @@
 // Registry/ApplicationConfiguration/UILifecycle/ConnectionStateHandler are
 // contracts satisfied at cutover.
 
+import type { UILifecycle } from '../UILifecycle';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import { Console } from '../Console';
 
@@ -31,15 +34,12 @@ const UI_ID_PARAMETER = 'v-uiId';
 
 /** The slice of Registry that Heartbeat uses. */
 interface HeartbeatRegistry {
-  getApplicationConfiguration(): { getHeartbeatInterval(): number; getServiceUrl(): string; getUIId(): number };
-  getUILifecycle(): {
-    addHandler(handler: (event: { getUiLifecycle(): { isTerminated(): boolean } }) => void): void;
-  };
-  getConnectionStateHandler(): {
-    heartbeatOk(): void;
-    heartbeatInvalidStatusCode(xhr: XMLHttpRequest): void;
-    heartbeatException(xhr: XMLHttpRequest, error: unknown): void;
-  };
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getHeartbeatInterval' | 'getServiceUrl' | 'getUIId'>;
+  getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
+  getConnectionStateHandler(): Pick<
+    ConnectionStateHandler,
+    'heartbeatOk' | 'heartbeatInvalidStatusCode' | 'heartbeatException'
+  >;
 }
 
 // One-shot reschedulable timer; mirrors the GWT Timer used by Heartbeat.

@@ -22,6 +22,14 @@
 // are contracts satisfied at cutover; push connections are created through an
 // injected factory (GWT.create in the Java version).
 
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
+import type { MessageHandler } from './MessageHandler';
+import type { PushConfiguration } from './PushConfiguration';
+import type { RequestResponseTracker } from './RequestResponseTracker';
+import type { ServerRpcQueue } from './ServerRpcQueue';
+import type { UILifecycle } from '../UILifecycle';
+import type { XhrConnection } from './XhrConnection';
 import { sendBeacon } from '../../MessageSender';
 import type { PushConnection, PushConnectionFactory } from './PushConnection';
 import { ResynchronizationState } from './ResynchronizationState';
@@ -40,24 +48,17 @@ type Payload = Record<string, unknown>;
 
 /** The slice of Registry that MessageSender uses. */
 export interface MessageSenderRegistry {
-  getUILifecycle(): { isRunning(): boolean };
-  getRequestResponseTracker(): {
-    hasActiveRequest(): boolean;
-    startRequest(): void;
-    addReconnectionAttemptHandler(handler: (attempt: number) => void): unknown;
-  };
-  getServerRpcQueue(): {
-    isEmpty(): boolean;
-    toJson(): unknown[];
-    clear(): void;
-    isFlushPending(): boolean;
-    flush(): void;
-  };
-  getLoadingIndicatorStateHandler(): { startLoading(): void };
-  getMessageHandler(): { getCsrfToken(): string; getLastSeenServerSyncId(): number };
-  getXhrConnection(): { send(payload: Payload): void; getUri(): string };
-  getApplicationConfiguration(): { getMaxMessageSuspendTimeout(): number };
-  getPushConfiguration(): { isPushEnabled(): boolean };
+  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
+  getRequestResponseTracker(): Pick<
+    RequestResponseTracker,
+    'hasActiveRequest' | 'startRequest' | 'addReconnectionAttemptHandler'
+  >;
+  getServerRpcQueue(): Pick<ServerRpcQueue, 'isEmpty' | 'toJson' | 'clear' | 'isFlushPending' | 'flush'>;
+  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'startLoading'>;
+  getMessageHandler(): Pick<MessageHandler, 'getCsrfToken' | 'getLastSeenServerSyncId'>;
+  getXhrConnection(): Pick<XhrConnection, 'send' | 'getUri'>;
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getMaxMessageSuspendTimeout'>;
+  getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
 }
 
 /** Sends messages to the server over XHR and/or push; mirrors MessageSender.java. */

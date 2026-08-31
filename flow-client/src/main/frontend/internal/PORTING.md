@@ -244,6 +244,21 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     to cover it.) If the PR that ports the class cannot collapse a slice in the
     same change, it files a retrofit-backlog row naming the slice: a slice never
     outlives its port silently.
+    - **A registry slice still names its members after the ported class.** The
+      `Registry` container itself stays a local interface until `DefaultRegistry`
+      lands (a suite cannot otherwise build one), but each getter's return type
+      is `Pick<PortedClass, 'onlyTheMembersUsed'>` rather than an inline object
+      type — the slice keeps naming only what the module calls, while no
+      signature is duplicated and nothing can drift from the class. Only a
+      getter whose class is genuinely unported spells its shape out inline.
+      _Introduced during #24951, which folded every remaining slice of a ported
+      class this way — the 64 inline registry getters plus `StateTree.ts`'s own
+      `ServerConnector` and `InitialPropertiesHandler` contracts. The sweep found six
+      places where a slice and its class had drifted apart (five slices looser
+      than the real signature, and `sendExistingElementWithIdAttachToServer`
+      declaring a non-null `id` the binding layer already calls it with as null)
+      plus one member, `handlePropertyUpdate`, that `StateTree`'s slice omitted
+      although the tree calls it._
 
 ## Tests
 
@@ -423,9 +438,7 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()`: both need the deferred-attach round trip, which runs through the message layer | the PR that ports the message layer | open |
-| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are omitted while 14 of their return types are unported, so `DependencyLoader`, `SystemErrorHandler`, `InitialPropertiesHandler`, `ExecuteJavaScriptProcessor`, `ResourceLoader` and `StateTree` each declare a local interface for the getters they call | the PR that ports the remaining services (`MessageSender`, `MessageHandler`, `ApplicationConnection`, …) | open |
-| 12 | `StateTree.ts` keeps a narrow contract for the now-ported `InitialPropertiesHandler`: the handler resolves its state tree through the registry while the tree is built from that same registry, so only a concrete registry can wire the two together | the PR that ports `DefaultRegistry` | open |
+| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are still omitted, now blocked on `ApplicationConnection` alone (the other 23 return types are ported). Twenty-two modules therefore still declare a local registry interface, though every member of those now derives from the ported class via `Pick<…>`, so only the container is local. They collapse into the real `Registry` once `DefaultRegistry` can assemble one, so a suite can build it | the PR that ports `ApplicationConnection` and `DefaultRegistry` | open |
 | 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert

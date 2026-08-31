@@ -23,6 +23,11 @@
 // succeeds. The actual reconnect retry (timer + payload re-send) and the full
 // ConnectionStateHandler push/xhr handlers compose this kernel.
 
+import type { Heartbeat } from './Heartbeat';
+import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
+import type { ReconnectConfiguration } from './ReconnectConfiguration';
+import type { RequestResponseTracker } from './RequestResponseTracker';
+import type { UILifecycle } from '../UILifecycle';
 import { setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
@@ -34,11 +39,11 @@ const CONNECTION_LOST = 'connection-lost';
 
 /** The slice of Registry the reconnect state machine uses. */
 interface ReconnectRegistry {
-  getUILifecycle(): { isRunning(): boolean };
-  getReconnectConfiguration(): { getReconnectAttempts(): number };
-  getRequestResponseTracker(): { hasActiveRequest(): boolean; endRequest(): void };
-  getLoadingIndicatorStateHandler(): { stopLoading(): void };
-  getHeartbeat(): { setInterval(interval: number): void };
+  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
+  getReconnectConfiguration(): Pick<ReconnectConfiguration, 'getReconnectAttempts'>;
+  getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest' | 'endRequest'>;
+  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
+  getHeartbeat(): Pick<Heartbeat, 'setInterval'>;
 }
 
 /**

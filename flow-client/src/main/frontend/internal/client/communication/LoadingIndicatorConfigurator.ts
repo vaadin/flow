@@ -20,6 +20,8 @@
 // indicator singleton via ConnectionIndicator.
 
 import { setProperty } from '../ConnectionIndicator';
+import type { NodeMap } from '../flow/nodefeature/NodeMap';
+import type { StateNode } from '../flow/StateNode';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 
 // com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap
@@ -32,28 +34,7 @@ const SECOND_DELAY_DEFAULT = 1500;
 const THIRD_DELAY_DEFAULT = 5000;
 const DEFAULT_THEME_APPLIED_DEFAULT = true;
 
-/** The source MapProperty of a change event, exposing getValueOrDefault. */
-interface ConfigSource {
-  getValueOrDefault(defaultValue: number): number;
-  getValueOrDefault(defaultValue: boolean): boolean;
-}
-
-/** The slice of MapProperty LoadingIndicatorConfigurator observes. */
-interface ConfigProperty {
-  addChangeListener(listener: (event: { getSource(): ConfigSource }) => void): unknown;
-}
-
-/** The slice of NodeMap LoadingIndicatorConfigurator reads. */
-interface ConfigMap {
-  getProperty(name: string): ConfigProperty;
-}
-
-/** The slice of StateNode LoadingIndicatorConfigurator reads. */
-interface LoadingIndicatorNode {
-  getMap(featureId: number): ConfigMap;
-}
-
-function bindInteger(map: ConfigMap, key: string, setter: (delay: number) => void, defaultValue: number): void {
+function bindInteger(map: NodeMap, key: string, setter: (delay: number) => void, defaultValue: number): void {
   map.getProperty(key).addChangeListener((event) => setter(event.getSource().getValueOrDefault(defaultValue)));
 }
 
@@ -61,7 +42,7 @@ function bindInteger(map: ConfigMap, key: string, setter: (delay: number) => voi
  * Observes the node's loading-indicator configuration and applies it to the
  * connection indicator. Mirrors LoadingIndicatorConfigurator.observe.
  */
-export function observe(node: LoadingIndicatorNode): void {
+export function observe(node: StateNode): void {
   const configMap = node.getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
   bindInteger(configMap, FIRST_DELAY_KEY, (delay) => setProperty('firstDelay', delay), FIRST_DELAY_DEFAULT);

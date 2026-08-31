@@ -17,26 +17,30 @@
 // TypeScript port of com.vaadin.client.communication.ServerConnector, built
 // alongside the Java version. It builds RPC messages (plain JS objects, later
 // JSON-serialized by the transport) and enqueues them on the server RPC queue.
-// The Registry, ServerRpcQueue and LoadingIndicatorStateHandler are not ported
-// yet, so the slices it needs are declared here as contracts satisfied at
-// cutover; this is the real implementation of StateTree's ServerConnector
-// contract.
+// ServerRpcQueue and LoadingIndicatorStateHandler are ported alongside this
+// module; the registry slice below still names only what this class calls,
+// because Registry.java's typed getters cannot be ported until DefaultRegistry
+// can assemble them. This is the real implementation of StateTree's
+// ServerConnector contract.
 
+import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
+import type { ServerRpcQueue } from './ServerRpcQueue';
+import type { StateNode } from '../flow/StateNode';
 import { encodeWithoutTypeInfo } from '../flow/util/ClientJsonCodec';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
-/** The slice of StateNode that ServerConnector reads. */
-interface ConnectorNode {
-  getId(): number;
-}
-
 /** The slice of Registry that ServerConnector uses. */
 interface ServerConnectorRegistry {
-  getLoadingIndicatorStateHandler(): { processMessage(type: string | null, eventType: string | null): void };
-  getServerRpcQueue(): { add(message: Record<string, unknown>): void; flush(): void };
+  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'processMessage'>;
+  getServerRpcQueue(): Pick<ServerRpcQueue, 'add' | 'flush'>;
 }
 
-/** Creates and sends messages to the server via the server RPC queue; mirrors ServerConnector.java. */
+/**
+ * Creates and sends messages to the server via the server RPC queue; mirrors
+ * ServerConnector.java. StateTree's registry slice names the
+ * subset of this class it calls with `Pick<…>`, so no contract duplicates these
+ * signatures.
+ */
 export class ServerConnector {
   readonly #registry: ServerConnectorRegistry;
 
@@ -64,7 +68,7 @@ export class ServerConnector {
    * mirroring the two `sendEventMessage` overloads in ServerConnector.java (the
    * id form is used by the published client API and connectWebComponent).
    */
-  sendEventMessage(nodeOrId: ConnectorNode | number, eventType: string, eventData: unknown): void {
+  sendEventMessage(nodeOrId: StateNode | number, eventType: string, eventData: unknown): void {
     const nodeId = typeof nodeOrId === 'number' ? nodeOrId : nodeOrId.getId();
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_TYPE_EVENT;
@@ -77,7 +81,7 @@ export class ServerConnector {
   }
 
   /** Sends a template (published-server-event-handler) event message to the server. */
-  sendTemplateEventMessage(node: ConnectorNode, methodName: string, argsArray: unknown[], promiseId: number): void {
+  sendTemplateEventMessage(node: StateNode, methodName: string, argsArray: unknown[], promiseId: number): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER;
     message[JsonConstants.RPC_NODE] = node.getId();
@@ -90,7 +94,7 @@ export class ServerConnector {
   }
 
   /** Sends a node map-property value sync message to the server. */
-  sendNodeSyncMessage(node: ConnectorNode, feature: number, key: string, value: unknown): void {
+  sendNodeSyncMessage(node: StateNode, feature: number, key: string, value: unknown): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_TYPE_MAP_SYNC;
     message[JsonConstants.RPC_NODE] = node.getId();
@@ -103,7 +107,7 @@ export class ServerConnector {
   /** Sends an attach-existing-element callback to the server. */
   // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the Java sendExistingElementAttachToServer signature
   sendExistingElementAttachToServer(
-    parent: ConnectorNode,
+    parent: StateNode,
     requestedId: number,
     assignedId: number,
     tagName: string,
@@ -121,10 +125,12 @@ export class ServerConnector {
 
   /** Sends an attach-existing-element-by-id callback to the server. */
   sendExistingElementWithIdAttachToServer(
-    parent: ConnectorNode,
+    parent: StateNode,
     requestedId: number,
     assignedId: number,
-    id: string
+    // Java takes a String, and the binding layer reaches this with a null id for
+    // an indices-path address, so the null is carried through as Java carries it.
+    id: string | null
   ): void {
     const message: Record<string, unknown> = {};
     message[JsonConstants.RPC_TYPE] = JsonConstants.RPC_ATTACH_EXISTING_ELEMENT_BY_ID;

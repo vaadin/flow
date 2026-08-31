@@ -32,6 +32,8 @@
 // getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
 // are contracts satisfied at cutover.
 
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { UILifecycle } from '../UILifecycle';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { assert } from '../../assert';
@@ -70,8 +72,8 @@ interface ContextCallbacks {
 /** The slice of Registry ExecuteJavaScriptProcessor uses. */
 interface ExecuteJsRegistry {
   getStateTree(): StateTree;
-  getApplicationConfiguration(): { getApplicationId(): string; isProductionMode(): boolean };
-  getUILifecycle(): { isTerminated(): boolean; setState(state: string): void };
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getApplicationId' | 'isProductionMode'>;
+  getUILifecycle(): Pick<UILifecycle, 'isTerminated' | 'setState'>;
 }
 
 /** Executes server-sent JavaScript invocations against the live tree; mirrors ExecuteJavaScriptProcessor.java. */

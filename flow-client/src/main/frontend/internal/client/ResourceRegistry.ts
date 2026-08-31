@@ -14,6 +14,7 @@
  * the License.
  */
 
+import type { SystemErrorHandler } from './SystemErrorHandler';
 import type { ResourceLoader } from './ResourceLoader';
 import { Console } from './Console';
 
@@ -39,7 +40,7 @@ export interface ResourceLoadListener {
 
 /** Reports resource load errors. */
 interface ResourceRegistryRegistry {
-  getSystemErrorHandler(): { handleError(message: string): void };
+  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleError'>;
 }
 
 /** Tracks loaded resources and their listeners; the dedup/fanout kernel of ResourceLoader. */

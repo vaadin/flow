@@ -1,10 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { ReconnectConfiguration } from '../../../../main/frontend/internal/client/communication/ReconnectConfiguration';
 import { XhrConnectionError } from '../../../../main/frontend/internal/client/communication/XhrConnectionError';
-import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
+import { fakeConnectionStateHandler } from './connectionStateHandlerFake';
 
 const RECONNECT_DIALOG_CONFIGURATION = 9;
 
@@ -21,19 +21,10 @@ const RECONNECT_INTERVAL_DEFAULT = 5000;
 // Java test that binds ReconnectConfiguration to a StateTree root node.
 function makeRegistry() {
   const tree = new StateTree(inertRegistry());
-  const node = new StateNode(2, tree);
-  tree.registerNode(node);
-  const map = node.getMap(RECONNECT_DIALOG_CONFIGURATION);
+  const map = tree.getRootNode().getMap(RECONNECT_DIALOG_CONFIGURATION);
   return {
     getProperty: (key: string) => map.getProperty(key),
-    getStateTree: () => ({
-      getRootNode: () => ({
-        getMap: (feature: number) => {
-          expect(feature).to.equal(RECONNECT_DIALOG_CONFIGURATION);
-          return map;
-        }
-      })
-    })
+    getStateTree: () => tree
   };
 }
 
@@ -91,12 +82,14 @@ describe('ReconnectConfiguration', () => {
     const config = new ReconnectConfiguration(registry);
     let configurationUpdatedCalled = 0;
     // Reads a value like the Java handler so the reactive computation tracks it.
-    ReconnectConfiguration.bind({
-      configurationUpdated: () => {
-        config.getDialogText();
-        configurationUpdatedCalled += 1;
-      }
-    });
+    ReconnectConfiguration.bind(
+      fakeConnectionStateHandler({
+        configurationUpdated: () => {
+          config.getDialogText();
+          configurationUpdatedCalled += 1;
+        }
+      })
+    );
 
     registry.getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue('bar');
     Reactive.flush();
@@ -111,12 +104,14 @@ describe('ReconnectConfiguration', () => {
     const registry = makeRegistry();
     const config = new ReconnectConfiguration(registry);
     let configurationUpdatedCalled = 0;
-    ReconnectConfiguration.bind({
-      configurationUpdated: () => {
-        config.getDialogText();
-        configurationUpdatedCalled += 1;
-      }
-    });
+    ReconnectConfiguration.bind(
+      fakeConnectionStateHandler({
+        configurationUpdated: () => {
+          config.getDialogText();
+          configurationUpdatedCalled += 1;
+        }
+      })
+    );
 
     registry.getProperty(RECONNECT_INTERVAL_KEY).setValue(13.0);
     registry.getProperty(RECONNECT_ATTEMPTS_KEY).setValue(13.0);

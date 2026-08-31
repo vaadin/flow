@@ -18,6 +18,11 @@
 // requests to the server over XHR and routes the response to the MessageHandler
 // or, on failure, to the ConnectionStateHandler.
 
+import type { ValueMap } from './MessageOrdering';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
+import type { MessageHandler } from './MessageHandler';
+import type { RequestResponseTracker } from './RequestResponseTracker';
 import { BrowserInfo } from '../BrowserInfo';
 import { XhrConnectionError } from './XhrConnectionError';
 import { parseJSONResponse } from './MessageHandler';
@@ -52,15 +57,13 @@ type Payload = Record<string, unknown>;
 
 /** The slice of Registry that XhrConnection uses. */
 export interface XhrConnectionRegistry {
-  getRequestResponseTracker(): { addResponseHandlingEndedHandler(handler: () => void): unknown };
-  getConnectionStateHandler(): {
-    xhrInvalidStatusCode(error: XhrConnectionError): void;
-    xhrException(error: XhrConnectionError): void;
-    xhrInvalidContent(error: XhrConnectionError): void;
-    xhrOk(): void;
-  };
-  getMessageHandler(): { handleMessage(json: unknown): void };
-  getApplicationConfiguration(): { getServiceUrl(): string; getUIId(): number };
+  getRequestResponseTracker(): Pick<RequestResponseTracker, 'addResponseHandlingEndedHandler'>;
+  getConnectionStateHandler(): Pick<
+    ConnectionStateHandler,
+    'xhrInvalidStatusCode' | 'xhrException' | 'xhrInvalidContent' | 'xhrOk'
+  >;
+  getMessageHandler(): Pick<MessageHandler, 'handleMessage'>;
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getServiceUrl' | 'getUIId'>;
 }
 
 // Parses a server response, returning null if it is not valid JSON. Mirrors
@@ -135,7 +138,7 @@ export class XhrConnection {
       return;
     }
     this.#registry.getConnectionStateHandler().xhrOk();
-    this.#registry.getMessageHandler().handleMessage(json);
+    this.#registry.getMessageHandler().handleMessage(json as ValueMap);
   }
 
   /** Routes a failed response to the connection-state handler. */

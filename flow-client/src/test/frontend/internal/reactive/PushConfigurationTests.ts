@@ -1,48 +1,35 @@
 import { expect } from '@open-wc/testing';
 import { PushConfiguration } from '../../../../main/frontend/internal/client/communication/PushConfiguration';
+import { NodeFeatures } from '../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 import { Reactive } from '../../../../main/frontend/internal/client/flow/reactive/Reactive';
+import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
 
+// PushConfiguration reads the root node's push configuration through a real
+// StateTree, so the configuration is written as the server writes it: values set
+// on the real map, whose change events drive the reactive push toggle.
 function makeRegistry(values: Record<string, unknown>) {
   const setPushCalls: boolean[] = [];
-  let pushModeListener: ((event: { getOldValue(): unknown; getNewValue(): unknown }) => void) | undefined;
+  const tree = new StateTree(inertRegistry());
+  const configMap = tree.getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
 
-  const parametersNode = {
-    getMap: () => ({
-      getProperty: () => ({ getValue: () => undefined, addChangeListener: () => {} }),
-      hasPropertyValue: () => false,
-      forEachProperty: (cb: (property: { getValue(): unknown }, key: string) => void) => {
-        cb({ getValue: () => 'websocket,long-polling' }, 'transports');
-      }
-    })
-  };
+  const parametersNode = new StateNode(3, tree);
+  tree.registerNode(parametersNode);
+  parametersNode
+    .getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS)
+    .getProperty('transports')
+    .setValue('websocket,long-polling');
+  configMap.getProperty('parameters').setValue(parametersNode);
 
-  const configMap = {
-    getProperty: (key: string) => {
-      if (key === 'pushMode') {
-        return {
-          getValue: () => values.pushMode,
-          addChangeListener: (l: (event: { getOldValue(): unknown; getNewValue(): unknown }) => void) => {
-            pushModeListener = l;
-          }
-        };
-      }
-      if (key === 'parameters') {
-        return { getValue: () => parametersNode, addChangeListener: () => {} };
-      }
-      return { getValue: () => values[key], addChangeListener: () => {} };
-    },
-    hasPropertyValue: (key: string) => values[key] !== undefined,
-    forEachProperty: () => {}
-  };
+  Object.entries(values).forEach(([key, value]) => configMap.getProperty(key).setValue(value));
 
-  const registry = {
+  return {
     setPushCalls,
-    firePushModeChange: (oldValue: unknown, newValue: unknown) =>
-      pushModeListener?.({ getOldValue: () => oldValue, getNewValue: () => newValue }),
-    getStateTree: () => ({ getRootNode: () => ({ getMap: () => configMap }) }),
+    configMap,
+    getStateTree: () => tree,
     getMessageSender: () => ({ setPushEnabled: (enabled: boolean) => setPushCalls.push(enabled) })
   };
-  return registry;
 }
 
 describe('PushConfiguration', () => {
@@ -57,7 +44,7 @@ describe('PushConfiguration', () => {
   it('enables push (deferred to flush) when the mode switches on', () => {
     const registry = makeRegistry({ pushMode: 'DISABLED' });
     new PushConfiguration(registry);
-    registry.firePushModeChange('DISABLED', 'AUTOMATIC');
+    registry.configMap.getProperty('pushMode').setValue('AUTOMATIC');
     expect(registry.setPushCalls).to.deep.equal([]); // deferred
     Reactive.flush();
     expect(registry.setPushCalls).to.deep.equal([true]);
@@ -66,7 +53,7 @@ describe('PushConfiguration', () => {
   it('disables push when the mode switches off', () => {
     const registry = makeRegistry({ pushMode: 'AUTOMATIC' });
     new PushConfiguration(registry);
-    registry.firePushModeChange('AUTOMATIC', 'DISABLED');
+    registry.configMap.getProperty('pushMode').setValue('DISABLED');
     Reactive.flush();
     expect(registry.setPushCalls).to.deep.equal([false]);
   });

@@ -25,6 +25,16 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { ConstantPool } from '../flow/ConstantPool';
+import type { Dependency, DependencyLoader, LoadMode } from '../DependencyLoader';
+import type { ExecuteJavaScriptProcessor } from '../flow/ExecuteJavaScriptProcessor';
+import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
+import type { MessageSender } from './MessageSender';
+import type { RequestResponseTracker } from './RequestResponseTracker';
+import type { ResourceLoader } from '../ResourceLoader';
+import type { SystemErrorHandler } from '../SystemErrorHandler';
+import type { UILifecycle } from '../UILifecycle';
 import { getServerId, isResynchronize, PendingMessageQueue } from './MessageOrdering';
 import { ResynchronizationState } from './ResynchronizationState';
 import { runWhenEagerDependenciesLoaded } from '../EagerDependencyTracker';
@@ -88,34 +98,27 @@ type ValueMap = Record<string, unknown>;
 
 /** The slice of Registry MessageHandler uses. */
 interface MessageHandlerRegistry {
-  getUILifecycle(): { getState(): string; setState(state: string): void };
-  getMessageSender(): {
-    getResynchronizationState(): string;
-    clearResynchronizationState(): void;
-    setClientToServerMessageId(nextExpectedId: number, force: boolean): void;
-    requestResynchronize(): boolean;
-    resynchronize(): void;
-  };
+  getUILifecycle(): Pick<UILifecycle, 'getState' | 'setState'>;
+  getMessageSender(): Pick<
+    MessageSender,
+    | 'getResynchronizationState'
+    | 'clearResynchronizationState'
+    | 'setClientToServerMessageId'
+    | 'requestResynchronize'
+    | 'resynchronize'
+  >;
   getStateTree(): unknown & { prepareForResync(): void };
-  getRequestResponseTracker(): { fireResponseHandlingStarted(): void; endRequest(): void; hasActiveRequest(): boolean };
-  getLoadingIndicatorStateHandler(): { stopLoading(): void };
-  getConstantPool(): { importFromJson(constants: unknown): void };
-  getExecuteJavaScriptProcessor(): { execute(commands: unknown): void };
-  getDependencyLoader(): {
-    loadDependencies(dependencies: Map<string, unknown[]>): void;
-  };
-  getSystemErrorHandler(): {
-    handleSessionExpiredError(details: string | null): void;
-    handleUnrecoverableError(
-      caption: string,
-      message: string,
-      details: string,
-      url: string,
-      querySelector: string | null
-    ): void;
-  };
-  getApplicationConfiguration(): { getMaxMessageSuspendTimeout(): number };
-  getResourceLoader(): { clearLoadedResourceById(dependencyId: string): void };
+  getRequestResponseTracker(): Pick<
+    RequestResponseTracker,
+    'fireResponseHandlingStarted' | 'endRequest' | 'hasActiveRequest'
+  >;
+  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
+  getConstantPool(): Pick<ConstantPool, 'importFromJson'>;
+  getExecuteJavaScriptProcessor(): Pick<ExecuteJavaScriptProcessor, 'execute'>;
+  getDependencyLoader(): Pick<DependencyLoader, 'loadDependencies'>;
+  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleSessionExpiredError' | 'handleUnrecoverableError'>;
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getMaxMessageSuspendTimeout'>;
+  getResourceLoader(): Pick<ResourceLoader, 'clearLoadedResourceById'>;
 }
 
 /** A state node whose DOM updates should be flushed after a server message. */
@@ -266,10 +269,10 @@ export class MessageHandler {
   }
 
   #handleDependencies(inputJson: ValueMap): void {
-    const dependencies = new Map<string, unknown[]>();
-    for (const loadMode of ['INLINE', 'EAGER', 'LAZY']) {
+    const dependencies = new Map<LoadMode, Dependency[]>();
+    for (const loadMode of ['INLINE', 'EAGER', 'LAZY'] as LoadMode[]) {
       if (loadMode in inputJson) {
-        dependencies.set(loadMode, inputJson[loadMode] as unknown[]);
+        dependencies.set(loadMode, inputJson[loadMode] as Dependency[]);
       }
     }
     if (dependencies.size > 0) {
@@ -284,7 +287,7 @@ export class MessageHandler {
     }
     try {
       if ('constants' in valueMap) {
-        this.#registry.getConstantPool().importFromJson(valueMap.constants);
+        this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
       }
       if ('changes' in valueMap) {
         this.#processChanges(valueMap);
@@ -297,7 +300,7 @@ export class MessageHandler {
         // during message processing (hence the doubly-nested post-flush).
         Reactive.addPostFlushListener(() =>
           Reactive.addPostFlushListener(() =>
-            this.#registry.getExecuteJavaScriptProcessor().execute(valueMap[UIDL_KEY_EXECUTE])
+            this.#registry.getExecuteJavaScriptProcessor().execute(valueMap[UIDL_KEY_EXECUTE] as unknown[][])
           )
         );
       }

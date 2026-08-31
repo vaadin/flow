@@ -21,6 +21,10 @@
 // so all parts of the configuration are updated first). The Registry/StateTree/
 // MessageSender are contracts satisfied at cutover.
 
+import type { StateNode } from '../flow/StateNode';
+import type { StateTree } from '../flow/StateTree';
+import type { NodeMap } from '../flow/nodefeature/NodeMap';
+import type { MessageSender } from './MessageSender';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { Reactive } from '../flow/reactive/Reactive';
 
@@ -30,28 +34,10 @@ const PUSH_SERVLET_MAPPING_KEY = 'pushServletMapping';
 const ALWAYS_USE_XHR_TO_SERVER = 'alwaysXhrToServer';
 const PARAMETERS_KEY = 'parameters';
 
-/** The slice of MapProperty PushConfiguration reads. */
-interface PushMapProperty {
-  getValue(): unknown;
-  addChangeListener(listener: (event: { getOldValue(): unknown; getNewValue(): unknown }) => void): unknown;
-}
-
-/** The slice of NodeMap PushConfiguration reads. */
-interface PushNodeMap {
-  getProperty(key: string): PushMapProperty;
-  hasPropertyValue(key: string): boolean;
-  forEachProperty(callback: (property: PushMapProperty, key: string) => void): void;
-}
-
-/** The slice of StateNode PushConfiguration reads. */
-interface PushStateNode {
-  getMap(featureId: number): PushNodeMap;
-}
-
 /** The slice of Registry PushConfiguration uses. */
 interface PushConfigRegistry {
-  getStateTree(): { getRootNode(): PushStateNode };
-  getMessageSender(): { setPushEnabled(enabled: boolean): void };
+  getStateTree(): StateTree;
+  getMessageSender(): Pick<MessageSender, 'setPushEnabled'>;
 }
 
 // Whether a PUSHMODE value enables push (anything other than DISABLED).
@@ -87,7 +73,7 @@ export class PushConfiguration {
     }
   }
 
-  #getConfigurationMap(): PushNodeMap {
+  #getConfigurationMap(): NodeMap {
     return this.#registry.getStateTree().getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
   }
 
@@ -108,7 +94,7 @@ export class PushConfiguration {
 
   /** All push parameters configured on the server (including transports). */
   getParameters(): Map<string, string> {
-    const parametersNode = this.#getConfigurationMap().getProperty(PARAMETERS_KEY).getValue() as PushStateNode;
+    const parametersNode = this.#getConfigurationMap().getProperty(PARAMETERS_KEY).getValue() as StateNode;
     const parametersMap = parametersNode.getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
 
     const parameters = new Map<string, string>();

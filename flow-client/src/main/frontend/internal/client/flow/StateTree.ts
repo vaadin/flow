@@ -27,48 +27,28 @@ import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { StateNode } from './StateNode';
+import type { InitialPropertiesHandler } from '../InitialPropertiesHandler';
+import type { ServerConnector } from '../communication/ServerConnector';
 import type { ConstantPool } from './ConstantPool';
 import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
 import { getIfPresent, rejectPromises } from './binding/ServerEventObject';
 
-/** The slice of ServerConnector that StateTree uses. */
-export interface ServerConnector {
-  sendEventMessage(node: StateNode, eventType: string, eventData: unknown): void;
-  sendNodeSyncMessage(node: StateNode, mapId: number, name: string, value: unknown): void;
-  sendTemplateEventMessage(node: StateNode, methodName: string, args: unknown[], promiseId: number): void;
-  sendExistingElementAttachToServer(
-    parent: StateNode,
-    requestedId: number,
-    assignedId: number,
-    tagName: string,
-    index: number
-  ): void;
-  sendExistingElementWithIdAttachToServer(
-    parent: StateNode,
-    requestedId: number,
-    assignedId: number,
-    id: string | null
-  ): void;
-  sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void;
-}
-
-/**
- * The slice of InitialPropertiesHandler that StateTree uses. The class is
- * ported, but it resolves its state tree through the registry while the tree is
- * built from that same registry, so wiring the two together needs the unported
- * DefaultRegistry; until then the tree names only what it calls.
- */
-export interface InitialPropertiesHandler {
-  flushPropertyUpdates(): void;
-  nodeRegistered(node: StateNode): void;
-  handlePropertyUpdate(property: MapProperty): boolean;
-}
-
 /** The slice of Registry that StateTree and the binding layer use. */
 export interface Registry {
-  getInitialPropertiesHandler(): InitialPropertiesHandler;
-  getServerConnector(): ServerConnector;
+  getInitialPropertiesHandler(): Pick<
+    InitialPropertiesHandler,
+    'flushPropertyUpdates' | 'nodeRegistered' | 'handlePropertyUpdate'
+  >;
+  getServerConnector(): Pick<
+    ServerConnector,
+    | 'sendEventMessage'
+    | 'sendNodeSyncMessage'
+    | 'sendTemplateEventMessage'
+    | 'sendExistingElementAttachToServer'
+    | 'sendExistingElementWithIdAttachToServer'
+    | 'sendReturnChannelMessage'
+  >;
   getApplicationConfiguration(): ApplicationConfiguration;
   getConstantPool(): ConstantPool;
   getExistingElementMap(): ExistingElementMap;

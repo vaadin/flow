@@ -20,6 +20,8 @@
 // before the queue is sent. The Registry/UILifecycle/MessageSender are contracts
 // satisfied at cutover.
 
+import type { MessageSender } from './MessageSender';
+import type { UILifecycle } from '../UILifecycle';
 import { getScheduler } from '../TrackingScheduler';
 import { Console } from '../Console';
 
@@ -28,8 +30,8 @@ const NO_OP = (): void => {};
 
 /** The slice of Registry that ServerRpcQueue uses. */
 interface ServerRpcQueueRegistry {
-  getUILifecycle(): { isRunning(): boolean };
-  getMessageSender(): { sendInvocationsToServer(): void };
+  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
+  getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;
 }
 
 /** Accumulates and flushes server RPC invocations; mirrors ServerRpcQueue.java. */

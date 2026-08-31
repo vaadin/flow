@@ -21,6 +21,12 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import type { UILifecycle } from '../UILifecycle';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { MessageHandler } from './MessageHandler';
+import type { PushConfiguration } from './PushConfiguration';
+import type { ResourceLoader } from '../ResourceLoader';
+import type { URIResolver } from '../URIResolver';
 import { parseJSONResponse } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
@@ -196,28 +202,16 @@ interface PushConnectionStateHandler {
 
 /** The slice of Registry AtmospherePushConnection uses. */
 interface AtmospherePushRegistry {
-  getUILifecycle(): {
-    addHandler(handler: (event: { getUiLifecycle(): { isTerminated(): boolean } }) => void): unknown;
-  };
-  getPushConfiguration(): {
-    getParameters(): Map<string, string>;
-    getPushServletMapping(): string | null;
-    isAlwaysXhrToServer(): boolean;
-  };
+  getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
+  getPushConfiguration(): Pick<PushConfiguration, 'getParameters' | 'getPushServletMapping' | 'isAlwaysXhrToServer'>;
   getConnectionStateHandler(): PushConnectionStateHandler;
-  getApplicationConfiguration(): {
-    getServiceUrl(): string;
-    getContextRootUrl(): string;
-    getUIId(): number;
-    isProductionMode(): boolean;
-  };
-  getURIResolver(): { resolveVaadinUri(uri: string): string | null };
-  getMessageHandler(): {
-    getPushId(): string | null;
-    getLastSeenServerSyncId(): number;
-    handleMessage(json: Record<string, unknown>): void;
-  };
-  getResourceLoader(): { loadScript(url: string, listener: ResourceLoadListener | null): void };
+  getApplicationConfiguration(): Pick<
+    ApplicationConfiguration,
+    'getServiceUrl' | 'getContextRootUrl' | 'getUIId' | 'isProductionMode'
+  >;
+  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
+  getMessageHandler(): Pick<MessageHandler, 'getPushId' | 'getLastSeenServerSyncId' | 'handleMessage'>;
+  getResourceLoader(): Pick<ResourceLoader, 'loadScript'>;
 }
 
 /**

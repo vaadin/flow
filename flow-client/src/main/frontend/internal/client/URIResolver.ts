@@ -19,6 +19,8 @@
 // protocols (context:// -> context root, base:// -> base URI) to
 // browser-loadable URLs; other protocols pass through unchanged.
 
+import type { ApplicationConfiguration } from './ApplicationConfiguration';
+
 // com.vaadin.flow.shared.ApplicationConstants
 const CONTEXT_PROTOCOL_PREFIX = 'context://';
 const BASE_PROTOCOL_PREFIX = 'base://';
@@ -61,7 +63,7 @@ export function getCurrentLocationRelativeToBaseUri(): string {
 
 /** The slice of Registry that URIResolver uses. */
 interface URIResolverRegistry {
-  getApplicationConfiguration(): { getContextRootUrl(): string };
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getContextRootUrl'>;
 }
 
 /** Resolves Vaadin URIs against the application context root; mirrors URIResolver.java. */

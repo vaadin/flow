@@ -20,6 +20,9 @@
 // connection-state handler's configurationUpdated() whenever the configuration
 // changes (reactively).
 
+import type { StateTree } from '../flow/StateTree';
+import type { MapProperty } from '../flow/nodefeature/MapProperty';
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { Reactive } from '../flow/reactive/Reactive';
 
@@ -31,20 +34,9 @@ const RECONNECT_ATTEMPTS_DEFAULT = 10000;
 const RECONNECT_INTERVAL_KEY = 'reconnectInterval';
 const RECONNECT_INTERVAL_DEFAULT = 5000;
 
-/** The slice of MapProperty ReconnectConfiguration reads. */
-interface ReconnectProperty {
-  getValue(): unknown;
-  getValueOrDefault(defaultValue: number): number;
-}
-
 /** The slice of Registry ReconnectConfiguration reads. */
 interface ReconnectRegistry {
-  getStateTree(): { getRootNode(): { getMap(featureId: number): { getProperty(key: string): ReconnectProperty } } };
-}
-
-/** Notified when the reconnect configuration changes. */
-interface ConfigurationListener {
-  configurationUpdated(): void;
+  getStateTree(): StateTree;
 }
 
 /** Exposes the reconnect configuration from the root node; mirrors ReconnectConfiguration.java. */
@@ -59,11 +51,11 @@ export class ReconnectConfiguration {
    * Re-runs the handler's configurationUpdated() whenever the reconnect
    * configuration changes. Mirrors ReconnectConfiguration.bind.
    */
-  static bind(connectionStateHandler: ConfigurationListener): void {
+  static bind(connectionStateHandler: ConnectionStateHandler): void {
     Reactive.runWhenDependenciesChange(() => connectionStateHandler.configurationUpdated());
   }
 
-  #getProperty(key: string): ReconnectProperty {
+  #getProperty(key: string): MapProperty {
     return this.#registry
       .getStateTree()
       .getRootNode()

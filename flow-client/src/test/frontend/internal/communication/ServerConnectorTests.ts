@@ -1,5 +1,8 @@
 import { expect } from '@open-wc/testing';
 import { ServerConnector } from '../../../../main/frontend/internal/client/communication/ServerConnector';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { inertRegistry } from '../client/flow/stateTreeTestRegistry';
 
 // Captures enqueued messages and processMessage calls.
 function makeRegistry() {
@@ -20,7 +23,9 @@ function makeRegistry() {
   return { registry, queued, processed, flushes: () => flushes };
 }
 
-const node = (id: number) => ({ getId: () => id });
+// ServerConnector takes the ported StateNode, so these are real nodes on an
+// inert tree; only getId is read.
+const node = (id: number): StateNode => new StateNode(id, new StateTree(inertRegistry()));
 
 describe('ServerConnector', () => {
   it('sends an event message and enqueues + flushes it', () => {

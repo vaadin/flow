@@ -19,6 +19,7 @@
 // types, muting it for high-frequency UI events (mousemove etc.). The
 // connection-indicator calls go through ConnectionIndicator.
 
+import type { RequestResponseTracker } from './RequestResponseTracker';
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
@@ -42,7 +43,7 @@ const SILENT_EVENT_TYPES = new Set<string>([
 
 /** The slice of Registry that LoadingIndicatorStateHandler uses. */
 interface LoadingIndicatorRegistry {
-  getRequestResponseTracker(): { hasActiveRequest(): boolean };
+  getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest'>;
 }
 
 /** Manages the loading indicator from RPC activity; mirrors LoadingIndicatorStateHandler.java. */
