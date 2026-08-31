@@ -365,6 +365,13 @@ final class DevLoopRedefiner {
             if (url == null) {
                 continue;
             }
+            if (!Files.isRegularFile(path)) {
+                // A deleted stylesheet: there is no content to push, and the
+                // classpath copy is already gone. Left uncounted on purpose, so
+                // a batch of nothing but deletions reloads the page - the only
+                // thing that takes a stylesheet off it.
+                continue;
+            }
             try {
                 liveReload.get().update(url,
                         Files.readString(path, StandardCharsets.UTF_8));

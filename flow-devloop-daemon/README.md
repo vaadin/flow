@@ -295,6 +295,15 @@ its answer rather than claiming success.
   starting and is never re-read, so the copy alone would leave the running JVM
   on the old values. `apply` copies it anyway, to keep the classpath honest, and
   then escalates to a restart rather than returning `Stable`.
+- **A deleted resource has to be un-copied.** A walk only sees what is there, so
+  the deletion is found against the fingerprint inventory instead — every
+  resource on disk at the last seed is a key in it. `target/classes` is what the
+  application actually reads, so the copy is removed; a public one then gets a
+  `RESOURCES` call of its own, which has nothing to push and therefore reloads
+  the page, and a startup one escalates exactly as an edit to it would. The
+  inventory is also what bounds this: a resource created and deleted without the
+  application restarting in between was never seeded, so its copy is left for
+  the next build to clear.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
   fires a competing full page reload; the Spring ones were measured to lose the

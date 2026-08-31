@@ -146,13 +146,18 @@ final class Compile {
 
     /**
      * One apply's worth of resource changes, split by {@link ResourceKind}.
+     * <p>
+     * Each half is a {@link Changes} - the same "edited and deleted" pair the
+     * compile leg uses - because a deletion asks the same question an edit
+     * does, and it is only the consequence that differs by kind.
      *
      * @param live
-     *            resources the browser can be shown once they are copied
+     *            resources the browser can be shown once the classpath copy has
+     *            been written or removed
      * @param startup
-     *            resources the running application will not re-read
+     *            resources the running application will not read again
      */
-    record ResourceChanges(List<Path> live, List<Path> startup) {
+    record ResourceChanges(Changes live, Changes startup) {
 
         boolean isEmpty() {
             return live.isEmpty() && startup.isEmpty();
@@ -162,9 +167,18 @@ final class Compile {
             return live.size() + startup.size();
         }
 
-        /** Everything that changed; all of it is copied to the classpath. */
-        List<Path> all() {
-            return Stream.concat(live.stream(), startup.stream())
+        /** Sources whose bytes have to be written onto the classpath. */
+        List<Path> copies() {
+            return joined(live.modified(), startup.modified());
+        }
+
+        /** Sources whose classpath copy has to go. */
+        List<Path> removals() {
+            return joined(live.deleted(), startup.deleted());
+        }
+
+        private static List<Path> joined(List<Path> first, List<Path> second) {
+            return Stream.concat(first.stream(), second.stream())
                     .sorted(Comparator.naturalOrder()).toList();
         }
     }
@@ -284,22 +298,46 @@ final class Compile {
      * Both questions are asked of every resource; only the consequence of a
      * "yes" differs, which is why the two kinds come back separately.
      * <p>
+     * Deletions are the third question, and the walk cannot answer it: a file
+     * that is gone is not visited. The fingerprint map is the inventory that
+     * can - every resource on disk at the last seed is a key in it - and a
+     * deletion has to be noticed, because the copy under {@code target/classes}
+     * is what the application actually reads. Leave that behind and the file
+     * goes on being served, and the config goes on being loaded, until the next
+     * full Maven build.
+     * <p>
      * The fingerprint map is seeded at daemon start, so a first apply with
      * nothing edited is still quiet.
      */
     ResourceChanges staleResources() {
         List<Path> live = new ArrayList<>();
         List<Path> startup = new ArrayList<>();
+        List<Path> deletedLive = new ArrayList<>();
+        List<Path> deletedStartup = new ArrayList<>();
+        java.util.Set<Path> seen = new java.util.HashSet<>();
         forEachResource((module, source, stamp) -> {
+            seen.add(source);
             if (!copyIsCurrent(module, source)
                     || !stamp.equals(notified.get(source))) {
                 (resourceKindOf(module, source) == ResourceKind.LIVE ? live
                         : startup).add(source);
             }
         });
-        live.sort(Comparator.naturalOrder());
-        startup.sort(Comparator.naturalOrder());
-        return new ResourceChanges(List.copyOf(live), List.copyOf(startup));
+        for (Path source : notified.keySet()) {
+            if (seen.contains(source)) {
+                continue;
+            }
+            resourceOwner(source).ifPresent(module -> (resourceKindOf(module,
+                    source) == ResourceKind.LIVE ? deletedLive : deletedStartup)
+                    .add(source));
+        }
+        return new ResourceChanges(
+                new Changes(sorted(live), sorted(deletedLive)),
+                new Changes(sorted(startup), sorted(deletedStartup)));
+    }
+
+    private static List<Path> sorted(List<Path> paths) {
+        return paths.stream().sorted(Comparator.naturalOrder()).toList();
     }
 
     /**
@@ -313,6 +351,20 @@ final class Compile {
         for (Path source : resources) {
             stampOf(source).ifPresent(stamp -> notified.put(source, stamp));
         }
+    }
+
+    /**
+     * Drops resources from the inventory, so a deletion is reported once.
+     * <p>
+     * Called for {@link ResourceKind#LIVE} deletions only, and for the same
+     * reason {@link #markResourcesNotified} is: the classpath is what a live
+     * resource is read from, so removing the copy is the whole of the change. A
+     * startup-only deletion stays in the inventory until the application
+     * restarts and {@link #seedResources()} clears it, because until then the
+     * running JVM is still holding what the file used to say.
+     */
+    void forgetResources(List<Path> resources) {
+        resources.forEach(notified::remove);
     }
 
     /** Seeds the fingerprints, so an untouched project reports no changes. */
@@ -490,6 +542,45 @@ final class Compile {
         return PUBLIC_RESOURCE_ROOTS.stream().anyMatch(path::startsWith)
                 ? ResourceKind.LIVE
                 : ResourceKind.STARTUP;
+    }
+
+    /**
+     * Removes the classpath copies of resources whose sources are gone; returns
+     * what was removed.
+     * <p>
+     * {@code deleteIfExists} rather than {@code delete}: a startup-only
+     * deletion is offered again on every apply until the restart that clears
+     * it, and the second offer has nothing left to remove. An empty directory
+     * left behind is deliberate - it is what {@code mvn} leaves too, and a
+     * daemon that prunes upwards would eventually prune something the build put
+     * there.
+     */
+    List<Path> removeResourceCopies(List<Path> sources) throws IOException {
+        List<Path> removed = new ArrayList<>();
+        for (Path source : sources) {
+            Optional<Reactor.Module> owner = resourceOwner(source);
+            if (owner.isEmpty()) {
+                continue;
+            }
+            Path target = owner.get().targetFor(source);
+            if (Files.deleteIfExists(target)) {
+                removed.add(target);
+            }
+        }
+        return removed;
+    }
+
+    /**
+     * The module whose resource tree a file belongs to.
+     * <p>
+     * Prefix-matched rather than {@link #moduleOf} so it answers for a path
+     * that no longer exists, which is what a deletion is, and so a Java source
+     * can never be mistaken for a resource.
+     */
+    private Optional<Reactor.Module> resourceOwner(Path resource) {
+        return modules.stream()
+                .filter(module -> resource.startsWith(module.resourceDir()))
+                .findFirst();
     }
 
     /** Copies changed resources onto the classpath; returns what was copied. */

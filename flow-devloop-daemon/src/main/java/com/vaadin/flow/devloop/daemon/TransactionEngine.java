@@ -87,6 +87,8 @@ final class TransactionEngine {
         volatile String hotswapDetail = "";
         volatile String escalation = "";
         volatile int resources;
+        /** Classpath copies removed because their source is gone. */
+        volatile int resourcesRemoved;
         volatile String frontend = "";
         /** Frontend files this change touched, however they were handled. */
         volatile int frontendFiles;
@@ -133,7 +135,8 @@ final class TransactionEngine {
                     + (escalation.isEmpty() ? "null"
                             : "\"" + Json.escape(escalation) + "\"")
                     + ",\"duplicateClassCopies\":" + duplicates
-                    + ",\"resources\":" + resources + ",\"frontend\":\""
+                    + ",\"resources\":" + resources + ",\"resourcesRemoved\":"
+                    + resourcesRemoved + ",\"frontend\":\""
                     + Json.escape(frontend) + "\",\"frontendFiles\":"
                     + frontendFiles + ",\"themePushed\":" + themePushed
                     + ",\"frontendMode\":\"" + Json.escape(frontendMode)
@@ -335,8 +338,10 @@ final class TransactionEngine {
                     .map(compile::relative).toList());
             changes.deleted().forEach(path -> tx.changeSet
                     .add(compile.relative(path) + " (deleted)"));
-            staleResources.all()
+            staleResources.copies()
                     .forEach(path -> tx.changeSet.add(compile.relative(path)));
+            staleResources.removals().forEach(path -> tx.changeSet
+                    .add(compile.relative(path) + " (deleted)"));
             frontendChanges.modified()
                     .forEach(path -> tx.changeSet.add(compile.relative(path)));
             frontendChanges.deleted().forEach(path -> tx.changeSet
@@ -389,10 +394,19 @@ final class TransactionEngine {
             if (!staleResources.isEmpty()) {
                 tx.state = "frontend";
                 try {
-                    compile.copyResources(staleResources.all());
-                    tx.resources = staleResources.size();
+                    compile.copyResources(staleResources.copies());
+                    tx.resources = staleResources.copies().size();
+                    // The copy is what the application reads, so a deletion
+                    // that leaves it behind deletes nothing: the file goes on
+                    // being served until the next full Maven build.
+                    tx.resourcesRemoved = compile
+                            .removeResourceCopies(staleResources.removals())
+                            .size();
                     log.line("resources: copied " + tx.resources
-                            + " to the classpath");
+                            + " to the classpath"
+                            + (tx.resourcesRemoved > 0
+                                    ? ", removed " + tx.resourcesRemoved
+                                    : ""));
                 } catch (java.io.IOException e) {
                     return finish(tx, Outcome.FAILED,
                             "resource copy: " + e.getMessage(), "none",
@@ -444,7 +458,8 @@ final class TransactionEngine {
                 // Java and resources in one change-set: push the resources too,
                 // otherwise the CSS half of the edit would sit on the classpath
                 // unseen until something reloaded the page.
-                notifyResources(staleResources.live(), log);
+                notifyResources(staleResources.live().modified(), log);
+                notifyRemovedResources(staleResources.live().deleted(), log);
             }
             if (tx.escalation.isEmpty()) {
                 // Skipped when a restart is coming: it re-reads every frontend
@@ -637,11 +652,24 @@ final class TransactionEngine {
      * "application.properties changed" is the whole explanation and a count is
      * not.
      */
-    private static String resourceEscalation(List<Path> startup) {
-        String what = startup.size() == 1
-                ? startup.get(0).getFileName() + " changed"
-                : startup.size() + " resource(s) changed";
+    private static String resourceEscalation(Compile.Changes startup) {
+        String what;
+        if (startup.modified().isEmpty()) {
+            what = named(startup.deleted(), "removed");
+        } else if (startup.deleted().isEmpty()) {
+            what = named(startup.modified(), "changed");
+        } else {
+            what = startup.size() + " resource(s) changed or removed";
+        }
         return what + " (read only while the app starts)";
+    }
+
+    /**
+     * {@code application.properties changed}, or {@code 3 resource(s) changed}.
+     */
+    private static String named(List<Path> paths, String verb) {
+        return (paths.size() == 1 ? paths.get(0).getFileName().toString()
+                : paths.size() + " resource(s)") + " " + verb;
     }
 
     /**
@@ -721,7 +749,7 @@ final class TransactionEngine {
      * either way.
      */
     private Transaction finishFrontendOnly(Transaction tx, Launch.Log log,
-            List<Path> resources, Frontend.Plan plan, long started) {
+            Compile.Changes resources, Frontend.Plan plan, long started) {
         Connector active = this.connector;
         if (app.state() != AppProcess.State.RUNNING || active == null
                 || !active.isOpen()) {
@@ -741,8 +769,8 @@ final class TransactionEngine {
         }
 
         long runtimeStart = System.nanoTime();
-        if (!resources.isEmpty()) {
-            Optional<String> reply = notifyResources(resources, log);
+        if (!resources.modified().isEmpty()) {
+            Optional<String> reply = notifyResources(resources.modified(), log);
             if (reply.isEmpty() || !reply.get().startsWith("OK")) {
                 tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
                 return finish(tx, Outcome.FAILED,
@@ -756,6 +784,13 @@ final class TransactionEngine {
                     : "true".equals(resourceFields.get("browserReload"))
                             ? "browser reload requested"
                             : "no browser connected";
+        }
+        if (!notifyRemovedResources(resources.deleted(), log)) {
+            tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
+            return finish(tx, Outcome.FAILED,
+                    "resource notify: the app did not answer for "
+                            + resources.deleted().size() + " removed file(s)",
+                    "hmr", "see target/devloop/app.log", started);
         }
         if (!notifyFrontend(plan, tx, log)) {
             tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
@@ -866,6 +901,40 @@ final class TransactionEngine {
             log.line("resource notify: " + reply.get());
         }
         return reply;
+    }
+
+    /**
+     * Tells the app about resources whose classpath copy has just been removed.
+     * <p>
+     * The same {@code RESOURCES} command an edit uses, and deliberately a
+     * separate call from the edits: Flow is told the resource changed either
+     * way - {@code Hotswapper.onHotswap} folds created, modified and deleted
+     * into one set - but a deleted stylesheet has no content to push, so the
+     * app answers {@code pushed=0} and reloads the page instead, which is the
+     * only thing that can take a file off it. Batched together with an edit
+     * that <em>was</em> pushed, that reload would not happen.
+     *
+     * @return {@code false} only when the app was asked and did not answer
+     */
+    private boolean notifyRemovedResources(List<Path> removed, Launch.Log log) {
+        if (removed.isEmpty()) {
+            return true;
+        }
+        Connector active = this.connector;
+        if (active == null || !active.isOpen()) {
+            // Nothing to tell, and nothing acted on: the next apply offers
+            // these again, and the restart that brings the app back re-seeds
+            // the inventory anyway.
+            return true;
+        }
+        Optional<String> reply = active.command("RESOURCES " + join(removed),
+                30);
+        if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+            log.line("resource notify: " + reply.orElse("no reply"));
+            return false;
+        }
+        compile.forgetResources(removed);
+        return true;
     }
 
     void onConnector(Connector connector) {
@@ -1163,9 +1232,14 @@ final class TransactionEngine {
         List<String> clauses = new ArrayList<>();
         if (tx.resources > 0) {
             clauses.add(tx.resources + " resource(s) copied");
-            if (!tx.hotswapDetail.isEmpty()) {
-                clauses.add(tx.hotswapDetail);
-            }
+        }
+        if (tx.resourcesRemoved > 0) {
+            clauses.add(tx.resourcesRemoved
+                    + " resource(s) removed from the classpath");
+        }
+        if ((tx.resources > 0 || tx.resourcesRemoved > 0)
+                && !tx.hotswapDetail.isEmpty()) {
+            clauses.add(tx.hotswapDetail);
         }
         if (tx.themePushed > 0) {
             clauses.add(tx.themePushed + " theme file(s) pushed in place");

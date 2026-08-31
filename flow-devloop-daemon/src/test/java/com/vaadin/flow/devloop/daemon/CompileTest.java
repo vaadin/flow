@@ -292,8 +292,58 @@ class CompileTest {
         // Copying application.properties onto the classpath does not change
         // what the running JVM was configured with, so it must not be reported
         // as something a push can make live.
-        assertEquals(List.of(served), changes.live());
-        assertEquals(List.of(config), changes.startup());
+        assertEquals(List.of(served), changes.live().modified());
+        assertEquals(List.of(config), changes.startup().modified());
+    }
+
+    @Test
+    void staleResources_reportADeletedResourceTheWalkCannotSee()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+        Files.delete(served);
+        Files.delete(config);
+
+        Compile.ResourceChanges changes = compile.staleResources();
+
+        assertEquals(List.of(served), changes.live().deleted());
+        assertEquals(List.of(config), changes.startup().deleted());
+    }
+
+    @Test
+    void removeResourceCopies_takesTheFileOffTheClasspath() throws IOException {
+        // The copy is what the application reads: a deletion that leaves it
+        // behind goes on being served until the next full Maven build.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(served));
+        Path copy = app.classesDir().resolve("META-INF/resources/site.css");
+        assertTrue(Files.isRegularFile(copy));
+        compile.seedResources();
+        Files.delete(served);
+
+        assertEquals(List.of(copy),
+                compile.removeResourceCopies(List.of(served)));
+        assertFalse(Files.exists(copy));
+
+        // Acting on it is what forgets it; otherwise every later apply would
+        // offer a file nobody is going to restore.
+        compile.forgetResources(List.of(served));
+        assertTrue(compile.staleResources().isEmpty());
     }
 
     @Test

@@ -71,6 +71,7 @@ the app turns up.
 | Structural Java (new fields/beans, new repository methods, changed routes or annotations) | restart → **reload the page** |
 | A JPA entity's mapping | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
+| A deleted `src/main/resources/` file | the copy under `target/classes` is removed too, or the app would go on serving it; a public one then **reloads the page**, a startup one **restarts** |
 | `src/main/frontend/themes/<theme>/**.css` | pushed in place, **no reload** — `apply` combines the theme and sends it |
 | `src/main/frontend/index.html`, theme assets (images, fonts) | already served from disk; `apply` **reloads the page** |
 | Any other `src/main/frontend/` file — `.ts`, `.tsx`, `.js`, `.css`, `theme.json` | in **dev-bundle mode** only a Vite build can fold it into the bundle, so `apply` **restarts**, and the restart rebuilds the bundle (slow — tens of seconds). In **Vite mode** Vite applied it when you saved; `apply` says so and does nothing — unless Vite could not compile it, in which case `apply` **fails** and quotes what Vite said |
