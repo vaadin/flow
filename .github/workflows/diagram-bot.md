@@ -158,7 +158,16 @@ If `EXPLICIT_REQUEST` is `true`, a maintainer asked for a diagram, so skip the g
 
 **Name real symbols in the nodes**: `StateTree.collectChanges()`, `Flow.ts collectBrowserDetails`, `UidlWriter`. A node label is a symbol plus at most a few words.
 
-**Mark what is new.** GitHub renders Mermaid in the reader's own light or dark theme, so never hard-code colours or `%%{init}%%` blocks — a colour that reads on one background disappears on the other. Put the change in the text instead: `(new)`, `(was: direct call)`, or a `Note` in a sequence diagram.
+**Mark what changed.** Highlight the nodes and arrows the pull request adds or reroutes, so the reviewer's eye lands on them first. In a pair, that is the new path in `After`.
+
+**Highlight in a way that survives both themes.** GitHub renders Mermaid in the reader's own light or dark theme, and a colour chosen for one can be unreadable on the other. Two forms are safe:
+
+- A `classDef` that touches the border only — `classDef changed stroke:#c9a227,stroke-width:3px`. A stroke colour sits on whatever fill the theme picked and never fights the label, so this is the default choice.
+- A `classDef` that sets `fill:` **and** `color:` together, as in `fill:#fff4ce,stroke:#b58900,color:#000`. Setting a fill without a text colour is the one thing that genuinely breaks: the dark theme keeps its near-white label and puts it on your pale box.
+
+Use one accent, not a palette — everything you mark is marked the same way. Never use a `%%{init}%%` block, and never highlight with a `rect` band in a sequence diagram; neither lets you control the text underneath. What the change removes needs no colour at all: a dropped path is a dotted link (`-.->`), a node that goes away carries `stroke-dasharray: 6 4`.
+
+**Say in words what the colour points at.** A highlight means "look here", never "here is what happened". Keep the marker in the text as well — `(new)`, `(was: direct call)`, or a `Note` in a sequence diagram — so the figure still reads for someone skimming on a phone, and so the claim survives being quoted as text.
 
 **Keep it small.** At most twelve nodes, or twelve messages in a sequence. If it does not fit, you are drawing the system rather than the change; narrow the claim until it fits.
 
@@ -175,7 +184,7 @@ If `EXPLICIT_REQUEST` is `true`, a maintainer asked for a diagram, so skip the g
 
 - In `flowchart` and `classDiagram`, a node label containing punctuation, parentheses, `<`, `>`, `:` or `,` must be quoted: `A["StateTree.collectChanges()"]`.
 - In `sequenceDiagram`, the text after `as`, after `:` on a message, and after `Note over X:` is free text. Do not quote it — the quotes would be drawn. Parentheses are fine there, but a second `:` in a message ends the label, so leave colons out of message text.
-- Everywhere: no raw HTML, no `click` directives, no images, no styling directives. Keep node ids and participant aliases short and alphanumeric.
+- Everywhere: no raw HTML, no `click` directives, no images, and no styling beyond the `classDef` form above. Keep node ids, class names and participant aliases short and alphanumeric.
 
 **Lay a before/after pair out side by side.** Mermaid orders disconnected subgraphs however it likes: leave the two halves unconnected and they come out stacked, often with `After` on top. Pin the layout down instead — `flowchart LR` for the frame, one subgraph per side, `direction TB` inside both so neither side sprawls, and the invisible edge `Before ~~~ After` to fix which comes first:
 
@@ -188,10 +197,11 @@ flowchart LR
     end
     subgraph After
         direction TB
-        A1["UidlWriter.write()"] -->|collects changes first| A2["StateTree.collectChanges()"]
+        A1["UidlWriter.write()"] -->|collects changes first| A2["StateTree.collectChanges() (new)"]:::changed
         A2 -->|writes response| A3["client applies"]
     end
     Before ~~~ After
+    classDef changed stroke:#c9a227,stroke-width:3px
 ```
 ````
 
@@ -229,7 +239,7 @@ When you decided not to draw, call the `noop` tool with a one-sentence reason, f
 1. Every node is a symbol you actually read in this repository. Nothing is invented, and nothing rests on the linked issue alone.
 2. Every arrow carries a label naming something the code does.
 3. The figure shows what the change is about, not the surrounding subsystem.
-4. Twelve nodes or fewer; labels with punctuation are quoted; no colours, no HTML, no init block.
+4. Twelve nodes or fewer; labels with punctuation are quoted; no HTML, no `%%{init}%%`; every `classDef` that sets `fill:` also sets `color:`.
 5. A before/after pair reads left to right — both halves are subgraphs of one `flowchart LR`, joined by `Before ~~~ After`, and neither sits above the other.
 6. The caption makes one claim, attributes or marks its intent statement, and contains no verdict and no instruction to the reviewer.
 7. If a check fails and you cannot fix it, `noop` instead of posting.
