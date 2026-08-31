@@ -356,9 +356,13 @@ public class Table extends HtmlComponent
     }
 
     /**
-     * Returns every row of this table, in document order: the
-     * <code>&lt;thead&gt;</code> rows, then the rows of each
+     * Returns every row of this table, walking its sections in document order:
+     * the <code>&lt;thead&gt;</code> rows, then the rows of each
      * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
+     * Note the asymmetry with {@link #addRow()}, which appends to the body:
+     * this returns the header and footer rows as well. Reach for
+     * {@link TableHead#getRows()} or {@link TableBody#getRows()} when only one
+     * section is of interest.
      *
      * @return all the rows of this table.
      */
