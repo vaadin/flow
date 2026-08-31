@@ -134,8 +134,6 @@ export class ServerConnector {
     this.#sendMessage(message);
   }
 
-  /** Sends an attach-existing-element callback to the server. */
-
   /**
    * Sends a data for attach existing element server side callback.
    *

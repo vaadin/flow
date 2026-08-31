@@ -99,7 +99,7 @@ export class StateTree {
 
   /**
    * Returns whether this tree is currently being updated by
-   * {@link TreeChangeProcessor.processChanges}.
+   * `TreeChangeProcessor.processChanges`.
    *
    * @returns `true` if being updated, `false` if not
    */

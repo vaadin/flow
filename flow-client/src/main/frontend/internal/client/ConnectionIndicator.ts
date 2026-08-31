@@ -79,7 +79,8 @@ export function setState(state: string): void {
 /**
  * Get the connection state.
  *
- * @returns the connection state
+ * @returns the connection state, or `null` when no connection-state component
+ *          is available
  */
 export function getState(): string | null {
   const connectionState = vaadin().connectionState;

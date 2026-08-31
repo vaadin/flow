@@ -41,8 +41,8 @@ interface ReconnectRegistry {
 
 /**
  * Tracks the reconnect configuration stored in the root node and provides it
- * with an easier to use API. Also triggers {@link
- * ConnectionStateHandler#configurationUpdated} whenever part of the
+ * with an easier to use API. Also triggers
+ * {@link ConnectionStateHandler.configurationUpdated} whenever part of the
  * configuration changes.
  */
 export class ReconnectConfiguration {

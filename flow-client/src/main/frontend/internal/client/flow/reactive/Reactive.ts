@@ -172,7 +172,7 @@ export const Reactive = {
 
   /**
    * Evaluates the given command whenever there is a change in any
-   * {@link ReactiveValue} used in the command.
+   * `ReactiveValue` used in the command.
    *
    * @param command - the command to run
    * @returns A {@link Computation} object which can be used to control the

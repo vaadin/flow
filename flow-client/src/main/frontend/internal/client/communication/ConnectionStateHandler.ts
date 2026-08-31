@@ -46,8 +46,8 @@ export const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
  * server.
  *
  * The handler is responsible for handling any problem in XHR, heartbeat and
- * push connections in a way it sees fit. The default implementation is {@link
- * DefaultConnectionStateHandler}.
+ * push connections in a way it sees fit. The default implementation is
+ * `DefaultConnectionStateHandler`.
  */
 export interface ConnectionStateHandler {
   /**
