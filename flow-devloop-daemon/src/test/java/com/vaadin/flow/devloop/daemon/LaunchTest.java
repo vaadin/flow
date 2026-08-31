@@ -60,14 +60,6 @@ class LaunchTest {
                 cache);
     }
 
-    @Test
-    void supportsEnhancedRedefinition_onlyForAJbr() {
-        assertEquals(true, Launch.supportsEnhancedRedefinition(
-                Path.of("C:/Users/dev/.jdks/jbr-21.0.5/bin/java.exe")));
-        assertEquals(false, Launch.supportsEnhancedRedefinition(
-                Path.of("/usr/lib/jvm/temurin-21/bin/java")));
-    }
-
     private static String classpath(String... entries) {
         return String.join(File.pathSeparator, entries);
     }

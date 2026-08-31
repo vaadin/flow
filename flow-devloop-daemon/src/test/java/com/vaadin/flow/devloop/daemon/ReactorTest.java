@@ -214,6 +214,93 @@ class ReactorTest {
         assertTrue(describe.endsWith(" and 5 more"), describe);
     }
 
+    @Test
+    void requiredRelease_readsTheCompilerProperty() throws IOException {
+        Path app = module("app", "app", "jar");
+        write(app, """
+                <project>
+                  <artifactId>app</artifactId>
+                  <properties>
+                    <maven.compiler.release>21</maven.compiler.release>
+                  </properties>
+                </project>
+                """);
+
+        assertEquals(21,
+                Reactor.discover(app, log).requiredRelease().getAsInt());
+    }
+
+    @Test
+    void requiredRelease_interpolatesTheSpringBootSpelling()
+            throws IOException {
+        Path app = module("app", "app", "jar");
+        write(app,
+                """
+                        <project>
+                          <artifactId>app</artifactId>
+                          <properties>
+                            <java.version>21</java.version>
+                            <maven.compiler.release>${java.version}</maven.compiler.release>
+                          </properties>
+                        </project>
+                        """);
+
+        assertEquals(21,
+                Reactor.discover(app, log).requiredRelease().getAsInt());
+    }
+
+    @Test
+    void requiredRelease_fallsBackToTheReactorRoot() throws IOException {
+        aggregator(repo, "root", List.of("app"));
+        write(repo, """
+                <project>
+                  <artifactId>root</artifactId>
+                  <packaging>pom</packaging>
+                  <modules><module>app</module></modules>
+                  <properties><java.version>25</java.version></properties>
+                </project>
+                """);
+        Path app = module("app", "app", "jar");
+
+        // The level is declared once at the top, which is where a multi-module
+        // project puts it.
+        assertEquals(25,
+                Reactor.discover(app, log).requiredRelease().getAsInt());
+    }
+
+    @Test
+    void requiredRelease_prefersTheCompilerPluginOverTheProperties()
+            throws IOException {
+        Path app = module("app", "app", "jar");
+        write(app, """
+                <project>
+                  <artifactId>app</artifactId>
+                  <properties><java.version>17</java.version></properties>
+                  <build><plugins><plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration><release>21</release></configuration>
+                  </plugin></plugins></build>
+                </project>
+                """);
+
+        // Maven acts on the plugin's own configuration, so the daemon must too.
+        assertEquals(21,
+                Reactor.discover(app, log).requiredRelease().getAsInt());
+    }
+
+    @Test
+    void requiredRelease_isEmptyWhenNoPomDeclaresOne() throws IOException {
+        Path app = module("app", "app", "jar");
+
+        // Inherited from a parent outside the checkout; answered from the
+        // bytecode instead.
+        assertTrue(Reactor.discover(app, log).requiredRelease().isEmpty());
+    }
+
+    private void write(Path moduleDir, String pom) throws IOException {
+        Files.writeString(moduleDir.resolve("pom.xml"), pom);
+    }
+
     private List<String> names(List<Reactor.Module> modules) {
         return modules.stream().map(Reactor.Module::name).toList();
     }

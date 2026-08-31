@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -345,13 +346,65 @@ final class Reactor {
     }
 
     /**
-     * The three things a pom is read for.
+     * The Java release this project is built for, when a pom says so.
+     * <p>
+     * The application module first and the reactor root second, because a
+     * multi-module project normally declares the level once at the top and a
+     * module that overrides it means it. A pom that inherits the level from a
+     * parent outside the checkout - {@code spring-boot-starter-parent} being
+     * the common case - yields nothing here, and is answered from the compiled
+     * bytecode instead; see {@link Jvm#required}.
+     */
+    OptionalInt requiredRelease() {
+        OptionalInt fromApp = releaseIn(app.dir());
+        return fromApp.isPresent() ? fromApp : releaseIn(root);
+    }
+
+    private static OptionalInt releaseIn(Path moduleDir) {
+        Pom pom = Pom.read(moduleDir.resolve("pom.xml"));
+        String declared = pom.declaredRelease();
+        if (declared == null) {
+            return OptionalInt.empty();
+        }
+        // <java.version>21</java.version> reaching maven.compiler.release as
+        // ${java.version} is how every Spring Boot project spells this.
+        String resolved = interpolate(declared, pom.properties());
+        return resolved == null ? OptionalInt.empty() : Jvm.featureOf(resolved);
+    }
+
+    /**
+     * The four things a pom is read for.
      * <p>
      * Namespace-unaware on purpose: element names are all that matter here, and
      * the POM namespace is declared inconsistently in the wild.
      */
     private record Pom(String artifactId, String packaging,
-            List<String> modules, Map<String, String> properties) {
+            List<String> modules, Map<String, String> properties,
+            String compilerRelease) {
+
+        /**
+         * The Java release this pom declares, still uninterpolated, or
+         * {@code null} when it declares none.
+         * <p>
+         * The compiler plugin's own configuration outranks the properties: a
+         * pom setting both means the one Maven will act on. {@code target}
+         * before {@code source} because it is {@code target} that decides which
+         * JVM can load the result.
+         */
+        String declaredRelease() {
+            if (compilerRelease != null && !compilerRelease.isBlank()) {
+                return compilerRelease;
+            }
+            for (String key : List.of("maven.compiler.release",
+                    "maven.compiler.target", "maven.compiler.source",
+                    "java.version")) {
+                String value = properties.get(key);
+                if (value != null && !value.isBlank()) {
+                    return value;
+                }
+            }
+            return null;
+        }
 
         static Pom read(Path file) {
             try {
@@ -387,12 +440,40 @@ final class Reactor {
                 String packaging = childText(project, "packaging");
                 return new Pom(artifactId == null ? "" : artifactId,
                         packaging == null ? "jar" : packaging, modules,
-                        properties);
+                        properties, compilerRelease(document));
             } catch (Exception e) {
                 // An unreadable pom is not a reason to refuse to serve the app:
                 // it yields no modules, which degrades to single-module mode.
-                return new Pom("", "jar", List.of(), Map.of());
+                return new Pom("", "jar", List.of(), Map.of(), null);
             }
+        }
+
+        /**
+         * {@code maven-compiler-plugin}'s configured level, wherever it is
+         * declared.
+         * <p>
+         * Every {@code <plugin>} in the document, {@code <pluginManagement>}
+         * and profiles included, for the same reason {@code <modules>} is read
+         * that way: a JDK-only reader cannot evaluate profile activation, and
+         * one declaration of the compiler level is what these poms have.
+         */
+        private static String compilerRelease(Document document) {
+            for (Element plugin : elementsNamed(document, "plugin")) {
+                if (!"maven-compiler-plugin"
+                        .equals(childText(plugin, "artifactId"))) {
+                    continue;
+                }
+                for (Element configuration : children(plugin,
+                        "configuration")) {
+                    for (String name : List.of("release", "target", "source")) {
+                        String value = childText(configuration, name);
+                        if (value != null && !value.isBlank()) {
+                            return value;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         private static List<Element> elementsNamed(Document document,

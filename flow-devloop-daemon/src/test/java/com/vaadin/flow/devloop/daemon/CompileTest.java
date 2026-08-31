@@ -41,6 +41,32 @@ class CompileTest {
     private Path repo;
 
     @Test
+    void compile_emitsBytecodeTheApplicationsJvmCanLoad() throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = new Launch.Project(List.of(app),
+                app.classesDir().toString(),
+                Map.of(app.artifactId(), app.classesDir().toString()),
+                java.util.OptionalInt.of(21));
+
+        Compile.Result result = new Compile(project)
+                .compile(List.of(source(app, "Main")), project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        // Major 65 is Java 21. Without --release javac would emit at the
+        // daemon's own level, which the app's JVM may be too old to load.
+        assertEquals(65, majorVersion(
+                app.classesDir().resolve("app").resolve("Main.class")));
+    }
+
+    private int majorVersion(Path classFile) throws IOException {
+        byte[] header = Files.readAllBytes(classFile);
+        return ((header[6] & 0xFF) << 8) | (header[7] & 0xFF);
+    }
+
+    @Test
     void compile_writesEachModulesClassesIntoItsOwnOutput() throws IOException {
         Reactor.Module app = module("app", "Main", """
                 package app;
@@ -224,7 +250,8 @@ class CompileTest {
         Launch.Project after = new Launch.Project(List.of(app),
                 before.appClasspath(),
                 Map.of(app.artifactId(), before.appClasspath()
-                        + File.pathSeparator + repo.resolve("added.jar")));
+                        + File.pathSeparator + repo.resolve("added.jar")),
+                before.release());
 
         assertEquals(List.of(source(app, "Main")),
                 compile.classpathForced(after));
@@ -493,6 +520,7 @@ class CompileTest {
                 .map(module -> module.classesDir().toString()).toList());
         Map<String, String> compile = new java.util.LinkedHashMap<>();
         all.forEach(module -> compile.put(module.artifactId(), classpath));
-        return new Launch.Project(all, classpath, compile);
+        return new Launch.Project(all, classpath, compile,
+                java.util.OptionalInt.empty());
     }
 }

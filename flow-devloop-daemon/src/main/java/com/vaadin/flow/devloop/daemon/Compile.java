@@ -905,10 +905,17 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = fm
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            List<String> options = List.of("-classpath",
-                    project.compileClasspath(module), "-d",
-                    module.classesDir().toString(), "-proc:none", "-encoding",
-                    "UTF-8", "-nowarn");
+            List<String> options = new ArrayList<>(
+                    List.of("-classpath", project.compileClasspath(module),
+                            "-d", module.classesDir().toString(), "-proc:none",
+                            "-encoding", "UTF-8", "-nowarn"));
+            // Without it javac emits at the daemon's own level, which the
+            // application's JVM may be too old to load - every redefine would
+            // then fail with UnsupportedClassVersionError rather than a
+            // diagnostic. Launch decides the value and only offers one javac
+            // can honour.
+            project.release().ifPresent(release -> options
+                    .addAll(List.of("--release", String.valueOf(release))));
             boolean ok = compiler
                     .getTask(null, fm, collected, options, null, units).call();
             List<Message> errors = new ArrayList<>();

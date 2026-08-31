@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -135,6 +136,9 @@ final class Launch {
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
 
+    /** The JVM chosen for the application; see {@link #appJvm()}. */
+    private volatile Jvm.Jdk appJvm;
+
     Launch(Reactor reactor, Log log) {
         this.reactor = reactor;
         this.root = reactor.app().dir();
@@ -151,7 +155,7 @@ final class Launch {
      * it - and would hide a module cycle behind a green apply.
      */
     record Project(List<Reactor.Module> modules, String appClasspath,
-            Map<String, String> compileClasspath) {
+            Map<String, String> compileClasspath, OptionalInt release) {
 
         String compileClasspath(Reactor.Module module) {
             return compileClasspath.getOrDefault(module.artifactId(),
@@ -281,43 +285,48 @@ final class Launch {
         return jar;
     }
 
-    /** Prefers a JBR, because enhanced redefinition is a JVM feature. */
-    Path javaBinary() {
-        String override = System.getProperty("vaadin.dev.javaHome");
-        if (override != null && !override.isBlank()) {
-            return javaIn(Path.of(override));
+    /**
+     * The JVM the application runs on, chosen once against what the project
+     * needs; see {@link Jvm}.
+     * <p>
+     * Decided once and kept: the set of installed JDKs does not change while a
+     * daemon is up, and re-deciding would repeat the decision line on every
+     * restart.
+     */
+    Jvm.Jdk appJvm() {
+        Jvm.Jdk current = appJvm;
+        if (current == null) {
+            current = Jvm.select(Jvm.required(reactor), log);
+            appJvm = current;
         }
-        Optional<Path> jbr = findJbr();
-        return jbr.map(this::javaIn).orElseGet(
-                () -> javaIn(Path.of(System.getProperty("java.home"))));
+        return current;
     }
 
-    private Optional<Path> findJbr() {
-        Path jdks = Path.of(System.getProperty("user.home"), ".jdks");
-        if (!Files.isDirectory(jdks)) {
-            return Optional.empty();
+    /**
+     * What javac compiles to, so a class the daemon writes is one the
+     * application's JVM can load.
+     * <p>
+     * The project's own release when a pom declares one - compiling a 17-target
+     * project at 21 would let code through the dev loop that Maven then rejects
+     * - and otherwise the level of the JVM the app will run on, which is the
+     * constraint that actually has to hold.
+     */
+    private OptionalInt compileRelease() {
+        int release = Jvm.required(reactor).map(Jvm.Requirement::feature)
+                .orElseGet(() -> appJvm().feature());
+        if (release <= 0) {
+            return OptionalInt.empty();
         }
-        try (var stream = Files.list(jdks)) {
-            return stream
-                    .filter(p -> p.getFileName().toString()
-                            .toLowerCase(Locale.ROOT).startsWith("jbr"))
-                    .filter(p -> Files.isRegularFile(javaIn(p)))
-                    .sorted((a, b) -> b.getFileName().toString()
-                            .compareTo(a.getFileName().toString()))
-                    .findFirst();
-        } catch (IOException e) {
-            return Optional.empty();
+        int daemon = Runtime.version().feature();
+        if (release > daemon) {
+            // javac cannot target a release newer than itself, and the JVM
+            // the daemon happens to run on is not the one chosen for the app.
+            log.line("WARNING: the project targets Java " + release
+                    + " but the daemon runs on Java " + daemon
+                    + "; compiling without --release");
+            return OptionalInt.empty();
         }
-    }
-
-    private Path javaIn(Path javaHome) {
-        Path win = javaHome.resolve("bin").resolve("java.exe");
-        return Files.isRegularFile(win) ? win
-                : javaHome.resolve("bin").resolve("java");
-    }
-
-    static boolean supportsEnhancedRedefinition(Path javaBinary) {
-        return javaBinary.toString().toLowerCase(Locale.ROOT).contains("jbr");
+        return OptionalInt.of(release);
     }
 
     /**
@@ -380,7 +389,8 @@ final class Launch {
             }
             classpathUnusable = true;
             Project fallback = new Project(List.of(reactor.app()),
-                    reactor.app().classesDir().toString(), Map.of());
+                    reactor.app().classesDir().toString(), Map.of(),
+                    compileRelease());
             project = fallback;
             return fallback;
         }
@@ -506,7 +516,7 @@ final class Launch {
                     assemble(List.of(module), modules, ownEntries));
         }
         return new Project(modules, assemble(modules, modules, entries),
-                compile);
+                compile, compileRelease());
     }
 
     private static List<String> entriesOf(Path file) throws IOException {
@@ -1047,7 +1057,7 @@ final class Launch {
 
     /** The full command line, in the order a human would want to read it. */
     List<String> command(int daemonPort, String token) throws IOException {
-        Path java = javaBinary();
+        Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
         Project resolved = project();
@@ -1064,7 +1074,7 @@ final class Launch {
         }
 
         List<String> cmd = new ArrayList<>();
-        cmd.add(java.toString());
+        cmd.add(java.binary().toString());
         cmd.add("-javaagent:" + haJar);
         Optional<Path> presentAgent = connectorAgent
                 .filter(Files::isRegularFile);
@@ -1078,7 +1088,7 @@ final class Launch {
                     + connectorAgent.map(path -> " at " + path).orElse("")
                     + " - every apply will restart instead of hot reloading");
         }
-        if (supportsEnhancedRedefinition(java)) {
+        if (java.jbr()) {
             cmd.add("-XX:+AllowEnhancedClassRedefinition");
         }
         // Vaadin: the plugin declares itself for Vaadin 23-24, though 2.0.3

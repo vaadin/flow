@@ -147,12 +147,41 @@ daemon was started with is also forwarded to the app JVM, which is how
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
 | `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath |
 | `vaadin.dev.mavenArgs` | none | extra arguments for the resolve, e.g. `-P!some-profile` |
-| `vaadin.dev.javaHome` | a JBR if present, else this JVM | which JVM runs the app |
+| `vaadin.dev.javaHome` | the best JBR for the project (see `Jvm`) | which JVM runs the app |
 | `vaadin.dev.hotswapAgentJar` | downloaded | an already-present HotswapAgent jar |
 | `vaadin.dev.agentJar` | this jar | the javaagent, for a daemon run from an exploded build |
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+## Which JVM runs the app
+
+`Jvm` owns it, and the answer is not simply "a JBR". Enhanced class redefinition is a
+JVM feature, so a JBR is what makes a structural change hot-swappable at all — but a
+JBR too old for the project cannot run the application, and that is the worse failure.
+So the project's required version is worked out first and the JBR is chosen against it.
+
+Where the requirement comes from, in order:
+
+1. **The poms** — `maven-compiler-plugin`'s `<configuration>`, then
+   `maven.compiler.release` / `target` / `source`, then `java.version`; the application
+   module first, the reactor root second. `Reactor.requiredRelease()`.
+2. **The compiled bytecode** — the major version of the first class under
+   `target/classes`. This is the answer for a project that inherits its level from a
+   parent outside the checkout, which is every `spring-boot-starter-parent` project
+   that leaves `java.version` alone. The poms cannot see that; the class files can.
+
+**Java 21 is a floor, not a preference.** Flow requires it, so a JVM below 21 is
+dropped during discovery and never ranked, and a project declaring 17 is still run on
+21 or above. The floor applies to the JVM only — javac is still told the project's own
+release, because compiling a 17-target project at 21 would let code through the dev
+loop that Maven then rejects.
+
+Candidates are every directory under `~/.jdks` plus `JAVA_HOME` and `JDK_HOME`, and
+each one's version and vendor are read from its own `release` file
+(`IMPLEMENTOR="JetBrains s.r.o."` is what makes it a JBR) rather than guessed from its
+directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
+the requirement wins; failing that, the closest JDK, and the log says what that cost.
 
 ## The frontend leg
 
@@ -291,7 +320,9 @@ its answer rather than claiming success.
   instead.
 - **Hot-swap coverage differs sharply between stock HotSpot and a JBR.** Only a
   JBR gets `-XX:+AllowEnhancedClassRedefinition`; on stock HotSpot a structural
-  change is simply rejected and escalates.
+  change is simply rejected and escalates. A project needing a Java version no
+  installed JBR provides therefore runs on a stock JDK for the whole session —
+  the launch log line says so when it happens.
 - **A sibling module contributing routes, `@JsModule` or `@NpmPackage` needs a
   restart**, not an `apply`: those are read at startup.
 - **Only resources under a public root can be made live.** `src/main/resources`
