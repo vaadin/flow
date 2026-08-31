@@ -288,6 +288,19 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addCaption_listOverloadAppendsLikeTheVarargsOne() {
+        Table table = table();
+        var first = new Span("first");
+        var second = new Span("second");
+
+        table.addCaption(first);
+        var caption = table.addCaption(List.of(second));
+
+        assertEquals(List.of(first, second), caption.getChildren().toList());
+        assertEquals(List.of(caption), table.getChildren().toList());
+    }
+
+    @Test
     void getSection_calledTwice_doesNotCreateASecondOne() {
         Table table = table();
 

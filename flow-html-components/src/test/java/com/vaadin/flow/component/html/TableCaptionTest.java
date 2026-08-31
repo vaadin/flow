@@ -34,7 +34,11 @@ class TableCaptionTest extends ComponentTest {
         assertEquals("Planets", new TableCaption("Planets").getText());
 
         var span = new Span("rich");
+        var paragraph = new Paragraph("more");
         assertEquals(List.of(span),
                 new TableCaption(span).getChildren().toList());
+        assertEquals(List.of(span, paragraph),
+                new TableCaption(List.of(span, paragraph)).getChildren()
+                        .toList());
     }
 }

@@ -25,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableColumnGroupTest extends ComponentTest {
@@ -71,6 +72,35 @@ class TableColumnGroupTest extends ComponentTest {
         group.addColumns(List.of(third));
 
         assertEquals(List.of(first, second, third), group.getColumns());
+    }
+
+    @Test
+    void spanAndColumns_areMutuallyExclusive() {
+        TableColumnGroup spanning = group();
+        spanning.setSpan(3);
+        assertThrows(IllegalStateException.class, spanning::addColumn);
+        assertThrows(IllegalStateException.class,
+                () -> spanning.addColumns(new TableColumn()));
+
+        TableColumnGroup withColumns = new TableColumnGroup();
+        withColumns.addColumn();
+        assertThrows(IllegalStateException.class, () -> withColumns.setSpan(3));
+    }
+
+    @Test
+    void resettingOneModeAllowsTheOther() {
+        TableColumnGroup group = group();
+        group.setSpan(3);
+
+        group.resetSpan();
+        TableColumn column = group.addColumn();
+
+        assertEquals(List.of(column), group.getColumns());
+
+        group.removeAllColumns();
+        group.setSpan(2);
+
+        assertEquals(2, group.getSpan());
     }
 
     @Test

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
@@ -38,8 +38,7 @@ public class TableElement extends TestBenchElement {
      * @return the rows of this table.
      */
     public List<TableRowElement> getRows() {
-        return childrenNamed("thead", "tbody", "tfoot").stream()
-                .flatMap(section -> rowsOf(section).stream()).toList();
+        return rowsOf(sections("thead", "tbody", "tfoot"));
     }
 
     /**
@@ -74,18 +73,18 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;thead&gt;</code>.
      */
     public List<TableRowElement> getHeaderRows() {
-        return rowsOfSections("thead");
+        return rowsOf(sections("thead"));
     }
 
     /**
      * Returns the rows of this table's <code>&lt;tbody&gt;</code> elements, in
-     * document order.
+     * document order. Use {@link #getBodies()} to keep them grouped by body.
      *
      * @return the body rows, or an empty list if the table has no
      *         <code>&lt;tbody&gt;</code>.
      */
     public List<TableRowElement> getBodyRows() {
-        return rowsOfSections("tbody");
+        return rowsOf(sections("tbody"));
     }
 
     /**
@@ -95,7 +94,38 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;tfoot&gt;</code>.
      */
     public List<TableRowElement> getFooterRows() {
-        return rowsOfSections("tfoot");
+        return rowsOf(sections("tfoot"));
+    }
+
+    /**
+     * Returns the <code>&lt;tbody&gt;</code> elements of this table, in
+     * document order. A table may have several, each holding its own rows.
+     *
+     * @return the table bodies.
+     */
+    public List<TableBodyElement> getBodies() {
+        return childrenNamed("tbody").stream()
+                .map(child -> child.wrap(TableBodyElement.class)).toList();
+    }
+
+    /**
+     * Returns this table's <code>&lt;thead&gt;</code>.
+     *
+     * @return the header section, or an empty optional if the table has none.
+     */
+    public Optional<TableHeadElement> getHead() {
+        return childrenNamed("thead").stream().findFirst()
+                .map(child -> child.wrap(TableHeadElement.class));
+    }
+
+    /**
+     * Returns this table's <code>&lt;tfoot&gt;</code>.
+     *
+     * @return the footer section, or an empty optional if the table has none.
+     */
+    public Optional<TableFootElement> getFoot() {
+        return childrenNamed("tfoot").stream().findFirst()
+                .map(child -> child.wrap(TableFootElement.class));
     }
 
     /**
@@ -109,11 +139,6 @@ public class TableElement extends TestBenchElement {
                 .map(child -> child.wrap(TableCaptionElement.class));
     }
 
-    private List<TableRowElement> rowsOfSections(String tagName) {
-        return childrenNamed(tagName).stream()
-                .flatMap(section -> rowsOf(section).stream()).toList();
-    }
-
     /**
      * Returns the column groups of this table, in document order.
      *
@@ -125,22 +150,26 @@ public class TableElement extends TestBenchElement {
                 .toList();
     }
 
+    private static List<TableRowElement> rowsOf(
+            Stream<TableSectionElement> sections) {
+        return sections.flatMap(section -> section.getRows().stream()).toList();
+    }
+
+    private Stream<TableSectionElement> sections(String... tagNames) {
+        return childrenNamed(tagNames).stream()
+                .map(child -> child.wrap(TableSectionElement.class));
+    }
+
     /**
      * The caption, column groups and sections of this table are its direct
      * children; a descendant query would also pick up those of a table nested
      * inside a cell.
      */
     private List<TestBenchElement> childrenNamed(String... tagNames) {
-        List<String> wanted = Arrays.asList(tagNames);
+        List<String> wanted = List.of(tagNames);
         return getChildren().stream()
                 .filter(child -> wanted.stream().anyMatch(
                         tag -> tag.equalsIgnoreCase(child.getTagName())))
                 .toList();
-    }
-
-    private static List<TableRowElement> rowsOf(TestBenchElement section) {
-        return section.getChildren().stream()
-                .filter(child -> "tr".equalsIgnoreCase(child.getTagName()))
-                .map(child -> child.wrap(TableRowElement.class)).toList();
     }
 }

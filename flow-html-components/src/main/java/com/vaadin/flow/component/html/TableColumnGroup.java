@@ -36,10 +36,13 @@ import com.vaadin.flow.component.Tag;
  * HTML specification</a>, a {@code <colgroup>} is used in one of two modes:
  * either it carries a {@code span} attribute and has no children, or it
  * contains zero or more {@code <col>} children and has no {@code span}
- * attribute. {@code <colgroup>} elements must be placed after the optional
- * {@code <caption>} and before any {@code <thead>}, {@code <tbody>},
- * {@code <tfoot>} or <code>&lt;tr&gt;</code>; {@link Table} inserts them at the
- * correct position automatically.
+ * attribute. This component enforces that: adding a column to a group that
+ * carries a {@code span} throws, as does setting a {@code span} on a group that
+ * already has columns. Call {@link #resetSpan()} or {@link #removeAllColumns()}
+ * first to switch a group from one mode to the other. {@code <colgroup>}
+ * elements must be placed after the optional {@code <caption>} and before any
+ * {@code <thead>}, {@code <tbody>}, {@code <tfoot>} or <code>&lt;tr&gt;</code>;
+ * {@link Table} inserts them at the correct position automatically.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/colgroup">MDN:
@@ -49,6 +52,8 @@ import com.vaadin.flow.component.Tag;
 @NullMarked
 @Tag(Tag.COLGROUP)
 public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
+
+    private static final String ATTRIBUTE_SPAN = "span";
 
     /**
      * Creates a new empty column group.
@@ -147,7 +152,22 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
     }
 
     private TableColumn addColumn(TableColumn column) {
+        if (getElement().hasAttribute(ATTRIBUTE_SPAN)) {
+            throw new IllegalStateException(
+                    "A <colgroup> carrying a span attribute may not have <col> "
+                            + "children. Call resetSpan() first.");
+        }
         getElement().appendChild(column.getElement());
         return column;
+    }
+
+    @Override
+    public void setSpan(int span) {
+        if (getElement().getChildCount() > 0) {
+            throw new IllegalStateException(
+                    "A <colgroup> with <col> children may not carry a span "
+                            + "attribute. Call removeAllColumns() first.");
+        }
+        TableColumnSpan.super.setSpan(span);
     }
 }

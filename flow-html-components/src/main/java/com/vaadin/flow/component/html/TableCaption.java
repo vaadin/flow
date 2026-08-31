@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.List;
+
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.Component;
@@ -52,6 +54,16 @@ public class TableCaption extends HtmlContainer {
      */
     public TableCaption(Component... components) {
         super(components);
+    }
+
+    /**
+     * List equivalent of {@link #TableCaption(Component...)}.
+     *
+     * @param components
+     *            the children components.
+     */
+    public TableCaption(List<? extends Component> components) {
+        super(components.toArray(Component[]::new));
     }
 
     /**

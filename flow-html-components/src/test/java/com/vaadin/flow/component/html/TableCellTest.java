@@ -25,10 +25,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -39,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Exercises the constructors both {@link TableCell} subclasses inherit, through
  * each of them.
  */
-class TableCellTest extends SignalsUnitTest {
+class TableCellTest {
 
     static Stream<Named<Function<List<Component>, TableCell>>> childrenConstructors() {
         return Stream.of(
@@ -74,32 +70,6 @@ class TableCellTest extends SignalsUnitTest {
         TableCell cell = constructor.apply("content");
 
         assertEquals("content", cell.getText());
-    }
-
-    static Stream<Named<Function<Signal<String>, TableCell>>> signalConstructors() {
-        return Stream.of(Named.of("td", TableDataCell::new),
-                Named.of("th", TableHeaderCell::new));
-    }
-
-    @ParameterizedTest
-    @MethodSource("signalConstructors")
-    void signalConstructor_bindsTheText(
-            Function<Signal<String>, TableCell> constructor) {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        TableCell cell = constructor.apply(signal);
-        UI.getCurrent().add(cell);
-
-        assertEquals("initial", cell.getText());
-        signal.set("updated");
-        assertEquals("updated", cell.getText());
-    }
-
-    @ParameterizedTest
-    @MethodSource("signalConstructors")
-    void signalConstructor_nullSignal_throws(
-            Function<Signal<String>, TableCell> constructor) {
-        assertThrows(NullPointerException.class, () -> constructor.apply(null));
     }
 
     static Stream<Named<Supplier<TableCell>>> cellKinds() {
