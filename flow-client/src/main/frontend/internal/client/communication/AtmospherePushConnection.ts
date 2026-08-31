@@ -21,6 +21,7 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import type { UILifecycle } from '../UILifecycle';
@@ -204,7 +205,7 @@ interface PushConnectionStateHandler {
   pushScriptLoadError(resourceUrl: string): void;
 }
 
-/** The slice of Registry AtmospherePushConnection uses. */
+/** The slice of {@link Registry} AtmospherePushConnection uses. */
 interface AtmospherePushRegistry {
   getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
   getPushConfiguration(): Pick<PushConfiguration, 'getParameters' | 'getPushServletMapping' | 'isAlwaysXhrToServer'>;
@@ -553,6 +554,6 @@ export class AtmospherePushConnection implements PushConnection {
   }
 }
 
-/** The default PushConnectionFactory: creates an AtmospherePushConnection. */
+/** The default {@link PushConnectionFactory}: creates an AtmospherePushConnection. */
 export const atmospherePushConnectionFactory: PushConnectionFactory = (registry: unknown): PushConnection =>
   new AtmospherePushConnection(registry as AtmospherePushRegistry);

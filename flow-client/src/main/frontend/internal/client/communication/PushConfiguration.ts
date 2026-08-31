@@ -21,6 +21,7 @@
 // so all parts of the configuration are updated first). The Registry/StateTree/
 // MessageSender are contracts satisfied at cutover.
 
+import type { Registry } from '../Registry';
 import type { StateNode } from '../flow/StateNode';
 import type { StateTree } from '../flow/StateTree';
 import type { NodeMap } from '../flow/nodefeature/NodeMap';
@@ -34,7 +35,7 @@ const PUSH_SERVLET_MAPPING_KEY = 'pushServletMapping';
 const ALWAYS_USE_XHR_TO_SERVER = 'alwaysXhrToServer';
 const PARAMETERS_KEY = 'parameters';
 
-/** The slice of Registry PushConfiguration uses. */
+/** The slice of {@link Registry} PushConfiguration uses. */
 interface PushConfigRegistry {
   getStateTree(): StateTree;
   getMessageSender(): Pick<MessageSender, 'setPushEnabled'>;

@@ -19,6 +19,7 @@
 // types, muting it for high-frequency UI events (mousemove etc.). The
 // connection-indicator calls go through ConnectionIndicator.
 
+import type { Registry } from '../Registry';
 import { getScheduler } from '../TrackingScheduler';
 import type { RequestResponseTracker } from './RequestResponseTracker';
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
@@ -42,7 +43,7 @@ const SILENT_EVENT_TYPES = new Set<string>([
   'dragover'
 ]);
 
-/** The slice of Registry that LoadingIndicatorStateHandler uses. */
+/** The slice of {@link Registry} that LoadingIndicatorStateHandler uses. */
 interface LoadingIndicatorRegistry {
   getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest'>;
 }

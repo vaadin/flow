@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import type { Registry } from '../Registry';
 import type { Command } from '../Command';
 import { getScheduler } from '../TrackingScheduler';
 import {
@@ -104,7 +105,7 @@ const META_ASYNC = 'async';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
-/** The slice of Registry MessageHandler uses. */
+/** The slice of {@link Registry} MessageHandler uses. */
 interface MessageHandlerRegistry {
   getUILifecycle(): Pick<UILifecycle, 'getState' | 'setState'>;
   getMessageSender(): Pick<
@@ -617,7 +618,7 @@ export class MessageHandler {
 // setNextResponseSessionExpiredHandler; a module function cannot live inside the
 // class body, so it follows it here.
 /**
- * Parse the given wrapped JSON, received from the server, to a ValueMap.
+ * Parse the given wrapped JSON, received from the server, to a {@link ValueMap}.
  *
  * @param jsonText - The JSON to parse
  * @returns A ValueMap created from the JSON

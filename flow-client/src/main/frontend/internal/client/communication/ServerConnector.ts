@@ -23,13 +23,15 @@
 // can assemble them. This is the real implementation of StateTree's
 // ServerConnector contract.
 
+import type { StateTree } from '../flow/StateTree';
+import type { Registry } from '../Registry';
 import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { StateNode } from '../flow/StateNode';
 import { encodeWithoutTypeInfo } from '../flow/util/ClientJsonCodec';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
-/** The slice of Registry that ServerConnector uses. */
+/** The slice of {@link Registry} that ServerConnector uses. */
 interface ServerConnectorRegistry {
   getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'processMessage'>;
   getServerRpcQueue(): Pick<ServerRpcQueue, 'add' | 'flush'>;
@@ -39,7 +41,7 @@ interface ServerConnectorRegistry {
  * Handles creating and sending messages to the server using {@link
  * ServerRpcQueue}.
  *
- * StateTree's registry slice names the subset of this class it calls with
+ * {@link StateTree}'s registry slice names the subset of this class it calls with
  * `Pick<…>`, so no contract duplicates these signatures.
  */
 export class ServerConnector {

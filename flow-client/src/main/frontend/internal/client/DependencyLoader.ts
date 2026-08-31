@@ -20,6 +20,8 @@
 // dependency type, and resolves Vaadin URIs via the URIResolver. Composes the
 // ported EagerDependencyTracker (eager-load gate) and ResourceLoader.
 
+import type { ResourceLoader } from './ResourceLoader';
+import type { Registry } from './Registry';
 import type { URIResolver } from './URIResolver';
 import {
   endEagerDependencyLoading,
@@ -45,7 +47,7 @@ export type LoadMode = 'INLINE' | 'EAGER' | 'LAZY';
 export type Dependency = Record<string, unknown>;
 type Loader = (data: string, listener: ResourceLoadListener) => void;
 
-/** The ResourceLoader methods DependencyLoader drives. */
+/** The {@link ResourceLoader} methods DependencyLoader drives. */
 interface DependencyResourceLoader {
   loadScript(scriptUrl: string, listener: ResourceLoadListener | null, async?: boolean, defer?: boolean): void;
   loadJsModule(scriptUrl: string, listener: ResourceLoadListener | null, async?: boolean, defer?: boolean): void;
@@ -59,7 +61,7 @@ interface DependencyResourceLoader {
   loadDynamicImport(expression: string, listener: ResourceLoadListener): void;
 }
 
-/** The slice of Registry DependencyLoader uses. */
+/** The slice of {@link Registry} DependencyLoader uses. */
 interface DependencyLoaderRegistry {
   getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
   getResourceLoader(): DependencyResourceLoader;

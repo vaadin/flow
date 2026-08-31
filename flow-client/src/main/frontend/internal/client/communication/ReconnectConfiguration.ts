@@ -20,6 +20,7 @@
 // connection-state handler's configurationUpdated() whenever the configuration
 // changes (reactively).
 
+import type { Registry } from '../Registry';
 import type { StateTree } from '../flow/StateTree';
 import type { MapProperty } from '../flow/nodefeature/MapProperty';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
@@ -34,7 +35,7 @@ const RECONNECT_ATTEMPTS_DEFAULT = 10000;
 const RECONNECT_INTERVAL_KEY = 'reconnectInterval';
 const RECONNECT_INTERVAL_DEFAULT = 5000;
 
-/** The slice of Registry ReconnectConfiguration reads. */
+/** The slice of {@link Registry} ReconnectConfiguration reads. */
 interface ReconnectRegistry {
   getStateTree(): StateTree;
 }

@@ -18,6 +18,7 @@
 // requests to the server over XHR and routes the response to the MessageHandler
 // or, on failure, to the ConnectionStateHandler.
 
+import type { Registry } from '../Registry';
 import { stringify } from '../WidgetUtil';
 import { Console } from '../Console';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
@@ -57,7 +58,7 @@ function resendRequest(xhr: XMLHttpRequest): boolean {
 
 type Payload = Record<string, unknown>;
 
-/** The slice of Registry that XhrConnection uses. */
+/** The slice of {@link Registry} that XhrConnection uses. */
 export interface XhrConnectionRegistry {
   getRequestResponseTracker(): Pick<RequestResponseTracker, 'addResponseHandlingEndedHandler'>;
   getConnectionStateHandler(): Pick<

@@ -20,6 +20,7 @@
 // before the queue is sent. The Registry/UILifecycle/MessageSender are contracts
 // satisfied at cutover.
 
+import type { Registry } from '../Registry';
 import type { MessageSender } from './MessageSender';
 import type { UILifecycle } from '../UILifecycle';
 import { getScheduler } from '../TrackingScheduler';
@@ -28,7 +29,7 @@ import { Console } from '../Console';
 // Sentinel flush strategy; identity-compared to detect a scheduled flush.
 const NO_OP = (): void => {};
 
-/** The slice of Registry that ServerRpcQueue uses. */
+/** The slice of {@link Registry} that ServerRpcQueue uses. */
 interface ServerRpcQueueRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
   getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;

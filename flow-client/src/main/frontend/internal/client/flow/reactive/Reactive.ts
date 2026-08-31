@@ -172,7 +172,9 @@ export const Reactive = {
 
   /**
    * Evaluates the given command whenever there is a change in any
-   * `ReactiveValue` used in the command.
+   * `ReactiveValue` used in the command. Reactive is an object literal, and a
+   * type imported only for a link in a member doc of one reads as unused, so
+   * this reference stays a code span.
    *
    * @param command - the command to run
    * @returns A {@link Computation} object which can be used to control the

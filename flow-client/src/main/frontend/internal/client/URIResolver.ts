@@ -19,10 +19,11 @@
 // protocols (context:// -> context root, base:// -> base URI) to
 // browser-loadable URLs; other protocols pass through unchanged.
 
+import type { Registry } from './Registry';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { VaadinUriResolver } from '../flow/shared/VaadinUriResolver';
 
-/** The slice of Registry that URIResolver uses. */
+/** The slice of {@link Registry} that URIResolver uses. */
 interface URIResolverRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getContextRootUrl'>;
 }

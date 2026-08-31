@@ -21,6 +21,7 @@
 // keeps its registration semantics: the same handler added twice is notified
 // twice, and one removal detaches one registration.
 
+import type { Registry } from '../Registry';
 import type { MessageSender } from './MessageSender';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { UILifecycle } from '../UILifecycle';
@@ -35,7 +36,7 @@ import { ResponseHandlingEndedEvent } from './ResponseHandlingEndedEvent';
 import { ResponseHandlingStartedEvent } from './ResponseHandlingStartedEvent';
 import { ResynchronizationState } from './MessageSender';
 
-/** The slice of Registry that RequestResponseTracker uses. */
+/** The slice of {@link Registry} that RequestResponseTracker uses. */
 interface RequestResponseRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
   getServerRpcQueue(): Pick<ServerRpcQueue, 'isFlushPending'>;

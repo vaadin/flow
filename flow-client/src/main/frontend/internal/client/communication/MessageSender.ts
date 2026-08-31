@@ -22,6 +22,7 @@
 // are contracts satisfied at cutover; push connections are created through an
 // injected factory (GWT.create in the Java version).
 
+import type { Registry } from '../Registry';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
 import type { MessageHandler } from './MessageHandler';
@@ -45,7 +46,7 @@ const UNLOAD_BEACON = 'UNLOAD';
 
 type Payload = Record<string, unknown>;
 
-/** The slice of Registry that MessageSender uses. */
+/** The slice of {@link Registry} that MessageSender uses. */
 export interface MessageSenderRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
   getRequestResponseTracker(): Pick<

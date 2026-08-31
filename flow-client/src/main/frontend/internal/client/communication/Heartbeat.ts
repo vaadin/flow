@@ -21,6 +21,7 @@
 // Registry/ApplicationConfiguration/UILifecycle/ConnectionStateHandler are
 // contracts satisfied at cutover.
 
+import type { Registry } from '../Registry';
 import type { UILifecycle } from '../UILifecycle';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
@@ -32,7 +33,7 @@ const REQUEST_TYPE_PARAMETER = 'v-r';
 const REQUEST_TYPE_HEARTBEAT = 'heartbeat';
 const UI_ID_PARAMETER = 'v-uiId';
 
-/** The slice of Registry that Heartbeat uses. */
+/** The slice of {@link Registry} that Heartbeat uses. */
 interface HeartbeatRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getHeartbeatInterval' | 'getServiceUrl' | 'getUIId'>;
   getUILifecycle(): Pick<UILifecycle, 'addHandler'>;

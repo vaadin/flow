@@ -17,11 +17,12 @@
 // TypeScript port of the com.vaadin.client.communication.PushConnectionFactory
 // functional interface.
 
+import type { Registry } from '../Registry';
 import type { PushConnection } from './PushConnection';
 
 /**
  * Factory for {@link PushConnection}.
  *
- * Produces a {@link PushConnection} for the provided `Registry`.
+ * Produces a {@link PushConnection} for the provided {@link Registry}.
  */
 export type PushConnectionFactory = (registry: unknown) => PushConnection;

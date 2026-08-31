@@ -23,6 +23,7 @@
 // succeeds. The actual reconnect retry (timer + payload re-send) and the full
 // ConnectionStateHandler push/xhr handlers compose this kernel.
 
+import type { Registry } from '../Registry';
 import type { Command } from '../Command';
 import type { Heartbeat } from './Heartbeat';
 import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
@@ -33,7 +34,7 @@ import { CONNECTED, CONNECTION_LOST, RECONNECTING, setState } from '../Connectio
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
 
-/** The slice of Registry the reconnect state machine uses. */
+/** The slice of {@link Registry} the reconnect state machine uses. */
 interface ReconnectRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
   getReconnectConfiguration(): Pick<ReconnectConfiguration, 'getReconnectAttempts'>;

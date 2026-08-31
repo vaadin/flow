@@ -20,13 +20,14 @@
 // stops when the UI lifecycle terminates. The Registry/StateTree are contracts
 // satisfied at cutover.
 
+import type { Registry } from '../Registry';
 import type { StateTree } from '../flow/StateTree';
 import type { UILifecycle } from '../UILifecycle';
 
 // com.vaadin.flow.component.PollEvent.DOM_EVENT_NAME
 const POLL_DOM_EVENT_NAME = 'ui-poll';
 
-/** The slice of Registry that Poller uses. */
+/** The slice of {@link Registry} that Poller uses. */
 interface PollerRegistry {
   getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
   getStateTree(): StateTree;

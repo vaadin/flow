@@ -18,6 +18,7 @@
 // interface. AtmospherePushConnection implements it; MessageSender and
 // ConnectionStateHandler reference the contract.
 
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { Command } from '../Command';
 
 /**
@@ -33,7 +34,7 @@ export interface PushConnection {
    *
    * Implementation detail: If the push connection is not connected and the
    * message can thus not be sent, the implementation must call
-   * `ConnectionStateHandler.pushNotConnected`, which will retry the send later.
+   * {@link ConnectionStateHandler.pushNotConnected}, which will retry the send later.
    *
    * This method must not be called if the push connection is not bidirectional
    * (if {@link PushConnection.isBidirectional} returns false)

@@ -20,6 +20,8 @@
 // (DefaultConnectionStateHandler implements it). Consolidates the contract
 // previously inlined across Heartbeat, XhrConnection and MessageSender.
 
+import type { DefaultConnectionStateHandler } from './DefaultConnectionStateHandler';
+import type { Heartbeat } from './Heartbeat';
 import type { PushConnection } from './PushConnection';
 import type { XhrConnectionError } from './XhrConnectionError';
 
@@ -47,7 +49,7 @@ export const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
  *
  * The handler is responsible for handling any problem in XHR, heartbeat and
  * push connections in a way it sees fit. The default implementation is
- * `DefaultConnectionStateHandler`.
+ * {@link DefaultConnectionStateHandler}.
  */
 export interface ConnectionStateHandler {
   /**

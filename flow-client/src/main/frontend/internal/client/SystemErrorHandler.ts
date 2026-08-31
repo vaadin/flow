@@ -16,6 +16,7 @@
 
 // Implementations migrated from SystemErrorHandler.java.
 
+import type { Registry } from './Registry';
 import { parseJson } from './communication/MessageHandler';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import type { Heartbeat } from './communication/Heartbeat';
@@ -65,7 +66,7 @@ function getWithCredentials(
 // (resynchronizeSession, XHR + heartbeat/push/reset) are DOM/network-bound and
 // IT-validated. The Registry is a contract satisfied at cutover.
 
-/** The slice of Registry SystemErrorHandler uses. */
+/** The slice of {@link Registry} SystemErrorHandler uses. */
 interface SystemErrorRegistry {
   getApplicationConfiguration(): Pick<
     ApplicationConfiguration,

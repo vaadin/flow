@@ -19,6 +19,7 @@
 // layer that StateTree needs are declared here as contracts that the
 // Registry/connector satisfy.
 
+import type { processChanges } from './TreeChangeProcessor';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
@@ -99,7 +100,7 @@ export class StateTree {
 
   /**
    * Returns whether this tree is currently being updated by
-   * `TreeChangeProcessor.processChanges`.
+   * {@link processChanges}.
    *
    * @returns `true` if being updated, `false` if not
    */
@@ -422,7 +423,7 @@ export class StateTree {
    * Returns a human readable string for the name space with the given id.
    *
    * Package-private in Java; exported here only because TypeScript has no
-   * package-private visibility and the same-package `StateNode` needs it. Not
+   * package-private visibility and the same-package {@link StateNode} needs it. Not
    * public API.
    *
    * @param id - the node feature id

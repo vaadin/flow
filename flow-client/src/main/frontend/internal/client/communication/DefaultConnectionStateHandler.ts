@@ -21,6 +21,7 @@
 // the heartbeat/xhr/push handler methods, online/offline handling, the reconnect
 // dialog text, and unrecoverable-error handling.
 
+import type { Registry } from '../Registry';
 import { redirect } from '../WidgetUtil';
 import type { UILifecycle } from '../UILifecycle';
 import type { ApplicationConfiguration } from '../ApplicationConfiguration';
@@ -46,7 +47,7 @@ const SC_UNAUTHORIZED = 401;
 // com.vaadin.client.UILifecycle.UIState
 const TERMINATED = 'TERMINATED';
 
-/** The slice of Registry DefaultConnectionStateHandler uses. */
+/** The slice of {@link Registry} DefaultConnectionStateHandler uses. */
 interface DefaultConnectionStateRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isRunning' | 'getState' | 'setState' | 'addHandler'>;
   getReconnectConfiguration(): Pick<
