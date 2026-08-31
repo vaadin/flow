@@ -31,9 +31,12 @@ import com.vaadin.testbench.elementsbase.Element;
 public class TableElement extends TestBenchElement {
 
     /**
-     * Returns every row of this table, in document order: the
+     * Returns every row of this table, walking its sections in document order.
+     * For a table rendered by {@code Table} that is the
      * <code>&lt;thead&gt;</code> rows, then the rows of each
-     * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
+     * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows; on
+     * a page that writes the sections in some other order, the result follows
+     * the markup rather than that order.
      *
      * @return the rows of this table.
      */

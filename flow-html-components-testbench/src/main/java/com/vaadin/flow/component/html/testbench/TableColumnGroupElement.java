@@ -35,7 +35,11 @@ public class TableColumnGroupElement extends TestBenchElement {
      * @return the columns of this group.
      */
     public List<TableColumnElement> getColumns() {
-        return $(TableColumnElement.class).all();
+        // direct children only, like the rest of the family: a descendant
+        // query would also reach into a table nested inside a cell
+        return getChildren().stream()
+                .filter(child -> "col".equalsIgnoreCase(child.getTagName()))
+                .map(child -> child.wrap(TableColumnElement.class)).toList();
     }
 
     /**

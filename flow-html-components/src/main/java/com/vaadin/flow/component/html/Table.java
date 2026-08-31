@@ -368,7 +368,9 @@ public class Table extends HtmlComponent
      * Appends a new empty row to this table's <code>&lt;tbody&gt;</code>,
      * creating the body if the table has none. This mirrors what a browser does
      * with a <code>&lt;tr&gt;</code> written straight inside a
-     * <code>&lt;table&gt;</code>.
+     * <code>&lt;table&gt;</code>. Use {@link #addHeaderRow()} or
+     * {@link #addFooterRow()} for the other sections; note that
+     * {@link #getRows()} spans all three.
      *
      * @return the new row.
      */
