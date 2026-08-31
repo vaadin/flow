@@ -77,7 +77,7 @@ export class InitialPropertiesHandler {
    * Notifies the handler about registered node.
    *
    * The method is called for the newly created `node` which is registered in
-   * the `StateTree`.
+   * the {@link StateTree}.
    *
    * @param node - the newly registered node
    */

@@ -14,6 +14,7 @@
  * the License.
  */
 
+import type { ServerRpcQueue } from './communication/ServerRpcQueue';
 import { assert } from '../assert';
 
 // TypeScript port of the container mechanism of com.vaadin.client.Registry.
@@ -33,7 +34,7 @@ import { assert } from '../assert';
 export type ServiceKey = unknown;
 
 /**
- * A registry of singleton instances, such as `ServerRpcQueue`, which can be
+ * A registry of singleton instances, such as {@link ServerRpcQueue}, which can be
  * looked up based on their class.
  */
 export class Registry {

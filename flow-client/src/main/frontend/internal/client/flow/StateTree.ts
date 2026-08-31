@@ -221,7 +221,7 @@ export class StateTree {
    * this state tree.
    *
    * @param node - the node to test
-   * @returns always `true`, for use with the `assert` helper
+   * @returns always `true`, for use with the {@link assert} helper
    */
   #assertValidNode(node: StateNode | null): boolean {
     assert(node !== null, 'Node is null');

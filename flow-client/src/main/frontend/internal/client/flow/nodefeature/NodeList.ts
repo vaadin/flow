@@ -17,6 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeList, on top of the
 // TS reactive core.
 
+import type { Computation } from '../reactive/Computation';
 import type { EventRemover } from '../../../EventRemover';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';
@@ -32,7 +33,7 @@ import { NodeFeature, type JsonValue } from './NodeFeature';
  * {@link Computation} will get a dependency on this list for any read operation
  * that depends on the list structure, such as querying the length, iterating
  * the list or finding the index of an item. Accessing an item by index does not
- * create a dependency. The `Computation` is invalidated when items
+ * create a dependency. The {@link Computation} is invalidated when items
  * are added, removed, reordered or replaced. It is not invalidated when the
  * contents of an item is updated since all items are expected to be either
  * immutable or reactive values of their own.

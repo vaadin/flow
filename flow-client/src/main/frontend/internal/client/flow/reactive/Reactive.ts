@@ -17,6 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.reactive.Reactive. The static
 // fields of Reactive.java are kept as module-level state here.
 
+import type { ReactiveValue } from './ReactiveValue';
 import type { Command } from '../../Command';
 import type { EventRemover } from '../../../EventRemover';
 import { Computation } from './Computation';
@@ -34,7 +35,8 @@ let flushing = false;
 /**
  * Handles global features related to reactivity, such as keeping track of the
  * current {@link Computation}, providing a lazy flush cycle and registering
- * reactive event collectors.
+ * reactive event collectors, over the {@link ReactiveValue} instances a
+ * computation reads.
  *
  * With a reactive programming model, the dependencies needed for producing a
  * result are automatically registered when the result is computed. When any
@@ -172,9 +174,7 @@ export const Reactive = {
 
   /**
    * Evaluates the given command whenever there is a change in any
-   * `ReactiveValue` used in the command. Reactive is an object literal, and a
-   * type imported only for a link in a member doc of one reads as unused, so
-   * this reference stays a code span.
+   * {@link ReactiveValue} used in the command.
    *
    * @param command - the command to run
    * @returns A {@link Computation} object which can be used to control the

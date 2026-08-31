@@ -22,6 +22,8 @@
 // only callers are in Bootstrapper, which lands in a later layer, so they are
 // ported with it.
 
+import type { ValueMap } from '../ValueMap';
+
 // The bootstrap configuration object exposes a getConfig(name) accessor over the
 // values the server injected into the page.
 interface ConfigObject {
@@ -42,7 +44,7 @@ export function getConfigString(config: ConfigObject, name: string): string | nu
 }
 
 /**
- * Reads a configuration parameter as a `ValueMap`. Please note that
+ * Reads a configuration parameter as a {@link ValueMap}. Please note that
  * the javascript value of the parameter should also be a javascript object,
  * or else an undefined exception may be thrown.
  *
