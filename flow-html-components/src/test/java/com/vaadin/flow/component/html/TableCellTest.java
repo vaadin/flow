@@ -136,27 +136,27 @@ class TableCellTest {
 
     @ParameterizedTest
     @MethodSource("cellKinds")
-    void setHeaders_writesSpaceJoinedAttributeAndReadsBack(
+    void setHeaderIds_writesSpaceJoinedAttributeAndReadsBack(
             Supplier<TableCell> factory) {
         TableCell cell = factory.get();
-        assertTrue(cell.getHeaders().isEmpty());
+        assertTrue(cell.getHeaderIds().isEmpty());
 
-        cell.setHeaders("name", "age");
+        cell.setHeaderIds("name", "age");
 
         assertEquals("name age", cell.getElement().getAttribute("headers"));
-        assertEquals(List.of("name", "age"), cell.getHeaders());
+        assertEquals(List.of("name", "age"), cell.getHeaderIds());
     }
 
     @ParameterizedTest
     @MethodSource("cellKinds")
-    void setHeaders_empty_clearsTheAttribute(Supplier<TableCell> factory) {
+    void setHeaderIds_empty_clearsTheAttribute(Supplier<TableCell> factory) {
         TableCell cell = factory.get();
-        cell.setHeaders("name");
+        cell.setHeaderIds("name");
 
-        cell.setHeaders(new String[0]);
+        cell.setHeaderIds(new String[0]);
 
         assertNull(cell.getElement().getAttribute("headers"));
-        assertTrue(cell.getHeaders().isEmpty());
+        assertTrue(cell.getHeaderIds().isEmpty());
     }
 
     @ParameterizedTest
@@ -172,7 +172,7 @@ class TableCellTest {
 
         assertEquals("name-h age-h", cell.getElement().getAttribute("headers"));
 
-        cell.setHeadersByCells(List.of(age, name));
+        cell.setHeaders(List.of(age, name));
 
         assertEquals("age-h name-h", cell.getElement().getAttribute("headers"));
     }
@@ -185,38 +185,38 @@ class TableCellTest {
         header.setId("name-h");
 
         // every overload documents null as "clear the attribute"
-        cell.setHeaders("name");
-        cell.setHeaders((String[]) null);
-        assertTrue(cell.getHeaders().isEmpty());
+        cell.setHeaderIds("name");
+        cell.setHeaderIds((String[]) null);
+        assertTrue(cell.getHeaderIds().isEmpty());
 
-        cell.setHeaders("name");
-        cell.setHeaders((List<String>) null);
-        assertTrue(cell.getHeaders().isEmpty());
+        cell.setHeaderIds("name");
+        cell.setHeaderIds((List<String>) null);
+        assertTrue(cell.getHeaderIds().isEmpty());
 
-        cell.setHeaders("name");
+        cell.setHeaderIds("name");
         cell.setHeaders((TableHeaderCell[]) null);
-        assertTrue(cell.getHeaders().isEmpty());
+        assertTrue(cell.getHeaderIds().isEmpty());
 
         cell.setHeaders(header);
-        cell.setHeadersByCells(null);
-        assertTrue(cell.getHeaders().isEmpty());
+        cell.setHeaders((List<? extends TableHeaderCell>) null);
+        assertTrue(cell.getHeaderIds().isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("cellKinds")
-    void setHeaders_rejectsIdsThatWouldNotSurviveTheRoundTrip(
+    void setHeaderIds_rejectsIdsThatWouldNotSurviveTheRoundTrip(
             Supplier<TableCell> factory) {
         TableCell cell = factory.get();
 
         // the attribute is a space-separated list, so these would read back
         // as a different set of ids than the caller asked for
         assertThrows(IllegalArgumentException.class,
-                () -> cell.setHeaders("name age"));
+                () -> cell.setHeaderIds("name age"));
         assertThrows(IllegalArgumentException.class,
-                () -> cell.setHeaders("", "name"));
+                () -> cell.setHeaderIds("", "name"));
         assertThrows(IllegalArgumentException.class,
-                () -> cell.setHeaders(" "));
-        assertTrue(cell.getHeaders().isEmpty());
+                () -> cell.setHeaderIds(" "));
+        assertTrue(cell.getHeaderIds().isEmpty());
     }
 
     @ParameterizedTest
@@ -234,11 +234,11 @@ class TableCellTest {
     @MethodSource("cellKinds")
     void resetHeaders_removesTheAttribute(Supplier<TableCell> factory) {
         TableCell cell = factory.get();
-        cell.setHeaders("name");
+        cell.setHeaderIds("name");
 
         cell.resetHeaders();
 
         assertNull(cell.getElement().getAttribute("headers"));
-        assertTrue(cell.getHeaders().isEmpty());
+        assertTrue(cell.getHeaderIds().isEmpty());
     }
 }

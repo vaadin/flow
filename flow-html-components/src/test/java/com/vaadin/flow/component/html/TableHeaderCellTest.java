@@ -34,8 +34,8 @@ class TableHeaderCellTest extends ComponentTest {
     void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
-        // headers is a list of ids rather than a scalar property
-        whitelistProperty("headers");
+        // headerIds is a list rather than a scalar property
+        whitelistProperty("headerIds");
         super.setup();
     }
 

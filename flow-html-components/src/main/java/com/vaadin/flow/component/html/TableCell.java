@@ -165,9 +165,7 @@ public abstract class TableCell extends HtmlContainer {
      * tables, where {@link TableHeaderCell#setScope(TableHeaderCell.Scope)
      * scope} alone isn't enough to disambiguate.
      * <p>
-     * An empty array removes the attribute; call {@link #resetHeaders()} to do
-     * the same without an argument, as an empty call would be ambiguous between
-     * this overload and {@link #setHeaders(TableHeaderCell...)}.
+     * An empty array removes the attribute, as does {@link #resetHeaders()}.
      *
      * @param ids
      *            the ids of the header cells, in any order. None may be blank
@@ -175,12 +173,12 @@ public abstract class TableCell extends HtmlContainer {
      * @throws IllegalArgumentException
      *             if an id is blank or contains whitespace.
      */
-    public void setHeaders(String @Nullable... ids) {
-        setHeaders(ids == null ? List.of() : Arrays.asList(ids));
+    public void setHeaderIds(String @Nullable... ids) {
+        setHeaderIds(ids == null ? List.of() : Arrays.asList(ids));
     }
 
     /**
-     * List equivalent of {@link #setHeaders(String...)}. An empty list (or
+     * List equivalent of {@link #setHeaderIds(String...)}. An empty list (or
      * {@code null}) clears the attribute.
      *
      * @param ids
@@ -189,7 +187,7 @@ public abstract class TableCell extends HtmlContainer {
      * @throws IllegalArgumentException
      *             if an id is blank or contains whitespace.
      */
-    public void setHeaders(@Nullable List<String> ids) {
+    public void setHeaderIds(@Nullable List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
             return;
@@ -217,7 +215,7 @@ public abstract class TableCell extends HtmlContainer {
      *             if any of the given cells does not have an id set.
      */
     public void setHeaders(TableHeaderCell @Nullable... headerCells) {
-        setHeadersByCells(
+        setHeaders(
                 headerCells == null ? List.of() : Arrays.asList(headerCells));
     }
 
@@ -229,7 +227,7 @@ public abstract class TableCell extends HtmlContainer {
      * @throws IllegalArgumentException
      *             if any of the given cells does not have an id set.
      */
-    public void setHeadersByCells(
+    public void setHeaders(
             @Nullable List<? extends TableHeaderCell> headerCells) {
         if (headerCells == null || headerCells.isEmpty()) {
             getElement().removeAttribute(ATTRIBUTE_HEADERS);
@@ -240,7 +238,7 @@ public abstract class TableCell extends HtmlContainer {
             ids.add(cell.getId().orElseThrow(() -> new IllegalArgumentException(
                     "Header cell must have an id to be referenced via the headers attribute")));
         }
-        setHeaders(ids);
+        setHeaderIds(ids);
     }
 
     /**
@@ -250,7 +248,7 @@ public abstract class TableCell extends HtmlContainer {
      *
      * @return the header ids, never {@code null}.
      */
-    public List<String> getHeaders() {
+    public List<String> getHeaderIds() {
         String value = getElement().getAttribute(ATTRIBUTE_HEADERS);
         if (value == null || value.isEmpty()) {
             return List.of();

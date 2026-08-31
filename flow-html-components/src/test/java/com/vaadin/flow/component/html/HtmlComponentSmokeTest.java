@@ -224,12 +224,12 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
-        // setHeaders writes a list of ids rather than a scalar property, so
-        // none of its overloads pairs with a same-type getter. TableCellTest
+        // the headers attribute is a list rather than a scalar property, so
+        // none of its setters pairs with a same-type getter. TableCellTest
         // drives every entry point through both kinds of cell.
         if (method.getDeclaringClass() == TableCell.class
                 && (method.getName().equals("setHeaders")
-                        || method.getName().equals("setHeadersByCells"))) {
+                        || method.getName().equals("setHeaderIds"))) {
             return true;
         }
 
