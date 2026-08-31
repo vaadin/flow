@@ -1,14 +1,17 @@
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 
-function makeRegistry() {
+function makeRegistry(maxMessageSuspendTimeout = 10000) {
   const log = {
     constants: [] as unknown[],
     executed: [] as unknown[],
     endRequests: 0,
     stopLoadings: 0,
     states: [] as string[],
-    clearedResources: [] as string[]
+    clearedResources: [] as string[],
+    resynchronized: false,
+    sessionExpiredHandled: false,
+    unrecoverableErrorHandled: false
   };
   let state = 'INITIALIZING';
   const registry = {
@@ -26,7 +29,9 @@ function makeRegistry() {
       clearResynchronizationState: () => {},
       setClientToServerMessageId: () => {},
       requestResynchronize: () => true,
-      resynchronize: () => {}
+      resynchronize: () => {
+        log.resynchronized = true;
+      }
     }),
     getStateTree: () => ({ prepareForResync: () => {} }),
     getRequestResponseTracker: () => ({
@@ -38,11 +43,26 @@ function makeRegistry() {
     getConstantPool: () => ({ importFromJson: (c: unknown) => log.constants.push(c) }),
     getExecuteJavaScriptProcessor: () => ({ execute: (c: unknown) => log.executed.push(c) }),
     getDependencyLoader: () => ({ loadDependencies: () => {} }),
-    getSystemErrorHandler: () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} }),
-    getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => 10000 }),
+    getSystemErrorHandler: () => ({
+      handleSessionExpiredError: () => {
+        log.sessionExpiredHandled = true;
+      },
+      handleUnrecoverableError: () => {
+        log.unrecoverableErrorHandled = true;
+      }
+    }),
+    getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => maxMessageSuspendTimeout }),
     getResourceLoader: () => ({ clearLoadedResourceById: (id: string) => log.clearedResources.push(id) })
   };
   return registry;
+}
+
+// handleJSON is protected, and the Gwt test reaches it through Java package
+// access; a subclass is the TypeScript equivalent, with no widening in the port.
+class TestMessageHandler extends MessageHandler {
+  callHandleJSON(json: Record<string, unknown>): void {
+    this.handleJSON(json);
+  }
 }
 
 describe('MessageHandler', () => {
@@ -115,6 +135,88 @@ describe('MessageHandler', () => {
       handler.setNextResponseSessionExpiredHandler(() => expiredHandled++);
       handler.handleMessage({ syncId: 0, meta: { sessionExpired: true } });
       expect(expiredHandled).to.equal(1);
+    });
+
+    // The session-expired handler runs after a delay, so these await it.
+    const afterSessionExpiredDelay = async (): Promise<void> =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 300);
+      });
+
+    it('shows no session-expired message when the UI is already terminated', async () => {
+      // Ported from testHandleJSON_uiTerminated_sessionExpiredMessageNotShown.
+      const registry = makeRegistry();
+      const handler = new TestMessageHandler(registry as never);
+      // The UI has been terminated, for instance by the redirect JS that
+      // Page::setLocation causes.
+      registry.getUILifecycle().setState('RUNNING');
+      registry.getUILifecycle().setState('TERMINATED');
+
+      handler.callHandleJSON({ meta: { sessionExpired: true } });
+      await afterSessionExpiredDelay();
+
+      expect(registry.log.sessionExpiredHandled).to.be.false;
+      expect(registry.log.unrecoverableErrorHandled).to.be.false;
+      expect(registry.getState()).to.equal('TERMINATED');
+    });
+
+    it('shows no unrecoverable-error message when the UI is already terminated', async () => {
+      // Ported from testHandleJSON_uiTerminated_unrecoverableErrorMessageNotShown.
+      const registry = makeRegistry();
+      const handler = new TestMessageHandler(registry as never);
+      registry.getUILifecycle().setState('RUNNING');
+      registry.getUILifecycle().setState('TERMINATED');
+
+      handler.callHandleJSON({ meta: { appError: true } });
+      await afterSessionExpiredDelay();
+
+      expect(registry.log.sessionExpiredHandled).to.be.false;
+      expect(registry.log.unrecoverableErrorHandled).to.be.false;
+      expect(registry.getState()).to.equal('TERMINATED');
+    });
+
+    it('shows the session-expired message and terminates a running UI', async () => {
+      // Ported from testHandleJSON_sessionExpiredAndUIRunning_sessionExpiredMessageShown.
+      const registry = makeRegistry();
+      const handler = new TestMessageHandler(registry as never);
+      registry.getUILifecycle().setState('RUNNING');
+
+      handler.callHandleJSON({ meta: { sessionExpired: true } });
+      await afterSessionExpiredDelay();
+
+      expect(registry.log.sessionExpiredHandled).to.be.true;
+      expect(registry.log.unrecoverableErrorHandled).to.be.false;
+      expect(registry.getState()).to.equal('TERMINATED');
+    });
+
+    it('shows the unrecoverable-error message and terminates a running UI', async () => {
+      // Ported from testHandleJSON_unrecoverableErrorAndUIRunning_unrecoverableErrorMessageShown.
+      const registry = makeRegistry();
+      const handler = new TestMessageHandler(registry as never);
+      registry.getUILifecycle().setState('RUNNING');
+
+      handler.callHandleJSON({ meta: { appError: { caption: 'error', message: 'oops' } } });
+      await afterSessionExpiredDelay();
+
+      expect(registry.log.unrecoverableErrorHandled).to.be.true;
+      expect(registry.log.sessionExpiredHandled).to.be.false;
+      expect(registry.getState()).to.equal('TERMINATED');
+    });
+
+    it('requests a resync when an out-of-order message is not resolved in time', async () => {
+      // Ported from testForceHandleMessage_resyncIsRequested. The configuration
+      // allows 200 ms of message suspension.
+      const registry = makeRegistry(200);
+      const handler = new MessageHandler(registry as never);
+
+      handler.handleMessage({ syncId: 1 });
+      handler.handleMessage({ syncId: 3 });
+
+      expect(registry.log.resynchronized).to.be.false;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 300);
+      });
+      expect(registry.log.resynchronized).to.be.true;
     });
 
     describe('beyond the Java suite', () => {

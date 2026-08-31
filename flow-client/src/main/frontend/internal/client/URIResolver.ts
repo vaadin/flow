@@ -20,33 +20,7 @@
 // browser-loadable URLs; other protocols pass through unchanged.
 
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
-
-// com.vaadin.flow.shared.ApplicationConstants
-const CONTEXT_PROTOCOL_PREFIX = 'context://';
-const BASE_PROTOCOL_PREFIX = 'base://';
-
-function processProtocol(protocol: string, replacement: string, vaadinUri: string): string {
-  if (vaadinUri.startsWith(protocol)) {
-    return replacement + vaadinUri.substring(protocol.length);
-  }
-  return vaadinUri;
-}
-
-/**
- * Client side URL resolver for vaadin protocols.
- *
- * @param uri - the global registry
- * @param servletToContextRoot - the URI to resolve
- * @returns the resolved URI
- */
-export function resolveVaadinUri(uri: string | null, servletToContextRoot: string): string | null {
-  if (uri === null) {
-    return null;
-  }
-  let processedUri = processProtocol(CONTEXT_PROTOCOL_PREFIX, servletToContextRoot, uri);
-  processedUri = processProtocol(BASE_PROTOCOL_PREFIX, '', processedUri);
-  return processedUri;
-}
+import { VaadinUriResolver } from '../flow/shared/VaadinUriResolver';
 
 /**
  * Returns the given uri as relative to the given base uri.
@@ -66,7 +40,7 @@ export function getBaseRelativeUri(baseURI: string, uri: string): string {
 /**
  * Returns the current document location as relative to the base uri of the document.
  *
- * @returns the document current location as relative to the document base * uri
+ * @returns the document current location as relative to the document base uri
  */
 export function getCurrentLocationRelativeToBaseUri(): string {
   return getBaseRelativeUri(document.baseURI, window.location.href);
@@ -77,17 +51,35 @@ interface URIResolverRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getContextRootUrl'>;
 }
 
-/** Resolves Vaadin URIs against the application context root; mirrors URIResolver.java. */
-export class URIResolver {
+/** Client side URL resolver for vaadin protocols. */
+export class URIResolver extends VaadinUriResolver {
   readonly #registry: URIResolverRegistry;
 
+  /**
+   * Creates a new instance connected to the given registry.
+   *
+   * @param registry - the global registry
+   */
   constructor(registry: URIResolverRegistry) {
+    super();
     this.#registry = registry;
   }
 
-  /** Translates a Vaadin URI to a browser-loadable URL. */
-  resolveVaadinUri(uri: string | null): string | null {
-    return resolveVaadinUri(uri, this.getContextRootUrl());
+  /**
+   * Translates a Vaadin URI to a URL that can be loaded by the browser. The
+   * following URI schemes are supported:
+   *
+   * - `context://` - resolves to the application context root
+   * - `base://` - resolves to the base URI of the page
+   *
+   * Any other URI protocols, such as `http://` or `https://` are passed through
+   * this method unmodified.
+   *
+   * @param uri - the URI to resolve
+   * @returns the resolved URI
+   */
+  override resolveVaadinUri(uri: string | null): string | null {
+    return super.resolveVaadinUri(uri, this.getContextRootUrl());
   }
 
   protected getContextRootUrl(): string {

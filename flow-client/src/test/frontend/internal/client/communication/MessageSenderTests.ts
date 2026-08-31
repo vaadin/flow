@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
-import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/ResynchronizationState';
+import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 
 function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   const log = {

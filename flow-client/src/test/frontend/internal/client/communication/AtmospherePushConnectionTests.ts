@@ -8,6 +8,7 @@ import {
   FragmentedMessage,
   isAtmosphereLoaded
 } from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
+import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -15,7 +16,7 @@ interface AtmosphereConfigCapture {
   config: Record<string, (...args: unknown[]) => unknown> | null;
 }
 
-function setupPush() {
+function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
   const log = {
     pushOk: 0,
     pushError: 0,
@@ -57,12 +58,15 @@ function setupPush() {
       pushScriptLoadError: () => {}
     }),
     getApplicationConfiguration: () => ({
-      getServiceUrl: () => '/app/',
-      getContextRootUrl: () => '/',
+      getServiceUrl: () => serviceUrl,
+      getContextRootUrl: () => contextRootUrl,
       getUIId: () => 1,
       isProductionMode: () => false
     }),
-    getURIResolver: () => ({ resolveVaadinUri: (uri: string) => uri }),
+    // The real resolver, so the push url is built from the context root as in
+    // production.
+    getURIResolver: () =>
+      new URIResolver({ getApplicationConfiguration: () => ({ getContextRootUrl: () => contextRootUrl }) }),
     getMessageHandler: () => ({
       getPushId: () => null,
       getLastSeenServerSyncId: () => 5,
@@ -271,6 +275,20 @@ describe('AtmospherePushConnection', () => {
       expect(disconnected).to.be.true;
       expect(log.disconnected.length).to.equal(1);
       expect(connection.isActive()).to.be.false; // DISCONNECTED
+    });
+    it('unsubscribes from the same url it subscribed to', async () => {
+      // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
+      const { registry, log, capture } = setupPush('context://foo', 'bar/');
+      const connection = new AtmospherePushConnection(registry as never);
+      await tick();
+      const pushUri = capture.config!.url as unknown as string;
+
+      capture.config!.onOpen(response('websocket'));
+      connection.disconnect(() => {});
+
+      expect(log.disconnected).to.have.length(1);
+      expect(log.disconnected[0].startsWith('bar/')).to.be.true;
+      expect(log.disconnected[0]).to.equal(pushUri);
     });
   });
 });

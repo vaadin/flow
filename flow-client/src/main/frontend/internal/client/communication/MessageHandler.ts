@@ -46,7 +46,7 @@ import type { ResourceLoader } from '../ResourceLoader';
 import type { SystemErrorHandler } from '../SystemErrorHandler';
 import type { UILifecycle } from '../UILifecycle';
 import { getServerId, isResynchronize, PendingMessageQueue } from './MessageOrdering';
-import { ResynchronizationState } from './ResynchronizationState';
+import { ResynchronizationState } from './MessageSender';
 import { runWhenEagerDependenciesLoaded } from '../EagerDependencyTracker';
 import { Reactive } from '../flow/reactive/Reactive';
 import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';

@@ -32,7 +32,6 @@ import type { UILifecycle } from '../UILifecycle';
 import type { XhrConnection } from './XhrConnection';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
-import { ResynchronizationState } from './ResynchronizationState';
 import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
@@ -70,6 +69,15 @@ export interface MessageSenderRegistry {
   getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getMaxMessageSuspendTimeout'>;
   getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
 }
+
+/** The state of a resynchronization request; mirrors MessageSender.ResynchronizationState. */
+export const ResynchronizationState = {
+  NOT_ACTIVE: 'NOT_ACTIVE',
+  SEND_TO_SERVER: 'SEND_TO_SERVER',
+  WAITING_FOR_RESPONSE: 'WAITING_FOR_RESPONSE'
+} as const;
+
+export type ResynchronizationState = (typeof ResynchronizationState)[keyof typeof ResynchronizationState];
 
 /**
  * MessageSender is responsible for sending messages to the server.

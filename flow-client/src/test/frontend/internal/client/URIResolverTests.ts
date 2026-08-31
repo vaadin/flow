@@ -2,22 +2,26 @@ import { expect } from '@open-wc/testing';
 import {
   getBaseRelativeUri,
   getCurrentLocationRelativeToBaseUri,
-  resolveVaadinUri,
   URIResolver
 } from '../../../../main/frontend/internal/client/URIResolver';
 
+// resolveVaadinUri is protected on the shared base class, so the protocol cases
+// go through the public URIResolver method, as its Java callers do.
+const resolver = (contextRootUrl: string) =>
+  new URIResolver({ getApplicationConfiguration: () => ({ getContextRootUrl: () => contextRootUrl }) });
+
 describe('URIResolver', () => {
   it('resolves the context:// protocol against the context root', () => {
-    expect(resolveVaadinUri('context://foo/bar.js', '/ctx/')).to.equal('/ctx/foo/bar.js');
+    expect(resolver('/ctx/').resolveVaadinUri('context://foo/bar.js')).to.equal('/ctx/foo/bar.js');
   });
 
   it('resolves the base:// protocol by stripping the prefix', () => {
-    expect(resolveVaadinUri('base://foo.js', '/ctx/')).to.equal('foo.js');
+    expect(resolver('/ctx/').resolveVaadinUri('base://foo.js')).to.equal('foo.js');
   });
 
   it('passes other protocols through unchanged, and null stays null', () => {
-    expect(resolveVaadinUri('https://example.com/x.js', '/ctx/')).to.equal('https://example.com/x.js');
-    expect(resolveVaadinUri(null, '/ctx/')).to.equal(null);
+    expect(resolver('/ctx/').resolveVaadinUri('https://example.com/x.js')).to.equal('https://example.com/x.js');
+    expect(resolver('/ctx/').resolveVaadinUri(null)).to.equal(null);
   });
 
   it('makes a uri relative to a base uri it shares, else leaves it', () => {

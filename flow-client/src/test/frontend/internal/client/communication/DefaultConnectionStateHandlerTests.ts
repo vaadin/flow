@@ -1,8 +1,14 @@
 import { expect } from '@open-wc/testing';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import {
+  CONNECTED,
+  CONNECTION_LOST,
+  getState,
+  RECONNECTING
+} from '../../../../../main/frontend/internal/client/ConnectionIndicator';
 
-function makeRegistry(reconnectAttempts = 3) {
+function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) {
   const log = {
     reconnectionAttempts: [] as number[],
     heartbeatSends: 0,
@@ -12,6 +18,7 @@ function makeRegistry(reconnectAttempts = 3) {
   };
   const lifecycleHandlers: Array<(event: { getUiLifecycle(): { isTerminated(): boolean } }) => void> = [];
   let state = 'RUNNING';
+  let heartbeatInterval = 300;
   const registry = {
     log,
     lifecycleHandlers,
@@ -36,8 +43,14 @@ function makeRegistry(reconnectAttempts = 3) {
       fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
     }),
     getLoadingIndicatorStateHandler: () => ({ stopLoading: () => {} }),
-    getHeartbeat: () => ({ setInterval: () => {}, getInterval: () => 300, send: () => log.heartbeatSends++ }),
-    getApplicationConfiguration: () => ({ getHeartbeatInterval: () => 300 }),
+    getHeartbeat: () => ({
+      setInterval: (interval: number) => {
+        heartbeatInterval = interval;
+      },
+      getInterval: () => heartbeatInterval,
+      send: () => log.heartbeatSends++
+    }),
+    getApplicationConfiguration: () => ({ getHeartbeatInterval: () => configuredHeartbeatInterval }),
     getMessageSender: () => ({ sendInvocationsToServer: () => {} }),
     getSystemErrorHandler: () => ({
       handleSessionExpiredError: () => log.sessionExpired++,
@@ -45,6 +58,11 @@ function makeRegistry(reconnectAttempts = 3) {
     })
   };
   return registry;
+}
+
+// The handler listens on window for the browser's connectivity events.
+function dispatch(type: 'online' | 'offline'): void {
+  window.dispatchEvent(new Event(type));
 }
 
 function xhrError(payload: Record<string, unknown>, status = 500, responseText = ''): XhrConnectionError {
@@ -105,5 +123,70 @@ describe('DefaultConnectionStateHandler', () => {
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.pushError({ isBidirectional: () => true } as never, { transport: 'websocket' });
     expect(registry.log.unrecoverable[0]).to.contain('websocket');
+  });
+  it('stops heartbeats while the browser is offline and resumes them', () => {
+    // Ported from test_browserEvents_stopsHeartbeats.
+    // The Java suite configures the same interval it sets on the heartbeat,
+    // because resuming restores the configured one.
+    const registry = makeRegistry(3, 10);
+    new DefaultConnectionStateHandler(registry as never);
+    registry.getHeartbeat().setInterval(10);
+
+    dispatch('offline');
+    expect(registry.getHeartbeat().getInterval()).to.equal(0);
+
+    dispatch('online');
+    expect(registry.getHeartbeat().getInterval()).to.equal(10);
+  });
+
+  it('goes to connection-lost offline, reconnecting online, and back', () => {
+    // Ported from test_onlineEventFollowedByOffline_connectionLost.
+    const registry = makeRegistry(3);
+    new DefaultConnectionStateHandler(registry as never);
+
+    dispatch('offline');
+    expect(getState()).to.equal(CONNECTION_LOST);
+
+    dispatch('online');
+    expect(getState()).to.equal(RECONNECTING);
+
+    dispatch('offline');
+    expect(getState()).to.equal(CONNECTION_LOST);
+  });
+
+  it('reports connected once the verifying heartbeat succeeds', () => {
+    // Ported from test_onlineEventHeartbeatSucceeds_connected.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry as never);
+
+    dispatch('offline');
+    expect(getState()).to.equal(CONNECTION_LOST);
+
+    dispatch('online');
+    expect(getState()).to.equal(RECONNECTING);
+
+    handler.heartbeatOk();
+    expect(getState()).to.equal(CONNECTED);
+  });
+
+  it('keeps reconnecting while heartbeats fail, then gives up', () => {
+    // Ported from test_onlineEventButHeartbeatFails_continuesReconnectingAndFinallyGivesUp.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry as never);
+
+    dispatch('offline');
+    expect(getState()).to.equal(CONNECTION_LOST);
+
+    dispatch('online');
+    expect(getState()).to.equal(RECONNECTING);
+
+    // Second attempt (the first one follows the transition to RECONNECTING):
+    // still reconnecting.
+    handler.heartbeatException(new XMLHttpRequest(), new Error('some exception'));
+    expect(getState()).to.equal(RECONNECTING);
+
+    // Third attempt: gives up.
+    handler.heartbeatException(new XMLHttpRequest(), new Error('some exception'));
+    expect(getState()).to.equal(CONNECTION_LOST);
   });
 });

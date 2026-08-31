@@ -23,7 +23,7 @@ import type { MessageSender } from './MessageSender';
 import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { UILifecycle } from '../UILifecycle';
 import type { EventRemover } from '../../EventRemover';
-import { ResynchronizationState } from './ResynchronizationState';
+import { ResynchronizationState } from './MessageSender';
 
 /** The slice of Registry that RequestResponseTracker uses. */
 interface RequestResponseRegistry {
