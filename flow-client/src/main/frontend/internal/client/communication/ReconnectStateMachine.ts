@@ -23,6 +23,7 @@
 // succeeds. The actual reconnect retry (timer + payload re-send) and the full
 // ConnectionStateHandler push/xhr handlers compose this kernel.
 
+import type { Command } from '../Command';
 import type { Heartbeat } from './Heartbeat';
 import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
 import type { ReconnectConfiguration } from './ReconnectConfiguration';
@@ -57,12 +58,24 @@ export class ReconnectStateMachine {
   // the full handler; cancels any scheduled retry on resolution.
   readonly #scheduleReconnect: (payload: unknown) => void;
 
-  readonly #cancelScheduledReconnect: () => void;
+  readonly #cancelScheduledReconnect: Command;
 
+  /**
+   * Creates a new instance connected to the given registry, driving the retry
+   * mechanics the full handler owns.
+   *
+   * @param registry - the global registry
+   * @param scheduleReconnect - schedules the next reconnect attempt for the
+   *          payload that did not reach the server, or `null` when the failure
+   *          was detected by a heartbeat
+   * @param cancelScheduledReconnect - cancels a reconnect this machine has
+   *          already scheduled; defaults to doing nothing, for a caller that
+   *          schedules nothing cancellable
+   */
   constructor(
     registry: ReconnectRegistry,
     scheduleReconnect: (payload: unknown) => void,
-    cancelScheduledReconnect: () => void = () => {}
+    cancelScheduledReconnect: Command = () => {}
   ) {
     this.#registry = registry;
     this.#scheduleReconnect = scheduleReconnect;
