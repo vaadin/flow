@@ -44,15 +44,14 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     @Test
     public void basicTableRendersRowsAndCells() {
         TableElement table = $(TableElement.class).id("basic-table");
-        List<TableRowElement> rows = table.$(TableRowElement.class).all();
+        List<TableRowElement> rows = table.getRows();
 
         Assert.assertEquals(2, rows.size());
-        Assert.assertEquals(4,
-                rows.get(0).$(TableDataCellElement.class).all().size());
+        Assert.assertEquals(4, rows.get(0).getDataCells().size());
         Assert.assertEquals("Hi, I'm your first cell.",
-                rows.get(0).$(TableDataCellElement.class).first().getText());
+                rows.get(0).getDataCells().get(0).getText());
         Assert.assertEquals("Second row, first cell.",
-                rows.get(1).$(TableDataCellElement.class).first().getText());
+                rows.get(1).getDataCells().get(0).getText());
     }
 
     @Test
