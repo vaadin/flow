@@ -167,6 +167,34 @@ class AbstractDownloadHandlerTest {
     }
 
     @Test
+    void uiAlreadyDetached_transferCompletes_noListenersNotified()
+            throws IOException {
+        // the UI can also be detached already when the transfer starts, in
+        // which case even the start notification is skipped
+        Mockito.doThrow(new UIDetachedException()).when(ui)
+                .access(Mockito.any(Command.class));
+        SerializableRunnable startHandler = Mockito
+                .mock(SerializableRunnable.class);
+        SerializableConsumer<Boolean> completeHandler = Mockito
+                .mock(SerializableConsumer.class);
+        handler.whenStart(startHandler);
+        handler.whenComplete(completeHandler);
+        handler.addTransferProgressListener(listener);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "Hello".getBytes(StandardCharsets.UTF_8));
+
+        long transferred = TransferUtil.transfer(inputStream, outputStream,
+                mockContext, handler.getListeners());
+
+        assertEquals(5, transferred);
+        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
+        Mockito.verifyNoInteractions(startHandler, completeHandler);
+        Mockito.verify(listener, Mockito.never()).onStart(mockContext);
+        Mockito.verify(listener, Mockito.never()).onComplete(mockContext,
+                transferred);
+    }
+
+    @Test
     void uiDetachedDuringTransfer_transferCompletes_noListenerCallsAfterDetach()
             throws IOException {
         AtomicBoolean uiAttached = new AtomicBoolean(true);
