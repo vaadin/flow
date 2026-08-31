@@ -20,12 +20,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.html.testbench.TableBodyElement;
 import com.vaadin.flow.component.html.testbench.TableCaptionElement;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
-import com.vaadin.flow.component.html.testbench.TableHeadElement;
 import com.vaadin.flow.component.html.testbench.TableHeaderCellElement;
 import com.vaadin.flow.component.html.testbench.TableRowElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -104,8 +102,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     public void planetsTableHasCaptionAndHeadWithRowgroupSpans() {
         TableElement table = $(TableElement.class).id("planets-table");
 
-        TableCaptionElement caption = table.$(TableCaptionElement.class)
-                .first();
+        TableCaptionElement caption = table.getCaption().orElseThrow();
         Assert.assertEquals("caption",
                 table.getPropertyElement("firstElementChild").getTagName());
         Assert.assertTrue(caption.getText()
@@ -114,12 +111,11 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         Assert.assertEquals("Nasa's Planetary Fact Sheet - Metric",
                 caption.$("a").first().getText());
 
-        TableHeadElement head = table.$(TableHeadElement.class).first();
         Assert.assertEquals(10,
-                head.$(TableHeaderCellElement.class).all().size());
+                table.getHeaderRows().get(0).getHeaderCells().size());
 
-        TableHeaderCellElement terrestrial = table.$(TableBodyElement.class)
-                .first().$(TableHeaderCellElement.class).first();
+        TableHeaderCellElement terrestrial = table.getBodyRows().get(0)
+                .getHeaderCells().get(0);
         Assert.assertEquals("Terrestrial planets", terrestrial.getText());
         Assert.assertEquals("rowgroup", terrestrial.getDomAttribute("scope"));
         Assert.assertEquals("4", terrestrial.getDomAttribute("rowspan"));

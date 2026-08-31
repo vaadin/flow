@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html.testbench;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
@@ -64,6 +65,54 @@ public class TableElement extends TestBenchElement {
      */
     public TableCellElement getCell(int row, int column) {
         return getRow(row).getCell(column);
+    }
+
+    /**
+     * Returns the rows of this table's <code>&lt;thead&gt;</code>.
+     *
+     * @return the header rows, or an empty list if the table has no
+     *         <code>&lt;thead&gt;</code>.
+     */
+    public List<TableRowElement> getHeaderRows() {
+        return rowsOf($(TableHeadElement.class).all());
+    }
+
+    /**
+     * Returns the rows of this table's <code>&lt;tbody&gt;</code> elements, in
+     * document order.
+     *
+     * @return the body rows, or an empty list if the table has no
+     *         <code>&lt;tbody&gt;</code>.
+     */
+    public List<TableRowElement> getBodyRows() {
+        return rowsOf($(TableBodyElement.class).all());
+    }
+
+    /**
+     * Returns the rows of this table's <code>&lt;tfoot&gt;</code>.
+     *
+     * @return the footer rows, or an empty list if the table has no
+     *         <code>&lt;tfoot&gt;</code>.
+     */
+    public List<TableRowElement> getFooterRows() {
+        return rowsOf($(TableFootElement.class).all());
+    }
+
+    /**
+     * Returns this table's caption.
+     *
+     * @return the <code>&lt;caption&gt;</code>, or an empty optional if the
+     *         table has none.
+     */
+    public Optional<TableCaptionElement> getCaption() {
+        return $(TableCaptionElement.class).all().stream().findFirst();
+    }
+
+    private static List<TableRowElement> rowsOf(
+            List<? extends TestBenchElement> sections) {
+        return sections.stream().flatMap(
+                section -> section.$(TableRowElement.class).all().stream())
+                .toList();
     }
 
     /**
