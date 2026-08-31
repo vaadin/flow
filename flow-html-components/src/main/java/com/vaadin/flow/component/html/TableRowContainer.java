@@ -17,6 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.util.List;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 
@@ -32,6 +34,7 @@ import com.vaadin.flow.component.HasElement;
  *
  * @since 25.3
  */
+@NullMarked
 interface TableRowContainer extends HasElement {
 
     /**

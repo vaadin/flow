@@ -18,8 +18,11 @@ package com.vaadin.flow.component.html;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
@@ -41,8 +44,10 @@ import com.vaadin.flow.dom.Element;
  *      &lt;table&gt; — The Table element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.TABLE)
-public class Table extends HtmlComponent implements ClickNotifier<Table> {
+public class Table extends HtmlComponent
+        implements ClickNotifier<Table>, HasAriaLabel {
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the

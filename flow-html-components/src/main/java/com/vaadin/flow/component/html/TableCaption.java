@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
@@ -31,6 +33,7 @@ import com.vaadin.flow.component.Tag;
  *      &lt;caption&gt; — The Table Caption element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.CAPTION)
 public class TableCaption extends HtmlContainer {
 

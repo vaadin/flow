@@ -17,6 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -31,6 +33,7 @@ import com.vaadin.flow.signals.Signal;
  *      &lt;td&gt; — The Table Data Cell element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.TD)
 public class TableDataCell extends TableCell
         implements ClickNotifier<TableDataCell> {

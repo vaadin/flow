@@ -17,6 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.util.List;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
@@ -35,6 +37,7 @@ import com.vaadin.flow.component.Tag;
  *      &lt;tr&gt; — The Table Row element</a>
  * @since 25.3
  */
+@NullMarked
 @Tag(Tag.TR)
 public class TableRow extends HtmlComponent implements ClickNotifier<TableRow> {
 

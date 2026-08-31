@@ -42,6 +42,14 @@ class TableTest extends ComponentTest {
         super.setup();
     }
 
+    @Test
+    @Override
+    protected void testHasAriaLabelIsImplemented() {
+        // <table> takes aria-label and aria-labelledby; a caption is not
+        // always the right way to name a table
+        super.testHasAriaLabelIsImplemented();
+    }
+
     private Table table() {
         return (Table) getComponent();
     }

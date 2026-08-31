@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 
@@ -30,6 +32,7 @@ import com.vaadin.flow.component.HtmlContainer;
  *
  * @since 25.3
  */
+@NullMarked
 public abstract class TableCell extends HtmlContainer {
 
     /**
