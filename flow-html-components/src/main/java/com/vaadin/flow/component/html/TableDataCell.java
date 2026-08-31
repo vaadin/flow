@@ -81,12 +81,23 @@ public class TableDataCell extends TableCell
     /**
      * Sets the {@code colspan} attribute — how many columns this cell spans.
      * The default is {@code 1}.
+     * <p>
+     * Unlike {@link #setRowspan(int)}, zero is not allowed: the "span the rest
+     * of the column group" meaning it once had was dropped from HTML, and
+     * browsers now clamp it back to {@code 1}. Values above 1000 are clamped to
+     * 1000.
      *
      * @param colspan
-     *            a non-negative integer.
+     *            a positive integer.
+     * @throws IllegalArgumentException
+     *             if {@code colspan} is less than 1.
      */
     public void setColspan(int colspan) {
-        setSpan(ATTRIBUTE_COLSPAN, colspan);
+        if (colspan < 1) {
+            throw new IllegalArgumentException(
+                    "colspan must be a positive integer value");
+        }
+        setSpanAttribute(ATTRIBUTE_COLSPAN, colspan);
     }
 
     /**
@@ -108,12 +119,24 @@ public class TableDataCell extends TableCell
     /**
      * Sets the {@code rowspan} attribute — how many rows this cell spans. The
      * default is {@code 1}.
+     * <p>
+     * Zero is allowed and still means something in HTML: the cell extends to
+     * the end of the row group ({@code <thead>}, {@code <tbody>} or
+     * {@code <tfoot>}, even an implicit one) it belongs to. Values above 65534
+     * are clamped to 65534.
      *
      * @param rowspan
-     *            a non-negative integer.
+     *            a non-negative integer, where 0 spans the rest of the row
+     *            group.
+     * @throws IllegalArgumentException
+     *             if {@code rowspan} is negative.
      */
     public void setRowspan(int rowspan) {
-        setSpan(ATTRIBUTE_ROWSPAN, rowspan);
+        if (rowspan < 0) {
+            throw new IllegalArgumentException(
+                    "rowspan must be a non-negative integer value");
+        }
+        setSpanAttribute(ATTRIBUTE_ROWSPAN, rowspan);
     }
 
     /**
@@ -132,11 +155,7 @@ public class TableDataCell extends TableCell
         getElement().removeAttribute(ATTRIBUTE_ROWSPAN);
     }
 
-    private void setSpan(String attribute, int span) {
-        if (span < 0) {
-            throw new IllegalArgumentException(
-                    attribute + " must be a non-negative integer value");
-        }
+    private void setSpanAttribute(String attribute, int span) {
         getElement().setAttribute(attribute, String.valueOf(span));
     }
 
