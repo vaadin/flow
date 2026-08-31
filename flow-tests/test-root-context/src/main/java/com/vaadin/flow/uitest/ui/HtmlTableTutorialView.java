@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -26,7 +27,6 @@ import com.vaadin.flow.component.html.TableHead;
 import com.vaadin.flow.component.html.TableHeaderCell;
 import com.vaadin.flow.component.html.TableHeaderCell.Scope;
 import com.vaadin.flow.component.html.TableRow;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -37,42 +37,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * All five examples from the tutorial are covered.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.HtmlTableTutorialView", layout = ViewTestLayout.class)
+@StyleSheet("./html-table-tutorial.css")
 public class HtmlTableTutorialView extends Div {
 
     public HtmlTableTutorialView() {
-        Element style = new Element("style");
-        style.setText("""
-                table {
-                  border-collapse: collapse;
-                  border: 2px solid rgb(200 200 200);
-                  letter-spacing: 1px;
-                  font-size: 0.8rem;
-                }
-
-                td,
-                th {
-                  border: 1px solid rgb(190 190 190);
-                  padding: 10px 20px;
-                }
-
-                td {
-                  text-align: center;
-                }
-                .column-background {
-                  background-color: #97db9a;
-                }
-
-                .column-fixed-width {
-                  width: 40px;
-                }
-
-                .column-background-border {
-                  background-color: #dcc48e;
-                  border: 4px solid #c1437a;
-                }
-                """);
-        getElement().appendChild(style);
-
         add(new H2("HTML table basics — examples from MDN"));
 
         add(new H3("1. Basic table with rows and cells"));
