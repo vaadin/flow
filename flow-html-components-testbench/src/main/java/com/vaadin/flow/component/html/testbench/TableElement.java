@@ -74,7 +74,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;thead&gt;</code>.
      */
     public List<TableRowElement> getHeaderRows() {
-        return rowsOf($(TableHeadElement.class).all());
+        return rowsOfSections("thead");
     }
 
     /**
@@ -85,7 +85,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;tbody&gt;</code>.
      */
     public List<TableRowElement> getBodyRows() {
-        return rowsOf($(TableBodyElement.class).all());
+        return rowsOfSections("tbody");
     }
 
     /**
@@ -95,7 +95,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;tfoot&gt;</code>.
      */
     public List<TableRowElement> getFooterRows() {
-        return rowsOf($(TableFootElement.class).all());
+        return rowsOfSections("tfoot");
     }
 
     /**
@@ -105,14 +105,13 @@ public class TableElement extends TestBenchElement {
      *         table has none.
      */
     public Optional<TableCaptionElement> getCaption() {
-        return $(TableCaptionElement.class).all().stream().findFirst();
+        return childrenNamed("caption").stream().findFirst()
+                .map(child -> child.wrap(TableCaptionElement.class));
     }
 
-    private static List<TableRowElement> rowsOf(
-            List<? extends TestBenchElement> sections) {
-        return sections.stream().flatMap(
-                section -> section.$(TableRowElement.class).all().stream())
-                .toList();
+    private List<TableRowElement> rowsOfSections(String tagName) {
+        return childrenNamed(tagName).stream()
+                .flatMap(section -> rowsOf(section).stream()).toList();
     }
 
     /**

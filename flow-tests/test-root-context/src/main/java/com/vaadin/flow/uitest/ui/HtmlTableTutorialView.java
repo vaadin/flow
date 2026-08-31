@@ -131,7 +131,7 @@ public class HtmlTableTutorialView extends Div {
 
         private void addRowWithRowHeader(String header, String... data) {
             TableRow row = addRow();
-            row.addHeaderCell(header).setScope(Scope.ROW);
+            row.addRowHeaderCell(header);
             row.addDataCells(data);
         }
     }
@@ -300,7 +300,7 @@ public class HtmlTableTutorialView extends Div {
 
         private void addPeriodRow(String period, String... days) {
             TableRow row = addRow();
-            row.addHeaderCell(period).setScope(Scope.ROW);
+            row.addRowHeaderCell(period);
             row.addDataCells(days);
         }
     }

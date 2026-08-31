@@ -113,6 +113,11 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         Assert.assertEquals(10,
                 table.getHeaderRows().get(0).getHeaderCells().size());
+        // the example builds a thead and a tbody but no tfoot
+        Assert.assertTrue(table.getFooterRows().isEmpty());
+        Assert.assertEquals(
+                table.getHeaderRows().size() + table.getBodyRows().size(),
+                table.getRows().size());
 
         TableHeaderCellElement terrestrial = table.getBodyRows().get(0)
                 .getHeaderCells().get(0);
