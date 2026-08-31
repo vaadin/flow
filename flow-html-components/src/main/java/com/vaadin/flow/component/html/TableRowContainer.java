@@ -15,32 +15,37 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.HasComponentsOfType;
 
 /**
  * A container of <code>&lt;tr&gt;</code> elements, implemented by
  * {@link TableHead}, {@link TableBody} and {@link TableFoot}.
  * <p>
  * The WHATWG HTML specification allows nothing but rows inside those three
- * elements, so the operations here are the only ones offered: there is
- * deliberately no generic {@code add(Component)}.
+ * elements, which is what {@link HasComponentsOfType} expresses: the standard
+ * {@code add}, {@code remove}, {@code replace} and
+ * {@link HasComponentsOfType#bindChildren(com.vaadin.flow.signals.Signal, com.vaadin.flow.function.SerializableFunction)
+ * bindChildren} operations are all available, but only for {@link TableRow}, so
+ * an unrelated component is rejected at compile time rather than producing
+ * invalid markup. What this interface adds on top are the row factories, which
+ * create a row and attach it in one call.
  * <p>
  * Implementers must be {@link Component} instances.
  *
  * @since 25.3
  */
 @NullMarked
-interface TableRowContainer extends HasElement {
+interface TableRowContainer extends HasComponentsOfType<TableRow> {
 
     /**
-     * Returns the rows in this container, in document order.
+     * Returns the rows in this container, in document order. This is the typed
+     * counterpart of {@link #getChildren()}.
      *
      * @return the rows in this container.
      */
@@ -50,40 +55,18 @@ interface TableRowContainer extends HasElement {
     }
 
     /**
-     * Appends a new empty row to this container.
+     * Creates a new empty row and appends it to this container.
      *
      * @return the new row.
      */
     default TableRow addRow() {
         TableRow row = new TableRow();
-        getElement().appendChild(row.getElement());
+        add(row);
         return row;
     }
 
     /**
-     * Appends the given rows to this container.
-     *
-     * @param rows
-     *            the rows to append.
-     */
-    default void addRows(TableRow... rows) {
-        addRows(Arrays.asList(rows));
-    }
-
-    /**
-     * List equivalent of {@link #addRows(TableRow...)}.
-     *
-     * @param rows
-     *            the rows to append.
-     */
-    default void addRows(List<? extends TableRow> rows) {
-        for (TableRow row : rows) {
-            getElement().appendChild(row.getElement());
-        }
-    }
-
-    /**
-     * Inserts a new empty row at the given position.
+     * Creates a new empty row and inserts it at the given position.
      *
      * @param position
      *            the position to insert the row at, between 0 and the number of
@@ -92,48 +75,7 @@ interface TableRowContainer extends HasElement {
      */
     default TableRow insertRow(int position) {
         TableRow row = new TableRow();
-        getElement().insertChild(position, row.getElement());
+        addComponentAtIndex(position, row);
         return row;
-    }
-
-    /**
-     * Replaces the row at the given position with the given one.
-     *
-     * @param position
-     *            the position of the row to replace.
-     * @param row
-     *            the row to put there instead.
-     */
-    default void replaceRow(int position, TableRow row) {
-        getElement().setChild(position, row.getElement());
-    }
-
-    /**
-     * Removes the given rows from this container.
-     *
-     * @param rows
-     *            the rows to remove.
-     */
-    default void removeRows(TableRow... rows) {
-        removeRows(Arrays.asList(rows));
-    }
-
-    /**
-     * List equivalent of {@link #removeRows(TableRow...)}.
-     *
-     * @param rows
-     *            the rows to remove.
-     */
-    default void removeRows(List<? extends TableRow> rows) {
-        for (TableRow row : rows) {
-            getElement().removeChild(row.getElement());
-        }
-    }
-
-    /**
-     * Removes every row from this container.
-     */
-    default void removeAllRows() {
-        getElement().removeAllChildren();
     }
 }

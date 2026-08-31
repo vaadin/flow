@@ -69,7 +69,7 @@ class TableColumnGroupTest extends ComponentTest {
         TableColumn third = new TableColumn();
 
         TableColumnGroup group = constructor.apply(List.of(first, second));
-        group.addColumns(List.of(third));
+        group.add(third);
 
         assertEquals(List.of(first, second, third), group.getColumns());
     }
@@ -80,11 +80,40 @@ class TableColumnGroupTest extends ComponentTest {
         spanning.setSpan(3);
         assertThrows(IllegalStateException.class, spanning::addColumn);
         assertThrows(IllegalStateException.class,
-                () -> spanning.addColumns(new TableColumn()));
+                () -> spanning.add(new TableColumn()));
 
         TableColumnGroup withColumns = new TableColumnGroup();
         withColumns.addColumn();
         assertThrows(IllegalStateException.class, () -> withColumns.setSpan(3));
+    }
+
+    @Test
+    void everyInheritedMutatorRespectsTheSpanMode() {
+        TableColumnGroup group = group();
+        group.setSpan(3);
+        TableColumn column = new TableColumn();
+
+        // the whole container contract has to honour the invariant, not just
+        // the factory methods
+        assertThrows(IllegalStateException.class,
+                () -> group.addComponentAtIndex(0, column));
+        assertThrows(IllegalStateException.class,
+                () -> group.addComponentAsFirst(column));
+        assertThrows(IllegalStateException.class,
+                () -> group.replace(column, new TableColumn()));
+        assertTrue(group.getColumns().isEmpty());
+
+        // and once the span is gone, they all work as the contract says
+        group.resetSpan();
+        TableColumn first = new TableColumn();
+        TableColumn second = new TableColumn();
+        group.addComponentAtIndex(0, second);
+        group.addComponentAsFirst(first);
+        assertEquals(List.of(first, second), group.getColumns());
+
+        TableColumn replacement = new TableColumn();
+        group.replace(second, replacement);
+        assertEquals(List.of(first, replacement), group.getColumns());
     }
 
     @Test
@@ -97,7 +126,7 @@ class TableColumnGroupTest extends ComponentTest {
 
         assertEquals(List.of(column), group.getColumns());
 
-        group.removeAllColumns();
+        group.removeAll();
         group.setSpan(2);
 
         assertEquals(2, group.getSpan());
@@ -109,19 +138,19 @@ class TableColumnGroupTest extends ComponentTest {
         TableColumn first = group.addColumn();
         TableColumn second = group.addColumn();
 
-        group.removeColumn(first);
+        group.remove(first);
 
         assertEquals(List.of(second), group.getColumns());
         assertTrue(first.getParent().isEmpty());
     }
 
     @Test
-    void removeAllColumns_leavesTheGroupEmpty() {
+    void removeAll_leavesTheGroupEmpty() {
         TableColumnGroup group = group();
         group.addColumn();
         group.addColumn();
 
-        group.removeAllColumns();
+        group.removeAll();
 
         assertTrue(group.getColumns().isEmpty());
     }

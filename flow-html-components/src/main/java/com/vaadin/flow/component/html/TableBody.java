@@ -20,6 +20,7 @@ import java.util.List;
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -37,8 +38,8 @@ import com.vaadin.flow.component.Tag;
  */
 @NullMarked
 @Tag(Tag.TBODY)
-public class TableBody extends HtmlComponent
-        implements TableRowContainer, ClickNotifier<TableBody> {
+public class TableBody extends HtmlComponent implements TableRowContainer,
+        HasComponentsOfType<TableRow>, ClickNotifier<TableBody> {
 
     /**
      * Creates a new empty {@code <tbody>}.
@@ -55,7 +56,7 @@ public class TableBody extends HtmlComponent
      */
     public TableBody(TableRow... rows) {
         super();
-        addRows(rows);
+        add(rows);
     }
 
     /**
@@ -66,6 +67,6 @@ public class TableBody extends HtmlComponent
      */
     public TableBody(List<? extends TableRow> rows) {
         super();
-        addRows(rows);
+        add(rows.toArray(TableRow[]::new));
     }
 }

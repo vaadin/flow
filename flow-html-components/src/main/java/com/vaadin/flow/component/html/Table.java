@@ -361,7 +361,7 @@ public class Table extends HtmlComponent
      * Removes every row from this table, leaving its sections in place.
      */
     public void removeAllRows() {
-        sections().forEach(TableRowContainer::removeAllRows);
+        sections().forEach(TableRowContainer::removeAll);
     }
 
     /**
@@ -406,7 +406,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addRows(TableRow... rows) {
-        getBody().addRows(rows);
+        getBody().add(rows);
     }
 
     /**
@@ -416,7 +416,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addRows(List<? extends TableRow> rows) {
-        getBody().addRows(rows);
+        getBody().add(rows.toArray(TableRow[]::new));
     }
 
     /**
@@ -459,7 +459,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addHeaderRows(TableRow... rows) {
-        getHead().addRows(rows);
+        getHead().add(rows);
     }
 
     /**
@@ -469,7 +469,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addHeaderRows(List<? extends TableRow> rows) {
-        getHead().addRows(rows);
+        getHead().add(rows.toArray(TableRow[]::new));
     }
 
     /**
@@ -512,7 +512,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addFooterRows(TableRow... rows) {
-        getFoot().addRows(rows);
+        getFoot().add(rows);
     }
 
     /**
@@ -522,7 +522,7 @@ public class Table extends HtmlComponent
      *            the rows to add.
      */
     public void addFooterRows(List<? extends TableRow> rows) {
-        getFoot().addRows(rows);
+        getFoot().add(rows.toArray(TableRow[]::new));
     }
 
     /**

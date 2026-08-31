@@ -82,7 +82,7 @@ class TableRowContainerTest {
         TableRow row0 = new TableRow();
         TableRow row1 = new TableRow();
 
-        section.addRows(row0, row1);
+        section.add(row0, row1);
 
         assertEquals(List.of(row0, row1), section.getRows());
     }
@@ -103,14 +103,13 @@ class TableRowContainerTest {
 
     @ParameterizedTest
     @MethodSource("sections")
-    void replaceRow_swapsTheRowAtThePosition(
-            Supplier<TableRowContainer> factory) {
+    void replace_swapsTheGivenRow(Supplier<TableRowContainer> factory) {
         TableRowContainer section = factory.get();
         TableRow first = section.addRow();
         TableRow old = section.addRow();
         TableRow replacement = new TableRow();
 
-        section.replaceRow(1, replacement);
+        section.replace(old, replacement);
 
         assertEquals(List.of(first, replacement), section.getRows());
         assertTrue(old.getParent().isEmpty());
@@ -125,7 +124,7 @@ class TableRowContainerTest {
         TableRow row1 = section.addRow();
         TableRow row2 = section.addRow();
 
-        section.removeRows(row0, row2);
+        section.remove(row0, row2);
 
         assertEquals(List.of(row1), section.getRows());
         assertTrue(row0.getParent().isEmpty());
@@ -140,7 +139,7 @@ class TableRowContainerTest {
         section.addRow();
         section.addRow();
 
-        section.removeAllRows();
+        section.removeAll();
 
         assertTrue(section.getRows().isEmpty());
     }

@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
@@ -38,9 +39,9 @@ import com.vaadin.flow.component.Tag;
  * contains zero or more {@code <col>} children and has no {@code span}
  * attribute. This component enforces that: adding a column to a group that
  * carries a {@code span} throws, as does setting a {@code span} on a group that
- * already has columns. Call {@link #resetSpan()} or {@link #removeAllColumns()}
- * first to switch a group from one mode to the other. {@code <colgroup>}
- * elements must be placed after the optional {@code <caption>} and before any
+ * already has columns. Call {@link #resetSpan()} or {@link #removeAll()} first
+ * to switch a group from one mode to the other. {@code <colgroup>} elements
+ * must be placed after the optional {@code <caption>} and before any
  * {@code <thead>}, {@code <tbody>}, {@code <tfoot>} or <code>&lt;tr&gt;</code>;
  * {@link Table} inserts them at the correct position automatically.
  *
@@ -51,7 +52,8 @@ import com.vaadin.flow.component.Tag;
  */
 @NullMarked
 @Tag(Tag.COLGROUP)
-public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
+public class TableColumnGroup extends HtmlComponent
+        implements TableColumnSpan, HasComponentsOfType<TableColumn> {
 
     private static final String ATTRIBUTE_SPAN = "span";
 
@@ -70,7 +72,7 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
      */
     public TableColumnGroup(TableColumn... columns) {
         super();
-        addColumns(columns);
+        add(columns);
     }
 
     /**
@@ -81,7 +83,7 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
      */
     public TableColumnGroup(List<? extends TableColumn> columns) {
         super();
-        addColumns(columns);
+        add(columns.toArray(TableColumn[]::new));
     }
 
     /**
@@ -105,26 +107,6 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
     }
 
     /**
-     * Appends the given columns to this group.
-     *
-     * @param columns
-     *            the columns to add.
-     */
-    public void addColumns(TableColumn... columns) {
-        addColumns(Arrays.asList(columns));
-    }
-
-    /**
-     * List equivalent of {@link #addColumns(TableColumn...)}.
-     *
-     * @param columns
-     *            the columns to add.
-     */
-    public void addColumns(List<? extends TableColumn> columns) {
-        columns.forEach(this::addColumn);
-    }
-
-    /**
      * Returns the columns inside this group.
      *
      * @return the list of {@code <col>} children.
@@ -134,30 +116,40 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
                 .toList();
     }
 
-    /**
-     * Removes a column from this group.
-     *
-     * @param column
-     *            the column to remove.
-     */
-    public void removeColumn(TableColumn column) {
-        getElement().removeChild(column.getElement());
+    @Override
+    public void add(Collection<TableColumn> columns) {
+        rejectColumnsWhileSpanIsSet();
+        HasComponentsOfType.super.add(columns);
     }
 
-    /**
-     * Removes all columns from this group.
-     */
-    public void removeAllColumns() {
-        getElement().removeAllChildren();
+    @Override
+    public void addComponentAtIndex(int index, TableColumn column) {
+        rejectColumnsWhileSpanIsSet();
+        HasComponentsOfType.super.addComponentAtIndex(index, column);
     }
 
-    private TableColumn addColumn(TableColumn column) {
+    @Override
+    public void addComponentAsFirst(TableColumn column) {
+        rejectColumnsWhileSpanIsSet();
+        HasComponentsOfType.super.addComponentAsFirst(column);
+    }
+
+    @Override
+    public void replace(TableColumn oldColumn, TableColumn newColumn) {
+        rejectColumnsWhileSpanIsSet();
+        HasComponentsOfType.super.replace(oldColumn, newColumn);
+    }
+
+    private void rejectColumnsWhileSpanIsSet() {
         if (getElement().hasAttribute(ATTRIBUTE_SPAN)) {
             throw new IllegalStateException(
                     "A <colgroup> carrying a span attribute may not have <col> "
                             + "children. Call resetSpan() first.");
         }
-        getElement().appendChild(column.getElement());
+    }
+
+    private TableColumn addColumn(TableColumn column) {
+        add(column);
         return column;
     }
 
@@ -166,7 +158,7 @@ public class TableColumnGroup extends HtmlComponent implements TableColumnSpan {
         if (getElement().getChildCount() > 0) {
             throw new IllegalStateException(
                     "A <colgroup> with <col> children may not carry a span "
-                            + "attribute. Call removeAllColumns() first.");
+                            + "attribute. Call removeAll() first.");
         }
         TableColumnSpan.super.setSpan(span);
     }
