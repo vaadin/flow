@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.vaadin.flow.signals.local.ListSignal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -101,6 +103,10 @@ class TableColumnGroupTest extends ComponentTest {
                 () -> group.addComponentAsFirst(column));
         assertThrows(IllegalStateException.class,
                 () -> group.replace(column, new TableColumn()));
+        // bindChildren cannot honour the invariant, so it is refused outright
+        assertThrows(UnsupportedOperationException.class,
+                () -> group.bindChildren(new ListSignal<TableColumn>(),
+                        signal -> new TableColumn()));
         assertTrue(group.getColumns().isEmpty());
 
         // and once the span is gone, they all work as the contract says

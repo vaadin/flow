@@ -19,11 +19,14 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;colgroup&gt;</code> element — a group of
@@ -138,6 +141,25 @@ public class TableColumnGroup extends HtmlComponent
     public void replace(TableColumn oldColumn, TableColumn newColumn) {
         rejectColumnsWhileSpanIsSet();
         HasComponentsOfType.super.replace(oldColumn, newColumn);
+    }
+
+    /**
+     * Not supported. The columns of a {@code <colgroup>} are structure rather
+     * than data, and a binding would attach them straight to the element,
+     * bypassing the check that keeps {@code span} and {@code <col>} children
+     * mutually exclusive. Bind the rows of a {@link TableBody} instead.
+     *
+     * @throws UnsupportedOperationException
+     *             always.
+     */
+    @Override
+    public <V extends @Nullable Object, S extends Signal<V>> void bindChildren(
+            Signal<List<S>> list,
+            SerializableFunction<S, TableColumn> childFactory) {
+        throw new UnsupportedOperationException(
+                "A <colgroup> does not support a children binding, because it "
+                        + "would bypass the rule that span and <col> children "
+                        + "are mutually exclusive.");
     }
 
     private void rejectColumnsWhileSpanIsSet() {

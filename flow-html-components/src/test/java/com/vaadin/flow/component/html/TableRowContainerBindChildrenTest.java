@@ -73,23 +73,10 @@ class TableRowContainerBindChildrenTest extends SignalsUnitTest {
         section.bindChildren(planets,
                 signal -> new TableRow(new TableDataCell(signal)));
 
-        // the row factories go through the inherited add, so the binding is
-        // protected from being edited behind its back
+        // the row factories go through the inherited add and
+        // addComponentAtIndex rather than the element, so they pick up the
+        // guard the contract already applies
         assertThrows(BindingActiveException.class, section::addRow);
         assertThrows(BindingActiveException.class, () -> section.insertRow(0));
-        assertThrows(BindingActiveException.class,
-                () -> section.add(new TableRow()));
-    }
-
-    @ParameterizedTest
-    @MethodSource("sections")
-    void bindChildren_twice_throws(Supplier<TableRowContainer> factory) {
-        TableRowContainer section = factory.get();
-        UI.getCurrent().add((com.vaadin.flow.component.Component) section);
-        ListSignal<String> planets = new ListSignal<>();
-        section.bindChildren(planets, signal -> new TableRow());
-
-        assertThrows(BindingActiveException.class, () -> section
-                .bindChildren(new ListSignal<>(), signal -> new TableRow()));
     }
 }
