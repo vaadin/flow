@@ -345,10 +345,11 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // Lost connection for a connection which will tell us when the connection
       // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+    } else {
+      // Lost connection for a connection we do not necessarily know when it is
+      // available again (long polling behind proxy). Do nothing and show the
+      // reconnect dialog if the user does something and the XHR fails.
     }
-    // Lost connection for a connection we do not necessarily know when it is
-    // available again (long polling behind proxy). Do nothing and show the
-    // reconnect dialog if the user does something and the XHR fails.
   }
 
   pushError(_pushConnection: PushConnection, response: unknown): void {

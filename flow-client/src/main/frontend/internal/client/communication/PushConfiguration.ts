@@ -42,7 +42,6 @@ interface PushConfigRegistry {
 }
 
 // Whether a PUSHMODE value enables push (anything other than DISABLED).
-// Intentionally avoiding bringing the enum to the client side.
 function isPushModeEnabled(propertyValue: unknown): boolean {
   if (propertyValue === null || propertyValue === undefined) {
     return false;
