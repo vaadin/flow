@@ -301,6 +301,27 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void setSection_null_removesTheOneTheTableHas() {
+        Table table = table();
+        var caption = table.getCaption();
+        var head = table.getHead();
+        var foot = table.getFoot();
+
+        table.setCaption(null);
+        table.setHead(null);
+        table.setFoot(null);
+
+        assertEquals(0, table.getChildren().count());
+        assertTrue(caption.getParent().isEmpty());
+        assertTrue(head.getParent().isEmpty());
+        assertTrue(foot.getParent().isEmpty());
+
+        // and null on a table that has none is a no-op rather than a failure
+        table.setCaption(null);
+        assertEquals(0, table.getChildren().count());
+    }
+
+    @Test
     void getSection_calledTwice_doesNotCreateASecondOne() {
         Table table = table();
 

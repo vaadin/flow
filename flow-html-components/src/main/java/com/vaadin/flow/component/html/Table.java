@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
@@ -115,11 +116,14 @@ public class Table extends HtmlComponent
      * if any.
      *
      * @param caption
-     *            the caption to use.
+     *            the caption to use, or {@code null} to remove the one the
+     *            table has.
      */
-    public void setCaption(TableCaption caption) {
+    public void setCaption(@Nullable TableCaption caption) {
         removeCaption();
-        insert(caption, RANK_CAPTION);
+        if (caption != null) {
+            insert(caption, RANK_CAPTION);
+        }
     }
 
     /**
@@ -241,11 +245,14 @@ public class Table extends HtmlComponent
      * already has, if any.
      *
      * @param head
-     *            the head to use.
+     *            the head to use, or {@code null} to remove the one the table
+     *            has.
      */
-    public void setHead(TableHead head) {
+    public void setHead(@Nullable TableHead head) {
         removeHead();
-        insert(head, RANK_HEAD);
+        if (head != null) {
+            insert(head, RANK_HEAD);
+        }
     }
 
     /**
@@ -278,11 +285,14 @@ public class Table extends HtmlComponent
      * already has, if any.
      *
      * @param foot
-     *            the foot to use.
+     *            the foot to use, or {@code null} to remove the one the table
+     *            has.
      */
-    public void setFoot(TableFoot foot) {
+    public void setFoot(@Nullable TableFoot foot) {
         removeFoot();
-        insert(foot, RANK_FOOT);
+        if (foot != null) {
+            insert(foot, RANK_FOOT);
+        }
     }
 
     /**
