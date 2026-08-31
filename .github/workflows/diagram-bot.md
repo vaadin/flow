@@ -136,7 +136,7 @@ If `EXPLICIT_REQUEST` is `true`, a maintainer asked for a diagram, so skip the g
 
 **Depict the mechanism, not its name.** A box labelled "cache" says less than the sentence it replaces. The path a request takes through that cache, the two stores it sits between, and the arrow that disappears when it is removed say what words cannot.
 
-**Draw the change, not the system.** Include only what the change turns on. Where before and after differ in shape, draw both as a small pair — that pair is still one figure. Never draw an inventory of the subsystem.
+**Draw the change, not the system.** Include only what the change turns on. Where before and after differ in shape, draw both as a small pair — that pair is still one figure, and it always reads left to right: `Before` on the left, `After` on the right, never one stacked above the other. Never draw an inventory of the subsystem.
 
 **Label every arrow** with something the code does: `collects changes`, `seeds UIInternals`, `re-runs validation`, `sends v-loc`. An unlabelled arrow means "related somehow", which the reviewer already assumed.
 
@@ -151,7 +151,7 @@ If `EXPLICIT_REQUEST` is `true`, a maintainer asked for a diagram, so skip the g
 | Type | Use for |
 |---|---|
 | `sequenceDiagram` | Call and message ordering across components; client/server round trips; handshakes. The usual choice in this repository. |
-| `flowchart LR` or `TD` | Data flow, dispatch and decision paths, build pipeline stages. |
+| `flowchart LR` or `TD` | Data flow, dispatch and decision paths, build pipeline stages, before/after pairs. |
 | `stateDiagram-v2` | Lifecycle and state machines: attach/detach, connection state, navigation phases. |
 | `classDiagram` | Only when the type relationships themselves are the change. |
 
@@ -160,6 +160,26 @@ If `EXPLICIT_REQUEST` is `true`, a maintainer asked for a diagram, so skip the g
 - In `flowchart` and `classDiagram`, a node label containing punctuation, parentheses, `<`, `>`, `:` or `,` must be quoted: `A["StateTree.collectChanges()"]`.
 - In `sequenceDiagram`, the text after `as`, after `:` on a message, and after `Note over X:` is free text. Do not quote it — the quotes would be drawn. Parentheses are fine there, but a second `:` in a message ends the label, so leave colons out of message text.
 - Everywhere: no raw HTML, no `click` directives, no images, no styling directives. Keep node ids and participant aliases short and alphanumeric.
+
+**Lay a before/after pair out side by side.** Mermaid orders disconnected subgraphs however it likes: leave the two halves unconnected and they come out stacked, often with `After` on top. Pin the layout down instead — `flowchart LR` for the frame, one subgraph per side, `direction TB` inside both so neither side sprawls, and the invisible edge `Before ~~~ After` to fix which comes first:
+
+````markdown
+```mermaid
+flowchart LR
+    subgraph Before
+        direction TB
+        B1["UidlWriter.write()"] -->|writes response| B2["client applies"]
+    end
+    subgraph After
+        direction TB
+        A1["UidlWriter.write()"] -->|collects changes first| A2["StateTree.collectChanges()"]
+        A2 -->|writes response| A3["client applies"]
+    end
+    Before ~~~ After
+```
+````
+
+A `sequenceDiagram` cannot hold a pair. There, keep one timeline and mark what changed with a `Note`, as below.
 
 A figure at the right altitude looks like this:
 
@@ -194,5 +214,6 @@ When you decided not to draw, call the `noop` tool with a one-sentence reason, f
 2. Every arrow carries a label naming something the code does.
 3. The figure shows what the change is about, not the surrounding subsystem.
 4. Twelve nodes or fewer; labels with punctuation are quoted; no colours, no HTML, no init block.
-5. The caption makes one claim, attributes or marks its intent statement, and contains no verdict and no instruction to the reviewer.
-6. If a check fails and you cannot fix it, `noop` instead of posting.
+5. A before/after pair reads left to right — both halves are subgraphs of one `flowchart LR`, joined by `Before ~~~ After`, and neither sits above the other.
+6. The caption makes one claim, attributes or marks its intent statement, and contains no verdict and no instruction to the reviewer.
+7. If a check fails and you cannot fix it, `noop` instead of posting.
