@@ -22,9 +22,12 @@
 /**
  * Event fired when a request starts.
  */
-export type RequestStartingEvent = Record<string, never>;
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- the Java event carries no data either, and the class exists so each fire allocates its own
+export class RequestStartingEvent {}
 
 /**
  * Handler for {@link RequestStartingEvent}s.
+ *
+ * @param requestStartingEvent - the event object
  */
 export type RequestStartingEventHandler = (requestStartingEvent: RequestStartingEvent) => void;

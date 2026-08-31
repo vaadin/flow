@@ -45,6 +45,7 @@ import type { RequestResponseTracker } from './RequestResponseTracker';
 import type { ResourceLoader } from '../ResourceLoader';
 import type { SystemErrorHandler } from '../SystemErrorHandler';
 import type { UILifecycle } from '../UILifecycle';
+import type { ValueMap } from '../ValueMap';
 import { getServerId, isResynchronize, PendingMessageQueue } from './MessageOrdering';
 import { ResynchronizationState } from './MessageSender';
 import { runWhenEagerDependenciesLoaded } from '../EagerDependencyTracker';
@@ -103,8 +104,6 @@ const META_ASYNC = 'async';
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
 /** A parsed UIDL message. */
-type ValueMap = Record<string, unknown>;
-
 /** The slice of Registry MessageHandler uses. */
 interface MessageHandlerRegistry {
   getUILifecycle(): Pick<UILifecycle, 'getState' | 'setState'>;

@@ -21,13 +21,15 @@
 // tracking decrement is scheduled right after the command so it runs once the
 // command has executed (FIFO timer order).
 
+import type { Command } from './Command';
+
 /** Defers commands while tracking whether any deferred work is pending. */
 export class TrackingScheduler {
   // 0 == no deferred commands in progress, > 0 otherwise.
   #deferredCommandTrackers = 0;
 
   /** Schedules a command to run deferred, tracking it as pending until it has run. */
-  scheduleDeferred(command: () => void): void {
+  scheduleDeferred(command: Command): void {
     this.#deferredCommandTrackers++;
     setTimeout(command, 0);
     setTimeout(() => {

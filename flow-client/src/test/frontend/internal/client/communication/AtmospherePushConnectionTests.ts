@@ -98,6 +98,7 @@ describe('AtmospherePushConnection', () => {
   });
 
   it('does nothing until the atmosphere library is available', async () => {
+    // Beyond the Java suite: GwtAtmospherePushConnectionTest sets the library up in every case, so the not-yet-loaded gate has no Java case.
     // isAtmosphereLoaded gates the deferred connect: with no library installed,
     // no subscription happens.
     const { registry, capture } = setupPush();
@@ -118,12 +119,14 @@ describe('AtmospherePushConnection', () => {
     }
 
     it('emits a short message as a single length-prefixed fragment', () => {
+      // Beyond the Java suite: FragmentedMessage has no Java case of its own; the Gwt suite only asserts the disconnect url.
       const fragments = fragmentsOf('hello');
       expect(fragments).to.deep.equal(['5|hello']);
       expect(reassemble(fragments)).to.equal('hello');
     });
 
     it('splits a long message into multiple fragments that reassemble', () => {
+      // Beyond the Java suite: No Java case covers multi-fragment websocket pushes.
       const message = 'a'.repeat(5000); // > the 4095-char fragment size
       const fragments = fragmentsOf(message);
       expect(fragments.length).to.be.greaterThan(1);
@@ -141,15 +144,17 @@ describe('AtmospherePushConnection', () => {
     });
 
     it('is active and not yet bidirectional before connecting', async () => {
+      // Beyond the Java suite: No Java case covers the state before a transport is known.
       const { registry } = setupPush();
       const connection = new AtmospherePushConnection(registry as never);
       await tick(); // let the deferred connect() run
       expect(connection.isActive()).to.be.true; // CONNECT_PENDING
       expect(connection.isBidirectional()).to.be.false; // no transport yet
-      expect(connection.getTransportType()).to.equal('');
+      expect(connection.getTransportType()).to.equal(null);
     });
 
     it('subscribes with the default config and a sync-id supplier', async () => {
+      // Beyond the Java suite: The Gwt suite reads the subscribe url only; the config defaults and the header supplier have no Java case.
       const { registry, capture } = setupPush();
       new AtmospherePushConnection(registry as never);
       await tick();
@@ -168,6 +173,7 @@ describe('AtmospherePushConnection', () => {
     });
 
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {
+      // Beyond the Java suite: No Java case drives onOpen through to a push.
       const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry as never);
       await tick();
@@ -184,6 +190,7 @@ describe('AtmospherePushConnection', () => {
     });
 
     it('routes a valid push message to the message handler and reports invalid content', async () => {
+      // Beyond the Java suite: No Java case covers onMessage.
       const { registry, log, capture } = setupPush();
       new AtmospherePushConnection(registry as never);
       await tick();
@@ -197,6 +204,7 @@ describe('AtmospherePushConnection', () => {
     });
 
     it('reports errors and closes, and disconnects an open connection', async () => {
+      // Beyond the Java suite: No Java case covers onError/onClose.
       const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry as never);
       await tick();

@@ -67,6 +67,7 @@ class TestMessageHandler extends MessageHandler {
 
 describe('MessageHandler', () => {
   it('parseJson parses JSON text, and reports unparseable or missing text as null', () => {
+    // Beyond the Java suite: GwtMessageHandlerTest exercises parseJson only through handleJSON, so its null paths have no Java case.
     expect(parseJson('{"a":1,"b":"x"}')).to.eql({ a: 1, b: 'x' });
     expect(parseJson('not json')).to.equal(null);
     expect(parseJson(null)).to.equal(null);
@@ -78,6 +79,7 @@ describe('MessageHandler', () => {
     // stays at zero and the deferred work runs straight away.
 
     it('starts in an undefined sync-id state with default csrf and no push id', () => {
+      // Beyond the Java suite: No Java case asserts the initial state.
       const handler = new MessageHandler(makeRegistry() as never);
       expect(handler.getLastSeenServerSyncId()).to.equal(-1);
       expect(handler.getCsrfToken()).to.equal('init');
@@ -86,6 +88,7 @@ describe('MessageHandler', () => {
     });
 
     it('starts the UI and applies an in-order message (constants, csrf, sync id, end request)', () => {
+      // Beyond the Java suite: No Java case walks a full in-order message.
       const registry = makeRegistry();
       const handler = new MessageHandler(registry as never);
       handler.handleMessage({
@@ -104,6 +107,7 @@ describe('MessageHandler', () => {
     });
 
     it('queues an out-of-order message without applying it', () => {
+      // Beyond the Java suite: The Gwt suite covers the forced resync, not the queueing itself.
       const registry = makeRegistry();
       const handler = new MessageHandler(registry as never);
       handler.handleMessage({ syncId: 0, constants: { first: 1 } });
@@ -116,6 +120,7 @@ describe('MessageHandler', () => {
     });
 
     it('ignores an already-seen (stale) message but still ends the request', () => {
+      // Beyond the Java suite: No Java case covers a stale re-send.
       const registry = makeRegistry();
       const handler = new MessageHandler(registry as never);
       handler.handleMessage({ syncId: 0 });
@@ -129,6 +134,7 @@ describe('MessageHandler', () => {
     });
 
     it('runs a one-shot session-expired handler when set', () => {
+      // Beyond the Java suite: No Java case covers setNextResponseSessionExpiredHandler.
       const registry = makeRegistry();
       const handler = new MessageHandler(registry as never);
       let expiredHandled = 0;

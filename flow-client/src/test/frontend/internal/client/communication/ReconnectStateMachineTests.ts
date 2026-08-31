@@ -1,3 +1,5 @@
+// Beyond the Java suite: ReconnectStateMachine has no Java test class in src/test/java or src/test-gwt/java —
+// it is a TypeScript-only split of DefaultConnectionStateHandler, whose Gwt cases drive the handler — so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import { ConnectionMessageType } from '../../../../../main/frontend/internal/client/communication/ConnectionMessageType';
 import { ReconnectStateMachine } from '../../../../../main/frontend/internal/client/communication/ReconnectStateMachine';

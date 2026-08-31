@@ -83,6 +83,10 @@ export class XhrResponseHandler {
   /**
    * Creates a new instance connected to the given registry.
    *
+   * Java declares this handler as an inner class, so it reads the connection's
+   * registry field; TypeScript has no inner classes, so the registry is passed
+   * in and the Java constructor's no-arg signature cannot be mirrored.
+   *
    * @param registry - the global registry
    */
   constructor(registry: XhrConnectionRegistry) {
@@ -116,7 +120,9 @@ export class XhrResponseHandler {
    *          a response other than 200
    */
   onFail(xhr: XMLHttpRequest, error: Error | null): void {
-    const errorEvent = new XhrConnectionError(xhr, this.#payload ?? {}, error);
+    // Java passes the field, and documents the payload as never null: send()
+    // always sets it before the request goes out.
+    const errorEvent = new XhrConnectionError(xhr, this.#payload!, error);
     if (error === null) {
       // Response other than 200
       this.#registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
@@ -139,9 +145,7 @@ export class XhrResponseHandler {
     const json = parseJson(responseText);
     if (json === null) {
       // Invalid JSON string
-      this.#registry
-        .getConnectionStateHandler()
-        .xhrInvalidContent(new XhrConnectionError(xhr, this.#payload ?? {}, null));
+      this.#registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, this.#payload!, null));
       return;
     }
 

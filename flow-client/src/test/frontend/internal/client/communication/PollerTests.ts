@@ -1,3 +1,5 @@
+// Beyond the Java suite: Poller has no Java test class in src/test/java or
+// src/test-gwt/java, so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import { Poller } from '../../../../../main/frontend/internal/client/communication/Poller';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';

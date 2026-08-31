@@ -22,9 +22,12 @@
 /**
  * Event fired when handling of a response starts.
  */
-export type ResponseHandlingStartedEvent = Record<string, never>;
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- the Java event carries no data either, and the class exists so each fire allocates its own
+export class ResponseHandlingStartedEvent {}
 
 /**
  * Handler for {@link ResponseHandlingStartedEvent}s.
+ *
+ * @param responseHandlingStartedEvent - the event object
  */
 export type ResponseHandlingStartedEventHandler = (responseHandlingStartedEvent: ResponseHandlingStartedEvent) => void;

@@ -319,8 +319,10 @@ export class MessageSender {
    * @returns A string representation of the current transport type
    */
   getCommunicationMethodName(): string {
-    let clientToServer = 'XHR';
-    let serverToClient = '-';
+    let clientToServer: string | null = 'XHR';
+    // Java concatenates the transport type into the string, so a null transport
+    // reads as "null" there too.
+    let serverToClient: string | null = '-';
     if (this.#push !== null) {
       serverToClient = this.#push.getTransportType();
       if (this.#push.isBidirectional()) {

@@ -73,9 +73,10 @@ export interface PushConnection {
    * Returns a human readable string representation of the transport type used to
    * communicate with the server.
    *
-   * @returns A human readable string representation of the transport type
+   * @returns A human readable string representation of the transport type, or
+   *          `null` before a connection has opened
    */
-  getTransportType(): string;
+  getTransportType(): string | null;
 
   /**
    * Checks whether this push connection should be used for communication in both

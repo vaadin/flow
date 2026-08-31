@@ -22,26 +22,31 @@
 /**
  * Event fired when a reconnection attempt is requested.
  */
-export interface ReconnectionAttemptEvent {
+export class ReconnectionAttemptEvent {
+  readonly #attempt: number;
+
+  /**
+   * Creates an event object.
+   *
+   * @param attempt - the reconnection attempt number
+   */
+  constructor(attempt: number) {
+    this.#attempt = attempt;
+  }
+
   /**
    * Gets the number of the current reconnection attempt.
    *
    * @returns the number of the current reconnection attempt.
    */
-  getAttempt(): number;
+  getAttempt(): number {
+    return this.#attempt;
+  }
 }
 
 /**
  * Handler for {@link ReconnectionAttemptEvent}s.
+ *
+ * @param event - the event object
  */
 export type ReconnectionAttemptEventHandler = (event: ReconnectionAttemptEvent) => void;
-
-/**
- * Creates an event object.
- *
- * @param attempt - the reconnection attempt number
- * @returns the event object
- */
-export function createReconnectionAttemptEvent(attempt: number): ReconnectionAttemptEvent {
-  return { getAttempt: () => attempt };
-}

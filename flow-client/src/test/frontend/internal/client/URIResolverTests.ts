@@ -1,3 +1,5 @@
+// Beyond the Java suite: URIResolver has no Java test class in src/test/java or src/test-gwt/java —
+// its context-root resolution comes from the base class, whose case lives in VaadinUriResolverTests — so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import {
   getBaseRelativeUri,

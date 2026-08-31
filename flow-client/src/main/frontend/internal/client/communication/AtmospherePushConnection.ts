@@ -31,6 +31,7 @@ import type { URIResolver } from '../URIResolver';
 import { parseJson } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
+import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
 import { Console } from '../Console';
@@ -67,7 +68,13 @@ export class FragmentedMessage {
     this.#message = message;
   }
 
-  /** Whether another fragment remains to be retrieved. */
+  /**
+   * Checks if there is another fragment which can be retrieved using
+   * {@link FragmentedMessage.getNextFragment} or if all fragments have been
+   * retrieved.
+   *
+   * @returns true if there is another fragment to retrieve, false otherwise
+   */
   hasNextFragment(): boolean {
     return this.#index < this.#message.length;
   }
@@ -395,7 +402,7 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
-  disconnect(command: () => void): void {
+  disconnect(command: Command): void {
     switch (this.#state) {
       case State.CONNECT_PENDING:
         // Let the connection callback initiate the disconnect once connected.
@@ -530,8 +537,8 @@ export class AtmospherePushConnection implements PushConnection {
     this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
   }
 
-  getTransportType(): string {
-    return this.#transport ?? '';
+  getTransportType(): string | null {
+    return this.#transport;
   }
 }
 

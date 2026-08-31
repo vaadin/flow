@@ -1,6 +1,8 @@
+// Beyond the Java suite: MessageSender has no Java test class in src/test/java or
+// src/test-gwt/java, so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import {
-  createReconnectionAttemptEvent,
+  ReconnectionAttemptEvent,
   type ReconnectionAttemptEventHandler
 } from '../../../../../main/frontend/internal/client/communication/ReconnectionAttemptEvent';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
@@ -139,7 +141,7 @@ describe('MessageSender (class)', () => {
 
     // Simulate the request finishing, then a reconnection attempt.
     registry.setActiveRequest(false);
-    registry.reconnectionHandlers.forEach((h: ReconnectionAttemptEventHandler) => h(createReconnectionAttemptEvent(1)));
+    registry.reconnectionHandlers.forEach((h: ReconnectionAttemptEventHandler) => h(new ReconnectionAttemptEvent(1)));
     expect(registry.log.xhrSends).to.have.length(2); // queued message resent
   });
 });

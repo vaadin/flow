@@ -1,3 +1,5 @@
+// Beyond the Java suite: ConnectionMessageType has no Java test class in src/test/java or src/test-gwt/java —
+// the enum it ports is nested in DefaultConnectionStateHandler, whose Gwt test covers the handler rather than the priorities — so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import {
   ConnectionMessageType,

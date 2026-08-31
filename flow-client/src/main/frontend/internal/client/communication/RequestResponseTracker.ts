@@ -29,7 +29,10 @@ import type { ReconnectionAttemptEventHandler } from './ReconnectionAttemptEvent
 import type { RequestStartingEventHandler } from './RequestStartingEvent';
 import type { ResponseHandlingEndedEventHandler } from './ResponseHandlingEndedEvent';
 import type { ResponseHandlingStartedEventHandler } from './ResponseHandlingStartedEvent';
-import { createReconnectionAttemptEvent } from './ReconnectionAttemptEvent';
+import { ReconnectionAttemptEvent } from './ReconnectionAttemptEvent';
+import { RequestStartingEvent } from './RequestStartingEvent';
+import { ResponseHandlingEndedEvent } from './ResponseHandlingEndedEvent';
+import { ResponseHandlingStartedEvent } from './ResponseHandlingStartedEvent';
 import { ResynchronizationState } from './MessageSender';
 
 /** The slice of Registry that RequestResponseTracker uses. */
@@ -41,9 +44,6 @@ interface RequestResponseRegistry {
     'getResynchronizationState' | 'hasQueuedMessages' | 'sendInvocationsToServer'
   >;
 }
-
-// The empty events carry no data, so a handler is invoked with one.
-const EVENT = {};
 
 function addListener<T>(listeners: T[], listener: T): EventRemover {
   listeners.push(listener);
@@ -88,7 +88,8 @@ export class RequestResponseTracker {
     this.#hasActiveRequestState = true;
     // Iterate a copy, as SimpleEventBus does, so a handler added or removed
     // during dispatch does not change who is notified for this event.
-    [...this.#requestStartingHandlers].forEach((handler) => handler(EVENT));
+    const event = new RequestStartingEvent();
+    [...this.#requestStartingHandlers].forEach((handler) => handler(event));
   }
 
   /**
@@ -120,17 +121,19 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(EVENT));
+    const event = new ResponseHandlingEndedEvent();
+    [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
   }
 
   /** Fires the response-handling-started event (called by the message handler). */
   fireResponseHandlingStarted(): void {
-    [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(EVENT));
+    const event = new ResponseHandlingStartedEvent();
+    [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */
   fireReconnectionAttempt(attempt: number): void {
-    const event = createReconnectionAttemptEvent(attempt);
+    const event = new ReconnectionAttemptEvent(attempt);
     [...this.#reconnectionAttemptHandlers].forEach((handler) => handler(event));
   }
 

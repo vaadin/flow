@@ -1,3 +1,5 @@
+// Beyond the Java suite: MessageOrdering has no Java test class in src/test/java or src/test-gwt/java —
+// it is a TypeScript-only split of MessageHandler, whose Gwt cases exercise the handler — so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
 import {
   getServerId,

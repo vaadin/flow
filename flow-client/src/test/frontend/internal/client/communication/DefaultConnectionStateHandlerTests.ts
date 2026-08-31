@@ -79,6 +79,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('re-sends the queued payload immediately on the first xhr failure', () => {
+    // Beyond the Java suite: GwtDefaultConnectionStateHandlerTest covers the browser events only; the xhr and push entry points have no Java case.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.xhrException(xhrError({ rpc: 1 }));
@@ -87,6 +88,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('sends a heartbeat (not a payload) to reconnect a heartbeat failure', () => {
+    // Beyond the Java suite: No Java case covers the heartbeat reconnect path.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.heartbeatException({} as XMLHttpRequest, new Error('down'));
@@ -95,6 +97,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('treats a 403 heartbeat as session expiry and stops the application', () => {
+    // Beyond the Java suite: No Java case covers the 403 heartbeat.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.heartbeatInvalidStatusCode({ status: 403 } as XMLHttpRequest);
@@ -103,6 +106,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('treats a 401 xhr as unauthorized (session expired) without reconnecting', () => {
+    // Beyond the Java suite: No Java case covers the 401 xhr.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.xhrInvalidStatusCode(xhrError({}, 401));
@@ -111,6 +115,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('reports an unrecoverable error for invalid xhr content (no refresh token)', () => {
+    // Beyond the Java suite: No Java case covers invalid xhr content.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.xhrInvalidContent(xhrError({}, 200, 'not json'));
@@ -119,6 +124,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('reports a push communication error', () => {
+    // Beyond the Java suite: No Java case covers pushError.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry as never);
     handler.pushError({ isBidirectional: () => true } as never, { transport: 'websocket' });

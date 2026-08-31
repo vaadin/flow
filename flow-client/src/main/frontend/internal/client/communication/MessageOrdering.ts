@@ -20,6 +20,8 @@
 // the client must process them in order, queueing out-of-order / locked messages
 // until the missing ones arrive. MessageHandler composes this.
 
+import type { ValueMap } from '../ValueMap';
+
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVER_SYNC_ID = 'syncId';
 const RESYNCHRONIZE_ID = 'resynchronize';
@@ -27,8 +29,9 @@ const RESYNCHRONIZE_ID = 'resynchronize';
 // The value of an undefined sync id (must be -1 per getLastSeenServerSyncId).
 const UNDEFINED_SYNC_ID = -1;
 
-/** A parsed UIDL message (a JSON object). */
-export type ValueMap = Record<string, unknown>;
+// Re-exported so the modules this kernel serves keep importing the message type
+// from here.
+export type { ValueMap };
 
 /** The server id of a message, or -1 if it has none. Mirrors getServerId. */
 export function getServerId(json: ValueMap): number {
