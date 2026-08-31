@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
@@ -138,7 +139,7 @@ public class TableHeaderCell extends TableCell
             return value;
         }
 
-        static Scope fromValue(String value) {
+        static @Nullable Scope fromValue(@Nullable String value) {
             if (value == null) {
                 return null;
             }
@@ -162,7 +163,7 @@ public class TableHeaderCell extends TableCell
      *            the scope, or {@code null} to clear the attribute.
      * @see Scope
      */
-    public void setScope(Scope scope) {
+    public void setScope(@Nullable Scope scope) {
         if (scope == null) {
             getElement().removeAttribute("scope");
         } else {
