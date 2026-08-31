@@ -94,6 +94,12 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     public void tableBodyHasOneRowPerPeriodPlusTheHeaderRow() {
         Assert.assertEquals(5, timetable.getRows().size());
         Assert.assertEquals(7, firstPeriodRow().getDataCells().size());
+        // The row leads with a <th> for the period, so the mixed list is one
+        // longer than the data cells alone
+        Assert.assertEquals(8, firstPeriodRow().getCells().size());
+        Assert.assertEquals("1st period",
+                firstPeriodRow().getCell(0).getText());
+        Assert.assertEquals("English", timetable.getCell(1, 1).getText());
     }
 
     private List<TableColumnElement> columns() {

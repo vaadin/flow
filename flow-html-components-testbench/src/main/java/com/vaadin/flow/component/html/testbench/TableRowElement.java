@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.testbench.TestBenchElement;
@@ -35,8 +36,7 @@ public class TableRowElement extends TestBenchElement {
      * @return the cells of this row.
      */
     public List<TableCellElement> getCells() {
-        return getChildren().stream().filter(TableRowElement::isCell)
-                .map(child -> child.wrap(TableCellElement.class)).toList();
+        return cells("td", "th");
     }
 
     /**
@@ -56,7 +56,8 @@ public class TableRowElement extends TestBenchElement {
      * @return this row's <code>&lt;td&gt;</code> cells.
      */
     public List<TableDataCellElement> getDataCells() {
-        return $(TableDataCellElement.class).all();
+        return cells("td").stream()
+                .map(cell -> cell.wrap(TableDataCellElement.class)).toList();
     }
 
     /**
@@ -65,11 +66,19 @@ public class TableRowElement extends TestBenchElement {
      * @return this row's <code>&lt;th&gt;</code> cells.
      */
     public List<TableHeaderCellElement> getHeaderCells() {
-        return $(TableHeaderCellElement.class).all();
+        return cells("th").stream()
+                .map(cell -> cell.wrap(TableHeaderCellElement.class)).toList();
     }
 
-    private static boolean isCell(TestBenchElement child) {
-        String tag = child.getTagName();
-        return "td".equalsIgnoreCase(tag) || "th".equalsIgnoreCase(tag);
+    /**
+     * The cells of this row are its direct children; a descendant query would
+     * also pick up the cells of a table nested inside one of them.
+     */
+    private List<TableCellElement> cells(String... tagNames) {
+        List<String> wanted = Arrays.asList(tagNames);
+        return getChildren().stream()
+                .filter(child -> wanted.stream().anyMatch(
+                        tag -> tag.equalsIgnoreCase(child.getTagName())))
+                .map(child -> child.wrap(TableCellElement.class)).toList();
     }
 }

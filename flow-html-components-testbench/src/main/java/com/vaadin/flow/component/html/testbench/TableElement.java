@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.testbench.TestBenchElement;
@@ -36,7 +37,8 @@ public class TableElement extends TestBenchElement {
      * @return the rows of this table.
      */
     public List<TableRowElement> getRows() {
-        return $(TableRowElement.class).all();
+        return childrenNamed("thead", "tbody", "tfoot").stream()
+                .flatMap(section -> rowsOf(section).stream()).toList();
     }
 
     /**
@@ -70,6 +72,27 @@ public class TableElement extends TestBenchElement {
      * @return the table's <code>&lt;colgroup&gt;</code> elements.
      */
     public List<TableColumnGroupElement> getColumnGroups() {
-        return $(TableColumnGroupElement.class).all();
+        return childrenNamed("colgroup").stream()
+                .map(child -> child.wrap(TableColumnGroupElement.class))
+                .toList();
+    }
+
+    /**
+     * The caption, column groups and sections of this table are its direct
+     * children; a descendant query would also pick up those of a table nested
+     * inside a cell.
+     */
+    private List<TestBenchElement> childrenNamed(String... tagNames) {
+        List<String> wanted = Arrays.asList(tagNames);
+        return getChildren().stream()
+                .filter(child -> wanted.stream().anyMatch(
+                        tag -> tag.equalsIgnoreCase(child.getTagName())))
+                .toList();
+    }
+
+    private static List<TableRowElement> rowsOf(TestBenchElement section) {
+        return section.getChildren().stream()
+                .filter(child -> "tr".equalsIgnoreCase(child.getTagName()))
+                .map(child -> child.wrap(TableRowElement.class)).toList();
     }
 }
