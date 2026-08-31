@@ -274,6 +274,44 @@ class CompileTest {
     }
 
     @Test
+    void staleResources_separateWhatTheAppServesFromWhatItReadAtStartup()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        write("app/src/main/resources/.application.properties.swp", "vim");
+        Compile compile = new Compile(project(app));
+
+        Compile.ResourceChanges changes = compile.staleResources();
+
+        // Copying application.properties onto the classpath does not change
+        // what the running JVM was configured with, so it must not be reported
+        // as something a push can make live.
+        assertEquals(List.of(served), changes.live());
+        assertEquals(List.of(config), changes.startup());
+    }
+
+    @Test
+    void resourceKind_isDecidedByThePublicResourceRoots() {
+        assertEquals(Compile.ResourceKind.LIVE,
+                Compile.resourceKindOf("META-INF/resources/site.css"));
+        assertEquals(Compile.ResourceKind.LIVE,
+                Compile.resourceKindOf("static/styles.css"));
+        assertEquals(Compile.ResourceKind.STARTUP,
+                Compile.resourceKindOf("application.properties"));
+        // Folded into the dev bundle at startup, not served from here.
+        assertEquals(Compile.ResourceKind.STARTUP,
+                Compile.resourceKindOf("META-INF/frontend/my-view.js"));
+        assertEquals(Compile.ResourceKind.IGNORED,
+                Compile.resourceKindOf("static/.styles.css.swp"));
+    }
+
+    @Test
     void tidy_collapsesJavacsRepetitionAndShortensNames() {
         // javac says "cannot find symbol symbol: method bar() location: class
         // com.example.Foo" over three lines; output length is a real cost for

@@ -112,6 +112,71 @@ final class Compile {
         }
     }
 
+    /**
+     * What a change to a resource means, decided by where the file sits under
+     * {@code src/main/resources}.
+     * <p>
+     * The split is by who reads the file at runtime, the same rule the frontend
+     * leg uses. Only the public roots are re-read per request; everything else
+     * - {@code application.properties} first among them - was read once while
+     * the application was starting, so a fresh copy on the classpath changes
+     * nothing about what the running JVM is using.
+     */
+    enum ResourceKind {
+        /**
+         * An editor's own file rather than the developer's. Never enters a
+         * change-set: a swap file must not copy itself onto the classpath, and
+         * it certainly must not restart the application.
+         */
+        IGNORED,
+        /**
+         * Served from the classpath per request, so the copy into
+         * {@code target/classes} is the whole of the work and the browser only
+         * has to be told.
+         */
+        LIVE,
+        /**
+         * Read while the application starts and not again - configuration,
+         * bundled frontend assets, anything Spring or Flow folded into state at
+         * boot. The copy keeps the classpath honest, but only a restart makes
+         * the new bytes take effect.
+         */
+        STARTUP
+    }
+
+    /**
+     * One apply's worth of resource changes, split by {@link ResourceKind}.
+     *
+     * @param live
+     *            resources the browser can be shown once they are copied
+     * @param startup
+     *            resources the running application will not re-read
+     */
+    record ResourceChanges(List<Path> live, List<Path> startup) {
+
+        boolean isEmpty() {
+            return live.isEmpty() && startup.isEmpty();
+        }
+
+        int size() {
+            return live.size() + startup.size();
+        }
+
+        /** Everything that changed; all of it is copied to the classpath. */
+        List<Path> all() {
+            return Stream.concat(live.stream(), startup.stream())
+                    .sorted(Comparator.naturalOrder()).toList();
+        }
+    }
+
+    /**
+     * The classpath-root-relative directories a servlet container or Spring
+     * Boot serves static content from. A resource outside them is never fetched
+     * over HTTP, so copying it can never be what makes an edit visible.
+     */
+    private static final List<String> PUBLIC_RESOURCE_ROOTS = List
+            .of("META-INF/resources/", "static/", "public/", "resources/");
+
     /** A file and the module it belongs to, which is all a walk ever needs. */
     private interface Visitor {
         void accept(Reactor.Module module, Path file, Stamp stamp);
@@ -200,7 +265,8 @@ final class Compile {
     }
 
     /**
-     * Resources the browser has not been told about yet.
+     * Resources the daemon has not acted on yet, split by what acting on them
+     * means.
      * <p>
      * Two questions have to be asked, and the artifact comparison alone answers
      * only the first:
@@ -208,29 +274,41 @@ final class Compile {
      * <li><b>Is the classpath copy current?</b> Flow watches the source tree
      * but never refreshes {@code target/classes}, so anything that re-fetches
      * the file - a page reload, a new tab - would get stale bytes.</li>
-     * <li><b>Has the browser seen this content?</b> An IDE that copies
+     * <li><b>Has the daemon acted on this content?</b> An IDE that copies
      * resources on save (IntelliJ does, with auto-build on) makes the classpath
      * copy current on its own, and then a pure artifact check reports "no
      * changes" for an edit the browser has never received. So the daemon also
-     * remembers the fingerprint of every resource as of the last time it
-     * notified the browser.</li>
+     * remembers the fingerprint of every resource as of the last time it acted
+     * on it.</li>
      * </ul>
+     * Both questions are asked of every resource; only the consequence of a
+     * "yes" differs, which is why the two kinds come back separately.
+     * <p>
      * The fingerprint map is seeded at daemon start, so a first apply with
      * nothing edited is still quiet.
      */
-    List<Path> staleResources() {
-        List<Path> stale = new ArrayList<>();
+    ResourceChanges staleResources() {
+        List<Path> live = new ArrayList<>();
+        List<Path> startup = new ArrayList<>();
         forEachResource((module, source, stamp) -> {
             if (!copyIsCurrent(module, source)
                     || !stamp.equals(notified.get(source))) {
-                stale.add(source);
+                (resourceKindOf(module, source) == ResourceKind.LIVE ? live
+                        : startup).add(source);
             }
         });
-        stale.sort(Comparator.naturalOrder());
-        return stale;
+        live.sort(Comparator.naturalOrder());
+        startup.sort(Comparator.naturalOrder());
+        return new ResourceChanges(List.copyOf(live), List.copyOf(startup));
     }
 
-    /** Records that the browser has been told about these resources. */
+    /**
+     * Records that the browser has been told about these resources.
+     * <p>
+     * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
+     * resource goes live when the application restarts, and
+     * {@link #seedFromDisk()} is what records that.
+     */
     void markResourcesNotified(List<Path> resources) {
         for (Path source : resources) {
             stampOf(source).ifPresent(stamp -> notified.put(source, stamp));
@@ -382,8 +460,36 @@ final class Compile {
 
     private void forEachResource(Visitor action) {
         for (Reactor.Module module : modules) {
-            walk(module, module.resourceDir(), path -> true, action);
+            java.util.function.Predicate<Path> tracked = file -> resourceKindOf(
+                    module, file) != ResourceKind.IGNORED;
+            walk(module, module.resourceDir(), tracked, action);
         }
+    }
+
+    private ResourceKind resourceKindOf(Reactor.Module module, Path file) {
+        return resourceKindOf(module.resourceDir().relativize(file).toString());
+    }
+
+    /**
+     * What a change to this resource means, decided on its path relative to the
+     * module's resource root.
+     * <p>
+     * Package-visible for the tests, which name paths rather than build them.
+     *
+     * @param relative
+     *            the resource path relative to {@code src/main/resources}
+     * @return how the file has to be handled
+     */
+    static ResourceKind resourceKindOf(String relative) {
+        String path = relative.replace(File.separatorChar, '/');
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        if (name.startsWith(".") || name.startsWith("~")
+                || name.endsWith("~")) {
+            return ResourceKind.IGNORED;
+        }
+        return PUBLIC_RESOURCE_ROOTS.stream().anyMatch(path::startsWith)
+                ? ResourceKind.LIVE
+                : ResourceKind.STARTUP;
     }
 
     /** Copies changed resources onto the classpath; returns what was copied. */

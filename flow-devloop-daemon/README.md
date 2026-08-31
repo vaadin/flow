@@ -281,6 +281,14 @@ its answer rather than claiming success.
   change is simply rejected and escalates.
 - **A sibling module contributing routes, `@JsModule` or `@NpmPackage` needs a
   restart**, not an `apply`: those are read at startup.
+- **Only resources under a public root can be made live.** `src/main/resources`
+  is split by who reads the file: `META-INF/resources/`, `static/`, `public/`
+  and `resources/` are served from the classpath per request, so the copy into
+  `target/classes` plus a `RESOURCES` push is the whole of the work. Everything
+  else — `application.properties` first among them — was read while the app was
+  starting and is never re-read, so the copy alone would leave the running JVM
+  on the old values. `apply` copies it anyway, to keep the classpath honest, and
+  then escalates to a restart rather than returning `Stable`.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
   fires a competing full page reload; the Spring ones were measured to lose the

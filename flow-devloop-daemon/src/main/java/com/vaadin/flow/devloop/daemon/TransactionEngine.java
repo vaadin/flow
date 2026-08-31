@@ -328,14 +328,14 @@ final class TransactionEngine {
                                 + " source(s)");
                 changes = merge(changes, forced);
             }
-            List<Path> staleResources = compile.staleResources();
+            Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
             changes.deleted().forEach(path -> tx.changeSet
                     .add(compile.relative(path) + " (deleted)"));
-            staleResources
+            staleResources.all()
                     .forEach(path -> tx.changeSet.add(compile.relative(path)));
             frontendChanges.modified()
                     .forEach(path -> tx.changeSet.add(compile.relative(path)));
@@ -389,7 +389,7 @@ final class TransactionEngine {
             if (!staleResources.isEmpty()) {
                 tx.state = "frontend";
                 try {
-                    compile.copyResources(staleResources);
+                    compile.copyResources(staleResources.all());
                     tx.resources = staleResources.size();
                     log.line("resources: copied " + tx.resources
                             + " to the classpath");
@@ -398,6 +398,17 @@ final class TransactionEngine {
                             "resource copy: " + e.getMessage(), "none",
                             "check file permissions under target/classes",
                             started);
+                }
+                // The copy is not the same as the change being live. Everything
+                // outside the public resource roots was read while the app was
+                // starting - application.properties above all - and the running
+                // JVM will not read it again, so reporting Stable here would be
+                // a green answer over values the app is not using.
+                if (!staleResources.startup().isEmpty()) {
+                    tx.escalation = resourceEscalation(
+                            staleResources.startup());
+                    log.line("resources: " + tx.escalation
+                            + "; only a restart can apply that");
                 }
             }
 
@@ -424,14 +435,16 @@ final class TransactionEngine {
 
             if (changes.isEmpty() && drift.isEmpty() && tx.escalation.isEmpty()
                     && (!staleResources.isEmpty() || plan.hasWork())) {
-                return finishFrontendOnly(tx, log, staleResources, plan,
+                // Reached only with the escalation empty, so there are no
+                // startup-only resources left to account for here.
+                return finishFrontendOnly(tx, log, staleResources.live(), plan,
                         started);
             }
-            if (!staleResources.isEmpty()) {
+            if (!staleResources.live().isEmpty()) {
                 // Java and resources in one change-set: push the resources too,
                 // otherwise the CSS half of the edit would sit on the classpath
                 // unseen until something reloaded the page.
-                notifyResources(staleResources, log);
+                notifyResources(staleResources.live(), log);
             }
             if (tx.escalation.isEmpty()) {
                 // Skipped when a restart is coming: it re-reads every frontend
@@ -604,6 +617,20 @@ final class TransactionEngine {
             return finish(tx, Outcome.FAILED, "internal: " + e, "none",
                     "see daemon.log", started);
         }
+    }
+
+    /**
+     * Why a resource change cannot be made live in the running application.
+     * <p>
+     * The file is named when it is the only one, because
+     * "application.properties changed" is the whole explanation and a count is
+     * not.
+     */
+    private static String resourceEscalation(List<Path> startup) {
+        String what = startup.size() == 1
+                ? startup.get(0).getFileName() + " changed"
+                : startup.size() + " resource(s) changed";
+        return what + " (read only while the app starts)";
     }
 
     /**
