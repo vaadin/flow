@@ -1,13 +1,9 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import {
-  BindGuardStateNode,
-  type CollectingTree,
-  NodeFeatures,
-  StateNode,
-  bind,
-  makeCollectingTree
-} from '../bindingTestHelpers';
+import { BindGuardStateNode, type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Element property binding is exercised the way GwtBasicElementBinderTest does
 // it: bind a node to a real element, drive the ELEMENT_PROPERTIES map and read

@@ -29,10 +29,6 @@ const RESYNCHRONIZE_ID = 'resynchronize';
 // The value of an undefined sync id (must be -1 per getLastSeenServerSyncId).
 export const UNDEFINED_SYNC_ID = -1;
 
-// Re-exported so the modules this kernel serves keep importing the message type
-// from here.
-export type { ValueMap };
-
 /** The server id of a message, or -1 if it has none. Mirrors getServerId. */
 export function getServerId(json: ValueMap): number {
   return SERVER_SYNC_ID in json ? (json[SERVER_SYNC_ID] as number) : -1;

@@ -1,7 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { Debouncer } from '../../../../../../main/frontend/internal/client/flow/binding/Debouncer';
-import { BindGuardStateNode, NodeFeatures, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { BindGuardStateNode, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // DOM event listener tests ported from GwtBasicElementBinderTest. They bind a
 // real StateNode to a real element attached to the document and drive the

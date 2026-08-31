@@ -6,13 +6,11 @@
 // fakes used by the unit-level binding tests.
 
 import { InitialPropertiesHandler } from '../../../../../main/frontend/internal/client/InitialPropertiesHandler';
-import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 
 // Arguments collected by the sendExistingElementWithIdAttachToServer RPC; mirrors
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.
@@ -160,5 +158,3 @@ export class BindGuardStateNode extends StateNode {
     return super.getMap(id);
   }
 }
-
-export { bind, StateNode, NodeFeatures, NodeProperties };
