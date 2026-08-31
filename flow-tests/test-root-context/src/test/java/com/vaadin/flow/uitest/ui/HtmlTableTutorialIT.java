@@ -102,7 +102,7 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
     public void planetsTableHasCaptionAndHeadWithRowgroupSpans() {
         TableElement table = $(TableElement.class).id("planets-table");
 
-        TableCaptionElement caption = table.getCaption().orElseThrow();
+        TableCaptionElement caption = table.getCaption();
         Assert.assertEquals("caption",
                 table.getPropertyElement("firstElementChild").getTagName());
         Assert.assertTrue(caption.getText()
@@ -115,8 +115,6 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
                 table.getHeaderRows().get(0).getHeaderCells().size());
         // the example builds a thead and a tbody but no tfoot
         Assert.assertTrue(table.getFooterRows().isEmpty());
-        Assert.assertTrue(table.getFoot().isEmpty());
-        Assert.assertTrue(table.getHead().isPresent());
         // one <tbody>, reachable on its own and holding all the body rows
         Assert.assertEquals(1, table.getBodies().size());
         Assert.assertEquals(table.getBodyRows().size(),

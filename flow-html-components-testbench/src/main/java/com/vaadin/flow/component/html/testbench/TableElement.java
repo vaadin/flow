@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html.testbench;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.testbench.TestBenchElement;
@@ -123,32 +122,40 @@ public class TableElement extends TestBenchElement {
     /**
      * Returns this table's <code>&lt;thead&gt;</code>.
      *
-     * @return the header section, or an empty optional if the table has none.
+     * @return the header section.
+     * @throws java.util.NoSuchElementException
+     *             if the table has none. Use {@link #getHeaderRows()} to ask
+     *             whether there is one without failing.
      */
-    public Optional<TableHeadElement> getHead() {
+    public TableHeadElement getHead() {
         return childrenNamed("thead").stream().findFirst()
-                .map(child -> child.wrap(TableHeadElement.class));
+                .map(child -> child.wrap(TableHeadElement.class)).orElseThrow();
     }
 
     /**
      * Returns this table's <code>&lt;tfoot&gt;</code>.
      *
-     * @return the footer section, or an empty optional if the table has none.
+     * @return the footer section.
+     * @throws java.util.NoSuchElementException
+     *             if the table has none. Use {@link #getFooterRows()} to ask
+     *             whether there is one without failing.
      */
-    public Optional<TableFootElement> getFoot() {
+    public TableFootElement getFoot() {
         return childrenNamed("tfoot").stream().findFirst()
-                .map(child -> child.wrap(TableFootElement.class));
+                .map(child -> child.wrap(TableFootElement.class)).orElseThrow();
     }
 
     /**
      * Returns this table's caption.
      *
-     * @return the <code>&lt;caption&gt;</code>, or an empty optional if the
-     *         table has none.
+     * @return the <code>&lt;caption&gt;</code>.
+     * @throws java.util.NoSuchElementException
+     *             if the table has none.
      */
-    public Optional<TableCaptionElement> getCaption() {
+    public TableCaptionElement getCaption() {
         return childrenNamed("caption").stream().findFirst()
-                .map(child -> child.wrap(TableCaptionElement.class));
+                .map(child -> child.wrap(TableCaptionElement.class))
+                .orElseThrow();
     }
 
     /**
