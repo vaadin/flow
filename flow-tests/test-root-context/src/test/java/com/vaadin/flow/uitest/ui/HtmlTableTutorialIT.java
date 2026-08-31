@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.component.html.testbench.TableCaptionElement;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
@@ -113,8 +114,13 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         Assert.assertEquals(10,
                 table.getHeaderRows().get(0).getHeaderCells().size());
-        // the example builds a thead and a tbody but no tfoot
+        // the example builds a thead and a tbody but no tfoot, so asking for
+        // the missing one fails rather than handing back something empty
+        Assert.assertTrue(table.hasHead());
+        Assert.assertNotNull(table.getHead());
+        Assert.assertFalse(table.hasFoot());
         Assert.assertTrue(table.getFooterRows().isEmpty());
+        Assert.assertThrows(NoSuchElementException.class, table::getFoot);
         // one <tbody>, reachable on its own and holding all the body rows
         Assert.assertEquals(1, table.getBodies().size());
         Assert.assertEquals(table.getBodyRows().size(),

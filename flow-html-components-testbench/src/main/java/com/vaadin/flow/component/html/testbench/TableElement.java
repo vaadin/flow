@@ -18,6 +18,8 @@ package com.vaadin.flow.component.html.testbench;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.openqa.selenium.NoSuchElementException;
+
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
@@ -123,39 +125,77 @@ public class TableElement extends TestBenchElement {
      * Returns this table's <code>&lt;thead&gt;</code>.
      *
      * @return the header section.
-     * @throws java.util.NoSuchElementException
-     *             if the table has none. Use {@link #getHeaderRows()} to ask
-     *             whether there is one without failing.
+     * @throws NoSuchElementException
+     *             if the table has none. Ask {@link #hasHead()} first to check
+     *             without failing; {@link #getHeaderRows()} is not the same
+     *             question, since an empty {@code <thead>} has no rows.
      */
     public TableHeadElement getHead() {
         return childrenNamed("thead").stream().findFirst()
-                .map(child -> child.wrap(TableHeadElement.class)).orElseThrow();
+                .map(child -> child.wrap(TableHeadElement.class))
+                .orElseThrow(() -> new NoSuchElementException(
+                        "The table has no <thead>"));
+    }
+
+    /**
+     * Reports whether this table has a <code>&lt;thead&gt;</code>, without
+     * failing if it does not.
+     *
+     * @return {@code true} if the section is present.
+     */
+    public boolean hasHead() {
+        return !childrenNamed("thead").isEmpty();
     }
 
     /**
      * Returns this table's <code>&lt;tfoot&gt;</code>.
      *
      * @return the footer section.
-     * @throws java.util.NoSuchElementException
-     *             if the table has none. Use {@link #getFooterRows()} to ask
-     *             whether there is one without failing.
+     * @throws NoSuchElementException
+     *             if the table has none. Ask {@link #hasFoot()} first to check
+     *             without failing; {@link #getFooterRows()} is not the same
+     *             question, since an empty {@code <tfoot>} has no rows.
      */
     public TableFootElement getFoot() {
         return childrenNamed("tfoot").stream().findFirst()
-                .map(child -> child.wrap(TableFootElement.class)).orElseThrow();
+                .map(child -> child.wrap(TableFootElement.class))
+                .orElseThrow(() -> new NoSuchElementException(
+                        "The table has no <tfoot>"));
+    }
+
+    /**
+     * Reports whether this table has a <code>&lt;tfoot&gt;</code>, without
+     * failing if it does not.
+     *
+     * @return {@code true} if the section is present.
+     */
+    public boolean hasFoot() {
+        return !childrenNamed("tfoot").isEmpty();
     }
 
     /**
      * Returns this table's caption.
      *
      * @return the <code>&lt;caption&gt;</code>.
-     * @throws java.util.NoSuchElementException
-     *             if the table has none.
+     * @throws NoSuchElementException
+     *             if the table has none. Ask {@link #hasCaption()} first to
+     *             check without failing.
      */
     public TableCaptionElement getCaption() {
         return childrenNamed("caption").stream().findFirst()
                 .map(child -> child.wrap(TableCaptionElement.class))
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException(
+                        "The table has no <caption>"));
+    }
+
+    /**
+     * Reports whether this table has a <code>&lt;caption&gt;</code>, without
+     * failing if it does not.
+     *
+     * @return {@code true} if the caption is present.
+     */
+    public boolean hasCaption() {
+        return !childrenNamed("caption").isEmpty();
     }
 
     /**
