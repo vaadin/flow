@@ -56,10 +56,23 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      `MapPropertyAddListener`) is a *separate* `.java` file from its owner
      feature in this codebase, so each gets its own module — it is **not**
      merged into the owner's module.
-   - The **only** exception is a type that is genuinely nested *inside* its
-     owner's `.java` file (a Java inner/nested class): it has no file of its
-     own, so it stays in the owner's module. None of the currently ported
-     reactive / node-feature event/listener types are nested this way.
+   - A type that is genuinely nested *inside* its owner's `.java` file (a Java
+     inner/nested class) has no file of its own, so it stays in the owner's
+     module. None of the ported reactive / node-feature event/listener types are
+     nested this way, so none of them is affected.
+     - **Unless keeping it there would form a load-time cycle.** A nested type
+       gets its own module when the owner cannot hold it:
+       `DefaultConnectionStateHandler.Type` is `ConnectionMessageType.ts`,
+       because `ReconnectStateMachine` compares these priorities at runtime while
+       `DefaultConnectionStateHandler` constructs the state machine, so an enum in
+       the owner would make the two modules circular at load time. Name the cycle
+       at the site, port the nested type's members in full — `isMessage`,
+       `isHigherPriorityThan` and the ordinal priorities are all there — and give
+       the module its own suite, as rule 1's mapping requires. This is the
+       module-layout twin of rule 12's `import type` escape for the same problem.
+       _Introduced during #24951._ (False positive this prevents: a review
+       reporting a rule-1 violation against a split whose alternative — a runtime
+       cycle — is not available.)
    - **Suites may be organised by feature area.** The one-`*Test`-to-one-`*Tests.ts`
      mapping above assumes a module's Java coverage lives in a single test class.
      Where it is spread across several, the port may group its suites by what is
