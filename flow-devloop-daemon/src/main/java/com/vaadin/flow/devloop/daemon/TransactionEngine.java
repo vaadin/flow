@@ -283,6 +283,9 @@ final class TransactionEngine {
         long started = System.nanoTime();
 
         synchronized (this) {
+            // The same monitor {@link #finish} completes under, so a
+            // transaction is either marked before it answers - and then answers
+            // "superseded" - or has already answered and is left alone.
             Transaction previous = inFlight;
             if (previous != null && previous.outcome == null) {
                 previous.superseded = true;
@@ -1231,34 +1234,85 @@ final class TransactionEngine {
         }
     }
 
+    /**
+     * What a transaction taken over by a newer apply answers, in both words.
+     */
+    private static final String SUPERSEDED_REASON = "a newer apply took over";
+
+    private static final String SUPERSEDED_NEXT_ACTION = "read the newer apply's result";
+
+    /**
+     * Stops early where continuing would only waste work - a compile, a javac
+     * queue.
+     * <p>
+     * Not what makes the verdict honest: {@link #finish} does that for every
+     * leg, and this only saves the work between here and there.
+     */
     private boolean bailIfSuperseded(Transaction tx, long started) {
         if (tx.superseded) {
-            finish(tx, Outcome.SUPERSEDED, "a newer apply took over", "none",
-                    "read the newer apply's result", started);
+            finish(tx, Outcome.SUPERSEDED, SUPERSEDED_REASON, "none",
+                    SUPERSEDED_NEXT_ACTION, started);
             return true;
         }
         return false;
     }
 
-    private Transaction finish(Transaction tx, Outcome outcome, String reason,
+    /**
+     * The one exit every leg takes, which is what makes it the place to decide
+     * whether the answer is still the transaction's to give.
+     * <p>
+     * Package-visible for the tests: an engine can be built without a project,
+     * and this needs nothing but the transaction.
+     */
+    Transaction finish(Transaction tx, Outcome outcome, String reason,
             String classification, String nextAction, long startedNanos) {
-        tx.outcome = outcome;
-        tx.reason = reason;
-        tx.classification = classification;
-        tx.nextAction = nextAction;
-        tx.state = outcome.name().toLowerCase();
-        tx.totalMs = (System.nanoTime() - startedNanos) / 1_000_000;
-        // Merged here rather than at every assignment site, so no leg can
-        // report Stable while a dev-server error it inherited goes unmentioned.
-        if (!tx.carriedLogErrors.isEmpty()) {
-            List<String> merged = new ArrayList<>(tx.carriedLogErrors);
-            tx.logErrors.stream().filter(line -> !merged.contains(line))
-                    .forEach(merged::add);
-            tx.logErrors = List.copyOf(merged);
-        }
-        // A superseded transaction is not the answer to "what is the state?".
-        if (outcome != Outcome.SUPERSEDED) {
-            last = tx;
+        Outcome verdict = outcome;
+        String why = reason;
+        String kind = classification;
+        String next = nextAction;
+        synchronized (this) {
+            // A transaction a newer apply took over must not answer for the
+            // state: its change-set is being applied again, and Stable here
+            // would tell the caller their change is live while another one is
+            // still in flight. Rewritten at the exit rather than checked before
+            // each return, because "the answer is no longer ours to give" is
+            // true of every leg - the redefine, the restart, the frontend-only
+            // push - and a check per return is a check the next leg forgets.
+            //
+            // Every zero-exit outcome, and only those: a failure is still the
+            // most useful thing to say, its reason was true when it happened,
+            // and the newer apply will report its own.
+            //
+            // Under the same monitor as the supersede decision in apply, so the
+            // two cannot cross: either that decision sees an outcome here and
+            // leaves the transaction alone, or it marks it and this sees the
+            // mark.
+            if (tx.superseded && verdict.exitCode == 0) {
+                verdict = Outcome.SUPERSEDED;
+                why = SUPERSEDED_REASON;
+                kind = "none";
+                next = SUPERSEDED_NEXT_ACTION;
+            }
+            tx.outcome = verdict;
+            tx.reason = why;
+            tx.classification = kind;
+            tx.nextAction = next;
+            tx.state = verdict.name().toLowerCase();
+            tx.totalMs = (System.nanoTime() - startedNanos) / 1_000_000;
+            // Merged here rather than at every assignment site, so no leg can
+            // report Stable while a dev-server error it inherited goes
+            // unmentioned.
+            if (!tx.carriedLogErrors.isEmpty()) {
+                List<String> merged = new ArrayList<>(tx.carriedLogErrors);
+                tx.logErrors.stream().filter(line -> !merged.contains(line))
+                        .forEach(merged::add);
+                tx.logErrors = List.copyOf(merged);
+            }
+            // A superseded transaction is not the answer to "what is the
+            // state?".
+            if (verdict != Outcome.SUPERSEDED) {
+                last = tx;
+            }
         }
         return tx;
     }

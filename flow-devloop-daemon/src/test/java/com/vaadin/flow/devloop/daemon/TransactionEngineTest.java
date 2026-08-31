@@ -24,14 +24,47 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The engine itself needs a running app, so what is unit-tested here is the one
- * verdict it reaches from the app log alone: whether the dev server refused the
- * change. Everything else is covered by {@code flow-tests/test-devloop}.
+ * The engine itself needs a running app, so what is unit-tested here are the
+ * verdicts it reaches without one: whether the dev server refused the change,
+ * and whether the answer is still this transaction's to give. Everything else
+ * is covered by {@code flow-tests/test-devloop}.
  */
 class TransactionEngineTest {
 
     private static final String VITE_ERROR = "14.32.37 [vite] Internal server"
             + " error: Transform failed with 1 error:";
+
+    @Test
+    void finish_willNotReportSuccessForATransactionANewerApplyTookOver() {
+        // Every leg ends here, which is why the check is here: a redefine that
+        // held, a restart that came back up and a push that landed are all
+        // answers about a state the newer apply has already taken over.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.superseded = true;
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hot-reload",
+                "", System.nanoTime());
+
+        assertEquals(TransactionEngine.Outcome.SUPERSEDED, tx.outcome);
+        // And it is not what "what is the state?" answers with either.
+        assertTrue(engine.lastTransaction().isEmpty());
+    }
+
+    @Test
+    void finish_keepsAFailureWorthReportingOnASupersededTransaction() {
+        // A compile error was true when it happened and is the useful thing to
+        // say; only the answers that claim success are rewritten.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.superseded = true;
+
+        engine.finish(tx, TransactionEngine.Outcome.FAILED, "compile", "none",
+                "fix the compile error", System.nanoTime());
+
+        assertEquals(TransactionEngine.Outcome.FAILED, tx.outcome);
+        assertEquals("compile", tx.reason);
+    }
 
     @Test
     void devServerFailure_isTheVerdictForAnErrorLoggedWhenTheFileWasSaved() {
