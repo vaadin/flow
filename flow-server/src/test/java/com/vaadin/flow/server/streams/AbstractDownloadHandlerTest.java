@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -166,29 +167,73 @@ class AbstractDownloadHandlerTest {
     }
 
     @Test
-    void uiDetached_transferCompletes_progressListenersNotNotified()
+    void uiDetachedDuringTransfer_transferCompletes_noListenerCallsAfterDetach()
             throws IOException {
-        Mockito.doThrow(new UIDetachedException()).when(ui)
-                .access(Mockito.any(Command.class));
+        AtomicBoolean uiAttached = new AtomicBoolean(true);
+        Mockito.doAnswer(invocation -> {
+            if (!uiAttached.get()) {
+                throw new UIDetachedException();
+            }
+            invocation.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).access(Mockito.any(Command.class));
         SerializableRunnable startHandler = Mockito
                 .mock(SerializableRunnable.class);
+        SerializableBiConsumer<Long, Long> progressHandler = Mockito
+                .mock(SerializableBiConsumer.class);
         SerializableConsumer<Boolean> completeHandler = Mockito
                 .mock(SerializableConsumer.class);
         handler.whenStart(startHandler);
+        handler.onProgress(progressHandler, 1);
         handler.whenComplete(completeHandler);
         handler.addTransferProgressListener(listener);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(
-                "Hello".getBytes(StandardCharsets.UTF_8));
+        // delivers one byte per read so that progress is reported for each
+        // byte, and detaches the UI while delivering the second byte
+        InputStream inputStream = new InputStream() {
+            private int remaining = 4;
+
+            @Override
+            public int read() {
+                if (remaining == 0) {
+                    return -1;
+                }
+                remaining--;
+                if (remaining == 2) {
+                    uiAttached.set(false);
+                }
+                return 'a';
+            }
+
+            @Override
+            public int read(byte[] bytes, int offset, int length) {
+                int value = read();
+                if (value == -1) {
+                    return -1;
+                }
+                bytes[offset] = (byte) value;
+                return 1;
+            }
+        };
 
         long transferred = TransferUtil.transfer(inputStream, outputStream,
                 mockContext, handler.getListeners());
 
-        assertEquals(5, transferred);
-        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
-        Mockito.verifyNoInteractions(startHandler, completeHandler);
-        Mockito.verify(listener, Mockito.never()).onStart(mockContext);
-        Mockito.verify(listener, Mockito.never()).onComplete(mockContext,
-                transferred);
+        // the transfer runs to the end even though the UI is gone
+        assertEquals(4, transferred);
+        assertEquals("aaaa", outputStream.toString(StandardCharsets.UTF_8));
+        // start and the first progress update are delivered with an attached UI
+        Mockito.verify(startHandler).run();
+        Mockito.verify(listener).onStart(mockContext);
+        Mockito.verify(progressHandler).accept(1L, TOTAL_BYTES);
+        Mockito.verify(listener).onProgress(mockContext, 1L, TOTAL_BYTES);
+        // nothing is delivered once the UI has been detached
+        Mockito.verifyNoMoreInteractions(progressHandler);
+        Mockito.verifyNoInteractions(completeHandler);
+        Mockito.verify(listener, Mockito.never()).onProgress(
+                Mockito.eq(mockContext), Mockito.longThat(bytes -> bytes > 1L),
+                Mockito.anyLong());
+        Mockito.verify(listener, Mockito.never())
+                .onComplete(Mockito.eq(mockContext), Mockito.anyLong());
     }
 
     @Test
