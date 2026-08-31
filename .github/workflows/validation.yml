@@ -408,8 +408,10 @@ jobs:
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
-          find flow-plugins/flow-gradle-plugin \
-            -path '*/build/reports/tests/*' -o -path '*/build/test-results/*' \
+          # -type f, so the matching directories are not listed alongside the
+          # files they contain and archived a second time.
+          find flow-plugins/flow-gradle-plugin -type f \
+            \( -path '*/build/reports/tests/*' -o -path '*/build/test-results/*' \) \
             > gradle-reports.txt
           # tar refuses to create an empty archive, so only pack a report if the
           # Gradle build got far enough to write one.
