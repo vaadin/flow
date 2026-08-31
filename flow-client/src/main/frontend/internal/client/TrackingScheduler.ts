@@ -23,7 +23,10 @@
 
 import type { Command } from './Command';
 
-/** Defers commands while tracking whether any deferred work is pending. */
+/**
+ * Scheduler implementation which tracks and reports whether there is any work
+ * queued or currently being executed.
+ */
 export class TrackingScheduler {
   // 0 == no deferred commands in progress, > 0 otherwise.
   #deferredCommandTrackers = 0;

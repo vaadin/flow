@@ -27,14 +27,48 @@ import { Console } from './Console';
 
 /** Information about a (loaded or failed) resource; mirrors ResourceLoadEvent. */
 export interface ResourceLoadEvent {
+  /**
+   * Gets the resource loader that has fired this event.
+   *
+   * @returns the resource loader
+   */
   getResourceLoader(): ResourceLoader;
-  /** The absolute URL, content, or import expression of the resource. */
+
+  /**
+   * Gets the absolute url or content of the loaded resource or the JS expression
+   * that imports the resource.
+   *
+   * @returns the absolute url or content of the loaded resource or the JS
+   *          expression that imports the resource
+   */
   getResourceData(): string;
 }
 
 /** Notified when a resource has loaded or failed; mirrors ResourceLoadListener. */
 export interface ResourceLoadListener {
+  /**
+   * Notifies this ResourceLoadListener that a resource has been loaded. Some
+   * browsers do not support any way of detecting load errors. In these cases,
+   * onLoad will be called regardless of the status.
+   *
+   * @see {@link ResourceLoadEvent}
+   *
+   * @param event - a resource load event with information about the loaded
+   *          resource
+   */
   onLoad(event: ResourceLoadEvent): void;
+
+  /**
+   * Notifies this ResourceLoadListener that a resource could not be loaded, e.g.
+   * because the file could not be found or because the server did not respond.
+   * Some browsers do not support any way of detecting load errors. In these
+   * cases, onLoad will be called regardless of the status.
+   *
+   * @see {@link ResourceLoadEvent}
+   *
+   * @param event - a resource load event with information about the resource
+   *          that could not be loaded.
+   */
   onError(event: ResourceLoadEvent): void;
 }
 

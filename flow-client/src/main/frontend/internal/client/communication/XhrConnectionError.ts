@@ -18,7 +18,10 @@
 // alongside the Java version. A data holder describing an error during an XHR
 // request to the server.
 
-/** Detail about an error during an XHR request to the server; mirrors XhrConnectionError.java. */
+/**
+ * XhrConnectionError provides detail about an error which occurred during an
+ * XHR request to the server.
+ */
 export class XhrConnectionError {
   readonly #xhr: XMLHttpRequest;
 

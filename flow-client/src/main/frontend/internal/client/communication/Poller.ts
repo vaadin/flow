@@ -32,7 +32,9 @@ interface PollerRegistry {
   getStateTree(): StateTree;
 }
 
-/** Polls the server with a given interval; mirrors Poller.java. */
+/**
+ * Handles polling the server with a given interval.
+ */
 export class Poller {
   #pollHandle: ReturnType<typeof setInterval> | null = null;
 

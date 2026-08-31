@@ -64,7 +64,12 @@ interface DefaultConnectionStateRegistry {
   getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleSessionExpiredError' | 'handleUnrecoverableError'>;
 }
 
-/** Handles connection state and reconnection; mirrors DefaultConnectionStateHandler.java. */
+/**
+ * Default implementation of the connection state handler. Handles temporary
+ * errors by showing a reconnect dialog to the user while trying to re-establish
+ * the connection to the server and re-send the pending message. Handles
+ * permanent errors by showing a critical system notification to the user
+ */
 export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   readonly #registry: DefaultConnectionStateRegistry;
 

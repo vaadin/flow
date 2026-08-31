@@ -41,6 +41,8 @@ export interface PushConnection {
    *
    * @param payload - the payload to push
    * @throws Error if this connection is not active
+   *
+   * @see {@link PushConnection.isActive}
    */
   push(payload: Record<string, unknown>): void;
 

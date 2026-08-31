@@ -217,9 +217,11 @@ interface AtmospherePushRegistry {
 }
 
 /**
- * Bidirectional server push over the Atmosphere library; mirrors
- * AtmospherePushConnection.java. Composes the Atmosphere-wiring helpers above and
- * the FragmentedMessage splitter; the Registry members are contracts.
+ * The default {@link PushConnection} implementation that uses Atmosphere for
+ * handling the communication channel.
+ *
+ * java. Composes the Atmosphere-wiring helpers above and the FragmentedMessage
+ * splitter; the Registry members are contracts.
  */
 export class AtmospherePushConnection implements PushConnection {
   readonly #registry: AtmospherePushRegistry;
@@ -424,6 +426,11 @@ export class AtmospherePushConnection implements PushConnection {
    *
    * @param response - the Atmosphere response object, which contains the message
    */
+  /**
+   * Called whenever a message is received by Atmosphere.
+   *
+   * @param response - the Atmosphere response object, which contains the message
+   */
   protected onMessage(response: AtmosphereResponse): void {
     const message = response.responseBody;
     const json = parseJson(message);
@@ -444,6 +451,13 @@ export class AtmospherePushConnection implements PushConnection {
    *
    * @param response - the Atmosphere response for the failed connection
    */
+  /**
+   * Called if the push connection fails.
+   *
+   * Atmosphere will automatically retry the connection until successful.
+   *
+   * @param response - the Atmosphere response for the failed connection
+   */
   protected onError(response: AtmosphereResponse): void {
     this.#state = State.DISCONNECTED;
     this.#getConnectionStateHandler().pushError(this, response);
@@ -453,6 +467,14 @@ export class AtmospherePushConnection implements PushConnection {
    * Called when the push connection has been closed. This does not necessarily indicate
    * an error and Atmosphere might try to reconnect or downgrade to the fallback
    * transport automatically.
+   *
+   * @param response - the Atmosphere response which was closed
+   */
+  /**
+   * Called when the push connection has been closed.
+   *
+   * This does not necessarily indicate an error and Atmosphere might try to
+   * reconnect or downgrade to the fallback transport automatically.
    *
    * @param response - the Atmosphere response which was closed
    */
@@ -468,6 +490,15 @@ export class AtmospherePushConnection implements PushConnection {
    * @param response - the Atmosphere response which was used when the timeout
    *          occurred
    */
+  /**
+   * Called when the Atmosphere client side timeout occurs.
+   *
+   * The connection will be closed at this point and reconnect will not happen
+   * automatically.
+   *
+   * @param response - the Atmosphere response which was used when the timeout
+   *          occurred
+   */
   protected onClientTimeout(response: AtmosphereResponse): void {
     this.#state = State.DISCONNECTED;
     this.#getConnectionStateHandler().pushClientTimeout(this, response);
@@ -479,6 +510,13 @@ export class AtmospherePushConnection implements PushConnection {
    *
    * @param request - the Atmosphere request
    * @param response - the Atmosphere response
+   */
+  /**
+   * Called when the push connection has lost the connection to the server and
+   * will proceed to try to re-establish the connection.
+   *
+   * @param _request - the Atmosphere request
+   * @param _response - the Atmosphere response
    */
   protected onReconnect(_request: unknown, _response: AtmosphereResponse): void {
     if (this.#state === State.CONNECTED) {

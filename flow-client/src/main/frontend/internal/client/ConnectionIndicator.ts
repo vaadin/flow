@@ -76,7 +76,11 @@ export function setState(state: string): void {
   }
 }
 
-/** Gets the connection state, or null if none is available. */
+/**
+ * Get the connection state.
+ *
+ * @returns the connection state
+ */
 export function getState(): string | null {
   const connectionState = vaadin().connectionState;
   return connectionState ? connectionState.state : null;

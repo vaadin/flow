@@ -36,10 +36,11 @@ interface ServerConnectorRegistry {
 }
 
 /**
- * Creates and sends messages to the server via the server RPC queue; mirrors
- * ServerConnector.java. StateTree's registry slice names the
- * subset of this class it calls with `Pick<…>`, so no contract duplicates these
- * signatures.
+ * Handles creating and sending messages to the server using {@link
+ * ServerRpcQueue}.
+ *
+ * StateTree's registry slice names the subset of this class it calls with
+ * `Pick<…>`, so no contract duplicates these signatures.
  */
 export class ServerConnector {
   readonly #registry: ServerConnectorRegistry;

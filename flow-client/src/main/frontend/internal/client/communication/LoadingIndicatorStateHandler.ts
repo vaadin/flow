@@ -47,7 +47,14 @@ interface LoadingIndicatorRegistry {
   getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest'>;
 }
 
-/** Manages the loading indicator from RPC activity; mirrors LoadingIndicatorStateHandler.java. */
+/**
+ * Manages the state of loading indicator based on active RPC requests, event
+ * types, and lifecycle events. This class ensures appropriate visual feedback
+ * (e.g., loading bar) is shown or hidden according to the current network
+ * conditions and request status. It is responsible for muting the loading
+ * indication when RPC requests are triggered by high-frequency UI events
+ * (mousemove and such) to avoid excessive visual noise in these cases.
+ */
 export class LoadingIndicatorStateHandler {
   readonly #registry: LoadingIndicatorRegistry;
 

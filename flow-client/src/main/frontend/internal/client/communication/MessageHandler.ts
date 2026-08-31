@@ -135,7 +135,11 @@ interface UpdatedNode {
   getDomNode(): Node | null;
 }
 
-/** Handles incoming UIDL messages and applies them to the client; mirrors MessageHandler.java. */
+/**
+ * A MessageHandler is responsible for handling all incoming messages (JSON)
+ * from the server (state changes, RPCs and other updates) and ensuring that the
+ * connectors are updated accordingly.
+ */
 export class MessageHandler {
   readonly #registry: MessageHandlerRegistry;
 

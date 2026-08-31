@@ -41,7 +41,14 @@ import type { XhrConnectionError } from './XhrConnectionError';
  */
 export const UIDL_REFRESH_TOKEN = 'Vaadin-Refresh';
 
-/** Reacts to connection successes/failures and reconnect-config changes. */
+/**
+ * Handles problems and other events which occur during communication with the
+ * server.
+ *
+ * The handler is responsible for handling any problem in XHR, heartbeat and
+ * push connections in a way it sees fit. The default implementation is {@link
+ * DefaultConnectionStateHandler}.
+ */
 export interface ConnectionStateHandler {
   /**
    * Called when an exception occurs during a {@link Heartbeat} request.

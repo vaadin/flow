@@ -49,7 +49,13 @@ function isPushModeEnabled(propertyValue: unknown): boolean {
   return propertyValue !== 'DISABLED';
 }
 
-/** Exposes the push configuration and drives MessageSender; mirrors PushConfiguration.java. */
+/**
+ * Provides the push configuration stored in the root node with an easier to use
+ * API.
+ *
+ * Additionally tracks when push is enabled/disabled and informs {@link
+ * MessageSender}.
+ */
 export class PushConfiguration {
   readonly #registry: PushConfigRegistry;
 

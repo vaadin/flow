@@ -45,7 +45,14 @@ export function isMessage(type: ConnectionMessageType): boolean {
   return type === ConnectionMessageType.PUSH || type === ConnectionMessageType.XHR;
 }
 
-/** Whether the first type has higher priority than the second. */
+/**
+ * Checks if the first type is of higher priority than the given type.
+ *
+ * @param type - the type to compare from
+ * @param other - the type to compare to
+ * @returns true if the first type has higher priority than the given type, false
+ *          otherwise
+ */
 export function isHigherPriorityThan(type: ConnectionMessageType, other: ConnectionMessageType): boolean {
   return PRIORITY[type] > PRIORITY[other];
 }

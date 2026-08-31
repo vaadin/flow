@@ -73,7 +73,9 @@ class HeartbeatTimer {
   }
 }
 
-/** Sends heartbeats to the server and reacts to the response; mirrors Heartbeat.java. */
+/**
+ * Handles sending of heartbeats to the server and reacting to the response
+ */
 export class Heartbeat {
   readonly #timer = new HeartbeatTimer(() => this.send());
 

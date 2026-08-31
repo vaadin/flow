@@ -76,7 +76,10 @@ interface ExecuteJsRegistry {
   getUILifecycle(): Pick<UILifecycle, 'isTerminated' | 'setState'>;
 }
 
-/** Executes server-sent JavaScript invocations against the live tree; mirrors ExecuteJavaScriptProcessor.java. */
+/**
+ * Processes the result of `Page.executeJs` on the client. `Page` is a
+ * flow-server class, outside this port, so the reference stays a code span.
+ */
 export class ExecuteJavaScriptProcessor {
   readonly #registry: ExecuteJsRegistry;
 

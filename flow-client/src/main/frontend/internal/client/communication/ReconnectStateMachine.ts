@@ -82,7 +82,12 @@ export class ReconnectStateMachine {
     this.#cancelScheduledReconnect = cancelScheduledReconnect;
   }
 
-  /** Whether a reconnection is in progress. */
+  /**
+   * Checks if we are currently trying to reconnect.
+   *
+   * @returns true if we have noted a problem and are trying to re-establish
+   *          server connection, false otherwise
+   */
   isReconnecting(): boolean {
     return this.#reconnectionCause !== null;
   }

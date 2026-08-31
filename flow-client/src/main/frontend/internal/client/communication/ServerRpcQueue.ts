@@ -34,7 +34,10 @@ interface ServerRpcQueueRegistry {
   getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;
 }
 
-/** Accumulates and flushes server RPC invocations; mirrors ServerRpcQueue.java. */
+/**
+ * Manages the queue of server invocations (RPC) which are waiting to be sent to
+ * the server.
+ */
 export class ServerRpcQueue {
   #pendingInvocations: unknown[] = [];
 

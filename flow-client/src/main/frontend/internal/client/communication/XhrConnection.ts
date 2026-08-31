@@ -155,7 +155,10 @@ export class XhrResponseHandler {
   }
 }
 
-/** Sends UIDL requests to the server over XHR; mirrors XhrConnection.java. */
+/**
+ * Provides a connection to the UIDL request handler on the server and knows how
+ * to send messages to that end point.
+ */
 export class XhrConnection {
   // Webkit ignores outgoing requests while waiting for a navigation response
   // (beforeunload); when set, retry sending until there is a response.
