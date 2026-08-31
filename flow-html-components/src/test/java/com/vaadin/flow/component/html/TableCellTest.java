@@ -174,17 +174,6 @@ class TableCellTest extends SignalsUnitTest {
 
     @ParameterizedTest
     @MethodSource("cellKinds")
-    void setHeaders_listEntryPointBehavesLikeTheVarargsOne(
-            Supplier<TableCell> factory) {
-        TableCell cell = factory.get();
-
-        cell.setHeaders(List.of("name", "age"));
-
-        assertEquals(List.of("name", "age"), cell.getHeaders());
-    }
-
-    @ParameterizedTest
-    @MethodSource("cellKinds")
     void setHeaders_empty_clearsTheAttribute(Supplier<TableCell> factory) {
         TableCell cell = factory.get();
         cell.setHeaders("name");
@@ -211,6 +200,23 @@ class TableCellTest extends SignalsUnitTest {
         cell.setHeadersByCells(List.of(age, name));
 
         assertEquals("age-h name-h", cell.getElement().getAttribute("headers"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void setHeaders_rejectsIdsThatWouldNotSurviveTheRoundTrip(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+
+        // the attribute is a space-separated list, so these would read back
+        // as a different set of ids than the caller asked for
+        assertThrows(IllegalArgumentException.class,
+                () -> cell.setHeaders("name age"));
+        assertThrows(IllegalArgumentException.class,
+                () -> cell.setHeaders("", "name"));
+        assertThrows(IllegalArgumentException.class,
+                () -> cell.setHeaders(" "));
+        assertTrue(cell.getHeaders().isEmpty());
     }
 
     @ParameterizedTest

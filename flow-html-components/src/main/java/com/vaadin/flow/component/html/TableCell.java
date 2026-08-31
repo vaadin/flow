@@ -160,7 +160,10 @@ public abstract class TableCell extends HtmlContainer {
      * this overload and {@link #setHeaders(TableHeaderCell...)}.
      *
      * @param ids
-     *            the ids of the header cells, in any order.
+     *            the ids of the header cells, in any order. None may be blank
+     *            or contain whitespace.
+     * @throws IllegalArgumentException
+     *             if an id is blank or contains whitespace.
      */
     public void setHeaders(String @Nullable... ids) {
         setHeaders(ids == null ? List.of() : Arrays.asList(ids));
@@ -171,7 +174,10 @@ public abstract class TableCell extends HtmlContainer {
      * {@code null}) clears the attribute.
      *
      * @param ids
-     *            the ids of the header cells, in any order.
+     *            the ids of the header cells, in any order. None may be blank
+     *            or contain whitespace.
+     * @throws IllegalArgumentException
+     *             if an id is blank or contains whitespace.
      */
     public void setHeaders(@Nullable List<String> ids) {
         if (ids == null || ids.isEmpty()) {
@@ -180,6 +186,13 @@ public abstract class TableCell extends HtmlContainer {
         }
         for (String id : ids) {
             Objects.requireNonNull(id, "header id must not be null");
+            // The attribute is a space-separated list, so an id that is blank
+            // or holds whitespace would not survive the round trip
+            if (id.isBlank() || id.chars().anyMatch(Character::isWhitespace)) {
+                throw new IllegalArgumentException(
+                        "header id must not be blank or contain whitespace: '"
+                                + id + "'");
+            }
         }
         getElement().setAttribute(ATTRIBUTE_HEADERS, String.join(" ", ids));
     }
