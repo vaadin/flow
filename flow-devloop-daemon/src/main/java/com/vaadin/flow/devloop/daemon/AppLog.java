@@ -380,8 +380,21 @@ final class AppLog {
             }
         }
 
+        /**
+         * Adds a part to the error currently being built up.
+         * <p>
+         * A no-op with no error to add to. Every caller reaches this behind a
+         * flag that says one is being built, so this cannot happen while those
+         * flags and {@link #errors} are cleared together - and a silent drop is
+         * still the right answer if a later change parts them again, because
+         * the alternative is an exception out of {@code drain} that {@code
+         * apply} can only report as an internal failure.
+         */
         private void append(String text) {
             int last = errors.size() - 1;
+            if (last < 0) {
+                return;
+            }
             errors.set(last, errors.get(last) + SEGMENT + text);
         }
 
@@ -416,8 +429,7 @@ final class AppLog {
                     // than counted again: one failure, reported as one error,
                     // and
                     // the half of it that names the type is this half.
-                    int last = errors.size() - 1;
-                    errors.set(last, errors.get(last) + SEGMENT + line.strip());
+                    append(line.strip());
                     continuing = false;
                 } else {
                     continuing = false;
@@ -456,6 +468,15 @@ final class AppLog {
             count = 0;
             failure = null;
             continuing = false;
+            // Every bit of "there is an error above this line" state goes with
+            // the errors themselves. A dev-server error arms detailScan for the
+            // lines below it, and Vite writes those a moment after the line
+            // that armed it - late enough to cross a mark. Left set, the scan
+            // attaches the detail to a window whose errors have just been
+            // dropped, which is an append to an empty list.
+            detailScan = 0;
+            detailTaken = false;
+            locationTaken = false;
         }
 
         /**

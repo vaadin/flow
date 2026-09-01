@@ -251,6 +251,32 @@ class AppLogTest {
         assertTrue(watch.errors().isEmpty());
     }
 
+    @Test
+    void watch_mark_alsoEndsTheDetailScanTheWindowLeftOpen()
+            throws IOException {
+        Path log = log("");
+        AppLog.Watch watch = new AppLog.Watch(log);
+
+        // A dev-server error arms a scan for the lines under it, because the
+        // one that names the syntax problem arrives a moment later. Late
+        // enough, and the apply that read the error has already ended its
+        // window.
+        append(log, "INFO c.v.b.d.DevServerOutputTracker :"
+                + " [vite] Internal server error: Transform failed with 1 error:\n");
+        assertEquals(1, watch.errors().size());
+
+        watch.mark();
+
+        append(log, "INFO c.v.b.d.DevServerOutputTracker :"
+                + " [PARSE_ERROR] Expected `}` but found `EOF`\n");
+
+        // The error that detail belonged to is not in this window any more, so
+        // there is nothing to attach it to. Attaching it anyway is what read
+        // errors.get(-1) and threw, which apply reported as an internal
+        // failure over a change that was fine.
+        assertEquals(List.of(), watch.errors());
+    }
+
     private Path log(String content) throws IOException {
         Path file = dir.resolve("app.log");
         Files.writeString(file, content);
