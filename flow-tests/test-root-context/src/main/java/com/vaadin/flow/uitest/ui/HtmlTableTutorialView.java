@@ -104,16 +104,14 @@ public class HtmlTableTutorialView extends Div {
             addRow().addHeaderCell("Hippopotamus").setColspan(2);
 
             TableRow horseRow = addRow();
-            TableHeaderCell horse = horseRow.addRowHeaderCell("Horse");
-            horse.setRowspan(2);
+            horseRow.addRowHeaderCell("Horse").setRowspan(2);
             horseRow.addDataCell("Mare");
             addRow("Stallion");
 
             addRow().addHeaderCell("Crocodile").setColspan(2);
 
             TableRow chickenRow = addRow();
-            TableHeaderCell chicken = chickenRow.addRowHeaderCell("Chicken");
-            chicken.setRowspan(2);
+            chickenRow.addRowHeaderCell("Chicken").setRowspan(2);
             chickenRow.addDataCell("Hen");
             addRow("Rooster");
         }

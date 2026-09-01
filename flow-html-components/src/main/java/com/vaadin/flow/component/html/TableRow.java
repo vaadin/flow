@@ -221,7 +221,13 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Appends a new header cell with the given text to this row.
+     * Appends a new header cell with the given text to this row. The cell
+     * carries no {@code scope}; use {@link #addRowHeaderCell(String)} or
+     * {@link #addColumnHeaderCell(String)} when the cell labels a row or a
+     * column.
+     * <p>
+     * A span goes on the cell handed back, so
+     * {@code row.addHeaderCell("Animals").setColspan(2)} is a single statement.
      *
      * @param text
      *            the text content.
@@ -268,6 +274,13 @@ public class TableRow extends HtmlComponent
      * <pre>{@code
      * <th scope="row">Breed</th>
      * }</pre>
+     * <p>
+     * There is no overload taking a span, because a span goes on the cell
+     * handed back — {@code row.addRowHeaderCell("Horse").setRowspan(2)} — and
+     * because it would be ambiguous which of the two spans an {@code int}
+     * meant. {@link #addRowGroupHeaderCell(String, int)} and
+     * {@link #addColumnGroupHeaderCell(String, int)} do take one: there the
+     * span is what makes the cell a group header rather than decoration on it.
      *
      * @param text
      *            the text content.
@@ -313,6 +326,11 @@ public class TableRow extends HtmlComponent
      * <pre>{@code
      * <th scope="col">Name</th>
      * }</pre>
+     * <p>
+     * A span goes on the cell handed back, as it does for
+     * {@link #addRowHeaderCell(String)}; a header that spans the columns it
+     * names is usually better expressed with
+     * {@link #addColumnGroupHeaderCell(String, int)}.
      *
      * @param text
      *            the text content.
