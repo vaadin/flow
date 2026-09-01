@@ -18,15 +18,17 @@
 // from the configuration object (the value returned by
 // $wnd.Vaadin.Flow.getApp(appId), which exposes a getConfig(name) accessor).
 //
-// getConfigInteger, getAtmosphereJSVersion and getUIDL are not ported: their
-// only callers are in Bootstrapper, which lands in a later layer, so they are
-// ported with it.
+// getAtmosphereJSVersion reads the Atmosphere version off the window rather than
+// through AtmospherePushConnection: Java reaches that class's private static
+// isAtmosphereLoaded through JSNI, which ignores visibility, and TypeScript has
+// no equivalent.
 
 import type { ValueMap } from '../ValueMap';
 
 // The bootstrap configuration object exposes a getConfig(name) accessor over the
-// values the server injected into the page.
-interface ConfigObject {
+// values the server injected into the page. This is the JavaScript object the
+// Java JSO overlays, so a caller passes it where Java calls a method on the JSO.
+export interface ConfigObject {
   getConfig(name: string): unknown;
 }
 
@@ -51,8 +53,8 @@ export function getConfigString(config: ConfigObject, name: string): string | nu
  * @param name - name of the configuration parameter
  * @returns value of the configuration parameter, or `null`if not defined
  */
-export function getConfigValueMap(config: ConfigObject, name: string): unknown {
-  return config.getConfig(name);
+export function getConfigValueMap(config: ConfigObject, name: string): ValueMap | null {
+  return (config.getConfig(name) as ValueMap | undefined) ?? null;
 }
 
 /**
@@ -80,6 +82,24 @@ export function getConfigBoolean(config: ConfigObject, name: string): boolean {
 }
 
 /**
+ * Reads a configuration parameter as an integer object. Please note that
+ * the javascript value of the parameter should also be an integer, or else
+ * an undefined exception may be thrown.
+ *
+ * @param config - the bootstrap configuration object
+ * @param name - name of the configuration parameter
+ * @returns integer value of the configuration parameter, or `null` if no value
+ *          is defined
+ */
+export function getConfigInteger(config: ConfigObject, name: string): number | null {
+  const value = config.getConfig(name);
+  if (value === null || value === undefined) {
+    return null;
+  }
+  return Number(value);
+}
+
+/**
  * Reads a configuration parameter as an `ErrorMessage` object. Please
  * note that the javascript value of the parameter should also be an object
  * with appropriate fields, or else an undefined exception may be thrown
@@ -89,7 +109,7 @@ export function getConfigBoolean(config: ConfigObject, name: string): boolean {
  * @returns error message with the given name, or `null` if no value is defined
  */
 export function getConfigError(config: ConfigObject, name: string): unknown {
-  return config.getConfig(name);
+  return config.getConfig(name) ?? null;
 }
 
 /**
@@ -110,4 +130,25 @@ export function getVaadinVersion(config: ConfigObject): string | null {
 export function getAtmosphereVersion(config: ConfigObject): string | null {
   const info = config.getConfig('versionInfo') as { atmosphereVersion?: string } | null;
   return info?.atmosphereVersion ?? null;
+}
+
+/**
+ * Gets the JS version used in the Atmosphere framework.
+ *
+ * @returns a string with the version
+ */
+export function getAtmosphereJSVersion(): string | null {
+  const atmosphere = (window as unknown as { vaadinPush?: { atmosphere?: { version?: string } } }).vaadinPush
+    ?.atmosphere;
+  return atmosphere?.version ?? null;
+}
+
+/**
+ * Gets the initial UIDL from the bootstrap page.
+ *
+ * @param config - the bootstrap configuration object
+ * @returns the initial UIDL
+ */
+export function getUIDL(config: ConfigObject): ValueMap | null {
+  return getConfigValueMap(config, 'uidl');
 }

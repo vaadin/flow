@@ -46,10 +46,10 @@ export function publishClient(
 
   const client: Record<string, unknown> = {
     isActive: () => ac.isActive(),
-    getByNodeId: (nodeId: number) => ac.getByNodeId(nodeId),
+    getByNodeId: (nodeId: number) => ac.getDomElementByNodeId(nodeId),
     getNodeId: (element: Element) => ac.getNodeId(element),
     getUIId: () => ac.getUIId(),
-    addDomBindingListener: (nodeId: number, callback: () => void) => ac.addDomBindingListener(nodeId, callback),
+    addDomBindingListener: (nodeId: number, callback: () => void) => ac.addDomSetListener(nodeId, callback),
     productionMode,
     poll: () => ac.poll(),
     connectWebComponent: (eventData: object) => ac.connectWebComponent(eventData),
@@ -68,7 +68,7 @@ export function publishClient(
     client.getVersionInfo = () => ({ flow: configuration.getServletVersion() });
     client.debug = () => ac.debug();
     client.getNodeInfo = (nodeId: number) => ({
-      element: ac.getByNodeId(nodeId),
+      element: ac.getDomElementByNodeId(nodeId),
       javaClass: ac.getJavaClass(nodeId),
       hiddenByServer: ac.isHiddenByServer(nodeId),
       styles: ac.getElementStyleProperties(nodeId)

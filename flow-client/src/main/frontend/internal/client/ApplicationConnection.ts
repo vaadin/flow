@@ -20,6 +20,21 @@
 // (start/isActive/poll/resolveUri/sendEventMessage/...) drives the application.
 // create() is the entry point the ported Bootstrapper calls; the live page still
 // starts the GWT engine, so nothing calls it outside the tests until cutover.
+//
+// Two deviations from the Java class:
+//
+// - Java does all of this in its public constructor, which can publish the client
+//   API because the instance exists inside it. Here the publication is a separate
+//   module (publishClient), so the connection has to exist before it can be
+//   published: the constructor takes the assembled registry and create() is the
+//   entry point that mirrors the Java constructor. That is also why the members
+//   the JSNI blocks reach - isActive, getDomElementByNodeId, getNodeId,
+//   addDomSetListener, getJavaClass, isHiddenByServer, getElementStyleProperties -
+//   are public here although Java keeps them private: JSNI reads private members
+//   of the enclosing class, a separate module cannot.
+// - The Styles JavaScriptObject that getElementStyleProperties fills is not
+//   ported: it exists to give JSNI a typed handle on a plain JS object, which a
+//   TypeScript object literal already is.
 
 import { bind } from './flow/binding/Binder';
 import { observe as observeLoadingIndicator } from './communication/LoadingIndicatorConfigurator';
@@ -66,9 +81,14 @@ export class ApplicationConnection implements PublishedClient {
   }
 
   /**
-   * Assembles the registry, binds the root state node to the page body, and
-   * publishes the client API. Mirrors the ApplicationConnection.java constructor;
-   * `rootElement` defaults to document.body (a seam for testing).
+   * Creates an application connection using the given configuration: assembles
+   * the registry, binds the root state node to the page body, and publishes the
+   * client API. Mirrors the ApplicationConnection.java constructor.
+   *
+   * @param applicationConfiguration - the configuration object for the application
+   * @param rootElement - the element to bind the root state node to; a port
+   *          addition, since Java reads the body directly
+   * @returns the connection, already published
    */
   static create(
     applicationConfiguration: ApplicationConfiguration,
@@ -96,7 +116,12 @@ export class ApplicationConnection implements PublishedClient {
     return connection;
   }
 
-  /** Starts the application from the initial UIDL, or resynchronizes if none. */
+  /**
+   * Starts this application. Public access is required for web components.
+   *
+   * @param initialUidl - the initial UIDL or null if the server did not provide
+   *          any
+   */
   start(initialUidl: ValueMap | null): void {
     if (initialUidl === null) {
       // Initial UIDL not in the DOM; request it from the server.
@@ -115,7 +140,15 @@ export class ApplicationConnection implements PublishedClient {
     });
   }
 
-  /** Whether there is client-side work pending (initial UIDL, active request, or deferred commands). */
+  /**
+   * Checks if there is some work to be done on the client side.
+   *
+   * Java also asks the scheduler whether deferred commands are still running,
+   * through a private isExecutingDeferredCommands; the port reads the injected
+   * scheduler directly.
+   *
+   * @returns true if the client has some work to be done, false otherwise
+   */
   isActive(): boolean {
     return (
       !this.#registry.getMessageHandler().isInitialUidlHandled() ||
@@ -124,39 +157,11 @@ export class ApplicationConnection implements PublishedClient {
     );
   }
 
-  /** Triggers a server poll. */
-  poll(): void {
-    this.#registry.getPoller().poll();
-  }
-
-  /** Resolves a Vaadin URI (context://, base://) to an absolute URL. */
-  resolveUri(uri: string): string | null {
-    return this.#registry.getURIResolver().resolveVaadinUri(uri);
-  }
-
-  /** Sends an event message to the server. */
-  sendEventMessage(nodeId: number, eventType: string, eventData: unknown): void {
-    this.#registry.getServerConnector().sendEventMessage(nodeId, eventType, eventData);
-  }
-
-  /** The id of the UI this connection is connected to. */
-  getUIId(): number {
-    return this.#registry.getApplicationConfiguration().getUIId();
-  }
-
-  /** Connects the web component described by the event data with the server. */
-  connectWebComponent(eventData: unknown): void {
-    const nodeId = this.#registry.getStateTree().getRootNode().getId();
-    this.#registry.getServerConnector().sendEventMessage(nodeId, 'connect-web-component', eventData);
-  }
-
-  /** A JSON description of the root node's state tree, for debugging. */
-  debug(): unknown {
-    return this.#registry.getStateTree().getRootNode().getDebugJson();
-  }
+  // The members below stand in for the JSNI blocks, in the order those publish
+  // them: first publishJavascriptMethods, then the development-mode block.
 
   /** The DOM node bound to the state node with the given id, or null. */
-  getByNodeId(id: number): Node | null {
+  getDomElementByNodeId(id: number): Node | null {
     const node = this.#registry.getStateTree().getNode(id);
     return node === null ? null : node.getDomNode();
   }
@@ -167,8 +172,13 @@ export class ApplicationConnection implements PublishedClient {
     return node === null ? -1 : node.getId();
   }
 
+  /** The id of the UI this connection is connected to. */
+  getUIId(): number {
+    return this.#registry.getApplicationConfiguration().getUIId();
+  }
+
   /** Runs the callback once the DOM node for the given state node id is set. */
-  addDomBindingListener(nodeId: number, callback: () => void): void {
+  addDomSetListener(nodeId: number, callback: () => void): void {
     const node = this.#registry.getStateTree().getNode(nodeId);
     if (node === null) {
       return;
@@ -182,10 +192,38 @@ export class ApplicationConnection implements PublishedClient {
     });
   }
 
+  /** Triggers a server poll. */
+  poll(): void {
+    this.#registry.getPoller().poll();
+  }
+
+  /** Connects the web component described by the event data with the server. */
+  connectWebComponent(eventData: unknown): void {
+    const nodeId = this.#registry.getStateTree().getRootNode().getId();
+    this.#registry.getServerConnector().sendEventMessage(nodeId, 'connect-web-component', eventData);
+  }
+
   /** Profiling data for the last request (processing times + server timing + bootstrap). */
   getProfilingData(): number[] {
     return this.#registry.getMessageHandler().getProfilingData();
   }
+
+  /** Resolves a Vaadin URI (context://, base://) to an absolute URL. */
+  resolveUri(uri: string): string | null {
+    return this.#registry.getURIResolver().resolveVaadinUri(uri);
+  }
+
+  /** Sends an event message to the server. */
+  sendEventMessage(nodeId: number, eventType: string, eventData: unknown): void {
+    this.#registry.getServerConnector().sendEventMessage(nodeId, eventType, eventData);
+  }
+
+  /** A JSON description of the root node's state tree, for debugging. */
+  debug(): unknown {
+    return this.#registry.getStateTree().getRootNode().getDebugJson();
+  }
+
+  // Java's own private helpers, in the order it declares them.
 
   /** The Java class name bound to the state node with the given id, or null. */
   getJavaClass(id: number): string | null {

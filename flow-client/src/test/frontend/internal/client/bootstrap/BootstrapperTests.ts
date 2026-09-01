@@ -7,24 +7,22 @@ import { expect } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import {
   deferStartApplication,
-  type JsoConfiguration,
   onModuleLoad,
   populateApplicationConfiguration,
   registerCallback,
+  startApplication,
   startApplicationImmediately
 } from '../../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
+import type { ConfigObject } from '../../../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
 
-// A JsoConfiguration backed by a plain values map.
-function makeJso(values: Record<string, unknown>): JsoConfiguration {
+// The bootstrap configuration object the server writes into the page: the values
+// are read through the ported JsoConfiguration accessors, as in production.
+function makeJso(values: Record<string, unknown>): ConfigObject {
   return {
-    getConfigString: (name: string) => (values[name] === undefined ? null : (values[name] as string)),
-    getConfigBoolean: (name: string) => !!values[name],
-    getConfigInteger: (name: string) => (values[name] as number) ?? 0,
-    getConfigStringArray: (name: string) => (values[name] as string[]) ?? [],
-    getConfigError: (name: string) => values[name] ?? null,
-    getVaadinVersion: () => (values.vaadinVersion as string) ?? '',
-    getAtmosphereVersion: () => (values.atmosphereVersion as string) ?? '',
-    getAtmosphereJSVersion: () => (values.atmosphereJSVersion as string) ?? ''
+    getConfig: (name: string) =>
+      name === 'versionInfo'
+        ? { vaadinVersion: values.vaadinVersion, atmosphereVersion: values.atmosphereVersion }
+        : values[name]
   };
 }
 
@@ -45,26 +43,33 @@ describe('Bootstrapper', () => {
     }
   });
 
-  it('deferStartApplication runs the callback on WebComponentsReady', () => {
-    let ran = false;
-    deferStartApplication(() => {
-      ran = true;
-    });
-    expect(ran).to.be.false;
-    window.dispatchEvent(new Event('WebComponentsReady'));
-    expect(ran).to.be.true;
+  it('deferStartApplication waits for WebComponentsReady before starting', () => {
+    // Java defers the start itself rather than taking a callback, so what is
+    // observable here is the listener it registers, not a flag it sets.
+    const registered: string[] = [];
+    const original = window.addEventListener;
+    window.addEventListener = function observed(this: Window, type: string, ...rest: unknown[]) {
+      registered.push(type);
+      return (original as (...args: unknown[]) => void).call(this, type, ...rest);
+    } as typeof window.addEventListener;
+    try {
+      deferStartApplication('app-1');
+      expect(registered).to.contain('WebComponentsReady');
+    } finally {
+      window.addEventListener = original;
+    }
   });
 
-  it('registerCallback forwards the widgetset name and callback to registerWidgetset', () => {
+  it('registerCallback registers startApplication under the widgetset name', () => {
     const saved = win.Vaadin;
     try {
       const calls: Array<[string, (id: string) => void]> = [];
       win.Vaadin = { Flow: { registerWidgetset: (name: string, cb: (id: string) => void) => calls.push([name, cb]) } };
-      const callback = (): void => {};
-      registerCallback('com.example.Widgetset', callback);
+      registerCallback('com.example.Widgetset');
       expect(calls).to.have.length(1);
       expect(calls[0][0]).to.equal('com.example.Widgetset');
-      expect(calls[0][1]).to.equal(callback);
+      // Java registers Bootstrapper::startApplication, not a caller-supplied one.
+      expect(calls[0][1]).to.equal(startApplication);
     } finally {
       win.Vaadin = saved;
     }
@@ -107,6 +112,9 @@ describe('Bootstrapper', () => {
 
   describe('populateApplicationConfiguration', () => {
     const sessionExpiredError = { caption: 'Session Expired', message: 'Take note of any unsaved data' };
+    // Java unboxes these three, so a configuration without them is a bootstrap
+    // error rather than a defaulted value; every case supplies them.
+    const requiredIntegers = { 'v-uiId': 1, heartbeatInterval: 300, maxMessageSuspendTimeout: 5000 };
 
     it('fills the configuration from the bootstrap JSO (with explicit service URL)', () => {
       const conf = new ApplicationConfiguration();
@@ -121,7 +129,6 @@ describe('Bootstrapper', () => {
           maxMessageSuspendTimeout: 5000,
           vaadinVersion: '24.9',
           atmosphereVersion: '2.4.0',
-          atmosphereJSVersion: '3.0.0',
           sessExpMsg: sessionExpiredError,
           debug: true,
           requestTiming: true,
@@ -140,7 +147,9 @@ describe('Bootstrapper', () => {
       expect(conf.getMaxMessageSuspendTimeout()).to.equal(5000);
       expect(conf.getServletVersion()).to.equal('24.9');
       expect(conf.getAtmosphereVersion()).to.equal('2.4.0');
-      expect(conf.getAtmosphereJSVersion()).to.equal('3.0.0');
+      // The Atmosphere JS version is read off the loaded push library, not the
+      // configuration, so it is empty until vaadinPush.js has loaded.
+      expect(conf.getAtmosphereJSVersion()).to.equal('');
       expect(conf.getSessionExpiredError()).to.equal(sessionExpiredError);
       expect(conf.isProductionMode()).to.be.false; // debug=true -> not production
       expect(conf.isRequestTiming()).to.be.true;
@@ -155,7 +164,7 @@ describe('Bootstrapper', () => {
       // Java stores them as null; the ported configuration takes strings, so the
       // bootstrap maps a missing value to the empty string.
       const conf = new ApplicationConfiguration();
-      populateApplicationConfiguration(conf, makeJso({ 'v-uiId': 1, contextRootUrl: './' }));
+      populateApplicationConfiguration(conf, makeJso({ ...requiredIntegers, contextRootUrl: './' }));
       expect(conf.getLiveReloadUrl()).to.equal('');
       expect(conf.getLiveReloadBackend()).to.equal('');
       expect(conf.getSpringBootLiveReloadPort()).to.equal('');
@@ -164,9 +173,16 @@ describe('Bootstrapper', () => {
       expect(conf.isRequestTiming()).to.be.false;
     });
 
+    it('fails when the bootstrap omits an integer Java unboxes', () => {
+      // Beyond the Java suite, which cannot observe an NPE from the client.
+      expect(() =>
+        populateApplicationConfiguration(new ApplicationConfiguration(), makeJso({ contextRootUrl: './' }))
+      ).to.throw('v-uiId');
+    });
+
     it('falls back to the current location when no service URL is configured', () => {
       const conf = new ApplicationConfiguration();
-      populateApplicationConfiguration(conf, makeJso({ contextRootUrl: '.', 'v-uiId': 1, debug: false }));
+      populateApplicationConfiguration(conf, makeJso({ ...requiredIntegers, contextRootUrl: '.', debug: false }));
       // serviceUrl resolves "." against the test page; just assert it is absolute.
       expect(conf.getServiceUrl()).to.match(/^https?:\/\//);
       expect(conf.isProductionMode()).to.be.true; // debug=false -> production

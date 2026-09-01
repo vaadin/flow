@@ -22,20 +22,24 @@
 // the DOM config, assembles the TS engine via ApplicationConnection.create, and
 // starts it from the initial UIDL.
 
-import { ApplicationConfiguration } from '../ApplicationConfiguration';
+import { ApplicationConfiguration, type ErrorMessage } from '../ApplicationConfiguration';
 import {
+  type ConfigObject,
+  getAtmosphereJSVersion,
   getAtmosphereVersion,
   getConfigBoolean,
   getConfigError,
+  getConfigInteger,
   getConfigString,
   getConfigStringArray,
-  getConfigValueMap,
+  getUIDL,
   getVaadinVersion
 } from './JsoConfiguration';
 import { getScheduler } from '../TrackingScheduler';
 import { getAbsoluteUrl } from '../WidgetUtil';
 import { Console } from '../Console';
-import type { ValueMap } from '../ValueMap';
+import { enter as profilerEnter, leave as profilerLeave } from '../Profiler';
+import { assert } from '../../assert';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVICE_URL = 'serviceUrl';
@@ -44,105 +48,84 @@ const CONTEXT_ROOT_URL = 'contextRootUrl';
 const UI_ID_PARAMETER = 'v-uiId';
 const DEV_TOOLS_ENABLED = 'devToolsEnabled';
 
-/** The bootstrap configuration object's typed accessors (a JS overlay in Java). */
-export interface JsoConfiguration {
-  getConfigString(name: string): string | null;
-  getConfigBoolean(name: string): boolean;
-  getConfigInteger(name: string): number;
-  getConfigStringArray(name: string): string[];
-  getConfigError(name: string): unknown;
-  getVaadinVersion(): string;
-  getAtmosphereVersion(): string;
-  getAtmosphereJSVersion(): string;
+// Java calls the JsoConfiguration overlay's methods on the configuration object;
+// the ported module takes that object as its first parameter instead, so every
+// read below names the same Java method.
+//
+// Java unboxes the Integer these three return, so a configuration missing one is
+// a bootstrap error rather than a defaulted value; assert instead of defaulting.
+function getRequiredConfigInteger(config: ConfigObject, name: string): number {
+  const value = getConfigInteger(config, name);
+  assert(value !== null, `The bootstrap configuration has no ${name}`);
+  return value as number;
 }
 
 /**
  * Fills the application configuration from the bootstrap JavaScript config.
  * Mirrors Bootstrapper.populateApplicationConfiguration.
  */
-export function populateApplicationConfiguration(
-  conf: ApplicationConfiguration,
-  jsoConfiguration: JsoConfiguration
-): void {
+export function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
   // Resolve potentially relative URLs now so they survive later base-URL changes.
-  const serviceUrl = jsoConfiguration.getConfigString(SERVICE_URL);
+  const serviceUrl = getConfigString(jsoConfiguration, SERVICE_URL);
 
-  conf.setWebComponentMode(jsoConfiguration.getConfigBoolean(APP_WC_MODE));
+  conf.setWebComponentMode(getConfigBoolean(jsoConfiguration, APP_WC_MODE));
 
   if (serviceUrl === null) {
     conf.setServiceUrl(getAbsoluteUrl('.'));
-    conf.setContextRootUrl(getAbsoluteUrl(jsoConfiguration.getConfigString(CONTEXT_ROOT_URL) ?? ''));
+    conf.setContextRootUrl(getAbsoluteUrl(getConfigString(jsoConfiguration, CONTEXT_ROOT_URL) ?? ''));
   } else {
     conf.setServiceUrl(serviceUrl);
-    conf.setContextRootUrl(getAbsoluteUrl(serviceUrl + (jsoConfiguration.getConfigString(CONTEXT_ROOT_URL) ?? '')));
+    conf.setContextRootUrl(getAbsoluteUrl(serviceUrl + (getConfigString(jsoConfiguration, CONTEXT_ROOT_URL) ?? '')));
   }
 
-  conf.setUIId(jsoConfiguration.getConfigInteger(UI_ID_PARAMETER));
-  conf.setHeartbeatInterval(jsoConfiguration.getConfigInteger('heartbeatInterval'));
-  conf.setMaxMessageSuspendTimeout(jsoConfiguration.getConfigInteger('maxMessageSuspendTimeout'));
+  conf.setUIId(getRequiredConfigInteger(jsoConfiguration, UI_ID_PARAMETER));
+  conf.setHeartbeatInterval(getRequiredConfigInteger(jsoConfiguration, 'heartbeatInterval'));
+  conf.setMaxMessageSuspendTimeout(getRequiredConfigInteger(jsoConfiguration, 'maxMessageSuspendTimeout'));
 
-  conf.setServletVersion(jsoConfiguration.getVaadinVersion());
-  conf.setAtmosphereVersion(jsoConfiguration.getAtmosphereVersion());
-  conf.setAtmosphereJSVersion(jsoConfiguration.getAtmosphereJSVersion());
-  conf.setSessionExpiredError(jsoConfiguration.getConfigError('sessExpMsg'));
+  conf.setServletVersion(getVaadinVersion(jsoConfiguration) ?? '');
+  conf.setAtmosphereVersion(getAtmosphereVersion(jsoConfiguration) ?? '');
+  conf.setAtmosphereJSVersion(getAtmosphereJSVersion() ?? '');
+  // JsoConfiguration returns the raw config value; the bootstrap contract is that
+  // it carries the ErrorMessage fields (see getConfigError's doc).
+  conf.setSessionExpiredError(getConfigError(jsoConfiguration, 'sessExpMsg') as ErrorMessage | null);
 
   // Debug or production mode?
-  conf.setProductionMode(!jsoConfiguration.getConfigBoolean('debug'));
-  conf.setRequestTiming(jsoConfiguration.getConfigBoolean('requestTiming'));
-  conf.setExportedWebComponents(jsoConfiguration.getConfigStringArray('webcomponents'));
+  conf.setProductionMode(!getConfigBoolean(jsoConfiguration, 'debug'));
+  conf.setRequestTiming(getConfigBoolean(jsoConfiguration, 'requestTiming'));
+  conf.setExportedWebComponents((getConfigStringArray(jsoConfiguration, 'webcomponents') as string[] | null) ?? []);
 
-  conf.setDevToolsEnabled(jsoConfiguration.getConfigBoolean(DEV_TOOLS_ENABLED));
-  conf.setLiveReloadUrl(jsoConfiguration.getConfigString('liveReloadUrl') ?? '');
-  conf.setLiveReloadBackend(jsoConfiguration.getConfigString('liveReloadBackend') ?? '');
-  conf.setSpringBootLiveReloadPort(jsoConfiguration.getConfigString('springBootLiveReloadPort') ?? '');
-}
-
-// The raw bootstrap config object (exposes getConfig(name)); see JsoConfiguration.
-interface RawConfigObject {
-  getConfig(name: string): unknown;
-}
-
-/** The loaded Atmosphere library version, or '' if push is not loaded. */
-function atmosphereJsVersion(): string {
-  const push = (window as unknown as { vaadinPush?: { atmosphere?: { version?: string } } }).vaadinPush;
-  return push?.atmosphere?.version ?? '';
+  conf.setDevToolsEnabled(getConfigBoolean(jsoConfiguration, DEV_TOOLS_ENABLED));
+  // The ported configuration takes strings where Java stores nullable ones, so a
+  // missing value becomes the empty string.
+  conf.setLiveReloadUrl(getConfigString(jsoConfiguration, 'liveReloadUrl') ?? '');
+  conf.setLiveReloadBackend(getConfigString(jsoConfiguration, 'liveReloadBackend') ?? '');
+  conf.setSpringBootLiveReloadPort(getConfigString(jsoConfiguration, 'springBootLiveReloadPort') ?? '');
 }
 
 /**
- * Wraps the raw bootstrap config object as a JsoConfiguration. getConfigInteger
- * and getAtmosphereJSVersion are inlined here (they stay Java-native in the GWT
- * build for deferred-binding reasons; see JsoConfiguration.ts).
+ * Constructs an ApplicationConfiguration object based on the information
+ * available in the DOM.
+ *
+ * @param appId - the application id
+ * @returns an application configuration object containing the read information
  */
-function toJsoConfiguration(rawConfig: unknown): JsoConfiguration {
-  const config = rawConfig as RawConfigObject;
-  return {
-    getConfigString: (name) => getConfigString(config, name),
-    getConfigBoolean: (name) => getConfigBoolean(config, name),
-    getConfigInteger: (name) => {
-      const value = config.getConfig(name);
-      return value === null || value === undefined ? 0 : Number(value);
-    },
-    getConfigStringArray: (name) => (getConfigStringArray(config, name) as string[] | null) ?? [],
-    getConfigError: (name) => getConfigError(config, name),
-    getVaadinVersion: () => getVaadinVersion(config) ?? '',
-    getAtmosphereVersion: () => getAtmosphereVersion(config) ?? '',
-    getAtmosphereJSVersion: () => atmosphereJsVersion()
-  };
+function getConfigFromDOM(appId: string): ApplicationConfiguration {
+  const conf = new ApplicationConfiguration();
+  conf.setApplicationId(appId);
+  populateApplicationConfiguration(conf, getJsoConfiguration(appId));
+  return conf;
 }
 
 /**
  * Starts the application with the given id: reads its configuration from the DOM,
  * assembles the TypeScript engine, and starts it from the initial UIDL. Mirrors
- * Bootstrapper.doStartApplication (which delegates here).
+ * Bootstrapper.doStartApplication.
  */
 export function doStartApplication(applicationId: string): void {
-  const rawConfig = getJsoConfiguration(applicationId);
-
-  const conf = new ApplicationConfiguration();
-  conf.setApplicationId(applicationId);
-  populateApplicationConfiguration(conf, toJsoConfiguration(rawConfig));
-
-  const initialUidl = getConfigValueMap(rawConfig as RawConfigObject, 'uidl') as ValueMap | null;
+  profilerEnter('Bootstrapper.startApplication');
+  const conf = getConfigFromDOM(applicationId);
+  const initialUidl = getUIDL(getJsoConfiguration(applicationId));
+  profilerLeave('Bootstrapper.startApplication');
 
   // Load the engine lazily: this keeps ApplicationConnection/DefaultRegistry and
   // the rest of the modern-JS engine out of the registerInternals bundle, which
@@ -174,7 +157,7 @@ interface FlowWidgetsetRegistrar {
 }
 
 interface FlowAppLookup {
-  Vaadin: { Flow: { getApp: (appId: string) => unknown } };
+  Vaadin: { Flow: { getApp: (appId: string) => ConfigObject } };
 }
 
 /**
@@ -187,20 +170,25 @@ export function startApplicationImmediately(): boolean {
 }
 
 /**
- * Defers starting the application until the WebComponents polyfill signals it
- * is ready, by running the (already $entry-wrapped) callback on the
- * WebComponentsReady event.
+ * Defers starting the application until the WebComponents polyfill signals it is
+ * ready, by starting it on the WebComponentsReady event. Java wraps the callback
+ * in $entry; the port has no equivalent, as every listener is plain JavaScript.
+ *
+ * @param applicationId - id of the application to start
  */
-export function deferStartApplication(callback: () => void): void {
-  window.addEventListener('WebComponentsReady', callback);
+export function deferStartApplication(applicationId: string): void {
+  window.addEventListener('WebComponentsReady', () => doStartApplication(applicationId));
 }
 
 /**
- * Registers the widgetset start callback with the bootstrap JavaScript so it can
- * start applications once the widgetset is loaded.
+ * Registers the callback that the bootstrap javascript uses to start
+ * applications once the widgetset is loaded and all required information is
+ * available.
+ *
+ * @param widgetsetName - the name of this widgetset
  */
-export function registerCallback(widgetsetName: string, callback: (applicationId: string) => void): void {
-  (window as unknown as FlowWidgetsetRegistrar).Vaadin.Flow.registerWidgetset(widgetsetName, callback);
+export function registerCallback(widgetsetName: string): void {
+  (window as unknown as FlowWidgetsetRegistrar).Vaadin.Flow.registerWidgetset(widgetsetName, startApplication);
 }
 
 // The client widgetset/module name (ClientEngine.gwt.xml rename-to="client").
@@ -231,7 +219,7 @@ export function startApplication(applicationId: string): void {
     if (startApplicationImmediately()) {
       doStartApplication(applicationId);
     } else {
-      deferStartApplication(() => doStartApplication(applicationId));
+      deferStartApplication(applicationId);
     }
   });
 }
@@ -263,13 +251,16 @@ export function onModuleLoad(): void {
   // omitted: the __gwtStatsEvent profiling logger is installed by the server
   // bootstrap JavaScript (BootstrapHandler.js), and the TypeScript profiler reads
   // performance timing directly, so it needs no relative-time supplier setup.
-  registerCallback(WIDGETSET_NAME, startApplication);
+  registerCallback(WIDGETSET_NAME);
 }
 
 /**
- * The bootstrap configuration object for the application with the given id, as
- * stored by the bootstrap JavaScript.
+ * Gets the configuration object for a specific application from the bootstrap
+ * javascript.
+ *
+ * @param appId - the id of the application to get configuration data for
+ * @returns a native javascript object containing the configuration data
  */
-export function getJsoConfiguration(appId: string): unknown {
+export function getJsoConfiguration(appId: string): ConfigObject {
   return (window as unknown as FlowAppLookup).Vaadin.Flow.getApp(appId);
 }

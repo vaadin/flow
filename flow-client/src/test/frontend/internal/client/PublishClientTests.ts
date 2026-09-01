@@ -15,9 +15,9 @@ const $wnd = window as any;
 function fakeConnectionStubs() {
   return {
     isActive: sinon.stub().returns(true),
-    getByNodeId: sinon.stub().returns(null),
+    getDomElementByNodeId: sinon.stub().returns(null),
     getNodeId: sinon.stub().returns(7),
-    addDomBindingListener: sinon.stub(),
+    addDomSetListener: sinon.stub(),
     poll: sinon.stub(),
     resolveUri: sinon.stub().returns('/resolved'),
     sendEventMessage: sinon.stub(),

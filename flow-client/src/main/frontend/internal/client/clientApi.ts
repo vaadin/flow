@@ -34,14 +34,16 @@ export interface ApplicationConfiguration {
 }
 
 /**
- * The client-API methods published on `window.Vaadin.Flow.clients[appId]` — the
- * public surface of the running client engine.
+ * What `publishClient` needs from the running engine to build
+ * `window.Vaadin.Flow.clients[appId]`. The published keys are the ones the JSNI
+ * blocks in ApplicationConnection.java define, so two of them (`getByNodeId`,
+ * `addDomBindingListener`) differ from the engine method they call.
  */
 export interface ApplicationConnection {
   isActive(): boolean;
-  getByNodeId(nodeId: number): Node | null;
+  getDomElementByNodeId(nodeId: number): Node | null;
   getNodeId(element: Element): number;
-  addDomBindingListener(nodeId: number, callback: () => void): void;
+  addDomSetListener(nodeId: number, callback: () => void): void;
   poll(): void;
   resolveUri(uri: string): string | null;
   sendEventMessage(nodeId: number, eventType: string, eventData: unknown): void;

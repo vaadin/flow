@@ -153,8 +153,8 @@ describe('ApplicationConnection', () => {
       const fixture = makeRegistryWithNode();
       fixture.attach();
       const connection = new ApplicationConnection(fixture.registry, idleScheduler);
-      expect(connection.getByNodeId(5)).to.equal(fixture.domNode);
-      expect(connection.getByNodeId(99)).to.equal(null);
+      expect(connection.getDomElementByNodeId(5)).to.equal(fixture.domNode);
+      expect(connection.getDomElementByNodeId(99)).to.equal(null);
       expect(connection.getNodeId(fixture.domNode)).to.equal(5);
       expect(connection.getNodeId(document.createElement('span'))).to.equal(-1);
     });
@@ -163,7 +163,7 @@ describe('ApplicationConnection', () => {
       const fixture = makeRegistryWithNode();
       const connection = new ApplicationConnection(fixture.registry, idleScheduler);
       let fired = 0;
-      connection.addDomBindingListener(5, () => fired++);
+      connection.addDomSetListener(5, () => fired++);
       fixture.attach();
       expect(fired).to.equal(1);
     });
