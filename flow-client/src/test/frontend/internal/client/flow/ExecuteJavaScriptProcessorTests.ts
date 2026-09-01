@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { ExecuteJavaScriptProcessor } from '../../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
@@ -7,7 +8,7 @@ import { Reactive } from '../../../../../main/frontend/internal/client/flow/reac
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { type RecordedCalls, recordingRegistry } from './stateTreeTestRegistry';
-import { TestRegistry } from '../testRegistry';
+import { TestRegistry, testRegistry } from '../testRegistry';
 
 // Ported from com.vaadin.client.flow.ExecuteJavaScriptProcessorTest and
 // com.vaadin.client.GwtExecuteJavaScriptElementUtilsTest (the return-channel
@@ -241,14 +242,15 @@ describe('ExecuteJavaScriptProcessor', () => {
 
   describe('class execute', () => {
     function makeRegistry() {
-      const lifecycleStates: string[] = [];
-      const registry = {
+      const lifecycleStates: UIState[] = [];
+      return {
         lifecycleStates,
-        getStateTree: () => ({ getNode: () => null }),
-        getApplicationConfiguration: () => ({ getApplicationId: () => 'ROOT-1', isProductionMode: () => false }),
-        getUILifecycle: () => ({ isTerminated: () => false, setState: (state: string) => lifecycleStates.push(state) })
+        registry: testRegistry({
+          StateTree: { getNode: () => null },
+          ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false },
+          UILifecycle: { isTerminated: () => false, setState: (state: UIState) => lifecycleStates.push(state) }
+        })
       };
-      return registry;
     }
 
     afterEach(() => {
@@ -261,17 +263,17 @@ describe('ExecuteJavaScriptProcessor', () => {
       const built = recordingRegistry();
       const recorded: RecordedCalls = built.recorded;
       const tree = new StateTree(built.registry);
-      const registry = {
-        getStateTree: () => tree,
-        getApplicationConfiguration: () => ({ getApplicationId: () => 'test', isProductionMode: () => false }),
-        getUILifecycle: () => ({ isTerminated: () => false, setState: () => {} })
-      };
+      const registry = testRegistry({
+        StateTree: tree,
+        ApplicationConfiguration: { getApplicationId: () => 'test', isProductionMode: () => false },
+        UILifecycle: { isTerminated: () => false, setState: () => {} }
+      });
 
       const expectedNodeId = 10;
       const expectedChannelId = 20;
 
       // The @v-return parameter decodes to a callback; the expression calls it.
-      new ExecuteJavaScriptProcessor(registry as never).execute([
+      new ExecuteJavaScriptProcessor(registry).execute([
         [{ '@v-return': [expectedNodeId, expectedChannelId] }, '$0(2)']
       ]);
 
@@ -282,26 +284,25 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('runs an invocation expression', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['globalThis.__ejpRan = true;']]);
+      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpRan = true;']]);
       expect((globalThis as Record<string, unknown>).__ejpRan).to.be.true;
     });
 
     it('binds invocation parameters to $0, $1, ...', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['hello', 'globalThis.__ejpParam = $0;']]);
+      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['hello', 'globalThis.__ejpParam = $0;']]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('hello');
     });
 
     it('exposes the app id with the per-UI suffix stripped', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['globalThis.__ejpParam = this.$appId;']]);
+      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpParam = this.$appId;']]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ROOT');
     });
 
     it('exposes the registry on the context', () => {
       // Beyond the Java suite.
-      const registry = makeRegistry();
-      new ExecuteJavaScriptProcessor(registry as never).execute([
+      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
         ['globalThis.__ejpParam = this.registry === undefined;']
       ]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal(false);
@@ -311,7 +312,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Beyond the Java suite.
       // getNode throws when the argument is not a state-node parameter; the
       // executed code sees that as a thrown ReferenceError.
-      new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([
+      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
         ['try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }']
       ]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ReferenceError');
@@ -320,15 +321,15 @@ describe('ExecuteJavaScriptProcessor', () => {
     it('catches exceptions thrown by the executed code', () => {
       // Beyond the Java suite.
       expect(() =>
-        new ExecuteJavaScriptProcessor(makeRegistry() as never).execute([['throw new Error("boom");']])
+        new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['throw new Error("boom");']])
       ).to.not.throw();
     });
 
     it('exposes stopApplication on the context, terminating the UI lifecycle', () => {
       // Beyond the Java suite.
-      const registry = makeRegistry();
-      new ExecuteJavaScriptProcessor(registry as never).execute([['this.stopApplication();']]);
-      expect(registry.lifecycleStates).to.deep.equal(['TERMINATED']);
+      const fixture = makeRegistry();
+      new ExecuteJavaScriptProcessor(fixture.registry).execute([['this.stopApplication();']]);
+      expect(fixture.lifecycleStates).to.deep.equal([UIState.TERMINATED]);
     });
   });
 });

@@ -22,19 +22,8 @@
 // populates it via the setters before the engine starts.
 
 import { assert } from '../assert';
+import type { ErrorMessage } from './bootstrap/ErrorMessage';
 import { Console } from './Console';
-
-/**
- * The slice of the bootstrap error message this configuration carries.
- *
- * TODO(flow-client-ts): replace with ErrorMessage once
- * com.vaadin.client.bootstrap.ErrorMessage is ported.
- */
-export interface ErrorMessage {
-  caption?: string;
-  message?: string;
-  url?: string;
-}
 
 /** Holds the bootstrap configuration of a UI; mirrors ApplicationConfiguration.java. */
 export class ApplicationConfiguration {

@@ -35,15 +35,14 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       unsubscribeUrl: (url: string) => log.disconnected.push(url)
     }
   };
-  const registry = {
-    log,
-    getUILifecycle: () => ({ addHandler: () => {} }),
-    getPushConfiguration: () => ({
+  const registry = testRegistry({
+    UILifecycle: { addHandler: () => ({ remove: () => {} }) },
+    PushConfiguration: {
       getParameters: () => new Map<string, string>(),
       getPushServletMapping: () => null,
       isAlwaysXhrToServer: () => false
-    }),
-    getConnectionStateHandler: () => ({
+    },
+    ConnectionStateHandler: {
       pushOk: () => log.pushOk++,
       pushError: () => log.pushError++,
       pushClosed: () => log.pushClosed++,
@@ -52,24 +51,25 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
       pushScriptLoadError: () => {}
-    }),
-    getApplicationConfiguration: () => ({
+    },
+    ApplicationConfiguration: {
       getServiceUrl: () => serviceUrl,
       getContextRootUrl: () => contextRootUrl,
       getUIId: () => 1,
       isProductionMode: () => false
-    }),
+    },
     // The real resolver, so the push url is built from the context root as in
     // production.
-    getURIResolver: () =>
-      new URIResolver(testRegistry({ ApplicationConfiguration: { getContextRootUrl: () => contextRootUrl } })),
-    getMessageHandler: () => ({
+    URIResolver: new URIResolver(
+      testRegistry({ ApplicationConfiguration: { getContextRootUrl: () => contextRootUrl } })
+    ),
+    MessageHandler: {
       getPushId: () => null,
       getLastSeenServerSyncId: () => 5,
       handleMessage: (json: unknown) => log.handled.push(json)
-    }),
-    getResourceLoader: () => ({ loadScript: () => {} })
-  };
+    },
+    ResourceLoader: { loadScript: () => {} }
+  });
   return { registry, log, capture };
 }
 
@@ -104,7 +104,7 @@ describe('AtmospherePushConnection', () => {
     // no subscription happens.
     const { registry, capture } = setupPush();
     win.vaadinPush = undefined;
-    new AtmospherePushConnection(registry as never);
+    new AtmospherePushConnection(registry);
     await tick();
     expect(capture.config).to.equal(null);
   });
@@ -147,7 +147,7 @@ describe('AtmospherePushConnection', () => {
     it('is active and not yet bidirectional before connecting', async () => {
       // Beyond the Java suite: No Java case covers the state before a transport is known.
       const { registry } = setupPush();
-      const connection = new AtmospherePushConnection(registry as never);
+      const connection = new AtmospherePushConnection(registry);
       await tick(); // let the deferred connect() run
       expect(connection.isActive()).to.be.true; // CONNECT_PENDING
       expect(connection.isBidirectional()).to.be.false; // no transport yet
@@ -157,7 +157,7 @@ describe('AtmospherePushConnection', () => {
     it('subscribes with the default config and a sync-id supplier', async () => {
       // Beyond the Java suite: The Gwt suite reads the subscribe url only; the config defaults and the header supplier have no Java case.
       const { registry, capture } = setupPush();
-      new AtmospherePushConnection(registry as never);
+      new AtmospherePushConnection(registry);
       await tick();
 
       const config = capture.config!;
@@ -176,7 +176,7 @@ describe('AtmospherePushConnection', () => {
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {
       // Beyond the Java suite: No Java case drives onOpen through to a push.
       const { registry, log, capture } = setupPush();
-      const connection = new AtmospherePushConnection(registry as never);
+      const connection = new AtmospherePushConnection(registry);
       await tick();
       expect(capture.config).to.not.equal(null); // subscribe was called
 
@@ -193,7 +193,7 @@ describe('AtmospherePushConnection', () => {
     it('routes a valid push message to the message handler and reports invalid content', async () => {
       // Beyond the Java suite: No Java case covers onMessage.
       const { registry, log, capture } = setupPush();
-      new AtmospherePushConnection(registry as never);
+      new AtmospherePushConnection(registry);
       await tick();
       capture.config!.onOpen(response('websocket'));
 
@@ -207,7 +207,7 @@ describe('AtmospherePushConnection', () => {
     it('reports errors and closes, and disconnects an open connection', async () => {
       // Beyond the Java suite: No Java case covers onError/onClose.
       const { registry, log, capture } = setupPush();
-      const connection = new AtmospherePushConnection(registry as never);
+      const connection = new AtmospherePushConnection(registry);
       await tick();
       capture.config!.onOpen(response('websocket'));
 
@@ -228,7 +228,7 @@ describe('AtmospherePushConnection', () => {
     it('unsubscribes from the same url it subscribed to', async () => {
       // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
       const { registry, log, capture } = setupPush('context://foo', 'bar/');
-      const connection = new AtmospherePushConnection(registry as never);
+      const connection = new AtmospherePushConnection(registry);
       await tick();
       const pushUri = capture.config!.url as unknown as string;
 

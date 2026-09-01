@@ -4,8 +4,10 @@ import sinon from 'sinon';
 import { Console } from '../../../../main/frontend/internal/client/Console';
 import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
 
-// Beyond the Java suite: com.vaadin.client.SystemErrorHandler has no test class
-// of its own.
+// Ported from com.vaadin.client.flow.GwtErrotHandlerTest (the class name carries
+// a typo in the Java source), whose single case is ported below. Every other case
+// here is beyond the Java suite: com.vaadin.client.SystemErrorHandler has no
+// JRE-side test class.
 describe('SystemErrorHandler', () => {
   function makeHandler(opts: { webComponentMode?: boolean; exported?: string[] } = {}) {
     return new SystemErrorHandler(
@@ -74,6 +76,21 @@ describe('SystemErrorHandler', () => {
       expect(Array.from(container.children).map((c) => c.className)).to.deep.equal(['caption', 'message', 'details']);
       expect(Array.from(container.children).map((c) => c.textContent)).to.deep.equal(['Cap', 'Msg', 'Det']);
       expect(logged).to.deep.equal(['Cap', 'Msg', 'Det']);
+    });
+
+    it('sets the text content of each part rather than its markup', () => {
+      // Ported from testhandleUnrecoverableError_textContentIsSetInDivsNotInnerHtml.
+      const container = show('<foo></foo>', '<bar></bar>', '<baz></baz>');
+      const [caption, message, details] = Array.from(container.children);
+
+      expect(caption.innerHTML).to.equal('&lt;foo&gt;&lt;/foo&gt;');
+      expect(caption.textContent).to.equal('<foo></foo>');
+
+      expect(message.innerHTML).to.equal('&lt;bar&gt;&lt;/bar&gt;');
+      expect(message.textContent).to.equal('<bar></bar>');
+
+      expect(details.innerHTML).to.equal('&lt;baz&gt;&lt;/baz&gt;');
+      expect(details.textContent).to.equal('<baz></baz>');
     });
 
     it('omits parts that are null', () => {

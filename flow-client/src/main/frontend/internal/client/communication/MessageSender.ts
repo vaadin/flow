@@ -182,7 +182,7 @@ export class MessageSender {
    *
    * @param payload - The contents of the request to send
    */
-  send(payload: Payload): void {
+  protected send(payload: Payload): void {
     if (this.hasQueuedMessages()) {
       // The server sync id is set in sendPayload. If it is already present, the
       // message has already been sent and enqueued.

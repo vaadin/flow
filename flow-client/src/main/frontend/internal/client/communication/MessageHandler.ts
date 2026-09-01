@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import type { StateNode } from '../flow/StateNode';
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
 import { getScheduler } from '../TrackingScheduler';
@@ -95,12 +96,6 @@ const META_SESSION_EXPIRED = 'sessionExpired';
 const META_ASYNC = 'async';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
-
-/** A state node whose DOM updates should be flushed after a server message. */
-interface UpdatedNode {
-  isUnregistered(): boolean;
-  getDomNode(): Node | null;
-}
 
 /**
  * A MessageHandler is responsible for handling all incoming messages (JSON)
@@ -436,13 +431,11 @@ export class MessageHandler {
     Reactive.addPostFlushListener(() =>
       // Through the tracking scheduler, as Scheduler.get().scheduleDeferred is,
       // so the pending callbacks keep the application active.
-      getScheduler().scheduleDeferred(() =>
-        updatedNodes.forEach((node) => this.#afterServerUpdates(node as unknown as UpdatedNode))
-      )
+      getScheduler().scheduleDeferred(() => updatedNodes.forEach((node) => this.#afterServerUpdates(node)))
     );
   }
 
-  #afterServerUpdates(node: UpdatedNode): void {
+  #afterServerUpdates(node: StateNode): void {
     if (!node.isUnregistered()) {
       const domNode = node.getDomNode();
       if (domNode) {

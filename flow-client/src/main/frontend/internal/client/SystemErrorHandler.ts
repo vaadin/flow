@@ -18,7 +18,7 @@
 
 import type { Registry } from './Registry';
 import { parseJson } from './communication/MessageHandler';
-import type { ErrorMessage } from './ApplicationConfiguration';
+import type { ErrorMessage } from './bootstrap/ErrorMessage';
 import { addGetParameters } from '../flow/shared/util/SharedUtil';
 import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';

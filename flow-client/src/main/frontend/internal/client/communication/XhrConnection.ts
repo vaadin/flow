@@ -237,6 +237,9 @@ export class XhrConnection {
    *
    * @returns The URI to use for server messages.
    */
+  // Protected in Java, where MessageSender.sendUnloadBeacon reads it through
+  // package access; TypeScript has no package visibility, so the port makes it
+  // public rather than moving the caller.
   getUri(): string {
     const configuration = this.#registry.getApplicationConfiguration();
     return addGetParameter(

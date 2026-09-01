@@ -1,4 +1,5 @@
 import { wiredRegistryBase } from '../flow/stateTreeTestRegistry';
+import { testRegistry } from '../testRegistry';
 import type {
   ResourceLoadEvent,
   ResourceLoadListener
@@ -23,48 +24,49 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
     sessionExpiredHandled: false,
     unrecoverableErrorHandled: false
   };
-  let state = 'INITIALIZING';
-  const registry = {
+  let state: UIState = UIState.INITIALIZING;
+  return {
     log,
     getState: () => state,
-    getUILifecycle: () => ({
-      getState: () => state,
-      setState: (s: string) => {
-        state = s;
-        log.states.push(s);
-      }
-    }),
-    getMessageSender: () => ({
-      getResynchronizationState: () => 'NOT_ACTIVE',
-      clearResynchronizationState: () => {},
-      setClientToServerMessageId: () => {},
-      requestResynchronize: () => true,
-      resynchronize: () => {
-        log.resynchronized = true;
-      }
-    }),
-    getStateTree: () => ({ prepareForResync: () => {} }),
-    getRequestResponseTracker: () => ({
-      fireResponseHandlingStarted: () => {},
-      endRequest: () => log.endRequests++,
-      hasActiveRequest: () => false
-    }),
-    getLoadingIndicatorStateHandler: () => ({ stopLoading: () => log.stopLoadings++ }),
-    getConstantPool: () => ({ importFromJson: (c: unknown) => log.constants.push(c) }),
-    getExecuteJavaScriptProcessor: () => ({ execute: (c: unknown) => log.executed.push(c) }),
-    getDependencyLoader: () => ({ loadDependencies: () => {} }),
-    getSystemErrorHandler: () => ({
-      handleSessionExpiredError: () => {
-        log.sessionExpiredHandled = true;
+    registry: testRegistry({
+      UILifecycle: {
+        getState: () => state,
+        setState: (s: UIState) => {
+          state = s;
+          log.states.push(s);
+        }
       },
-      handleUnrecoverableError: () => {
-        log.unrecoverableErrorHandled = true;
-      }
-    }),
-    getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => maxMessageSuspendTimeout }),
-    getResourceLoader: () => ({ clearLoadedResourceById: (id: string) => log.clearedResources.push(id) })
+      MessageSender: {
+        getResynchronizationState: () => 'NOT_ACTIVE',
+        clearResynchronizationState: () => {},
+        setClientToServerMessageId: () => {},
+        requestResynchronize: () => true,
+        resynchronize: () => {
+          log.resynchronized = true;
+        }
+      },
+      StateTree: { prepareForResync: () => {} },
+      RequestResponseTracker: {
+        fireResponseHandlingStarted: () => {},
+        endRequest: () => log.endRequests++,
+        hasActiveRequest: () => false
+      },
+      LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
+      ConstantPool: { importFromJson: (c: unknown) => log.constants.push(c) },
+      ExecuteJavaScriptProcessor: { execute: (c: unknown) => log.executed.push(c) },
+      DependencyLoader: { loadDependencies: () => {} },
+      SystemErrorHandler: {
+        handleSessionExpiredError: () => {
+          log.sessionExpiredHandled = true;
+        },
+        handleUnrecoverableError: () => {
+          log.unrecoverableErrorHandled = true;
+        }
+      },
+      ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => maxMessageSuspendTimeout },
+      ResourceLoader: { clearLoadedResourceById: (id: string) => log.clearedResources.push(id) }
+    })
   };
-  return registry;
 }
 
 // handleJSON is protected, and the Gwt test reaches it through Java package
@@ -187,7 +189,7 @@ describe('MessageHandler', () => {
 
     it('starts in an undefined sync-id state with default csrf and no push id', () => {
       // Beyond the Java suite: No Java case asserts the initial state.
-      const handler = new MessageHandler(makeRegistry() as never);
+      const handler = new MessageHandler(makeRegistry().registry);
       expect(handler.getLastSeenServerSyncId()).to.equal(-1);
       expect(handler.getCsrfToken()).to.equal('init');
       expect(handler.getPushId()).to.equal(null);
@@ -197,7 +199,7 @@ describe('MessageHandler', () => {
     it('starts the UI and applies an in-order message (constants, csrf, sync id, end request)', () => {
       // Beyond the Java suite: No Java case walks a full in-order message.
       const registry = makeRegistry();
-      const handler = new MessageHandler(registry as never);
+      const handler = new MessageHandler(registry.registry);
       handler.handleMessage({
         syncId: 0,
         'Vaadin-Security-Key': 'tok',
@@ -216,7 +218,7 @@ describe('MessageHandler', () => {
     it('queues an out-of-order message without applying it', () => {
       // Beyond the Java suite: The Gwt suite covers the forced resync, not the queueing itself.
       const registry = makeRegistry();
-      const handler = new MessageHandler(registry as never);
+      const handler = new MessageHandler(registry.registry);
       handler.handleMessage({ syncId: 0, constants: { first: 1 } });
       expect(handler.getLastSeenServerSyncId()).to.equal(0);
 
@@ -229,7 +231,7 @@ describe('MessageHandler', () => {
     it('ignores an already-seen (stale) message but still ends the request', () => {
       // Beyond the Java suite: No Java case covers a stale re-send.
       const registry = makeRegistry();
-      const handler = new MessageHandler(registry as never);
+      const handler = new MessageHandler(registry.registry);
       handler.handleMessage({ syncId: 0 });
       handler.handleMessage({ syncId: 1 });
       const endRequestsBefore = registry.log.endRequests;
@@ -243,7 +245,7 @@ describe('MessageHandler', () => {
     it('runs a one-shot session-expired handler when set', () => {
       // Beyond the Java suite: No Java case covers setNextResponseSessionExpiredHandler.
       const registry = makeRegistry();
-      const handler = new MessageHandler(registry as never);
+      const handler = new MessageHandler(registry.registry);
       let expiredHandled = 0;
       handler.setNextResponseSessionExpiredHandler(() => expiredHandled++);
       handler.handleMessage({ syncId: 0, meta: { sessionExpired: true } });
@@ -297,7 +299,7 @@ describe('MessageHandler', () => {
       // Ported from testForceHandleMessage_resyncIsRequested. The configuration
       // allows 200 ms of message suspension.
       const registry = makeRegistry(200);
-      const handler = new MessageHandler(registry as never);
+      const handler = new MessageHandler(registry.registry);
 
       handler.handleMessage({ syncId: 1 });
       handler.handleMessage({ syncId: 3 });
@@ -312,11 +314,11 @@ describe('MessageHandler', () => {
     it('shows no session-expired message when the UI is already terminated', async () => {
       // Ported from testHandleJSON_uiTerminated_sessionExpiredMessageNotShown.
       const registry = makeRegistry();
-      const handler = new TestMessageHandler(registry as never);
+      const handler = new TestMessageHandler(registry.registry);
       // The UI has been terminated, for instance by the redirect JS that
       // Page::setLocation causes.
-      registry.getUILifecycle().setState('RUNNING');
-      registry.getUILifecycle().setState('TERMINATED');
+      registry.registry.getUILifecycle().setState(UIState.RUNNING);
+      registry.registry.getUILifecycle().setState(UIState.TERMINATED);
 
       handler.callHandleJSON({ meta: { sessionExpired: true } });
       await afterSessionExpiredDelay();
@@ -329,9 +331,9 @@ describe('MessageHandler', () => {
     it('shows no unrecoverable-error message when the UI is already terminated', async () => {
       // Ported from testHandleJSON_uiTerminated_unrecoverableErrorMessageNotShown.
       const registry = makeRegistry();
-      const handler = new TestMessageHandler(registry as never);
-      registry.getUILifecycle().setState('RUNNING');
-      registry.getUILifecycle().setState('TERMINATED');
+      const handler = new TestMessageHandler(registry.registry);
+      registry.registry.getUILifecycle().setState(UIState.RUNNING);
+      registry.registry.getUILifecycle().setState(UIState.TERMINATED);
 
       handler.callHandleJSON({ meta: { appError: true } });
       await afterSessionExpiredDelay();
@@ -344,8 +346,8 @@ describe('MessageHandler', () => {
     it('shows the session-expired message and terminates a running UI', async () => {
       // Ported from testHandleJSON_sessionExpiredAndUIRunning_sessionExpiredMessageShown.
       const registry = makeRegistry();
-      const handler = new TestMessageHandler(registry as never);
-      registry.getUILifecycle().setState('RUNNING');
+      const handler = new TestMessageHandler(registry.registry);
+      registry.registry.getUILifecycle().setState(UIState.RUNNING);
 
       handler.callHandleJSON({ meta: { sessionExpired: true } });
       await afterSessionExpiredDelay();
@@ -358,8 +360,8 @@ describe('MessageHandler', () => {
     it('shows the unrecoverable-error message and terminates a running UI', async () => {
       // Ported from testHandleJSON_unrecoverableErrorAndUIRunning_unrecoverableErrorMessageShown.
       const registry = makeRegistry();
-      const handler = new TestMessageHandler(registry as never);
-      registry.getUILifecycle().setState('RUNNING');
+      const handler = new TestMessageHandler(registry.registry);
+      registry.registry.getUILifecycle().setState(UIState.RUNNING);
 
       handler.callHandleJSON({ meta: { appError: { caption: 'error', message: 'oops' } } });
       await afterSessionExpiredDelay();
@@ -402,7 +404,7 @@ describe('MessageHandler', () => {
         document.head.append(link, style, keep);
 
         const registry = makeRegistry();
-        new MessageHandler(registry as never).handleMessage({ syncId: 0, stylesheetRemovals: ['dep-x'] });
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, stylesheetRemovals: ['dep-x'] });
 
         expect(document.querySelector('[data-id="dep-x"]')).to.equal(null);
         expect(document.querySelector('[data-id="dep-y"]')).to.not.equal(null);
@@ -412,7 +414,7 @@ describe('MessageHandler', () => {
 
       it('reports finite processing and bootstrap timings after a message', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry as never);
+        const handler = new MessageHandler(registry.registry);
         handler.handleMessage({ syncId: 0 });
 
         // [lastProcessingTime, totalProcessingTime, ...serverTimings?, bootstrapTime].
@@ -424,7 +426,7 @@ describe('MessageHandler', () => {
 
       it('keeps processing a message whose stylesheetRemovals is null', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry as never);
+        const handler = new MessageHandler(registry.registry);
         // Java early-returns on a null/empty array; iterating it here would throw
         // inside the processing try and skip everything after it.
         handler.handleMessage({ syncId: 0, stylesheetRemovals: null, constants: { c: 1 } });

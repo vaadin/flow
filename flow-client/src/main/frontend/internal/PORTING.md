@@ -154,6 +154,19 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    never "forgotten". A deliberate subset (e.g. `NodeProperties` currently
    ports only the keys the ported client needs) must say so in the module
    Javadoc, and missing entries are added as later ports require them.
+   - **A Java class with no TypeScript module is listed here, with its reason.**
+     Once the port is complete, "no module at the mirrored path" has to mean a
+     decision rather than an omission, and a reader looking for one of these
+     should not have to re-derive why it is absent. _Introduced during #24952,
+     when the port became complete._
+
+     | Java class | Why no module |
+     | --- | --- |
+     | `client.flow.collection.JsCollections`, `JsMap`, `JsSet`, `JsWeakMap` and their four `jre.Jre*` implementations | GWT overlays for the JavaScript collections; the port uses `Map`, `Set` and `WeakMap` directly. `JsArray` is ported, because Java adds `remove`/`splice` semantics on top of the array |
+     | `client.flow.util.JsObject`, `client.flow.util.NativeFunction` | JSNI helpers for property access and for building a function from source; both are language features in TypeScript, used at the call sites Java routes through them |
+     | `client.gwt.com.google.web.bindery.event.shared.SimpleEventBus`, `client.gwt.elemental.js.util.Xhr` | GWT/elemental shims the framework needed; the port uses its own event router and `XMLHttpRequest` |
+     | `flow.linker.ClientEngineLinker` | a GWT compiler linker, not client code |
+
 5. **Member order follows the Java declaration order**, including for constant
    registries. In a module of exported functions this covers the **export order**
    too: the sequence of `export function` declarations follows the order of the

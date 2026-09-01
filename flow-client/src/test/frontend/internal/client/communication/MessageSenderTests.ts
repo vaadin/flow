@@ -51,6 +51,14 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   return registry;
 }
 
+// send is protected, as in Java, where a test in the same package would reach
+// it; a subclass is the TypeScript equivalent, with no widening in the port.
+class TestMessageSender extends MessageSender {
+  callSend(payload: Record<string, unknown>): void {
+    this.send(payload);
+  }
+}
+
 describe('MessageSender (class)', () => {
   it('runs the resynchronization state machine', () => {
     const sender = new MessageSender(makeRegistry());
@@ -64,8 +72,8 @@ describe('MessageSender (class)', () => {
 
   it('sends a payload over XHR, assigning sync and client ids', () => {
     const registry = makeRegistry();
-    const sender = new MessageSender(registry);
-    sender.send({ rpc: [] });
+    const sender = new TestMessageSender(registry);
+    sender.callSend({ rpc: [] });
 
     expect(registry.log.xhrSends).to.have.length(1);
     const sent = registry.log.xhrSends[0];
@@ -77,17 +85,17 @@ describe('MessageSender (class)', () => {
 
   it('queues a second message while one is pending', () => {
     const registry = makeRegistry();
-    const sender = new MessageSender(registry);
-    sender.send({ rpc: [] }); // sent, clientId 0
-    sender.send({ rpc: ['second'] }); // queued, not sent
+    const sender = new TestMessageSender(registry);
+    sender.callSend({ rpc: [] }); // sent, clientId 0
+    sender.callSend({ rpc: ['second'] }); // queued, not sent
     expect(registry.log.xhrSends).to.have.length(1);
     expect(sender.hasQueuedMessages()).to.be.true;
   });
 
   it('dequeues the acknowledged message on a matching client id', () => {
     const registry = makeRegistry();
-    const sender = new MessageSender(registry);
-    sender.send({ rpc: [] }); // sent, clientId 0
+    const sender = new TestMessageSender(registry);
+    sender.callSend({ rpc: [] }); // sent, clientId 0
     expect(sender.hasQueuedMessages()).to.be.true;
 
     // Server acknowledges client id 1 (it has seen message 0).
@@ -123,7 +131,7 @@ describe('MessageSender (class)', () => {
       configurable: true
     });
     try {
-      new MessageSender(registry).sendUnloadBeacon();
+      new TestMessageSender(registry).sendUnloadBeacon();
     } finally {
       Object.defineProperty(navigator, 'sendBeacon', { value: original, configurable: true });
     }
@@ -135,8 +143,8 @@ describe('MessageSender (class)', () => {
 
   it('resends queued messages on a reconnection attempt', () => {
     const registry = makeRegistry();
-    const sender = new MessageSender(registry);
-    sender.send({ rpc: [] });
+    const sender = new TestMessageSender(registry);
+    sender.callSend({ rpc: [] });
     expect(registry.log.xhrSends).to.have.length(1);
 
     // Simulate the request finishing, then a reconnection attempt.

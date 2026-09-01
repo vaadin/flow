@@ -99,6 +99,14 @@ suite with the most coverage.
 *Decision procedure:* the report lists the counterparts found per suite and the
 union's case count, so a suite that claims to have none has demonstrably looked.
 
+Match the class by its **subject**, not by the name a search for the ported class
+turns up: `GwtErrotHandlerTest` (the typo is in the Java source) is
+`SystemErrorHandler`'s Gwt test, and its suite claimed the class had none until
+this enumeration ran from the Java side. A Java test class whose subject has no
+TypeScript module at all is not a gap - the collection overlays and JSNI helpers
+in rule 4's table, and `AssertionTest` / `CodeTest`, which check the Java build
+itself - but say which of the two it is rather than leaving the class unmentioned.
+
 **Report evidence, not verdicts.** The grid may be summarised **per rule** — never
 per module — and each rule row carries what established it: the counts compared,
 or the members listed. *"Rule 6: `@param`/`@returns` per module 5/2, 4/2, 16/12/3,
