@@ -87,6 +87,8 @@ public interface TableColumnSpan extends HasElement {
      * interface is implicitly {@code public static final} and cannot be made
      * private, so a constant here would become published API, both on this
      * interface and on every class inheriting it.
+     *
+     * @return the name of the {@code span} attribute.
      */
     private static String spanAttribute() {
         return "span";

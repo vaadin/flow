@@ -31,6 +31,12 @@ import com.vaadin.testbench.elementsbase.Element;
 @Element("table")
 public class TableElement extends TestBenchElement {
 
+    private static final String CAPTION = "caption";
+    private static final String COLGROUP = "colgroup";
+    private static final String THEAD = "thead";
+    private static final String TBODY = "tbody";
+    private static final String TFOOT = "tfoot";
+
     /**
      * Returns every row of this table, walking its sections in document order.
      * For a table rendered by {@code Table} that is the
@@ -50,7 +56,7 @@ public class TableElement extends TestBenchElement {
      * @return all the rows of this table.
      */
     public List<TableRowElement> getAllRows() {
-        return rowsOf(sections("thead", "tbody", "tfoot"));
+        return rowsOf(sections(THEAD, TBODY, TFOOT));
     }
 
     /**
@@ -86,7 +92,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;thead&gt;</code>.
      */
     public List<TableRowElement> getHeaderRows() {
-        return rowsOf(sections("thead"));
+        return rowsOf(sections(THEAD));
     }
 
     /**
@@ -97,7 +103,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;tbody&gt;</code>.
      */
     public List<TableRowElement> getBodyRows() {
-        return rowsOf(sections("tbody"));
+        return rowsOf(sections(TBODY));
     }
 
     /**
@@ -107,7 +113,7 @@ public class TableElement extends TestBenchElement {
      *         <code>&lt;tfoot&gt;</code>.
      */
     public List<TableRowElement> getFooterRows() {
-        return rowsOf(sections("tfoot"));
+        return rowsOf(sections(TFOOT));
     }
 
     /**
@@ -117,7 +123,7 @@ public class TableElement extends TestBenchElement {
      * @return the table bodies.
      */
     public List<TableBodyElement> getBodies() {
-        return childrenNamed("tbody").stream()
+        return childrenNamed(TBODY).stream()
                 .map(child -> child.wrap(TableBodyElement.class)).toList();
     }
 
@@ -131,7 +137,7 @@ public class TableElement extends TestBenchElement {
      *             question, since an empty {@code <thead>} has no rows.
      */
     public TableHeadElement getHead() {
-        return childrenNamed("thead").stream().findFirst()
+        return childrenNamed(THEAD).stream().findFirst()
                 .map(child -> child.wrap(TableHeadElement.class))
                 .orElseThrow(() -> new NoSuchElementException(
                         "The table has no <thead>"));
@@ -144,7 +150,7 @@ public class TableElement extends TestBenchElement {
      * @return {@code true} if the section is present.
      */
     public boolean hasHead() {
-        return !childrenNamed("thead").isEmpty();
+        return !childrenNamed(THEAD).isEmpty();
     }
 
     /**
@@ -157,7 +163,7 @@ public class TableElement extends TestBenchElement {
      *             question, since an empty {@code <tfoot>} has no rows.
      */
     public TableFootElement getFoot() {
-        return childrenNamed("tfoot").stream().findFirst()
+        return childrenNamed(TFOOT).stream().findFirst()
                 .map(child -> child.wrap(TableFootElement.class))
                 .orElseThrow(() -> new NoSuchElementException(
                         "The table has no <tfoot>"));
@@ -170,7 +176,7 @@ public class TableElement extends TestBenchElement {
      * @return {@code true} if the section is present.
      */
     public boolean hasFoot() {
-        return !childrenNamed("tfoot").isEmpty();
+        return !childrenNamed(TFOOT).isEmpty();
     }
 
     /**
@@ -182,7 +188,7 @@ public class TableElement extends TestBenchElement {
      *             check without failing.
      */
     public TableCaptionElement getCaption() {
-        return childrenNamed("caption").stream().findFirst()
+        return childrenNamed(CAPTION).stream().findFirst()
                 .map(child -> child.wrap(TableCaptionElement.class))
                 .orElseThrow(() -> new NoSuchElementException(
                         "The table has no <caption>"));
@@ -195,7 +201,7 @@ public class TableElement extends TestBenchElement {
      * @return {@code true} if the caption is present.
      */
     public boolean hasCaption() {
-        return !childrenNamed("caption").isEmpty();
+        return !childrenNamed(CAPTION).isEmpty();
     }
 
     /**
@@ -204,7 +210,7 @@ public class TableElement extends TestBenchElement {
      * @return the table's <code>&lt;colgroup&gt;</code> elements.
      */
     public List<TableColumnGroupElement> getColumnGroups() {
-        return childrenNamed("colgroup").stream()
+        return childrenNamed(COLGROUP).stream()
                 .map(child -> child.wrap(TableColumnGroupElement.class))
                 .toList();
     }

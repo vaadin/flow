@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -42,6 +43,7 @@ import com.vaadin.flow.component.HtmlContainer;
 public abstract class TableCell extends HtmlContainer {
 
     private static final String ATTRIBUTE_HEADERS = "headers";
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
     private static final String ATTRIBUTE_COLSPAN = "colspan";
     private static final String ATTRIBUTE_ROWSPAN = "rowspan";
 
@@ -287,7 +289,7 @@ public abstract class TableCell extends HtmlContainer {
         // leading whitespace would otherwise yield an empty first id. Only an
         // attribute set through the Element API can look like that, since the
         // setters reject blank ids
-        return List.of(value.strip().split("\\s+"));
+        return List.of(WHITESPACE.split(value.strip()));
     }
 
     /**

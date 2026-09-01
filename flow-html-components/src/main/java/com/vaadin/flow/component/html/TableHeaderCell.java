@@ -41,6 +41,8 @@ import com.vaadin.flow.signals.Signal;
 public class TableHeaderCell extends TableCell
         implements ClickNotifier<TableHeaderCell> {
 
+    private static final String ATTRIBUTE_SCOPE = "scope";
+
     /**
      * Creates a new empty header cell.
      */
@@ -184,9 +186,9 @@ public class TableHeaderCell extends TableCell
      */
     public void setScope(@Nullable Scope scope) {
         if (scope == null) {
-            getElement().removeAttribute("scope");
+            getElement().removeAttribute(ATTRIBUTE_SCOPE);
         } else {
-            getElement().setAttribute("scope", scope.getValue());
+            getElement().setAttribute(ATTRIBUTE_SCOPE, scope.getValue());
         }
     }
 
@@ -198,6 +200,6 @@ public class TableHeaderCell extends TableCell
      */
     public Optional<Scope> getScope() {
         return Optional.ofNullable(
-                Scope.fromValue(getElement().getAttribute("scope")));
+                Scope.fromValue(getElement().getAttribute(ATTRIBUTE_SCOPE)));
     }
 }

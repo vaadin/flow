@@ -83,8 +83,8 @@ class TableColumnGroupTest extends ComponentTest {
         assertThrows(IllegalStateException.class, spanning::addColumn);
         assertThrows(IllegalStateException.class,
                 () -> spanning.insertColumn(0));
-        assertThrows(IllegalStateException.class,
-                () -> spanning.add(new TableColumn()));
+        TableColumn loose = new TableColumn();
+        assertThrows(IllegalStateException.class, () -> spanning.add(loose));
 
         TableColumnGroup withColumns = new TableColumnGroup();
         withColumns.addColumn();
@@ -103,12 +103,13 @@ class TableColumnGroupTest extends ComponentTest {
                 () -> group.addComponentAtIndex(0, column));
         assertThrows(IllegalStateException.class,
                 () -> group.addComponentAsFirst(column));
+        TableColumn replacementWhileSpanning = new TableColumn();
         assertThrows(IllegalStateException.class,
-                () -> group.replace(column, new TableColumn()));
+                () -> group.replace(column, replacementWhileSpanning));
         // bindChildren cannot honour the invariant, so it is refused outright
+        ListSignal<TableColumn> columns = new ListSignal<>();
         assertThrows(UnsupportedOperationException.class,
-                () -> group.bindChildren(new ListSignal<TableColumn>(),
-                        signal -> new TableColumn()));
+                () -> group.bindChildren(columns, signal -> new TableColumn()));
         assertTrue(group.getColumns().isEmpty());
 
         // and once the span is gone, they all work as the contract says

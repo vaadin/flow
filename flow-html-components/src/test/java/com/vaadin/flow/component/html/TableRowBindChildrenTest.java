@@ -63,7 +63,7 @@ class TableRowBindChildrenTest extends SignalsUnitTest {
         // applies: a factory, an insert, and addCells wrapping a non-cell
         assertThrows(BindingActiveException.class, row::addDataCell);
         assertThrows(BindingActiveException.class, () -> row.insertDataCell(0));
-        assertThrows(BindingActiveException.class,
-                () -> row.addCells(new Span("x")));
+        Span loose = new Span("x");
+        assertThrows(BindingActiveException.class, () -> row.addCells(loose));
     }
 }
