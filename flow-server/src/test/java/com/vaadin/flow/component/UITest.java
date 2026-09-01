@@ -1266,6 +1266,45 @@ public class UITest {
 
         assertFalse(fixture.ui.hasModalComponent(),
                 "Setting modal to VISUAL should have removed all server side modality");
+        assertTrue(fixture.ui.getInternals().hasModalityComponent(),
+                "VISUAL component should still be tracked as a component with modality");
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported as a component with modality");
+        verifyInert(fixture.routingComponent, false);
+    }
+
+    @Test
+    public void modalityComponents_modalAndVisual_allReported() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.add(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        MatcherAssert.assertThat(
+                fixture.ui.getInternals().getModalityComponents(),
+                CoreMatchers.hasItems(fixture.modalComponent, visualComponent));
+
+        fixture.ui.setChildComponentModal(visualComponent,
+                ModalityMode.MODELESS);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Setting MODELESS should have removed the component from the modality components");
+    }
+
+    @Test
+    public void modalVisualComponent_removedFromUI_notReportedAsModalityComponent() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        fixture.modalComponent.removeFromParent();
+
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Detached component should not be tracked as a component with modality");
+        assertTrue(fixture.ui.getInternals().getModalityComponents().isEmpty(),
+                "Detached component should not be reported as a component with modality");
     }
 
     @Test
