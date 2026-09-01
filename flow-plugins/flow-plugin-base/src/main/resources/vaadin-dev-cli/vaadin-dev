@@ -401,6 +401,18 @@ spin_tick() {
 trap spin_erase EXIT
 trap 'spin_erase; exit 130' INT
 
+# The frame between two replies is made by a read that times out, and that is a
+# bash 4 feature three times over: a fractional -t, an exit status above 128 that
+# separates a timeout from end of stream, and partial input kept in the variable
+# instead of dropped. macOS still ships bash 3.2, which has none of the three, so
+# there the read blocks and the phase line moves only when the daemon speaks -
+# a reply must never be truncated to make room for a spinner.
+if (( BASH_VERSINFO[0] >= 4 )); then
+    RECV_TIMEOUT=(-t 0.2)
+else
+    RECV_TIMEOUT=()
+fi
+
 # Sends one command and streams the reply. Response lines are "> text" progress
 # followed by a final "EXIT <code>" which becomes this script's exit status.
 send() { # $1=port $2=token $3...=command words
@@ -411,13 +423,14 @@ send() { # $1=port $2=token $3...=command words
         return 99
     fi
     printf '%s %s\n' "$token" "$*" >&3
-    local line status=1 buf='' chunk rc
+    local line status=1 buf='' chunk='' rc
     spin_begin "$*"
     while :; do
-        # A timeout is what makes room for a frame between two replies. Anything
-        # read before it fires is kept: bash leaves a partial line in the variable,
-        # and dropping it would silently truncate the reply.
-        IFS= read -r -t 0.2 chunk <&3
+        # Where the timeout is armed it is what makes room for a frame between two
+        # replies. Anything read before it fires is kept: bash leaves a partial
+        # line in the variable, and dropping it would silently truncate the reply.
+        # The ${RECV_TIMEOUT+...} guard keeps an empty array from tripping set -u.
+        IFS= read -r ${RECV_TIMEOUT+"${RECV_TIMEOUT[@]}"} chunk <&3
         rc=$?
         if (( rc > 128 )); then
             buf+="$chunk"
