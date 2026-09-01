@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from './testRegistry';
 import { ResourceLoader, addOnloadHandler } from '../../../../main/frontend/internal/client/ResourceLoader';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
@@ -57,7 +58,7 @@ describe('ResourceLoader', () => {
   // runPromiseExpression is private in Java; it is reached through the public
   // loadDynamicImport, which resolves the listener from the promise it returns.
   describe('loadDynamicImport', () => {
-    const loader = () => new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
+    const loader = () => new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
     const listener = (onLoad: () => void, onError: () => void): ResourceLoadListener => ({
       onLoad,
       onError
@@ -97,7 +98,7 @@ describe('ResourceLoader', () => {
   });
 
   it('loads an external script and dedupes a repeat request', async () => {
-    const loader = new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
+    const loader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
     const url = 'data:text/javascript,globalThis.__rl_probe=(globalThis.__rl_probe||0)+1';
     const first = recordingListener();
     loader.loadScript(url, first.listener);
@@ -114,7 +115,7 @@ describe('ResourceLoader', () => {
     const comment = document.createComment('Stylesheet end');
     document.head.appendChild(comment);
     try {
-      const loader = new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
+      const loader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
       const url = `data:text/css,/* ${Math.floor(performance.now())} */ .rl-probe{color:red}`;
       const first = recordingListener();
       loader.loadStylesheet(url, first.listener);
@@ -143,7 +144,7 @@ describe('ResourceLoader', () => {
     const comment = document.createComment('Stylesheet end');
     document.head.appendChild(comment);
     try {
-      const loader = new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
+      const loader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
       const css = '.inline-probe{color:blue}';
       // A <style> element fires no load event, so this covers the insertion
       // position only; notification is covered by the loadStylesheet case above.

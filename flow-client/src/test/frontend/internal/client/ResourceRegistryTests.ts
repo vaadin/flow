@@ -1,10 +1,11 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from './testRegistry';
 import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
 import { type ResourceLoadEvent, ResourceRegistry } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 // The registry resolves its error handler through the registry, as Java does.
 function registryWith(handleError: (message: string) => void) {
-  return { getSystemErrorHandler: () => ({ handleError }) };
+  return testRegistry({ SystemErrorHandler: { handleError } });
 }
 
 // The event carries the loader that did the work.

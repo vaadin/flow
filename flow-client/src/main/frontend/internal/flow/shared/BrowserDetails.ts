@@ -253,6 +253,8 @@ export class BrowserDetails {
           }
         } else if (this.#browserEngine === BrowserEngine.TRIDENT) {
           // potentially IE 11 in compatibility mode
+          // See
+          // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537503(v=vs.85)#trident-token
           this.#browserMajorVersion = 4 + Math.trunc(this.#browserEngineVersion);
           this.#browserMinorVersion = 0;
         } else {

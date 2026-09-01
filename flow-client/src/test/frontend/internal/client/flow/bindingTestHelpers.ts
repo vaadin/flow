@@ -5,6 +5,7 @@
 // StateTree, so this harness builds that same stack instead of the per-function
 // fakes used by the unit-level binding tests.
 
+import { TestRegistry } from '../testRegistry';
 import { InitialPropertiesHandler } from '../../../../../main/frontend/internal/client/InitialPropertiesHandler';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
@@ -38,8 +39,7 @@ export interface CollectingTree {
   // sendTemplateEventToServer collected, mirrors serverMethods/serverRpcNodes/
   // serverPromiseIds in GwtEventHandlerTest.
   templateEvents: TemplateEvent[];
-  // The registry's real handler. Tests reach it here rather than through
-  // tree.getRegistry(), whose slice names only the two methods the binder calls.
+  // The registry's real handler, so a test can drive it without looking it up.
   initialPropertiesHandler: InitialPropertiesHandler;
   clearSynchronizedProperties(): void;
 }
@@ -72,9 +72,11 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
   // reverts a property the client changed during binding. It resolves its tree
   // through the registry while the tree is built from that registry, so the
   // getter below reads the tree lazily to break the construction cycle.
-  const initialPropertiesHandler = new InitialPropertiesHandler({
-    getStateTree: () => tree
-  });
+  // The registry is built first and filled in below: the handler resolves its
+  // tree through it while the tree is built from it, so neither can be
+  // constructed before the other is registered.
+  const registry = new TestRegistry();
+  const initialPropertiesHandler = new InitialPropertiesHandler(registry);
 
   const serverConnector = {
     sendEventMessage: (node: StateNode, _eventType: string, eventData: unknown): void => {
@@ -103,15 +105,15 @@ export function makeCollectingTree(options: CollectingTreeOptions = {}): Collect
     }
   };
 
-  const registry: any = {
-    getInitialPropertiesHandler: () => initialPropertiesHandler,
-    getServerConnector: () => serverConnector,
-    getConstantPool: () => constantPool,
-    getExistingElementMap: () => existingElementMap,
-    getApplicationConfiguration: () => applicationConfiguration
-  };
+  registry
+    .register('InitialPropertiesHandler', initialPropertiesHandler)
+    .register('ServerConnector', serverConnector)
+    .register('ConstantPool', constantPool)
+    .register('ExistingElementMap', existingElementMap)
+    .register('ApplicationConfiguration', applicationConfiguration);
 
   const tree: StateTree = new StateTree(registry);
+  registry.register('StateTree', tree);
 
   return {
     tree,

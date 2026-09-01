@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from './testRegistry';
 import { InitialPropertiesHandler } from '../../../../main/frontend/internal/client/InitialPropertiesHandler';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
@@ -20,7 +21,7 @@ describe('InitialPropertiesHandler', () => {
     tree = new StateTree(built.registry);
     // The handler asks its registry for the tree; the tree is the real one, so
     // the update-in-progress flag is set on it directly.
-    handler = new InitialPropertiesHandler({ getStateTree: () => tree });
+    handler = new InitialPropertiesHandler(testRegistry({ StateTree: tree }));
     updateInProgress = false;
   });
 

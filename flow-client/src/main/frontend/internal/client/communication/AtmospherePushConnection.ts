@@ -21,15 +21,10 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
-import type { UILifecycle } from '../UILifecycle';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { MessageHandler } from './MessageHandler';
-import type { PushConfiguration } from './PushConfiguration';
-import type { ResourceLoader } from '../ResourceLoader';
-import type { URIResolver } from '../URIResolver';
 import { parseJson } from './MessageHandler';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
@@ -193,32 +188,6 @@ interface AtmosphereResponse {
   responseBody: string;
 }
 
-/** The connection-state callbacks AtmospherePushConnection invokes. */
-interface PushConnectionStateHandler {
-  pushOk(connection: PushConnection): void;
-  pushError(connection: PushConnection, response: unknown): void;
-  pushClosed(connection: PushConnection, response: unknown): void;
-  pushClientTimeout(connection: PushConnection, response: unknown): void;
-  pushReconnectPending(connection: PushConnection): void;
-  pushInvalidContent(connection: PushConnection, message: string): void;
-  pushNotConnected(payload: Record<string, unknown>): void;
-  pushScriptLoadError(resourceUrl: string): void;
-}
-
-/** The slice of {@link Registry} AtmospherePushConnection uses. */
-interface AtmospherePushRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
-  getPushConfiguration(): Pick<PushConfiguration, 'getParameters' | 'getPushServletMapping' | 'isAlwaysXhrToServer'>;
-  getConnectionStateHandler(): PushConnectionStateHandler;
-  getApplicationConfiguration(): Pick<
-    ApplicationConfiguration,
-    'getServiceUrl' | 'getContextRootUrl' | 'getUIId' | 'isProductionMode'
-  >;
-  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
-  getMessageHandler(): Pick<MessageHandler, 'getPushId' | 'getLastSeenServerSyncId' | 'handleMessage'>;
-  getResourceLoader(): Pick<ResourceLoader, 'loadScript'>;
-}
-
 /**
  * The default {@link PushConnection} implementation that uses Atmosphere for
  * handling the communication channel.
@@ -227,7 +196,7 @@ interface AtmospherePushRegistry {
  * splitter.
  */
 export class AtmospherePushConnection implements PushConnection {
-  readonly #registry: AtmospherePushRegistry;
+  readonly #registry: Registry;
 
   #state: State = State.CONNECT_PENDING;
 
@@ -243,7 +212,7 @@ export class AtmospherePushConnection implements PushConnection {
 
   #pendingDisconnectCommand: Command | null = null;
 
-  constructor(registry: AtmospherePushRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
@@ -274,7 +243,7 @@ export class AtmospherePushConnection implements PushConnection {
     this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
   }
 
-  #getConnectionStateHandler(): PushConnectionStateHandler {
+  #getConnectionStateHandler(): ConnectionStateHandler {
     return this.#registry.getConnectionStateHandler();
   }
 
@@ -560,4 +529,4 @@ export class AtmospherePushConnection implements PushConnection {
 
 /** The default {@link PushConnectionFactory}: creates an AtmospherePushConnection. */
 export const atmospherePushConnectionFactory: PushConnectionFactory = (registry: unknown): PushConnection =>
-  new AtmospherePushConnection(registry as AtmospherePushRegistry);
+  new AtmospherePushConnection(registry as Registry);

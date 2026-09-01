@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from '../testRegistry';
 import { ReconnectConfiguration } from '../../../../../main/frontend/internal/client/communication/ReconnectConfiguration';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
@@ -21,8 +22,8 @@ function makeRegistry() {
   const tree = new StateTree(inertRegistry());
   const map = tree.getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
   return {
-    getProperty: (key: string) => map.getProperty(key),
-    getStateTree: () => tree
+    registry: testRegistry({ StateTree: tree }),
+    getProperty: (key: string) => map.getProperty(key)
   };
 }
 
@@ -33,7 +34,7 @@ describe('ReconnectConfiguration', () => {
 
   beforeEach(() => {
     registry = makeRegistry();
-    config = new ReconnectConfiguration(registry);
+    config = new ReconnectConfiguration(registry.registry);
     configurationUpdatedCalled = 0;
     ReconnectConfiguration.bind(
       fakeConnectionStateHandler({

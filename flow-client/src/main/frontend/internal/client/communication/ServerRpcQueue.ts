@@ -17,23 +17,14 @@
 // TypeScript port of com.vaadin.client.communication.ServerRpcQueue, built
 // alongside the Java version. It accumulates pending RPC invocations and flushes
 // them to the server (via the MessageSender) deferred, so all event handlers run
-// before the queue is sent. The Registry/UILifecycle/MessageSender are contracts
-// satisfied at cutover.
+// before the queue is sent.
 
 import type { Registry } from '../Registry';
-import type { MessageSender } from './MessageSender';
-import type { UILifecycle } from '../UILifecycle';
 import { getScheduler } from '../TrackingScheduler';
 import { Console } from '../Console';
 
 // Sentinel flush strategy; identity-compared to detect a scheduled flush.
 const NO_OP = (): void => {};
-
-/** The slice of {@link Registry} that ServerRpcQueue uses. */
-interface ServerRpcQueueRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
-  getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;
-}
 
 /**
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
@@ -44,7 +35,7 @@ export class ServerRpcQueue {
 
   #flushPending = false;
 
-  readonly #registry: ServerRpcQueueRegistry;
+  readonly #registry: Registry;
 
   #doFlushStrategy: () => void = NO_OP;
 
@@ -53,7 +44,7 @@ export class ServerRpcQueue {
    *
    * @param registry - the global registry
    */
-  constructor(registry: ServerRpcQueueRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

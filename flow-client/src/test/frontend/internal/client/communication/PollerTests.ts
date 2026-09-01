@@ -9,16 +9,17 @@ import { recordingRegistry } from '../flow/stateTreeTestRegistry';
 // Poller reaches the server through a real StateTree, and its lifecycle handler
 // through the real UILifecycle, so both are built here rather than faked.
 function makeRegistry() {
-  const { registry: treeRegistry, recorded } = recordingRegistry();
-  const tree = new StateTree(treeRegistry);
+  const { registry, recorded } = recordingRegistry();
+  const tree = new StateTree(registry);
   const uiLifecycle = new UILifecycle();
-  return { events: recorded.events, tree, uiLifecycle, getUILifecycle: () => uiLifecycle, getStateTree: () => tree };
+  registry.register('StateTree', tree).register('UILifecycle', uiLifecycle);
+  return { registry, events: recorded.events, tree, uiLifecycle };
 }
 
 describe('Poller', () => {
   it('poll() sends a ui-poll event on the root node', () => {
     const registry = makeRegistry();
-    new Poller(registry).poll();
+    new Poller(registry.registry).poll();
     expect(registry.events).to.deep.equal([
       { nodeId: registry.tree.getRootNode().getId(), eventType: 'ui-poll', eventData: null }
     ]);
@@ -26,7 +27,7 @@ describe('Poller', () => {
 
   it('polls repeatedly at the configured interval, and stops', async () => {
     const registry = makeRegistry();
-    const poller = new Poller(registry);
+    const poller = new Poller(registry.registry);
     poller.setInterval(5);
     await new Promise((resolve) => setTimeout(resolve, 25));
     const countWhilePolling = registry.events.length;
@@ -39,7 +40,7 @@ describe('Poller', () => {
 
   it('stops polling when the UI lifecycle terminates', async () => {
     const registry = makeRegistry();
-    const poller = new Poller(registry);
+    const poller = new Poller(registry.registry);
     poller.setInterval(5);
     await new Promise((resolve) => setTimeout(resolve, 15));
     // Only single forward steps are allowed, so run the UI before terminating it.

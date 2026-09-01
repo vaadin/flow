@@ -29,12 +29,9 @@
 // parameters, defers until any referenced node is bound, then manifests and runs
 // the expression against a context wired to the ExecuteJavaScriptElementUtils
 // callbacks. Composes the ported decoders / invokeJavaScript /
-// getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
-// are contracts satisfied at cutover.
+// getContextExecutionObject / element-utils / needsRebind.
 
 import type { Registry } from '../Registry';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { UILifecycle } from '../UILifecycle';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { assert } from '../../assert';
@@ -49,7 +46,6 @@ import {
 } from '../ExecuteJavaScriptElementUtils';
 import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
-import type { StateTree } from './StateTree';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
 
@@ -70,26 +66,19 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-/** The slice of {@link Registry} ExecuteJavaScriptProcessor uses. */
-interface ExecuteJsRegistry {
-  getStateTree(): StateTree;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getApplicationId' | 'isProductionMode'>;
-  getUILifecycle(): Pick<UILifecycle, 'isTerminated' | 'setState'>;
-}
-
 /**
  * Processes the result of `Page.executeJs` on the client. `Page` is a
  * flow-server class, outside this port, so the reference stays a code span.
  */
 export class ExecuteJavaScriptProcessor {
-  readonly #registry: ExecuteJsRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new instance connected to the given registry.
    *
    * @param registry - the global registry
    */
-  constructor(registry: ExecuteJsRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 
@@ -117,7 +106,7 @@ export class ExecuteJavaScriptProcessor {
       const parameterJson = invocation[i];
       // The real StateTree's ServerConnector has sendReturnChannelMessage (used
       // by the @v-return branch); StateTree's narrower type omits it.
-      const parameter = decodeWithTypeInfo(tree as never, parameterJson);
+      const parameter = decodeWithTypeInfo(tree, parameterJson);
       parameters.push(parameter);
       parameterNamesAndCode.push(`$${i}`);
 
@@ -159,7 +148,7 @@ export class ExecuteJavaScriptProcessor {
   // A node is bound once it has a DOM node that does not need rebinding, and so
   // is each of its ancestors.
   protected isBound(node: StateNode): boolean {
-    const isNodeBound = node.getDomNode() !== null && !needsRebind(node as never);
+    const isNodeBound = node.getDomNode() !== null && !needsRebind(node);
     const parent = node.getParent();
     if (!isNodeBound || parent === null) {
       return isNodeBound;
@@ -170,8 +159,7 @@ export class ExecuteJavaScriptProcessor {
   /**
    * Executes the actual invocation.
    *
-   * Java declares this protected instead of private for testing purposes; the
-   * port keeps it private and covers it through execute().
+   * Protected instead of private for testing purposes, as in Java.
    *
    * @param parameterNamesAndCode - an array consisting of parameter names
    *          followed by the JavaScript expression to execute

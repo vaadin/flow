@@ -1455,6 +1455,7 @@ function getOrCreateExpression(expressionString: string): EventExpression {
  * walk from the target's parent. Returns -1 if none is found. Mirrors
  * getClosestStateNodeIdToEventTarget.
  */
+// This function could be moved somewhere to be reusable
 function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTarget | null): number {
   if (target === null) {
     return -1;
@@ -1473,6 +1474,7 @@ function getClosestStateNodeIdToEventTarget(topNode: StateNode, target: EventTar
         return stateNode.getId();
       }
       // NOTE: for now not looking at virtual children on purpose.
+      // If needed (?), those can be included here to the search stack
       stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).forEach((child) => stack.push(child as StateNode));
     }
     // no direct match: bottom-up search from the target's parent

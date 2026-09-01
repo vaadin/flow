@@ -17,21 +17,12 @@
 // TypeScript port of com.vaadin.client.communication.Poller, built alongside the
 // Java version. It polls the server at a configured interval by sending a poll
 // event on the root state node (the GWT repeating Timer maps to setInterval) and
-// stops when the UI lifecycle terminates. The Registry/StateTree are contracts
-// satisfied at cutover.
+// stops when the UI lifecycle terminates.
 
 import type { Registry } from '../Registry';
-import type { StateTree } from '../flow/StateTree';
-import type { UILifecycle } from '../UILifecycle';
 
 // com.vaadin.flow.component.PollEvent.DOM_EVENT_NAME
 const POLL_DOM_EVENT_NAME = 'ui-poll';
-
-/** The slice of {@link Registry} that Poller uses. */
-interface PollerRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
-  getStateTree(): StateTree;
-}
 
 /**
  * Handles polling the server with a given interval.
@@ -39,14 +30,14 @@ interface PollerRegistry {
 export class Poller {
   #pollHandle: ReturnType<typeof setInterval> | null = null;
 
-  readonly #registry: PollerRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new instance using the given registry.
    *
    * @param registry - the registry
    */
-  constructor(registry: PollerRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {

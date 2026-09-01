@@ -18,41 +18,26 @@
 // alongside the Java version. It builds RPC messages (plain JS objects, later
 // JSON-serialized by the transport) and enqueues them on the server RPC queue.
 // ServerRpcQueue and LoadingIndicatorStateHandler are ported alongside this
-// module; the registry slice below still names only what this class calls,
-// because Registry.java's typed getters cannot be ported until DefaultRegistry
-// can assemble them. This is the real implementation of StateTree's
-// ServerConnector contract.
+// module, and are resolved through the registry as in Java.
 
-import type { StateTree } from '../flow/StateTree';
 import type { Registry } from '../Registry';
-import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
-import type { ServerRpcQueue } from './ServerRpcQueue';
 import type { StateNode } from '../flow/StateNode';
 import { encodeWithoutTypeInfo } from '../flow/util/ClientJsonCodec';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
-/** The slice of {@link Registry} that ServerConnector uses. */
-interface ServerConnectorRegistry {
-  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'processMessage'>;
-  getServerRpcQueue(): Pick<ServerRpcQueue, 'add' | 'flush'>;
-}
-
 /**
  * Handles creating and sending messages to the server using {@link
  * ServerRpcQueue}.
- *
- * {@link StateTree}'s registry slice names the subset of this class it calls with
- * `Pick<…>`, so no contract duplicates these signatures.
  */
 export class ServerConnector {
-  readonly #registry: ServerConnectorRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new server connector.
    *
    * @param registry - the global registry
    */
-  constructor(registry: ServerConnectorRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

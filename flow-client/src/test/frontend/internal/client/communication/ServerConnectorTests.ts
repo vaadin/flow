@@ -1,5 +1,6 @@
 // Beyond the Java suite: ServerConnector has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
+import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { ServerConnector } from '../../../../../main/frontend/internal/client/communication/ServerConnector';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
@@ -11,17 +12,17 @@ function makeRegistry() {
   const queued: Array<Record<string, unknown>> = [];
   const processed: Array<[string | null, string | null]> = [];
   let flushes = 0;
-  const registry = {
-    getLoadingIndicatorStateHandler: () => ({
+  const registry = testRegistry({
+    LoadingIndicatorStateHandler: {
       processMessage: (type: string | null, eventType: string | null) => processed.push([type, eventType])
-    }),
-    getServerRpcQueue: () => ({
+    },
+    ServerRpcQueue: {
       add: (message: Record<string, unknown>) => queued.push(message),
       flush: () => {
         flushes++;
       }
-    })
-  };
+    }
+  });
   return { registry, queued, processed, flushes: () => flushes };
 }
 

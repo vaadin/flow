@@ -1,31 +1,35 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from './testRegistry';
 import sinon from 'sinon';
 import { Console } from '../../../../main/frontend/internal/client/Console';
 import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
 
-// Beyond the Java suite: com.vaadin.client.SystemErrorHandler has no test class
-// of its own.
+// Ported from com.vaadin.client.flow.GwtErrotHandlerTest (the class name carries
+// a typo in the Java source), whose single case is ported below. Every other case
+// here is beyond the Java suite: com.vaadin.client.SystemErrorHandler has no
+// JRE-side test class.
 describe('SystemErrorHandler', () => {
   function makeHandler(opts: { webComponentMode?: boolean; exported?: string[] } = {}) {
-    return new SystemErrorHandler({
-      getApplicationConfiguration: () => ({
-        isWebComponentMode: () => opts.webComponentMode ?? false,
-        getExportedWebComponents: () => opts.exported ?? [],
-        // The rest of the configuration contract; inert, as these cases only
-        // drive the two above.
-        getSessionExpiredError: () => null,
-        getServiceUrl: () => '',
-        getUIId: () => 0,
-        setUIId: () => {},
-        getHeartbeatInterval: () => 0
-      }),
-      getHeartbeat: () => ({ setInterval: () => {} }),
-      getPushConfiguration: () => ({ isPushEnabled: () => false }),
-      getMessageSender: () => ({ setPushEnabled: () => {} }),
-      getUILifecycle: () => ({ setState: () => {} }),
-      getMessageHandler: () => ({ handleMessage: () => {} }),
-      reset: () => {}
-    });
+    return new SystemErrorHandler(
+      testRegistry({
+        ApplicationConfiguration: {
+          isWebComponentMode: () => opts.webComponentMode ?? false,
+          getExportedWebComponents: () => opts.exported ?? [],
+          // The rest of the configuration contract; inert, as these cases only
+          // drive the two above.
+          getSessionExpiredError: () => null,
+          getServiceUrl: () => '',
+          getUIId: () => 0,
+          setUIId: () => {},
+          getHeartbeatInterval: () => 0
+        },
+        Heartbeat: { setInterval: () => {} },
+        PushConfiguration: { isPushEnabled: () => false },
+        MessageSender: { setPushEnabled: () => {} },
+        UILifecycle: { setState: () => {} },
+        MessageHandler: { handleMessage: () => {} }
+      })
+    );
   }
 
   // The notification builder is private in Java, so it is driven through the
@@ -72,6 +76,21 @@ describe('SystemErrorHandler', () => {
       expect(Array.from(container.children).map((c) => c.className)).to.deep.equal(['caption', 'message', 'details']);
       expect(Array.from(container.children).map((c) => c.textContent)).to.deep.equal(['Cap', 'Msg', 'Det']);
       expect(logged).to.deep.equal(['Cap', 'Msg', 'Det']);
+    });
+
+    it('sets the text content of each part rather than its markup', () => {
+      // Ported from testhandleUnrecoverableError_textContentIsSetInDivsNotInnerHtml.
+      const container = show('<foo></foo>', '<bar></bar>', '<baz></baz>');
+      const [caption, message, details] = Array.from(container.children);
+
+      expect(caption.innerHTML).to.equal('&lt;foo&gt;&lt;/foo&gt;');
+      expect(caption.textContent).to.equal('<foo></foo>');
+
+      expect(message.innerHTML).to.equal('&lt;bar&gt;&lt;/bar&gt;');
+      expect(message.textContent).to.equal('<bar></bar>');
+
+      expect(details.innerHTML).to.equal('&lt;baz&gt;&lt;/baz&gt;');
+      expect(details.textContent).to.equal('<baz></baz>');
     });
 
     it('omits parts that are null', () => {
@@ -125,23 +144,24 @@ describe('SystemErrorHandler', () => {
       // With every part null, Java redirects outside web-component mode and
       // resynchronizes the session inside it; the resync stops the heartbeat.
       const intervals: number[] = [];
-      const handler = new SystemErrorHandler({
-        getApplicationConfiguration: () => ({
-          isWebComponentMode: () => true,
-          getExportedWebComponents: () => [],
-          getSessionExpiredError: () => null,
-          getServiceUrl: () => 'about:blank#',
-          getUIId: () => 0,
-          setUIId: () => {},
-          getHeartbeatInterval: () => 0
-        }),
-        getHeartbeat: () => ({ setInterval: (interval: number) => intervals.push(interval) }),
-        getPushConfiguration: () => ({ isPushEnabled: () => false }),
-        getMessageSender: () => ({ setPushEnabled: () => {} }),
-        getUILifecycle: () => ({ setState: () => {} }),
-        getMessageHandler: () => ({ handleMessage: () => {} }),
-        reset: () => {}
-      });
+      const handler = new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => true,
+            getExportedWebComponents: () => [],
+            getSessionExpiredError: () => null,
+            getServiceUrl: () => 'about:blank#',
+            getUIId: () => 0,
+            setUIId: () => {},
+            getHeartbeatInterval: () => 0
+          },
+          Heartbeat: { setInterval: (interval: number) => intervals.push(interval) },
+          PushConfiguration: { isPushEnabled: () => false },
+          MessageSender: { setPushEnabled: () => {} },
+          UILifecycle: { setState: () => {} },
+          MessageHandler: { handleMessage: () => {} }
+        })
+      );
 
       handler.handleUnrecoverableError(null, null, null, null, null);
 

@@ -20,9 +20,7 @@
 // dependency type, and resolves Vaadin URIs via the URIResolver. Composes the
 // ported EagerDependencyTracker (eager-load gate) and ResourceLoader.
 
-import type { ResourceLoader } from './ResourceLoader';
 import type { Registry } from './Registry';
-import type { URIResolver } from './URIResolver';
 import {
   endEagerDependencyLoading,
   runWhenEagerDependenciesLoaded,
@@ -47,31 +45,11 @@ export type LoadMode = 'INLINE' | 'EAGER' | 'LAZY';
 export type Dependency = Record<string, unknown>;
 type Loader = (data: string, listener: ResourceLoadListener) => void;
 
-/** The {@link ResourceLoader} methods DependencyLoader drives. */
-interface DependencyResourceLoader {
-  loadScript(scriptUrl: string, listener: ResourceLoadListener | null, async?: boolean, defer?: boolean): void;
-  loadJsModule(scriptUrl: string, listener: ResourceLoadListener | null, async?: boolean, defer?: boolean): void;
-  inlineScript(scriptContents: string, listener: ResourceLoadListener | null): void;
-  loadStylesheet(stylesheetUrl: string, listener: ResourceLoadListener | null, dependencyId?: string | null): void;
-  inlineStyleSheet(
-    styleSheetContents: string,
-    listener: ResourceLoadListener | null,
-    dependencyId?: string | null
-  ): void;
-  loadDynamicImport(expression: string, listener: ResourceLoadListener): void;
-}
-
-/** The slice of {@link Registry} DependencyLoader uses. */
-interface DependencyLoaderRegistry {
-  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
-  getResourceLoader(): DependencyResourceLoader;
-}
-
 /**
  * Handles loading of dependencies (stylesheets and scripts) in the application.
  */
 export class DependencyLoader {
-  readonly #registry: DependencyLoaderRegistry;
+  readonly #registry: Registry;
 
   // Loads the next eager dependency when the current one completes.
   readonly #eagerListener: ResourceLoadListener = {
@@ -97,7 +75,7 @@ export class DependencyLoader {
    *
    * @param registry - the global registry
    */
-  constructor(registry: DependencyLoaderRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

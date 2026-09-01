@@ -34,19 +34,11 @@ import { Reactive } from './flow/reactive/Reactive';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 
 /**
- * The slice of {@link Registry} the handler uses. {@link Registry}'s typed getters are not
- * ported yet, so this narrow contract stands in for the one it needs.
- */
-interface InitialPropertiesRegistry {
-  getStateTree(): StateTree;
-}
-
-/**
  * Handles server initial property values so client-side defaults don't override
  * them; mirrors InitialPropertiesHandler.java.
  */
 export class InitialPropertiesHandler {
-  readonly #registry: InitialPropertiesRegistry;
+  readonly #registry: Registry;
 
   readonly #newNodeDuringUpdate = new Set<number>();
 
@@ -57,7 +49,7 @@ export class InitialPropertiesHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: InitialPropertiesRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

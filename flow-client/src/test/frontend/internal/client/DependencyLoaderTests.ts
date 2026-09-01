@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from './testRegistry';
 import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
@@ -9,7 +10,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 // eager counter never leaks between cases.
 const active: Array<{ completeAll(): void }> = [];
 
-const eventLoader = new ResourceLoader({ getSystemErrorHandler: () => ({ handleError: () => {} }) }, false);
+const eventLoader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
 
 function makeRegistry() {
   const calls: Array<{ method: string; args: unknown[]; listener: ResourceLoadListener }> = [];
@@ -39,14 +40,16 @@ function makeRegistry() {
       call.listener?.onLoad({ getResourceLoader: () => eventLoader, getResourceData: () => String(call.args[0]) });
     }
   };
-  const registry = {
+  const fixture = {
     calls,
     completeAll,
-    getURIResolver: () => ({ resolveVaadinUri: (uri: string) => `resolved:${uri}` }),
-    getResourceLoader: () => resourceLoader
+    registry: testRegistry({
+      URIResolver: { resolveVaadinUri: (uri: string) => `resolved:${uri}` },
+      ResourceLoader: resourceLoader
+    })
   };
-  active.push(registry);
-  return registry;
+  active.push(fixture);
+  return fixture;
 }
 
 // Ported from com.vaadin.client.DependencyLoaderTest and
@@ -59,7 +62,7 @@ describe('DependencyLoader (class)', () => {
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
     // Ported from loadStylesheet.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1' }]]])
     );
     const call = registry.calls.find((c) => c.method === 'loadStylesheet');
@@ -71,7 +74,9 @@ describe('DependencyLoader (class)', () => {
   it('routes eager JavaScript to loadScript with defer=true', () => {
     // Ported from loadScript.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(new Map([['EAGER', [{ type: 'JAVASCRIPT', url: 'app.js' }]]]));
+    new DependencyLoader(registry.registry).loadDependencies(
+      new Map([['EAGER', [{ type: 'JAVASCRIPT', url: 'app.js' }]]])
+    );
     const call = registry.calls.find((c) => c.method === 'loadScript');
     expect(call?.args).to.deep.equal(['resolved:app.js', call?.listener, false, true]);
   });
@@ -79,7 +84,7 @@ describe('DependencyLoader (class)', () => {
   it('routes inline JavaScript to inlineScript with the contents', () => {
     // Ported from inlineScript.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([['INLINE', [{ type: 'JAVASCRIPT', contents: 'window.x=1' }]]])
     );
     const call = registry.calls.find((c) => c.method === 'inlineScript');
@@ -89,7 +94,7 @@ describe('DependencyLoader (class)', () => {
   it('routes a dynamic import to loadDynamicImport', () => {
     // Beyond the Java suite: the dynamic-import type postdates the Java tests.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: 'import("x")' }]]])
     );
     // DYNAMIC_IMPORT is always eager, so it loads immediately.
@@ -100,7 +105,7 @@ describe('DependencyLoader (class)', () => {
   it('defers lazy dependencies until after eager ones complete', async () => {
     // Ported from GwtDependencyLoaderTest.testEnsureLazyDependenciesLoadedInOrder.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([
         ['EAGER', [{ type: 'JAVASCRIPT', url: 'eager.js' }]],
         ['LAZY', [{ type: 'STYLESHEET', url: 'lazy.css' }]]
@@ -120,7 +125,7 @@ describe('DependencyLoader (class)', () => {
   it('processes dependencies of every load mode', async () => {
     // Ported from GwtDependencyLoaderTest.testDependenciesWithAllLoadModesAreProcessed.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([
         [
           'INLINE',
@@ -169,7 +174,7 @@ describe('DependencyLoader (class)', () => {
     // Ported from ensureEagerDependenciesLoadedInOrder and
     // GwtDependencyLoaderTest.testAllEagerDependenciesAreLoadedFirst.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([
         [
           'EAGER',
@@ -192,7 +197,7 @@ describe('DependencyLoader (class)', () => {
   it('keeps inline dependencies in the order they were added', () => {
     // Ported from ensureInlineDependenciesLoadedInOrder.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([
         [
           'INLINE',
@@ -215,7 +220,7 @@ describe('DependencyLoader (class)', () => {
   it('loads several eager dependencies of different types', () => {
     // Ported from loadMultiple.
     const registry = makeRegistry();
-    new DependencyLoader(registry).loadDependencies(
+    new DependencyLoader(registry.registry).loadDependencies(
       new Map([
         [
           'EAGER',
@@ -238,7 +243,9 @@ describe('DependencyLoader (class)', () => {
     // Beyond the Java suite: the JsModule inline guard has no Java case.
     const registry = makeRegistry();
     expect(() =>
-      new DependencyLoader(registry).loadDependencies(new Map([['INLINE', [{ type: 'JS_MODULE', contents: 'x' }]]]))
+      new DependencyLoader(registry.registry).loadDependencies(
+        new Map([['INLINE', [{ type: 'JS_MODULE', contents: 'x' }]]])
+      )
     ).to.throw('Inline load mode is not supported for JsModule');
   });
 });

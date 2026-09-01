@@ -1,5 +1,6 @@
 // Beyond the Java suite: RequestResponseTracker has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
+import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
@@ -13,17 +14,17 @@ function makeRegistry(
   } = {}
 ) {
   let sends = 0;
-  const registry = {
-    getUILifecycle: () => ({ isRunning: () => opts.running ?? true }),
-    getServerRpcQueue: () => ({ isFlushPending: () => opts.flushPending ?? false }),
-    getMessageSender: () => ({
+  const registry = testRegistry({
+    UILifecycle: { isRunning: () => opts.running ?? true },
+    ServerRpcQueue: { isFlushPending: () => opts.flushPending ?? false },
+    MessageSender: {
       getResynchronizationState: () => opts.resync ?? ResynchronizationState.NOT_ACTIVE,
       hasQueuedMessages: () => opts.queued ?? false,
       sendInvocationsToServer: () => {
         sends++;
       }
-    })
-  };
+    }
+  });
   return { registry, sends: () => sends };
 }
 

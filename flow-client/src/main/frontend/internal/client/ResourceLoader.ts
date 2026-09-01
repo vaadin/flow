@@ -21,19 +21,10 @@
 // BrowserInfo Safari/Opera quirks).
 
 import type { Registry } from './Registry';
-import type { SystemErrorHandler } from './SystemErrorHandler';
 import { BrowserInfo } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
 import { Console } from './Console';
-
-/**
- * The slice of {@link Registry} ResourceLoader uses. {@link Registry}'s typed getters are not
- * ported yet, so this names only the one it calls.
- */
-interface ResourceLoaderRegistry {
-  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleError'>;
-}
 
 /**
  * ResourceLoader lets you dynamically include external scripts and styles on
@@ -54,7 +45,7 @@ export class ResourceLoader {
    * @param initFromDom - `true` if currently loaded resources should be marked
    *          as loaded, `false` to ignore currently loaded resources
    */
-  constructor(registry: ResourceLoaderRegistry, initFromDom: boolean) {
+  constructor(registry: Registry, initFromDom: boolean) {
     this.#resources = new ResourceRegistry(registry);
     if (initFromDom) {
       this.#initLoadedResourcesFromDom();

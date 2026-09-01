@@ -1,18 +1,19 @@
 // Beyond the Java suite: ServerRpcQueue has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
+import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { ServerRpcQueue } from '../../../../../main/frontend/internal/client/communication/ServerRpcQueue';
 
 function makeRegistry(running = true) {
   let sends = 0;
-  const registry = {
-    getUILifecycle: () => ({ isRunning: () => running }),
-    getMessageSender: () => ({
+  const registry = testRegistry({
+    UILifecycle: { isRunning: () => running },
+    MessageSender: {
       sendInvocationsToServer: () => {
         sends++;
       }
-    })
-  };
+    }
+  });
   return { registry, sends: () => sends };
 }
 

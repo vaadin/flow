@@ -1,5 +1,6 @@
 // Beyond the Java suite: URIResolver has no Java test class in src/test/java or src/test-gwt/java —
 // its context-root resolution comes from the base class, whose case lives in VaadinUriResolverTests — so every case here is beyond the Java suite.
+import { testRegistry } from './testRegistry';
 import { expect } from '@open-wc/testing';
 import {
   getBaseRelativeUri,
@@ -10,7 +11,7 @@ import {
 // resolveVaadinUri is protected on the shared base class, so the protocol cases
 // go through the public URIResolver method, as its Java callers do.
 const resolver = (contextRootUrl: string) =>
-  new URIResolver({ getApplicationConfiguration: () => ({ getContextRootUrl: () => contextRootUrl }) });
+  new URIResolver(testRegistry({ ApplicationConfiguration: { getContextRootUrl: () => contextRootUrl } }));
 
 describe('URIResolver', () => {
   it('resolves the context:// protocol against the context root', () => {
@@ -44,7 +45,7 @@ describe('URIResolver', () => {
   });
 
   it('resolves via the class against the configured context root', () => {
-    const resolver = new URIResolver({ getApplicationConfiguration: () => ({ getContextRootUrl: () => '/ctx/' }) });
+    const resolver = new URIResolver(testRegistry({ ApplicationConfiguration: { getContextRootUrl: () => '/ctx/' } }));
     expect(resolver.resolveVaadinUri('context://app.js')).to.equal('/ctx/app.js');
     expect(resolver.resolveVaadinUri('https://x/y')).to.equal('https://x/y');
   });

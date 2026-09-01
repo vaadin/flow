@@ -1,6 +1,8 @@
 // Beyond the Java suite: MessageSender has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
+import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
+import { testRegistry } from '../testRegistry';
 import {
   ReconnectionAttemptEvent,
   type ReconnectionAttemptEventHandler
@@ -10,50 +12,59 @@ import { ResynchronizationState } from '../../../../../main/frontend/internal/cl
 
 function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   const log = {
-    xhrSends: [] as any[],
+    xhrSends: [] as Array<Record<string, unknown>>,
     startRequests: 0,
     loadingStarts: 0
   };
   let activeRequest = false;
   const reconnectionHandlers: ReconnectionAttemptEventHandler[] = [];
-  const registry: any = {
+  return {
     log,
     reconnectionHandlers,
-    setActiveRequest: (v: boolean) => {
-      activeRequest = v;
+    setActiveRequest: (active: boolean) => {
+      activeRequest = active;
     },
-    getUILifecycle: () => ({ isRunning: () => true }),
-    getRequestResponseTracker: () => ({
-      hasActiveRequest: () => activeRequest,
-      startRequest: () => {
-        activeRequest = true;
-        log.startRequests++;
+    registry: testRegistry({
+      UILifecycle: { isRunning: () => true },
+      RequestResponseTracker: {
+        hasActiveRequest: () => activeRequest,
+        startRequest: () => {
+          activeRequest = true;
+          log.startRequests++;
+        },
+        addReconnectionAttemptHandler: (handler: ReconnectionAttemptEventHandler): EventRemover => {
+          reconnectionHandlers.push(handler);
+          return { remove: () => reconnectionHandlers.splice(reconnectionHandlers.indexOf(handler), 1) };
+        }
       },
-      addReconnectionAttemptHandler: (h: ReconnectionAttemptEventHandler) => reconnectionHandlers.push(h)
-    }),
-    getServerRpcQueue: () => ({
-      isEmpty: () => true,
-      toJson: () => [],
-      clear: () => {},
-      isFlushPending: () => false,
-      flush: () => {}
-    }),
-    getLoadingIndicatorStateHandler: () => ({
-      startLoading: () => {
-        log.loadingStarts++;
-      }
-    }),
-    getMessageHandler: () => ({ getCsrfToken: () => 'init', getLastSeenServerSyncId: () => 42 }),
-    getXhrConnection: () => ({ send: (payload: any) => log.xhrSends.push(payload), getUri: () => '/app?v-r=uidl' }),
-    getApplicationConfiguration: () => ({ getMaxMessageSuspendTimeout: () => 1000000 }),
-    getPushConfiguration: () => ({ isPushEnabled: () => opts.pushEnabled ?? false })
+      ServerRpcQueue: {
+        isEmpty: () => true,
+        toJson: () => [],
+        clear: () => {},
+        isFlushPending: () => false,
+        flush: () => {}
+      },
+      LoadingIndicatorStateHandler: {
+        startLoading: () => {
+          log.loadingStarts++;
+        }
+      },
+      MessageHandler: { getCsrfToken: () => 'init', getLastSeenServerSyncId: () => 42 },
+      XhrConnection: {
+        send: (payload: Record<string, unknown>) => {
+          log.xhrSends.push(payload);
+        },
+        getUri: () => '/app?v-r=uidl'
+      },
+      ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 1000000 },
+      PushConfiguration: { isPushEnabled: () => opts.pushEnabled ?? false }
+    })
   };
-  return registry;
 }
 
 describe('MessageSender (class)', () => {
   it('runs the resynchronization state machine', () => {
-    const sender = new MessageSender(makeRegistry());
+    const sender = new MessageSender(makeRegistry().registry);
     expect(sender.getResynchronizationState()).to.equal(ResynchronizationState.NOT_ACTIVE);
     expect(sender.requestResynchronize()).to.be.true;
     expect(sender.getResynchronizationState()).to.equal(ResynchronizationState.SEND_TO_SERVER);
@@ -63,29 +74,29 @@ describe('MessageSender (class)', () => {
   });
 
   it('sends a payload over XHR, assigning sync and client ids', () => {
-    const registry = makeRegistry();
+    const { registry, log } = makeRegistry();
     const sender = new MessageSender(registry);
     sender.send({ rpc: [] });
 
-    expect(registry.log.xhrSends).to.have.length(1);
-    const sent = registry.log.xhrSends[0];
+    expect(log.xhrSends).to.have.length(1);
+    const sent = log.xhrSends[0];
     expect(sent.syncId).to.equal(42);
     expect(sent.clientId).to.equal(0);
-    expect(registry.log.startRequests).to.equal(1);
+    expect(log.startRequests).to.equal(1);
     expect(sender.hasQueuedMessages()).to.be.true;
   });
 
   it('queues a second message while one is pending', () => {
-    const registry = makeRegistry();
+    const { registry, log } = makeRegistry();
     const sender = new MessageSender(registry);
     sender.send({ rpc: [] }); // sent, clientId 0
     sender.send({ rpc: ['second'] }); // queued, not sent
-    expect(registry.log.xhrSends).to.have.length(1);
+    expect(log.xhrSends).to.have.length(1);
     expect(sender.hasQueuedMessages()).to.be.true;
   });
 
   it('dequeues the acknowledged message on a matching client id', () => {
-    const registry = makeRegistry();
+    const { registry } = makeRegistry();
     const sender = new MessageSender(registry);
     sender.send({ rpc: [] }); // sent, clientId 0
     expect(sender.hasQueuedMessages()).to.be.true;
@@ -96,7 +107,7 @@ describe('MessageSender (class)', () => {
   });
 
   it('reports the communication method and reflects an enabled push connection', () => {
-    const registry = makeRegistry();
+    const { registry } = makeRegistry();
     const push = {
       isActive: () => true,
       isBidirectional: () => true,
@@ -112,7 +123,7 @@ describe('MessageSender (class)', () => {
   });
 
   it('sends an unload beacon with the UNLOAD flag', () => {
-    const registry = makeRegistry();
+    const { registry } = makeRegistry();
     const beacons: Array<{ url: string; payload: string }> = [];
     const original = navigator.sendBeacon;
     Object.defineProperty(navigator, 'sendBeacon', {
@@ -134,14 +145,14 @@ describe('MessageSender (class)', () => {
   });
 
   it('resends queued messages on a reconnection attempt', () => {
-    const registry = makeRegistry();
+    const { registry, log, reconnectionHandlers, setActiveRequest } = makeRegistry();
     const sender = new MessageSender(registry);
     sender.send({ rpc: [] });
-    expect(registry.log.xhrSends).to.have.length(1);
+    expect(log.xhrSends).to.have.length(1);
 
     // Simulate the request finishing, then a reconnection attempt.
-    registry.setActiveRequest(false);
-    registry.reconnectionHandlers.forEach((h: ReconnectionAttemptEventHandler) => h(new ReconnectionAttemptEvent(1)));
-    expect(registry.log.xhrSends).to.have.length(2); // queued message resent
+    setActiveRequest(false);
+    reconnectionHandlers.forEach((handler) => handler(new ReconnectionAttemptEvent(1)));
+    expect(log.xhrSends).to.have.length(2); // queued message resent
   });
 });

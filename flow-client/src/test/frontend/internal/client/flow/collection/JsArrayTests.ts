@@ -9,8 +9,10 @@ import {
 } from '../../../../../../main/frontend/internal/client/flow/collection/JsArray';
 
 describe('JsArray helpers', () => {
-  // Cases beyond the Java suite: GwtJsArrayTest covers the JsArray type
-  // itself; these exercise the @JsOverlay helper functions the port exposes.
+  // Cases beyond the Java suite: the counterparts are GwtJsArrayTest and
+  // JreArrayTest, which cover the JsArray type itself - the array the port uses
+  // natively - while these exercise the @JsOverlay helper functions the port
+  // exposes.
   describe('beyond the Java suite', () => {
     it('pushArray appends all values and returns the new length', () => {
       const arr = [1, 2];
