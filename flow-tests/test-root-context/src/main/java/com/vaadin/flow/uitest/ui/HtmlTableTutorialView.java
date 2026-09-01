@@ -164,8 +164,8 @@ public class HtmlTableTutorialView extends Div {
             addRowWithHeader("Earth", "5.97", "12,756", "5514", "9.8", "24.0",
                     "149.6", "15", "1", "Our world");
 
-            addRowWithHeader("Mars", "0.642", "6,792", "3933", "3.7", "24.7", "227.9",
-                    "-65", "2", "The red planet");
+            addRowWithHeader("Mars", "0.642", "6,792", "3933", "3.7", "24.7",
+                    "227.9", "-65", "2", "The red planet");
 
             TableRow jupiter = addRow();
             jupiter.addRowGroupHeaderCell("Jovian planets", 4);
