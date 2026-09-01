@@ -30,10 +30,13 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -866,7 +869,7 @@ final class Compile {
 
         List<String> written = new ArrayList<>();
         for (Map.Entry<Reactor.Module, List<Path>> group : groupByModule(
-                sources).entrySet()) {
+                sources, project).entrySet()) {
             Result result = compileModule(compiler, group.getKey(),
                     group.getValue(), project);
             if (!result.success()) {
@@ -880,13 +883,110 @@ final class Compile {
     }
 
     /** The change-set by module, dependencies before the application. */
-    private Map<Reactor.Module, List<Path>> groupByModule(List<Path> sources) {
+    private Map<Reactor.Module, List<Path>> groupByModule(List<Path> sources,
+            Launch.Project project) {
         Map<Reactor.Module, List<Path>> grouped = new LinkedHashMap<>();
-        for (Reactor.Module module : modules.subList(1, modules.size())) {
+        for (Reactor.Module module : compileOrder(project)) {
             collect(grouped, module, sources);
         }
-        collect(grouped, app(), sources);
         return grouped;
+    }
+
+    /**
+     * The order the loop's modules are compiled in: every module after the
+     * modules it compiles against, and the application last.
+     * <p>
+     * Not the loop's own order. That is read off the resolved classpath, whose
+     * order is Maven's nearest-first, so a dependent can sit ahead of its
+     * dependency - and compiling in that order hands javac a module whose
+     * upstream output is still the pre-edit copy, or absent. The error it
+     * reports then names a line that is correct, and the module that would have
+     * fixed it never compiles, because a failing group ends the compile.
+     * <p>
+     * The edges come from the resolved compile classpaths rather than from the
+     * poms: a module compiles against another exactly when Maven put that
+     * module's output directory on its classpath, which is already resolved,
+     * already accounts for the reactor substitution, and cannot disagree with
+     * what javac is about to be given.
+     * <p>
+     * Recomputed per compile rather than cached with the module set, because a
+     * pom edit can change what a module depends on without adding or removing
+     * one - and that is the edit most likely to reorder this.
+     */
+    private List<Reactor.Module> compileOrder(Launch.Project project) {
+        List<Reactor.Module> libraries = modules.subList(1, modules.size());
+        Map<String, Set<Path>> classpaths = new LinkedHashMap<>();
+        for (Reactor.Module module : libraries) {
+            classpaths.put(module.artifactId(),
+                    outputsOn(project.compileClasspath(module)));
+        }
+        List<Reactor.Module> ordered = new ArrayList<>();
+        Set<String> placed = new HashSet<>();
+        Set<String> placing = new LinkedHashSet<>();
+        for (Reactor.Module module : libraries) {
+            place(module, libraries, classpaths, ordered, placed, placing);
+        }
+        // The application depends on all of them by construction - the loop is
+        // derived from its classpath - so it is last without being sorted.
+        ordered.add(app());
+        return ordered;
+    }
+
+    /**
+     * Adds one module after everything it compiles against.
+     * <p>
+     * A cycle is left in the order it was found. Maven cannot build one, so
+     * reaching this means the classpaths disagree with that; refusing to emit
+     * the module would drop its sources from the compile, which is worse than
+     * the ordering being no better than it was.
+     */
+    private void place(Reactor.Module module, List<Reactor.Module> libraries,
+            Map<String, Set<Path>> classpaths, List<Reactor.Module> ordered,
+            Set<String> placed, Set<String> placing) {
+        if (placed.contains(module.artifactId())
+                || !placing.add(module.artifactId())) {
+            return;
+        }
+        Set<Path> classpath = classpaths.getOrDefault(module.artifactId(),
+                Set.of());
+        for (Reactor.Module other : libraries) {
+            if (other != module && classpath.contains(output(other))) {
+                place(other, libraries, classpaths, ordered, placed, placing);
+            }
+        }
+        placing.remove(module.artifactId());
+        if (placed.add(module.artifactId())) {
+            ordered.add(module);
+        }
+    }
+
+    /**
+     * The output directories on a classpath, as absolute normalized paths so an
+     * entry and a module's own {@code classesDir} compare equal however either
+     * was spelled. Jars are irrelevant here: an in-loop module is on a
+     * classpath as its output directory, and {@code Launch.assemble} removes
+     * the installed jar that would otherwise shadow it.
+     */
+    private static Set<Path> outputsOn(String classpath) {
+        Set<Path> outputs = new LinkedHashSet<>();
+        for (String entry : classpath
+                .split(Pattern.quote(File.pathSeparator))) {
+            String trimmed = entry.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            try {
+                outputs.add(Path.of(trimmed).toAbsolutePath().normalize());
+            } catch (RuntimeException e) {
+                // Not a path this platform can express, so not a module output
+                // either. Nothing to order by.
+            }
+        }
+        return outputs;
+    }
+
+    private static Path output(Reactor.Module module) {
+        return module.classesDir().toAbsolutePath().normalize();
     }
 
     private void collect(Map<Reactor.Module, List<Path>> into,

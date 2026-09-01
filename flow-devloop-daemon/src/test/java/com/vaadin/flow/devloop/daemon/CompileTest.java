@@ -100,6 +100,81 @@ class CompileTest {
     }
 
     @Test
+    void compile_compilesAModuleAfterTheOnesItCompilesAgainst()
+            throws IOException {
+        // The loop is read off the resolved classpath, whose order is Maven's
+        // nearest-first - not dependency order. So a dependent can sit ahead of
+        // its dependency, and compiling in loop order then hands javac a module
+        // whose upstream output is not there yet.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                }
+                """);
+        Reactor.Module web = module("web", "CartView", """
+                package web;
+                public class CartView {
+                    public static int lines() { return core.Cart.count(); }
+                }
+                """);
+        Reactor.Module core = module("core", "Cart", """
+                package core;
+                public class Cart {
+                    public static int count() { return 2; }
+                }
+                """);
+        // web ahead of core, and only web depends on core. Nothing is on disk
+        // yet, so compiling web first cannot resolve core.Cart at all.
+        Launch.Project project = reactor(List.of(app, web, core),
+                Map.of("web", List.of(core)));
+        Compile compile = new Compile(project);
+
+        Compile.Result result = compile.compile(
+                List.of(source(web, "CartView"), source(core, "Cart")),
+                project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        assertTrue(Files.isRegularFile(
+                core.classesDir().resolve("core").resolve("Cart.class")));
+        assertTrue(Files.isRegularFile(
+                web.classesDir().resolve("web").resolve("CartView.class")));
+    }
+
+    @Test
+    void compile_classpathsThatDependOnEachOtherStillCompileEveryModule()
+            throws IOException {
+        // Maven cannot build a cycle, so this means the resolved classpaths
+        // disagree with that - two modules each carrying the other's output.
+        // Ordering has to give up here; dropping a module's sources instead
+        // would leave a stale class behind and report success.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                }
+                """);
+        Reactor.Module one = module("one", "One", """
+                package one;
+                public class One {
+                }
+                """);
+        Reactor.Module two = module("two", "Two", """
+                package two;
+                public class Two {
+                }
+                """);
+        // project() hands every module every output, which is the mutual shape.
+        Launch.Project project = project(app, one, two);
+        Compile compile = new Compile(project);
+
+        Compile.Result result = compile.compile(List.of(source(one, "One"),
+                source(two, "Two"), source(app, "Main")), project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        assertEquals(List.of("app.Main", "one.One", "two.Two"),
+                result.writtenClasses());
+    }
+
+    @Test
     void compile_dependencyErrorEndsTheCompileWithoutTheConsequences()
             throws IOException {
         Reactor.Module app = module("app", "Main", """
@@ -521,6 +596,37 @@ class CompileTest {
         Map<String, String> compile = new java.util.LinkedHashMap<>();
         all.forEach(module -> compile.put(module.artifactId(), classpath));
         return new Launch.Project(all, classpath, compile,
+                java.util.OptionalInt.empty());
+    }
+
+    /**
+     * A reactor whose dependency direction is actually present, unlike
+     * {@link #project}, which hands every module every output and so says
+     * nothing about which module needs which. Each module compiles against its
+     * own output plus the outputs named for it, which is what
+     * {@code Launch.assemble} produces from Maven's per-module answer.
+     *
+     * @param loop
+     *            the modules, application first, in the order the resolved
+     *            classpath put them
+     * @param dependencies
+     *            the modules each artifactId compiles against
+     */
+    private Launch.Project reactor(List<Reactor.Module> loop,
+            Map<String, List<Reactor.Module>> dependencies) {
+        Map<String, String> compile = new java.util.LinkedHashMap<>();
+        for (Reactor.Module module : loop) {
+            List<String> entries = new java.util.ArrayList<>();
+            entries.add(module.classesDir().toString());
+            dependencies.getOrDefault(module.artifactId(), List.of())
+                    .forEach(dep -> entries.add(dep.classesDir().toString()));
+            compile.put(module.artifactId(),
+                    String.join(File.pathSeparator, entries));
+        }
+        // The application sees everything, which is what makes it the loop.
+        String appClasspath = String.join(File.pathSeparator, loop.stream()
+                .map(module -> module.classesDir().toString()).toList());
+        return new Launch.Project(loop, appClasspath, compile,
                 java.util.OptionalInt.empty());
     }
 }
