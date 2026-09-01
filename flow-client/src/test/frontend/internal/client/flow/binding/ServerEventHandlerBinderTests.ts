@@ -4,7 +4,9 @@ import { JsonConstants } from '../../../../../../main/frontend/internal/flow/sha
 import { bindServerEventHandlerNames } from '../../../../../../main/frontend/internal/client/flow/binding/ServerEventHandlerBinder';
 import { getMethods } from '../../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { BindGuardStateNode, type CollectingTree, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { BindGuardStateNode, type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // A NodeList stand-in holding handler names, with a hook to fire a splice event.
 function fakeList(items: string[]) {

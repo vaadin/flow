@@ -2,15 +2,11 @@ import { expect } from '@open-wc/testing';
 import { UpdatableModelProperties } from '../../../../../../main/frontend/internal/client/flow/model/UpdatableModelProperties';
 import { setProperty } from '../../../../../../main/frontend/internal/client/PolymerUtils';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import {
-  BindGuardStateNode,
-  type CollectingTree,
-  NodeFeatures,
-  NodeProperties,
-  StateNode,
-  bind,
-  makeCollectingTree
-} from '../bindingTestHelpers';
+import { BindGuardStateNode, type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Full-state-tree Polymer model tests ported from GwtPolymerModelTest. They bind
 // a real StateNode to a Polymer-model element (mocked set/splice) via the real

@@ -17,6 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeMap, on top of the
 // TS reactive core and MapProperty.
 
+import type { Computation } from '../reactive/Computation';
 import type { EventRemover } from '../../../EventRemover';
 import { ReactiveEventRouter } from '../reactive/ReactiveEventRouter';
 import type { ReactiveValue } from '../reactive/ReactiveValue';
@@ -33,7 +34,7 @@ import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
  * The feature works as a reactive value with regards to the set of available
  * properties. A {@link Computation} will get a dependency on this feature by
  * iterating the properties. Accessing a property by name does not create a
- * dependency. The `Computation` is invalidated when a property is
+ * dependency. The {@link Computation} is invalidated when a property is
  * added (properties are never removed). It is not invalidated when the value of
  * a property changes since the property is a reactive values of its own.
  */

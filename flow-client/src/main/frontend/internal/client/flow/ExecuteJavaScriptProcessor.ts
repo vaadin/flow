@@ -32,6 +32,9 @@
 // getContextExecutionObject / element-utils / needsRebind. The Registry/StateTree
 // are contracts satisfied at cutover.
 
+import type { Registry } from '../Registry';
+import type { ApplicationConfiguration } from '../ApplicationConfiguration';
+import type { UILifecycle } from '../UILifecycle';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { assert } from '../../assert';
@@ -67,14 +70,17 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-/** The slice of Registry ExecuteJavaScriptProcessor uses. */
+/** The slice of {@link Registry} ExecuteJavaScriptProcessor uses. */
 interface ExecuteJsRegistry {
   getStateTree(): StateTree;
-  getApplicationConfiguration(): { getApplicationId(): string; isProductionMode(): boolean };
-  getUILifecycle(): { isTerminated(): boolean; setState(state: string): void };
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getApplicationId' | 'isProductionMode'>;
+  getUILifecycle(): Pick<UILifecycle, 'isTerminated' | 'setState'>;
 }
 
-/** Executes server-sent JavaScript invocations against the live tree; mirrors ExecuteJavaScriptProcessor.java. */
+/**
+ * Processes the result of `Page.executeJs` on the client. `Page` is a
+ * flow-server class, outside this port, so the reference stays a code span.
+ */
 export class ExecuteJavaScriptProcessor {
   readonly #registry: ExecuteJsRegistry;
 

@@ -21,6 +21,8 @@
 // dependencies are loaded). The resource loading itself lives in the rest of
 // DependencyLoader, on ResourceLoader.
 
+import type { Command } from './Command';
+
 // Number of eager dependencies currently loading.
 let eagerDependenciesLoading = 0;
 
@@ -28,11 +30,17 @@ let eagerDependenciesLoading = 0;
 let callbacks: Array<() => void> = [];
 
 /**
- * Runs the command when all eager dependencies have finished loading, or
- * immediately if none are loading. Mirrors
- * DependencyLoader.runWhenEagerDependenciesLoaded.
+ * Adds a command to be run when all eager dependencies have finished loading.
+ *
+ * If no eager dependencies are currently being loaded, runs the command
+ * immediately.
+ *
+ * @see {@link startEagerDependencyLoading}
+ * @see {@link endEagerDependencyLoading}
+ *
+ * @param command - the command to run when eager dependencies have been loaded
  */
-export function runWhenEagerDependenciesLoaded(command: () => void): void {
+export function runWhenEagerDependenciesLoaded(command: Command): void {
   if (eagerDependenciesLoading === 0) {
     command();
   } else {
@@ -40,15 +48,22 @@ export function runWhenEagerDependenciesLoaded(command: () => void): void {
   }
 }
 
-/** Marks that loading of an eager dependency has started. */
+/**
+ * Marks that loading of a dependency has started.
+ *
+ * @see {@link runWhenEagerDependenciesLoaded}
+ * @see {@link endEagerDependencyLoading}
+ */
 export function startEagerDependencyLoading(): void {
   eagerDependenciesLoading++;
 }
 
 /**
- * Marks that loading of an eager dependency has ended; once none remain, runs
- * the queued commands (clearing them even if one throws). Mirrors
- * DependencyLoader.endEagerDependencyLoading.
+ * Marks that loading of a dependency has ended.
+ *
+ * If all pending dependencies have been loaded, calls any callback registered
+ * using {@link runWhenEagerDependenciesLoaded}. The callbacks are cleared even
+ * if one of them throws.
  */
 export function endEagerDependencyLoading(): void {
   eagerDependenciesLoading--;

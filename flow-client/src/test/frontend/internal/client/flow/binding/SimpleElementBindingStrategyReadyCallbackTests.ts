@@ -1,7 +1,11 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { addReadyListener } from '../../../../../../main/frontend/internal/client/PolymerUtils';
-import { NodeFeatures, NodeProperties, StateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Ported from the testReadyCallback_* cases in GwtBasicElementBinderTest. Binding
 // a Polymer element wraps its `ready` method so that the element's own `ready`

@@ -16,6 +16,14 @@
 
 // Implementations migrated from SystemErrorHandler.java.
 
+import type { Registry } from './Registry';
+import { parseJson } from './communication/MessageHandler';
+import type { ApplicationConfiguration } from './ApplicationConfiguration';
+import type { Heartbeat } from './communication/Heartbeat';
+import type { MessageHandler } from './communication/MessageHandler';
+import type { MessageSender } from './communication/MessageSender';
+import type { PushConfiguration } from './communication/PushConfiguration';
+import type { UILifecycle } from './UILifecycle';
 import type { ErrorMessage } from './ApplicationConfiguration';
 import { addGetParameters } from '../flow/shared/util/SharedUtil';
 import { getScheduler } from './TrackingScheduler';
@@ -58,22 +66,23 @@ function getWithCredentials(
 // (resynchronizeSession, XHR + heartbeat/push/reset) are DOM/network-bound and
 // IT-validated. The Registry is a contract satisfied at cutover.
 
-/** The slice of Registry SystemErrorHandler uses. */
+/** The slice of {@link Registry} SystemErrorHandler uses. */
 interface SystemErrorRegistry {
-  getApplicationConfiguration(): {
-    isWebComponentMode(): boolean;
-    getExportedWebComponents(): string[];
-    getSessionExpiredError(): ErrorMessage | null;
-    getServiceUrl(): string;
-    getUIId(): number;
-    setUIId(uiId: number): void;
-    getHeartbeatInterval(): number;
-  };
-  getHeartbeat(): { setInterval(interval: number): void };
-  getPushConfiguration(): { isPushEnabled(): boolean };
-  getMessageSender(): { setPushEnabled(enabled: boolean, reEnableIfNeeded?: boolean): void };
-  getUILifecycle(): { setState(state: UIState): void };
-  getMessageHandler(): { handleMessage(json: Record<string, unknown>): void };
+  getApplicationConfiguration(): Pick<
+    ApplicationConfiguration,
+    | 'isWebComponentMode'
+    | 'getExportedWebComponents'
+    | 'getSessionExpiredError'
+    | 'getServiceUrl'
+    | 'getUIId'
+    | 'setUIId'
+    | 'getHeartbeatInterval'
+  >;
+  getHeartbeat(): Pick<Heartbeat, 'setInterval'>;
+  getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
+  getMessageSender(): Pick<MessageSender, 'setPushEnabled'>;
+  getUILifecycle(): Pick<UILifecycle, 'setState'>;
+  getMessageHandler(): Pick<MessageHandler, 'handleMessage'>;
   reset(): void;
 }
 
@@ -209,7 +218,7 @@ export class SystemErrorHandler {
         this.#registry.getHeartbeat().setInterval(-1);
 
         const uiId = configuration.getUIId();
-        const json = JSON.parse(responseText) as Record<string, unknown>;
+        const json = parseJson(responseText)!;
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);

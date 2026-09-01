@@ -20,17 +20,19 @@
 // and clear-by-id, as well as the stylesheet loaders (which need the
 // BrowserInfo Safari/Opera quirks).
 
+import type { Registry } from './Registry';
+import type { SystemErrorHandler } from './SystemErrorHandler';
 import { BrowserInfo } from './BrowserInfo';
 import { type ResourceLoadEvent, type ResourceLoadListener, ResourceRegistry } from './ResourceRegistry';
 import { getAbsoluteUrl } from './WidgetUtil';
 import { Console } from './Console';
 
 /**
- * The slice of Registry ResourceLoader uses. Registry's typed getters are not
+ * The slice of {@link Registry} ResourceLoader uses. {@link Registry}'s typed getters are not
  * ported yet, so this names only the one it calls.
  */
 interface ResourceLoaderRegistry {
-  getSystemErrorHandler(): { handleError(message: string): void };
+  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleError'>;
 }
 
 /**

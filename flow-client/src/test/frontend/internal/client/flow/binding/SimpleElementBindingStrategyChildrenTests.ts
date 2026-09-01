@@ -1,14 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import {
-  BindGuardStateNode,
-  type CollectingTree,
-  NodeFeatures,
-  NodeProperties,
-  StateNode,
-  bind,
-  makeCollectingTree
-} from '../bindingTestHelpers';
+import { BindGuardStateNode, type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Full-state-tree children tests ported from GwtBasicElementBinderTest. They
 // bind a real StateNode to a real <div> via the real Binder and drive child

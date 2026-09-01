@@ -7,7 +7,8 @@ import { NodeProperties } from '../../../../../../main/frontend/internal/flow/in
 import { TextBindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/TextBindingStrategy';
 import type { BinderContext } from '../../../../../../main/frontend/internal/client/flow/binding/BinderContext';
 import type { BindingStrategy } from '../../../../../../main/frontend/internal/client/flow/binding/BindingStrategy';
-import { BindGuardStateNode, bind, makeCollectingTree } from '../bindingTestHelpers';
+import { BindGuardStateNode, makeCollectingTree } from '../bindingTestHelpers';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Only the members StateNode reaches for; cast because StateTree is a class
 // with private state that a literal cannot satisfy.

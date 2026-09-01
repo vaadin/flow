@@ -1,13 +1,10 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import {
-  type CollectingTree,
-  NodeFeatures,
-  NodeProperties,
-  StateNode,
-  bind,
-  makeCollectingTree
-} from '../bindingTestHelpers';
+import { type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
 
 // Visibility binding is exercised the way GwtBasicElementBinderTest does it:
 // bind a node to a real element, toggle the VISIBLE property and inspect the

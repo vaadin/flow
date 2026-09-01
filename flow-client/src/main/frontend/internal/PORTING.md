@@ -56,10 +56,23 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      `MapPropertyAddListener`) is a *separate* `.java` file from its owner
      feature in this codebase, so each gets its own module — it is **not**
      merged into the owner's module.
-   - The **only** exception is a type that is genuinely nested *inside* its
-     owner's `.java` file (a Java inner/nested class): it has no file of its
-     own, so it stays in the owner's module. None of the currently ported
-     reactive / node-feature event/listener types are nested this way.
+   - A type that is genuinely nested *inside* its owner's `.java` file (a Java
+     inner/nested class) has no file of its own, so it stays in the owner's
+     module. None of the ported reactive / node-feature event/listener types are
+     nested this way, so none of them is affected.
+     - **Unless keeping it there would form a load-time cycle.** A nested type
+       gets its own module when the owner cannot hold it:
+       `DefaultConnectionStateHandler.Type` is `ConnectionMessageType.ts`,
+       because `ReconnectStateMachine` compares these priorities at runtime while
+       `DefaultConnectionStateHandler` constructs the state machine, so an enum in
+       the owner would make the two modules circular at load time. Name the cycle
+       at the site, port the nested type's members in full — `isMessage`,
+       `isHigherPriorityThan` and the ordinal priorities are all there — and give
+       the module its own suite, as rule 1's mapping requires. This is the
+       module-layout twin of rule 12's `import type` escape for the same problem.
+       _Introduced during #24951._ (False positive this prevents: a review
+       reporting a rule-1 violation against a split whose alternative — a runtime
+       cycle — is not available.)
    - **Suites may be organised by feature area.** The one-`*Test`-to-one-`*Tests.ts`
      mapping above assumes a module's Java coverage lives in a single test class.
      Where it is spread across several, the port may group its suites by what is
@@ -110,10 +123,12 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      `…flow.nodefeature.MapPropertyTest` →
      `src/test/frontend/internal/client/flow/nodefeature/MapPropertyTests.ts`. The test
      runner discovers suites recursively (`src/test/frontend/**/*Tests.ts`), and
-     `eslint.config.mjs` lists each test subdirectory in
-     `projectService.allowDefaultProject` (its globs do not support the `**`
-     multi-level wildcard, so add one entry per level when introducing a new
-     test subdirectory). This mapping fixes where the suite **lives**; which Java
+     a new subdirectory needs no lint configuration: the eslint project service
+     walks up from each file to `src/test/frontend/tsconfig.json`, and
+     `allowDefaultProject` in `eslint.config.mjs` now lists only the root-level
+     suites that predate the port. _(This bullet used to say every test
+     subdirectory had to be listed there; that stopped being true when the test
+     tree got its own `tsconfig.json`.)_ This mapping fixes where the suite **lives**; which Java
      test classes it must cover is rule 13.9, and there is often more than one.
 
 ## Visibility parity
@@ -244,6 +259,21 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     to cover it.) If the PR that ports the class cannot collapse a slice in the
     same change, it files a retrofit-backlog row naming the slice: a slice never
     outlives its port silently.
+    - **A registry slice still names its members after the ported class.** The
+      `Registry` container itself stays a local interface until `DefaultRegistry`
+      lands (a suite cannot otherwise build one), but each getter's return type
+      is `Pick<PortedClass, 'onlyTheMembersUsed'>` rather than an inline object
+      type — the slice keeps naming only what the module calls, while no
+      signature is duplicated and nothing can drift from the class. Only a
+      getter whose class is genuinely unported spells its shape out inline.
+      _Introduced during #24951, which folded every remaining slice of a ported
+      class this way — the 64 inline registry getters plus `StateTree.ts`'s own
+      `ServerConnector` and `InitialPropertiesHandler` contracts. The sweep found six
+      places where a slice and its class had drifted apart (five slices looser
+      than the real signature, and `sendExistingElementWithIdAttachToServer`
+      declaring a non-null `id` the binding layer already calls it with as null)
+      plus one member, `handlePropertyUpdate`, that `StateTree`'s slice omitted
+      although the tree calls it._
 
 ## Tests
 
@@ -350,7 +380,15 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        at the site. (Regression this prevents: eight structural asserts were
        dropped from `StateTree` / `TreeChangeProcessor` while the
        null-precondition ones were correctly dropped, so the omission read as
-       deliberate.)
+       deliberate.) One further exception, and it needs the same note at the site:
+       where the asserted invariant is one the running client can legitimately
+       break — and Java, whose assertions production strips, therefore continues
+       and recovers — the check stays as a `Console.warn` rather than a throw.
+       `MessageHandler.processMessage` is the case in point: it runs deferred
+       until the message's eager dependencies load, and `forceMessageHandling`
+       can clear the response locks and handle a newer message meanwhile, moving
+       the last seen server id past the one being processed. _Introduced during
+       #24951._
     5. **A GWT-compiler-only construct has no port** — `crazyJsCast`,
        `crazyJsoCast`, deferred binding — and its absence is documented at the
        site that would have called it.
@@ -411,6 +449,47 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     #24949._ (Regression this prevents: `BinderContext.getStrategies` invited a
     mid-series signature change that would have diverged from `BinderContext.java`
     while both trees were still being reviewed against each other.)
+17. **Carry the implementation comments, not only the Javadoc.** The in-body
+    `//` comments of a Java method are part of what is ported: they record why a
+    branch exists, what the server does that forces an ordering, which bug a line
+    works around, why a wait is where it is. Carry each one to the statement it
+    annotates, at the same point in the method and in the source wording — a port
+    that keeps every Javadoc block but drops the body comments loses precisely the
+    knowledge that cannot be re-derived from the code. Rewrapping to the
+    TypeScript print width is fine, and two Java comments may merge into one
+    sentence where the port merges the statements they annotate; dropping the
+    substance is not.
+    - **The exceptions are the ones the code itself has.** A comment explaining a
+      construct the port does not have is not missing: `// prevent direct
+      instantiation` / `// Only static stuff in this class` above a private
+      utility constructor (a module of functions has none), `// JSO Constructor`,
+      `// $entry not needed as function is not exported`, `// Crazy cast since
+      otherwise SDM fails`, a comment on an unported private helper. Where the
+      port *replaces* the mechanic rather than dropping it, the comment is
+      replaced too — say what the TypeScript does instead, at that site.
+    - **A carried Java `TODO` stays a plain `TODO`,** with its original text and
+      ticket link — `DefaultConnectionStateHandler.pushClientTimeout` keeps
+      `// TODO Reconnect, allowing client timeout to be set` and its
+      `dev.vaadin.com/ticket/18429` link. It is the Java author's open item, not
+      porting debt, so it takes neither the rule-11 `TODO(flow-client-ts)` marker
+      nor a retrofit-backlog row.
+    - *Verification:* compare the comment-line counts per module
+      (`grep -c '^[ \t]\+//'` over the `.java` and its `.ts`) and read the Java
+      comments against the port wherever the port has fewer. The count only
+      points at modules to read: a port that condenses three Java lines into one
+      sentence is complete at a lower count, and one that adds port-specific
+      notes can sit at a higher count while still having dropped something.
+      Indentation-scoped counts mislead badly — measuring only 8-space Java
+      against 4-space TypeScript comments read `SimpleElementBindingStrategy` as
+      short by 49 lines when it is short by 2, and reported no gap at all for
+      `JsoConfiguration`, whose port carries none of its original three.
+    _Introduced during #24951._ (Regression this prevents:
+    `DefaultConnectionStateHandler` carried 12 of its original's 50 comment lines,
+    losing among others why `scheduleReconnect` fires the first retry outside the
+    timer, why 4xx status codes are treated as possibly temporary, and why a
+    bidirectional transport pushes pending changes immediately on reconnect; the
+    sweep it prompted found comments missing in eight of this PR's modules and
+    eleven more in the layers below.)
 
 ## Retrofit backlog
 
@@ -423,10 +502,9 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()`: both need the deferred-attach round trip, which runs through the message layer | the PR that ports the message layer | open |
-| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are omitted while 14 of their return types are unported, so `DependencyLoader`, `SystemErrorHandler`, `InitialPropertiesHandler`, `ExecuteJavaScriptProcessor`, `ResourceLoader` and `StateTree` each declare a local interface for the getters they call | the PR that ports the remaining services (`MessageSender`, `MessageHandler`, `ApplicationConnection`, …) | open |
-| 12 | `StateTree.ts` keeps a narrow contract for the now-ported `InitialPropertiesHandler`: the handler resolves its state tree through the registry while the tree is built from that same registry, so only a concrete registry can wire the two together | the PR that ports `DefaultRegistry` | open |
+| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are still omitted, now blocked on `ApplicationConnection` alone (the other 23 return types are ported). Twenty-two modules therefore still declare a local registry interface, though every member of those now derives from the ported class via `Pick<…>`, so only the container is local. They collapse into the real `Registry` once `DefaultRegistry` can assemble one, so a suite can build it | the PR that ports `ApplicationConnection` and `DefaultRegistry` | open |
 | 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
+| 17 | Eleven base-layer modules measure short of their Java original's comment lines: `Console` (2/7), `SharedUtil` (10/13), `TreeChangeProcessor` (4/6), `JsArray` (0/2), `BrowserDetails` (34/36), `ExistingElementMap` (1/2), `MapProperty` (14/15), `ClientJsonCodec` (9/10), `SimpleElementBindingStrategy` (107/109), `ServerEventHandlerBinder` (0/1), `NodeFeatures` (0/1). Each needs the read-through the count only points at, since part of the gap is the GWT mechanics the rule exempts (`Console`'s `$entry` deferral, `JsArray`'s private constructor) and part is genuinely dropped (`ClientJsonCodec` has none of the five `// Check for @v-…` branch markers (`@v-node` twice, `@v-return`, `@v-fn`, and the unknown-`@v-` fallback); `MapProperty` carries one of the two `// mark as server update is in progress` sites) | a follow-up on the state-tree and support-services layers | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on

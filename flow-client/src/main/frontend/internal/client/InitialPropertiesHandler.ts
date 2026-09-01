@@ -26,6 +26,7 @@
 // is the real implementation of the InitialPropertiesHandler contract that
 // StateTree.ts declares.
 
+import type { Registry } from './Registry';
 import type { MapProperty } from './flow/nodefeature/MapProperty';
 import type { StateNode } from './flow/StateNode';
 import type { StateTree } from './flow/StateTree';
@@ -33,7 +34,7 @@ import { Reactive } from './flow/reactive/Reactive';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 
 /**
- * The slice of Registry the handler uses. Registry's typed getters are not
+ * The slice of {@link Registry} the handler uses. {@link Registry}'s typed getters are not
  * ported yet, so this narrow contract stands in for the one it needs.
  */
 interface InitialPropertiesRegistry {
@@ -76,7 +77,7 @@ export class InitialPropertiesHandler {
    * Notifies the handler about registered node.
    *
    * The method is called for the newly created `node` which is registered in
-   * the `StateTree`.
+   * the {@link StateTree}.
    *
    * @param node - the newly registered node
    */
