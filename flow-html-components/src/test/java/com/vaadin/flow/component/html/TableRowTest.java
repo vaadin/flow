@@ -211,6 +211,9 @@ class TableRowTest extends ComponentTest {
         assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COLGROUP),
                 columnGroup.getScope());
         assertEquals(3, columnGroup.getColspan());
+        // These overloads attach the cell themselves rather than going through
+        // addHeaderCell, so pin that they land in the row, in order
+        assertEquals(List.of(rowGroup, columnGroup), row.getCells());
     }
 
     @Test
