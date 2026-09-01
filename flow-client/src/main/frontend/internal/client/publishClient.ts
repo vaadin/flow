@@ -73,6 +73,8 @@ export function publishClient(
   if (!productionMode) {
     // The Java block also re-publishes client.isActive here, with the same
     // function it published above; the port publishes it once.
+    // The Java block publishes this as function(parameter) and ignores the
+    // argument; the published arity is kept.
     client.getVersionInfo = (_parameter?: unknown) => ({ flow: configuration.getServletVersion() });
     client.debug = () => ac.debug();
     client.getNodeInfo = (nodeId: number) => ({

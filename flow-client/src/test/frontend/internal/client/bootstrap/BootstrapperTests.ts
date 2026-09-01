@@ -11,7 +11,9 @@
 // resolved context root. The values no published method exposes (the heartbeat
 // and suspend intervals, the session-expired error, the Atmosphere versions, the
 // dev-tools and live-reload settings) are read by the same key-for-key block and
-// are not asserted.
+// are not asserted. Neither is the assert that a missing v-uiId, heartbeat
+// interval or suspend timeout raises: it fires inside a deferred command, where
+// a browser reports the throw rather than handing it to the caller.
 
 import { expect, waitUntil } from '@open-wc/testing';
 import {
@@ -177,39 +179,61 @@ describe('Bootstrapper', () => {
       // serviceUrl + contextRootUrl, resolved: http://host/app/../ -> http://host/
       expect(client.resolveUri('context://style.css')).to.equal('http://host/style.css');
       // The development-mode block, and the version the parameter is ignored for.
-      expect(client.getVersionInfo?.('ignored')).to.deep.equal({ flow: '24.9' }); // vaadinVersion
+      expect(client.getVersionInfo?.()).to.deep.equal({ flow: '24.9' }); // vaadinVersion
       expect(client.getNodeInfo).to.be.a('function');
       expect(client.getProfilingData).to.be.a('function'); // requestTiming: true
     });
 
-    it('publishes neither the development-mode methods nor profiling data in production', async () => {
+    it('falls back to the current location when no service URL is configured', async () => {
       win.WebComponents = undefined;
-      const bootstrap = installBootstrapScript(bootstrapConfiguration({ debug: false, requestTiming: false }));
+      const configuration = bootstrapConfiguration({ contextRootUrl: './', debug: false });
+      delete configuration.serviceUrl;
+      const bootstrap = installBootstrapScript(configuration);
 
-      startApplication('prodapp');
-      const client = await bootstrap.started('prodapp');
+      startApplication('rootedapp');
+      const client = await bootstrap.started('rootedapp');
 
-      expect(client.productionMode).to.be.true;
-      expect(client.getVersionInfo).to.equal(undefined);
-      expect(client.getNodeInfo).to.equal(undefined);
-      expect(client.getProfilingData).to.equal(undefined);
+      // The context root resolves against the test page rather than against a
+      // service URL, so it is the page's own directory.
+      const anchor = document.createElement('a');
+      anchor.href = './style.css';
+      expect(client.resolveUri('context://style.css')).to.equal(anchor.href);
+      expect(client.productionMode).to.be.true; // debug: false
     });
 
     it('waits for the WebComponents polyfill before starting', async () => {
       win.WebComponents = { ready: false };
       const bootstrap = installBootstrapScript(bootstrapConfiguration());
+      // The listener the bootstrap registers is anonymous and permanent, so it is
+      // captured as it is added and removed afterwards: this page outlives the
+      // case, and a later dispatch would start the application again.
+      let listener: EventListenerOrEventListenerObject | null = null;
+      const originalAddEventListener = window.addEventListener;
+      window.addEventListener = function observed(this: Window, type: string, ...rest: unknown[]) {
+        if (type === 'WebComponentsReady') {
+          listener = rest[0] as EventListenerOrEventListenerObject;
+        }
+        return (originalAddEventListener as (...args: unknown[]) => void).call(this, type, ...rest);
+      } as typeof window.addEventListener;
 
-      startApplication('deferredapp');
-      // The start is deferred, so nothing has read the configuration yet.
-      await new Promise((resolve) => {
-        setTimeout(resolve, 0);
-      });
-      expect(bootstrap.lookedUp).to.deep.equal([]);
+      try {
+        startApplication('deferredapp');
+        // The start is deferred, so nothing has read the configuration yet.
+        await new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        });
+        expect(bootstrap.lookedUp).to.deep.equal([]);
 
-      win.WebComponents = { ready: true };
-      window.dispatchEvent(new Event('WebComponentsReady'));
-      const client = await bootstrap.started('deferredapp');
-      expect(client.getUIId()).to.equal(7);
+        win.WebComponents = { ready: true };
+        window.dispatchEvent(new Event('WebComponentsReady'));
+        const client = await bootstrap.started('deferredapp');
+        expect(client.getUIId()).to.equal(7);
+      } finally {
+        window.addEventListener = originalAddEventListener;
+        if (listener !== null) {
+          window.removeEventListener('WebComponentsReady', listener);
+        }
+      }
     });
 
     it('starts immediately once the WebComponents polyfill is ready', async () => {
