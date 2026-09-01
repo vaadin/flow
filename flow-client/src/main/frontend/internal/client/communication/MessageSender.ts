@@ -163,9 +163,9 @@ export class MessageSender {
    * Sends an asynchronous or synchronous UIDL request to the server using the
    * given URI.
    *
-   * Java overloads `send` for this, one overload `protected` and the other
-   * `public`; TypeScript cannot give two overloads different visibility, so the
-   * protected one keeps this name.
+   * Java overloads `send` for this: the two-argument overload is `protected` and
+   * the one-argument one, ported as `send`, is `public`. TypeScript cannot give
+   * two overloads different visibility, so the protected one keeps this name.
    *
    * @param reqInvocations - Data containing RPC invocations and all related
    *          information.
@@ -182,7 +182,7 @@ export class MessageSender {
    *
    * @param payload - The contents of the request to send
    */
-  protected send(payload: Payload): void {
+  send(payload: Payload): void {
     if (this.hasQueuedMessages()) {
       // The server sync id is set in sendPayload. If it is already present, the
       // message has already been sent and enqueued.
