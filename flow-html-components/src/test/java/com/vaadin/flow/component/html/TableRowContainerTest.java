@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -134,24 +134,23 @@ class TableRowContainerTest {
     }
 
     /**
-     * The interface has to stay public: a method declared by a package-private
-     * type is not reflectively invocable from the outside even when inherited
-     * into a public class, which breaks bean introspection and any tooling
-     * reflecting over the components.
+     * The interface has to stay public. A method declared by a package-private
+     * type is not reflectively invocable from outside that package even when it
+     * is inherited into a public class, which breaks bean introspection and any
+     * tooling reflecting over the components, and the type cannot be named by a
+     * caller wanting to write code generic over the three sections.
      */
-    @ParameterizedTest
-    @MethodSource("sections")
-    void rowMethods_areReflectivelyInvocable(
-            Supplier<TableRowContainer> factory) throws Exception {
-        TableRowContainer section = factory.get();
-        section.addRow();
+    @Test
+    void rowMethodsAreDeclaredByAPublicType() throws Exception {
+        for (Class<?> section : List.of(TableHead.class, TableBody.class,
+                TableFoot.class)) {
+            Class<?> declaring = section.getMethod("getRows")
+                    .getDeclaringClass();
 
-        Method getRows = section.getClass().getMethod("getRows");
-
-        assertTrue(java.lang.reflect.Modifier
-                .isPublic(getRows.getDeclaringClass().getModifiers()));
-        assertEquals(section.getRows(),
-                assertDoesNotThrow(() -> getRows.invoke(section)));
+            assertEquals(TableRowContainer.class, declaring);
+            assertTrue(Modifier.isPublic(declaring.getModifiers()),
+                    declaring + " must stay public");
+        }
     }
 
     @ParameterizedTest
