@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -65,6 +69,23 @@ class TableColumnTest extends ComponentTest {
 
         assertThrows(IllegalArgumentException.class, () -> col.setSpan(0));
         assertThrows(IllegalArgumentException.class, () -> col.setSpan(-1));
+    }
+
+    /**
+     * {@link TableColumnSpan} has to stay public: a method declared by a
+     * package-private type is not reflectively invocable from the outside even
+     * when inherited into a public class.
+     */
+    @Test
+    void spanMethods_areReflectivelyInvocable() throws Exception {
+        TableColumn col = (TableColumn) getComponent();
+        col.setSpan(3);
+
+        Method getSpan = TableColumn.class.getMethod("getSpan");
+
+        assertTrue(
+                Modifier.isPublic(getSpan.getDeclaringClass().getModifiers()));
+        assertEquals(3, assertDoesNotThrow(() -> getSpan.invoke(col)));
     }
 
     @Test

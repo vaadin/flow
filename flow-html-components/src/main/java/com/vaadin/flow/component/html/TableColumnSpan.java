@@ -21,12 +21,17 @@ import com.vaadin.flow.component.HasElement;
 
 /**
  * A table column definition carrying a {@code span} attribute, i.e. either a
- * <code>&lt;col&gt;</code> or a <code>&lt;colgroup&gt;</code>.
+ * <code>&lt;col&gt;</code> or a <code>&lt;colgroup&gt;</code>, implemented by
+ * {@link TableColumn} and {@link TableColumnGroup}.
+ * <p>
+ * A {@code span} tells the browser how many consecutive columns the definition
+ * covers, so that one element can carry the styling or attributes of a range of
+ * columns.
  *
  * @since 25.3
  */
 @NullMarked
-interface TableColumnSpan extends HasElement {
+public interface TableColumnSpan extends HasElement {
 
     /**
      * Sets the {@code span} attribute — how many consecutive columns this
@@ -78,11 +83,10 @@ interface TableColumnSpan extends HasElement {
     }
 
     /**
-     * The attribute name, as a method rather than a constant: a field here
-     * would be implicitly {@code public static final} and inherited by the
-     * public classes implementing this interface, which would make
-     * {@code TableColumn.ATTRIBUTE_SPAN} part of the API. An interface cannot
-     * declare a private field.
+     * The attribute name, as a method rather than a constant: a field in an
+     * interface is implicitly {@code public static final} and cannot be made
+     * private, so a constant here would become published API, both on this
+     * interface and on every class inheriting it.
      */
     private static String spanAttribute() {
         return "span";

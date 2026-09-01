@@ -41,7 +41,7 @@ import com.vaadin.flow.component.HasComponentsOfType;
  * @since 25.3
  */
 @NullMarked
-interface TableRowContainer extends HasComponentsOfType<TableRow> {
+public interface TableRowContainer extends HasComponentsOfType<TableRow> {
 
     /**
      * Returns the rows in this container, in document order. This is the typed

@@ -145,6 +145,8 @@ public class TableHeaderCell extends TableCell
 
         /**
          * Returns the attribute value as it appears in the rendered HTML.
+         *
+         * @return the {@code scope} attribute value.
          */
         public String getValue() {
             return value;
