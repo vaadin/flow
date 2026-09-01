@@ -14,13 +14,14 @@
  * the License.
  */
 
+import type { publishClient } from './publishClient';
 import type { ValueMap } from './ValueMap';
 
 /**
- * Type contracts for the client API. `ApplicationConnection` is the public
- * surface of the running client engine; `ApplicationConfiguration` is the
- * application configuration read from the DOM at startup. `publishClient` exposes
- * an `ApplicationConnection` on `window.Vaadin.Flow.clients[appId]`.
+ * Type contracts for the client API. {@link ApplicationConnection} is the public
+ * surface of the running client engine; {@link ApplicationConfiguration} is the
+ * application configuration read from the DOM at startup. {@link publishClient}
+ * exposes an {@link ApplicationConnection} on `window.Vaadin.Flow.clients[appId]`.
  */
 
 /** The application configuration read from the DOM at startup. */
@@ -34,7 +35,7 @@ export interface ApplicationConfiguration {
 }
 
 /**
- * What `publishClient` needs from the running engine to build
+ * What {@link publishClient} needs from the running engine to build
  * `window.Vaadin.Flow.clients[appId]`. The published keys are the ones the JSNI
  * blocks in ApplicationConnection.java define, so two of them (`getByNodeId`,
  * `addDomBindingListener`) differ from the engine method they call.

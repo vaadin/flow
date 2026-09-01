@@ -70,6 +70,11 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
   uncaughtErrorHandler = handler;
 }
 
+/**
+ * Main class for an application / UI.
+ *
+ * Initializes the registry and starts the application.
+ */
 export class ApplicationConnection implements PublishedClient {
   readonly #registry: Registry;
 
@@ -82,8 +87,9 @@ export class ApplicationConnection implements PublishedClient {
 
   /**
    * Creates an application connection using the given configuration: assembles
-   * the registry, binds the root state node to the page body, and publishes the
-   * client API. Mirrors the ApplicationConnection.java constructor.
+   * the {@link DefaultRegistry}, binds the root state node to the page body, and
+   * publishes the client API through {@link publishClient}. Mirrors the
+   * ApplicationConnection.java constructor.
    *
    * @param applicationConfiguration - the configuration object for the application
    * @param rootElement - the element to bind the root state node to; a port

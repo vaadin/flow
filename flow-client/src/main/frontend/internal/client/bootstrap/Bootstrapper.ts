@@ -14,13 +14,14 @@
  * the License.
  */
 
-// Bootstrap-sequence helpers migrated from Bootstrapper.java.
+// TypeScript port of com.vaadin.client.bootstrap.Bootstrapper: handles
+// bootstrapping of the application. It reads the configuration provided by the
+// server in the DOM and starts the client engine (ApplicationConnection), and
+// acts as the entry point, which is the GWT module entry point in Java.
 //
-// populateApplicationConfiguration below is the TS port of the
-// Bootstrapper DOM-config reader: it fills an ApplicationConfiguration from the
-// bootstrap JsoConfiguration. doStartApplication is the bootstrap entry: it reads
-// the DOM config, assembles the TS engine via ApplicationConnection.create, and
-// starts it from the initial UIDL.
+// Java is a class implementing EntryPoint whose members are all static; the port
+// is the module of those members, so onModuleLoad is an exported function rather
+// than an overridden one.
 
 import { ApplicationConfiguration, type ErrorMessage } from '../ApplicationConfiguration';
 import {
@@ -40,6 +41,7 @@ import { getAbsoluteUrl } from '../WidgetUtil';
 import { Console } from '../Console';
 import { enter as profilerEnter, leave as profilerLeave } from '../Profiler';
 import { assert } from '../../assert';
+import type { ApplicationConnection } from '../ApplicationConnection';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVICE_URL = 'serviceUrl';
@@ -61,8 +63,10 @@ function getRequiredConfigInteger(config: ConfigObject, name: string): number {
 }
 
 /**
- * Fills the application configuration from the bootstrap JavaScript config.
- * Mirrors Bootstrapper.populateApplicationConfiguration.
+ * Reads the configuration values defined by the bootstrap JavaScript.
+ *
+ * @param conf - the configuration to fill in
+ * @param jsoConfiguration - the bootstrap configuration object to read
  */
 export function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
   // Resolve potentially relative URLs now so they survive later base-URL changes.
@@ -118,8 +122,10 @@ function getConfigFromDOM(appId: string): ApplicationConfiguration {
 
 /**
  * Starts the application with the given id: reads its configuration from the DOM,
- * assembles the TypeScript engine, and starts it from the initial UIDL. Mirrors
- * Bootstrapper.doStartApplication.
+ * assembles the TypeScript engine through {@link ApplicationConnection.create},
+ * and starts it from the initial UIDL. Mirrors Bootstrapper.doStartApplication.
+ *
+ * @param applicationId - id of the application to start
  */
 export function doStartApplication(applicationId: string): void {
   profilerEnter('Bootstrapper.startApplication');
@@ -163,6 +169,8 @@ interface FlowAppLookup {
 /**
  * Whether the application can be started immediately, i.e. there is no
  * WebComponents polyfill still loading.
+ *
+ * @returns `true` if the application can be started now
  */
 export function startApplicationImmediately(): boolean {
   const webComponents = (window as unknown as WebComponentsGlobal).WebComponents;
@@ -210,9 +218,12 @@ function flowBootstrapState(): FlowBootstrapState | undefined {
 }
 
 /**
- * Starts the application with the given id. On the next deferred tick it starts
+ * Starts the application with a given id by reading the configuration options
+ * stored by the bootstrap javascript. On the next deferred tick it starts
  * immediately, or defers until the WebComponents polyfill signals it is ready.
- * Mirrors Bootstrapper.startApplication.
+ *
+ * @param applicationId - id of the application to load, this is also the id of
+ *          the html element into which the application should be rendered
  */
 export function startApplication(applicationId: string): void {
   getScheduler().scheduleDeferred(() => {

@@ -51,8 +51,19 @@ import { UILifecycle } from './UILifecycle';
 import { URIResolver } from './URIResolver';
 import { XhrConnection } from './communication/XhrConnection';
 
-/** The concrete registry that wires the TS services; mirrors DefaultRegistry.java. */
+/**
+ * A registry implementation used by {@link ApplicationConnection}.
+ */
 export class DefaultRegistry extends Registry {
+  /**
+   * Constructs a registry based on the given configuration reference.
+   *
+   * Java also takes the application connection here, because the registry is
+   * constructed from inside ApplicationConnection's constructor; the port
+   * registers it through {@link DefaultRegistry.setApplicationConnection} instead.
+   *
+   * @param applicationConfiguration - the application configuration
+   */
   constructor(applicationConfiguration: ApplicationConfiguration) {
     super();
     // Initialization order matters: many constructors read earlier services.
