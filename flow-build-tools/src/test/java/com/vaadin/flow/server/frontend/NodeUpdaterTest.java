@@ -54,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -422,6 +423,19 @@ class NodeUpdaterTest {
         assertEquals(
                 "{\"lit\":\"2.0.0\",\"@vaadin/router\":\"1.7.5\",\"@polymer/polymer\":\"3.4.1\"}",
                 nodeUpdater.versionsJson.toString());
+    }
+
+    @Test
+    void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheUpdater()
+            throws IOException {
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
+
+        assertSame(nodeUpdater.getPinnedNpmVersions(),
+                nodeUpdater.getPinnedNpmVersions(),
+                "The versions files should be read once for the updater");
+        Mockito.verify(finder, Mockito.times(1))
+                .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
     }
 
     @Test

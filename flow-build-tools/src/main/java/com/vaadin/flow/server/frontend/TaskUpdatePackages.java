@@ -512,7 +512,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        return new PinnedNpmVersions(finder).getAllDependencies();
+        return getPinnedNpmVersions().getAllDependencies();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
