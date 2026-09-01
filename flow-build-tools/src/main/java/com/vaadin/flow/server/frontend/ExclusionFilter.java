@@ -16,11 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,14 +24,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Excludes dependencies listed in an "exclusions" array of
- * vaadin-*versions.json file from a package.json.
+ * Excludes dependencies listed in an "exclusions" array of a pinned npm
+ * versions file from a package.json.
  * 
  * @since 24.4
  */
@@ -93,9 +86,9 @@ public class ExclusionFilter implements Serializable {
     }
 
     /**
-     * Exclude dependencies from the given map based on the
-     * vaadin-*versions.json files, and dependencies that are part of a package
-     * Flow manages the version of.
+     * Exclude dependencies from the given map based on the pinned npm versions
+     * files, and dependencies that are part of a package Flow manages the
+     * version of.
      *
      * @param dependencies
      *            the dependencies to filter
@@ -133,27 +126,8 @@ public class ExclusionFilter implements Serializable {
         return LoggerFactory.getLogger(ExclusionFilter.class);
     }
 
-    private List<String> getExclusions() throws IOException {
-        List<String> exclusions = new ArrayList<>();
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-        if (coreVersionsResource != null) {
-            exclusions.addAll(getExclusions(coreVersionsResource));
-        }
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (vaadinVersionsResource != null) {
-            exclusions.addAll(getExclusions(vaadinVersionsResource));
-        }
-        return exclusions;
-    }
-
-    private Set<String> getExclusions(URL versionsResource) throws IOException {
-        try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    reactEnabled, excludeWebComponentNpmPackages);
-            return convert.getExclusions();
-        }
+    private Set<String> getExclusions() throws IOException {
+        return new PinnedNpmVersions(finder).getExclusions(reactEnabled,
+                excludeWebComponentNpmPackages);
     }
 }
