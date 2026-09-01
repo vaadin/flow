@@ -25,7 +25,8 @@ application the project's normal way.
 
 The shared file is deliberately tool-agnostic. These are the tools to use for it here.
 
-- Verify with the **Playwright MCP** tools: `browser_navigate` once, then `browser_snapshot` /
+- Verify with the **Playwright MCP** tools: `browser_navigate` once and before the first
+  `apply` (a CSS push needs a page already connected), then `browser_snapshot` /
   `browser_evaluate` for the assertions the shared reference describes, and
   `browser_console_messages` after each change (a `/favicon.ico` 404 is normal noise). The
   first snapshot after `browser_navigate` is usually empty — Vaadin renders client-side.

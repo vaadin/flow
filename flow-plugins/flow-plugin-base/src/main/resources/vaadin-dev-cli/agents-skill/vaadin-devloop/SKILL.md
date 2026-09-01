@@ -32,11 +32,16 @@ another application with `--app`, the version that counts is that application's.
    everything after depends on the answer.
 1. If it says `stopped`, `.vaadin/vaadin-dev start` (~30 s cold; it blocks until the app
    serves or fails).
-2. Edit Java, CSS and/or frontend files. Batch the edits — `apply` finds the change-set itself
+2. **Open the app in the browser now, before the first `apply`**, and keep that page open. A
+   CSS or theme push has somewhere to land only if a page is already connected: with none,
+   `apply` says the resource was copied to the classpath and nothing about a push, which is
+   honest but is not the answer you came for. Opening the page afterwards serves the new file
+   from disk, so the change shows up — but that apply's verdict cannot be recovered.
+3. Edit Java, CSS and/or frontend files. Batch the edits — `apply` finds the change-set itself
    by scanning the sources of every module in the loop. Run it once after a batch, not per file.
-3. `.vaadin/vaadin-dev apply` — **the exit code is the verdict**: `0` live, `1` failed,
+4. `.vaadin/vaadin-dev apply` — **the exit code is the verdict**: `0` live, `1` failed,
    `4` superseded.
-4. Verify in the browser. Only then report the change as working.
+5. Verify in the page opened in step 2. Only then report the change as working.
 
 ## Commands
 
@@ -101,6 +106,7 @@ target/devloop/app.log, daemon.log          logs, under the target application
 | Output | Meaning |
 |---|---|
 | `hmr: … pushed 1 stylesheet(s) in place` | CSS is live in the open page, no reload |
+| `hmr: … no browser connected` | the new CSS is on the classpath, but no page was open to push it into — open one and re-apply rather than reporting the change live |
 | `hmr: N theme file(s) pushed in place` | theme CSS is live in the open page, no reload |
 | `hmr: N frontend file(s), applied by Vite (dev server up:…)` | Vite mode: the edit went live when you saved it |
 | `frontend → Failed` with `dev server: [vite] …` | Vite mode: Vite refused to compile the edit — exit `1`. Fix the file it names and re-apply; a restart cannot compile it either |
@@ -116,9 +122,9 @@ target/devloop/app.log, daemon.log          logs, under the target application
 
 `Stable` with an `app log:` line under it is a failure to investigate, not a success.
 
-The app serves on **http://localhost:8080** unless `server.port` says otherwise. Navigate once
-and keep the page open across applies — CSS pushes and Java hot-swaps land in an already-open
-page, and re-navigating hides what you are testing.
+The app serves on **http://localhost:8080** unless `server.port` says otherwise. Navigate once,
+in step 2, and keep the page open across applies — CSS pushes and Java hot-swaps land in an
+already-open page, and re-navigating hides what you are testing.
 
 ## Full reference
 

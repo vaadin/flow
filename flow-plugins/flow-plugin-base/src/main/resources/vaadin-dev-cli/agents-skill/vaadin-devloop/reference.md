@@ -89,8 +89,10 @@ Use whatever browser automation this agent has — a Playwright/browser MCP serv
 built-in browser tool, or a headless Playwright/Selenium script. The rules are the same
 whichever it is:
 
-- **Navigate once, keep the page open across applies.** CSS pushes and Java hot-swaps land in
-  an already-open page; re-navigating hides what you are testing. Reload only after a restart.
+- **Navigate before the first `apply`, then keep the page open across applies.** CSS pushes and
+  Java hot-swaps land in an already-open page; re-navigating hides what you are testing. Reload
+  only after a restart. An `apply` run with no page open reports the stylesheet copied rather
+  than pushed — the change is on the classpath, but nothing was told about it.
 - **The first snapshot after navigating is usually empty** — Vaadin renders client-side. Wait
   for a known element or re-snapshot before asserting.
 - **CSS: assert computed style**, not screenshots —
