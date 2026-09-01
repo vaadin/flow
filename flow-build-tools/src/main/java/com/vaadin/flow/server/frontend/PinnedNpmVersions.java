@@ -63,6 +63,8 @@ class PinnedNpmVersions {
 
     private static final String JSON_SUFFIX = ".json";
 
+    private static final String PLATFORM = "platform";
+
     /**
      * A versions file and the location it was read from.
      */
@@ -160,14 +162,59 @@ class PinnedNpmVersions {
      * @return the Vaadin version, or empty if no versions file declares one
      */
     Optional<String> getVaadinVersion() {
-        String vaadinVersion = null;
-        String origin = null;
-        for (VersionsFile file : files) {
-            JsonNode platform = file.content().get("platform");
-            if (platform == null || !platform.isString()) {
+        List<VersionsFile> platformFiles = files.stream()
+                .filter(file -> declaresVaadinVersion(file)
+                        && declaresPlatformPackage(file.content()))
+                .toList();
+        if (!platformFiles.isEmpty()) {
+            files.stream()
+                    .filter(file -> declaresVaadinVersion(file)
+                            && !platformFiles.contains(file))
+                    .forEach(file -> log().warn(
+                            "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'.",
+                            file.content().get(PLATFORM).asString(),
+                            file.origin(), VAADIN_CORE_NPM_PACKAGE));
+            return getVaadinVersion(platformFiles);
+        }
+        // Nothing on the classpath is the platform, so there is nothing to
+        // tell the Vaadin version apart from what the files say
+        return getVaadinVersion(
+                files.stream().filter(this::declaresVaadinVersion).toList());
+    }
+
+    private boolean declaresVaadinVersion(VersionsFile file) {
+        JsonNode platform = file.content().get(PLATFORM);
+        return platform != null && platform.isString();
+    }
+
+    /**
+     * Checks whether the versions file is one of the platform itself, which is
+     * the file declaring the npm package of the platform.
+     */
+    private static boolean declaresPlatformPackage(JsonNode obj) {
+        for (String key : JacksonUtils.getKeys(obj)) {
+            JsonNode value = obj.get(key);
+            if (!(value instanceof ObjectNode)) {
                 continue;
             }
-            String version = platform.asString();
+            if (value.has(NPM_NAME)) {
+                if (Objects.equals(value.get(NPM_NAME).asString(),
+                        VAADIN_CORE_NPM_PACKAGE)) {
+                    return true;
+                }
+            } else if (declaresPlatformPackage(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Optional<String> getVaadinVersion(
+            List<VersionsFile> versionsFiles) {
+        String vaadinVersion = null;
+        String origin = null;
+        for (VersionsFile file : versionsFiles) {
+            String version = file.content().get(PLATFORM).asString();
             if (vaadinVersion == null) {
                 vaadinVersion = version;
                 origin = file.origin();

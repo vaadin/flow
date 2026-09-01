@@ -188,6 +188,36 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void onlyThePlatformFileGivesTheVaadinVersion() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "platform": "42.0.0",
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "platform": "25.1.0",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        // The file of a jar that is not the platform cannot say what the
+        // Vaadin version is, whatever it declares
+        assertEquals(Optional.of("25.1.0"),
+                pinnedNpmVersions.getVaadinVersion());
+    }
+
+    @Test
     void differentVaadinVersionsInMultipleFiles_newestVersionIsUsed()
             throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
@@ -344,6 +374,30 @@ class PinnedNpmVersionsTest {
         assertFalse(dependencies.has("@vaadin/vaadin-core"));
         // The packages declared after it are collected all the same
         assertTrue(dependencies.has("@vaadin/button"));
+    }
+
+    @Test
+    void noPlatformFile_theVaadinVersionIsTakenFromTheFilesDeclaringIt()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "platform": "25.1.0"
+                }
+                """);
+
+        // Without the platform on the classpath there is nothing to tell the
+        // Vaadin version apart from what the files say
+        assertEquals(Optional.of("25.1.0"),
+                pinnedNpmVersions.getVaadinVersion());
     }
 
     @Test
