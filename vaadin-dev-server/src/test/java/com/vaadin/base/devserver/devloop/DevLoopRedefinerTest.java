@@ -19,6 +19,13 @@ import java.io.File;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.Theme;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -115,6 +122,62 @@ class DevLoopRedefinerTest {
 
     private static File file(String path) {
         return new File(path);
+    }
+
+    /** Where {@code @Theme} has to sit, and it is never a Component. */
+    @Theme(value = "my-theme", variant = "dark")
+    static class ThemedAppShell implements AppShellConfigurator {
+    }
+
+    /** {@code @JsModule} and friends are not Component-only either. */
+    @JsModule("./holder.js")
+    @NpmPackage(value = "some-pkg", version = "1.2.3")
+    static class PlainFrontendHolder {
+    }
+
+    @Tag("some-view")
+    @JsModule("./view.js")
+    static class SomeView extends Component {
+    }
+
+    static class NothingDeclared {
+    }
+
+    @Test
+    void frontendDependencies_seesTheThemeOnAnAppShellThatIsNoComponent() {
+        // @Theme belongs on the AppShellConfigurator, which is never a
+        // Component. Read only from Components, it is invisible - so adding or
+        // changing a theme redefines cleanly, reports frontendImports=-, and
+        // apply calls Stable over a theme the build never generated imports
+        // for.
+        String imports = DevLoopRedefiner
+                .frontendDependencies(ThemedAppShell.class);
+
+        assertTrue(imports.contains("theme:my-theme"), imports);
+        // The variant is read at startup the same way the name is, so a change
+        // to it is the same kind of change.
+        assertTrue(imports.contains("dark"), imports);
+    }
+
+    @Test
+    void frontendDependencies_seesBuildTimeImportsOnANonComponent() {
+        String imports = DevLoopRedefiner
+                .frontendDependencies(PlainFrontendHolder.class);
+
+        assertTrue(imports.contains("js:./holder.js"), imports);
+        assertTrue(imports.contains("npm:some-pkg@1.2.3"), imports);
+    }
+
+    @Test
+    void frontendDependencies_readsAComponentAndAnswersEmptyForNeither() {
+        // The Component path goes through AnnotationReader, so an import
+        // inherited from a supertype or picked up through @Uses still counts
+        // the way the build counts it.
+        assertTrue(DevLoopRedefiner.frontendDependencies(SomeView.class)
+                .contains("js:./view.js"));
+        // And a class that declares none is not a change to any.
+        assertEquals("",
+                DevLoopRedefiner.frontendDependencies(NothingDeclared.class));
     }
 
     @Test

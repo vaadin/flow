@@ -47,6 +47,9 @@ import com.vaadin.base.devserver.PublicResourcesLiveUpdater;
 import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -858,20 +861,44 @@ final class DevLoopRedefiner {
      * and removed by {@code StyleSheetHotswapper} without a rebuild, and
      * restarting for one would be a regression.
      */
-    private static String frontendDependencies(Class<?> type) {
-        if (!Component.class.isAssignableFrom(type)) {
-            return "";
-        }
-        @SuppressWarnings("unchecked")
-        Class<? extends Component> componentType = (Class<? extends Component>) type;
+    // Package-private so the non-Component reads can be asserted directly.
+    static String frontendDependencies(Class<?> type) {
         List<String> imports = new ArrayList<>();
-        AnnotationReader.getJsModuleAnnotations(componentType)
-                .forEach(annotation -> imports.add("js:" + annotation.value()));
-        AnnotationReader.getJavaScriptAnnotations(componentType).forEach(
-                annotation -> imports.add("script:" + annotation.value()));
-        AnnotationReader.getCssImportAnnotations(componentType)
-                .forEach(annotation -> imports.add("css:" + annotation.value()
-                        + ":" + annotation.id() + ":" + annotation.themeFor()));
+        if (Component.class.isAssignableFrom(type)) {
+            @SuppressWarnings("unchecked")
+            Class<? extends Component> componentType = (Class<? extends Component>) type;
+            AnnotationReader.getJsModuleAnnotations(componentType).forEach(
+                    annotation -> imports.add("js:" + annotation.value()));
+            AnnotationReader.getJavaScriptAnnotations(componentType).forEach(
+                    annotation -> imports.add("script:" + annotation.value()));
+            AnnotationReader.getCssImportAnnotations(componentType).forEach(
+                    annotation -> imports.add("css:" + annotation.value() + ":"
+                            + annotation.id() + ":" + annotation.themeFor()));
+        } else {
+            // Straight off the class, because AnnotationReader only accepts a
+            // Component - and none of these annotations is Component-only. The
+            // build scans every class it reaches from an entry point, so a
+            // JsModule on a service init listener ends up in
+            // generated-flow-imports.js exactly like one on a view.
+            for (JsModule annotation : type
+                    .getAnnotationsByType(JsModule.class)) {
+                imports.add("js:" + annotation.value());
+            }
+            for (JavaScript annotation : type
+                    .getAnnotationsByType(JavaScript.class)) {
+                imports.add("script:" + annotation.value());
+            }
+            for (CssImport annotation : type
+                    .getAnnotationsByType(CssImport.class)) {
+                imports.add("css:" + annotation.value() + ":" + annotation.id()
+                        + ":" + annotation.themeFor());
+            }
+        }
+        // These two are read off the class whatever it is. @Theme in particular
+        // has to sit on the AppShellConfigurator, which is never a Component -
+        // so reading it only from Components meant a theme could be added,
+        // changed or removed, redefine cleanly, and be reported Stable over a
+        // bundle that has no imports for it.
         for (NpmPackage npmPackage : type
                 .getAnnotationsByType(NpmPackage.class)) {
             imports.add(
@@ -879,7 +906,11 @@ final class DevLoopRedefiner {
         }
         Theme theme = type.getAnnotation(Theme.class);
         if (theme != null) {
-            imports.add("theme:" + theme.value());
+            // Variant and theme class alongside the name: all three are read
+            // while the application starts, so a change to any of them is the
+            // same kind of change.
+            imports.add("theme:" + theme.value() + ":" + theme.variant() + ":"
+                    + theme.themeClass().getName());
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
