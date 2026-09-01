@@ -442,18 +442,25 @@ send() { # $1=port $2=token $3...=command words
         line="${line%$'\r'}"
         # Erase first: a reply line must never be printed onto a drawn frame.
         spin_erase
-        if (( rc != 0 )); then
-            # End of stream. Whatever arrived unterminated is still a reply.
-            [[ -n "$line" ]] && printf '%s\n' "$line"
-            break
+        # An unterminated last line is a reply like any other and can carry the
+        # verdict, so end of stream decides when to stop reading and never how to
+        # read the line in hand.
+        if [[ -n "$line" ]]; then
+            case "$line" in
+                "EXIT "*)
+                    status="${line#EXIT }"
+                    # A verdict cut in half is no verdict: fail rather than hand
+                    # `return` something that is not a number.
+                    [[ -n "$status" && -z "${status//[0-9]/}" ]] || status=1
+                    break
+                    ;;
+                # The last thing the daemon said is the truest label available: it
+                # names the phase, so the frame moves under "restarting", not "start".
+                "> "*)  printf '%s\n' "${line#> }"; spin_label="${line#> }" ;;
+                *)      printf '%s\n' "$line" ;;
+            esac
         fi
-        case "$line" in
-            "EXIT "*) status="${line#EXIT }"; break ;;
-            # The last thing the daemon said is the truest label available: it
-            # names the phase, so the frame moves under "restarting", not "start".
-            "> "*)    printf '%s\n' "${line#> }"; spin_label="${line#> }" ;;
-            *)        printf '%s\n' "$line" ;;
-        esac
+        (( rc != 0 )) && break
         spin_quiet=$SECONDS
     done
     spin_erase
