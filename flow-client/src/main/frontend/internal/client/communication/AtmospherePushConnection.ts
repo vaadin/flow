@@ -21,6 +21,7 @@
 // The rest of AtmospherePushConnection is the Atmosphere library connection state
 // machine (push/connect/disconnect/onMessage), which is library/network-bound.
 
+import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
@@ -187,18 +188,6 @@ interface AtmosphereResponse {
   responseBody: string;
 }
 
-/** The connection-state callbacks AtmospherePushConnection invokes. */
-interface PushConnectionStateHandler {
-  pushOk(connection: PushConnection): void;
-  pushError(connection: PushConnection, response: unknown): void;
-  pushClosed(connection: PushConnection, response: unknown): void;
-  pushClientTimeout(connection: PushConnection, response: unknown): void;
-  pushReconnectPending(connection: PushConnection): void;
-  pushInvalidContent(connection: PushConnection, message: string): void;
-  pushNotConnected(payload: Record<string, unknown>): void;
-  pushScriptLoadError(resourceUrl: string): void;
-}
-
 /**
  * The default {@link PushConnection} implementation that uses Atmosphere for
  * handling the communication channel.
@@ -254,7 +243,7 @@ export class AtmospherePushConnection implements PushConnection {
     this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
   }
 
-  #getConnectionStateHandler(): PushConnectionStateHandler {
+  #getConnectionStateHandler(): ConnectionStateHandler {
     return this.#registry.getConnectionStateHandler();
   }
 

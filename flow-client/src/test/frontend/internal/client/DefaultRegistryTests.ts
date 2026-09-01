@@ -4,6 +4,7 @@
 
 import { expect } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
 import { DefaultConnectionStateHandler } from '../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { DefaultRegistry } from '../../../../main/frontend/internal/client/DefaultRegistry';
 import { MessageSender } from '../../../../main/frontend/internal/client/communication/MessageSender';
@@ -27,6 +28,19 @@ describe('DefaultRegistry', () => {
     // The state tree, server connector, message handler, etc. are all present.
     expect(registry.getStateTree().getRootNode()).to.not.equal(null);
     expect(registry.getMessageHandler().getCsrfToken()).to.equal('init');
+  });
+
+  it('hands out the application connection once it has been set', () => {
+    // Java passes the connection into the constructor. The port cannot, because
+    // it builds the registry before the connection, so ApplicationConnection.create
+    // registers it as soon as it exists - its only caller. Until then the lookup
+    // fails rather than returning undefined.
+    const registry = makeRegistry();
+    expect(() => registry.getApplicationConnection()).to.throw();
+
+    const connection = new ApplicationConnection(registry, { hasWorkQueued: () => false });
+    registry.setApplicationConnection(connection);
+    expect(registry.getApplicationConnection()).to.equal(connection);
   });
 
   it('cross-wires services: XhrConnection.getUri() resolves the configuration', () => {

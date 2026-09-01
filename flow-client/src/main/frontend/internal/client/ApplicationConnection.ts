@@ -91,6 +91,7 @@ export class ApplicationConnection implements PublishedClient {
     bind(rootNode, rootElement);
 
     const connection = new ApplicationConnection(registry, getScheduler());
+    registry.setApplicationConnection(connection);
     publishClient(connection, applicationConfiguration);
     return connection;
   }

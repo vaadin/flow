@@ -1,4 +1,8 @@
 import { wiredRegistryBase } from '../flow/stateTreeTestRegistry';
+import type {
+  ResourceLoadEvent,
+  ResourceLoadListener
+} from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
@@ -109,17 +113,19 @@ function makeWiredRegistry() {
   // eager-dependency gate — the thing these cases assert — decide the order.
   // loadDynamicImport runs the expression, which is what the real loader does
   // and what the dynamic-import case asserts on.
-  const event = { getResourceUrl: () => '' };
+  // Only the loader identity is read from the event, and nothing under test reads
+  // it, so it stands in for the one a real load would carry.
+  const event = { getResourceLoader: () => null, getResourceData: () => '' } as unknown as ResourceLoadEvent;
   // The Java fake records the load when it is requested; recording it when it
   // completes is what makes "handled before applying changes" checkable, since a
   // real load finishes on a later task.
-  const complete = (listener: { onLoad(e: unknown): void }) => {
+  const complete = (listener: ResourceLoadListener | null) => {
     setTimeout(() => {
       order.push('ResourceLoader');
-      listener.onLoad(event);
+      listener?.onLoad(event);
     }, 0);
   };
-  const recordScript = (url: string, listener: { onLoad(e: unknown): void }) => {
+  const recordScript = (url: string, listener: ResourceLoadListener | null) => {
     scriptUrls.push(url);
     complete(listener);
   };
@@ -127,7 +133,7 @@ function makeWiredRegistry() {
     .register('ResourceLoader', {
       loadJsModule: recordScript,
       loadScript: recordScript,
-      loadDynamicImport: (expression: string, listener: { onLoad(e: unknown): void }) => {
+      loadDynamicImport: (expression: string, listener: ResourceLoadListener) => {
         setTimeout(() => {
           new Function(expression)();
           order.push('ResourceLoader');
