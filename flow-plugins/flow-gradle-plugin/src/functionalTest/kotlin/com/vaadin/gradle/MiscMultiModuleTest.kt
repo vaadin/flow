@@ -205,9 +205,19 @@ class MiscMultiModuleTest : AbstractGradleTest() {
 
             relocated = TestProject()
             val excludedDirs = setOf("build", ".gradle", "node_modules")
+            // The default index.html is generated into the frontend folder
+            // and is declared as an output of vaadinBuildFrontend. A fresh
+            // checkout does not carry it, and copying it over would make
+            // Gradle see an output file it cannot attribute to the task,
+            // which disables caching for the whole task.
+            val generatedIndexHtml =
+                File("web/src/main/frontend", "index.html").path
             testProject.dir.walkTopDown()
                 .onEnter { it.name !in excludedDirs }
-                .filter { it.isFile }
+                .filter {
+                    it.isFile && it.relativeTo(testProject.dir).path !=
+                            generatedIndexHtml
+                }
                 .forEach { source ->
                     val target = File(
                         relocated.dir,
