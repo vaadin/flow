@@ -222,11 +222,23 @@ class PinnedNpmVersionsTest {
             throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
-                  "platform": "25.1.1"
+                  "platform": "25.1.1",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "25.1.1"
+                    }
+                  }
                 }
                 """, """
                 {
-                  "platform": "25.1.2"
+                  "platform": "25.1.2",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "25.1.2"
+                    }
+                  }
                 }
                 """);
 
@@ -378,26 +390,50 @@ class PinnedNpmVersionsTest {
 
     @Test
     void vaadinVersionIsReadFromTheFileDeclaringIt() throws IOException {
-        // Without the platform on the classpath there is nothing to tell the
-        // Vaadin version apart from what the files say, and the first file
-        // does not declare it
+        // The first file of the platform does not declare the version
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
-                  "components": {
-                    "grid": {
-                      "npmName": "@vaadin/grid",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
                       "jsVersion": "25.1.0"
                     }
                   }
                 }
                 """, """
                 {
-                  "platform": "25.1.0"
+                  "platform": "25.1.0",
+                  "components": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
                 }
                 """);
 
         assertEquals(Optional.of("25.1.0"),
                 pinnedNpmVersions.getVaadinVersion());
+    }
+
+    @Test
+    void noPlatformFile_theVersionOfThePlatformItselfIsUsed()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "platform": "42.0.0",
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        // No file of the platform, so the version comes from the platform
+        // itself, which is not on the classpath of this test
+        assertEquals(Optional.empty(), pinnedNpmVersions.getVaadinVersion());
     }
 
     @Test

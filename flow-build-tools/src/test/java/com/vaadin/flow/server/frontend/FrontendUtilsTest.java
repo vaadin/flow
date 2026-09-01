@@ -690,6 +690,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -744,6 +745,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -769,6 +771,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -795,6 +798,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -822,6 +826,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -848,6 +853,7 @@ class FrontendUtilsTest {
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
