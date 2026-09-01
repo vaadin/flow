@@ -27,6 +27,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.vaadin.flow.component.Component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableRowTest extends ComponentTest {
@@ -175,6 +177,52 @@ class TableRowTest extends ComponentTest {
         assertEquals("Breed", cell.getText());
         assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROW),
                 cell.getScope());
+    }
+
+    @Test
+    void addGroupHeaderCell_setsTheGroupScopeAndLeavesTheSpanAlone() {
+        TableRow row = new TableRow();
+
+        TableHeaderCell rowGroup = row.addRowGroupHeaderCell("Jovian planets");
+        TableHeaderCell columnGroup = row
+                .addColumnGroupHeaderCell("Measurements");
+
+        assertEquals("Jovian planets", rowGroup.getText());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROWGROUP),
+                rowGroup.getScope());
+        assertEquals("Measurements", columnGroup.getText());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COLGROUP),
+                columnGroup.getScope());
+        // Without an explicit span neither attribute is written out
+        assertNull(rowGroup.getElement().getAttribute("rowspan"));
+        assertNull(columnGroup.getElement().getAttribute("colspan"));
+    }
+
+    @Test
+    void addGroupHeaderCell_withASpan_reachesOverTheGroupItNames() {
+        TableRow row = new TableRow();
+
+        TableHeaderCell rowGroup = row.addRowGroupHeaderCell("Gas giants", 2);
+        TableHeaderCell columnGroup = row.addColumnGroupHeaderCell("Size", 3);
+
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROWGROUP),
+                rowGroup.getScope());
+        assertEquals(2, rowGroup.getRowspan());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COLGROUP),
+                columnGroup.getScope());
+        assertEquals(3, columnGroup.getColspan());
+    }
+
+    @Test
+    void addGroupHeaderCell_rejectsAnInvalidSpanBeforeAttachingTheCell() {
+        TableRow row = new TableRow();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> row.addRowGroupHeaderCell("Jovian planets", -1));
+        assertThrows(IllegalArgumentException.class,
+                () -> row.addColumnGroupHeaderCell("Size", 0));
+
+        assertTrue(row.getCells().isEmpty());
     }
 
     @Test

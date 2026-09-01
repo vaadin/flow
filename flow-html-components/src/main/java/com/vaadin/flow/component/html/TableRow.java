@@ -254,6 +254,86 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell labelling the band of rows it heads, with
+     * {@code scope="rowgroup"} set on the resulting <code>&lt;th&gt;</code>.
+     * Use it for the cell that names a group of consecutive rows, such as
+     * "Terrestrial planets" in front of the four rows describing them, as
+     * opposed to {@link #addRowHeaderCell(String)}, which labels one row.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} with {@code scope="rowgroup"}.
+     */
+    public TableHeaderCell addRowGroupHeaderCell(String text) {
+        TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROWGROUP);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell labelling the band of rows it heads, with
+     * {@code scope="rowgroup"} and the given {@code rowspan} set on the
+     * resulting <code>&lt;th&gt;</code>, so that the cell reaches over the rows
+     * it names.
+     *
+     * @param text
+     *            the text content.
+     * @param rowspan
+     *            the number of rows the header covers, or {@code 0} to cover
+     *            the rest of the row group.
+     * @return the new {@code <th>} with {@code scope="rowgroup"}.
+     * @throws IllegalArgumentException
+     *             if {@code rowspan} is negative.
+     */
+    public TableHeaderCell addRowGroupHeaderCell(String text, int rowspan) {
+        TableHeaderCell cell = new TableHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROWGROUP);
+        // Set the span before attaching, so that a rejected one leaves the row
+        // as it was
+        cell.setRowspan(rowspan);
+        return append(cell);
+    }
+
+    /**
+     * Appends a header cell labelling the band of columns it heads, with
+     * {@code scope="colgroup"} set on the resulting <code>&lt;th&gt;</code>.
+     * This is the counterpart of {@link #addRowGroupHeaderCell(String)}, for a
+     * cell that names a group of consecutive columns rather than a single one.
+     *
+     * @param text
+     *            the text content.
+     * @return the new {@code <th>} with {@code scope="colgroup"}.
+     */
+    public TableHeaderCell addColumnGroupHeaderCell(String text) {
+        TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.COLGROUP);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell labelling the band of columns it heads, with
+     * {@code scope="colgroup"} and the given {@code colspan} set on the
+     * resulting <code>&lt;th&gt;</code>, so that the cell reaches over the
+     * columns it names.
+     *
+     * @param text
+     *            the text content.
+     * @param colspan
+     *            the number of columns the header covers.
+     * @return the new {@code <th>} with {@code scope="colgroup"}.
+     * @throws IllegalArgumentException
+     *             if {@code colspan} is less than 1.
+     */
+    public TableHeaderCell addColumnGroupHeaderCell(String text, int colspan) {
+        TableHeaderCell cell = new TableHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.COLGROUP);
+        // Set the span before attaching, so that a rejected one leaves the row
+        // as it was
+        cell.setColspan(colspan);
+        return append(cell);
+    }
+
+    /**
      * Appends a new empty data cell to this row.
      *
      * @return the new {@code <td>}.

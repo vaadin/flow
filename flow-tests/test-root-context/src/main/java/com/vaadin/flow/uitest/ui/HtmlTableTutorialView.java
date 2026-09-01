@@ -25,7 +25,6 @@ import com.vaadin.flow.component.html.TableColumn;
 import com.vaadin.flow.component.html.TableColumnGroup;
 import com.vaadin.flow.component.html.TableHead;
 import com.vaadin.flow.component.html.TableHeaderCell;
-import com.vaadin.flow.component.html.TableHeaderCell.Scope;
 import com.vaadin.flow.component.html.TableRow;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -105,8 +104,7 @@ public class HtmlTableTutorialView extends Div {
             addRow().addHeaderCell("Hippopotamus").setColspan(2);
 
             TableRow horseRow = addRow();
-            TableHeaderCell horse = horseRow.addHeaderCell("Horse");
-            horse.setScope(Scope.ROW);
+            TableHeaderCell horse = horseRow.addRowHeaderCell("Horse");
             horse.setRowspan(2);
             horseRow.addDataCell("Mare");
             addRow("Stallion");
@@ -114,8 +112,7 @@ public class HtmlTableTutorialView extends Div {
             addRow().addHeaderCell("Crocodile").setColspan(2);
 
             TableRow chickenRow = addRow();
-            TableHeaderCell chicken = chickenRow.addHeaderCell("Chicken");
-            chicken.setScope(Scope.ROW);
+            TableHeaderCell chicken = chickenRow.addRowHeaderCell("Chicken");
             chicken.setRowspan(2);
             chickenRow.addDataCell("Hen");
             addRow("Rooster");
@@ -147,10 +144,8 @@ public class HtmlTableTutorialView extends Div {
 
             TableRow mercury = addRow();
             TableHeaderCell terrestrial = mercury
-                    .addHeaderCell("Terrestrial planets");
-            terrestrial.setScope(Scope.ROWGROUP);
+                    .addRowGroupHeaderCell("Terrestrial planets", 4);
             terrestrial.setColspan(2);
-            terrestrial.setRowspan(4);
             mercury.addRowHeaderCell("Mercury");
             mercury.addDataCells("0.330", "4,879", "5427", "3.7", "4222.6",
                     "57.9", "167", "0", "Closest to the Sun");
@@ -171,14 +166,8 @@ public class HtmlTableTutorialView extends Div {
                     "-65", "2", "The red planet");
 
             TableRow jupiter = addRow();
-            TableHeaderCell jovian = jupiter
-                    .addHeaderCell("Jovian planets");
-            jovian.setScope(Scope.ROWGROUP);
-            jovian.setRowspan(4);
-            TableHeaderCell gasGiants = jupiter
-                    .addHeaderCell("Gas giants");
-            gasGiants.setScope(Scope.ROWGROUP);
-            gasGiants.setRowspan(2);
+            jupiter.addRowGroupHeaderCell("Jovian planets", 4);
+            jupiter.addRowGroupHeaderCell("Gas giants", 2);
             jupiter.addRowHeaderCell("Jupiter");
             jupiter.addDataCells("1898", "142,984", "1326", "23.1", "9.9",
                     "778.6", "-110", "67", "The largest planet");
@@ -189,10 +178,7 @@ public class HtmlTableTutorialView extends Div {
                     "1433.5", "-140", "62", "");
 
             TableRow uranus = addRow();
-            TableHeaderCell iceGiants = uranus
-                    .addHeaderCell("Ice giants");
-            iceGiants.setScope(Scope.ROWGROUP);
-            iceGiants.setRowspan(2);
+            uranus.addRowGroupHeaderCell("Ice giants", 2);
             uranus.addRowHeaderCell("Uranus");
             uranus.addDataCells("86.8", "51,118", "1271", "8.7", "17.2",
                     "2872.5", "-195", "27", "");
@@ -204,8 +190,7 @@ public class HtmlTableTutorialView extends Div {
 
             TableRow pluto = addRow();
             TableHeaderCell dwarf = pluto
-                    .addHeaderCell("Dwarf planets");
-            dwarf.setScope(Scope.ROWGROUP);
+                    .addRowGroupHeaderCell("Dwarf planets");
             dwarf.setColspan(2);
             pluto.addRowHeaderCell("Pluto");
             pluto.addDataCells("0.0146", "2,370", "2095", "0.7", "153.3",
