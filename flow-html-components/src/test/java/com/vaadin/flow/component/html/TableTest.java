@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableTest extends ComponentTest {
@@ -362,6 +363,37 @@ class TableTest extends ComponentTest {
         assertEquals(List.of(header), table.getHeaderRows());
         assertEquals(List.of(first, second), table.getBodyRows());
         assertEquals(List.of(footer), table.getFooterRows());
+    }
+
+    @Test
+    void removeRow_findsTheSectionHoldingItWithoutBeingTold() {
+        Table table = table();
+        TableRow header = table.addHeaderRow();
+        TableRow body = table.addRow();
+        TableRow secondBody = table.addBody().addRow();
+        TableRow footer = table.addFooterRow();
+
+        table.removeRow(body);
+        table.removeRow(secondBody);
+        table.removeRow(header);
+        table.removeRow(footer);
+
+        assertTrue(table.getAllRows().isEmpty());
+        // the sections stay, as they do for removeAllRows
+        assertEquals(4, table.getChildren().count());
+    }
+
+    @Test
+    void removeRow_rejectsARowThisTableDoesNotHold() {
+        Table table = table();
+        table.addRow();
+        TableRow foreign = new Table().addRow();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> table.removeRow(foreign));
+        assertThrows(IllegalArgumentException.class,
+                () -> table.removeRow(new TableRow()));
+        assertEquals(1, table.getAllRows().size());
     }
 
     @Test

@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -40,6 +41,17 @@ import com.vaadin.flow.dom.Element;
  * {@code <caption>}, {@code <colgroup>}, {@code <thead>}, {@code <tbody>} and
  * {@code <tfoot>}, and those are reached through the accessors below, which
  * also keep them in the order the WHATWG HTML specification requires.
+ * <p>
+ * Most code never has to name a section. {@link #addRow()},
+ * {@link #addRowWithHeader(String, String...)}, {@link #addHeaderRow()} and
+ * {@link #addFooterRow()} create the enclosing {@code <tbody>}, {@code <thead>}
+ * or {@code <tfoot>} on demand, and {@link #getHeaderRows()},
+ * {@link #getBodyRows()}, {@link #getFooterRows()}, {@link #getAllRows()} and
+ * {@link #removeRow(TableRow)} read and remove rows without one either. This
+ * mirrors the DOM, where inserting a row into a table materialises the missing
+ * row group by itself. Reach for {@link #getHead()} and friends only when you
+ * need to address a section as a whole — to style it, or to hand it to
+ * {@code bindChildren}.
  *
  * @see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  *      HTML: Tabular data</a>
@@ -467,6 +479,28 @@ public class Table extends HtmlComponent
      */
     public List<TableRow> getFooterRows() {
         return findFoot().map(TableFoot::getRows).orElseGet(List::of);
+    }
+
+    /**
+     * Removes the given row from whichever section of this table holds it, so
+     * that a caller who added the row through {@link #addRow()} or one of its
+     * siblings does not have to know which section that was.
+     *
+     * @param row
+     *            the row to remove.
+     * @throws IllegalArgumentException
+     *             if the row is not in any section of this table.
+     */
+    public void removeRow(TableRow row) {
+        Objects.requireNonNull(row, "row must not be null");
+        for (TableRowContainer section : sections().toList()) {
+            if (section.indexOf(row) >= 0) {
+                section.remove(row);
+                return;
+            }
+        }
+        throw new IllegalArgumentException(
+                "The given row is not in any section of this table");
     }
 
     /**
