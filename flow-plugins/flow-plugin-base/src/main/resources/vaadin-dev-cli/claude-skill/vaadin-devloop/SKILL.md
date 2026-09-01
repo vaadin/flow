@@ -25,11 +25,12 @@ application the project's normal way.
 
 The shared file is deliberately tool-agnostic. These are the tools to use for it here.
 
-- Verify with the **Playwright MCP** tools: `browser_navigate` once and before the first
-  `apply` (a CSS push needs a page already connected), then `browser_snapshot` /
-  `browser_evaluate` for the assertions the shared reference describes, and
-  `browser_console_messages` after each change (a `/favicon.ico` 404 is normal noise). The
-  first snapshot after `browser_navigate` is usually empty — Vaadin renders client-side.
+- Verify with the **Playwright MCP** tools, for a change with a visual surface (the shared
+  file's step 5): `browser_navigate` once and before the first `apply` (a CSS push needs a page
+  already connected), then `browser_snapshot` / `browser_evaluate` for the assertions the
+  shared reference describes, and `browser_console_messages` after each change (a
+  `/favicon.ico` 404 is normal noise). The first snapshot after `browser_navigate` is usually
+  empty — Vaadin renders client-side.
 - Use the **Vaadin MCP server** (`search_vaadin_docs`, `get_component_java_api`,
   `get_component_styling`, `get_theme_css_properties`) instead of recalling API from memory;
   check the Vaadin version in the target application's `pom.xml`.

@@ -32,7 +32,8 @@ another application with `--app`, the version that counts is that application's.
    everything after depends on the answer.
 1. If it says `stopped`, `.vaadin/vaadin-dev start` (~30 s cold; it blocks until the app
    serves or fails).
-2. **Open the app in the browser now, before the first `apply`**, and keep that page open. A
+2. **Open the app in the browser now, before the first `apply`**, and keep that page open,
+   unless the change ahead has no visual surface at all — step 5 defines which those are. A
    CSS or theme push has somewhere to land only if a page is already connected: with none,
    `apply` says the resource was copied to the classpath and nothing about a push, which is
    honest but is not the answer you came for. Opening the page afterwards serves the new file
@@ -41,7 +42,12 @@ another application with `--app`, the version that counts is that application's.
    by scanning the sources of every module in the loop. Run it once after a batch, not per file.
 4. `.vaadin/vaadin-dev apply` — **the exit code is the verdict**: `0` live, `1` failed,
    `4` superseded.
-5. Verify in the page opened in step 2. Only then report the change as working.
+5. Verify what actually changed, and only then report it as working. A change with a visual
+   surface — a view, component, layout, theme, stylesheet — is verified in the page opened in
+   step 2; nothing else proves the UI renders what you intended. A change with none — a
+   service, a repository, a formatter, a config value — is answered in full by `apply`'s
+   verdict and the project's own tests, so opening a browser to look at nothing buys no
+   evidence and costs the run a browser launch.
 
 ## Commands
 

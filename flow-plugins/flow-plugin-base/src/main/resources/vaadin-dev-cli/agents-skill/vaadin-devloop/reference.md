@@ -85,9 +85,10 @@ the app turns up.
 
 ## Verifying in the browser
 
-Use whatever browser automation this agent has — a Playwright/browser MCP server, a
-built-in browser tool, or a headless Playwright/Selenium script. The rules are the same
-whichever it is:
+First, whether to look at all: only a change with a visual surface earns a browser, as the
+shared file's step 5 says. Then use whatever browser automation this agent has — a
+Playwright/browser MCP server, a built-in browser tool, or a headless Playwright/Selenium
+script. The rules are the same whichever it is:
 
 - **Navigate before the first `apply`, then keep the page open across applies.** CSS pushes and
   Java hot-swaps land in an already-open page; re-navigating hides what you are testing. Reload
@@ -149,12 +150,15 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
 
 ## Also
 
-- The target application's `./mvnw test` for unit + UI tests.
+- The target application's `./mvnw test` for unit + UI tests. Update a test the change
+  actually broke — its assertion is the behaviour you replaced — and say that you did. Leave
+  the rest alone: a test suite rewritten around a one-line edit is scope nobody asked for.
 - If a **Vaadin MCP server** is available (`search_vaadin_docs`, `get_component_java_api`,
   `get_component_styling`, `get_theme_css_properties`), use it instead of recalling API from
   memory; otherwise check the Vaadin version in the application's `pom.xml` and read
   vaadin.com/docs for that version. Prefer theme CSS properties (`--vaadin-*`, `--aura-*`)
-  over hard-coded values.
+  over hard-coded values. This covers a test framework's API too: unpacking jars out of
+  `~/.m2` to find a method name spends minutes on what a docs query answers in seconds.
 - Browser verification needs a browser automation tool. Nothing installs or configures one for
   you: register a Playwright MCP server (or the equivalent for your agent) yourself, and the
   Vaadin docs MCP server alongside it.
