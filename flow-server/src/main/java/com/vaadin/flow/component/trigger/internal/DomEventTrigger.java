@@ -61,6 +61,17 @@ public class DomEventTrigger extends Trigger {
     }
 
     /**
+     * The DOM event name this trigger fires on (e.g. {@code "click"}).
+     * Inherited by subclasses such as {@link ClickTrigger} (which reports
+     * {@code "click"}) and {@link DoubleClickTrigger} ({@code "dblclick"}).
+     *
+     * @return the DOM event name, not {@code null}
+     */
+    public String getEventName() {
+        return eventName;
+    }
+
+    /**
      * Returns an {@link Action.Input} that yields {@code event[name]} at fire
      * time, valid in the handler of any trigger that is an instance of
      * {@code ownerClass}. Used by trigger families that expose their event
