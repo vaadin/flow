@@ -1120,16 +1120,8 @@ final class Launch {
             cmd.add(target + "=ALL-UNNAMED");
         });
         cmd.add("-Dvaadin.launch-browser=false");
-        // Forward any vaadin.* property the daemon itself was started with, so
-        // a
-        // developer can steer the app's dev mode (for example
-        // -Dvaadin.frontend.hotdeploy=true to run Vite rather than build a
-        // bundle) without the daemon needing to know each option.
         System.getProperties().stringPropertyNames().stream()
-                .filter(name -> name.startsWith("vaadin.")
-                        && !name.equals("vaadin.launch-browser")
-                        && !name.equals("vaadin.devloop.classes"))
-                .sorted().forEach(name -> cmd
+                .filter(Launch::forwardedToApp).sorted().forEach(name -> cmd
                         .add("-D" + name + "=" + System.getProperty(name)));
         cmd.add("-Dvaadin.devloop.daemonPort=" + daemonPort);
         cmd.add("-Dvaadin.devloop.token=" + token);
@@ -1150,6 +1142,55 @@ final class Launch {
         launchedClasspath = resolved.appClasspath();
         return cmd;
     }
+
+    /**
+     * Whether a property the daemon itself was started with is passed on to the
+     * app JVM.
+     * <p>
+     * The point is that a developer can steer the app through
+     * {@code VAADIN_DEV_DAEMON_OPTS} without the daemon needing to know each
+     * option - {@code -Dvaadin.frontend.hotdeploy=true} to run Vite rather than
+     * build a bundle, say. It is an allowlist rather than "forward everything"
+     * because the daemon's own JVM carries a hundred properties of its own, and
+     * handing the app {@code user.dir} or {@code java.class.path} from another
+     * process would be actively wrong.
+     * <p>
+     * {@code spring.*} is forwarded whole rather than one key at a time. The
+     * profile is the case that forces it - an application that only runs under
+     * one is otherwise outside the loop entirely - but a datasource, a port or
+     * a banner mode are the same kind of thing, and an allowlist that has to
+     * grow a name per option is one that is always missing the option someone
+     * needs. A property set this way lives as long as the daemon and appears in
+     * no file, so it is for steering a local run; anything the project always
+     * needs belongs in its own properties files.
+     * <p>
+     * {@link #LOOP_OWNED} is what cannot be forwarded, because those are put on
+     * the app's command line above with the value the loop requires and the
+     * forwarding runs after them - and for a repeated {@code -D} the last one
+     * wins, so a forwarded copy overrides rather than duplicates. Spring's own
+     * devtools restart is the one that matters: two things restarting the
+     * application on their own schedules is what the transaction model exists
+     * to prevent.
+     *
+     * @param name
+     *            a system property name
+     * @return {@code true} if the app JVM is given it too
+     */
+    static boolean forwardedToApp(String name) {
+        if (LOOP_OWNED.contains(name)) {
+            return false;
+        }
+        return name.startsWith("vaadin.") || name.startsWith("spring.");
+    }
+
+    /**
+     * Properties the loop sets on the app itself, so a forwarded copy would
+     * override the value it needs rather than merely repeat it. See
+     * {@link #forwardedToApp}.
+     */
+    private static final Set<String> LOOP_OWNED = Set.of(
+            "spring.devtools.restart.enabled", "vaadin.launch-browser",
+            "vaadin.devloop.classes");
 
     private static String sha256(Path file) throws IOException {
         try {
