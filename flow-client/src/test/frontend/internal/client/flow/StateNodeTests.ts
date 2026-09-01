@@ -1,24 +1,11 @@
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { inertRegistry } from './stateTreeTestRegistry';
 import type { NodeFeature } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 
 // Minimal registry; StateNode tests do not reach into the tree or the server.
-const registry: Registry = {
-  getInitialPropertiesHandler: () => ({
-    flushPropertyUpdates: () => {},
-    nodeRegistered: () => {},
-    handlePropertyUpdate: () => false
-  }),
-  getServerConnector: () => ({
-    sendEventMessage: () => {},
-    sendNodeSyncMessage: () => {},
-    sendTemplateEventMessage: () => {},
-    sendExistingElementAttachToServer: () => {},
-    sendExistingElementWithIdAttachToServer: () => {},
-    sendReturnChannelMessage: () => {}
-  })
-};
+const registry: Registry = inertRegistry();
 const tree = new StateTree(registry);
 
 class TestData {

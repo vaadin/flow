@@ -110,13 +110,17 @@ From `flow-client/`:
 | `npm ci` | yes | install — run it first |
 | `npm run lint` | yes | eslint, including `tsdoc/syntax` and `no-console`. **Not** a type-check |
 | `npm test` | yes | the ported suites. `FlowTests.ts` **fails without a Maven build** — it imports the GWT-built `FlowClient.js`. Expected noise, not a regression |
+| `npm run typecheck-tests` | yes | `tsc` over `src/test/frontend/tsconfig.json`: the ported suites and every module they import. A **real type-check**, and the only one that needs no Maven build |
 | `npm run compile`, `npm run build` | **no** | both run `scripts/client.js`, which reads the GWT output under `target/classes/META-INF/resources/VAADIN/static/client/` and fails with `ENOENT` until Maven has built it |
-| `mvn -pl flow-client install` | yes, slow | the real type-check: GWT compile, then `tsc`, then lint |
+| `mvn -pl flow-client install` | yes, slow | everything: GWT compile, then `tsc` over `src/main/frontend`, then the test-tree check, then lint |
 
-`npx tsc --noEmit` is not available either. So lint and the suites are cheap and
-always available, while a type-check costs a full `mvn -pl flow-client install`.
-If you did not run one, write that the type-check is **unverified** and leave it to
-CI — "lint passed" is not "types check".
+So lint, the suites and the test-tree type-check are all cheap and always
+available. What still costs a full `mvn -pl flow-client install` is the whole-tree
+check of `src/main/frontend`: its `tsc` emits, and `npm run build` puts
+`scripts/client.js` in front of it. A module no suite imports is therefore only
+covered by that build, so state which of the two you ran. If you ran neither, write
+that the type-check is **unverified** and leave it to CI — "lint passed" is not
+"types check".
 
 Paste the real output of what you ran. If a command could not run, write that the
 work is **unverified** and why. There is no third state, and "should be clean" is
@@ -228,3 +232,28 @@ stack to retrofit it.
 > 31-module relayout across two already-reviewed branches, while `@since` was
 > requested, applied and then dropped again — both because there was no way to
 > say "new rule, applies from here".
+
+## 9. Look for deferred improvements, and file them
+
+Every review ends with one pass that asks a different question: not "is this
+faithful to Java?" but "is faithful also the best TypeScript can do?" Sweep the
+modules in scope for these shapes — each has already produced a real entry:
+
+- a type parameter with **no inference site** (it appears only in the return type),
+  so the caller declares it and nothing checks the claim;
+- an `as` cast, a `!` or a `@ts-expect-error` that exists **only** to satisfy a
+  Java shape;
+- a **boolean predicate used for narrowing**, where a type guard would infer the
+  result;
+- an **overload set** that a single generic signature would collapse;
+- a **structural check standing in for `instanceof`**, or `unknown` / `any` where
+  Java had a real type parameter;
+- `number` or `string` parameters that a **literal union** of the ported constants
+  would constrain;
+- a module or member that exists **only because the Java file exists**, whose body
+  is a one-liner over a native TypeScript construct.
+
+File each hit in [`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) per rule
+16 — the site stays `pass` in the grid, because the port is faithful — and list
+what you filed in the report. A review that files nothing says so explicitly, so
+"nothing found" is a claim rather than a silence.

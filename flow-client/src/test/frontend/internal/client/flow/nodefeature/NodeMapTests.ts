@@ -1,3 +1,4 @@
+import { unavailableRegistry } from '../stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { countingComputation } from '../reactive/CountingComputation';
@@ -10,17 +11,7 @@ import { StateNode } from '../../../../../../main/frontend/internal/client/flow/
 import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
 // A real state node; node-feature tests do not reach into the tree.
-const node = new StateNode(
-  0,
-  new StateTree({
-    getInitialPropertiesHandler: () => {
-      throw new Error('registry not available in this test');
-    },
-    getServerConnector: () => {
-      throw new Error('registry not available in this test');
-    }
-  })
-);
+const node = new StateNode(0, new StateTree(unavailableRegistry()));
 
 describe('NodeMap', () => {
   let map: NodeMap;
@@ -107,6 +98,16 @@ describe('NodeMap', () => {
     expect(map.hasPropertyValue('foo')).to.equal(true);
     p.removeValue();
     expect(map.hasPropertyValue('foo')).to.equal(false);
+  });
+
+  it('keeps the prototype methods of an object stored as a property value', () => {
+    // Ported from GwtBasicElementBinderTest.testPropertyValueHasPrototypeMethods:
+    // an object stored as a property value is a real object, so it still carries
+    // its prototype methods (e.g. toString).
+    const object = { name: 'bar' };
+    map.getProperty('foo').setValue(object);
+    expect(map.hasPropertyValue('foo')).to.equal(true);
+    expect(String(map.getProperty('foo').getValue())).to.equal('[object Object]');
   });
 
   it('innerHTML on the element-properties map always updates the value', () => {

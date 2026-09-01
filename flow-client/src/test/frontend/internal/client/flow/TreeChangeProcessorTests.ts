@@ -1,3 +1,4 @@
+import { inertRegistry } from './stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { processChange, processChanges } from '../../../../../main/frontend/internal/client/flow/TreeChangeProcessor';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
@@ -8,21 +9,7 @@ import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared
 type Change = Record<string, unknown>;
 
 function makeTree(): StateTree {
-  const registry: Registry = {
-    getInitialPropertiesHandler: () => ({
-      flushPropertyUpdates: () => {},
-      nodeRegistered: () => {},
-      handlePropertyUpdate: () => false
-    }),
-    getServerConnector: () => ({
-      sendEventMessage: () => {},
-      sendNodeSyncMessage: () => {},
-      sendTemplateEventMessage: () => {},
-      sendExistingElementAttachToServer: () => {},
-      sendExistingElementWithIdAttachToServer: () => {},
-      sendReturnChannelMessage: () => {}
-    })
-  };
+  const registry: Registry = inertRegistry();
   return new StateTree(registry);
 }
 

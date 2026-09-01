@@ -17,8 +17,7 @@
 // TypeScript port of com.vaadin.client.flow.StateTree, on top of the TS state
 // node and node features. The slices of the Registry and server-communication
 // layer that StateTree needs are declared here as contracts that the
-// Registry/connector satisfy. ServerEventObject lookup (used only during resync)
-// is injected, defaulting to "no server event object".
+// Registry/connector satisfy.
 
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
@@ -27,7 +26,10 @@ import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { StateNode } from './StateNode';
+import type { ConstantPool } from './ConstantPool';
+import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
+import { getIfPresent, rejectPromises } from './binding/ServerEventObject';
 
 /** The slice of ServerConnector that StateTree uses. */
 export interface ServerConnector {
@@ -41,7 +43,12 @@ export interface ServerConnector {
     tagName: string,
     index: number
   ): void;
-  sendExistingElementWithIdAttachToServer(parent: StateNode, requestedId: number, assignedId: number, id: string): void;
+  sendExistingElementWithIdAttachToServer(
+    parent: StateNode,
+    requestedId: number,
+    assignedId: number,
+    id: string | null
+  ): void;
   sendReturnChannelMessage(stateNodeId: number, channelId: number, args: unknown[]): void;
 }
 
@@ -52,14 +59,23 @@ export interface InitialPropertiesHandler {
   handlePropertyUpdate(property: MapProperty): boolean;
 }
 
-/** The slice of Registry that StateTree uses. */
+/**
+ * The slice of ApplicationConfiguration the binding layer reads; the class
+ * itself is not ported yet.
+ */
+export interface ApplicationConfiguration {
+  isWebComponentMode(): boolean;
+  getServiceUrl(): string;
+}
+
+/** The slice of Registry that StateTree and the binding layer use. */
 export interface Registry {
   getInitialPropertiesHandler(): InitialPropertiesHandler;
   getServerConnector(): ServerConnector;
+  getApplicationConfiguration(): ApplicationConfiguration;
+  getConstantPool(): ConstantPool;
+  getExistingElementMap(): ExistingElementMap;
 }
-
-/** Looks up a server event object attached to a DOM node; mirrors ServerEventObject.getIfPresent. */
-export type ServerEventObjectAccess = (dom: Node) => { rejectPromises(): void } | null;
 
 /**
  * A client-side representation of a server-side state tree.
@@ -68,8 +84,6 @@ export class StateTree {
   readonly #idToNode = new Map<number, StateNode>();
 
   readonly #registry: Registry;
-
-  readonly #serverEventObjectAccess: ServerEventObjectAccess;
 
   readonly #rootNode: StateNode;
 
@@ -83,13 +97,9 @@ export class StateTree {
    * Creates a new instance connected to the given registry.
    *
    * @param registry - the global registry
-   * @param serverEventObjectAccess - looks up a server event object attached to
-   *          a DOM node during resync; port deviation for the not-yet-ported
-   *          ServerEventObject, defaulting to "no server event object"
    */
-  constructor(registry: Registry, serverEventObjectAccess: ServerEventObjectAccess = () => null) {
+  constructor(registry: Registry) {
     this.#registry = registry;
-    this.#serverEventObjectAccess = serverEventObjectAccess;
     this.#rootNode = new StateNode(1, this);
     this.registerNode(this.#rootNode);
   }
@@ -126,6 +136,8 @@ export class StateTree {
    * @param node - the node to register
    */
   registerNode(node: StateNode): void {
+    // Java asserts node != null here; the parameter is non-nullable, so the
+    // check is unreachable and dropped.
     assert(node.getTree() === this, 'Node is not created for this tree');
     assert(!node.isUnregistered(), "Can't re-register a node");
     assert(!this.#idToNode.has(node.getId()), `Node ${node.getId()} is already registered`);
@@ -162,12 +174,11 @@ export class StateTree {
     this.#idToNode.forEach((node) => {
       if (node !== this.#rootNode) {
         const dom = node.getDomNode();
-        if (dom !== null) {
-          const serverEventObject = this.#serverEventObjectAccess(dom);
-          if (serverEventObject !== null) {
-            // reject any promise waiting on this node
-            serverEventObject.rejectPromises();
-          }
+        // Java looks the server object up twice here as well; the second call
+        // cannot return null after the guard, hence the assertion.
+        if (dom !== null && getIfPresent(dom) !== null) {
+          // reject any promise waiting on this node
+          rejectPromises(getIfPresent(dom)!);
         }
         this.unregisterNode(node);
         node.setParent(null);
@@ -306,6 +317,8 @@ export class StateTree {
    *          server, not `null`
    */
   sendNodePropertySyncToServer(property: MapProperty): void {
+    // Java asserts property != null here; the parameter is non-nullable, so the
+    // check is unreachable and dropped.
     const nodeMap = property.getMap() as NodeMap;
     const node = nodeMap.getNode() as StateNode;
 
@@ -378,7 +391,7 @@ export class StateTree {
     parent: StateNode,
     requestedId: number,
     assignedId: number,
-    id: string
+    id: string | null
   ): void {
     assert(this.#assertValidNode(parent), 'Invalid node');
     this.#registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);

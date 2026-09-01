@@ -60,6 +60,21 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
      owner's `.java` file (a Java inner/nested class): it has no file of its
      own, so it stays in the owner's module. None of the currently ported
      reactive / node-feature event/listener types are nested this way.
+   - **Suites may be organised by feature area.** The one-`*Test`-to-one-`*Tests.ts`
+     mapping above assumes a module's Java coverage lives in a single test class.
+     Where it is spread across several, the port may group its suites by what is
+     being exercised instead, provided **each suite names the Java classes it draws
+     from** in its header, so rule 13.9's counterpart question stays answerable.
+     `SimpleElementBindingStrategy` is the case in point: its attribute, children,
+     property, styling, visibility, shadow-root, virtual-children, event-listener,
+     ready-callback and model-handler suites draw between them from
+     `GwtBasicElementBinderTest`, `GwtMultipleBindingTest`, `GwtPolymerModelTest`
+     and `GwtPropertyElementBinderTest`, none of which is organised by feature.
+     Rule 13's case-level rules apply unchanged to the union of those classes.
+     _Introduced during #24949._ (False positive this prevents: a review reporting
+     ten rule-1 violations against a layout that is deliberate, and that the
+     alternative — six suites each mixing unrelated features because Java groups by
+     binder class — would make worse.)
 2. **Mirror the Java package path verbatim** under `internal/`, stripping only
    the `com.vaadin.` prefix:
 
@@ -143,9 +158,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    - Tags belong to the members that are **ported**. An unported private Java
      helper's `@param`/`@return` are out of scope — `TreeChangeProcessor`'s
      `jsonArrayAsJsArray` has no TypeScript counterpart, so its tags are not
-     missing — and a parameter that exists only in the port gets its own `@param`,
-     such as `StateTree`'s injected `serverEventObjectAccess`. A tag count that
-     differs from Java for one of those two reasons is not a finding.
+     missing — and a parameter that exists only in the port gets its own `@param`.
+     A tag count that differs from Java for one of those two reasons is not a
+     finding.
 7. **Do not carry `@since` or `@author`.**
 8. **Match the Java API — including constructor signatures.** Do **not** deviate
    from the Java parameter list; in particular, do not bundle several positional
@@ -175,7 +190,17 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
    too (mirror the Java test: hard-coded where the Java test hard-codes,
    `NodeFeatures.X` where the Java test uses the constant).
 10. Cross-link intra-module references with a real `{@link …}` to the ported
-    symbol (e.g. `{@link NodeProperties.VISIBLE}`).
+    symbol (e.g. `{@link NodeProperties.VISIBLE}`). A cross-*module* reference
+    needs the symbol in scope for the link to resolve, so add a doc-only
+    `import type { X } from '…'` (or `import type * as X` for a module of
+    functions) alongside it. Such an import does **not** trip `noUnusedLocals`:
+    TypeScript counts a `{@link}` reference as a use, so the link and the import
+    keep each other alive. Do not settle for a plain code span — that was the
+    earlier workaround and it loses the link. The cross-module half of this rule
+    was _introduced during #24949_; a code span standing in for a cross-module
+    link in an earlier branch is `n/a` per `PORTING-REVIEW.md` §8.6, not a
+    finding. (A code span for a symbol that is not ported at all stays correct
+    under rule 11, whichever branch it is in.)
 
 ## References to not-yet-ported symbols
 
@@ -254,7 +279,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        obvious, e.g. `setValue_updateFromServerIsApplied_syncToServerUpdatesValue`
        → `"setValue: update from server is applied, syncToServer updates
        value"`), and keep the `it()` blocks in the same order as the Java
-       `@Test` methods.
+       `@Test` methods. Where suites are organised by feature area (rule 1), the
+       order holds *within* each suite: the cases it ports keep their relative
+       order from the Java class they came from.
     8. **Import shared test helpers — never re-declare them.** When a Java test
        reuses a helper from another test (e.g. `MapPropertyTest`, `NodeMapTest`
        and `NodeListTest` all `import
@@ -358,18 +385,42 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     this prevents: production and test modules across the stack carried
     `// See PORTING.md rule 14.6` and `// beyond the Java suite (PORTING.md 13.6)`
     comments that would outlive the review process.)
+16. **Record TypeScript improvements; do not make them.** Where the port is
+    faithful but TypeScript could express the same thing better — a type guard
+    instead of an unchecked type parameter, a literal union instead of `number`, a
+    generic instead of an overload set — leave the code as it is and file the idea
+    in [`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) against that file's
+    admission test. The port stays literal until the migration is complete, because
+    a reviewer's only leverage is reading a module against its Java original; the
+    cutover PR owns that list and empties it. A review grades such a site `pass` —
+    the port *is* faithful — and files the entry instead of reporting a finding;
+    `PORTING-REVIEW.md` §9 is the step that looks for them. _Introduced during
+    #24949._ (Regression this prevents: `BinderContext.getStrategies` invited a
+    mid-series signature change that would have diverged from `BinderContext.java`
+    while both trees were still being reviewed against each other.)
 
 ## Retrofit backlog
 
-Rules added mid-series that earlier ported code does not satisfy yet. A row is
+Rules added mid-series that earlier ported code does not satisfy yet — **parity
+debts**, whose fixes make the port *more* literal. An improvement that would
+deviate from the Java shape is not a row here; it goes to
+[`PORTING-IMPROVEMENTS.md`](./PORTING-IMPROVEMENTS.md) (rule 16). A row is
 removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 §8 for how rows get here and where a retrofit is allowed to land.
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
+| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()` | the PR that ports `InitialPropertiesHandler` | open |
 
-_No open rows: the rule-12 slices that stood in for `StateNode` / `StateTree` /
-`NodeMap` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
+The virtual-child rows are blocked rather than overlooked: both cases assert
+that `InitialPropertiesHandler` reverts a deferred element's properties on
+flush, and that class is not ported yet, so the assertion has nothing to bind
+to. The suite records the deferral at its head.
+
+The rule-12 slices that stood in for `StateNode` / `StateTree` / `NodeMap`
+(`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
 `MapProperty.ts`, `NodeFeatureNode` in `NodeFeature.ts`) were collapsed to the
 real types in #24948, which also rewrote the base-layer `MapPropertyTests` /
-`NodeMapTests` / `NodeListTests` mocks into real instances._
+`NodeMapTests` / `NodeListTests` mocks into real instances. The
+`serverEventObjectAccess` slice in `StateTree` was collapsed in #24949 when
+`ServerEventObject` landed.

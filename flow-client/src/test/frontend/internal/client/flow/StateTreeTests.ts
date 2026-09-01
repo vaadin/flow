@@ -1,11 +1,12 @@
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
-import {
-  StateTree,
-  type Registry,
-  type ServerEventObjectAccess
-} from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { get as getServerEventObject } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
+import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
@@ -24,10 +25,7 @@ interface TemplateEvent {
   promiseId: number;
 }
 
-function makeTree(
-  handlePropertyUpdateResult = false,
-  serverEventObjectAccess?: ServerEventObjectAccess
-): {
+function makeTree(handlePropertyUpdateResult = false): {
   tree: StateTree;
   syncs: Sync[];
   templateEvents: TemplateEvent[];
@@ -38,6 +36,10 @@ function makeTree(
   const templateEvents: TemplateEvent[] = [];
   let flushCount = 0;
   const registeredNodes: StateNode[] = [];
+  // One instance each: the code under test reads these through several calls,
+  // so a fresh instance per call would hide anything written by an earlier one.
+  const constantPool = new ConstantPool();
+  const existingElementMap = new ExistingElementMap();
   const registry: Registry = {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {
@@ -56,10 +58,13 @@ function makeTree(
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
-    })
+    }),
+    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getConstantPool: () => constantPool,
+    getExistingElementMap: () => existingElementMap
   };
   return {
-    tree: serverEventObjectAccess ? new StateTree(registry, serverEventObjectAccess) : new StateTree(registry),
+    tree: new StateTree(registry),
     syncs,
     templateEvents,
     getFlushCount: () => flushCount,
@@ -144,9 +149,20 @@ describe('StateTree', () => {
     expect(() => tree.unregisterNode(node)).to.throw();
   });
 
-  // testUpdatingTree_triggeringBinder_causesAssertionError is intentionally not
-  // ported: it drives `Binder.bind`, and `Binder` is not yet ported. Restore
-  // this case in the PR that ports `Binder`.
+  it('throws when the binder runs while a tree update is in progress', () => {
+    // Ported from testUpdatingTree_triggeringBinder_causesAssertionError.
+    const { tree } = makeTree();
+    const node = new StateNode(5, tree);
+    tree.registerNode(node);
+    tree.setUpdateInProgress(true);
+
+    // Asserting on the message matters here: a bare node has no applicable
+    // binding strategy either, so a bare throw() would pass even if the
+    // update-in-progress assert were gone.
+    expect(() => bind(node, null as unknown as Node)).to.throw(
+      'Binding state node while processing state tree changes'
+    );
+  });
 
   describe('sendNodePropertySyncToServer', () => {
     it('sends a non-initial property of a valid node', () => {
@@ -341,25 +357,28 @@ describe('StateTree', () => {
     });
 
     it('rejects a pending promise on a descendant during resync', () => {
-      // testPrepareForResync_rejectsPendingPromise: the GWT test drives
-      // ServerEventObject.get(element) and native promise mocks. ServerEventObject
-      // is not yet ported, so the port exercises the same branch through the
-      // injected serverEventObjectAccess deviation, which stands in for
-      // ServerEventObject.getIfPresent and whose rejectPromises() is invoked here.
-      let rejected = false;
-      const access: ServerEventObjectAccess = () => ({
-        rejectPromises: () => {
-          rejected = true;
-        }
-      });
-      const { tree } = makeTree(false, access);
+      // Ported from testPrepareForResync_rejectsPendingPromise.
+      const { tree } = makeTree();
       const root = tree.getRootNode();
 
       const child = new StateNode(2, tree);
       child.setParent(root);
       tree.registerNode(child);
       root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0, child);
-      child.setDomNode(document.createElement('div'));
+
+      const element = document.createElement('div');
+      child.setDomNode(element);
+
+      // createMockPromise: store a pending promise on the $server object, the
+      // way a client-callable method awaiting a server response does.
+      const serverObject = getServerEventObject(element) as unknown as Record<string, any>;
+      let rejected = false;
+      serverObject[JsonConstants.RPC_PROMISE_CALLBACK_NAME].promises[0] = [
+        () => {},
+        () => {
+          rejected = true;
+        }
+      ];
 
       tree.prepareForResync();
 
