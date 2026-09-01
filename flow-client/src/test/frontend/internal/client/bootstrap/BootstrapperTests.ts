@@ -2,21 +2,27 @@
 // has no test class of its own. The one Java-side case that drives it,
 // GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents,
 // is ported in ApplicationConnectionTests, next to the class it is written against.
+//
+// The module exports what Bootstrapper.java makes public - onModuleLoad,
+// startApplication and registerCallback - so the cases drive those. The
+// configuration reader is private, as in Java, and is therefore covered through
+// what a started application publishes: the ui id, the production and
+// request-timing flags, the exported web components, the servlet version and the
+// resolved context root. The values no published method exposes (the heartbeat
+// and suspend intervals, the session-expired error, the Atmosphere versions, the
+// dev-tools and live-reload settings) are read by the same key-for-key block and
+// are not asserted.
 
 import { expect, waitUntil } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import {
-  deferStartApplication,
   onModuleLoad,
-  populateApplicationConfiguration,
   registerCallback,
-  startApplication,
-  startApplicationImmediately
+  startApplication
 } from '../../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import type { ConfigObject } from '../../../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
 
-// The bootstrap configuration object the server writes into the page: the values
-// are read through the ported JsoConfiguration accessors, as in production.
+// The bootstrap configuration object the server writes into the page, read
+// through the ported JsoConfiguration accessors as in production.
 function makeJso(values: Record<string, unknown>): ConfigObject {
   return {
     getConfig: (name: string) =>
@@ -26,87 +32,69 @@ function makeJso(values: Record<string, unknown>): ConfigObject {
   };
 }
 
+// A configuration the whole bootstrap can run on: absolute URLs so the resolved
+// context root is predictable, an initial UIDL so the started application handles
+// a message instead of resynchronizing over XHR, and no heartbeat.
+function bootstrapConfiguration(values: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    serviceUrl: 'http://host/app/',
+    contextRootUrl: '../',
+    'v-uiId': 7,
+    heartbeatInterval: -1,
+    maxMessageSuspendTimeout: 5000,
+    vaadinVersion: '24.9',
+    debug: true,
+    requestTiming: true,
+    webcomponents: ['my-el'],
+    uidl: { syncId: 0, changes: [] },
+    ...values
+  };
+}
+
+// The published client, as the browser sees it.
+interface PublishedClient {
+  productionMode: boolean;
+  exportedWebComponents: string[];
+  getUIId(): number;
+  resolveUri(uri: string): string;
+  getVersionInfo?(parameter?: unknown): { flow: string };
+  getProfilingData?(): number[];
+  getNodeInfo?(nodeId: number): unknown;
+}
+
 describe('Bootstrapper', () => {
   const win = window as unknown as { WebComponents?: unknown; Vaadin?: unknown };
 
-  it('startApplicationImmediately is true with no WebComponents polyfill', () => {
-    const saved = win.WebComponents;
-    try {
-      win.WebComponents = undefined;
-      expect(startApplicationImmediately()).to.be.true;
-      win.WebComponents = { ready: false };
-      expect(startApplicationImmediately()).to.be.false;
-      win.WebComponents = { ready: true };
-      expect(startApplicationImmediately()).to.be.true;
-    } finally {
-      win.WebComponents = saved;
-    }
-  });
-
-  it('deferStartApplication starts the application on WebComponentsReady', async () => {
-    // Java defers the start itself rather than taking a callback, so what has to
-    // be observable is the started application, not a flag a callback set. The
-    // configuration carries an initial UIDL, so the started engine handles that
-    // message instead of resynchronizing over XHR, and its heartbeat is off.
-    const saved = win.Vaadin;
-    // The listener is anonymous, so it is captured as it is registered and
-    // removed afterwards: this page outlives the case.
-    let listener: EventListenerOrEventListenerObject | null = null;
-    const original = window.addEventListener;
-    window.addEventListener = function observed(this: Window, type: string, ...rest: unknown[]) {
-      if (type === 'WebComponentsReady') {
-        listener = rest[0] as EventListenerOrEventListenerObject;
-      }
-      return (original as (...args: unknown[]) => void).call(this, type, ...rest);
-    } as typeof window.addEventListener;
-    try {
-      const lookedUp: string[] = [];
-      const configuration: Record<string, unknown> = {
-        heartbeatInterval: -1,
-        maxMessageSuspendTimeout: 5000,
-        contextRootUrl: '../',
-        debug: true,
-        'v-uiId': 0,
-        serviceUrl: '//localhost:8080/flow/',
-        uidl: { syncId: 0, changes: [] }
-      };
-      const clients: Record<string, unknown> = {};
-      win.Vaadin = {
-        Flow: {
-          clients,
-          getApp: (appId: string) => {
-            lookedUp.push(appId);
-            return { getConfig: (key: string) => configuration[key] };
-          }
-        },
-        connectionState: {
-          state: 'connected',
-          setState(state: string) {
-            this.state = state;
-          },
-          loadingStarted() {},
-          loadingFinished() {},
-          loadingFailed() {}
+  // Stands in for vaadinBootstrap.js: it holds the clients the engine publishes
+  // into and answers the configuration lookup.
+  function installBootstrapScript(configuration: Record<string, unknown>) {
+    const clients: Record<string, unknown> = {};
+    const lookedUp: string[] = [];
+    win.Vaadin = {
+      Flow: {
+        clients,
+        registerWidgetset: (_name: string, callback: (applicationId: string) => void) => callback('registered'),
+        getApp: (appId: string) => {
+          lookedUp.push(appId);
+          return makeJso(configuration);
         }
-      };
-
-      deferStartApplication('testapp');
-      expect(lookedUp).to.deep.equal([]);
-
-      window.dispatchEvent(new Event('WebComponentsReady'));
-      // The engine module is imported asynchronously; the published client is
-      // the signal that the deferred start ran to completion.
-      await waitUntil(() => clients.testapp !== undefined, 'the deferred application was never started');
-      // Twice: Java also looks the configuration up again for the initial UIDL.
-      expect(lookedUp).to.deep.equal(['testapp', 'testapp']);
-    } finally {
-      window.addEventListener = original;
-      if (listener !== null) {
-        window.removeEventListener('WebComponentsReady', listener);
+      },
+      connectionState: {
+        state: 'connected',
+        setState(state: string) {
+          this.state = state;
+        },
+        loadingStarted() {},
+        loadingFinished() {},
+        loadingFailed() {}
       }
-      win.Vaadin = saved;
-    }
-  });
+    };
+    const started = async (appId: string): Promise<PublishedClient> => {
+      await waitUntil(() => clients[appId] !== undefined, `the application ${appId} was never started`);
+      return clients[appId] as PublishedClient;
+    };
+    return { clients, lookedUp, started };
+  }
 
   it('registerCallback registers startApplication under the widgetset name', () => {
     const saved = win.Vaadin;
@@ -158,82 +146,79 @@ describe('Bootstrapper', () => {
     });
   });
 
-  describe('populateApplicationConfiguration', () => {
-    const sessionExpiredError = { caption: 'Session Expired', message: 'Take note of any unsaved data' };
-    // Java unboxes these three, so a configuration without them is a bootstrap
-    // error rather than a defaulted value; every case supplies them.
-    const requiredIntegers = { 'v-uiId': 1, heartbeatInterval: 300, maxMessageSuspendTimeout: 5000 };
+  // Each case below starts a real application, which binds a root state node to
+  // the shared document.body and has no shutdown path; binding an empty root node
+  // installs nothing on the body, and each application publishes under its own id.
+  describe('startApplication', () => {
+    let savedVaadin: unknown;
+    let savedWebComponents: unknown;
 
-    it('fills the configuration from the bootstrap JSO (with explicit service URL)', () => {
-      const conf = new ApplicationConfiguration();
-      populateApplicationConfiguration(
-        conf,
-        makeJso({
-          serviceUrl: 'http://host/app/',
-          contextRootUrl: '../',
-          webComponentMode: true,
-          'v-uiId': 7,
-          heartbeatInterval: 300,
-          maxMessageSuspendTimeout: 5000,
-          vaadinVersion: '24.9',
-          atmosphereVersion: '2.4.0',
-          sessExpMsg: sessionExpiredError,
-          debug: true,
-          requestTiming: true,
-          webcomponents: ['my-el'],
-          devToolsEnabled: true,
-          liveReloadUrl: 'http://host/live',
-          liveReloadBackend: 'SPRING_BOOT_DEVTOOLS',
-          springBootLiveReloadPort: '35729'
-        })
-      );
-      expect(conf.getServiceUrl()).to.equal('http://host/app/');
-      expect(conf.getContextRootUrl()).to.equal('http://host/'); // resolved http://host/app/../
-      expect(conf.isWebComponentMode()).to.be.true;
-      expect(conf.getUIId()).to.equal(7);
-      expect(conf.getHeartbeatInterval()).to.equal(300);
-      expect(conf.getMaxMessageSuspendTimeout()).to.equal(5000);
-      expect(conf.getServletVersion()).to.equal('24.9');
-      expect(conf.getAtmosphereVersion()).to.equal('2.4.0');
-      // The Atmosphere JS version is read off the loaded push library, not the
-      // configuration, so it is empty until vaadinPush.js has loaded.
-      expect(conf.getAtmosphereJSVersion()).to.equal('');
-      expect(conf.getSessionExpiredError()).to.equal(sessionExpiredError);
-      expect(conf.isProductionMode()).to.be.false; // debug=true -> not production
-      expect(conf.isRequestTiming()).to.be.true;
-      expect(conf.getExportedWebComponents()).to.deep.equal(['my-el']);
-      expect(conf.isDevToolsEnabled()).to.be.true;
-      expect(conf.getLiveReloadUrl()).to.equal('http://host/live');
-      expect(conf.getLiveReloadBackend()).to.equal('SPRING_BOOT_DEVTOOLS');
-      expect(conf.getSpringBootLiveReloadPort()).to.equal('35729');
+    beforeEach(() => {
+      savedVaadin = win.Vaadin;
+      savedWebComponents = win.WebComponents;
     });
 
-    it('leaves the live-reload strings empty when the bootstrap omits them', () => {
-      // Java stores them as null; the ported configuration takes strings, so the
-      // bootstrap maps a missing value to the empty string.
-      const conf = new ApplicationConfiguration();
-      populateApplicationConfiguration(conf, makeJso({ ...requiredIntegers, contextRootUrl: './' }));
-      expect(conf.getLiveReloadUrl()).to.equal('');
-      expect(conf.getLiveReloadBackend()).to.equal('');
-      expect(conf.getSpringBootLiveReloadPort()).to.equal('');
-      expect(conf.getSessionExpiredError()).to.be.null;
-      expect(conf.isDevToolsEnabled()).to.be.false;
-      expect(conf.isRequestTiming()).to.be.false;
+    afterEach(() => {
+      win.Vaadin = savedVaadin;
+      win.WebComponents = savedWebComponents;
     });
 
-    it('fails when the bootstrap omits an integer Java unboxes', () => {
-      // Beyond the Java suite, which cannot observe an NPE from the client.
-      expect(() =>
-        populateApplicationConfiguration(new ApplicationConfiguration(), makeJso({ contextRootUrl: './' }))
-      ).to.throw('v-uiId');
+    it('reads the configuration from the DOM into the published client', async () => {
+      win.WebComponents = undefined;
+      const bootstrap = installBootstrapScript(bootstrapConfiguration());
+
+      startApplication('devapp');
+      const client = await bootstrap.started('devapp');
+
+      expect(bootstrap.lookedUp).to.contain('devapp');
+      expect(client.getUIId()).to.equal(7); // v-uiId
+      expect(client.productionMode).to.be.false; // debug: true
+      expect(client.exportedWebComponents).to.deep.equal(['my-el']); // webcomponents
+      // serviceUrl + contextRootUrl, resolved: http://host/app/../ -> http://host/
+      expect(client.resolveUri('context://style.css')).to.equal('http://host/style.css');
+      // The development-mode block, and the version the parameter is ignored for.
+      expect(client.getVersionInfo?.('ignored')).to.deep.equal({ flow: '24.9' }); // vaadinVersion
+      expect(client.getNodeInfo).to.be.a('function');
+      expect(client.getProfilingData).to.be.a('function'); // requestTiming: true
     });
 
-    it('falls back to the current location when no service URL is configured', () => {
-      const conf = new ApplicationConfiguration();
-      populateApplicationConfiguration(conf, makeJso({ ...requiredIntegers, contextRootUrl: '.', debug: false }));
-      // serviceUrl resolves "." against the test page; just assert it is absolute.
-      expect(conf.getServiceUrl()).to.match(/^https?:\/\//);
-      expect(conf.isProductionMode()).to.be.true; // debug=false -> production
+    it('publishes neither the development-mode methods nor profiling data in production', async () => {
+      win.WebComponents = undefined;
+      const bootstrap = installBootstrapScript(bootstrapConfiguration({ debug: false, requestTiming: false }));
+
+      startApplication('prodapp');
+      const client = await bootstrap.started('prodapp');
+
+      expect(client.productionMode).to.be.true;
+      expect(client.getVersionInfo).to.equal(undefined);
+      expect(client.getNodeInfo).to.equal(undefined);
+      expect(client.getProfilingData).to.equal(undefined);
+    });
+
+    it('waits for the WebComponents polyfill before starting', async () => {
+      win.WebComponents = { ready: false };
+      const bootstrap = installBootstrapScript(bootstrapConfiguration());
+
+      startApplication('deferredapp');
+      // The start is deferred, so nothing has read the configuration yet.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      expect(bootstrap.lookedUp).to.deep.equal([]);
+
+      win.WebComponents = { ready: true };
+      window.dispatchEvent(new Event('WebComponentsReady'));
+      const client = await bootstrap.started('deferredapp');
+      expect(client.getUIId()).to.equal(7);
+    });
+
+    it('starts immediately once the WebComponents polyfill is ready', async () => {
+      win.WebComponents = { ready: true };
+      const bootstrap = installBootstrapScript(bootstrapConfiguration());
+
+      startApplication('readyapp');
+      const client = await bootstrap.started('readyapp');
+      expect(client.getUIId()).to.equal(7);
     });
   });
 });

@@ -68,7 +68,7 @@ function getRequiredConfigInteger(config: ConfigObject, name: string): number {
  * @param conf - the configuration to fill in
  * @param jsoConfiguration - the bootstrap configuration object to read
  */
-export function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
+function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
   // The ported ApplicationConfiguration takes strings and a string array where
   // Java stores nullable ones, so the context root, the two version strings, the
   // exported web components and the three live-reload values below substitute an
@@ -132,11 +132,15 @@ function getConfigFromDOM(appId: string): ApplicationConfiguration {
  *
  * @param applicationId - id of the application to start
  */
-export function doStartApplication(applicationId: string): void {
+function doStartApplication(applicationId: string): void {
+  // Java also builds the connection inside this span; here the engine is loaded
+  // lazily below, so the span covers the configuration read that stays
+  // synchronous. The initial UIDL is read after it, as in Java.
   profilerEnter('Bootstrapper.startApplication');
   const conf = getConfigFromDOM(applicationId);
-  const initialUidl = getUIDL(getJsoConfiguration(applicationId));
   profilerLeave('Bootstrapper.startApplication');
+
+  const initialUidl = getUIDL(getJsoConfiguration(applicationId));
 
   // Load the engine lazily: this keeps ApplicationConnection/DefaultRegistry and
   // the rest of the modern-JS engine out of the registerInternals bundle, which
@@ -177,7 +181,7 @@ interface FlowAppLookup {
  *
  * @returns `true` if the application can be started now
  */
-export function startApplicationImmediately(): boolean {
+function startApplicationImmediately(): boolean {
   const webComponents = (window as unknown as WebComponentsGlobal).WebComponents;
   return !webComponents || webComponents.ready === true;
 }
@@ -189,7 +193,7 @@ export function startApplicationImmediately(): boolean {
  *
  * @param applicationId - id of the application to start
  */
-export function deferStartApplication(applicationId: string): void {
+function deferStartApplication(applicationId: string): void {
   window.addEventListener('WebComponentsReady', () => doStartApplication(applicationId));
 }
 
@@ -277,6 +281,6 @@ export function onModuleLoad(): void {
  * @param appId - the id of the application to get configuration data for
  * @returns a native javascript object containing the configuration data
  */
-export function getJsoConfiguration(appId: string): ConfigObject {
+function getJsoConfiguration(appId: string): ConfigObject {
   return (window as unknown as FlowAppLookup).Vaadin.Flow.getApp(appId);
 }

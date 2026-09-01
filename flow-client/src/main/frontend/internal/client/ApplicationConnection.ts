@@ -170,8 +170,11 @@ export class ApplicationConnection implements PublishedClient {
     );
   }
 
-  // The members below stand in for the JSNI blocks, in the order those publish
-  // them: first publishJavascriptMethods, then the development-mode block.
+  // The members the JSNI blocks publish, in the order publishJavascriptMethods
+  // publishes them, followed by the development-mode block's. Java declares
+  // getDomElementByNodeId, getNodeId and addDomSetListener among its helpers
+  // below and reaches the rest inline from the JSNI; grouping them by the
+  // publication keeps each block readable against its Java original.
 
   /** The DOM node bound to the state node with the given id, or null. */
   getDomElementByNodeId(id: number): Node | null {
@@ -236,7 +239,7 @@ export class ApplicationConnection implements PublishedClient {
     return this.#registry.getStateTree().getRootNode().getDebugJson();
   }
 
-  // Java's own private helpers, in the order it declares them.
+  // The helpers only the dev-tools methods call, in the order Java declares them.
 
   /** The Java class name bound to the state node with the given id, or null. */
   getJavaClass(id: number): string | null {
