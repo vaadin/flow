@@ -134,7 +134,24 @@ public abstract class AbstractDefaultIT extends BrowserTestBase
      * server to be ready.
      */
     protected void open() {
-        getDriver().get(getTestURL());
+        open(getTestPath());
+    }
+
+    /**
+     * Opens the given path on the test server and waits for the dev server to
+     * be ready.
+     * <p>
+     * Waiting is required because in dev mode requests made while the frontend
+     * bundle is still being built are answered with a placeholder page. That
+     * page carries neither the view contents nor a Flow client, so navigating
+     * without waiting makes element lookups and server side navigation, such as
+     * forwarding, fail.
+     *
+     * @param path
+     *            the path to open, starting with a "/"
+     */
+    protected void open(String path) {
+        getDriver().get(getRootURL() + path);
         waitForDevServer();
     }
 
