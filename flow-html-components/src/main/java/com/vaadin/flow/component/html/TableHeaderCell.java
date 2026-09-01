@@ -152,12 +152,18 @@ public class TableHeaderCell extends TableCell
             return value;
         }
 
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code scope} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code scope="COL"} has to read back as {@link #COL}.
+         */
         static @Nullable Scope fromValue(@Nullable String value) {
             if (value == null) {
                 return null;
             }
             for (Scope s : values()) {
-                if (s.value.equals(value)) {
+                if (s.value.equalsIgnoreCase(value)) {
                     return s;
                 }
             }

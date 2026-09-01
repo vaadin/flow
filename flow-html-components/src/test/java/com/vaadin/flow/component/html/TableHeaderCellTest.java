@@ -74,4 +74,17 @@ class TableHeaderCellTest extends ComponentTest {
 
         assertEquals(Optional.empty(), cell.getScope());
     }
+
+    @Test
+    void getScope_matchesTheKeywordRegardlessOfCase() {
+        TableHeaderCell cell = new TableHeaderCell();
+
+        // scope is an HTML enumerated attribute, so its keywords are matched
+        // ASCII case-insensitively
+        cell.getElement().setAttribute("scope", "COL");
+        assertEquals(Optional.of(Scope.COL), cell.getScope());
+
+        cell.getElement().setAttribute("scope", "RowGroup");
+        assertEquals(Optional.of(Scope.ROWGROUP), cell.getScope());
+    }
 }
