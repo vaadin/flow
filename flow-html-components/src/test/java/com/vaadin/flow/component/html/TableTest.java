@@ -110,6 +110,33 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void captionText_survivesARoundTripThroughTheGetter() {
+        Table table = table();
+
+        table.setCaptionText(table.getCaptionText());
+
+        assertFalse(table.hasCaption());
+        assertNull(table.getCaptionText());
+
+        table.setCaptionText("Planets");
+        table.setCaptionText(table.getCaptionText());
+
+        assertEquals("Planets", table.getCaptionText());
+    }
+
+    @Test
+    void setCaptionText_null_removesTheCaption() {
+        Table table = table();
+        var caption = table.getCaption();
+
+        table.setCaptionText(null);
+
+        assertFalse(table.hasCaption());
+        assertTrue(caption.getParent().isEmpty());
+        assertEquals(0, table.getChildren().count());
+    }
+
+    @Test
     void getCaptionText_withComponentContent_isNull() {
         Table table = table();
         table.addCaption(new Span("Planets"));

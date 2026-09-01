@@ -124,12 +124,20 @@ public class Table extends HtmlComponent
     /**
      * Sets the text content of this table's caption, creating the caption if
      * the table has none.
+     * <p>
+     * Passing {@code null} removes the caption, as
+     * {@link #setCaption( TableCaption)} does, so that whatever
+     * {@link #getCaptionText()} reports can be handed straight back.
      *
      * @param text
-     *            the caption text.
+     *            the caption text, or {@code null} to remove the caption.
      */
-    public void setCaptionText(String text) {
-        getCaption().setText(text);
+    public void setCaptionText(@Nullable String text) {
+        if (text == null) {
+            removeCaption();
+        } else {
+            getCaption().setText(text);
+        }
     }
 
     /**
