@@ -144,13 +144,48 @@ class PinnedNpmVersions {
     private static Optional<VersionsFile> readVersionsFile(
             ResourceFolderUtil.FolderFile file) {
         try (InputStream content = file.open()) {
-            return Optional.of(new VersionsFile(file.getLocation(),
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content))));
+            VersionsFile versionsFile = new VersionsFile(file.getLocation(),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)));
+            warnAboutPackagesWithoutVersion(versionsFile);
+            return Optional.of(versionsFile);
         } catch (IOException | JsonDecodingException | ClassCastException e) {
             log().warn("Unable to read the pinned npm versions of '{}'."
                     + " The packages it defines won't be pinned for npm/pnpm/bun.",
                     file.getLocation(), e);
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Warns about the packages a versions file gives no version for, once for
+     * the file rather than once for every time it is read through.
+     */
+    private static void warnAboutPackagesWithoutVersion(
+            VersionsFile versionsFile) {
+        Set<String> packages = new TreeSet<>();
+        collectPackagesWithoutVersion(versionsFile.content(), packages);
+        if (!packages.isEmpty()) {
+            log().warn(
+                    "The npm packages {} of '{}' have no 'npmVersion' or 'jsVersion',"
+                            + " so their versions are not pinned. Report it to whoever ships the file.",
+                    packages, versionsFile.origin());
+        }
+    }
+
+    private static void collectPackagesWithoutVersion(JsonNode obj,
+            Set<String> packages) {
+        for (String key : JacksonUtils.getKeys(obj)) {
+            JsonNode value = obj.get(key);
+            if (!(value instanceof ObjectNode)) {
+                continue;
+            }
+            if (value.has(NPM_NAME)) {
+                if (!value.has(NPM_VERSION) && !value.has(JS_VERSION)) {
+                    packages.add(value.get(NPM_NAME).asString());
+                }
+            } else {
+                collectPackagesWithoutVersion(value, packages);
+            }
         }
     }
 

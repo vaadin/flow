@@ -195,10 +195,10 @@ class VersionsJsonConverter {
             version = obj.get(JS_VERSION).asString();
         } else {
             // A versions file comes from whichever jar ships it, so a package
-            // without a version is not a reason to give up on the rest
-            getLogger().warn(
-                    "The npm package '{}' of a versions file has no 'npmVersion' or 'jsVersion',"
-                            + " so its version is not pinned. Report it to whoever ships the file.",
+            // without a version is not a reason to give up on the rest. The
+            // file is warned about once when it is read
+            getLogger().debug(
+                    "dependency '{}' has no 'npmVersion'/'jsVersion'.",
                     npmName);
             return;
         }
