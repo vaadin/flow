@@ -7,8 +7,7 @@ const LEVELS: Level[] = ['debug', 'log', 'warn', 'error'];
 
 describe('Console', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.Console has no Java test,
-  // so there is nothing to port 1:1 and all coverage below is additional
-  // (PORTING.md rule 13.6).
+  // so there is nothing to port 1:1 and all coverage below is additional.
   const KEY = 'vaadin.browserLog';
   let saved: string | null;
   let stubs: Record<Level, sinon.SinonStub>;

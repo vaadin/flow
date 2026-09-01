@@ -15,19 +15,15 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.nodefeature.NodeFeature, built
-// alongside the Java version. StateNode is not ported yet, so the slice the
-// node features need is declared here as a contract the future TS StateNode
-// will satisfy at cutover.
+// alongside the Java version. StateNode is imported type-only: NodeFeature is
+// the base class of NodeList/NodeMap, so a runtime (value) import of StateNode —
+// which itself constructs NodeList/NodeMap — would form a circular
+// `class NodeList extends NodeFeature` initialization cycle. See getAsDebugJson.
 
-import type { MapPropertyNode } from './MapProperty';
+import type { StateNode } from '../StateNode';
 
 /** A JSON value, mirroring elemental.json.JsonValue in loose form. */
 export type JsonValue = unknown;
-
-/** The slice of StateNode needed by node features. */
-export interface NodeFeatureNode extends MapPropertyNode {
-  getDebugJson(): JsonValue;
-}
 
 /**
  * Holder of the actual data in a state node. The state node data is isolated
@@ -36,7 +32,7 @@ export interface NodeFeatureNode extends MapPropertyNode {
 export abstract class NodeFeature {
   readonly #id: number;
 
-  readonly #node: NodeFeatureNode;
+  readonly #node: StateNode;
 
   /**
    * Creates a new feature.
@@ -44,7 +40,7 @@ export abstract class NodeFeature {
    * @param id - the id of the feature
    * @param node - the node that the feature belongs to
    */
-  constructor(id: number, node: NodeFeatureNode) {
+  constructor(id: number, node: StateNode) {
     this.#id = id;
     this.#node = node;
   }
@@ -63,7 +59,7 @@ export abstract class NodeFeature {
    *
    * @returns the node
    */
-  getNode(): NodeFeatureNode {
+  getNode(): StateNode {
     return this.#node;
   }
 
@@ -100,11 +96,17 @@ export abstract class NodeFeature {
 }
 
 /**
- * Tells whether the given value is a state node, i.e. exposes a
- * `getDebugJson` method. Mirrors the Java `value instanceof StateNode` check
- * used by {@link NodeFeature.getAsDebugJson} before StateNode is ported.
+ * Tells whether the given value is a `StateNode`, i.e. exposes a `getDebugJson`
+ * method. Port deviation: Java uses `value instanceof StateNode`
+ * ({@link NodeFeature.getAsDebugJson}), but `NodeFeature` is the base class of
+ * `NodeList`/`NodeMap`, so a runtime (value) import of `StateNode` — needed for a
+ * real `instanceof` — would form a circular `class NodeList extends NodeFeature`
+ * initialization cycle (`NodeFeature` → `StateNode` → `NodeList`/`NodeMap` →
+ * `NodeFeature`). `StateNode` is therefore imported type-only and the check is
+ * structural; it is behaviorally equivalent for the values a feature holds
+ * (primitives or child `StateNode`s).
  */
-function isStateNode(value: unknown): value is NodeFeatureNode {
+function isStateNode(value: unknown): value is StateNode {
   return (
     value !== null &&
     typeof value === 'object' &&

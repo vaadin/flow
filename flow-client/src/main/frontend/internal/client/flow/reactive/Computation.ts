@@ -108,8 +108,11 @@ export class Computation {
 
   #clearDependencies(): void {
     while (this.#dependencies.length > 0) {
+      // Mirror Java's non-null deref: dependencies.remove(0).remove() — the loop
+      // guards a non-empty array, so use `!` rather than `?.` (which would silently
+      // skip the removal).
       const remover = this.#dependencies.shift();
-      remover?.remove();
+      remover!.remove();
     }
   }
 

@@ -1,24 +1,47 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { countingComputation } from '../reactive/CountingComputation';
-import {
-  MapProperty,
-  type MapPropertyNode,
-  type MapPropertyOwner,
-  type MapPropertyTree
-} from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
+import { MapProperty } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapProperty';
 import type { MapPropertyChangeEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/MapPropertyChangeEvent';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
-// Builds a MapProperty backed by mock state-tree contracts, recording the
+// A state tree whose activeness is configurable and that records the properties
+// synced to the server, mirroring MapPropertyTest.TestTree.
+class TestTree extends StateTree {
+  readonly #active: boolean;
+
+  readonly #synced: MapProperty[];
+
+  constructor(active: boolean, synced: MapProperty[]) {
+    super({
+      getInitialPropertiesHandler: () => {
+        throw new Error('registry not available in this test');
+      },
+      getServerConnector: () => {
+        throw new Error('registry not available in this test');
+      }
+    });
+    this.#active = active;
+    this.#synced = synced;
+  }
+
+  override isActive(): boolean {
+    return this.#active;
+  }
+
+  override sendNodePropertySyncToServer(property: MapProperty): void {
+    this.#synced.push(property);
+  }
+}
+
+// Builds a MapProperty backed by a real state tree and node, recording the
 // properties synced to the server.
 function makeProperty(active = true, forceValueUpdate = false): { property: MapProperty; synced: MapProperty[] } {
   const synced: MapProperty[] = [];
-  const tree: MapPropertyTree = {
-    isActive: () => active,
-    sendNodePropertySyncToServer: (p) => synced.push(p)
-  };
-  const node: MapPropertyNode = { getTree: () => tree };
-  const map: MapPropertyOwner = { getNode: () => node };
+  const tree = new TestTree(active, synced);
+  const node = new StateNode(0, tree);
+  const map = node.getMap(0);
   return { property: new MapProperty('foo', map, forceValueUpdate), synced };
 }
 

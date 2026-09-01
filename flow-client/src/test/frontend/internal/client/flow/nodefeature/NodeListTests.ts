@@ -3,14 +3,21 @@ import { Reactive } from '../../../../../../main/frontend/internal/client/flow/r
 import { countingComputation } from '../reactive/CountingComputation';
 import { NodeList } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeList';
 import type { ListSpliceEvent } from '../../../../../../main/frontend/internal/client/flow/nodefeature/ListSpliceEvent';
-import type { NodeFeatureNode } from '../../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
+import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
 
-const node: NodeFeatureNode = {
-  getTree: () => {
-    throw new Error('tree not available in this test');
-  },
-  getDebugJson: () => null
-};
+// A real state node; node-feature tests do not reach into the tree.
+const node = new StateNode(
+  0,
+  new StateTree({
+    getInitialPropertiesHandler: () => {
+      throw new Error('registry not available in this test');
+    },
+    getServerConnector: () => {
+      throw new Error('registry not available in this test');
+    }
+  })
+);
 
 describe('NodeList', () => {
   let list: NodeList;

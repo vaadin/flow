@@ -1111,7 +1111,7 @@ describe('BrowserDetails', () => {
     assertEngineVersion(bd, -1);
   });
 
-  // beyond the Java suite (PORTING.md 13.6)
+  // beyond the Java suite
   it('flags unsupported browsers via isTooOldToFunctionProperly', () => {
     expect(new BrowserDetails(IE8_WINDOWS).isTooOldToFunctionProperly()).to.be.true;
     expect(new BrowserDetails(CHROME100_WINDOWS).isTooOldToFunctionProperly()).to.be.false;

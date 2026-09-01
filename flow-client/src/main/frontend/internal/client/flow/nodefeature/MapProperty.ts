@@ -15,8 +15,7 @@
  */
 
 // TypeScript port of com.vaadin.client.flow.nodefeature.MapProperty, on top of
-// the TS reactive core. The thin slice of the state-tree classes it touches is
-// declared here as contracts that NodeMap, StateNode and StateTree satisfy.
+// the TS reactive core.
 
 import type { EventRemover } from '../../../EventRemover';
 import { Reactive } from '../reactive/Reactive';
@@ -25,34 +24,7 @@ import type { ReactiveValue } from '../reactive/ReactiveValue';
 import type { ReactiveValueChangeListener } from '../reactive/ReactiveValueChangeListener';
 import { MapPropertyChangeEvent } from './MapPropertyChangeEvent';
 import type { MapPropertyChangeListener } from './MapPropertyChangeListener';
-
-/**
- * Port deviation: the slice of `StateTree` that `MapProperty` uses. This
- * interface has no Java counterpart; it decouples `MapProperty` from the
- * concrete state tree, and is satisfied by the state-tree classes.
- */
-export interface MapPropertyTree {
-  isActive(node: MapPropertyNode): boolean;
-  sendNodePropertySyncToServer(property: MapProperty): void;
-}
-
-/**
- * Port deviation: the slice of `StateNode` that `MapProperty` uses. This
- * interface has no Java counterpart; it decouples `MapProperty` from the
- * concrete state node, and is satisfied by the state-tree classes.
- */
-export interface MapPropertyNode {
-  getTree(): MapPropertyTree;
-}
-
-/**
- * Port deviation: the slice of `NodeMap` that `MapProperty` uses. This
- * interface has no Java counterpart; it decouples `MapProperty` from the
- * concrete node map, and is satisfied by the state-tree classes.
- */
-export interface MapPropertyOwner {
-  getNode(): MapPropertyNode;
-}
+import type { NodeMap } from './NodeMap';
 
 /**
  * A property in a node map.
@@ -66,7 +38,7 @@ export class MapProperty implements ReactiveValue {
 
   readonly #name: string;
 
-  readonly #map: MapPropertyOwner;
+  readonly #map: NodeMap;
 
   // Indicates that a server update is in progress. While this is true we don't
   // accept any changes via syncToServer().
@@ -94,7 +66,7 @@ export class MapProperty implements ReactiveValue {
    * @param forceValueUpdate - whether value update for `name` property should be
    *            applied regardless of previous value
    */
-  constructor(name: string, map: MapPropertyOwner, forceValueUpdate = false) {
+  constructor(name: string, map: NodeMap, forceValueUpdate = false) {
     this.#name = name;
     this.#map = map;
     this.#forceValueUpdate = forceValueUpdate;
@@ -114,7 +86,7 @@ export class MapProperty implements ReactiveValue {
    *
    * @returns the map
    */
-  getMap(): MapPropertyOwner {
+  getMap(): NodeMap {
     return this.#map;
   }
 

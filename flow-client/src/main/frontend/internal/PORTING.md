@@ -22,6 +22,16 @@ These conventions apply to the incremental port of the GWT client
 They consolidate the review feedback from the migration PR stack (#24933,
 #24947, …) so follow-up PRs stay consistent.
 
+Reviewing a port against these rules has its own procedure — enumeration,
+evidence and verification requirements — in
+[`PORTING-REVIEW.md`](./PORTING-REVIEW.md). A review that does not follow it is
+not a review of this document.
+
+A rule added after the series started carries the branch it appeared at
+(`_Introduced during #NNNNN._`). Ported code written before that branch is graded
+against the rules that existed for it, and any retrofit still owed is listed in
+the [retrofit backlog](#retrofit-backlog) at the end of this file.
+
 ## Module layout
 
 1. **One Java *source file* → one TypeScript module.** The split follows the
@@ -88,13 +98,25 @@ They consolidate the review feedback from the migration PR stack (#24933,
      `eslint.config.mjs` lists each test subdirectory in
      `projectService.allowDefaultProject` (its globs do not support the `**`
      multi-level wildcard, so add one entry per level when introducing a new
-     test subdirectory).
+     test subdirectory). This mapping fixes where the suite **lives**; which Java
+     test classes it must cover is rule 13.9, and there is often more than one.
 
 ## Visibility parity
 
 3. Java `public`/`protected` → `export` / class member; Java `private` →
    non-exported module-local function or a JS-native `#`-private class member
    (use `#`, not the TypeScript `private` keyword).
+   - **Do not widen visibility for tests.** Never add an `export` (or promote a
+     `#`-private member to public) just so a test can reach a helper that is
+     `private` in Java — that breaks visibility parity. Test a private helper
+     through the existing public surface that already exercises it, mirroring how
+     the Java `*Test` covers it. A Java method that is *itself* public "for
+     testing purposes" (e.g. `TreeChangeProcessor.processChange`) is genuine
+     public API and is exported as such — that is not a test-only export.
+     (Regression this prevents: `ClientJsonCodec`'s `applyCaptures` and
+     `createReturnChannelCallback`, both `private static native` in Java, were
+     exported only so the test could call them directly; they are covered instead
+     through the public `decodeWithTypeInfo` `@v-fn` / `@v-return` paths.)
 
 ## Completeness & ordering
 
@@ -103,7 +125,12 @@ They consolidate the review feedback from the migration PR stack (#24933,
    ports only the keys the ported client needs) must say so in the module
    Javadoc, and missing entries are added as later ports require them.
 5. **Member order follows the Java declaration order**, including for constant
-   registries.
+   registries. In a module of exported functions this covers the **export order**
+   too: the sequence of `export function` declarations follows the order of the
+   Java methods they port. (Regression this prevents: `TreeChangeProcessor.ts`
+   exported `processChange` before `processChanges` while
+   `TreeChangeProcessor.java` declares `processChanges` first, and a review that
+   checked class members marked the module `pass` on every rule.)
 
 ## Javadoc / TSDoc
 
@@ -113,6 +140,12 @@ They consolidate the review feedback from the migration PR stack (#24933,
    source keeps its `@param` in the port; a constructor is not exempt. Preserve
    the source wording (including typos); do not silently reword. Convert `<p>` →
    blank lines and `<code>`/`{@code}` → backticks.
+   - Tags belong to the members that are **ported**. An unported private Java
+     helper's `@param`/`@return` are out of scope — `TreeChangeProcessor`'s
+     `jsonArrayAsJsArray` has no TypeScript counterpart, so its tags are not
+     missing — and a parameter that exists only in the port gets its own `@param`,
+     such as `StateTree`'s injected `serverEventObjectAccess`. A tag count that
+     differs from Java for one of those two reasons is not a finding.
 7. **Do not carry `@since` or `@author`.**
 8. **Match the Java API — including constructor signatures.** Do **not** deviate
    from the Java parameter list; in particular, do not bundle several positional
@@ -153,8 +186,26 @@ They consolidate the review feedback from the migration PR stack (#24933,
     that ports the referenced class.
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
-    future ported class will satisfy at cutover — see `MapPropertyTree` /
-    `MapPropertyNode` / `MapPropertyOwner` in `MapProperty.ts`.
+    future ported class will satisfy at cutover — see `Registry` /
+    `ServerConnector` / `InitialPropertiesHandler` in `StateTree.ts`, standing in
+    for the not-yet-ported `com.vaadin.client.Registry` and its
+    server-communication layer. A slice is only for a class that is **not yet
+    ported**, never a permanent decoupling from one that is: once the referenced
+    class lands, replace the slice with a real `import` of the ported type and
+    delete the interface. (E.g. `StateNode` and `ClientJsonCodec` import the real
+    `StateTree` rather than re-declaring a `getNode` / `getRegistry` slice; and
+    once `StateTree`/`StateNode`/`NodeMap` landed in #24948, `MapProperty` and
+    `NodeFeature` dropped their `MapPropertyTree` / `MapPropertyNode` /
+    `MapPropertyOwner` / `NodeFeatureNode` slices for the real types. Where the
+    real class would create a runtime import cycle — `NodeFeature` is the base
+    class of `NodeList`/`NodeMap`, so a *value* import of `StateNode` for an
+    `instanceof` would form a circular `extends` — import the type with
+    `import type` and keep a structural runtime check, documented at the site.
+    Where a real consumer needs a member the slice omitted — such as
+    `ServerConnector.sendReturnChannelMessage` — extend the still-unported slice
+    to cover it.) If the PR that ports the class cannot collapse a slice in the
+    same change, it files a retrofit-backlog row naming the slice: a slice never
+    outlives its port silently.
 
 ## Tests
 
@@ -163,10 +214,10 @@ They consolidate the review feedback from the migration PR stack (#24933,
     cases, merged cases, under-asserting cases); the sub-rules below spell out
     what "1:1" means so the mismatches don't recur.
     1. **One Java `@Test` → at least one TypeScript `it()`.** Every `@Test`
-       method in the Java counterpart is accounted for by an `it()`. This is a
-       floor, not a ceiling: a module may carry *extra* cases beyond the Java
-       set (see 13.6). Verify before opening the PR that no Java case is
-       missing.
+       method in **every** Java counterpart (13.9) is accounted for by an
+       `it()`. This is a floor, not a ceiling: a module may carry *extra* cases
+       beyond the Java set (see 13.6). Verify before opening the PR that no Java
+       case is missing.
     2. **Never drop a case.** Port *every* `@Test`, including the intricate
        ones. A missing `it()` means "not in the Java test", never "skipped for
        brevity". (Regression this prevents: `MapPropertyTest.java`'s 9
@@ -215,3 +266,110 @@ They consolidate the review feedback from the migration PR stack (#24933,
        it from there, even across package directories. (Regression this
        prevents: `MapPropertyTests`, `NodeMapTests` and `NodeListTests` each
        carried their own `countingComputation` copy instead of the shared one.)
+    9. **A module can have more than one Java counterpart — find them all.**
+       Rule 2's path mirror says where a `*Tests.ts` *lives*; it does not say
+       where its Java counterpart lives. Before counting cases, inventory every
+       Java test class that exercises the ported class, across all source roots
+       and naming variants:
+       - `flow-client/src/test/java/**/XTest.java` — the JRE-side unit test;
+       - `flow-client/src/test-gwt/java/**/GwtXTest.java` — the GWT/browser test
+         (`GwtJsArrayTest` for `JsArray`, `GwtStateTreeTest` for `StateTree`);
+       - `flow-client/src/test/java/**/JreXTest.java` — the JRE-fallback test
+         (`JreArrayTest` for `JsArray`);
+       - `flow-server/src/test/java/**/XTest(s).java` — for a class ported from
+         `com.vaadin.flow.*` (`BrowserDetailsTest`, `SharedUtilTests`).
+
+       Rules 13.1–13.8 then apply to the **union** of their `@Test` methods, and
+       a suite that declares itself to have no Java counterpart must have checked
+       all four locations first. List the counterparts you found in the review, so
+       the next round does not have to re-derive the set. _Introduced during
+       #24948._ (Regression this prevents: eight `@Test` methods across
+       `GwtStateTreeTest`, `GwtStateNodeTest`, `GwtTreeChangeProcessorTest` and
+       `GwtClientJsonCodecTest` had no verdict in any grid, and
+       `ClientJsonCodecTests` stated that `ClientJsonCodec` "has no `*Test.java`
+       counterpart" while `GwtClientJsonCodecTest` existed with two cases.)
+
+## Language mapping
+
+14. **Settled mappings — cite these, do not re-derive or reopen them.** Each was
+    decided once for the whole series; a review may point at the rule number, and
+    may reopen one only with new evidence. _Introduced during #24948._
+    1. **Value comparison uses strict `===`.** Java `Objects.equals` becomes
+       `===`, accepting that `undefined` and `null` stay distinct where GWT's
+       compiled `==` treated them alike. This is deliberate: the stricter
+       behaviour is preferred, and the consequences are handled where they
+       surface.
+    2. **`Optional<T>` becomes `T | undefined`**, with `Optional.ofNullable`
+       mapping to a `null` → `undefined` normalisation at the setter (see
+       `MapProperty.setPreviousDomValue`).
+    3. **A Java `Class<T>` token becomes the JS constructor function** — see the
+       `nodeData` map in `StateNode`.
+    4. **Java `assert` becomes the always-on `assert()` helper**, including the
+       structural and consistency assertions, not only the null checks. Drop only
+       an assertion that TypeScript's non-null types make unreachable, and say so
+       at the site. (Regression this prevents: eight structural asserts were
+       dropped from `StateTree` / `TreeChangeProcessor` while the
+       null-precondition ones were correctly dropped, so the omission read as
+       deliberate.)
+    5. **A GWT-compiler-only construct has no port** — `crazyJsCast`,
+       `crazyJsoCast`, deferred binding — and its absence is documented at the
+       site that would have called it.
+    6. **Non-null access mirrors Java's — use `!`, not `?.`.** Where Java
+       dereferences a reference its own types treat as non-null — a plain
+       `x.foo()` with no guarding `assert` that would throw
+       `NullPointerException` if `x` were null — the port mirrors it with a
+       non-null assertion (`x!.foo()`), **not** optional chaining (`x?.foo()`).
+       Strict parity is preferred: optional chaining silently yields `undefined`
+       exactly on the input Java rejects, quietly diverging behaviour instead of
+       failing as Java does. (Regression this prevents:
+       `ClientJsonCodec.decodeWithTypeInfo`'s `@v-node` branch used
+       `tree.getNode(id)?.getDomNode()`, returning `undefined` for a missing node
+       where Java's `tree.getNode(id).getDomNode()` throws.) The opposite case —
+       normalising a JS `undefined` to `null` for a *value* Java also treats as
+       nullable, e.g. `map.get(...) ?? null` mirroring a Java `Map.get` that
+       returns `null` — is faithful and stays, because it restores Java's
+       contract rather than deviating from it. Where Java *does* guard the access
+       with an `assert`, port the assert (rule 14.4) rather than a bare `!`. If
+       `eslint-config-vaadin`'s `@typescript-eslint/no-non-null-assertion` fires
+       on the `!`, disable it at that line with a note (as rule 8 does for
+       `max-params`) rather than reshaping the access into a silent `?.`.
+    7. **Side effects and identity are part of the port.** Mirror what the Java
+       method mutates and what it returns, not just the shape of the result: a
+       helper that mutates its argument in place and returns that same instance is
+       ported the same way, not as build-a-copy-and-return. (Deviation this names:
+       `ClientJsonCodec.decodeObjectWithTypeInfo` builds a new object, where
+       `ClientJsonCodec.java:306` writes the decoded values back into the incoming
+       `JsonObject` and returns it — observationally different for a caller that
+       holds a reference to the input.)
+
+## Comments in ported code
+
+15. **Do not cite these porting conventions from ported code.** A comment in a
+    `.ts` module — production or test — explains what the code does and why on its
+    own terms; it must **not** reference `PORTING.md` or a rule number (`rule 14.6`,
+    `13.9`, `PORTING.md 13.6`, …). These conventions exist to govern the review of
+    the port while the migration series is in progress; once the port is finished
+    this document goes away, and a comment that points at "rule 13.6" becomes a
+    dangling reference to a file the reader no longer has. Keep the *substance* —
+    the reason a deviation exists, that a case has no Java equivalent, why a `!` is
+    used instead of `?.` — as a self-contained explanation, and drop the citation.
+    (A review still cites rule numbers; that lives in the PR discussion and the
+    review grid, not in the source tree.) _Introduced during #24948._ (Regression
+    this prevents: production and test modules across the stack carried
+    `// See PORTING.md rule 14.6` and `// beyond the Java suite (PORTING.md 13.6)`
+    comments that would outlive the review process.)
+
+## Retrofit backlog
+
+Rules added mid-series that earlier ported code does not satisfy yet. A row is
+removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
+§8 for how rows get here and where a retrofit is allowed to land.
+
+| Rule | Affected modules | Retrofit lands in | Status |
+| --- | --- | --- | --- |
+
+_No open rows: the rule-12 slices that stood in for `StateNode` / `StateTree` /
+`NodeMap` (`MapPropertyTree` / `MapPropertyNode` / `MapPropertyOwner` in
+`MapProperty.ts`, `NodeFeatureNode` in `NodeFeature.ts`) were collapsed to the
+real types in #24948, which also rewrote the base-layer `MapPropertyTests` /
+`NodeMapTests` / `NodeListTests` mocks into real instances._
