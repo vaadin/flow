@@ -36,10 +36,16 @@ describe('Registry', () => {
     class MyClass {
       readonly marker = 'my-class';
     }
+    class OtherClass {
+      readonly marker = 'other-class';
+    }
     const registry = new TokenRegistry();
     const instance = new MyClass();
     registry.registerToken(MyClass, instance);
     expect(registry.lookup(MyClass)).to.equal(instance);
+    // A class key names itself in the assert messages, as Class.getName() does.
+    expect(() => registry.registerToken(MyClass, instance)).to.throw('already has a class of type MyClass');
+    expect(() => registry.lookup(OtherClass)).to.throw('Tried to lookup type OtherClass');
   });
 
   it('throws when registering the same type twice', () => {
