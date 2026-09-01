@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
-import { ApplicationConnection } from '../../../main/frontend/internal/client/ApplicationConnection';
+import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
 
 function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: boolean } = {}) {
   const log = {

@@ -1,12 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { ApplicationConfiguration } from '../../../main/frontend/internal/client/ApplicationConfiguration';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import {
   deferStartApplication,
   type JsoConfiguration,
   populateApplicationConfiguration,
   registerCallback,
   startApplicationImmediately
-} from '../../../main/frontend/internal/client/bootstrap/Bootstrapper';
+} from '../../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 
 // A JsoConfiguration backed by a plain values map.
 function makeJso(values: Record<string, unknown>): JsoConfiguration {
