@@ -147,8 +147,11 @@ export class MapProperty implements ReactiveValue {
    */
   removeValue(): void {
     if (this.#hasValueState) {
+      // mark as server update is in progress
       this.#isServerUpdate = true;
       this.#updateValue(null, false);
+      // unmark server update at the end of flush, i.e. at the end of the current
+      // server request processing
       Reactive.addPostFlushListener(() => {
         this.#isServerUpdate = false;
       });

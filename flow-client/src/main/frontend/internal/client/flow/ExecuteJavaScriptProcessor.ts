@@ -159,8 +159,7 @@ export class ExecuteJavaScriptProcessor {
   /**
    * Executes the actual invocation.
    *
-   * Java declares this protected instead of private for testing purposes; the
-   * port keeps it private and covers it through execute().
+   * Protected instead of private for testing purposes, as in Java.
    *
    * @param parameterNamesAndCode - an array consisting of parameter names
    *          followed by the JavaScript expression to execute

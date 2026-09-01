@@ -512,8 +512,29 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
-| 17 | Eleven base-layer modules measure short of their Java original's comment lines: `Console` (2/7), `SharedUtil` (10/13), `TreeChangeProcessor` (4/6), `JsArray` (0/2), `BrowserDetails` (34/36), `ExistingElementMap` (1/2), `MapProperty` (14/15), `ClientJsonCodec` (9/10), `SimpleElementBindingStrategy` (107/109), `ServerEventHandlerBinder` (0/1), `NodeFeatures` (0/1). Each needs the read-through the count only points at, since part of the gap is the GWT mechanics the rule exempts (`Console`'s `$entry` deferral, `JsArray`'s private constructor) and part is genuinely dropped (`ClientJsonCodec` has none of the five `// Check for @v-…` branch markers (`@v-node` twice, `@v-return`, `@v-fn`, and the unknown-`@v-` fallback); `MapProperty` carries one of the two `// mark as server update is in progress` sites) | a follow-up on the state-tree and support-services layers | open |
+| _(none)_ | | | |
+
+The backlog is empty: every row filed during the series has landed. #24952, the
+top of the stack, carried the last three, which is where §8's table sends a
+retrofit for branches that are approved and awaiting merge.
+
+The rule-13.1 row closed with the cases themselves: `ExecuteJavaScriptProcessorTests` now has
+the five `execute_*` and seven `isBound_*` cases of
+`ExecuteJavaScriptProcessorTest`, driven the way the Java suite drives them -
+a subclass that records what `invoke` was given and answers `isBound` from a
+flag, and a second one that exposes `isBound` because TypeScript has no package
+access.
+
+The rule-17 row was closed by reading each of the eleven modules against its
+Java original rather than trusting the counts: what was genuinely missing came
+down to `ClientJsonCodec`'s five `// Check for @v-…` branch markers,
+`MapProperty`'s second `// mark as server update is in progress` site,
+`SharedUtil`'s two fragment lines, `BrowserDetails`'s compatibility-mode
+reference and two author notes in `SimpleElementBindingStrategy`. The rest of the
+gap was the GWT mechanics the rule exempts (`Console`'s `$entry` deferral, the
+private constructors, the JRE-only branches) or comments already carried into the
+module that ports the code - the Polymer `whenDefined` and `__dataHost` notes
+live in `PolymerModelBinding.ts`, with the JSNI they annotate.
 
 The rule-12 row for `Registry`'s typed getters was closed in #24952: the getters
 moved from `DefaultRegistry` to `Registry`, where `Registry.java` has them, all

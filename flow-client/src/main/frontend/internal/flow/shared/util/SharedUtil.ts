@@ -224,7 +224,9 @@ export function addGetParameters(uri: string, extraParams: string | null): strin
   let fragment: string | null = null;
   const hashPosition = base.indexOf('#');
   if (hashPosition !== -1) {
+    // Fragment including "#"
     fragment = base.substring(hashPosition);
+    // The full uri before the fragment
     base = base.substring(0, hashPosition);
   }
 

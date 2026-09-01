@@ -102,6 +102,7 @@ export function decodeWithoutTypeInfo(json: unknown): unknown {
  */
 export function decodeStateNode(tree: StateTree, json: unknown): StateNode | null {
   if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
+    // Check for @v-node format
     const nodeIdValue = (json as Record<string, unknown>)['@v-node'];
     if (nodeIdValue !== undefined && nodeIdValue !== null) {
       if (typeof nodeIdValue !== 'number') {
@@ -196,6 +197,7 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
  */
 export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
   if (isPlainObject(json)) {
+    // Check for @v-node format
     const nodeIdValue = json['@v-node'];
     if (nodeIdValue !== undefined && nodeIdValue !== null) {
       if (typeof nodeIdValue !== 'number') {
@@ -207,6 +209,7 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
       return tree.getNode(nodeIdValue)!.getDomNode();
     }
 
+    // Check for @v-return format
     const returnArray = json['@v-return'];
     if (returnArray !== undefined && returnArray !== null) {
       if (!Array.isArray(returnArray)) {
@@ -225,6 +228,7 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
       );
     }
 
+    // Check for @v-fn format
     const fnValue = json['@v-fn'];
     if (fnValue !== undefined && fnValue !== null) {
       if (!isPlainObject(fnValue)) {
@@ -233,6 +237,7 @@ export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
       return decodeJsFunction(tree, fnValue, JSON.stringify(json));
     }
 
+    // Check for unknown @v- types
     for (const key of Object.keys(json)) {
       if (key.startsWith('@v-')) {
         throw new Error(`Unsupported @v type '${key}' in ${JSON.stringify(json)}`);
