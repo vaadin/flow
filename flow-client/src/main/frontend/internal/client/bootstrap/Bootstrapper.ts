@@ -147,9 +147,21 @@ export function doStartApplication(applicationId: string): void {
   // the rest of the modern-JS engine out of the registerInternals bundle, which
   // the HtmlUnit-based GwtTests also load and cannot run (no Array.from, etc.).
   // The engine is only needed once a real application starts.
-  void import('../ApplicationConnection').then(({ ApplicationConnection }) => {
-    ApplicationConnection.create(conf).start(initialUidl ?? null);
-  });
+  //
+  // Loading the engine is asynchronous, so an application started later can
+  // reach start() before an earlier one does; the Java bootstrap started them in
+  // call order. Nothing in the engine depends on that order today (each
+  // application has its own registry), and the cutover, which no longer needs the
+  // lazy split, restores it.
+  void import('../ApplicationConnection')
+    .then(({ ApplicationConnection }) => {
+      ApplicationConnection.create(conf).start(initialUidl ?? null);
+    })
+    .catch((error: unknown) => {
+      // The engine failed to load or to start, so there is no system error
+      // handler to report through; log rather than leaving a silent rejection.
+      Console.error(`Failed to start the Vaadin application ${applicationId}: ${String(error)}`);
+    });
 }
 
 interface WebComponentsGlobal {

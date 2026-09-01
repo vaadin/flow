@@ -41,14 +41,14 @@ export interface ApplicationConnection {
   getNodeId(element: Element): number;
   addDomBindingListener(nodeId: number, callback: () => void): void;
   poll(): void;
-  resolveUri(uri: string): string;
-  sendEventMessage(nodeId: number, eventType: string, eventData: object | null): void;
+  resolveUri(uri: string): string | null;
+  sendEventMessage(nodeId: number, eventType: string, eventData: unknown): void;
   getUIId(): number;
-  connectWebComponent(eventData: object): void;
-  debug(): object;
+  connectWebComponent(eventData: unknown): void;
+  debug(): unknown;
   getJavaClass(nodeId: number): string | null;
   isHiddenByServer(nodeId: number): boolean;
-  getElementStyleProperties(nodeId: number): object;
-  getProfilingData(): unknown[];
-  start(initialUidl: object | null): void;
+  getElementStyleProperties(nodeId: number): Record<string, unknown>;
+  getProfilingData(): number[];
+  start(initialUidl: Record<string, unknown> | null): void;
 }

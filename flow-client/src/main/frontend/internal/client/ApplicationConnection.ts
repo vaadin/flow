@@ -18,7 +18,8 @@
 // The static create() assembles the DefaultRegistry, binds the root state node to
 // the page body, and publishes the client API. The instance API
 // (start/isActive/poll/resolveUri/sendEventMessage/...) drives the application.
-// create() is the entry point wired into the live bootstrap.
+// create() is the entry point the ported Bootstrapper calls; the live page still
+// starts the GWT engine, so nothing calls it outside the tests until cutover.
 
 import { bind } from './flow/binding/Binder';
 import { observe as observeLoadingIndicator } from './communication/LoadingIndicatorConfigurator';
@@ -28,6 +29,7 @@ import { DefaultRegistry } from './DefaultRegistry';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
+import type { ApplicationConnection as PublishedClient } from './clientApi';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
 
@@ -72,7 +74,26 @@ interface DeferredWorkScheduler {
 }
 
 /** The main class for an application/UI; mirrors ApplicationConnection.java's engine API. */
-export class ApplicationConnection {
+// GWT's uncaught exception handler is a single, replaceable slot: creating
+// another connection replaced the handler instead of adding one. Mirror that
+// with one window listener, installed on the first connection and dispatching to
+// the handler of the most recently created one, so several applications on a
+// page do not report the same error once per connection.
+//
+// The listener is wider than the Java original in one way that has no
+// TypeScript equivalent: GWT only routed exceptions thrown inside $entry-wrapped
+// engine code, while a window error listener also sees errors thrown by
+// unrelated page scripts.
+let uncaughtErrorHandler: ((error: unknown) => void) | null = null;
+
+function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
+  if (uncaughtErrorHandler === null) {
+    window.addEventListener('error', (event) => uncaughtErrorHandler?.(event.error ?? event.message));
+  }
+  uncaughtErrorHandler = handler;
+}
+
+export class ApplicationConnection implements PublishedClient {
   readonly #registry: ApplicationConnectionRegistry;
 
   readonly #scheduler: DeferredWorkScheduler;
@@ -95,7 +116,7 @@ export class ApplicationConnection {
 
     // Route uncaught errors to the system error handler (GWT's uncaught handler).
     const systemErrorHandler = registry.getSystemErrorHandler();
-    window.addEventListener('error', (event) => systemErrorHandler.handleErrorObject(event.error ?? event.message));
+    setUncaughtErrorHandler((error) => systemErrorHandler.handleErrorObject(error));
 
     const rootNode = registry.getStateTree().getRootNode();
 
@@ -108,7 +129,7 @@ export class ApplicationConnection {
     bind(rootNode, rootElement);
 
     const connection = new ApplicationConnection(registry as never, getScheduler());
-    publishClient(connection as never, applicationConfiguration);
+    publishClient(connection, applicationConfiguration);
     return connection;
   }
 

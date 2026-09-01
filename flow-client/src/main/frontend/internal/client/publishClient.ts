@@ -27,9 +27,10 @@ import type { ApplicationConfiguration, ApplicationConnection } from './clientAp
  * exported methods carry the GWT entry-point semantics, so no explicit `$entry`
  * wrapping is needed here.
  *
- * Not yet wired into the bootstrap — see `MIGRATION_STRATEGY.md`. The handoff
- * that calls this with the constructed instance, and the removal of the JSNI
- * publication, is a separate step.
+ * Called by ApplicationConnection.create with the constructed instance. The live
+ * page still runs the GWT engine, so the JSNI publication is what actually
+ * populates `window.Vaadin.Flow.clients` today; removing it is part of the
+ * cutover that makes the bootstrap start this engine instead.
  */
 export function publishClient(
   applicationConnection: ApplicationConnection,

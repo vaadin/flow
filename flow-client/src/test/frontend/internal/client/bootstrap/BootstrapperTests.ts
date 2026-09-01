@@ -3,6 +3,7 @@ import { ApplicationConfiguration } from '../../../../../main/frontend/internal/
 import {
   deferStartApplication,
   type JsoConfiguration,
+  onModuleLoad,
   populateApplicationConfiguration,
   registerCallback,
   startApplicationImmediately
@@ -64,7 +65,44 @@ describe('Bootstrapper', () => {
     }
   });
 
+  describe('onModuleLoad', () => {
+    let saved: unknown;
+
+    beforeEach(() => {
+      saved = win.Vaadin;
+    });
+
+    afterEach(() => {
+      win.Vaadin = saved;
+    });
+
+    it('does nothing when vaadinBootstrap.js was not loaded', () => {
+      win.Vaadin = {};
+      expect(() => onModuleLoad()).to.not.throw();
+    });
+
+    it('registers the widgetset callback, and only once per bootstrap context', () => {
+      const registered: string[] = [];
+      const flow = { registerWidgetset: (name: string) => registered.push(name) };
+      win.Vaadin = { Flow: flow };
+
+      onModuleLoad();
+      expect(registered).to.deep.equal(['client']);
+
+      // Second call in the same bootstrap context is a no-op.
+      onModuleLoad();
+      expect(registered).to.deep.equal(['client']);
+
+      // A replaced window.Vaadin.Flow is a new context, so it registers again.
+      win.Vaadin = { Flow: { registerWidgetset: (name: string) => registered.push(name) } };
+      onModuleLoad();
+      expect(registered).to.deep.equal(['client', 'client']);
+    });
+  });
+
   describe('populateApplicationConfiguration', () => {
+    const sessionExpiredError = { caption: 'Session Expired', message: 'Take note of any unsaved data' };
+
     it('fills the configuration from the bootstrap JSO (with explicit service URL)', () => {
       const conf = new ApplicationConfiguration();
       populateApplicationConfiguration(
@@ -72,23 +110,53 @@ describe('Bootstrapper', () => {
         makeJso({
           serviceUrl: 'http://host/app/',
           contextRootUrl: '../',
-          webComponentMode: false,
+          webComponentMode: true,
           'v-uiId': 7,
           heartbeatInterval: 300,
           maxMessageSuspendTimeout: 5000,
           vaadinVersion: '24.9',
+          atmosphereVersion: '2.4.0',
+          atmosphereJSVersion: '3.0.0',
+          sessExpMsg: sessionExpiredError,
           debug: true,
-          webcomponents: ['my-el']
+          requestTiming: true,
+          webcomponents: ['my-el'],
+          devToolsEnabled: true,
+          liveReloadUrl: 'http://host/live',
+          liveReloadBackend: 'SPRING_BOOT_DEVTOOLS',
+          springBootLiveReloadPort: '35729'
         })
       );
       expect(conf.getServiceUrl()).to.equal('http://host/app/');
       expect(conf.getContextRootUrl()).to.equal('http://host/'); // resolved http://host/app/../
+      expect(conf.isWebComponentMode()).to.be.true;
       expect(conf.getUIId()).to.equal(7);
       expect(conf.getHeartbeatInterval()).to.equal(300);
       expect(conf.getMaxMessageSuspendTimeout()).to.equal(5000);
       expect(conf.getServletVersion()).to.equal('24.9');
+      expect(conf.getAtmosphereVersion()).to.equal('2.4.0');
+      expect(conf.getAtmosphereJSVersion()).to.equal('3.0.0');
+      expect(conf.getSessionExpiredError()).to.equal(sessionExpiredError);
       expect(conf.isProductionMode()).to.be.false; // debug=true -> not production
+      expect(conf.isRequestTiming()).to.be.true;
       expect(conf.getExportedWebComponents()).to.deep.equal(['my-el']);
+      expect(conf.isDevToolsEnabled()).to.be.true;
+      expect(conf.getLiveReloadUrl()).to.equal('http://host/live');
+      expect(conf.getLiveReloadBackend()).to.equal('SPRING_BOOT_DEVTOOLS');
+      expect(conf.getSpringBootLiveReloadPort()).to.equal('35729');
+    });
+
+    it('leaves the live-reload strings empty when the bootstrap omits them', () => {
+      // Java stores them as null; the ported configuration takes strings, so the
+      // bootstrap maps a missing value to the empty string.
+      const conf = new ApplicationConfiguration();
+      populateApplicationConfiguration(conf, makeJso({ 'v-uiId': 1, contextRootUrl: './' }));
+      expect(conf.getLiveReloadUrl()).to.equal('');
+      expect(conf.getLiveReloadBackend()).to.equal('');
+      expect(conf.getSpringBootLiveReloadPort()).to.equal('');
+      expect(conf.getSessionExpiredError()).to.be.null;
+      expect(conf.isDevToolsEnabled()).to.be.false;
+      expect(conf.isRequestTiming()).to.be.false;
     });
 
     it('falls back to the current location when no service URL is configured', () => {

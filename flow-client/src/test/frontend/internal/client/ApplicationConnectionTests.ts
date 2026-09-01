@@ -185,5 +185,34 @@ describe('ApplicationConnection', () => {
         (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
       }
     });
+
+    it('installs one uncaught-error listener however many connections are created', () => {
+      // GWT's uncaught exception handler was a single replaceable slot, so a
+      // second application did not make every error be reported twice.
+      const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
+      const originalAddEventListener = window.addEventListener;
+      const registeredTypes: string[] = [];
+      (window as Window).addEventListener = function patched(this: Window, type: string, ...rest: unknown[]) {
+        registeredTypes.push(type);
+        return (originalAddEventListener as (...args: unknown[]) => void).call(this, type, ...rest);
+      } as typeof window.addEventListener;
+      try {
+        (window as { Vaadin?: unknown }).Vaadin = { Flow: { clients: {} }, connectionState: { state: '' } };
+        const config = new ApplicationConfiguration();
+        config.setApplicationId('ROOT-1');
+        config.setServiceUrl('/app');
+        config.setUIId(0);
+        config.setHeartbeatInterval(-1);
+
+        ApplicationConnection.create(config, document.createElement('div'));
+        ApplicationConnection.create(config, document.createElement('div'));
+
+        // One at most: zero when an earlier case already installed the listener.
+        expect(registeredTypes.filter((type) => type === 'error')).to.have.length.at.most(1);
+      } finally {
+        window.addEventListener = originalAddEventListener;
+        (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
+      }
+    });
   });
 });
