@@ -76,9 +76,14 @@ public class UIScopeTarget extends Div {
                 event.unregisterListener();
             });
 
-            // simulate resynchronization
-            ui.getInternals().getStateTree().prepareForResync();
-            ui.getInternals().getDependencyList().clearPendingSendToClient();
+            // Trigger a real resynchronization instead of only running the
+            // server side of it: skipping a sync id makes the client notice
+            // the gap and request a resync, so the response carries the
+            // resynchronize flag and the client rebuilds its state tree from
+            // scratch. Calling prepareForResync() here directly would send a
+            // full re-attach of the tree the client still holds, which is not
+            // something the client can apply.
+            ui.getInternals().incrementServerId();
         });
         resynchronize.setId("resynchronize");
         add(resynchronize);
