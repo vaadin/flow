@@ -100,14 +100,25 @@ public class Table extends HtmlComponent
     }
 
     /**
-     * Returns the text content of this table's caption, or an empty string if
-     * the table has no caption. Unlike {@link #getCaption()}, this does not
-     * create one.
+     * Returns the text content of this table's caption, or {@code null} if the
+     * table has no caption or the caption holds something other than text.
+     * Unlike {@link #getCaption()}, this does not create one.
+     * <p>
+     * A caption assembled from components has no faithful text representation,
+     * and reporting whichever text nodes happen to sit around those components
+     * would be misleading, so {@code null} is returned instead. Use
+     * {@link #hasCaption()} to tell a table with no caption from one whose
+     * caption holds markup.
      *
-     * @return the caption text, never {@code null}.
+     * @return the caption text, or {@code null} if there is none to report.
      */
-    public String getCaptionText() {
-        return findCaption().map(TableCaption::getText).orElse("");
+    public @Nullable String getCaptionText() {
+        return findCaption().filter(Table::holdsOnlyText)
+                .map(TableCaption::getText).orElse(null);
+    }
+
+    private static boolean holdsOnlyText(TableCaption caption) {
+        return caption.getElement().getChildren().allMatch(Element::isTextNode);
     }
 
     /**

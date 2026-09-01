@@ -22,8 +22,11 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.Element;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableTest extends ComponentTest {
@@ -99,11 +102,31 @@ class TableTest extends ComponentTest {
     }
 
     @Test
-    void getCaptionText_withoutCaption_isEmptyAndCreatesNothing() {
+    void getCaptionText_withoutCaption_isNullAndCreatesNothing() {
         Table table = table();
 
-        assertEquals("", table.getCaptionText());
+        assertNull(table.getCaptionText());
         assertEquals(0, table.getChildren().count());
+    }
+
+    @Test
+    void getCaptionText_withComponentContent_isNull() {
+        Table table = table();
+        table.addCaption(new Span("Planets"));
+
+        assertNull(table.getCaptionText());
+        assertTrue(table.hasCaption());
+    }
+
+    @Test
+    void getCaptionText_withTextAlongsideAComponent_isNullRatherThanPartial() {
+        Table table = table();
+        TableCaption caption = table.getCaption();
+        caption.getElement().appendChild(Element.createText("Data about "));
+        caption.add(new Span("the planets"));
+
+        assertEquals("Data about ", caption.getText());
+        assertNull(table.getCaptionText());
     }
 
     @Test
