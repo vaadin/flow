@@ -70,9 +70,10 @@ function getRequiredConfigInteger(config: ConfigObject, name: string): number {
  */
 export function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
   // The ported ApplicationConfiguration takes strings and a string array where
-  // Java stores nullable ones, so every read below substitutes the empty value
-  // for a missing one. Java instead stores the null, which for the context root
-  // means concatenating it into the URL as "null"; nothing depends on that, and
+  // Java stores nullable ones, so the context root, the two version strings, the
+  // exported web components and the three live-reload values below substitute an
+  // empty value where Java stores the null. For the context root that null is
+  // what Java concatenates into the URL as "null"; nothing depends on that, and
   // the server always writes these values.
   //
   // Resolve potentially relative URLs now so they survive later base-URL changes.

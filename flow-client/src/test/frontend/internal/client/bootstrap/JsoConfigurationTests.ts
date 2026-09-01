@@ -31,11 +31,14 @@ describe('JsoConfiguration', () => {
     expect(getConfigBoolean(config({}), 'b')).to.be.false;
   });
 
-  it('getConfigInteger returns the number, or null when absent', () => {
+  it('getConfigInteger truncates toward zero, and returns null when absent', () => {
     expect(getConfigInteger(config({ i: 7 }), 'i')).to.equal(7);
     // The value the server writes is a JSON number, but Java's Integer.valueOf
     // accepts what the JSNI hands it, so a numeric string reads the same way.
     expect(getConfigInteger(config({ i: '7' }), 'i')).to.equal(7);
+    // Integer.valueOf(int) truncates, and toward zero rather than downward.
+    expect(getConfigInteger(config({ i: 7.9 }), 'i')).to.equal(7);
+    expect(getConfigInteger(config({ i: -7.9 }), 'i')).to.equal(-7);
     expect(getConfigInteger(config({}), 'i')).to.equal(null);
   });
 

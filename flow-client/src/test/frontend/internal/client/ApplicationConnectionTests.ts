@@ -238,10 +238,11 @@ describe('ApplicationConnection', () => {
     });
   });
 
-  // This has to stay the last block in the file: the case below starts a real
-  // application through the bootstrap, which binds the root state node to the
-  // shared document.body and has no shutdown path, so anything running after it
-  // would inherit that body.
+  // create() binds the root state node to the shared document.body, as Java's
+  // constructor does, and nothing stops an application once started. Binding an
+  // empty root node installs nothing on the body and each tree looks its own
+  // nodes up, so the cases above and the one below coexist; a case that asserts
+  // on the body's own content would have to run before them.
   describe('bootstrap', () => {
     it('does not add navigation events for web components', async () => {
       // Ported from GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents.

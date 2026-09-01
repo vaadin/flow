@@ -128,15 +128,5 @@ export function inertNode(id = 2): StateNode {
  */
 
 export function wiredRegistryBase(uiLifecycle: UILifecycle): TestRegistry {
-  return testRegistry({
-    UILifecycle: uiLifecycle,
-    ApplicationConfiguration: new ApplicationConfiguration(),
-    ConstantPool: new ConstantPool(),
-    ExistingElementMap: new ExistingElementMap(),
-    InitialPropertiesHandler: {
-      flushPropertyUpdates: () => {},
-      nodeRegistered: () => {},
-      handlePropertyUpdate: () => false
-    }
-  });
+  return testRegistry({ ...inertServices(), UILifecycle: uiLifecycle });
 }

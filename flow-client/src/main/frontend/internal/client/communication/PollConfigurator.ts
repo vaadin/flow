@@ -25,9 +25,6 @@ import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 // com.vaadin.flow.internal.nodefeature.PollConfigurationMap.POLL_INTERVAL_KEY
 const POLL_INTERVAL_KEY = 'pollInterval';
 
-// The poller is named by the method it is driven through rather than as a whole
-// Poller, so a suite can observe the configured interval directly; the type is
-// still derived from the ported class, so it cannot drift from it.
 /**
  * Observes the poll configuration stored in the given node and configures polling
  * accordingly.
