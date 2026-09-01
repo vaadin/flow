@@ -280,6 +280,28 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell holding the given content and labelling the row it
+     * leads, with {@code scope="row"} set on the resulting
+     * <code>&lt;th&gt;</code>. This is the content-taking form of
+     * {@link #addRowHeaderCell(String)}, for a label that is not plain text.
+     * <p>
+     * For example, {@code addRowHeaderCell(new Span("Breed"))} renders as:
+     *
+     * <pre>{@code
+     * <th scope="row"><span>Breed</span></th>
+     * }</pre>
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <th>} with {@code scope="row"}.
+     */
+    public TableHeaderCell addRowHeaderCell(Component... content) {
+        TableHeaderCell cell = addHeaderCell(content);
+        cell.setScope(TableHeaderCell.Scope.ROW);
+        return cell;
+    }
+
+    /**
      * Appends a header cell labelling the column it sits in, with
      * {@code scope="col"} set on the resulting <code>&lt;th&gt;</code>. This is
      * the counterpart of {@link #addRowHeaderCell(String)} and the usual shape
@@ -305,7 +327,14 @@ public class TableRow extends HtmlComponent
     /**
      * Appends a header cell holding the given content and labelling the column
      * it sits in, with {@code scope="col"} set on the resulting
-     * <code>&lt;th&gt;</code>.
+     * <code>&lt;th&gt;</code>. This is the content-taking form of
+     * {@link #addColumnHeaderCell(String)}, for a label that is not plain text.
+     * <p>
+     * For example, {@code addColumnHeaderCell(new Span("Name"))} renders as:
+     *
+     * <pre>{@code
+     * <th scope="col"><span>Name</span></th>
+     * }</pre>
      *
      * @param content
      *            the content of the cell.
@@ -337,6 +366,31 @@ public class TableRow extends HtmlComponent
      */
     public TableHeaderCell addRowGroupHeaderCell(String text) {
         TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROWGROUP);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell holding the given content and labelling the band of
+     * rows it heads, with {@code scope="rowgroup"} set on the resulting
+     * <code>&lt;th&gt;</code>. This is the content-taking form of
+     * {@link #addRowGroupHeaderCell(String)}; set the span on the returned cell
+     * with {@link TableCell#setRowspan(int)}, since a varargs parameter has to
+     * come last and so cannot be combined with one in a single call.
+     * <p>
+     * For example, {@code addRowGroupHeaderCell(new Span("Gas giants"))}
+     * renders as:
+     *
+     * <pre>{@code
+     * <th scope="rowgroup"><span>Gas giants</span></th>
+     * }</pre>
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <th>} with {@code scope="rowgroup"}.
+     */
+    public TableHeaderCell addRowGroupHeaderCell(Component... content) {
+        TableHeaderCell cell = addHeaderCell(content);
         cell.setScope(TableHeaderCell.Scope.ROWGROUP);
         return cell;
     }
@@ -392,6 +446,31 @@ public class TableRow extends HtmlComponent
      */
     public TableHeaderCell addColumnGroupHeaderCell(String text) {
         TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.COLGROUP);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell holding the given content and labelling the band of
+     * columns it heads, with {@code scope="colgroup"} set on the resulting
+     * <code>&lt;th&gt;</code>. This is the content-taking form of
+     * {@link #addColumnGroupHeaderCell(String)}; set the span on the returned
+     * cell with {@link TableCell#setColspan(int)}, since a varargs parameter
+     * has to come last and so cannot be combined with one in a single call.
+     * <p>
+     * For example, {@code addColumnGroupHeaderCell(new Span("Measurements"))}
+     * renders as:
+     *
+     * <pre>{@code
+     * <th scope="colgroup"><span>Measurements</span></th>
+     * }</pre>
+     *
+     * @param content
+     *            the content of the cell.
+     * @return the new {@code <th>} with {@code scope="colgroup"}.
+     */
+    public TableHeaderCell addColumnGroupHeaderCell(Component... content) {
+        TableHeaderCell cell = addHeaderCell(content);
         cell.setScope(TableHeaderCell.Scope.COLGROUP);
         return cell;
     }

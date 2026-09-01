@@ -216,6 +216,37 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void scopedHeaderCellFactories_takeContentAsWellAsText() {
+        TableRow row = new TableRow();
+        Span rowLabel = new Span("Breed");
+        Span rowGroupLabel = new Span("Gas giants");
+        Span columnGroupLabel = new Span("Measurements");
+        Span columnLabel = new Span("Name");
+
+        TableHeaderCell rowCell = row.addRowHeaderCell(rowLabel);
+        TableHeaderCell rowGroupCell = row.addRowGroupHeaderCell(rowGroupLabel);
+        TableHeaderCell columnGroupCell = row
+                .addColumnGroupHeaderCell(columnGroupLabel);
+        TableHeaderCell columnCell = row.addColumnHeaderCell(columnLabel);
+
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROW),
+                rowCell.getScope());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.ROWGROUP),
+                rowGroupCell.getScope());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COLGROUP),
+                columnGroupCell.getScope());
+        assertEquals(java.util.Optional.of(TableHeaderCell.Scope.COL),
+                columnCell.getScope());
+        // the content lands in the cell rather than being flattened to text
+        assertEquals(List.of(rowLabel), rowCell.getChildren().toList());
+        assertEquals(List.of(rowGroupLabel),
+                rowGroupCell.getChildren().toList());
+        assertEquals(
+                List.of(rowCell, rowGroupCell, columnGroupCell, columnCell),
+                row.getHeaderCells());
+    }
+
+    @Test
     void addGroupHeaderCell_withASpan_reachesOverTheGroupItNames() {
         TableRow row = new TableRow();
 
