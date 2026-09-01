@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,12 +47,14 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -222,6 +227,62 @@ class ActiveTransferLifecycleTest {
                 "A terminated download should not have written all of its contents");
     }
 
+    @Test
+    void ongoingDownload_customHandlerBlockedInIo_sessionInvalidatedTerminatesIt()
+            throws Exception {
+        // A handler that implements the interface directly and blocks while
+        // waiting for its data source instead of using TransferUtil
+        CountDownLatch handlerStarted = new CountDownLatch(1);
+        CountDownLatch neverReleased = new CountDownLatch(1);
+        AtomicBoolean terminated = new AtomicBoolean();
+        AtomicBoolean completed = new AtomicBoolean();
+
+        ElementRequestHandler blockingHandler = (request, response, session,
+                owner) -> {
+            handlerStarted.countDown();
+            try {
+                completed.set(neverReleased.await(3, TimeUnit.SECONDS));
+            } catch (InterruptedException e) {
+                terminated.set(true);
+                Thread.currentThread().interrupt();
+            }
+        };
+        register(blockingHandler);
+
+        // Let the request be served by another thread while the session is
+        // invalidated by this one
+        session.unlock();
+        try {
+            Thread requestThread = new Thread(() -> {
+                try {
+                    streamRequestHandler.handleRequest(session, request,
+                            response);
+                } catch (IOException e) {
+                    terminated.set(true);
+                }
+            });
+            requestThread.start();
+
+            assertTrue(handlerStarted.await(5, TimeUnit.SECONDS),
+                    "The download handler should have been called");
+
+            session.lock();
+            try {
+                invalidateSession();
+            } finally {
+                session.unlock();
+            }
+
+            requestThread.join(5000);
+            assertTrue(terminated.get(),
+                    "A handler blocked in I/O should be terminated when the session is invalidated");
+            assertFalse(completed.get(),
+                    "A terminated download should not run to completion");
+        } finally {
+            session.lock();
+        }
+    }
+
     private void invalidateSession() {
         service.fireSessionDestroy(session);
         // fireSessionDestroy uses VaadinSession.access, and the pending
@@ -230,15 +291,18 @@ class ActiveTransferLifecycleTest {
         service.runPendingAccessTasks(session);
     }
 
-    private void handleRequest(
-            com.vaadin.flow.server.streams.ElementRequestHandler handler)
+    private void handleRequest(ElementRequestHandler handler)
             throws IOException {
+        register(handler);
+
+        streamRequestHandler.handleRequest(session, request, response);
+    }
+
+    private void register(ElementRequestHandler handler) {
         StreamRegistration registration = registry.registerResource(handler,
                 owner.getElement());
         Mockito.when(request.getPathInfo())
                 .thenReturn("/" + registration.getResourceUri().toString());
-
-        streamRequestHandler.handleRequest(session, request, response);
     }
 
     private void mockUploadRequest(String contents, Runnable onFirstRead)
