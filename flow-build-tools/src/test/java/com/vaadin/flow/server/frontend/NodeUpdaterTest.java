@@ -424,7 +424,7 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPinnedNpmDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+    void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
         Logger logger = Mockito.spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
@@ -442,10 +442,11 @@ class NodeUpdaterTest {
             ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
-            Mockito.verify(logger, Mockito.times(1)).info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+            Mockito.verify(logger, Mockito.times(1))
+                    .info("Couldn't find {} or {} to pin dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                            Constants.VAADIN_CORE_VERSIONS_JSON,
+                            Constants.VAADIN_VERSIONS_JSON);
         }
     }
 

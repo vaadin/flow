@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,6 +104,30 @@ class ResourceFolderUtilTest {
     }
 
     @Test
+    void vfsFolder_onlyItsFilesAreVisited() throws IOException {
+        File folder = new File(temporaryFolder, "deployment");
+        File nested = new File(folder, "nested");
+        Files.createDirectories(nested.toPath());
+        Files.writeString(new File(folder, "one.txt").toPath(), "first",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(nested, "two.txt").toPath(), "second",
+                StandardCharsets.UTF_8);
+
+        URL vfsFolder = new URL("vfs", "deployment", 0, "/my.war/classes/",
+                new VirtualFileHandler(folder));
+
+        List<String> contents = new ArrayList<>();
+        ResourceFolderUtil.visitFiles(vfsFolder, file -> {
+            contents.add(file.getName() + "=" + read(file.open()));
+            assertEquals(vfsFolder + file.getName(), file.getLocation(),
+                    "The location should point at the file in the folder");
+        });
+
+        // The folder inside it is not a file of the folder
+        assertEquals(List.of("one.txt=first"), contents);
+    }
+
+    @Test
     void folderDoesNotExist_failsWithAnIOException() throws IOException {
         URL missing = new File(temporaryFolder, "missing").toURI().toURL();
 
@@ -124,6 +149,70 @@ class ResourceFolderUtilTest {
     private static String read(InputStream content) throws IOException {
         try (InputStream stream = content) {
             return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    /**
+     * Stands in for the virtual file system of WildFly, which serves a folder
+     * of the deployment through the {@code vfs} protocol.
+     */
+    private static class VirtualFileHandler extends URLStreamHandler {
+
+        private final File folder;
+
+        private VirtualFileHandler(File folder) {
+            this.folder = folder;
+        }
+
+        @Override
+        protected URLConnection openConnection(URL url) {
+            return new URLConnection(url) {
+                @Override
+                public void connect() {
+                    // The content is served without a connection
+                }
+
+                @Override
+                public Object getContent() {
+                    return new MockVirtualFile(folder);
+                }
+            };
+        }
+    }
+
+    /**
+     * Stands in for the virtual file of WildFly, which is only reachable
+     * through reflection and creates the files it is asked for.
+     */
+    public static class MockVirtualFile {
+
+        private final File file;
+
+        public MockVirtualFile(File file) {
+            this.file = file;
+        }
+
+        public List<MockVirtualFile> getChildren() {
+            List<MockVirtualFile> children = new ArrayList<>();
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    children.add(new MockVirtualFile(child));
+                }
+            }
+            return children;
+        }
+
+        public String getName() {
+            return file.getName();
+        }
+
+        public boolean isFile() {
+            return file.isFile();
+        }
+
+        public InputStream openStream() throws IOException {
+            return new FileInputStream(file);
         }
     }
 
