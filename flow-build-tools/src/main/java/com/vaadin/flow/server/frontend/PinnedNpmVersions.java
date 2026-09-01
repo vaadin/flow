@@ -35,6 +35,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.ResourceFolderUtil;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
@@ -102,14 +103,10 @@ class PinnedNpmVersions {
         Map<String, VersionsFile> filesInFolder = new TreeMap<>();
         try {
             ResourceFolderUtil.visitFiles(folder, file -> {
-                if (!file.getName().endsWith(JSON_SUFFIX)) {
-                    return;
-                }
-                try (InputStream content = file.open()) {
-                    filesInFolder.put(file.getLocation(),
-                            new VersionsFile(file.getLocation(),
-                                    JacksonUtils.readTree(
-                                            StringUtil.toUTF8String(content))));
+                if (file.getName().endsWith(JSON_SUFFIX)) {
+                    readVersionsFile(file)
+                            .ifPresent(versionsFile -> filesInFolder
+                                    .put(versionsFile.origin(), versionsFile));
                 }
             });
         } catch (IOException e) {
@@ -119,6 +116,26 @@ class PinnedNpmVersions {
             return;
         }
         versionsFiles.putAll(filesInFolder);
+    }
+
+    /**
+     * Reads one versions file, skipping it if it cannot be read or is not the
+     * json the versions files are.
+     * <p>
+     * A versions file comes from whichever jar ships it, so one that is broken
+     * is not a reason to stop pinning the packages the other files declare.
+     */
+    private static Optional<VersionsFile> readVersionsFile(
+            ResourceFolderUtil.FolderFile file) {
+        try (InputStream content = file.open()) {
+            return Optional.of(new VersionsFile(file.getLocation(),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content))));
+        } catch (IOException | JsonDecodingException | ClassCastException e) {
+            log().warn("Unable to read the pinned npm versions of '{}'."
+                    + " The packages it defines won't be pinned for npm/pnpm/bun.",
+                    file.getLocation(), e);
+            return Optional.empty();
+        }
     }
 
     /**
@@ -305,13 +322,24 @@ class PinnedNpmVersions {
     }
 
     private static boolean isNewerThan(String version, String otherVersion) {
-        try {
-            return new FrontendVersion(version)
-                    .isNewerThan(new FrontendVersion(otherVersion));
-        } catch (NumberFormatException e) {
-            log().debug("Unable to compare versions '{}' and '{}'", version,
-                    otherVersion, e);
+        FrontendVersion frontendVersion = parseVersion(version);
+        if (frontendVersion == null) {
+            // A version that cannot be compared does not replace one that is
+            // already there
             return false;
+        }
+        FrontendVersion otherFrontendVersion = parseVersion(otherVersion);
+        // A version that can be compared replaces one that cannot
+        return otherFrontendVersion == null
+                || frontendVersion.isNewerThan(otherFrontendVersion);
+    }
+
+    private static FrontendVersion parseVersion(String version) {
+        try {
+            return new FrontendVersion(version);
+        } catch (NumberFormatException e) {
+            log().debug("Unable to read '{}' as a version", version, e);
+            return null;
         }
     }
 

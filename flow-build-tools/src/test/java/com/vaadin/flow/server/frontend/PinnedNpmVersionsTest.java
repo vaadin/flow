@@ -123,6 +123,60 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void versionsFileIsBroken_theOtherFilesArePinnedAllTheSame()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, "{ this is not json",
+                // A versions file is not a list either
+                """
+                        [
+                          { "npmName": "@vaadin/grid" }
+                        ]
+                        """);
+
+        // A jar shipping a broken versions file cannot take the build down
+        // with it
+        assertTrue(pinnedNpmVersions
+                .getDependencies(false, false, keepEverything())
+                .has("@vaadin/button"));
+    }
+
+    @Test
+    void versionThatCannotBeComparedIsReplacedByOneThatCan()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "a folder link"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "components": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        assertEquals("25.1.0", pinnedNpmVersions.getAllDependencies()
+                .get("@vaadin/button").asString());
+    }
+
+    @Test
     void differentVaadinVersionsInMultipleFiles_newestVersionIsUsed()
             throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
