@@ -16,7 +16,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -122,25 +124,33 @@ public class HtmlTableTutorialView extends Div {
     /** Example 4: planet data with caption, thead and rowgroup spans. */
     static class PlanetsTable extends Table {
         {
-            addCaption(new Html("<span>Data about the planets of our solar"
-                    + " system (Source: <a href=\"https://nssdc.gsfc.nasa.gov/"
-                    + "planetary/factsheet/\">Nasa's Planetary Fact Sheet -"
-                    + " Metric</a>).</span>"));
+            addCaption(
+                    new Text("Data about the planets of our solar system"
+                            + " (Source: "),
+                    new Anchor("https://nssdc.gsfc.nasa.gov/planetary/"
+                            + "factsheet/",
+                            "Nasa's Planetary Fact Sheet - Metric"),
+                    new Text(")."));
 
             TableHead head = getHead();
             TableRow headerRow = head.addRow();
             headerRow.addDataCell().setColspan(2);
-            headerRow.addColumnHeaderCell(new Html("<span>Name</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Mass (10<sup>24</sup>kg)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Diameter (km)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Density (kg/m<sup>3</sup>)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Gravity (m/s<sup>2</sup>)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Length of day (hours)</span>"));
+            headerRow.addColumnHeaderCell("Name");
+            // Only the four units carrying an exponent need markup; the rest
+            // are plain text
+            headerRow.addColumnHeaderCell(
+                    new Html("<span>Mass (10<sup>24</sup>kg)</span>"));
+            headerRow.addColumnHeaderCell("Diameter (km)");
+            headerRow.addColumnHeaderCell(
+                    new Html("<span>Density (kg/m<sup>3</sup>)</span>"));
+            headerRow.addColumnHeaderCell(
+                    new Html("<span>Gravity (m/s<sup>2</sup>)</span>"));
+            headerRow.addColumnHeaderCell("Length of day (hours)");
             headerRow.addColumnHeaderCell(new Html(
                     "<span>Distance from Sun (10<sup>6</sup>km)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Mean temperature (\u00b0C)</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Number of moons</span>"));
-            headerRow.addColumnHeaderCell(new Html("<span>Notes</span>"));
+            headerRow.addColumnHeaderCell("Mean temperature (\u00b0C)");
+            headerRow.addColumnHeaderCell("Number of moons");
+            headerRow.addColumnHeaderCell("Notes");
 
             TableRow mercury = addRow();
             TableHeaderCell terrestrial = mercury
