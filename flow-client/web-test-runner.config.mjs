@@ -5,7 +5,9 @@ import { fileURLToPath } from 'url';
 
 export default {
   // Test files end in Tests.ts; anything else under src/test/frontend is a
-  // shared helper or fixture rather than a suite.
+  // shared helper or fixture rather than a suite. Suites are discovered
+  // recursively so tests can mirror the ported modules' directory layout (e.g.
+  // src/test/frontend/internal/client/flow/reactive/ComputationTests.ts).
   files: ['src/test/frontend/**/*Tests.ts'],
   // The tests import components that pull in Lit, whose development build logs a
   // "Lit is in dev mode" banner when it loads. Pre-mark that warning as issued in
