@@ -95,12 +95,25 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Returns the value of the {@code colspan} attribute.
+     * Returns the value of the {@code colspan} attribute. A cell with no
+     * {@code colspan} covers one column, so this reports 1 for it; use
+     * {@link #hasColspan()} to tell that apart from an explicit
+     * {@code colspan="1"}.
      *
      * @return the current colspan. Default is 1.
      */
     public int getColspan() {
         return getSpan(ATTRIBUTE_COLSPAN);
+    }
+
+    /**
+     * Reports whether this cell carries an explicit {@code colspan}, as opposed
+     * to falling back to the default of 1.
+     *
+     * @return {@code true} if the attribute is set.
+     */
+    public boolean hasColspan() {
+        return getElement().hasAttribute(ATTRIBUTE_COLSPAN);
     }
 
     /**
@@ -134,12 +147,27 @@ public abstract class TableCell extends HtmlContainer {
     }
 
     /**
-     * Returns the value of the {@code rowspan} attribute.
+     * Returns the value of the {@code rowspan} attribute. A cell with no
+     * {@code rowspan} covers one row, so this reports 1 for it; use
+     * {@link #hasRowspan()} to tell that apart from an explicit
+     * {@code rowspan="1"}.
      *
      * @return the current rowspan. Default is 1.
      */
     public int getRowspan() {
         return getSpan(ATTRIBUTE_ROWSPAN);
+    }
+
+    /**
+     * Reports whether this cell carries an explicit {@code rowspan}, as opposed
+     * to falling back to the default of 1. Note that {@code rowspan="0"}, which
+     * reaches to the end of the row group, is an explicit span even though
+     * {@link #getRowspan()} reports 0 rather than a row count.
+     *
+     * @return {@code true} if the attribute is set.
+     */
+    public boolean hasRowspan() {
+        return getElement().hasAttribute(ATTRIBUTE_ROWSPAN);
     }
 
     /**

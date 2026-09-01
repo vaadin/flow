@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.vaadin.flow.component.Component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -83,6 +84,8 @@ class TableCellTest {
         TableCell cell = factory.get();
         assertEquals(1, cell.getColspan());
         assertEquals(1, cell.getRowspan());
+        assertFalse(cell.hasColspan());
+        assertFalse(cell.hasRowspan());
 
         cell.setColspan(2);
         cell.setRowspan(3);
@@ -91,6 +94,24 @@ class TableCellTest {
         assertEquals("3", cell.getElement().getAttribute("rowspan"));
         assertEquals(2, cell.getColspan());
         assertEquals(3, cell.getRowspan());
+        assertTrue(cell.hasColspan());
+        assertTrue(cell.hasRowspan());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
+    void hasSpan_tellsAnExplicitSpanFromTheDefault(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+        cell.setColspan(1);
+        // rowspan="0" reaches to the end of the row group, so it is an
+        // explicit span even though it is not a row count
+        cell.setRowspan(0);
+
+        assertEquals(1, cell.getColspan());
+        assertTrue(cell.hasColspan());
+        assertEquals(0, cell.getRowspan());
+        assertTrue(cell.hasRowspan());
     }
 
     @ParameterizedTest
@@ -105,6 +126,8 @@ class TableCellTest {
 
         assertNull(cell.getElement().getAttribute("colspan"));
         assertNull(cell.getElement().getAttribute("rowspan"));
+        assertFalse(cell.hasColspan());
+        assertFalse(cell.hasRowspan());
     }
 
     @ParameterizedTest
