@@ -152,12 +152,18 @@ class PinnedNpmVersionsTest {
     @Test
     void versionThatCannotBeComparedIsReplacedByOneThatCan()
             throws IOException {
+        // The version that can be compared wins whether it is read before or
+        // after the one that cannot
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "core": {
                     "button": {
                       "npmName": "@vaadin/button",
                       "jsVersion": "a folder link"
+                    },
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0"
                     }
                   }
                 }
@@ -167,13 +173,18 @@ class PinnedNpmVersionsTest {
                     "button": {
                       "npmName": "@vaadin/button",
                       "jsVersion": "25.1.0"
+                    },
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "a folder link"
                     }
                   }
                 }
                 """);
 
-        assertEquals("25.1.0", pinnedNpmVersions.getAllDependencies()
-                .get("@vaadin/button").asString());
+        ObjectNode dependencies = pinnedNpmVersions.getAllDependencies();
+        assertEquals("25.1.0", dependencies.get("@vaadin/button").asString());
+        assertEquals("25.1.0", dependencies.get("@vaadin/grid").asString());
     }
 
     @Test

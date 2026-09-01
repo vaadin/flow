@@ -93,10 +93,13 @@ class PinnedNpmVersions {
     /**
      * Reads the versions files from one folder on the classpath.
      * <p>
-     * A folder that cannot be read is skipped as a whole, with a warning, as
-     * the versions files of the other folders still pin the packages they
-     * define. Half of a folder would pin only some of the packages that belong
-     * together.
+     * A folder that cannot be listed is skipped as a whole, with a warning:
+     * there is no telling which of its files were missed, so taking the ones
+     * that were read would pin an unknown part of what the folder declares. The
+     * versions files of the other folders still pin what they define.
+     * <p>
+     * A file that is there but cannot be read is a different matter, as it is
+     * known exactly what is missing, and it is skipped on its own.
      */
     private static void readVersionsFiles(URL folder,
             Map<String, VersionsFile> versionsFiles) {
