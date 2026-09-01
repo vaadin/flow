@@ -180,10 +180,12 @@ class VersionsJsonConverter {
             if (excludeWebComponents) {
                 // collecting exclusions also from non-included dependencies
                 // with a mode (react), when web components are not wanted.
+                // The package is not installed from this file, so what it
+                // excludes is not something this file says about the package
                 if (MODE_REACT.equalsIgnoreCase(mode)) {
                     exclusions.add(npmName);
                 }
-                collectExclusions(obj);
+                collectExclusions(obj, false);
             }
             return;
         }
@@ -199,18 +201,28 @@ class VersionsJsonConverter {
         }
         convertedObject.put(npmName, version);
 
-        collectExclusions(obj);
+        collectExclusions(obj, true);
         getLogger().debug("versions.json adds dependency {} with version {}{}",
                 npmName, version, (mode != null ? " for mode " + mode : ""));
     }
 
-    private void collectExclusions(JsonNode obj) {
+    /**
+     * Collects what a dependency excludes.
+     *
+     * @param declared
+     *            whether the dependency is one this versions file installs, so
+     *            that what it excludes is what the file says about the packages
+     *            rather than a consequence of the mode
+     */
+    private void collectExclusions(JsonNode obj, boolean declared) {
         if (obj.has(EXCLUSIONS)) {
             ArrayNode array = (ArrayNode) obj.get(EXCLUSIONS);
             if (array != null) {
                 IntStream.range(0, array.size()).forEach(i -> {
                     exclusions.add(array.get(i).asString());
-                    declaredExclusions.add(array.get(i).asString());
+                    if (declared) {
+                        declaredExclusions.add(array.get(i).asString());
+                    }
                 });
             }
         }
