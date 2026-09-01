@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -224,6 +225,31 @@ class ActiveTransferLifecycleTest {
         assertThrows(IOException.class, () -> handleRequest(downloadHandler),
                 "A download should be terminated when the session is invalidated");
         assertTrue(responseBody.size() < contents.length,
+                "A terminated download should not have written all of its contents");
+    }
+
+    @Test
+    void ongoingDownload_customHandlerWritingToResponse_sessionInvalidatedTerminatesIt() {
+        byte[] chunk = new byte[1024];
+        int chunkCount = 10;
+
+        // A handler that implements the interface directly and writes to the
+        // response instead of using TransferUtil
+        ElementRequestHandler rawHandler = (request, response, session,
+                owner) -> {
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.write(chunk);
+
+            invalidateSession();
+
+            for (int i = 1; i < chunkCount; i++) {
+                outputStream.write(chunk);
+            }
+        };
+
+        assertThrows(IOException.class, () -> handleRequest(rawHandler),
+                "A download writing to the response should be terminated when the session is invalidated");
+        assertTrue(responseBody.size() < chunkCount * chunk.length,
                 "A terminated download should not have written all of its contents");
     }
 
