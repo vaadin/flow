@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableTest extends ComponentTest {
@@ -59,9 +60,45 @@ class TableTest extends ComponentTest {
         Table table = table();
 
         assertEquals(0, table.getChildren().count());
-        assertTrue(table.findHead().isEmpty());
-        assertTrue(table.findFoot().isEmpty());
+        assertFalse(table.hasCaption());
+        assertFalse(table.hasHead());
+        assertFalse(table.hasFoot());
         assertTrue(table.getBodies().isEmpty());
+    }
+
+    @Test
+    void hasSection_reportsThePresenceWithoutCreatingAnything() {
+        Table table = table();
+
+        assertFalse(table.hasCaption());
+        assertFalse(table.hasHead());
+        assertFalse(table.hasFoot());
+        assertEquals(0, table.getChildren().count());
+
+        table.getCaption();
+        table.getHead();
+        table.getFoot();
+
+        assertTrue(table.hasCaption());
+        assertTrue(table.hasHead());
+        assertTrue(table.hasFoot());
+
+        table.removeCaption();
+        table.removeHead();
+        table.removeFoot();
+
+        assertFalse(table.hasCaption());
+        assertFalse(table.hasHead());
+        assertFalse(table.hasFoot());
+    }
+
+    @Test
+    void hasCaption_tellsAnEmptyCaptionFromAMissingOne() {
+        Table table = table();
+        table.setCaptionText("");
+
+        assertEquals("", table.getCaptionText());
+        assertTrue(table.hasCaption());
     }
 
     @Test

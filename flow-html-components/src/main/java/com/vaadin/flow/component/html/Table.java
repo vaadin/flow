@@ -81,6 +81,16 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * Reports whether this table already has a {@code <caption>}. Unlike
+     * {@link #getCaption()}, this does not create one.
+     *
+     * @return {@code true} if the table has a caption.
+     */
+    public boolean hasCaption() {
+        return findCaption().isPresent();
+    }
+
+    /**
      * Returns this table's caption if it has one, without creating it.
      *
      * @return the table's {@code <caption>}, or an empty optional.
@@ -232,11 +242,21 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * Reports whether this table already has a {@code <thead>}. Unlike
+     * {@link #getHead()}, this does not create one.
+     *
+     * @return {@code true} if the table has a head.
+     */
+    public boolean hasHead() {
+        return findHead().isPresent();
+    }
+
+    /**
      * Returns this table's {@code <thead>} if it has one, without creating it.
      *
      * @return the table's {@code <thead>}, or an empty optional.
      */
-    public Optional<TableHead> findHead() {
+    private Optional<TableHead> findHead() {
         return ComponentUtil.getFirstChildOfType(this, TableHead.class);
     }
 
@@ -272,11 +292,21 @@ public class Table extends HtmlComponent
     }
 
     /**
+     * Reports whether this table already has a {@code <tfoot>}. Unlike
+     * {@link #getFoot()}, this does not create one.
+     *
+     * @return {@code true} if the table has a foot.
+     */
+    public boolean hasFoot() {
+        return findFoot().isPresent();
+    }
+
+    /**
      * Returns this table's {@code <tfoot>} if it has one, without creating it.
      *
      * @return the table's {@code <tfoot>}, or an empty optional.
      */
-    public Optional<TableFoot> findFoot() {
+    private Optional<TableFoot> findFoot() {
         return ComponentUtil.getFirstChildOfType(this, TableFoot.class);
     }
 
