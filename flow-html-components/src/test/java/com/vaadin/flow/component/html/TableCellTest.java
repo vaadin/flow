@@ -175,6 +175,21 @@ class TableCellTest {
 
     @ParameterizedTest
     @MethodSource("cellKinds")
+    void getHeaderIds_ignoresPaddingInARawAttribute(
+            Supplier<TableCell> factory) {
+        TableCell cell = factory.get();
+
+        // The setters reject blank ids, so only an attribute written through
+        // the Element API can carry padding
+        cell.getElement().setAttribute("headers", "  name   age  ");
+        assertEquals(List.of("name", "age"), cell.getHeaderIds());
+
+        cell.getElement().setAttribute("headers", "   ");
+        assertTrue(cell.getHeaderIds().isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cellKinds")
     void setHeaderIds_empty_clearsTheAttribute(Supplier<TableCell> factory) {
         TableCell cell = factory.get();
         cell.setHeaderIds("name");

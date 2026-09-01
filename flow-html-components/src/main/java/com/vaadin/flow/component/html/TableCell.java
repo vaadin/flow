@@ -78,8 +78,9 @@ public abstract class TableCell extends HtmlContainer {
      * <p>
      * Unlike {@link #setRowspan(int)}, zero is not allowed: the "span the rest
      * of the column group" meaning it once had was dropped from HTML, and
-     * browsers now clamp it back to {@code 1}. Values above 1000 are clamped to
-     * 1000.
+     * browsers now clamp it back to {@code 1}. Browsers likewise clamp values
+     * above 1000 down to 1000 when laying the table out; the value is written
+     * through and read back verbatim here.
      *
      * @param colspan
      *            a positive integer.
@@ -129,8 +130,9 @@ public abstract class TableCell extends HtmlContainer {
      * <p>
      * Zero is allowed and still means something in HTML: the cell extends to
      * the end of the row group ({@code <thead>}, {@code <tbody>} or
-     * {@code <tfoot>}, even an implicit one) it belongs to. Values above 65534
-     * are clamped to 65534.
+     * {@code <tfoot>}, even an implicit one) it belongs to. Browsers clamp
+     * values above 65534 down to 65534 when laying the table out; the value is
+     * written through and read back verbatim here.
      *
      * @param rowspan
      *            a non-negative integer, where 0 spans the rest of the row
@@ -278,10 +280,14 @@ public abstract class TableCell extends HtmlContainer {
      */
     public List<String> getHeaderIds() {
         String value = getElement().getAttribute(ATTRIBUTE_HEADERS);
-        if (value == null || value.isEmpty()) {
+        if (value == null || value.isBlank()) {
             return List.of();
         }
-        return List.of(value.split("\\s+"));
+        // The attribute is a space-separated list, so strip before splitting:
+        // leading whitespace would otherwise yield an empty first id. Only an
+        // attribute set through the Element API can look like that, since the
+        // setters reject blank ids
+        return List.of(value.strip().split("\\s+"));
     }
 
     /**
