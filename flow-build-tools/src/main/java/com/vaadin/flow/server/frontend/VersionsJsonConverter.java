@@ -194,10 +194,13 @@ class VersionsJsonConverter {
         } else if (obj.has(JS_VERSION)) {
             version = obj.get(JS_VERSION).asString();
         } else {
-            throw new IllegalStateException("Vaadin code versions file "
-                    + "contains unexpected data: dependency '" + npmName
-                    + "' has" + " no 'npmVersion'/'jsVersion' . "
-                    + "Please report a bug in https://github.com/vaadin/platform/issues/new");
+            // A versions file comes from whichever jar ships it, so a package
+            // without a version is not a reason to give up on the rest
+            getLogger().warn(
+                    "The npm package '{}' of a versions file has no 'npmVersion' or 'jsVersion',"
+                            + " so its version is not pinned. Report it to whoever ships the file.",
+                    npmName);
+            return;
         }
         convertedObject.put(npmName, version);
 

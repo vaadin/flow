@@ -339,6 +339,33 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void packageWithoutAVersion_theOtherPackagesArePinnedAllTheSame()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid"
+                    },
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        // A package a versions file gives no version for cannot be pinned,
+        // which is no reason to give up on the packages that have one
+        ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
+                false, keepEverything());
+        assertFalse(dependencies.has("@vaadin/grid"));
+        assertTrue(dependencies.has("@vaadin/button"));
+        assertTrue(
+                pinnedNpmVersions.getAllDependencies().has("@vaadin/button"));
+    }
+
+    @Test
     void exclusionsOfAllFilesAreCollected() throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
