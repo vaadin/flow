@@ -156,30 +156,38 @@ class PinnedNpmVersions {
      * Gets the Vaadin version, i.e. the version of the platform the versions
      * files come from, as declared in their {@code platform} field.
      * <p>
-     * The files are expected to declare the same version; if they do not, the
-     * newest one wins and a warning is logged, as for the packages.
+     * Only the files of the platform itself, the ones declaring the npm package
+     * {@value VersionsJsonConverter#VAADIN_CORE_NPM_PACKAGE}, say what the
+     * version is; what any other file declares is ignored, so that a jar that
+     * is not the platform cannot set it. Where no file declares that package
+     * there is no platform to tell apart, and the files declaring a version are
+     * used instead.
+     * <p>
+     * The files that count are expected to declare the same version; if they do
+     * not, the newest one wins and a warning is logged, as for the packages.
      *
      * @return the Vaadin version, or empty if no versions file declares one
      */
     Optional<String> getVaadinVersion() {
-        List<VersionsFile> platformFiles = files.stream()
-                .filter(file -> declaresVaadinVersion(file)
-                        && declaresPlatformPackage(file.content()))
+        List<VersionsFile> declaringFiles = files.stream()
+                .filter(this::declaresVaadinVersion).toList();
+        List<VersionsFile> platformFiles = declaringFiles.stream()
+                .filter(file -> declaresPlatformPackage(file.content()))
                 .toList();
-        if (!platformFiles.isEmpty()) {
-            files.stream()
-                    .filter(file -> declaresVaadinVersion(file)
-                            && !platformFiles.contains(file))
-                    .forEach(file -> log().warn(
-                            "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'.",
-                            file.content().get(PLATFORM).asString(),
-                            file.origin(), VAADIN_CORE_NPM_PACKAGE));
-            return getVaadinVersion(platformFiles);
+        if (platformFiles.isEmpty()) {
+            // Nothing on the classpath is the platform, so there is nothing to
+            // tell the Vaadin version apart from what the files say
+            return getVaadinVersion(declaringFiles);
         }
-        // Nothing on the classpath is the platform, so there is nothing to
-        // tell the Vaadin version apart from what the files say
-        return getVaadinVersion(
-                files.stream().filter(this::declaresVaadinVersion).toList());
+        Optional<String> vaadinVersion = getVaadinVersion(platformFiles);
+        declaringFiles.stream().filter(file -> !platformFiles.contains(file)
+                && !vaadinVersion.orElseThrow()
+                        .equals(file.content().get(PLATFORM).asString()))
+                .forEach(file -> log().warn(
+                        "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'. Using '{}'.",
+                        file.content().get(PLATFORM).asString(), file.origin(),
+                        VAADIN_CORE_NPM_PACKAGE, vaadinVersion.orElseThrow()));
+        return vaadinVersion;
     }
 
     private boolean declaresVaadinVersion(VersionsFile file) {
