@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.tests.util.MockOptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -368,7 +369,7 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
-    void packageWithoutAVersion_isWarnedAboutOnceForTheReader()
+    void packageWithoutAVersion_isWarnedAboutOnceForTheBuild()
             throws IOException {
         String versionsFile = """
                 {
@@ -379,8 +380,19 @@ class PinnedNpmVersionsTest {
                   }
                 }
                 """;
+        File folder = new File(temporaryFolder, "jar" + fileCount++);
+        folder.mkdirs();
+        File file = new File(folder, "versions.json");
+        Files.writeString(file.toPath(), versionsFile, StandardCharsets.UTF_8);
+        String origin = file.getAbsolutePath();
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(folder.toURI().toURL()));
+        Options options = new MockOptions(finder, temporaryFolder);
+        ExclusionFilter exclusionFilter = new ExclusionFilter(options, true,
+                false);
+
         MockLogger logger = new MockLogger();
-        String origin;
         try (MockedStatic<LoggerFactory> loggerFactory = Mockito
                 .mockStatic(LoggerFactory.class)) {
             loggerFactory.when(
@@ -390,21 +402,9 @@ class PinnedNpmVersionsTest {
                     () -> LoggerFactory.getLogger(VersionsJsonConverter.class))
                     .thenReturn(new MockLogger());
 
-            File folder = new File(temporaryFolder, "jar" + fileCount++);
-            folder.mkdirs();
-            File file = new File(folder, "versions.json");
-            Files.writeString(file.toPath(), versionsFile,
-                    StandardCharsets.UTF_8);
-            origin = file.getAbsolutePath();
-            ClassFinder finder = Mockito.mock(ClassFinder.class);
-            Mockito.when(
-                    finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
-                    .thenReturn(List.of(folder.toURI().toURL()));
-
-            // The build asks the same versions for one thing after another
-            PinnedNpmVersions pinnedNpmVersions = new PinnedNpmVersions(finder);
-            pinnedNpmVersions.getAllDependencies();
-            pinnedNpmVersions.getExclusions(true, false);
+            // The build asks the versions for one thing after another
+            exclusionFilter.exclude(Map.of());
+            options.getPinnedNpmVersions().getAllDependencies();
         }
 
         List<String> warnings = logger.getLogs().lines()

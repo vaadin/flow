@@ -89,8 +89,8 @@ public class FrontendBuildUtils {
      * platform version recorder and node_modules exists, then platform is
      * considered as staying on the same version.
      *
-     * @param finder
-     *            project execution class finder
+     * @param options
+     *            the task options
      * @param npmFolder
      *            npm root folder
      * @param nodeModules
@@ -150,8 +150,8 @@ public class FrontendBuildUtils {
      * platform version recorder and node_modules exists, then platform is
      * considered updated.
      *
-     * @param finder
-     *            project execution class finder
+     * @param options
+     *            the task options
      * @param npmFolder
      *            npm root folder
      * @param nodeModules
@@ -186,8 +186,8 @@ public class FrontendBuildUtils {
      * where there is none, the version of the Vaadin on the classpath is used
      * instead.
      *
-     * @param finder
-     *            the class finder to use for locating the versions files
+     * @param options
+     *            the task options to take the pinned npm versions from
      * @return the Vaadin version as a string, or empty if neither a versions
      *         file of the platform nor the classpath tells it
      */

@@ -56,7 +56,7 @@ public class BundleBuildUtils {
             FrontendTools frontendTools) {
         try {
             if (FrontendBuildUtils.isPlatformMajorVersionUpdated(options,
-                    options.getNodeModulesFolder(), options.getNpmFolder(),
+                    options.getNpmFolder(), options.getNodeModulesFolder(),
                     options.getBuildDirectory())) {
                 getLogger().info(
                         "Platform version updated. Skipping bundle lock file copy.");
