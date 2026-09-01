@@ -323,8 +323,17 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageUpdater.updateVaadinJsonContents(
                 Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        FileUtils.write(versions, "{\"platform\": \"1.2.3\"}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(versions, """
+                {
+                  "platform": "1.2.3",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "1.2.3"
+                    }
+                  }
+                }
+                """, StandardCharsets.UTF_8);
         packageUpdater.execute();
         assertCleanUp();
     }

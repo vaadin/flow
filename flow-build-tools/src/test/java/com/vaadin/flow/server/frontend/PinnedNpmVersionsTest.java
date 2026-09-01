@@ -34,11 +34,13 @@ import java.util.jar.JarOutputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -431,9 +433,16 @@ class PinnedNpmVersionsTest {
                 }
                 """);
 
-        // No file of the platform, so the version comes from the platform
-        // itself, which is not on the classpath of this test
-        assertEquals(Optional.empty(), pinnedNpmVersions.getVaadinVersion());
+        // No file of the platform, so the version of the Vaadin on the
+        // classpath is used and what the file says is ignored
+        try (MockedStatic<Platform> platform = Mockito
+                .mockStatic(Platform.class)) {
+            platform.when(() -> Platform.getVaadinVersion(Mockito.any()))
+                    .thenReturn(Optional.of("25.1.0"));
+
+            assertEquals(Optional.of("25.1.0"),
+                    pinnedNpmVersions.getVaadinVersion());
+        }
     }
 
     @Test

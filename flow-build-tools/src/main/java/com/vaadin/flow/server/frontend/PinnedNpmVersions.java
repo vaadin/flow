@@ -74,6 +74,8 @@ class PinnedNpmVersions {
 
     private final List<VersionsFile> files;
 
+    private final ClassLoader classLoader;
+
     /**
      * Reads all versions files visible to the given class finder.
      *
@@ -83,6 +85,7 @@ class PinnedNpmVersions {
      *             if the versions folders cannot be looked up
      */
     PinnedNpmVersions(ClassFinder finder) throws IOException {
+        classLoader = finder.getClassLoader();
         // Sorted by origin for a deterministic order and to skip the
         // duplicates a class loader hierarchy may report for the same folder
         Map<String, VersionsFile> versionsFiles = new TreeMap<>();
@@ -161,13 +164,14 @@ class PinnedNpmVersions {
      * {@value VersionsJsonConverter#VAADIN_CORE_NPM_PACKAGE}, say what the
      * version is; what any other file declares is ignored, so that a jar that
      * is not the platform cannot set it. Where no file declares that package,
-     * the version the platform reports for itself is used rather than anything
+     * the version of the Vaadin on the classpath is used rather than anything
      * the files say.
      * <p>
      * The files that count are expected to declare the same version; if they do
      * not, the newest one wins and a warning is logged, as for the packages.
      *
-     * @return the Vaadin version, or empty if no versions file declares one
+     * @return the Vaadin version, or empty if neither a versions file of the
+     *         platform nor the classpath tells it
      */
     Optional<String> getVaadinVersion() {
         List<VersionsFile> declaringFiles = files.stream()
@@ -182,7 +186,7 @@ class PinnedNpmVersions {
                     "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'.",
                     file.content().get(PLATFORM).asString(), file.origin(),
                     VAADIN_CORE_NPM_PACKAGE));
-            return Platform.getVaadinVersion();
+            return Platform.getVaadinVersion(classLoader);
         }
         Optional<String> vaadinVersion = getVaadinVersion(platformFiles);
         declaringFiles.stream().filter(file -> !platformFiles.contains(file)
