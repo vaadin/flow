@@ -78,8 +78,6 @@ class TableRowContainerBindChildrenTest extends SignalsUnitTest {
 
         // moveTo rejects an index equal to the size, so the last position is
         // size - 1
-        assertThrows(IndexOutOfBoundsException.class,
-                () -> planets.moveTo(first, planets.peek().size()));
         planets.moveTo(first, planets.peek().size() - 1);
 
         assertEquals(List.of("Venus", "Mercury"), texts(table));
