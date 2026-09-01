@@ -43,6 +43,19 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
 
 const idleScheduler = { hasWorkQueued: () => false };
 
+// Records the event types registered on a target, the way the Java suite's
+// addEventsObserver monkey-patches addEventListener. Returns the undo function.
+function observeAddedEvents(target: EventTarget, into: string[]): () => void {
+  const original = target.addEventListener;
+  target.addEventListener = function observed(this: EventTarget, type: string, ...rest: unknown[]) {
+    into.push(type);
+    return (original as (...args: unknown[]) => void).call(this, type, ...rest);
+  } as typeof target.addEventListener;
+  return () => {
+    target.addEventListener = original;
+  };
+}
+
 describe('ApplicationConnection', () => {
   it('resynchronizes when there is no initial UIDL', () => {
     const registry = makeRegistry();
@@ -195,12 +208,8 @@ describe('ApplicationConnection', () => {
       // GWT's uncaught exception handler was a single replaceable slot, so a
       // second application did not make every error be reported twice.
       const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
-      const originalAddEventListener = window.addEventListener;
       const registeredTypes: string[] = [];
-      (window as Window).addEventListener = function patched(this: Window, type: string, ...rest: unknown[]) {
-        registeredTypes.push(type);
-        return (originalAddEventListener as (...args: unknown[]) => void).call(this, type, ...rest);
-      } as typeof window.addEventListener;
+      const restoreWindow = observeAddedEvents(window, registeredTypes);
       try {
         (window as { Vaadin?: unknown }).Vaadin = { Flow: { clients: {} }, connectionState: { state: '' } };
         const config = new ApplicationConfiguration();
@@ -215,26 +224,17 @@ describe('ApplicationConnection', () => {
         // One at most: zero when an earlier case already installed the listener.
         expect(registeredTypes.filter((type) => type === 'error')).to.have.length.at.most(1);
       } finally {
-        window.addEventListener = originalAddEventListener;
+        restoreWindow();
         (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
       }
     });
   });
 
+  // This has to stay the last block in the file: the case below starts a real
+  // application through the bootstrap, which binds the root state node to the
+  // shared document.body and has no shutdown path, so anything running after it
+  // would inherit that body.
   describe('bootstrap', () => {
-    // Records the event types registered on a target, the way the Java case's
-    // addEventsObserver monkey-patches addEventListener.
-    function observeAddedEvents(target: EventTarget, into: string[]): () => void {
-      const original = target.addEventListener;
-      target.addEventListener = function observed(this: EventTarget, type: string, ...rest: unknown[]) {
-        into.push(type);
-        return (original as (...args: unknown[]) => void).call(this, type, ...rest);
-      } as typeof target.addEventListener;
-      return () => {
-        target.addEventListener = original;
-      };
-    }
-
     it('does not add navigation events for web components', async () => {
       // Ported from GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents.
       const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
@@ -284,12 +284,21 @@ describe('ApplicationConnection', () => {
           .clients;
         await waitUntil(() => clients.client !== undefined, 'the application was never started');
 
+        // The engine's own window listener first: absent navigation events only
+        // mean anything once the observer is known to have seen the application
+        // start. The Java case relies on delayTestFinish for the same reason.
+        expect(windowEvents).to.contain('pagehide');
         expect(windowEvents).to.not.contain('popstate');
         expect(bodyEvents).to.not.contain('click');
       } finally {
         restoreBody();
         restoreWindow();
-        (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
+        // The application keeps running, so leave the globals it reads in place
+        // rather than restoring an undefined Vaadin: a late callback into
+        // ConnectionIndicator dereferences window.Vaadin without a guard.
+        if (savedVaadin !== undefined) {
+          (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
+        }
       }
     });
   });
