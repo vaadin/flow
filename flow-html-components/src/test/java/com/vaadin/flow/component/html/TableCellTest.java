@@ -103,14 +103,15 @@ class TableCellTest {
     void hasSpan_tellsAnExplicitSpanFromTheDefault(
             Supplier<TableCell> factory) {
         TableCell cell = factory.get();
+
+        // A span written out explicitly as the default value is the case the
+        // getters cannot express on their own
         cell.setColspan(1);
-        // rowspan="0" reaches to the end of the row group, so it is an
-        // explicit span even though it is not a row count
-        cell.setRowspan(0);
+        cell.setRowspan(1);
 
         assertEquals(1, cell.getColspan());
         assertTrue(cell.hasColspan());
-        assertEquals(0, cell.getRowspan());
+        assertEquals(1, cell.getRowspan());
         assertTrue(cell.hasRowspan());
     }
 
@@ -155,6 +156,8 @@ class TableCellTest {
         cell.setRowspan(0);
         assertEquals("0", cell.getElement().getAttribute("rowspan"));
         assertEquals(0, cell.getRowspan());
+        // and counts as an explicit span, even though it is not a row count
+        assertTrue(cell.hasRowspan());
     }
 
     @ParameterizedTest
