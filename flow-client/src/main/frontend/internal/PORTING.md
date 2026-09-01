@@ -260,8 +260,9 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     outlives its port silently.
     - **A service takes the registry, not a slice of it.** `Registry` declares the
       24 typed getters `Registry.java` declares, so a module's constructor takes
-      `Registry` and no module re-declares the getters it happens to call. There
-      is no registry slice left to keep in step with anything.
+      `Registry` and no module re-declares the getters it happens to call. No
+      `Pick<…>` of a ported class is left anywhere in the engine: a collaborator
+      is named by its class, so nothing can drift from it.
       _First stated during #24951, when the container was still local and each
       getter's return type was narrowed to `Pick<PortedClass, 'membersUsed'>`; that
       sweep found six places where a slice and its class had drifted apart (five
@@ -277,7 +278,10 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
       in `src/test/frontend/internal/client/testRegistry.ts` — `testRegistry({ StateTree: tree })`
       — rather than casting an object literal into the registry type. Services a
       suite does not register stay unregistered, so a lookup the code under test
-      should not make throws instead of silently returning a stub.
+      should not make throws instead of silently returning a stub. Java's own
+      RegistryTest calls the protected `set`/`get` directly, as a test in the same
+      package may; TypeScript has no package access, so the subclass stands in for
+      it and there is one of them, not one per suite.
 
 ## Tests
 

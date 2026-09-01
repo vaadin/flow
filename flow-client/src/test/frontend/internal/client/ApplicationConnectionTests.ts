@@ -6,6 +6,7 @@ import { testRegistry } from './testRegistry';
 import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
+import { getScheduler } from '../../../../main/frontend/internal/client/TrackingScheduler';
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
@@ -52,8 +53,6 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
   return { registry, log, tree };
 }
 
-const idleScheduler = { hasWorkQueued: () => false };
-
 // Records the event types registered on a target, the way the Java suite's
 // addEventsObserver monkey-patches addEventListener. Returns the undo function.
 function observeAddedEvents(target: EventTarget, into: string[]): () => void {
@@ -70,46 +69,58 @@ function observeAddedEvents(target: EventTarget, into: string[]): () => void {
 describe('ApplicationConnection', () => {
   it('resynchronizes when there is no initial UIDL', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry.registry, idleScheduler).start(null);
+    new ApplicationConnection(registry.registry).start(null);
     expect(registry.log.resynchronized).to.equal(1);
     expect(registry.log.handled).to.deep.equal([]);
   });
 
   it('handles the initial UIDL (after starting a request) when provided', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry.registry, idleScheduler).start({ syncId: 0 });
+    new ApplicationConnection(registry.registry).start({ syncId: 0 });
     expect(registry.log.startedRequests).to.equal(1);
     expect(registry.log.handled).to.deep.equal([{ syncId: 0 }]);
     expect(registry.log.resynchronized).to.equal(0);
   });
 
   it('isActive while the initial UIDL is not yet handled', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }).registry, idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }).registry);
     expect(connection.isActive()).to.be.true;
   });
 
-  it('isActive while a request is active or deferred work is queued', () => {
-    expect(
-      new ApplicationConnection(
-        makeRegistry({ initialUidlHandled: true, activeRequest: true }).registry,
-        idleScheduler
-      ).isActive()
-    ).to.be.true;
-    expect(
-      new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry, {
-        hasWorkQueued: () => true
-      }).isActive()
-    ).to.be.true;
+  it('isActive while a request is active', () => {
+    const registry = makeRegistry({ initialUidlHandled: true, activeRequest: true }).registry;
+    expect(new ApplicationConnection(registry).isActive()).to.be.true;
+  });
+
+  it('isActive while deferred work is queued on the shared scheduler', () => {
+    // The connection asks the shared TrackingScheduler, as Java asks
+    // Scheduler.get(), so the work is queued on that instance rather than on an
+    // injected double.
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry);
+    expect(connection.isActive()).to.be.false;
+
+    let ran = false;
+    getScheduler().scheduleDeferred(() => {
+      ran = true;
+    });
+    expect(connection.isActive()).to.be.true;
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        expect(ran).to.be.true;
+        expect(connection.isActive()).to.be.false;
+        resolve();
+      }, 0);
+    });
   });
 
   it('is idle when the initial UIDL is handled with no request or deferred work', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry, idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry);
     expect(connection.isActive()).to.be.false;
   });
 
   it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, debug', () => {
     const registry = makeRegistry();
-    const connection = new ApplicationConnection(registry.registry, idleScheduler);
+    const connection = new ApplicationConnection(registry.registry);
 
     connection.poll();
     expect(registry.log.polled).to.equal(1);
@@ -152,7 +163,7 @@ describe('ApplicationConnection', () => {
     it('getByNodeId / getNodeId resolve node<->element both ways', () => {
       const fixture = makeRegistryWithNode();
       fixture.attach();
-      const connection = new ApplicationConnection(fixture.registry, idleScheduler);
+      const connection = new ApplicationConnection(fixture.registry);
       expect(connection.getDomElementByNodeId(5)).to.equal(fixture.domNode);
       expect(connection.getDomElementByNodeId(99)).to.equal(null);
       expect(connection.getNodeId(fixture.domNode)).to.equal(5);
@@ -161,7 +172,7 @@ describe('ApplicationConnection', () => {
 
     it('addDomBindingListener fires the callback when the matching node is bound', () => {
       const fixture = makeRegistryWithNode();
-      const connection = new ApplicationConnection(fixture.registry, idleScheduler);
+      const connection = new ApplicationConnection(fixture.registry);
       let fired = 0;
       connection.addDomSetListener(5, () => fired++);
       fixture.attach();
@@ -169,7 +180,7 @@ describe('ApplicationConnection', () => {
     });
 
     it('exposes javaClass, hidden-by-server and style properties for dev tools', () => {
-      const connection = new ApplicationConnection(makeRegistryWithNode().registry, idleScheduler);
+      const connection = new ApplicationConnection(makeRegistryWithNode().registry);
       expect(connection.getJavaClass(5)).to.equal('com.example.MyView');
       expect(connection.isHiddenByServer(5)).to.be.true; // visible=false
       expect(connection.getElementStyleProperties(5)).to.deep.equal({ color: 'red' });
@@ -187,8 +198,7 @@ describe('ApplicationConnection', () => {
         config.setUIId(0);
         config.setHeartbeatInterval(-1);
 
-        const rootElement = document.createElement('div');
-        const connection = ApplicationConnection.create(config, rootElement);
+        const connection = ApplicationConnection.create(config);
 
         expect(connection).to.be.instanceOf(ApplicationConnection);
         // The client API is published under the suffix-stripped application id.
@@ -216,8 +226,8 @@ describe('ApplicationConnection', () => {
         config.setUIId(0);
         config.setHeartbeatInterval(-1);
 
-        ApplicationConnection.create(config, document.createElement('div'));
-        ApplicationConnection.create(config, document.createElement('div'));
+        ApplicationConnection.create(config);
+        ApplicationConnection.create(config);
 
         // One at most: zero when an earlier case already installed the listener.
         expect(registeredTypes.filter((type) => type === 'error')).to.have.length.at.most(1);

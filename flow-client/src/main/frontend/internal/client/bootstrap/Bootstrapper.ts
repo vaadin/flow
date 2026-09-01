@@ -69,6 +69,12 @@ function getRequiredConfigInteger(config: ConfigObject, name: string): number {
  * @param jsoConfiguration - the bootstrap configuration object to read
  */
 export function populateApplicationConfiguration(conf: ApplicationConfiguration, jsoConfiguration: ConfigObject): void {
+  // The ported ApplicationConfiguration takes strings and a string array where
+  // Java stores nullable ones, so every read below substitutes the empty value
+  // for a missing one. Java instead stores the null, which for the context root
+  // means concatenating it into the URL as "null"; nothing depends on that, and
+  // the server always writes these values.
+  //
   // Resolve potentially relative URLs now so they survive later base-URL changes.
   const serviceUrl = getConfigString(jsoConfiguration, SERVICE_URL);
 
@@ -99,8 +105,6 @@ export function populateApplicationConfiguration(conf: ApplicationConfiguration,
   conf.setExportedWebComponents((getConfigStringArray(jsoConfiguration, 'webcomponents') as string[] | null) ?? []);
 
   conf.setDevToolsEnabled(getConfigBoolean(jsoConfiguration, DEV_TOOLS_ENABLED));
-  // The ported configuration takes strings where Java stores nullable ones, so a
-  // missing value becomes the empty string.
   conf.setLiveReloadUrl(getConfigString(jsoConfiguration, 'liveReloadUrl') ?? '');
   conf.setLiveReloadBackend(getConfigString(jsoConfiguration, 'liveReloadBackend') ?? '');
   conf.setSpringBootLiveReloadPort(getConfigString(jsoConfiguration, 'springBootLiveReloadPort') ?? '');

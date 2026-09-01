@@ -1,10 +1,13 @@
 import { expect } from '@open-wc/testing';
-import { Registry, type ServiceKey } from '../../../../main/frontend/internal/client/Registry';
+import type { ServiceKey } from '../../../../main/frontend/internal/client/Registry';
+import { TestRegistry } from './testRegistry';
 
-// Test subclass exposing the protected container API (the cutover subclass will
-// instead register concrete services and add typed getters).
-class TestRegistry extends Registry {
-  register<T>(type: ServiceKey, instance: T): void {
+// The container cases store and look up arbitrary tokens, which the shared
+// TestRegistry does not: it registers the registry's own services. This subclass
+// adds the rest of the protected container API those cases drive. Java's
+// RegistryTest calls set/get directly, as a class in the same package may.
+class TokenRegistry extends TestRegistry {
+  registerToken<T>(type: ServiceKey, instance: T): void {
     this.set(type, instance);
   }
 
@@ -21,9 +24,9 @@ class TestRegistry extends Registry {
 describe('Registry', () => {
   it('stores and looks up an instance by token', () => {
     // Ported from setAndGet.
-    const registry = new TestRegistry();
+    const registry = new TokenRegistry();
     const service = { name: 'sender' };
-    registry.register('MessageSender', service);
+    registry.registerToken('MessageSender', service);
     expect(registry.lookup('MessageSender')).to.equal(service);
   });
 
@@ -33,30 +36,30 @@ describe('Registry', () => {
     class MyClass {
       readonly marker = 'my-class';
     }
-    const registry = new TestRegistry();
+    const registry = new TokenRegistry();
     const instance = new MyClass();
-    registry.register(MyClass, instance);
+    registry.registerToken(MyClass, instance);
     expect(registry.lookup(MyClass)).to.equal(instance);
   });
 
   it('throws when registering the same type twice', () => {
     // Beyond the Java suite.
-    const registry = new TestRegistry();
-    registry.register('X', {});
-    expect(() => registry.register('X', {})).to.throw('already has');
+    const registry = new TokenRegistry();
+    registry.registerToken('X', {});
+    expect(() => registry.registerToken('X', {})).to.throw('already has');
   });
 
   it('throws when looking up an unregistered type', () => {
     // Ported from getUndefined.
-    const registry = new TestRegistry();
+    const registry = new TokenRegistry();
     expect(() => registry.lookup('missing')).to.throw('no instance has been registered');
   });
 
   it('recreates resettable instances on reset, leaving final ones untouched', () => {
     // Beyond the Java suite: Registry.java has no resettable-supplier overload.
-    const registry = new TestRegistry();
+    const registry = new TokenRegistry();
     const final = { id: 'final' };
-    registry.register('Final', final);
+    registry.registerToken('Final', final);
 
     let counter = 0;
     registry.registerResettable('Resettable', () => ({ id: counter++ }));

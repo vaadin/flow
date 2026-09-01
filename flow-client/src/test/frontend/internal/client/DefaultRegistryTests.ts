@@ -38,7 +38,7 @@ describe('DefaultRegistry', () => {
     const registry = makeRegistry();
     expect(() => registry.getApplicationConnection()).to.throw();
 
-    const connection = new ApplicationConnection(registry, { hasWorkQueued: () => false });
+    const connection = new ApplicationConnection(registry);
     registry.setApplicationConnection(connection);
     expect(registry.getApplicationConnection()).to.equal(connection);
   });

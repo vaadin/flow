@@ -3,28 +3,35 @@
 // added to Registry is filled in once rather than in every suite.
 
 import type { UILifecycle } from '../../../../../main/frontend/internal/client/UILifecycle';
-import { type TestRegistry, testRegistry } from '../testRegistry';
+import { type TestRegistry, type TestServices, testRegistry } from '../testRegistry';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 
-/** A registry whose members are all present but inert. */
-export function inertRegistry(): TestRegistry {
-  // One instance each per registry: the binding path reads these through
-  // several calls, so handing out a fresh one per call would hide anything
-  // written through an earlier call.
-  const constantPool = new ConstantPool();
-  const existingElementMap = new ExistingElementMap();
-  // The real ApplicationConfiguration, which is ported and needs nothing else.
-  const applicationConfiguration = new ApplicationConfiguration();
-  return testRegistry({
+// Everything a state tree needs except the server connector, which a recording
+// registry replaces. One instance each per registry: the binding path reads these
+// through several calls, so handing out a fresh one per call would hide anything
+// written through an earlier call. ApplicationConfiguration, ConstantPool and
+// ExistingElementMap are the real classes, which need nothing else.
+function inertServices(): TestServices {
+  return {
     InitialPropertiesHandler: {
       flushPropertyUpdates: () => {},
       nodeRegistered: () => {},
       handlePropertyUpdate: () => false
     },
+    ApplicationConfiguration: new ApplicationConfiguration(),
+    ConstantPool: new ConstantPool(),
+    ExistingElementMap: new ExistingElementMap()
+  };
+}
+
+/** A registry whose members are all present but inert. */
+export function inertRegistry(): TestRegistry {
+  return testRegistry({
+    ...inertServices(),
     ServerConnector: {
       sendEventMessage: () => {},
       sendNodeSyncMessage: () => {},
@@ -32,10 +39,7 @@ export function inertRegistry(): TestRegistry {
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
-    },
-    ApplicationConfiguration: applicationConfiguration,
-    ConstantPool: constantPool,
-    ExistingElementMap: existingElementMap
+    }
   });
 }
 
@@ -52,8 +56,8 @@ export interface RecordedCalls {
 }
 
 /**
- * An inert registry that also records what was sent to the server, for suites
- * that assert on the round trip.
+ * A registry whose members are inert apart from the server connector, which
+ * records what was sent, for suites that assert on the round trip.
  */
 export function recordingRegistry(): { registry: TestRegistry; recorded: RecordedCalls } {
   const recorded: RecordedCalls = {
@@ -62,18 +66,10 @@ export function recordingRegistry(): { registry: TestRegistry; recorded: Recorde
     returnChannelMessages: [],
     events: []
   };
-  // The recording connector replaces the inert one, so the registry is built
-  // here rather than by extending inertRegistry: a service is registered once.
-  const registry = testRegistry({
-    InitialPropertiesHandler: {
-      flushPropertyUpdates: () => {},
-      nodeRegistered: () => {},
-      handlePropertyUpdate: () => false
-    },
-    ApplicationConfiguration: new ApplicationConfiguration(),
-    ConstantPool: new ConstantPool(),
-    ExistingElementMap: new ExistingElementMap()
-  });
+  // The recording connector replaces the inert one, so the registry is built from
+  // the shared services rather than from inertRegistry: a service is registered
+  // once.
+  const registry = testRegistry(inertServices());
   registry.register('ServerConnector', {
     sendTemplateEventMessage: () => {},
     sendExistingElementWithIdAttachToServer: () => {},

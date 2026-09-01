@@ -28,8 +28,6 @@ const POLL_INTERVAL_KEY = 'pollInterval';
 // The poller is named by the method it is driven through rather than as a whole
 // Poller, so a suite can observe the configured interval directly; the type is
 // still derived from the ported class, so it cannot drift from it.
-type ConfigurablePoller = Pick<Poller, 'setInterval'>;
-
 /**
  * Observes the poll configuration stored in the given node and configures polling
  * accordingly.
@@ -37,7 +35,7 @@ type ConfigurablePoller = Pick<Poller, 'setInterval'>;
  * @param node - the node containing the poll configuration
  * @param poller - the poller to configure
  */
-export function observe(node: StateNode, poller: ConfigurablePoller): void {
+export function observe(node: StateNode, poller: Poller): void {
   const pollIntervalProperty = node.getMap(NodeFeatures.POLL_CONFIGURATION).getProperty(POLL_INTERVAL_KEY);
   pollIntervalProperty.addChangeListener((event) => {
     poller.setInterval(Math.trunc(Number(event.getNewValue())));

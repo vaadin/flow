@@ -46,7 +46,7 @@ import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
 import type { ApplicationConnection as PublishedClient } from './clientApi';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
-import { getScheduler, type TrackingScheduler } from './TrackingScheduler';
+import { getScheduler } from './TrackingScheduler';
 import type { Registry } from './Registry';
 import type { ValueMap } from './ValueMap';
 
@@ -71,6 +71,24 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
 }
 
 /**
+ * Checks if deferred commands are (potentially) still being executed as a result
+ * of an update from the server. Returns true if a deferred command might still be
+ * executing, false otherwise. This will not work correctly if a deferred command
+ * is added in another deferred command.
+ *
+ * Used by the native "client.isActive" function.
+ *
+ * Java asks Scheduler.get() and checks whether it is a TrackingScheduler; the
+ * port has only that scheduler, so it reads the shared instance directly.
+ *
+ * @returns true if deferred commands are (potentially) being executed, false
+ *          otherwise
+ */
+function isExecutingDeferredCommands(): boolean {
+  return getScheduler().hasWorkQueued();
+}
+
+/**
  * Main class for an application / UI.
  *
  * Initializes the registry and starts the application.
@@ -78,11 +96,8 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
 export class ApplicationConnection implements PublishedClient {
   readonly #registry: Registry;
 
-  readonly #scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>;
-
-  constructor(registry: Registry, scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>) {
+  constructor(registry: Registry) {
     this.#registry = registry;
-    this.#scheduler = scheduler;
   }
 
   /**
@@ -92,14 +107,10 @@ export class ApplicationConnection implements PublishedClient {
    * ApplicationConnection.java constructor.
    *
    * @param applicationConfiguration - the configuration object for the application
-   * @param rootElement - the element to bind the root state node to; a port
-   *          addition, since Java reads the body directly
    * @returns the connection, already published
    */
-  static create(
-    applicationConfiguration: ApplicationConfiguration,
-    rootElement: Element = document.body
-  ): ApplicationConnection {
+  static create(applicationConfiguration: ApplicationConfiguration): ApplicationConnection {
+    const rootElement = document.body;
     const registry = new DefaultRegistry(applicationConfiguration);
 
     // Route uncaught errors to the system error handler (GWT's uncaught handler).
@@ -116,7 +127,7 @@ export class ApplicationConnection implements PublishedClient {
     rootNode.setDomNode(rootElement);
     bind(rootNode, rootElement);
 
-    const connection = new ApplicationConnection(registry, getScheduler());
+    const connection = new ApplicationConnection(registry);
     registry.setApplicationConnection(connection);
     publishClient(connection, applicationConfiguration);
     return connection;
@@ -149,17 +160,13 @@ export class ApplicationConnection implements PublishedClient {
   /**
    * Checks if there is some work to be done on the client side.
    *
-   * Java also asks the scheduler whether deferred commands are still running,
-   * through a private isExecutingDeferredCommands; the port reads the injected
-   * scheduler directly.
-   *
    * @returns true if the client has some work to be done, false otherwise
    */
   isActive(): boolean {
     return (
       !this.#registry.getMessageHandler().isInitialUidlHandled() ||
       this.#registry.getRequestResponseTracker().hasActiveRequest() ||
-      this.#scheduler.hasWorkQueued()
+      isExecutingDeferredCommands()
     );
   }
 
@@ -185,10 +192,10 @@ export class ApplicationConnection implements PublishedClient {
 
   /** Runs the callback once the DOM node for the given state node id is set. */
   addDomSetListener(nodeId: number, callback: () => void): void {
-    const node = this.#registry.getStateTree().getNode(nodeId);
-    if (node === null) {
-      return;
-    }
+    // Mirror Java's non-null deref: getNode(nodeId).addDomNodeSetListener throws
+    // if the node is unknown, so use `!` (a TypeError on null) rather than `?.`
+    // (which would silently do nothing).
+    const node = this.#registry.getStateTree().getNode(nodeId)!;
     node.addDomNodeSetListener((boundNode) => {
       if (boundNode.getId() === nodeId) {
         callback();

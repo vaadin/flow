@@ -96,7 +96,8 @@ export function getConfigInteger(config: ConfigObject, name: string): number | n
   if (value === null || value === undefined) {
     return null;
   }
-  return Number(value);
+  // Java hands the value to Integer.valueOf(int), which truncates it.
+  return Math.trunc(Number(value));
 }
 
 /**
