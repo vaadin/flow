@@ -55,6 +55,12 @@ import { assert } from '../assert';
 /** A token identifying a registered service (its class/constructor, a symbol, or a name). */
 export type ServiceKey = unknown;
 
+// What Java's assert messages interpolate with Class.getName(): a token is
+// either the name itself or the constructor standing in for the class.
+function typeName(type: ServiceKey): string {
+  return typeof type === 'function' ? (type as { name: string }).name : String(type);
+}
+
 /**
  * The service lookup tokens, one per registered singleton. Java keys the lookup
  * table by `Class<?>`; a TypeScript service can be a function rather than a
@@ -90,6 +96,10 @@ export const TOKEN = {
 /**
  * A registry of singleton instances, such as {@link ServerRpcQueue}, which can be
  * looked up based on their class.
+ *
+ * A new registry is empty; {@link DefaultRegistry} populates one by calling
+ * {@link Registry.set} for each service, as Java's constructor documentation
+ * describes.
  */
 export class Registry {
   readonly #lookupTable = new Map<ServiceKey, unknown>();
@@ -104,7 +114,7 @@ export class Registry {
    * @typeParam T - the type
    */
   protected set<T>(type: ServiceKey, instance: T): void {
-    assert(!this.#lookupTable.has(type), 'Registry already has a class of this type registered');
+    assert(!this.#lookupTable.has(type), () => `Registry already has a class of type ${typeName(type)} registered`);
     this.#lookupTable.set(type, instance);
   }
 
@@ -123,7 +133,10 @@ export class Registry {
    * registered. Mirrors Registry.get(Class).
    */
   protected get<T>(type: ServiceKey): T {
-    assert(this.#lookupTable.has(type), 'Tried to look up a type but no instance has been registered');
+    assert(
+      this.#lookupTable.has(type),
+      () => `Tried to lookup type ${typeName(type)} but no instance has been registered`
+    );
     return this.#lookupTable.get(type) as T;
   }
 

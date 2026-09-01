@@ -46,13 +46,16 @@ describe('Registry', () => {
     // Beyond the Java suite.
     const registry = new TokenRegistry();
     registry.registerToken('X', {});
-    expect(() => registry.registerToken('X', {})).to.throw('already has');
+    // Java interpolates the class name into the message; the token carries it.
+    expect(() => registry.registerToken('X', {})).to.throw('already has a class of type X');
   });
 
   it('throws when looking up an unregistered type', () => {
     // Ported from getUndefined.
     const registry = new TokenRegistry();
-    expect(() => registry.lookup('missing')).to.throw('no instance has been registered');
+    expect(() => registry.lookup('missing')).to.throw(
+      'Tried to lookup type missing but no instance has been registered'
+    );
   });
 
   it('recreates resettable instances on reset, leaving final ones untouched', () => {

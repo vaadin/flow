@@ -20,9 +20,14 @@
 // production behaviour: invariant violations surface immediately rather than
 // corrupting state or emitting malformed output silently.
 
-/** Throws an Error with the given message when the condition is falsy. */
-export function assert(condition: unknown, message: string): asserts condition {
+/**
+ * Throws an Error with the given message when the condition is falsy.
+ *
+ * Java evaluates the message expression only when the assertion fails, so a
+ * caller on a hot path passes a function and pays for the message only then.
+ */
+export function assert(condition: unknown, message: string | (() => string)): asserts condition {
   if (!condition) {
-    throw new Error(message);
+    throw new Error(typeof message === 'function' ? message() : message);
   }
 }

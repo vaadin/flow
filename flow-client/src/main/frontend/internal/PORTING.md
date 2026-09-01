@@ -270,9 +270,11 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
       `sendExistingElementWithIdAttachToServer` declaring a non-null `id` the
       binding layer already calls it with as null) plus one member,
       `handlePropertyUpdate`, that `StateTree`'s slice omitted although the tree
-      calls it. #24952 then ported `DefaultRegistry` and dropped all 23 local
-      contracts for the real class, which also removed the last four `as never`
-      casts the loose slices had needed._
+      calls it. #24952 then ported `DefaultRegistry` and dropped the 23 local
+      registry contracts for the real class, then the two remaining slices of a
+      ported class - `AtmospherePushConnection`'s copy of
+      `ConnectionStateHandler` and `PollConfigurator`'s `Pick` of `Poller` -
+      along with every `as never` cast the loose slices had needed._
     - **A suite builds a real registry.** Because `Registry.set` is protected, as
       in Java, a suite registers its services through the `TestRegistry` subclass
       in `src/test/frontend/internal/client/testRegistry.ts` — `testRegistry({ StateTree: tree })`

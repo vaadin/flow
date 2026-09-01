@@ -144,6 +144,8 @@ export class ApplicationConnection implements PublishedClient {
       // Initial UIDL not in the DOM; request it from the server.
       this.#registry.getMessageSender().resynchronize();
     } else {
+      // Initial UIDL provided in the DOM, continue as if returned by request.
+      //
       // Hack to avoid logging an error in endRequest().
       this.#registry.getRequestResponseTracker().startRequest();
       this.#registry.getMessageHandler().handleMessage(initialUidl);
@@ -151,8 +153,11 @@ export class ApplicationConnection implements PublishedClient {
 
     window.addEventListener('pagehide', () => this.#registry.getMessageSender().sendUnloadBeacon());
     window.addEventListener('pageshow', () => {
-      // Mainly Safari back/forward: state is likely cleared server-side, so
-      // resynchronize by reloading.
+      // Currently only Safari gets here, sometimes when going back/forward with
+      // browser buttons. Chrome discards our state as beforeunload is used. As
+      // state is most likely cleared on the server already (especially now with
+      // the Beacon API request), it is probably better to resynchronize the
+      // state (which would happen on the first server visit).
       window.location.reload();
     });
   }
