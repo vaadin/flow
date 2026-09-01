@@ -289,16 +289,23 @@ final class Jvm {
     /**
      * What a JDK home is, read from its {@code release} file and falling back
      * to its directory name.
+     * <p>
+     * The path given may be the root of a macOS bundle rather than the home
+     * itself; the {@code Jdk} always names the home, which is what a launch
+     * needs. The version fallback still comes from the name the caller used,
+     * because that is the one carrying a version - a bundle's home is called
+     * {@code Home}.
      */
     static Jdk describe(Path home) {
-        Path binary = javaIn(home);
-        Map<String, String> release = release(home);
+        Path real = bundleHome(home);
+        Path binary = javaIn(real);
+        Map<String, String> release = release(real);
         String version = release.get("JAVA_VERSION");
         Path name = home.getFileName();
         int feature = featureOf(
                 version != null ? version : name == null ? "" : name.toString())
                 .orElse(0);
-        return new Jdk(home, binary, feature,
+        return new Jdk(real, binary, feature,
                 version != null ? version : "unknown version",
                 isJetBrains(release.get("IMPLEMENTOR"), binary));
     }
@@ -308,6 +315,27 @@ final class Jvm {
         Path win = home.resolve("bin").resolve("java.exe");
         return Files.isRegularFile(win) ? win
                 : home.resolve("bin").resolve("java");
+    }
+
+    /**
+     * The home inside a macOS bundle, or the path itself when it is already a
+     * home.
+     * <p>
+     * A JDK installed on macOS is a bundle whose home is
+     * {@code <root>/Contents/Home}, and that is the layout a JetBrains IDE
+     * leaves in {@code ~/.jdks} - so without this, the runtime a developer
+     * already has is the one never found: the bundle root carries neither the
+     * launcher nor the {@code release} file, and a candidate with no launcher
+     * is dropped without a word. Resolved for anything named as a home,
+     * {@code vaadin.dev.javaHome} included, since a bundle root is what a
+     * Finder window offers.
+     */
+    private static Path bundleHome(Path home) {
+        if (Files.isRegularFile(javaIn(home))) {
+            return home;
+        }
+        Path inside = home.resolve("Contents").resolve("Home");
+        return Files.isRegularFile(javaIn(inside)) ? inside : home;
     }
 
     /**
