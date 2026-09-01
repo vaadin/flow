@@ -138,6 +138,23 @@ class TableRowTest extends ComponentTest {
     }
 
     @Test
+    void addColumnHeaderCells_appendOneScopedCellPerText() {
+        TableRow row = new TableRow();
+
+        TableRow returned = row.addColumnHeaderCells(List.of("Mon", "Tue"))
+                .addColumnHeaderCells("Wed");
+
+        assertEquals(row, returned);
+        assertEquals(List.of("Mon", "Tue", "Wed"), row.getHeaderCells().stream()
+                .map(TableHeaderCell::getText).toList());
+        // Unlike addHeaderCells, each cell labels the column it sits in
+        row.getHeaderCells()
+                .forEach(cell -> assertEquals(
+                        java.util.Optional.of(TableHeaderCell.Scope.COL),
+                        cell.getScope()));
+    }
+
+    @Test
     void addColumnHeaderCell_setsColScope() {
         TableRow row = new TableRow();
 

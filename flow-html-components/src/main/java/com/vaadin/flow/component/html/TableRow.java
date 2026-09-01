@@ -162,6 +162,32 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell for each of the given texts, each labelling the
+     * column it sits in with {@code scope="col"}. This is the bulk form of
+     * {@link #addColumnHeaderCell(String)} and the usual way to fill a row in a
+     * {@link TableHead}.
+     *
+     * @param cellTexts
+     *            the text content of the cells, one cell per entry.
+     * @return this row, for chaining.
+     */
+    public TableRow addColumnHeaderCells(String... cellTexts) {
+        return addColumnHeaderCells(Arrays.asList(cellTexts));
+    }
+
+    /**
+     * List equivalent of {@link #addColumnHeaderCells(String...)}.
+     *
+     * @param cellTexts
+     *            the text content of the cells, one cell per entry.
+     * @return this row, for chaining.
+     */
+    public TableRow addColumnHeaderCells(List<String> cellTexts) {
+        cellTexts.forEach(this::addColumnHeaderCell);
+        return this;
+    }
+
+    /**
      * Appends a new empty header cell to this row.
      *
      * @return the new {@code <th>}.

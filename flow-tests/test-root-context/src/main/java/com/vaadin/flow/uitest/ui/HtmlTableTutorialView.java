@@ -83,11 +83,9 @@ public class HtmlTableTutorialView extends Div {
     static class DogsTable extends Table {
         {
             TableRow headerRow = addRow();
+            // The corner cell above the row headers is empty
             headerRow.addDataCell();
-            for (String name : new String[] { "Knocky", "Flor", "Ella",
-                    "Juan" }) {
-                headerRow.addColumnHeaderCell(name);
-            }
+            headerRow.addColumnHeaderCells("Knocky", "Flor", "Ella", "Juan");
             addRowWithHeader("Breed", "Jack Russell", "Poodle", "Streetdog",
                     "Cocker Spaniel");
             addRowWithHeader("Age", "16", "9", "10", "5");
@@ -160,19 +158,13 @@ public class HtmlTableTutorialView extends Div {
             mercury.addDataCells("0.330", "4,879", "5427", "3.7", "4222.6",
                     "57.9", "167", "0", "Closest to the Sun");
 
-            TableRow venus = addRow();
-            venus.addRowHeaderCell("Venus");
-            venus.addDataCells("4.87", "12,104", "5243", "8.9", "2802.0",
+            addRowWithHeader("Venus", "4.87", "12,104", "5243", "8.9", "2802.0",
                     "108.2", "464", "0", "");
 
-            TableRow earth = addRow();
-            earth.addRowHeaderCell("Earth");
-            earth.addDataCells("5.97", "12,756", "5514", "9.8", "24.0",
+            addRowWithHeader("Earth", "5.97", "12,756", "5514", "9.8", "24.0",
                     "149.6", "15", "1", "Our world");
 
-            TableRow mars = addRow();
-            mars.addRowHeaderCell("Mars");
-            mars.addDataCells("0.642", "6,792", "3933", "3.7", "24.7", "227.9",
+            addRowWithHeader("Mars", "0.642", "6,792", "3933", "3.7", "24.7", "227.9",
                     "-65", "2", "The red planet");
 
             TableRow jupiter = addRow();
@@ -182,9 +174,7 @@ public class HtmlTableTutorialView extends Div {
             jupiter.addDataCells("1898", "142,984", "1326", "23.1", "9.9",
                     "778.6", "-110", "67", "The largest planet");
 
-            TableRow saturn = addRow();
-            saturn.addRowHeaderCell("Saturn");
-            saturn.addDataCells("568", "120,536", "687", "9.0", "10.7",
+            addRowWithHeader("Saturn", "568", "120,536", "687", "9.0", "10.7",
                     "1433.5", "-140", "62", "");
 
             TableRow uranus = addRow();
@@ -193,9 +183,7 @@ public class HtmlTableTutorialView extends Div {
             uranus.addDataCells("86.8", "51,118", "1271", "8.7", "17.2",
                     "2872.5", "-195", "27", "");
 
-            TableRow neptune = addRow();
-            neptune.addRowHeaderCell("Neptune");
-            neptune.addDataCells("102", "49,528", "1638", "11.0", "16.1",
+            addRowWithHeader("Neptune", "102", "49,528", "1638", "11.0", "16.1",
                     "4495.1", "-200", "14", "");
 
             TableRow pluto = addRow();
