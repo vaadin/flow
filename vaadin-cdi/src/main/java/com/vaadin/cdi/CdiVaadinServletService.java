@@ -53,6 +53,8 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SystemMessagesProvider;
+import com.vaadin.flow.server.UIInitEvent;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -91,12 +93,6 @@ public class CdiVaadinServletService extends VaadinServletService {
     public void init() throws ServiceException {
         delegate.init(this);
         super.init();
-    }
-
-    @Override
-    public void fireUIInitListeners(UI ui) {
-        delegate.addUIListeners(ui);
-        super.fireUIInitListeners(ui);
     }
 
     @Override
@@ -186,8 +182,7 @@ public class CdiVaadinServletService extends VaadinServletService {
         public void init(VaadinService vaadinService) throws ServiceException {
             lookup(SystemMessagesProvider.class)
                     .ifPresent(vaadinService::setSystemMessagesProvider);
-            vaadinService.addUIInitListener(
-                    e -> getBeanManager().getEvent().fire(e));
+            vaadinService.addUIInitListener(uiEventListener);
             vaadinService.addSessionInitListener(this::sessionInit);
             vaadinService.addSessionDestroyListener(this::sessionDestroy);
             vaadinService.addServiceDestroyListener(this::fireCdiDestroyEvent);
@@ -267,14 +262,22 @@ public class CdiVaadinServletService extends VaadinServletService {
      * Static listener class, to avoid registering the whole service instance.
      */
     @ListenerPriority(-100) // navigation event listeners are last by default
-    private static class UIEventListener
-            implements AfterNavigationListener, BeforeEnterListener,
-            BeforeLeaveListener, ComponentEventListener<PollEvent> {
+    private static class UIEventListener implements UIInitListener,
+            AfterNavigationListener, BeforeEnterListener, BeforeLeaveListener,
+            ComponentEventListener<PollEvent> {
 
         private final CdiVaadinServiceDelegate delegate;
 
         private UIEventListener(CdiVaadinServiceDelegate delegate) {
             this.delegate = delegate;
+        }
+
+        @Override
+        public void uiInit(UIInitEvent event) {
+            // UI listeners must be attached before observers are notified of
+            // the UI initialization
+            delegate.addUIListeners(event.getUI());
+            delegate.getBeanManager().getEvent().fire(event);
         }
 
         @Override

@@ -26,7 +26,9 @@ import jakarta.inject.Singleton;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -44,6 +46,9 @@ import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
+import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultSystemMessagesProvider;
 import com.vaadin.flow.server.ServiceException;
@@ -105,8 +110,12 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
 
         private UI initEventUI;
 
+        private int navigationListenersOnInit;
+
         void onUIInit(@Observes UIInitEvent uiInitEvent) {
             initEventUI = (UI) uiInitEvent.getUI();
+            navigationListenersOnInit = initEventUI.getInternals()
+                    .getListeners(BeforeEnterHandler.class).size();
         }
     }
 
@@ -230,7 +239,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
     }
 
     @Test
-    void fireUIInitListeners_serialization_UIserializableAndListenersWork()
+    void uiInit_serialization_UIserializableAndListenersWork()
             throws Exception {
         initService(beanManager);
 
@@ -238,13 +247,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
                 .getInstantiator().getOrCreate(UIListenerEventReceiver.class);
         UI ui = new UI();
         VaadinSession session = new MockVaadinSession(service);
-        session.getLockInstance().lock();
-        try {
-            ui.getInternals().setSession(session);
-            service.fireUIInitListeners(ui);
-        } finally {
-            session.getLockInstance().unlock();
-        }
+        initUI(ui, session);
 
         ComponentUtil.fireEvent(ui, new PollEvent(ui, false));
         Assertions.assertEquals(ui, uiListenerEventReceiver.pollEventUI);
@@ -257,7 +260,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
     }
 
     @Test
-    void fireUIInitListeners_uiAttachedAndDetached_UIeventsCanBeObserved()
+    void uiInit_uiAttachedAndDetached_UIeventsCanBeObserved()
             throws Exception {
         initService(beanManager);
 
@@ -267,13 +270,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
                 .getOrCreate(UIInitEventReceiver.class);
         UI ui = new UI();
         VaadinSession session = new MockVaadinSession(service);
-        session.getLockInstance().lock();
-        try {
-            ui.getInternals().setSession(session);
-            service.fireUIInitListeners(ui);
-        } finally {
-            session.getLockInstance().unlock();
-        }
+        initUI(ui, session);
 
         Assertions.assertEquals(ui, uiInitEventReceiver.initEventUI);
 
@@ -285,6 +282,70 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         }
 
         Assertions.assertEquals(ui, uiDetachEventReceiver.detachEventUI);
+    }
+
+    @Test
+    void uiInit_uiEventListenersAttachedBeforeCdiEventIsFired()
+            throws Exception {
+        initService(beanManager);
+
+        UIInitEventReceiver uiInitEventReceiver = service.getInstantiator()
+                .getOrCreate(UIInitEventReceiver.class);
+        UI ui = new UI();
+        initUI(ui, new MockVaadinSession(service));
+
+        Object listener = getSingleListener(ui, AfterNavigationHandler.class);
+        Assertions.assertSame(listener,
+                getSingleListener(ui, BeforeEnterHandler.class),
+                "The same listener should observe all navigation events");
+        Assertions.assertSame(listener,
+                getSingleListener(ui, BeforeLeaveHandler.class),
+                "The same listener should observe all navigation events");
+
+        Assertions.assertEquals(1,
+                uiInitEventReceiver.navigationListenersOnInit,
+                "UI listeners should be attached before the CDI event");
+    }
+
+    private Object getSingleListener(UI ui, Class<?> handlerType) {
+        List<?> listeners = ui.getInternals().getListeners(handlerType);
+        Assertions.assertEquals(1, listeners.size(), "Expecting a single "
+                + handlerType.getSimpleName() + " registered on the UI");
+        return listeners.get(0);
+    }
+
+    private void initUI(UI ui, VaadinSession session) {
+        session.getLockInstance().lock();
+        try {
+            ui.getInternals().setSession(session);
+            fireUIInitEvent(ui);
+        } finally {
+            session.getLockInstance().unlock();
+        }
+    }
+
+    /**
+     * Mimics what Flow does once the UI has been created.
+     * <p>
+     * Since Flow 25.3 the event is fired through the service event bus and
+     * {@link VaadinService#fireUIInitListeners(UI)} is deprecated for removal
+     * and no longer called by Flow. The event bus is used reflectively so that
+     * the test exercises the real code path also when compiled against Flow
+     * 25.2, where the event bus does not exist yet.
+     */
+    @SuppressWarnings({ "deprecation", "removal" })
+    private void fireUIInitEvent(UI ui) {
+        try {
+            Object eventBus = VaadinService.class.getMethod("getEventBus")
+                    .invoke(service);
+            eventBus.getClass().getMethod("fireEvent", EventObject.class)
+                    .invoke(eventBus, new UIInitEvent(ui, service));
+        } catch (NoSuchMethodException e) {
+            // Flow 25.2 and older
+            service.fireUIInitListeners(ui);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Cannot fire the UI init event", e);
+        }
     }
 
     private void initService(BeanManager beanManager) throws ServiceException {
