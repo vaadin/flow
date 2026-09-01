@@ -299,6 +299,21 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void addRow_withSeveralBodies_appendsToTheFirst() {
+        Table table = table();
+        TableBody first = table.addBody();
+        TableBody second = table.addBody();
+
+        TableRow row = table.addRow("a");
+        TableRow withHeader = table.addRowWithHeader("h", "b");
+        TableRow prebuilt = new TableRow();
+        table.addRows(prebuilt);
+
+        assertEquals(List.of(row, withHeader, prebuilt), first.getRows());
+        assertTrue(second.getRows().isEmpty());
+    }
+
+    @Test
     void addRowWithHeader_leadsWithARowScopedHeaderCell() {
         Table table = table();
 

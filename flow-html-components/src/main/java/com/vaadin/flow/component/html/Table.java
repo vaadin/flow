@@ -517,6 +517,11 @@ public class Table extends HtmlComponent
      * <code>&lt;table&gt;</code>. Use {@link #addHeaderRow()} or
      * {@link #addFooterRow()} for the other sections; note that
      * {@link #getAllRows()} spans all three.
+     * <p>
+     * A table may have several {@code <tbody>} elements. This one appends to
+     * the first, the same one {@link #getBody()} returns; to append to another,
+     * call {@link TableBody#addRow()} on the body you mean, which is what
+     * {@link #addBody()} hands back.
      *
      * @return the new row.
      */
@@ -605,7 +610,9 @@ public class Table extends HtmlComponent
     }
 
     /**
-     * Appends the given rows to this table's <code>&lt;tbody&gt;</code>.
+     * Appends the given rows to this table's first <code>&lt;tbody&gt;</code>,
+     * creating the body if the table has none. As with {@link #addRow()}, a
+     * table with several bodies gets the rows in the first of them.
      *
      * @param rows
      *            the rows to add.
