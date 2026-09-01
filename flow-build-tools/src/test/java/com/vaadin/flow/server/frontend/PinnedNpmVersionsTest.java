@@ -368,7 +368,7 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
-    void packageWithoutAVersion_isWarnedAboutOnceForTheFile()
+    void packageWithoutAVersion_isWarnedAboutOnceForTheReader()
             throws IOException {
         String versionsFile = """
                 {
@@ -386,6 +386,9 @@ class PinnedNpmVersionsTest {
             loggerFactory.when(
                     () -> LoggerFactory.getLogger(PinnedNpmVersions.class))
                     .thenReturn(logger);
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(VersionsJsonConverter.class))
+                    .thenReturn(new MockLogger());
 
             File folder = new File(temporaryFolder, "jar" + fileCount++);
             folder.mkdirs();
@@ -398,33 +401,22 @@ class PinnedNpmVersionsTest {
                     finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                     .thenReturn(List.of(folder.toURI().toURL()));
 
-            // The build reads the versions files for one thing after another
-            new PinnedNpmVersions(finder);
-            new PinnedNpmVersions(finder);
-
-            // A file that starts leaving out another package is a new warning
-            Files.writeString(file.toPath(),
-                    versionsFile.replace("\"core\": {", """
-                            "core": {
-                                "button": {
-                                  "npmName": "@vaadin/button"
-                                },"""), StandardCharsets.UTF_8);
-            new PinnedNpmVersions(finder);
+            // The build asks the same versions for one thing after another
+            PinnedNpmVersions pinnedNpmVersions = new PinnedNpmVersions(finder);
+            pinnedNpmVersions.getAllDependencies();
+            pinnedNpmVersions.getExclusions(true, false);
         }
 
         List<String> warnings = logger.getLogs().lines()
                 .filter(line -> line.startsWith(MockLogger.WARN)).toList();
-        assertEquals(2, warnings.size(),
-                "The same warning should be said once, logs were "
+        assertEquals(1, warnings.size(),
+                "The file should be warned about once, logs were "
                         + logger.getLogs());
         assertTrue(warnings.get(0).contains("@vaadin/grid"),
                 "The warning should name the package without a version, was "
                         + warnings.get(0));
         assertTrue(warnings.get(0).contains(origin),
                 "The warning should name the file, was " + warnings.get(0));
-        assertTrue(warnings.get(1).contains("@vaadin/button"),
-                "The warning should name the package that has since lost its version, was "
-                        + warnings.get(1));
     }
 
     @Test

@@ -93,8 +93,6 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     final ClassFinder finder;
 
-    private transient PinnedNpmVersions pinnedNpmVersions;
-
     boolean modified;
 
     ObjectNode versionsJson;
@@ -148,18 +146,15 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Gets the npm packages whose versions are pinned, reading the versions
-     * files the first time they are asked for.
+     * Gets the npm packages whose versions are pinned, as read once for the
+     * whole build.
      *
      * @return the pinned npm versions of the classpath
      * @throws IOException
      *             if the versions folders cannot be looked up
      */
     PinnedNpmVersions getPinnedNpmVersions() throws IOException {
-        if (pinnedNpmVersions == null) {
-            pinnedNpmVersions = new PinnedNpmVersions(finder);
-        }
-        return pinnedNpmVersions;
+        return options.getPinnedNpmVersions();
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {

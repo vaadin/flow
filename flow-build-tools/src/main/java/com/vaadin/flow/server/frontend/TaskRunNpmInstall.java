@@ -194,7 +194,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
-            FrontendBuildUtils.getVaadinVersion(packageUpdater.finder)
+            FrontendBuildUtils.getVaadinVersion(packageUpdater.options)
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
             updates.put(PROJECT_FOLDER,
                     options.getNpmFolder().getAbsolutePath());

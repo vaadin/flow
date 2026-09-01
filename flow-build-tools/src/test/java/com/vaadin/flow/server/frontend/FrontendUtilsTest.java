@@ -698,7 +698,7 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(finder);
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertTrue(vaadinVersion.isPresent(),
                 "versions.json should have had the platform field");
@@ -710,7 +710,8 @@ class FrontendUtilsTest {
         //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
-        vaadinVersion = FrontendBuildUtils.getVaadinVersion(finder);
+        vaadinVersion = FrontendBuildUtils
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertFalse(vaadinVersion.isPresent(),
                 "versions.json should not contain platform version");
@@ -725,7 +726,7 @@ class FrontendUtilsTest {
                 .thenReturn(List.of());
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(finder);
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertFalse(vaadinVersion.isPresent(),
                 "versions.json should not contain platform version");
@@ -765,8 +766,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, npmFolder),
                 "Change in minor version should return false");
 
         //@formatter:off
@@ -779,8 +781,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, npmFolder),
                 "Change in major version should return true");
     }
 
@@ -820,8 +823,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in minor version should return false");
 
         //@formatter:off
@@ -834,8 +838,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in major version should return true");
     }
 
@@ -886,8 +891,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in minor version should return false");
     }
 

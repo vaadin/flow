@@ -101,12 +101,12 @@ public class FrontendBuildUtils {
      * @throws IOException
      *             when file reading fails
      */
-    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
+    protected static boolean isPlatformMajorVersionUpdated(Options options,
             File npmFolder, File nodeModules, File buildDirectory)
             throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
+        Optional<String> platformVersion = getVaadinVersion(options);
         if (platformVersion.isPresent()) {
             JsonNode vaadinJsonContents = getBundleVaadinContent(
                     buildDirectory);
@@ -160,11 +160,11 @@ public class FrontendBuildUtils {
      * @throws IOException
      *             when file reading fails
      */
-    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
+    protected static boolean isPlatformVersionUpdated(Options options,
             File npmFolder, File nodeModules) throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
+        Optional<String> platformVersion = getVaadinVersion(options);
         if (platformVersion.isPresent() && nodeModules.exists()) {
             JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
             // If no record of previous version, version is considered updated
@@ -191,9 +191,9 @@ public class FrontendBuildUtils {
      * @return the Vaadin version as a string, or empty if neither a versions
      *         file of the platform nor the classpath tells it
      */
-    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
+    protected static Optional<String> getVaadinVersion(Options options) {
         try {
-            return new PinnedNpmVersions(finder).getVaadinVersion();
+            return options.getPinnedNpmVersions().getVaadinVersion();
         } catch (Exception e) {
             LoggerFactory.getLogger(Platform.class)
                     .error("Unable to determine version information", e);

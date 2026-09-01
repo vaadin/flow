@@ -620,7 +620,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         int added = 0;
 
         Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                finder,
+                options,
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
@@ -682,7 +682,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
         doCleanUp = doCleanUp || (!enablePnpm && FrontendBuildUtils
-                .isPlatformVersionUpdated(finder, options.getNpmFolder(),
+                .isPlatformVersionUpdated(options, options.getNpmFolder(),
                         options.getNodeModulesFolder()));
 
         // Remove obsolete devDependencies

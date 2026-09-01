@@ -426,14 +426,14 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheUpdater()
+    void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheBuild()
             throws IOException {
         Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
-        assertSame(nodeUpdater.getPinnedNpmVersions(),
+        assertSame(options.getPinnedNpmVersions(),
                 nodeUpdater.getPinnedNpmVersions(),
-                "The versions files should be read once for the updater");
+                "The updater should take the versions the build has read");
         Mockito.verify(finder, Mockito.times(1))
                 .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
     }
