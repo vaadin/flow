@@ -4,6 +4,12 @@ import { ApplicationConfiguration } from '../../../../main/frontend/internal/cli
 // Beyond the Java suite: com.vaadin.client.ApplicationConfiguration has no test
 // class of its own.
 describe('ApplicationConfiguration', () => {
+  // setProductionMode fans out to the module-level state the engine logging
+  // shares, so put the development-mode default back after each case.
+  afterEach(() => {
+    new ApplicationConfiguration().setProductionMode(false);
+  });
+
   it('round-trips the URL / id / timeout configuration', () => {
     const config = new ApplicationConfiguration();
     config.setServiceUrl('/app?v-r=uidl');

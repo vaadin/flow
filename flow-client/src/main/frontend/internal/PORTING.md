@@ -434,6 +434,23 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
        `eslint-config-vaadin`'s `@typescript-eslint/no-non-null-assertion` fires
        on the `!`, disable it at that line with a note (as rule 8 does for
        `max-params`) rather than reshaping the access into a silent `?.`.
+
+       A property the value's runtime type may not carry at all is a different
+       case from a nullable one, and the `!` says nothing about it: it asserts
+       that the reference is there, not that the property exists on the object at
+       hand. Where the DOM interface a value is cast to is wider than its runtime
+       type, the read yields `undefined` where the Java getter yields `null`, and
+       rule 14.1's strict `!== null` then takes the branch Java skips. Cast to
+       `Partial<...>` so the type shows the property may be absent, and
+       normalise the read with `?? null`. (Regression this prevents:
+       `SimpleElementBindingStrategy.create` read `namespaceURI` off a parent DOM
+       node that is a `ShadowRoot` for the children of a shadow root, and a
+       shadow root has no `namespaceURI`. The `undefined` reached
+       `createElementNS`, which coerces it to the null namespace, so every
+       element the client created directly inside a shadow root stopped being an
+       HTML element: the `<style>` elements the server hands to an embedded web
+       component's shadow root were no longer stylesheets, their CSS rendered as
+       text, and no theme applied.)
     7. **Side effects and identity are part of the port.** Mirror what the Java
        method mutates and what it returns, not just the shape of the result: a
        helper that mutates its argument in place and returns that same instance is

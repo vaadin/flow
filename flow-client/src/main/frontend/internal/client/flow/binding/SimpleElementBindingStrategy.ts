@@ -200,7 +200,14 @@ function create(node: StateNode): Element {
     // Java dereferences the parent's DOM node unconditionally; mirror that with
     // a non-null assertion rather than an optional chain so a missing DOM node
     // fails here instead of silently falling through to a non-namespaced tag.
-    const namespaceURI = (parent.getDomNode()! as Element).namespaceURI;
+    //
+    // The parent DOM node is not always an element: the parent of a shadow
+    // root's children is the shadow root, which has no namespaceURI property at
+    // all. Java reads it through Node.getNamespaceURI(), which is null there,
+    // so normalise undefined to null as well. Passing undefined on to
+    // createElementNS would create the child in the null namespace instead of
+    // the HTML one, leaving it without any HTML element semantics.
+    const namespaceURI = (parent.getDomNode()! as Partial<Element>).namespaceURI ?? null;
     if (namespaceURI !== null) {
       return document.createElementNS(namespaceURI, tag);
     }
