@@ -3,7 +3,7 @@
 // GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents,
 // is ported in ApplicationConnectionTests, next to the class it is written against.
 
-import { expect } from '@open-wc/testing';
+import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import {
   deferStartApplication,
@@ -43,20 +43,68 @@ describe('Bootstrapper', () => {
     }
   });
 
-  it('deferStartApplication waits for WebComponentsReady before starting', () => {
-    // Java defers the start itself rather than taking a callback, so what is
-    // observable here is the listener it registers, not a flag it sets.
-    const registered: string[] = [];
+  it('deferStartApplication starts the application on WebComponentsReady', async () => {
+    // Java defers the start itself rather than taking a callback, so what has to
+    // be observable is the started application, not a flag a callback set. The
+    // configuration carries an initial UIDL, so the started engine handles that
+    // message instead of resynchronizing over XHR, and its heartbeat is off.
+    const saved = win.Vaadin;
+    // The listener is anonymous, so it is captured as it is registered and
+    // removed afterwards: this page outlives the case.
+    let listener: EventListenerOrEventListenerObject | null = null;
     const original = window.addEventListener;
     window.addEventListener = function observed(this: Window, type: string, ...rest: unknown[]) {
-      registered.push(type);
+      if (type === 'WebComponentsReady') {
+        listener = rest[0] as EventListenerOrEventListenerObject;
+      }
       return (original as (...args: unknown[]) => void).call(this, type, ...rest);
     } as typeof window.addEventListener;
     try {
-      deferStartApplication('app-1');
-      expect(registered).to.contain('WebComponentsReady');
+      const lookedUp: string[] = [];
+      const configuration: Record<string, unknown> = {
+        heartbeatInterval: -1,
+        maxMessageSuspendTimeout: 5000,
+        contextRootUrl: '../',
+        debug: true,
+        'v-uiId': 0,
+        serviceUrl: '//localhost:8080/flow/',
+        uidl: { syncId: 0, changes: [] }
+      };
+      const clients: Record<string, unknown> = {};
+      win.Vaadin = {
+        Flow: {
+          clients,
+          getApp: (appId: string) => {
+            lookedUp.push(appId);
+            return { getConfig: (key: string) => configuration[key] };
+          }
+        },
+        connectionState: {
+          state: 'connected',
+          setState(state: string) {
+            this.state = state;
+          },
+          loadingStarted() {},
+          loadingFinished() {},
+          loadingFailed() {}
+        }
+      };
+
+      deferStartApplication('testapp');
+      expect(lookedUp).to.deep.equal([]);
+
+      window.dispatchEvent(new Event('WebComponentsReady'));
+      // The engine module is imported asynchronously; the published client is
+      // the signal that the deferred start ran to completion.
+      await waitUntil(() => clients.testapp !== undefined, 'the deferred application was never started');
+      // Twice: Java also looks the configuration up again for the initial UIDL.
+      expect(lookedUp).to.deep.equal(['testapp', 'testapp']);
     } finally {
       window.addEventListener = original;
+      if (listener !== null) {
+        window.removeEventListener('WebComponentsReady', listener);
+      }
+      win.Vaadin = saved;
     }
   });
 
