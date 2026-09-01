@@ -19,9 +19,9 @@
 // server in the DOM and starts the client engine (ApplicationConnection), and
 // acts as the entry point, which is the GWT module entry point in Java.
 //
-// Java is a class implementing EntryPoint whose members are all static; the port
-// is the module of those members, so onModuleLoad is an exported function rather
-// than an overridden one.
+// Java is a class implementing EntryPoint, whose members are static apart from
+// the onModuleLoad override the interface requires; the port is the module of
+// those members, so onModuleLoad is an exported function.
 
 import { ApplicationConfiguration, type ErrorMessage } from '../ApplicationConfiguration';
 import {
