@@ -79,6 +79,8 @@ class VersionsJsonConverter {
 
     private Set<String> exclusions;
 
+    private Set<String> declaredExclusions;
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
@@ -88,6 +90,7 @@ class VersionsJsonConverter {
         this.reactEnabled = reactEnabled;
         this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
+        declaredExclusions = new HashSet<>();
         convertedObject = JacksonUtils.createObjectNode();
 
         collectDependencies(pinnedNpmVersions);
@@ -106,11 +109,24 @@ class VersionsJsonConverter {
 
     /**
      * Get the exclusions set of npm package names.
+     * <p>
+     * Includes the packages left out because of the mode they apply to, which
+     * are excluded for this versions file rather than by the file saying so.
      *
      * @return the exclusions set
      */
     Set<String> getExclusions() {
         return exclusions;
+    }
+
+    /**
+     * Get the npm package names the versions file itself excludes, in its
+     * {@value #EXCLUSIONS} arrays.
+     *
+     * @return the exclusions the versions file declares
+     */
+    Set<String> getDeclaredExclusions() {
+        return declaredExclusions;
     }
 
     private void collectDependencies(JsonNode obj) {
@@ -192,8 +208,10 @@ class VersionsJsonConverter {
         if (obj.has(EXCLUSIONS)) {
             ArrayNode array = (ArrayNode) obj.get(EXCLUSIONS);
             if (array != null) {
-                IntStream.range(0, array.size())
-                        .forEach(i -> exclusions.add(array.get(i).asString()));
+                IntStream.range(0, array.size()).forEach(i -> {
+                    exclusions.add(array.get(i).asString());
+                    declaredExclusions.add(array.get(i).asString());
+                });
             }
         }
     }

@@ -209,8 +209,10 @@ class PinnedNpmVersions {
                 new VersionsJsonConverter(file.content(), reactEnabled,
                         excludeWebComponents).getConvertedJson(),
                 file.origin()));
-        // A package excluded in one file is excluded from all of them
-        getExclusions(reactEnabled, excludeWebComponents)
+        // A package a file excludes is excluded from all of them, unlike a
+        // package that is only left out of that file because of the mode it
+        // applies to, which says nothing about the other files
+        getDeclaredExclusions(reactEnabled, excludeWebComponents)
                 .forEach(dependencies::remove);
         return dependencies;
     }
@@ -230,6 +232,25 @@ class PinnedNpmVersions {
         files.forEach(file -> exclusions
                 .addAll(new VersionsJsonConverter(file.content(), reactEnabled,
                         excludeWebComponents).getExclusions()));
+        return exclusions;
+    }
+
+    /**
+     * Gets the npm packages the versions files themselves exclude, leaving out
+     * the ones a file only leaves out because of the mode they apply to.
+     *
+     * @param reactEnabled
+     *            whether React is enabled
+     * @param excludeWebComponents
+     *            whether to exclude web component npm packages
+     * @return the excluded npm package names
+     */
+    private Set<String> getDeclaredExclusions(boolean reactEnabled,
+            boolean excludeWebComponents) {
+        Set<String> exclusions = new TreeSet<>();
+        files.forEach(file -> exclusions
+                .addAll(new VersionsJsonConverter(file.content(), reactEnabled,
+                        excludeWebComponents).getDeclaredExclusions()));
         return exclusions;
     }
 

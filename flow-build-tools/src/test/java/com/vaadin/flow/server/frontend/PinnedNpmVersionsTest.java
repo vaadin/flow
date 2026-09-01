@@ -232,6 +232,38 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void packageLeftOutOfOneFileByItsMode_isPinnedByTheFileDeclaringIt()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "components": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        // The first file leaves the package out because web components are
+        // not wanted, which says nothing about the file declaring it for
+        // every mode
+        assertTrue(
+                pinnedNpmVersions.getDependencies(false, true, keepEverything())
+                        .has("@vaadin/grid"));
+    }
+
+    @Test
     void exclusionsOfAllFilesAreCollected() throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
