@@ -1272,18 +1272,35 @@ public class UITest {
                 fixture.ui.getInternals().getModalityComponents(),
                 "VISUAL component should be reported as a component with modality");
         verifyInert(fixture.routingComponent, false);
+
+        // re-applying the same modality should not track the component twice
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported only once");
     }
 
     @Test
-    public void modalityComponents_modalAndVisual_allReported() {
+    public void modalityComponents_modalAndVisual_reportedMostRecentFirst() {
         final TestFixture fixture = new TestFixture();
         Component visualComponent = new AttachableComponent();
         fixture.ui.add(visualComponent);
         fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
 
-        MatcherAssert.assertThat(
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
                 fixture.ui.getInternals().getModalityComponents(),
-                CoreMatchers.hasItems(fixture.modalComponent, visualComponent));
+                "Components with modality should be reported most recently set first");
+
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.STRICT);
+
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Switching from VISUAL to STRICT should not report the component twice");
+        assertEquals(visualComponent,
+                fixture.ui.getInternals().getActiveModalComponent(),
+                "Component should have become the active modal component");
 
         fixture.ui.setChildComponentModal(visualComponent,
                 ModalityMode.MODELESS);

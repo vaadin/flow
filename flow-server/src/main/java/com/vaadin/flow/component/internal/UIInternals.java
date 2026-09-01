@@ -313,7 +313,9 @@ public class UIInternals implements Serializable {
 
     private ArrayDeque<Component> modalComponentStack;
 
-    private ArrayDeque<Component> visuallyModalComponentStack;
+    private ArrayDeque<Component> modalityComponentStack;
+
+    private Map<Component, Registration> modalityRemovalRegistrations;
 
     private Element wrapperElement;
 
@@ -1872,8 +1874,8 @@ public class UIInternals implements Serializable {
      * @since 25.3
      */
     public boolean hasModalityComponent() {
-        return hasModalComponent() || (visuallyModalComponentStack != null
-                && !visuallyModalComponentStack.isEmpty());
+        return modalityComponentStack != null
+                && !modalityComponentStack.isEmpty();
     }
 
     /**
@@ -1888,14 +1890,7 @@ public class UIInternals implements Serializable {
         if (!hasModalityComponent()) {
             return Collections.emptyList();
         }
-        List<Component> components = new ArrayList<>();
-        if (modalComponentStack != null) {
-            components.addAll(modalComponentStack);
-        }
-        if (visuallyModalComponentStack != null) {
-            components.addAll(visuallyModalComponentStack);
-        }
-        return components;
+        return List.copyOf(modalityComponentStack);
     }
 
     /**
@@ -1942,12 +1937,10 @@ public class UIInternals implements Serializable {
                     modalComponentStack.peek().getElement(), false);
         }
 
-        final boolean needsListener = !modalComponentStack.remove(child);
+        modalComponentStack.remove(child);
         modalComponentStack.push(child);
 
-        if (needsListener) {
-            registerModalityRemoval(child);
-        }
+        trackModality(child);
     }
 
     /**
@@ -1966,31 +1959,42 @@ public class UIInternals implements Serializable {
      */
     public void setChildVisuallyModal(Component child) {
         // strict and visual modality are mutually exclusive
-        setChildModeless(child);
-        if (visuallyModalComponentStack == null) {
-            visuallyModalComponentStack = new ArrayDeque<>();
-        }
-        final boolean needsListener = !visuallyModalComponentStack
-                .remove(child);
-        visuallyModalComponentStack.push(child);
+        removeStrictModality(child);
+        trackModality(child);
+    }
 
-        if (needsListener) {
-            registerModalityRemoval(child);
+    private void trackModality(Component child) {
+        if (modalityComponentStack == null) {
+            modalityComponentStack = new ArrayDeque<>();
         }
+        modalityComponentStack.remove(child);
+        modalityComponentStack.push(child);
+        registerModalityRemoval(child);
     }
 
     /*
      * Handle removal automatically on element level always due to possible
-     * component.getElement().removeFromParent() usage.
+     * component.getElement().removeFromParent() usage. Does nothing if the
+     * child is already registered, so that repeatedly changing the modality of
+     * a component does not pile up detach listeners.
      */
     private void registerModalityRemoval(Component child) {
+        if (modalityRemovalRegistrations == null) {
+            modalityRemovalRegistrations = new IdentityHashMap<>();
+        } else if (modalityRemovalRegistrations.containsKey(child)) {
+            return;
+        }
         AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-        final Registration componentRemoval = () -> setChildModeless(child);
+        final Registration componentRemoval = () -> {
+            modalityRemovalRegistrations.remove(child);
+            setChildModeless(child);
+        };
         final Registration listenerRegistration = child.getElement()
                 .addDetachListener(
                         event -> registrationCombination.get().remove());
         registrationCombination.set(
                 Registration.combine(componentRemoval, listenerRegistration));
+        modalityRemovalRegistrations.put(child, registrationCombination.get());
     }
 
     /**
@@ -2003,9 +2007,13 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
-        if (visuallyModalComponentStack != null) {
-            visuallyModalComponentStack.remove(child);
+        if (modalityComponentStack != null) {
+            modalityComponentStack.remove(child);
         }
+        removeStrictModality(child);
+    }
+
+    private void removeStrictModality(Component child) {
         if (modalComponentStack == null) {
             return;
         }

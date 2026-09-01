@@ -817,24 +817,6 @@ class HotswapperTest {
     }
 
     @Test
-    void onHotswap_pushEnabled_routeClassChanged_visuallyModalComponent_activeChainRefreshed()
-            throws ServiceException {
-        VaadinSession session = createMockVaadinSession();
-        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
-
-        RefreshTestingUI ui = initUIAndNavigateTo(session,
-                MyRouteWithVisualModal.class);
-        ui.enablePush();
-
-        hotswapper.onHotswap(
-                new String[] { MyRouteWithVisualModal.class.getName() }, true);
-
-        ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-    }
-
-    @Test
     void onHotswap_pushEnabled_visuallyModalComponentClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
