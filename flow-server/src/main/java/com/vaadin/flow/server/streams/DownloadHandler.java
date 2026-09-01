@@ -89,10 +89,18 @@ import com.vaadin.flow.server.VaadinSession;
  * behavior, so that a download the user has already started is not lost when
  * the view that started it goes away.
  * <p>
- * The exception is a handler with transfer progress listeners: notifying them
- * uses the UI that started the download, so the transfer is interrupted if that
- * UI has been detached from the session by the time the next notification is
- * sent, see {@link TransferProgressListener}.
+ * A UI that is closed while a download for it is ongoing is kept attached to
+ * its session until the download has completed, so that transfer progress
+ * listeners bound to that UI are still notified even though there is no client
+ * left to receive the UI changes, see {@link TransferProgressListener}.
+ * <p>
+ * A download does not, however, outlive its session: if the session is
+ * invalidated, either explicitly or by timing out, an ongoing download is
+ * terminated. The output stream of the download stops accepting bytes and
+ * throws an {@link java.io.IOException} instead, which leaves the response
+ * truncated. An application with long-lived downloads that should survive can
+ * keep the session alive while the download is ongoing, or serve the download
+ * through a servlet of its own that is not tied to a UI and a session.
  *
  * @since 24.8
  */

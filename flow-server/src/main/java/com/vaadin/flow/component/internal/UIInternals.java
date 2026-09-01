@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -313,6 +315,9 @@ public class UIInternals implements Serializable {
     private ArrayDeque<Component> modalComponentStack;
 
     private Element wrapperElement;
+
+    private final Set<ActiveTransfer> activeTransfers = ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Creates a new instance for the given UI.
@@ -2001,11 +2006,51 @@ public class UIInternals implements Serializable {
 
     /**
      * Get outlet element reference wrapper if set.
-     * 
+     *
      * @return wrapperElement if set else {@code null}
      * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;
+    }
+
+    /**
+     * Registers an upload or download request that is currently being served
+     * for this UI.
+     * <p>
+     * A UI that has active transfers is not detached from its session even if
+     * it is closed, so that listeners and callbacks bound to this UI are still
+     * effective while a transfer is ongoing. The returned registration must
+     * therefore be removed when the request has been served, so that a closed
+     * UI is eventually detached.
+     *
+     * @param transfer
+     *            the transfer to register, not {@code null}
+     * @return a registration for removing the transfer
+     */
+    public Registration registerActiveTransfer(ActiveTransfer transfer) {
+        activeTransfers.add(transfer);
+        return () -> activeTransfers.remove(transfer);
+    }
+
+    /**
+     * Checks whether there are upload or download requests currently being
+     * served for this UI.
+     *
+     * @return {@code true} if there is at least one active transfer,
+     *         {@code false} otherwise
+     */
+    public boolean hasActiveTransfers() {
+        return !activeTransfers.isEmpty();
+    }
+
+    /**
+     * Gets the upload and download requests that are currently being served for
+     * this UI.
+     *
+     * @return an unmodifiable collection of the active transfers
+     */
+    public Collection<ActiveTransfer> getActiveTransfers() {
+        return Collections.unmodifiableCollection(activeTransfers);
     }
 }

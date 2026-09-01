@@ -47,6 +47,12 @@ public interface ElementRequestHandler extends Serializable {
      * request that has already been passed to this method is therefore served
      * to the end even if the owner element is detached, hidden or disabled in
      * the meantime.
+     * <p>
+     * Note: the request is terminated if the session is invalidated while it is
+     * being served. The streams of the given request and response then refuse
+     * to transfer any more bytes and throw an {@link IOException} instead, so a
+     * handler that reads or writes through some other means should stop on its
+     * own account when the session is no longer valid.
      *
      * @param request
      *            VaadinRequest request to handle

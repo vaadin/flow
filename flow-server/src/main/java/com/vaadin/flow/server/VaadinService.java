@@ -71,6 +71,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
@@ -999,6 +1000,7 @@ public abstract class VaadinService implements Serializable {
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
                 try {
+                    terminateActiveTransfers(ui);
                     ui.accessSynchronously(() -> {
                         /*
                          * close() called here for consistency so that it is
@@ -1030,6 +1032,27 @@ public abstract class VaadinService implements Serializable {
 
             session.setState(VaadinSessionState.CLOSED);
         });
+    }
+
+    /**
+     * Terminates the upload and download requests that are currently being
+     * served for the given UI, since the session they belong to is no longer
+     * valid.
+     * <p>
+     * The reason for the invalidation is not known here, so a session that has
+     * merely timed out is treated in the same way as one that has been
+     * invalidated for a security critical reason such as a password reset.
+     *
+     * @param ui
+     *            the UI whose transfers to terminate
+     */
+    private void terminateActiveTransfers(UI ui) {
+        for (ActiveTransfer transfer : ui.getInternals().getActiveTransfers()) {
+            transfer.terminate();
+            getLogger().warn(
+                    "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                    ui.getUIId(), transfer.getDescription());
+        }
     }
 
     /**
@@ -1685,6 +1708,19 @@ public abstract class VaadinService implements Serializable {
         List<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
+                if (ui.getInternals().hasActiveTransfers()) {
+                    /*
+                     * Keep the UI attached so that listeners and callbacks
+                     * bound to it are still effective for the ongoing upload or
+                     * download. The request that serves the last transfer
+                     * detaches the UI through its own cleanup.
+                     */
+                    getLogger().debug(
+                            "Not removing closed UI {} since it has {} ongoing transfer(s)",
+                            ui.getUIId(),
+                            ui.getInternals().getActiveTransfers().size());
+                    continue;
+                }
                 ui.accessSynchronously(() -> {
                     getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);

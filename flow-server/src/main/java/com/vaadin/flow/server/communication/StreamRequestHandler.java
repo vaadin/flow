@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -43,6 +44,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.shared.Registration;
 
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
@@ -141,6 +143,9 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
+        ActiveTransfer transfer = new ActiveTransfer(pathInfo, owner);
+        Registration transferRegistration = null;
+
         session.lock();
         try {
             if (blockInert(elementRequest, node)
@@ -190,11 +195,49 @@ public class StreamRequestHandler implements RequestHandler {
                     return;
                 }
             }
+
+            /*
+             * Registered while the session is locked, so that an invalidation
+             * either runs after this and terminates the transfer, or has
+             * already detached the UI, in which case the owner element is no
+             * longer attached and the request has been rejected above.
+             */
+            UI ui = findUI(session, pathInfo);
+            if (ui != null) {
+                transferRegistration = ui.getInternals()
+                        .registerActiveTransfer(transfer);
+            }
         } finally {
             session.unlock();
         }
-        elementRequest.getElementRequestHandler().handleRequest(request,
-                response, session, elementRequest.getOwner());
+        try {
+            elementRequest.getElementRequestHandler().handleRequest(
+                    transfer.wrapRequest(request),
+                    transfer.wrapResponse(response), session,
+                    elementRequest.getOwner());
+        } finally {
+            if (transferRegistration != null) {
+                transferRegistration.remove();
+            }
+        }
+    }
+
+    /**
+     * Finds the UI that the request for the given path was made for, based on
+     * the UI id that is part of the resource path.
+     *
+     * @return the UI, or <code>null</code> if it is not available in the
+     *         session
+     */
+    private UI findUI(VaadinSession session, String pathInfo) {
+        try {
+            return session
+                    .getUIById(Integer.parseInt(parsePath(pathInfo).UIid));
+        } catch (NumberFormatException e) {
+            getLogger().debug("Stream request path '{}' has no valid UI id",
+                    pathInfo, e);
+            return null;
+        }
     }
 
     private static boolean blockDisabled(

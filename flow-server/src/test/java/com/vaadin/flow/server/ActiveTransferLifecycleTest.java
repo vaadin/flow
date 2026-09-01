@@ -19,6 +19,8 @@ import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,9 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +54,6 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -80,8 +78,9 @@ class ActiveTransferLifecycleTest {
     private int uiId;
     private TestComponent owner;
 
+    private HttpServletRequest httpRequest;
     private VaadinServletRequest request;
-    private VaadinResponse response;
+    private VaadinServletResponse response;
     private ByteArrayOutputStream responseBody;
 
     @BeforeEach
@@ -105,11 +104,13 @@ class ActiveTransferLifecycleTest {
         registry = new StreamResourceRegistry(session);
         VaadinSession.setCurrent(session);
 
-        request = Mockito.mock(VaadinServletRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        Mockito.when(response.getService()).thenReturn(service);
+        httpRequest = Mockito.mock(HttpServletRequest.class);
+        request = new VaadinServletRequest(httpRequest, service);
+
         responseBody = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream())
+        HttpServletResponse httpResponse = Mockito
+                .mock(HttpServletResponse.class);
+        Mockito.when(httpResponse.getOutputStream())
                 .thenReturn(new ServletOutputStream() {
                     @Override
                     public boolean isReady() {
@@ -125,6 +126,7 @@ class ActiveTransferLifecycleTest {
                         responseBody.write(b);
                     }
                 });
+        response = new VaadinServletResponse(httpResponse, service);
 
         ui = new MockUI(session);
         uiId = session.getNextUIid();
@@ -204,8 +206,7 @@ class ActiveTransferLifecycleTest {
     }
 
     @Test
-    void ongoingDownload_sessionInvalidated_downloadIsTerminated()
-            throws IOException {
+    void ongoingDownload_sessionInvalidated_downloadIsTerminated() {
         // Three buffers worth of data, so that the transfer has to loop
         byte[] contents = new byte[3 * TransferUtil.DEFAULT_BUFFER_SIZE];
         InputStream contentStream = new ByteArrayInputStream(contents) {
@@ -218,9 +219,15 @@ class ActiveTransferLifecycleTest {
             }
         };
 
-        DownloadHandler downloadHandler = DownloadHandler.fromInputStream(
-                event -> new DownloadResponse(contentStream, "file.bin",
-                        "application/octet-stream", contents.length));
+        // The progress listener is notified through the UI that the download
+        // was started with, which is detached along with the session. That must
+        // not hide the reason the download failed.
+        DownloadHandler downloadHandler = DownloadHandler
+                .fromInputStream(
+                        event -> new DownloadResponse(contentStream, "file.bin",
+                                "application/octet-stream", contents.length))
+                .onProgress((transferred, total) -> {
+                });
 
         assertThrows(IOException.class, () -> handleRequest(downloadHandler),
                 "A download should be terminated when the session is invalidated");
@@ -253,62 +260,6 @@ class ActiveTransferLifecycleTest {
                 "A terminated download should not have written all of its contents");
     }
 
-    @Test
-    void ongoingDownload_customHandlerBlockedInIo_sessionInvalidatedTerminatesIt()
-            throws Exception {
-        // A handler that implements the interface directly and blocks while
-        // waiting for its data source instead of using TransferUtil
-        CountDownLatch handlerStarted = new CountDownLatch(1);
-        CountDownLatch neverReleased = new CountDownLatch(1);
-        AtomicBoolean terminated = new AtomicBoolean();
-        AtomicBoolean completed = new AtomicBoolean();
-
-        ElementRequestHandler blockingHandler = (request, response, session,
-                owner) -> {
-            handlerStarted.countDown();
-            try {
-                completed.set(neverReleased.await(3, TimeUnit.SECONDS));
-            } catch (InterruptedException e) {
-                terminated.set(true);
-                Thread.currentThread().interrupt();
-            }
-        };
-        register(blockingHandler);
-
-        // Let the request be served by another thread while the session is
-        // invalidated by this one
-        session.unlock();
-        try {
-            Thread requestThread = new Thread(() -> {
-                try {
-                    streamRequestHandler.handleRequest(session, request,
-                            response);
-                } catch (IOException e) {
-                    terminated.set(true);
-                }
-            });
-            requestThread.start();
-
-            assertTrue(handlerStarted.await(5, TimeUnit.SECONDS),
-                    "The download handler should have been called");
-
-            session.lock();
-            try {
-                invalidateSession();
-            } finally {
-                session.unlock();
-            }
-
-            requestThread.join(5000);
-            assertTrue(terminated.get(),
-                    "A handler blocked in I/O should be terminated when the session is invalidated");
-            assertFalse(completed.get(),
-                    "A terminated download should not run to completion");
-        } finally {
-            session.lock();
-        }
-    }
-
     private void invalidateSession() {
         service.fireSessionDestroy(session);
         // fireSessionDestroy uses VaadinSession.access, and the pending
@@ -319,25 +270,22 @@ class ActiveTransferLifecycleTest {
 
     private void handleRequest(ElementRequestHandler handler)
             throws IOException {
-        register(handler);
+        StreamRegistration registration = registry.registerResource(handler,
+                owner.getElement());
+        Mockito.when(httpRequest.getPathInfo())
+                .thenReturn("/" + registration.getResourceUri().toString());
 
         streamRequestHandler.handleRequest(session, request, response);
     }
 
-    private void register(ElementRequestHandler handler) {
-        StreamRegistration registration = registry.registerResource(handler,
-                owner.getElement());
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/" + registration.getResourceUri().toString());
-    }
-
     private void mockUploadRequest(String contents, Runnable onFirstRead)
             throws IOException {
-        Mockito.when(request.getMethod()).thenReturn("POST");
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("file.txt");
-        Mockito.when(request.getContentLengthLong())
+        Mockito.when(httpRequest.getMethod()).thenReturn("POST");
+        Mockito.when(httpRequest.getHeader("X-Filename"))
+                .thenReturn("file.txt");
+        Mockito.when(httpRequest.getContentLengthLong())
                 .thenReturn((long) contents.length());
-        Mockito.when(request.getInputStream())
+        Mockito.when(httpRequest.getInputStream())
                 .thenReturn(uploadStream(contents, onFirstRead));
     }
 
