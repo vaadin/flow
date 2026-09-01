@@ -71,7 +71,10 @@ public class Table extends HtmlComponent
     }
 
     /**
-     * Returns this table's caption, creating one if the table has none.
+     * Returns this table's caption, creating one if the table has none. Reading
+     * through this accessor therefore has a side effect; use
+     * {@link #hasCaption()} or {@link #getCaptionText()} to inspect the table
+     * without adding a caption to it.
      *
      * @return the table's {@code <caption>}.
      */
@@ -253,6 +256,9 @@ public class Table extends HtmlComponent
 
     /**
      * Returns this table's {@code <thead>}, creating one if the table has none.
+     * Reading through this accessor therefore has a side effect; use
+     * {@link #hasHead()} or {@link #getHeaderRows()} to inspect the table
+     * without adding a section to it.
      *
      * @return the table's {@code <thead>}.
      */
@@ -303,6 +309,9 @@ public class Table extends HtmlComponent
 
     /**
      * Returns this table's {@code <tfoot>}, creating one if the table has none.
+     * Reading through this accessor therefore has a side effect; use
+     * {@link #hasFoot()} or {@link #getFooterRows()} to inspect the table
+     * without adding a section to it.
      *
      * @return the table's {@code <tfoot>}.
      */
@@ -419,6 +428,40 @@ public class Table extends HtmlComponent
     public List<TableRow> getAllRows() {
         return sections().flatMap(section -> section.getRows().stream())
                 .toList();
+    }
+
+    /**
+     * Returns the rows of this table's {@code <thead>}, or an empty list if it
+     * has none. Unlike {@link #getHead()}, this does not create the section, so
+     * it is safe to call while only reading the table — from a debugger watch,
+     * for instance.
+     *
+     * @return the head's rows, in document order.
+     */
+    public List<TableRow> getHeaderRows() {
+        return findHead().map(TableHead::getRows).orElseGet(List::of);
+    }
+
+    /**
+     * Returns the rows of this table's {@code <tbody>} elements, in document
+     * order, or an empty list if it has none. Unlike {@link #getBody()}, this
+     * does not create a body.
+     *
+     * @return the rows of every body, in document order.
+     */
+    public List<TableRow> getBodyRows() {
+        return getBodies().stream().flatMap(body -> body.getRows().stream())
+                .toList();
+    }
+
+    /**
+     * Returns the rows of this table's {@code <tfoot>}, or an empty list if it
+     * has none. Unlike {@link #getFoot()}, this does not create the section.
+     *
+     * @return the foot's rows, in document order.
+     */
+    public List<TableRow> getFooterRows() {
+        return findFoot().map(TableFoot::getRows).orElseGet(List::of);
     }
 
     /**

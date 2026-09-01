@@ -345,6 +345,28 @@ class TableTest extends ComponentTest {
     }
 
     @Test
+    void sectionRowAccessors_readWithoutCreatingTheSection() {
+        Table table = table();
+
+        assertEquals(List.of(), table.getHeaderRows());
+        assertEquals(List.of(), table.getBodyRows());
+        assertEquals(List.of(), table.getFooterRows());
+        // the whole point: reading them leaves the table untouched
+        assertEquals(0, table.getChildren().count());
+
+        TableRow header = table.addHeaderRow();
+        TableRow first = table.addRow();
+        TableRow second = table.addBody().addRow();
+        TableRow footer = table.addFooterRow();
+
+        assertEquals(List.of(header), table.getHeaderRows());
+        assertEquals(List.of(first, second), table.getBodyRows());
+        assertEquals(List.of(footer), table.getFooterRows());
+        assertEquals(List.of(header, first, second, footer),
+                table.getAllRows());
+    }
+
+    @Test
     void removeAllRows_keepsTheSections() {
         Table table = table();
         table.addHeaderRow();
