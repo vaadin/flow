@@ -1000,10 +1000,11 @@ final class TransactionEngine {
      * The same {@code RESOURCES} command an edit uses, and deliberately a
      * separate call from the edits: Flow is told the resource changed either
      * way - {@code Hotswapper.onHotswap} folds created, modified and deleted
-     * into one set - but a deleted stylesheet has no content to push, so the
-     * app answers {@code pushed=0} and reloads the page instead, which is the
-     * only thing that can take a file off it. Batched together with an edit
-     * that <em>was</em> pushed, that reload would not happen.
+     * into one set - but what takes the file off the open page depends on what
+     * it was. A deleted stylesheet is pushed as empty content, which removes
+     * it; anything else has nothing to push, so the app answers
+     * {@code pushed=0} and reloads instead. Batched together with an edit that
+     * <em>was</em> pushed, that reload would not happen.
      *
      * @return {@code false} only when the app was asked and did not answer
      */

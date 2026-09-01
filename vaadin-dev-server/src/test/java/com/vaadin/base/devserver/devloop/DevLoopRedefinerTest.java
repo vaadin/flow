@@ -15,8 +15,12 @@
  */
 package com.vaadin.base.devserver.devloop;
 
+import java.io.File;
+
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -77,6 +81,40 @@ class DevLoopRedefinerTest {
         // No live reload to ask means no browser was reloaded, which is a fact
         // the daemon reports rather than an error it fails on.
         assertTrue(reply.equals("OK reloaded=false"), reply);
+    }
+
+    @Test
+    void publicRootOf_takesTheLastWholeSegment() {
+        // The marker directory is part of the root: the URL the browser knows
+        // is the path below it, so a root short by one segment pushes CSS under
+        // a URL that matches nothing on the page.
+        assertEquals(file("/p/src/main/resources/META-INF/resources"),
+                DevLoopRedefiner.publicRootOf(
+                        "/p/src/main/resources/META-INF/resources/app.css"));
+
+        // "/resources/" also occurs in "src/main/resources", earlier. Taking
+        // the first match would make the URL "META-INF/resources/app.css"
+        // above, and "resources/a.css" here.
+        assertEquals(file("/p/src/main/resources/resources"), DevLoopRedefiner
+                .publicRootOf("/p/src/main/resources/resources/a.css"));
+
+        // A directory named like a marker anywhere above the real root must not
+        // win, however deep the checkout sits.
+        assertEquals(file("/static-site/p/src/main/resources/static"),
+                DevLoopRedefiner.publicRootOf(
+                        "/static-site/p/src/main/resources/static/a.css"));
+
+        assertEquals(file("C:/p/src/main/webapp"), DevLoopRedefiner
+                .publicRootOf("C:\\p\\src\\main\\webapp\\css\\a.css"));
+
+        // Under no public root at all, so there is nothing to resolve against
+        // and the caller falls back to a reload.
+        assertNull(DevLoopRedefiner
+                .publicRootOf("/p/src/main/java/com/example/View.java"));
+    }
+
+    private static File file(String path) {
+        return new File(path);
     }
 
     @Test

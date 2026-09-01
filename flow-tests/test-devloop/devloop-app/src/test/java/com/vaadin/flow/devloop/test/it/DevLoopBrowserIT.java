@@ -118,6 +118,35 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
     }
 
     @BrowserTest
+    void cssRuleRemoved_stopsApplyingToTheOpenPage() {
+        // The value change above passes whether or not the push replaced the
+        // stylesheet the bootstrap linked: a <style> added to the end of <head>
+        // outranks an earlier <link> on document order, so a new value wins
+        // either way. Removing a declaration is the case that needs the old
+        // <link> actually gone, which is why it is asserted separately.
+        Assertions.assertEquals("12px",
+                computedStyle(".task-list-view", "rowGap"),
+                "the fixture should start from the stylesheet's own value");
+        String reloadMarker = markPage();
+
+        patch.replace(STYLESHEET, "row-gap: 12px;", "");
+        cli.run("apply").assertExitCode(0).assertOutputContains("hmr:");
+
+        // Back to the initial value of row-gap: nothing declares it any more.
+        new WebDriverWait(getDriver(), Duration.ofSeconds(30))
+                .withMessage(() -> "row-gap should have fallen back to its "
+                        + "initial value once the declaration was removed, but "
+                        + "is still "
+                        + computedStyle(".task-list-view", "rowGap")
+                        + " - the stylesheet the page bootstrapped with is "
+                        + "still applying")
+                .until(driver -> "normal"
+                        .equals(computedStyle(".task-list-view", "rowGap")));
+        Assertions.assertEquals(reloadMarker, currentMarker(),
+                "a CSS push must not reload the page");
+    }
+
+    @BrowserTest
     void siblingModuleEdit_isVisibleOnceTheViewRendersAgain() {
         patch.replace(AbstractDevLoopIT.SHARED.resolve(
                 "src/main/java/com/vaadin/flow/devloop/test/shared/DueDateFormatter.java"),

@@ -43,6 +43,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.PublicResourcesLiveUpdater;
 import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
@@ -95,8 +96,15 @@ final class DevLoopRedefiner {
      */
     private static final String CLASSES_PROPERTY = "vaadin.devloop.classes";
 
+    /**
+     * The directory names that make a public resource root, as whole path
+     * segments so a match cannot land in the middle of one.
+     * {@code META-INF/resources} is listed first only for readability - the
+     * longest match from the end wins, not the earliest in this array.
+     */
     private static final String[] PUBLIC_RESOURCE_ROOTS = {
-            "/META-INF/resources/", "/static/", "/public/", "/resources/" };
+            "/META-INF/resources/", "/static/", "/public/", "/resources/",
+            "/webapp/" };
 
     private DevLoopRedefiner() {
     }
@@ -350,55 +358,90 @@ final class DevLoopRedefiner {
     }
 
     /**
-     * Sends new CSS content straight to the browser for each changed
-     * stylesheet, keyed by the URL the client knows it as - the file name
-     * relative to the public resource root, which is what
-     * {@code @StyleSheet("styles.css")} resolves to.
+     * Gets the new CSS in front of the browser, through the same call Flow's
+     * own watcher makes on save.
+     * <p>
+     * {@code PublicResourcesLiveUpdater.push} rather than a push of its own,
+     * for the reason the theme leg calls {@code ThemeLiveUpdater.push}: the
+     * update has to be keyed by the URL the browser knows the stylesheet as -
+     * {@code context://} prefix included, because the debug window strips that
+     * prefix unconditionally before matching what is already on the page - and
+     * it has to carry the stylesheet's <em>bundled</em> content, or an
+     * {@code @import} and every relative {@code url(...)} resolve against the
+     * wrong base. Neither is derivable from the changed file's path, which is
+     * all this leg is given: a file reached through an {@code @import} is not
+     * the URL the browser has, and mapping a path back to a URL by looking for
+     * a {@code /static/} segment in it guesses wrong as soon as the checkout
+     * has one in its own path.
+     * <p>
+     * Asked once for the whole change-set rather than per file, because the
+     * call re-bundles every active stylesheet and so already covers all of
+     * them.
      */
     private static int pushStyleSheets(String csv) {
-        Optional<BrowserLiveReload> liveReload = liveReload();
-        if (liveReload.isEmpty()) {
+        VaadinService service = DevLoopRegistration.service();
+        if (service == null) {
             return 0;
         }
-        int pushed = 0;
+        List<File> roots = styleSheetRoots(csv);
+        if (roots.isEmpty()) {
+            // No stylesheet in the change-set: an image or a font is a public
+            // resource too, and has nothing to push.
+            return 0;
+        }
+        return PublicResourcesLiveUpdater.push(service.getContext(), roots);
+    }
+
+    /**
+     * The public resource roots the changed stylesheets sit under.
+     * <p>
+     * Passed to the push because the application knows only its own roots and
+     * skips anything it can merely find on the classpath - which is every
+     * reactor sibling's resource, and a sibling's stylesheet reaching the open
+     * page is the whole point of having the loop span the reactor. The daemon
+     * sends absolute paths, so the root is derivable here and nowhere else.
+     */
+    private static List<File> styleSheetRoots(String csv) {
+        List<File> roots = new ArrayList<>();
         for (String value : csv.split(",")) {
             String trimmed = value.trim();
             if (!trimmed.endsWith(".css")) {
                 continue;
             }
-            Path path = Paths.get(trimmed);
-            String url = publicUrlOf(path);
-            if (url == null) {
-                continue;
-            }
-            if (!Files.isRegularFile(path)) {
-                // A deleted stylesheet: there is no content to push, and the
-                // classpath copy is already gone. Left uncounted on purpose, so
-                // a batch of nothing but deletions reloads the page - the only
-                // thing that takes a stylesheet off it.
-                continue;
-            }
-            try {
-                liveReload.get().update(url,
-                        Files.readString(path, StandardCharsets.UTF_8));
-                pushed++;
-            } catch (IOException | RuntimeException e) {
-                LOGGER.warn("Could not push {}", url, e);
+            File root = publicRootOf(trimmed);
+            if (root != null && !roots.contains(root)) {
+                roots.add(root);
             }
         }
-        return pushed;
+        return roots;
     }
 
-    /** Maps a file under a public resource root to its served URL. */
-    private static String publicUrlOf(Path path) {
-        String normalized = path.toString().replace('\\', '/');
-        for (String root : PUBLIC_RESOURCE_ROOTS) {
-            int at = normalized.indexOf(root);
-            if (at >= 0) {
-                return normalized.substring(at + root.length());
+    /**
+     * The public resource root a file sits under, or {@code null} when it sits
+     * under none.
+     * <p>
+     * The <em>last</em> marker wins, and it has to be a whole path segment.
+     * Both matter for the same reason: {@code /resources/} occurs in
+     * {@code src/main/resources} as well, so taking the first occurrence maps
+     * {@code src/main/resources/META-INF/resources/app.css} to
+     * {@code META-INF/resources/app.css} instead of {@code app.css} - and a
+     * checkout that merely has a directory named {@code static} above it would
+     * do the same to every file in the project.
+     */
+    // Package-private so the segment and last-match rules can be asserted
+    // directly; they are the part of this leg that a wrong answer makes silent.
+    static File publicRootOf(String path) {
+        String normalized = path.replace('\\', '/');
+        int end = -1;
+        for (String marker : PUBLIC_RESOURCE_ROOTS) {
+            int at = normalized.lastIndexOf(marker);
+            if (at >= 0 && at + marker.length() > end) {
+                // Up to and including the marker directory, without its
+                // trailing separator: that directory is the root.
+                end = at + marker.length() - 1;
             }
         }
-        return null;
+        return end < 0 ? null : new File(normalized.substring(0, end));
     }
 
     /**
