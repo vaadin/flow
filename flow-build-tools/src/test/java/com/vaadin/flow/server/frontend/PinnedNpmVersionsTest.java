@@ -83,12 +83,17 @@ class PinnedNpmVersionsTest {
 
     @Test
     void samePackageInMultipleFiles_newestVersionIsUsed() throws IOException {
+        // The newest wins whether it is read before or after the older one
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {
                   "core": {
                     "button": {
                       "npmName": "@vaadin/button",
                       "jsVersion": "25.1.2"
+                    },
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.1"
                     }
                   }
                 }
@@ -98,17 +103,95 @@ class PinnedNpmVersionsTest {
                     "button": {
                       "npmName": "@vaadin/button",
                       "jsVersion": "25.1.1"
+                    },
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.2"
                     }
                   }
                 }
                 """);
 
-        assertEquals("25.1.2",
-                pinnedNpmVersions
-                        .getDependencies(false, false, keepEverything())
-                        .get("@vaadin/button").asString());
+        ObjectNode dependencies = pinnedNpmVersions.getDependencies(false,
+                false, keepEverything());
+        assertEquals("25.1.2", dependencies.get("@vaadin/button").asString());
+        assertEquals("25.1.2", dependencies.get("@vaadin/grid").asString());
         assertEquals("25.1.2", pinnedNpmVersions.getAllDependencies()
                 .get("@vaadin/button").asString());
+        assertEquals("25.1.2", pinnedNpmVersions.getAllDependencies()
+                .get("@vaadin/grid").asString());
+    }
+
+    @Test
+    void differentVaadinVersionsInMultipleFiles_newestVersionIsUsed()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "platform": "25.1.1"
+                }
+                """, """
+                {
+                  "platform": "25.1.2"
+                }
+                """);
+
+        assertEquals(Optional.of("25.1.2"),
+                pinnedNpmVersions.getVaadinVersion());
+    }
+
+    @Test
+    void allDependenciesAreCollectedWhicheverModeTheyApplyTo()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    },
+                    "board": {
+                      "npmName": "@vaadin/board",
+                      "jsVersion": "25.1.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """);
+
+        ObjectNode dependencies = pinnedNpmVersions.getAllDependencies();
+
+        // A package of another mode is pinned as well, as it can still be
+        // pulled in transitively
+        assertTrue(dependencies.has("@vaadin/button"));
+        assertTrue(dependencies.has("@vaadin/board"));
+    }
+
+    @Test
+    void exclusionsOfAllFilesAreCollected() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0",
+                      "exclusions": ["@vaadin/legacy-grid"]
+                    }
+                  }
+                }
+                """, """
+                {
+                  "components": {
+                    "grid-pro": {
+                      "npmName": "@vaadin/grid-pro",
+                      "jsVersion": "25.1.0",
+                      "exclusions": ["@vaadin/legacy-grid-pro"]
+                    }
+                  }
+                }
+                """);
+
+        assertEquals(Set.of("@vaadin/legacy-grid", "@vaadin/legacy-grid-pro"),
+                pinnedNpmVersions.getExclusions(false, false));
     }
 
     @Test

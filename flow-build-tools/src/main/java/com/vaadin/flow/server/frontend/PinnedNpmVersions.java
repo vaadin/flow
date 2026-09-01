@@ -133,6 +133,9 @@ class PinnedNpmVersions {
     /**
      * Gets the Vaadin version, i.e. the version of the platform the versions
      * files come from, as declared in their {@code platform} field.
+     * <p>
+     * The files are expected to declare the same version; if they do not, the
+     * newest one wins and a warning is logged, as for the packages.
      *
      * @return the Vaadin version, or empty if no versions file declares one
      */
@@ -144,14 +147,20 @@ class PinnedNpmVersions {
             if (platform == null || !platform.isString()) {
                 continue;
             }
+            String version = platform.asString();
             if (vaadinVersion == null) {
-                vaadinVersion = platform.asString();
+                vaadinVersion = version;
                 origin = file.origin();
-            } else if (!vaadinVersion.equals(platform.asString())) {
+            } else if (!vaadinVersion.equals(version)) {
+                boolean newer = isNewerThan(version, vaadinVersion);
                 log().warn(
                         "Conflicting Vaadin versions found: '{}' in {} and '{}' in {}. Using '{}'.",
-                        vaadinVersion, origin, platform.asString(),
-                        file.origin(), vaadinVersion);
+                        vaadinVersion, origin, version, file.origin(),
+                        newer ? version : vaadinVersion);
+                if (newer) {
+                    vaadinVersion = version;
+                    origin = file.origin();
+                }
             }
         }
         return Optional.ofNullable(vaadinVersion);
