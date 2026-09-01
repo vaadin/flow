@@ -565,14 +565,11 @@ public class Table extends HtmlComponent
      * <code>&lt;th scope="row"&gt;</code>, which is what lets assistive
      * technology announce the right label for each data cell in the row.
      *
-     * @param header
-     *            the text of the leading header cell.
-     *            <p>
-     *            For example,
-     *            {@code addRowWithHeader("Venus", "4.87", "12,104")} renders
-     *            as:
+     * <p>
+     * For example, {@code addRowWithHeader("Venus", "4.87", "12,104")} renders
+     * as:
      *
-     *            <pre>{@code
+     * <pre>{@code
      * <tbody>
      *   <tr>
      *     <th scope="row">Venus</th>
@@ -582,6 +579,8 @@ public class Table extends HtmlComponent
      * </tbody>
      * }</pre>
      *
+     * @param header
+     *            the text of the leading header cell.
      * @param cellTexts
      *            the text content for each data cell after it.
      * @return the new row.
@@ -667,7 +666,7 @@ public class Table extends HtmlComponent
      * @return the new row.
      */
     public TableRow addHeaderRow(List<String> cellTexts) {
-        return addHeaderRow().addHeaderCells(cellTexts);
+        return addHeaderRow().addColumnHeaderCells(cellTexts);
     }
 
     /**

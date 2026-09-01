@@ -347,17 +347,16 @@ public class TableRow extends HtmlComponent
      * resulting <code>&lt;th&gt;</code>, so that the cell reaches over the rows
      * it names.
      *
-     * @param text
-     *            the text content.
-     *            <p>
-     *            For example,
-     *            {@code addRowGroupHeaderCell("Terrestrial planets", 4)}
-     *            renders as:
+     * <p>
+     * For example, {@code addRowGroupHeaderCell("Terrestrial planets", 4)}
+     * renders as:
      *
-     *            <pre>{@code
+     * <pre>{@code
      * <th scope="rowgroup" rowspan="4">Terrestrial planets</th>
      * }</pre>
      *
+     * @param text
+     *            the text content.
      * @param rowspan
      *            the number of rows the header covers, or {@code 0} to cover
      *            the rest of the row group.
@@ -403,17 +402,16 @@ public class TableRow extends HtmlComponent
      * resulting <code>&lt;th&gt;</code>, so that the cell reaches over the
      * columns it names.
      *
-     * @param text
-     *            the text content.
-     *            <p>
-     *            For example,
-     *            {@code addColumnGroupHeaderCell("Measurements", 3)} renders
-     *            as:
+     * <p>
+     * For example, {@code addColumnGroupHeaderCell("Measurements", 3)} renders
+     * as:
      *
-     *            <pre>{@code
+     * <pre>{@code
      * <th scope="colgroup" colspan="3">Measurements</th>
      * }</pre>
      *
+     * @param text
+     *            the text content.
      * @param colspan
      *            the number of columns the header covers.
      * @return the new {@code <th>} with {@code scope="colgroup"}.

@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -327,6 +328,9 @@ class TableTest extends ComponentTest {
         assertEquals(List.of(footerRow), table.getFoot().getRows());
         assertEquals(List.of("h"), headerRow.getHeaderCells().stream()
                 .map(TableHeaderCell::getText).toList());
+        // a thead row labels its columns, so the cells carry scope="col"
+        assertEquals(Optional.of(TableHeaderCell.Scope.COL),
+                headerRow.getHeaderCells().get(0).getScope());
         assertEquals(List.of("f"), footerRow.getDataCells().stream()
                 .map(TableDataCell::getText).toList());
     }
