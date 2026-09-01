@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,7 +35,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public interface ClassFinder extends Serializable {
 
@@ -105,6 +107,11 @@ public interface ClassFinder extends Serializable {
             return classLoader.getResource(name);
         }
 
+        @Override
+        public List<URL> getResources(String name) throws IOException {
+            return Collections.list(classLoader.getResources(name));
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         public <T> Class<T> loadClass(String name)
@@ -160,6 +167,11 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
+        public List<URL> getResources(String name) throws IOException {
+            return classFinder.getResources(name);
+        }
+
+        @Override
         public <T> Class<T> loadClass(String name)
                 throws ClassNotFoundException {
             return classFinder.loadClass(name);
@@ -210,6 +222,22 @@ public interface ClassFinder extends Serializable {
     URL getResource(String name);
 
     /**
+     * Get all resources with the given name from the classpath.
+     * <p>
+     * Unlike {@link #getResource(String)}, which returns only the first match,
+     * this returns the resource from every jar or folder providing it.
+     *
+     * @param name
+     *            the resource path
+     * @return all matching resources, never {@code null}
+     * @throws IOException
+     *             if the resources cannot be listed
+     */
+    default List<URL> getResources(String name) throws IOException {
+        return Collections.list(getClassLoader().getResources(name));
+    }
+
+    /**
      * Load a class in the classloader.
      *
      * @param <T>
@@ -237,6 +265,7 @@ public interface ClassFinder extends Serializable {
      * Get class loader which is used to find classes.
      *
      * @return the class loader which is used to find classes..
+     * @since 3.0
      */
     ClassLoader getClassLoader();
 
@@ -270,6 +299,7 @@ public interface ClassFinder extends Serializable {
      *            the fully qualified name of the class
      * @return {@code true} if the class should be inspected, otherwise
      *         {@code false}
+     * @since 24.8
      */
     default boolean shouldInspectClass(String className) {
         return true;

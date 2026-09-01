@@ -169,6 +169,7 @@ class NodeUpdaterTest {
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/core");
+        expectedDependencies.add("@babel/types");
         expectedDependencies
                 .add("@babel/plugin-transform-react-jsx-development");
         expectedDependencies.add("@babel/preset-react");
@@ -423,7 +424,7 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+    void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
         Logger logger = Mockito.spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
@@ -438,19 +439,19 @@ class NodeUpdaterTest {
             Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                     .thenReturn(null);
 
-            ObjectNode pinnedVersions = nodeUpdater
-                    .getPlatformPinnedDependencies();
+            ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
-            Mockito.verify(logger, Mockito.times(1)).info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+            Mockito.verify(logger, Mockito.times(1))
+                    .info("Couldn't find {} or {} to pin dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                            Constants.VAADIN_CORE_VERSIONS_JSON,
+                            Constants.VAADIN_VERSIONS_JSON);
         }
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
+    void testGetPinnedNpmDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
             throws IOException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
                 ".json",
@@ -468,7 +469,7 @@ class NodeUpdaterTest {
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(null);
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertFalse(pinnedVersions.has("@vaadin/grid-pro"));
@@ -476,7 +477,7 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactNotAvailable_noReactComponents()
+    void testGetPinnedNpmDependencies_reactNotAvailable_noReactComponents()
             throws IOException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
                 ".json",
@@ -504,18 +505,18 @@ class NodeUpdaterTest {
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(null);
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertFalse(pinnedVersions.has("react-components"));
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
+    void testGetPinnedNpmDependencies_reactAvailable_containsReactComponents()
             throws IOException, ClassNotFoundException {
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertTrue(pinnedVersions.has("@vaadin/react-components"));
@@ -523,12 +524,12 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactAvailable_excludeWebComponents()
+    void testGetPinnedNpmDependencies_reactAvailable_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         // @vaadin/button doesn't have 'mode' set, so it should be included
         assertTrue(pinnedVersions.has("@vaadin/button"));
@@ -537,13 +538,13 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactDisabled_excludeWebComponents()
+    void testGetPinnedNpmDependencies_reactDisabled_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withReact(false);
         options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         // @vaadin/button doesn't have 'mode' set, so it should be included
         assertTrue(pinnedVersions.has("@vaadin/button"));
@@ -603,7 +604,7 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
+    void testGetPinnedNpmDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
             throws IOException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
                 ".json",
@@ -634,7 +635,7 @@ class NodeUpdaterTest {
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(vaadinVersionsFile.toURI().toURL());
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertTrue(pinnedVersions.has("@vaadin/grid-pro"));
@@ -818,8 +819,8 @@ class NodeUpdaterTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be an object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
     }
 
     @Test

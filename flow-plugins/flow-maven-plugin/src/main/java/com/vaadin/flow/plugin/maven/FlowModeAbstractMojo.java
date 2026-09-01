@@ -83,9 +83,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.eagerServerLoad=true}.
      */
-    @Parameter(defaultValue = "${vaadin."
-            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL, defaultValue = "false")
     private boolean eagerServerLoad;
 
     /**
@@ -255,6 +258,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = "vaadin.npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
+
+    /**
+     * Npm packages to exclude from running post install scripts.
+     * <p>
+     * Used to skip built-in entries (e.g. {@code esbuild}) when their
+     * postinstall step is known to fail or is not needed.
+     */
+    @Parameter(property = "vaadin.npm.excludePostinstallPackages", defaultValue = "")
+    private List<String> excludePostinstallPackages;
 
     /**
      * Parameter to control if frontend development server should be used in
@@ -698,16 +710,34 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public String buildFolder() {
-        if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
+        Path buildDir = Paths.get(projectBuildDir);
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // the project basedir. A build dir outside basedir then yields a "../"
+        // path. Returning the absolute path would instead append it to the
+        // project folder and point outside the build dir.
+        if (!buildDir.isAbsolute()) {
+            return projectBuildDir;
         }
-        return projectBuildDir;
+        // relativize() requires both paths to be absolute; basedir is always
+        // absolute in a real build, toAbsolutePath() only guards exotic setups.
+        try {
+            return projectBaseDirectory().toAbsolutePath().relativize(buildDir)
+                    .toString();
+        } catch (IllegalArgumentException e) {
+            // Different filesystem roots (e.g. on Windows): cannot relativize.
+            return projectBuildDir;
+        }
     }
 
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public List<String> excludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     @Override

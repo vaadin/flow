@@ -234,6 +234,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @param errorHandler
      *            a handler for an error message in case the execution failed,
      *            or <code>null</code> to ignore errors
+     * @since 25.0
      */
     default <T> void then(TypeReference<T> typeReference,
             SerializableConsumer<T> resultHandler,
@@ -271,6 +272,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @param resultHandler
      *            a handler for the return value from a successful execution,
      *            not <code>null</code>
+     * @since 25.0
      */
     default <T> void then(TypeReference<T> typeReference,
             SerializableConsumer<T> resultHandler) {
@@ -296,6 +298,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            <code>null</code>
      * @return a completable future that will be completed based on the
      *         execution results, not <code>null</code>
+     * @since 25.0
      */
     default <T> CompletableFuture<T> toCompletableFuture(
             TypeReference<T> typeReference) {

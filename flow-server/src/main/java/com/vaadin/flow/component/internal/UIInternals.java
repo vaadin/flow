@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -48,15 +50,20 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
+import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
+import com.vaadin.flow.component.wakelock.WakeLockAvailability;
+import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
@@ -77,17 +84,20 @@ import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterState;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -125,6 +135,7 @@ public class UIInternals implements Serializable {
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
+         * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
             /*
@@ -169,6 +180,8 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
+    private int nextJsInitializerId = 0;
+
     private final StateTree stateTree;
 
     private PushConnection pushConnection = null;
@@ -180,9 +193,30 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
+    private volatile Instant lastUpdateSentTimestamp = Instant.now();
+
+    /**
+     * The number of JavaScript invocations that have been scheduled for the
+     * related UI without being sent to the client. Kept here instead of on the
+     * individual state nodes to avoid growing the size of every node.
+     * <p>
+     * Serialized together with the invocations that make up the count, each of
+     * which references these internals until it stops being counted, so a UI
+     * that has been through a serialization round trip keeps counting where it
+     * left off.
+     */
+    private int undeliveredJsInvocations;
+
+    private boolean undeliveredJsInvocationsWarningLogged;
+
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
-    private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
+    /**
+     * The owners of everything currently in {@link #pendingJsInvocations}.
+     * Detaching a component tree unregisters every node in it, so this keeps
+     * the check that runs for each of them down to a single lookup.
+     */
+    private Set<StateNode> pendingJsInvocationOwners = new HashSet<>();
 
     /**
      * The related UI.
@@ -195,10 +229,16 @@ public class UIInternals implements Serializable {
 
     private String appShellTitle;
 
-    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
+    private PendingJavaScriptResult pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
+
+    private final ValueSignal<RouterState> routerStateSignal = new ValueSignal<>(
+            new RouterState(new Location(""), RouteParameters.empty(),
+                    Collections.emptyList(), null));
+    private final Signal<RouterState> readonlyRouterStateSignal = routerStateSignal
+            .asReadonly();
 
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
@@ -236,6 +276,40 @@ public class UIInternals implements Serializable {
     private final ValueSignal<GeolocationAvailability> geolocationAvailabilitySignal = new ValueSignal<>(
             GeolocationAvailability.UNKNOWN);
 
+    private final ValueSignal<WebShareSupport> webShareSupportSignal = new ValueSignal<>(
+            WebShareSupport.UNKNOWN);
+
+    private final Signal<WebShareSupport> webShareSupportReadOnly = webShareSupportSignal
+            .asReadonly();
+
+    private GeolocationClient geolocationClient;
+
+    private Registration geolocationClientAvailabilityRegistration;
+
+    private final ValueSignal<Boolean> wakeLockActiveSignal = new ValueSignal<>(
+            Boolean.FALSE);
+
+    private final Signal<Boolean> wakeLockActiveReadOnly = wakeLockActiveSignal
+            .asReadonly();
+
+    private final ValueSignal<WakeLockAvailability> wakeLockAvailabilitySignal = new ValueSignal<>(
+            WakeLockAvailability.UNKNOWN);
+
+    private final Signal<WakeLockAvailability> wakeLockAvailabilityReadOnly = wakeLockAvailabilitySignal
+            .asReadonly();
+
+    private boolean wakeLockListenerInstalled;
+
+    private static final String SCREEN_ORIENTATION_CHANGE_EVENT = "vaadin-screen-orientation-change";
+
+    private final ValueSignal<ScreenOrientationData> screenOrientationSignal = new ValueSignal<>(
+            new ScreenOrientationData(ScreenOrientationType.UNKNOWN, 0));
+
+    private final Signal<ScreenOrientationData> screenOrientationReadOnly = screenOrientationSignal
+            .asReadonly();
+
+    private boolean screenOrientationListenerInstalled;
+
     private ArrayDeque<Component> modalComponentStack;
 
     private Element wrapperElement;
@@ -258,6 +332,7 @@ public class UIInternals implements Serializable {
      *            the UI to use
      * @param internalsHandler
      *            an implementation of {@link UIInternalUpdater}
+     * @since 3.0
      */
     public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
         this.internalsHandler = internalsHandler;
@@ -323,6 +398,7 @@ public class UIInternals implements Serializable {
      *
      * @param lastRequestResponse
      *            The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
@@ -332,6 +408,7 @@ public class UIInternals implements Serializable {
      * Returns the response created for the last UIDL request.
      *
      * @return The request that was sent for the last UIDL request.
+     * @since 24.7
      */
     public String getLastRequestResponse() {
         return lastRequestResponse;
@@ -386,6 +463,61 @@ public class UIInternals implements Serializable {
      */
     public long getLastHeartbeatTimestamp() {
         return lastHeartbeatTimestamp;
+    }
+
+    /**
+     * Gets the time when the updates pending for the related UI were last
+     * purged into a response for the client.
+     * <p>
+     * The value is held in a volatile field, so it can be read from a
+     * background thread without holding the session lock.
+     *
+     * @return the time the pending updates were last purged
+     * @see UI#getLastUpdateSentTimestamp()
+     */
+    public Instant getLastUpdateSentTimestamp() {
+        return lastUpdateSentTimestamp;
+    }
+
+    /**
+     * Changes the number of JavaScript invocations that have been scheduled for
+     * the related UI without being sent to the client by the given delta. A
+     * delta of 0 reads the current number without changing it.
+     *
+     * @param delta
+     *            the number of invocations to add to the count, negative for
+     *            invocations that are no longer waiting to be sent
+     * @return the number of undelivered JavaScript invocations after the
+     *         change, never negative
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    int addUndeliveredJsInvocations(int delta) {
+        session.checkHasLock();
+        // Only an invocation that this instance counted uncounts itself, so
+        // the count is not expected to go negative. Clamped rather than
+        // asserted since a slip in the bookkeeping behind a warning is not
+        // worth failing an application over
+        undeliveredJsInvocations = Math.max(0,
+                undeliveredJsInvocations + delta);
+        return undeliveredJsInvocations;
+    }
+
+    /**
+     * Marks the warning about undelivered JavaScript invocations as logged for
+     * the related UI, so that it is logged only once even if the number of
+     * undelivered invocations keeps crossing the threshold.
+     *
+     * @return <code>true</code> if the warning had not been logged for the
+     *         related UI before
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    boolean markUndeliveredJsInvocationsWarningLogged() {
+        session.checkHasLock();
+        if (undeliveredJsInvocationsWarningLogged) {
+            return false;
+        }
+        undeliveredJsInvocationsWarningLogged = true;
+        return true;
     }
 
     /**
@@ -599,6 +731,7 @@ public class UIInternals implements Serializable {
      * @param <E>
      *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
+     * @since 2.0
      */
     public <E> List<E> getListeners(Class<E> handler) {
         List<E> registeredListeners = (List<E>) listeners
@@ -613,11 +746,27 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @since 2.0
      */
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+        pendingJsInvocationOwners.add(invocation.getOwner());
+    }
+
+    /**
+     * Returns the next unique id for a JavaScript initializer registered
+     * through {@link Element#addJsInitializer(String, Object...)} on any
+     * element in this UI. Shared across the UI so cleanups can be keyed by the
+     * id alone on the client side.
+     *
+     * @return the next initializer id
+     * @since 25.2
+     */
+    public int nextJsInitializerId() {
+        session.checkHasLock();
+        return nextJsInitializerId++;
     }
 
     /**
@@ -630,6 +779,7 @@ public class UIInternals implements Serializable {
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         session.checkHasLock();
         pendingTitleUpdateCanceler = null;
+        lastUpdateSentTimestamp = Instant.now();
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
@@ -642,61 +792,57 @@ public class UIInternals implements Serializable {
         List<PendingJavaScriptInvocation> readyToSend = partition.get(true);
         readyToSend.forEach(PendingJavaScriptInvocation::setSentToBrowser);
 
+        List<PendingJavaScriptInvocation> retained = partition.get(false);
         // ensure collection is mutable
-        pendingJsInvocations = new LinkedHashSet<>(partition.get(false));
-        pendingJsInvocations
-                .forEach(this::registerDetachListenerForPendingInvocation);
+        pendingJsInvocations = new LinkedHashSet<>(retained);
+        pendingJsInvocationOwners = retained.stream()
+                .map(PendingJavaScriptInvocation::getOwner)
+                .collect(Collectors.toCollection(HashSet::new));
+
         return readyToSend;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void registerDetachListenerForPendingInvocation(
-            PendingJavaScriptInvocation invocation) {
-
-        PendingJavaScriptInvocationDetachListener listener = pendingJsInvocationDetachListeners
-                .computeIfAbsent(invocation.getOwner(), node -> {
-                    PendingJavaScriptInvocationDetachListener detachListener = new PendingJavaScriptInvocationDetachListener();
-                    detachListener.registration = Registration.combine(
-                            () -> pendingJsInvocationDetachListeners
-                                    .remove(node),
-                            node.addDetachListener(detachListener));
-                    return detachListener;
-                });
-        if (listener.invocationList.add(invocation)) {
-            SerializableConsumer callback = unused -> listener
-                    .onInvocationCompleted(invocation);
-            invocation.then(callback, callback);
+    /**
+     * Discards the pending JavaScript invocations owned by the given node,
+     * which are the ones waiting for the node to become visible again.
+     * <p>
+     * {@link StateTree} calls this for every node that is detached, so the
+     * owners are tracked separately to keep it to a single lookup for a node
+     * with nothing queued.
+     *
+     * @param owner
+     *            the node whose invocations to discard, not <code>null</code>
+     */
+    public void discardPendingJavaScriptInvocations(StateNode owner) {
+        checkInvocationQueueLock();
+        if (!pendingJsInvocationOwners.remove(owner)) {
+            return;
         }
+        pendingJsInvocations
+                .removeIf(invocation -> invocation.getOwner() == owner);
     }
 
-    private class PendingJavaScriptInvocationDetachListener implements Command {
-        private final Set<PendingJavaScriptInvocation> invocationList = new HashSet<>();
+    /**
+     * Discards every pending JavaScript invocation of the related UI.
+     * <p>
+     * Called by {@link StateTree} when resynchronizing, which reinitializes the
+     * whole client side, so the queue is emptied in one go rather than node by
+     * node.
+     */
+    public void discardPendingJavaScriptInvocations() {
+        checkInvocationQueueLock();
+        pendingJsInvocations.clear();
+        pendingJsInvocationOwners.clear();
+    }
 
-        private Registration registration;
-
-        @Override
-        public void execute() {
-            if (!invocationList.isEmpty()) {
-                List<PendingJavaScriptInvocation> copy = new ArrayList<>(
-                        invocationList);
-                invocationList.clear();
-                copy.forEach(this::removePendingInvocation);
-            }
-        }
-
-        private void removePendingInvocation(
-                PendingJavaScriptInvocation invocation) {
+    /**
+     * Checks the session lock unless the related UI has never been attached to
+     * a session, since a state tree is also manipulated before its UI is
+     * initialized and there is no lock to check then.
+     */
+    private void checkInvocationQueueLock() {
+        if (session != null) {
             session.checkHasLock();
-            UIInternals.this.pendingJsInvocations.remove(invocation);
-            if (invocationList.isEmpty() && registration != null) {
-                registration.remove();
-                registration = null;
-            }
-        }
-
-        void onInvocationCompleted(PendingJavaScriptInvocation invocation) {
-            invocationList.remove(invocation);
-            removePendingInvocation(invocation);
         }
     }
 
@@ -721,6 +867,7 @@ public class UIInternals implements Serializable {
      * @param containsFilter
      *            string to filter invocation expressions with
      * @return true if any invocation with given expression is found.
+     * @since 24.4
      */
     public boolean containsPendingJavascript(String containsFilter) {
         return getPendingJavaScriptInvocations().anyMatch(js -> js
@@ -738,12 +885,9 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                generateTitleScript().stripIndent(), title);
 
-        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
-                getStateTree().getRootNode(), invocation);
-        addJavaScriptInvocation(pendingTitleUpdateCanceler);
+        pendingTitleUpdateCanceler = ui.getPage()
+                .executeJs(generateTitleScript().stripIndent(), title);
 
         this.title = title;
     }
@@ -772,6 +916,7 @@ public class UIInternals implements Serializable {
      *
      * @param appShellTitle
      *            the appShellTitle to set
+     * @since 4.0.4
      */
     public void setAppShellTitle(String appShellTitle) {
         this.appShellTitle = appShellTitle;
@@ -797,6 +942,7 @@ public class UIInternals implements Serializable {
      * <b>NOTE</b> Intended for internal use, you should not call this method.
      *
      * @return the app shell title
+     * @since 4.0.4
      */
     public String getAppShellTitle() {
         return appShellTitle;
@@ -824,6 +970,7 @@ public class UIInternals implements Serializable {
      *
      * @param layouts
      *            stored router target chain to set as last navigated chain
+     * @since 24.8
      */
     public void setRouterTargetChain(List<RouterLayout> layouts) {
         if (routerTargetChain.isEmpty()) {
@@ -843,6 +990,7 @@ public class UIInternals implements Serializable {
      *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
+     * @since 4.0
      */
     public void showRouteTarget(Location viewLocation, Component target,
             List<RouterLayout> layouts) {
@@ -951,6 +1099,7 @@ public class UIInternals implements Serializable {
      *
      * @param otherUI
      *            the other UI to transfer content from.
+     * @since 3.0
      */
     public void moveElementsFrom(UI otherUI) {
         internalsHandler.moveToNewUI(otherUI, ui);
@@ -974,6 +1123,32 @@ public class UIInternals implements Serializable {
      */
     public Location getActiveViewLocation() {
         return viewLocation;
+    }
+
+    /**
+     * Gets the cached read-only {@link Signal} that holds the current
+     * {@link RouterState} for this UI. Backs
+     * {@link com.vaadin.flow.component.UI#routerStateSignal()}.
+     *
+     * @return the read-only router state signal, not <code>null</code>
+     * @since 25.2
+     */
+    public Signal<RouterState> getRouterStateSignal() {
+        return readonlyRouterStateSignal;
+    }
+
+    /**
+     * Updates the {@link RouterState} value held by this UI's router state
+     * signal. Called by the navigation pipeline whenever a navigation
+     * completes, immediately before {@link AfterNavigationListener}s are
+     * notified.
+     *
+     * @param state
+     *            the new router state, not <code>null</code>
+     * @since 25.2
+     */
+    public void updateRouterState(RouterState state) {
+        routerStateSignal.set(state);
     }
 
     /**
@@ -1009,6 +1184,7 @@ public class UIInternals implements Serializable {
      *
      * @param dependencyId
      *            the ID of the stylesheet dependency to remove
+     * @since 25.0
      */
     public void removeStyleSheet(String dependencyId) {
         // Always add to pending removals - the client gracefully handles
@@ -1024,6 +1200,7 @@ public class UIInternals implements Serializable {
      * Gets the pending stylesheet removals to be sent to the client.
      *
      * @return the set of dependency IDs to remove
+     * @since 25.0
      */
     public Set<String> getPendingStyleSheetRemovals() {
         return new HashSet<>(pendingStyleSheetRemovals);
@@ -1031,6 +1208,8 @@ public class UIInternals implements Serializable {
 
     /**
      * Clears the pending stylesheet removals.
+     * 
+     * @since 25.0
      */
     public void clearPendingStyleSheetRemovals() {
         pendingStyleSheetRemovals.clear();
@@ -1054,14 +1233,24 @@ public class UIInternals implements Serializable {
             triggerChunkLoading(componentClass);
         }
 
-        dependencies.getStyleSheets().forEach(styleSheet -> page
-                .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+        dependencies.getStyleSheets().forEach(styleSheet -> {
+            String resolved = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet.value());
+            if (resolved != null) {
+                page.addStyleSheet(resolved, styleSheet.loadMode());
+            }
+        });
 
         VaadinService service = session.getService();
         if (!service.getDeploymentConfiguration().isProductionMode()) {
-            dependencies.getStyleSheets()
-                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
-                            .trackAddForComponent(styleSheet.value()));
+            dependencies.getStyleSheets().forEach(styleSheet -> {
+                String resolved = FrontendDependencyUrlResolver
+                        .resolveToContextRoot(styleSheet.value());
+                if (resolved != null) {
+                    ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(resolved);
+                }
+            });
         }
 
         warnForUnavailableBundledDependencies(componentClass, dependencies);
@@ -1188,6 +1377,7 @@ public class UIInternals implements Serializable {
      *
      * @param location
      *            current location.
+     * @since 24.7.1
      */
     public void setLocationForRefresh(Location location) {
         locationForRefresh = location;
@@ -1206,6 +1396,7 @@ public class UIInternals implements Serializable {
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
+     * @since 24.4
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         if (locationForRefresh == null) {
@@ -1223,6 +1414,7 @@ public class UIInternals implements Serializable {
      * component that implements HasErrorParameter.
      *
      * @return true if showing an error view, false otherwise
+     * @since 25.0.6
      */
     public boolean isShowingErrorView() {
         if (routerTargetChain.isEmpty()) {
@@ -1277,6 +1469,7 @@ public class UIInternals implements Serializable {
      * @param fullAppId
      *            the (full, not stripped) id of the application tied with this
      *            UI
+     * @since 24.1
      */
     public void setFullAppId(String fullAppId) {
         this.fullAppId = fullAppId;
@@ -1299,6 +1492,7 @@ public class UIInternals implements Serializable {
      * will be gone.
      *
      * @return the full app id
+     * @since 24.1
      */
     public String getFullAppId() {
         return fullAppId;
@@ -1386,6 +1580,7 @@ public class UIInternals implements Serializable {
      * when the browser details are received.
      *
      * @return the extended client details (never {@code null})
+     * @since 2.0
      */
     public ExtendedClientDetails getExtendedClientDetails() {
         if (extendedClientDetails == null) {
@@ -1402,6 +1597,7 @@ public class UIInternals implements Serializable {
      *
      * @param details
      *            the updated extended client details.
+     * @since 2.0
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
@@ -1412,9 +1608,10 @@ public class UIInternals implements Serializable {
      * UI. Starts as {@link GeolocationAvailability#UNKNOWN} before the first
      * client bootstrap report, then transitions to the value the browser
      * reports and reflects subsequent updates. Application code reads it via
-     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilitySignal()}.
+     * {@link com.vaadin.flow.component.geolocation.Geolocation#availabilityHintSignal()}.
      *
      * @return the availability signal
+     * @since 25.2
      */
     public ValueSignal<GeolocationAvailability> getGeolocationAvailabilitySignal() {
         return geolocationAvailabilitySignal;
@@ -1425,6 +1622,7 @@ public class UIInternals implements Serializable {
      *
      * @param availability
      *            the new availability
+     * @since 25.2
      */
     public void setGeolocationAvailability(
             GeolocationAvailability availability) {
@@ -1432,9 +1630,227 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Returns the read-only reactive signal holding the Web Share API support
+     * state for this UI. Starts as {@link WebShareSupport#UNKNOWN} before the
+     * first client bootstrap report, then transitions to the value the browser
+     * reports. Application code reads it via
+     * {@link com.vaadin.flow.component.webshare.WebShare#supportSignal()}.
+     *
+     * @return the support signal
+     * @since 25.2
+     */
+    public Signal<WebShareSupport> getWebShareSupportSignalReadOnly() {
+        return webShareSupportReadOnly;
+    }
+
+    /**
+     * Updates the Web Share support signal. For framework use only.
+     *
+     * @param support
+     *            the new support state
+     * @since 25.2
+     */
+    public void setWebShareSupport(WebShareSupport support) {
+        this.webShareSupportSignal.set(support);
+    }
+
+    /**
+     * Returns the geolocation client currently bound to this UI, or
+     * {@code null} if none has been installed yet. Framework-internal:
+     * application code resolves the client through the static
+     * {@link com.vaadin.flow.component.geolocation.Geolocation} API, which
+     * lazily installs a default client on first use.
+     *
+     * @return the installed geolocation client, or {@code null}
+     * @since 25.2
+     */
+    public GeolocationClient getGeolocationClient() {
+        return geolocationClient;
+    }
+
+    /**
+     * Installs the given geolocation client on this UI, replacing any previous
+     * one. The previous client is closed; the availability signal is seeded
+     * with the new client's current availability and updated whenever the
+     * client reports a change. Framework-internal entry point used by the
+     * default {@code Geolocation} bootstrap and by external test drivers that
+     * substitute a browserless client.
+     *
+     * @param client
+     *            the client to install, never {@code null}
+     * @since 25.2
+     */
+    public void setGeolocationClient(GeolocationClient client) {
+        if (geolocationClient != null) {
+            geolocationClient.close();
+        }
+        if (geolocationClientAvailabilityRegistration != null) {
+            geolocationClientAvailabilityRegistration.remove();
+        }
+        geolocationClient = client;
+        setGeolocationAvailability(client.currentAvailability());
+        geolocationClientAvailabilityRegistration = client
+                .subscribeAvailability(this::setGeolocationAvailability);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock active signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#activeSignal()}.
+     *
+     * @return the read-only active signal
+     * @since 25.2
+     */
+    public Signal<Boolean> getWakeLockActiveSignalReadOnly() {
+        return wakeLockActiveReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock active signal. For framework use only.
+     *
+     * @param active
+     *            the new active state
+     * @since 25.2
+     */
+    public void setWakeLockActive(boolean active) {
+        this.wakeLockActiveSignal.set(active);
+    }
+
+    /**
+     * Returns the read-only view of the wake-lock availability signal for this
+     * UI. Application code reads it via
+     * {@link com.vaadin.flow.component.wakelock.WakeLock#availabilitySignal()}.
+     *
+     * @return the read-only availability signal
+     * @since 25.2
+     */
+    public Signal<WakeLockAvailability> getWakeLockAvailabilitySignalReadOnly() {
+        return wakeLockAvailabilityReadOnly;
+    }
+
+    /**
+     * Updates the wake-lock availability signal. For framework use only.
+     *
+     * @param availability
+     *            the new availability
+     * @since 25.2
+     */
+    public void setWakeLockAvailability(WakeLockAvailability availability) {
+        this.wakeLockAvailabilitySignal.set(availability);
+    }
+
+    /**
+     * Returns whether the per-UI DOM listener that bridges
+     * {@code vaadin-wake-lock-change} events into
+     * {@link #setWakeLockActive(boolean)} has already been installed. For
+     * framework use only.
+     *
+     * @return {@code true} if the listener has been installed
+     * @since 25.2
+     */
+    public boolean isWakeLockListenerInstalled() {
+        return wakeLockListenerInstalled;
+    }
+
+    /**
+     * Marks the per-UI wake-lock DOM listener as installed so subsequent
+     * {@link com.vaadin.flow.component.wakelock.WakeLock} calls do not install
+     * a duplicate. For framework use only.
+     * 
+     * @since 25.2
+     */
+    public void markWakeLockListenerInstalled() {
+        this.wakeLockListenerInstalled = true;
+    }
+
+    /**
+     * Returns the read-only view of the screen orientation signal for this UI.
+     * Application code reads it via
+     * {@link com.vaadin.flow.component.screenorientation.ScreenOrientation#orientationSignal()}.
+     *
+     * @return the read-only screen orientation signal
+     * @since 25.2
+     */
+    public Signal<ScreenOrientationData> getScreenOrientationSignalReadOnly() {
+        return screenOrientationReadOnly;
+    }
+
+    /**
+     * Installs, once per UI, the DOM listener that bridges
+     * {@code vaadin-screen-orientation-change} events into the screen
+     * orientation signal. Guarded by a flag so repeated calls do not attach
+     * duplicate listeners. For framework use only.
+     * 
+     * @since 25.2
+     */
+    public void ensureScreenOrientationWired() {
+        if (screenOrientationListenerInstalled) {
+            return;
+        }
+        screenOrientationListenerInstalled = true;
+        ui.getElement().addEventListener(SCREEN_ORIENTATION_CHANGE_EVENT,
+                e -> applyScreenOrientation(
+                        e.getEventDetail(ScreenOrientationDetail.class)))
+                .addEventDetail().allowInert();
+    }
+
+    /**
+     * Seeds the screen orientation signal from raw client-side values (e.g.
+     * from the initial bootstrap parameters) and ensures the change listener is
+     * installed. A {@code null} or empty type leaves the current value
+     * untouched; an unparseable angle is treated as {@code 0} so a valid type
+     * is still applied. For framework use only.
+     *
+     * @param type
+     *            the raw orientation type from the client, or {@code null}
+     * @param angle
+     *            the raw orientation angle from the client, or {@code null}
+     * @since 25.2
+     */
+    public void setScreenOrientationFromClient(@Nullable String type,
+            @Nullable String angle) {
+        ensureScreenOrientationWired();
+        int angleValue;
+        try {
+            angleValue = angle == null ? 0 : Integer.parseInt(angle);
+        } catch (NumberFormatException e) {
+            getLogger().debug(
+                    "Unparseable screen orientation angle from client: {}",
+                    angle);
+            angleValue = 0;
+        }
+        applyScreenOrientation(type, angleValue);
+    }
+
+    private void applyScreenOrientation(
+            @Nullable ScreenOrientationDetail detail) {
+        if (detail != null) {
+            applyScreenOrientation(detail.type(), detail.angle());
+        }
+    }
+
+    private void applyScreenOrientation(@Nullable String type, int angle) {
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+        try {
+            screenOrientationSignal.set(new ScreenOrientationData(
+                    ScreenOrientationType.fromClientValue(type), angle));
+        } catch (IllegalArgumentException e) {
+            getLogger().debug("Unknown screen orientation type from client: {}",
+                    type);
+        }
+    }
+
+    private record ScreenOrientationDetail(@Nullable String type,
+            int angle) implements Serializable {
+    }
+
+    /**
      * Check if we have a modal component defined for the UI.
      *
      * @return {@code true} if modal component is defined
+     * @since 23.0
      */
     public boolean hasModalComponent() {
         return modalComponentStack != null && !modalComponentStack.isEmpty();
@@ -1444,6 +1860,7 @@ public class UIInternals implements Serializable {
      * Get the active modal component if modal components set.
      *
      * @return the current active modal component
+     * @since 23.0
      */
     public Component getActiveModalComponent() {
         if (hasModalComponent()) {
@@ -1465,6 +1882,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @since 23.0
      */
     public void setChildModal(Component child) {
         if (modalComponentStack == null) {
@@ -1507,6 +1925,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to make modeless
+     * @since 23.0
      */
     public void setChildModeless(Component child) {
         if (modalComponentStack == null) {
@@ -1561,6 +1980,7 @@ public class UIInternals implements Serializable {
      * Returns the Deployment Configuration for the application
      *
      * @return The Deployment Configuration
+     * @since 24.8
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
@@ -1569,6 +1989,8 @@ public class UIInternals implements Serializable {
     /**
      * Create flow reference for the client outlet element if not already
      * generated.
+     * 
+     * @since 25.1
      */
     public void createWrapperElement() {
         if (this.wrapperElement == null) {
@@ -1581,6 +2003,7 @@ public class UIInternals implements Serializable {
      * Get outlet element reference wrapper if set.
      * 
      * @return wrapperElement if set else {@code null}
+     * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;

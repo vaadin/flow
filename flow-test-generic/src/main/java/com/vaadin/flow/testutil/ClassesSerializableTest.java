@@ -239,6 +239,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.PinnedNpmVersions(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
 
@@ -246,8 +247,11 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractFileGeneratorFallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.GeneratedFilesSupport",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeInstallation",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeInstallations",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.PnpmWorkspaceFile",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
@@ -257,6 +261,9 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushSubscription",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushRegistration",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushMessage",
+
+                // Static Utilities
+                "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",

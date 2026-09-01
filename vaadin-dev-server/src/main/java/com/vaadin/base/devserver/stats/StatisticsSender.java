@@ -31,6 +31,8 @@ import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Handles sending of telemetry data.
+ * 
+ * @since 9.0.2
  */
 public class StatisticsSender {
 

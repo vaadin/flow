@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -61,8 +60,7 @@ public final class ElementEffect implements Serializable {
     private final ContextualEffectAction effectFunction;
     private final Element owner;
     private Effect effect = null;
-    private Registration attachRegistration;
-    private Registration detachRegistration;
+    private Registration attachedScope;
     /**
      * Error handler used by the active effect action. {@code null} means
      * exceptions are re-thrown (probe / unattached mode).
@@ -80,19 +78,7 @@ public final class ElementEffect implements Serializable {
         this.effectFunction = effectFunction;
         this.owner = owner;
 
-        if (owner.getNode().isAttached()) {
-            // Element is already attached: set up the error handler and
-            // UI-locked dispatcher before creating the Effect so that the
-            // initial (synchronous) run uses the proper error-routing and
-            // execution context.
-            enableEffect(owner);
-
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
-        } else {
+        if (!owner.getNode().isAttached()) {
             // Element is not yet attached: run a probe immediately so that
             // structural errors (e.g. MissingSignalUsageException) are reported
             // at the call site rather than delayed until attach. The probe uses
@@ -103,14 +89,12 @@ public final class ElementEffect implements Serializable {
             effect.passivate();
         }
 
-        attachRegistration = owner.addAttachListener(attach -> {
-            enableEffect(attach.getSource());
-
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
+        // Enables the effect on attach and passivates it on detach, also when
+        // the element is re-attached without an intervening detach event
+        // reaching its listeners.
+        attachedScope = owner.whenAttached(ui -> {
+            enableEffect(ui);
+            return this::disableEffect;
         });
     }
 
@@ -164,6 +148,7 @@ public final class ElementEffect implements Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             EffectAction effectFunction) {
@@ -205,6 +190,7 @@ public final class ElementEffect implements Serializable {
      *            information about the trigger, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             ContextualEffectAction effectFunction) {
@@ -276,11 +262,7 @@ public final class ElementEffect implements Serializable {
         return binding;
     }
 
-    private void enableEffect(Element owner) {
-        Component parentComponent = ComponentUtil.findParentComponent(owner)
-                .get();
-        UI ui = parentComponent.getUI().get();
-
+    private void enableEffect(UI ui) {
         // Install the UI error handler so that exceptions during active
         // (post-attach) runs are routed to the session error handler instead
         // of being re-thrown.
@@ -336,17 +318,13 @@ public final class ElementEffect implements Serializable {
     }
 
     public void close() {
+        if (attachedScope != null) {
+            attachedScope.remove();
+            attachedScope = null;
+        }
         if (effect != null) {
             effect.dispose();
             effect = null;
-        }
-        if (attachRegistration != null) {
-            attachRegistration.remove();
-            attachRegistration = null;
-        }
-        if (detachRegistration != null) {
-            detachRegistration.remove();
-            detachRegistration = null;
         }
     }
 
@@ -390,6 +368,7 @@ public final class ElementEffect implements Serializable {
      * @throws IllegalStateException
      *             thrown if parent element has default-slot children, or if the
      *             child factory produces elements with a {@code slot} attribute
+     * @since 25.1
      */
     public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,

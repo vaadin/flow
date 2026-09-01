@@ -21,7 +21,6 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 
-import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -137,7 +136,6 @@ public class MessageSender {
                     + pushPendingMessage.toJson());
             JsonObject payload = pushPendingMessage;
             pushPendingMessage = null;
-            registry.getRequestResponseTracker().startRequest();
             sendPayload(payload);
             return;
         } else if (hasQueuedMessages()) {
@@ -156,7 +154,6 @@ public class MessageSender {
             return;
         }
 
-        boolean showLoadingIndicator = serverRpcQueue.showLoadingIndicator();
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
 
@@ -177,9 +174,7 @@ public class MessageSender {
             resetTimer();
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
-        if (showLoadingIndicator) {
-            ConnectionIndicator.setState(ConnectionIndicator.LOADING);
-        }
+        registry.getLoadingIndicatorStateHandler().startLoading();
         send(reqJson, extraJson);
     }
 
@@ -193,7 +188,6 @@ public class MessageSender {
      */
     protected void send(final JsonArray reqInvocations,
             final JsonObject extraJson) {
-        registry.getRequestResponseTracker().startRequest();
         send(preparePayload(reqInvocations, extraJson));
     }
 

@@ -25,10 +25,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -68,7 +68,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
-@NotThreadSafe
+@Isolated
 class WebComponentProviderTest {
 
     @Mock
@@ -209,9 +209,12 @@ class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle web-component request");
 
-        assertTrue(out.toString().contains(
-                "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
-                "Response should have Feature Flags updater function");
+        String generatedScript = out.toString();
+        assertTrue(generatedScript.contains("web-component/my-component"),
+                "Response should contain the web component bootstrap script "
+                        + "for the exported component");
+        assertTrue(generatedScript.contains("web-component-bootstrap.js"),
+                "Response should reference the web component bootstrap module");
 
         Mockito.verify(response).getOutputStream();
         Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),

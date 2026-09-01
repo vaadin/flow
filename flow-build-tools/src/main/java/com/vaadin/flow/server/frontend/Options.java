@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
@@ -39,6 +40,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Build a <code>NodeExecutor</code> instance.
+ * 
+ * @since 23.3.1
  */
 public class Options implements Serializable {
 
@@ -148,6 +151,11 @@ public class Options implements Serializable {
      */
     private List<String> postinstallPackages = new ArrayList<>();
 
+    /**
+     * Npm packages to exclude from running postinstall scripts.
+     */
+    private List<String> excludePostinstallPackages = new ArrayList<>();
+
     private FeatureFlags featureFlags;
 
     private boolean frontendHotdeploy = false;
@@ -166,6 +174,15 @@ public class Options implements Serializable {
 
     private boolean commercialBannerEnabled = false;
 
+    /**
+     * Minimum age, in days, that an npm/pnpm/bun frontend package version must
+     * have before it is allowed to be installed, or {@code null} when nothing
+     * has been configured on the Vaadin side. In the latter case the value is
+     * resolved from the package manager configuration, falling back to
+     * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}.
+     */
+    private @Nullable Integer minimumFrontendPackageAgeDays;
+
     private ApplicationConfiguration applicationConfiguration;
 
     /**
@@ -175,6 +192,7 @@ public class Options implements Serializable {
      *            a {@link Lookup} to discover services used by Flow (SPI)
      * @param npmFolder
      *            a project's base folder
+     * @since 24.0
      */
     public Options(Lookup lookup, File npmFolder) {
         this(lookup, new ClassFinder.CachedClassFinder(
@@ -190,6 +208,7 @@ public class Options implements Serializable {
      *            a class finder to use in node tasks
      * @param npmFolder
      *            a project's base folder
+     * @since 24.4
      */
     public Options(Lookup lookup, ClassFinder classFinder, File npmFolder) {
         this.lookup = lookup;
@@ -205,6 +224,8 @@ public class Options implements Serializable {
      *            the application configuration to be applied
      * @return the updated {@code Options} instance with the specified
      *         application configuration
+     *
+     * @since 25.1.6
      */
     public Options withApplicationConfiguration(
             ApplicationConfiguration applicationConfiguration) {
@@ -218,6 +239,7 @@ public class Options implements Serializable {
      * @param frontendDirectory
      *            a directory with project's frontend files
      * @return this
+     * @since 24.0
      */
     public Options withFrontendDirectory(File frontendDirectory) {
         this.frontendDirectory = frontendDirectory.isAbsolute()
@@ -234,6 +256,7 @@ public class Options implements Serializable {
      *            project build directory
      *
      * @return this builder
+     * @since 24.0
      */
     public Options withBuildDirectory(String buildDirectory) {
         this.buildDirectoryName = buildDirectory;
@@ -251,6 +274,7 @@ public class Options implements Serializable {
      *            as the "config/stats.json" stats file, and the
      *            "config/flow-build-info.json" token file.
      * @return this builder
+     * @since 24.4
      */
     public Options withBuildResultFolders(File webappResourcesDirectory,
             File resourceOutputDirectory) {
@@ -303,6 +327,7 @@ public class Options implements Serializable {
      * @param runNpmInstall
      *            run npm install. Default is <code>false</code>
      * @return the builder
+     * @since 24.0
      */
     public Options withRunNpmInstall(boolean runNpmInstall) {
         this.runNpmInstall = runNpmInstall;
@@ -348,6 +373,7 @@ public class Options implements Serializable {
      *            whether to copy templates
      *
      * @return the builder
+     * @since 24.0
      */
     public Options withCopyTemplates(boolean copyTemplates) {
         this.copyTemplates = copyTemplates;
@@ -408,6 +434,7 @@ public class Options implements Serializable {
      * Gets the folder where frontend files should be generated.
      *
      * @return folder to generate frontend files in
+     * @since 24.0
      */
     public File getFrontendGeneratedFolder() {
         if (frontendGeneratedFolder == null) {
@@ -437,6 +464,7 @@ public class Options implements Serializable {
      * @param object
      *            the object to fill with token file data
      * @return the builder, for chaining
+     * @since 24.7
      */
     public Options populateTokenFileData(JsonNode object) {
         tokenFileData = object;
@@ -463,6 +491,7 @@ public class Options implements Serializable {
      * @param enable
      *            enables pnpm.
      * @return the builder, for chaining
+     * @since 24.0
      */
     public Options withEnablePnpm(boolean enable) {
         enablePnpm = enable;
@@ -477,6 +506,7 @@ public class Options implements Serializable {
      * @param enable
      *            enables bun.
      * @return the builder, for chaining
+     * @since 24.3
      */
     public Options withEnableBun(boolean enable) {
         enableBun = enable;
@@ -492,6 +522,7 @@ public class Options implements Serializable {
      * @param ciBuild
      *            true to enable ci build
      * @return the builder, for chaining
+     * @since 24.1
      */
     public Options withCiBuild(boolean ciBuild) {
         this.ciBuild = ciBuild;
@@ -505,6 +536,7 @@ public class Options implements Serializable {
      * @param forceProductionBuild
      *            true to force production build
      * @return the builder, for chaining
+     * @since 24.1
      */
     public Options withForceProductionBuild(boolean forceProductionBuild) {
         this.forceProductionBuild = forceProductionBuild;
@@ -546,6 +578,7 @@ public class Options implements Serializable {
      *            the folder path containing node executable, or null to use
      *            default resolution
      * @return the builder, for chaining
+     * @since 25.0.4
      */
     public Options withNodeFolder(String nodeFolder) {
         this.nodeFolder = nodeFolder;
@@ -600,6 +633,7 @@ public class Options implements Serializable {
      *            true to run with a dev server, false to run in development
      *            bundle mode
      * @return this builder
+     * @since 24.0
      */
     public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
         this.frontendHotdeploy = frontendHotdeploy;
@@ -613,6 +647,7 @@ public class Options implements Serializable {
      * @param frontendIgnoreVersionChecks
      *            {@code true} to ignore node/npm tool version checks
      * @return the builder, for chaining
+     * @since 24.8
      */
     public Options withFrontendIgnoreVersionChecks(
             boolean frontendIgnoreVersionChecks) {
@@ -625,6 +660,7 @@ public class Options implements Serializable {
      *
      * @return true to run with a dev server, false to run in development bundle
      *         mode
+     * @since 24.0
      */
     public boolean isFrontendHotdeploy() {
         return frontendHotdeploy;
@@ -634,6 +670,7 @@ public class Options implements Serializable {
      * Check if a dev mode bundle build should run.
      *
      * @return true to run the build, false otherwise
+     * @since 24.0
      */
     public boolean isDevBundleBuild() {
         return !isProductionMode() && isBundleBuild();
@@ -646,6 +683,7 @@ public class Options implements Serializable {
      * @param bundleBuild
      *            true to run a bundle build
      * @return this builder
+     * @since 24.1
      */
     public Options withBundleBuild(boolean bundleBuild) {
         this.bundleBuild = bundleBuild;
@@ -656,6 +694,7 @@ public class Options implements Serializable {
      * Check if a bundle build should run.
      *
      * @return true to run the build, false otherwise
+     * @since 24.1
      */
     public boolean isBundleBuild() {
         return bundleBuild;
@@ -687,6 +726,24 @@ public class Options implements Serializable {
      */
     public Options withPostinstallPackages(List<String> postinstallPackages) {
         this.postinstallPackages = postinstallPackages;
+        return this;
+    }
+
+    /**
+     * Sets the npm packages to exclude from running {@code postinstall} for.
+     * <p>
+     * Entries here are removed from the built-in default postinstall list (e.g.
+     * {@code esbuild}, {@code @vaadin/vaadin-usage-statistics}) as well as from
+     * any additional packages added via {@link #withPostinstallPackages(List)}.
+     *
+     * @param excludePostinstallPackages
+     *            the npm packages to exclude from postinstall
+     * @return the builder, for chaining
+     * @since 25.1.8
+     */
+    public Options withExcludePostinstallPackages(
+            List<String> excludePostinstallPackages) {
+        this.excludePostinstallPackages = excludePostinstallPackages;
         return this;
     }
 
@@ -730,6 +787,7 @@ public class Options implements Serializable {
      * gradle.
      *
      * @return The name of the build directory
+     * @since 24.0
      */
     public String getBuildDirectoryName() {
         return buildDirectoryName;
@@ -822,6 +880,7 @@ public class Options implements Serializable {
      * @deprecated used internally only for testing, to be removed without a
      *             replacement.
      * @return true if npm files should be cleaned, false otherwise
+     * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
@@ -888,6 +947,7 @@ public class Options implements Serializable {
      * Gets the lookup instance to use for internal lookups.
      *
      * @return the lookup instance
+     * @since 24.0
      */
     public Lookup getLookup() {
         return lookup;
@@ -898,6 +958,7 @@ public class Options implements Serializable {
      *
      * @return <code>true</code> if production mode is enabled, otherwise
      *         <code>false</code>
+     * @since 24.0
      */
     public boolean isProductionMode() {
         return productionMode;
@@ -908,6 +969,7 @@ public class Options implements Serializable {
      * {@literal src/main/resources} in a Maven project.
      *
      * @return the java resource folder
+     * @since 24.0
      */
     public File getJavaResourceFolder() {
         return javaResourceFolder;
@@ -915,6 +977,10 @@ public class Options implements Serializable {
 
     public List<String> getPostinstallPackages() {
         return postinstallPackages;
+    }
+
+    public List<String> getExcludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     /**
@@ -925,6 +991,7 @@ public class Options implements Serializable {
      * @param skip
      *            {@code true} to skip rebuild of dev bundle
      * @return this builder
+     * @since 24.1
      */
     public Options skipDevBundleBuild(boolean skip) {
         skipDevBundle = skip;
@@ -936,6 +1003,7 @@ public class Options implements Serializable {
      *
      * @return {@code true} to skip dev bundle checks, {@code false} to run
      *         normally. Default is {@code false}
+     * @since 24.1
      */
     public boolean isSkipDevBundle() {
         return skipDevBundle;
@@ -947,6 +1015,7 @@ public class Options implements Serializable {
      * @param compressBundle
      *            {@code false} to not compress frontend bundles
      * @return this builder
+     * @since 24.3
      */
     public Options withCompressBundle(boolean compressBundle) {
         this.compressBundle = compressBundle;
@@ -957,6 +1026,7 @@ public class Options implements Serializable {
      * Get if frontend bundle should be compressed or not.
      *
      * @return true to copress, false to skip compression
+     * @since 24.3
      */
     public boolean isCompressBundle() {
         return compressBundle;
@@ -989,6 +1059,7 @@ public class Options implements Serializable {
      *            {@literal false} if they should be preserved.
      *
      * @return this builder
+     * @since 24.4
      */
     public Options withCleanOldGeneratedFiles(boolean clean) {
         this.cleanOldGeneratedFiles = clean;
@@ -1001,6 +1072,7 @@ public class Options implements Serializable {
      *
      * @return {@literal true} if old generated files should be removed,
      *         otherwise {@literal false}.
+     * @since 24.4
      */
     public boolean isCleanOldGeneratedFiles() {
         return cleanOldGeneratedFiles;
@@ -1012,6 +1084,7 @@ public class Options implements Serializable {
      * @param frontendExtraFileExtensions
      *            the file extensions to add for the project
      * @return this builder
+     * @since 24.6
      */
     public Options withFrontendExtraFileExtensions(
             List<String> frontendExtraFileExtensions) {
@@ -1023,6 +1096,7 @@ public class Options implements Serializable {
      * Gets the project file extensions.
      *
      * @return the project file extensions
+     * @since 24.6
      */
     public List<String> getFrontendExtraFileExtensions() {
         return frontendExtraFileExtensions;
@@ -1032,6 +1106,7 @@ public class Options implements Serializable {
      * Sets whether to exclude web component npm packages in packages.json.
      *
      * @return this builder
+     * @since 24.6
      */
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
@@ -1043,6 +1118,7 @@ public class Options implements Serializable {
      * @param exclude
      *            whether to exclude web component npm packages
      * @return this builder
+     * @since 24.6
      */
     public Options withNpmExcludeWebComponents(boolean exclude) {
         this.npmExcludeWebComponents = exclude;
@@ -1053,6 +1129,7 @@ public class Options implements Serializable {
      * Whether to ignore node/npm tool version checks or not.
      *
      * @return {@code true} to ignore node/npm tool version checks
+     * @since 24.8
      */
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
@@ -1064,6 +1141,7 @@ public class Options implements Serializable {
      * @param frontendDependenciesScanner
      *            frontend dependencies scanner
      * @return this builder
+     * @since 24.8
      */
     public Options withFrontendDependenciesScanner(
             FrontendDependenciesScanner frontendDependenciesScanner) {
@@ -1076,6 +1154,7 @@ public class Options implements Serializable {
      *
      * @return {@code true} if the commercial banner is enabled, {@code false}
      *         otherwise
+     * @since 24.9
      */
     public boolean isCommercialBannerEnabled() {
         return commercialBannerEnabled;
@@ -1089,6 +1168,7 @@ public class Options implements Serializable {
      *            a boolean value indicating whether the built application could
      *            add a commercial banner.
      * @return this builder
+     * @since 24.9
      */
     public Options withCommercialBanner(boolean enableCommercialBanner) {
         this.commercialBannerEnabled = enableCommercialBanner;
@@ -1096,10 +1176,68 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the minimum age (in days) a frontend package version must have
+     * before it is allowed to be installed by npm, pnpm or bun. The intent is
+     * to avoid pulling in brand-new versions that may have been compromised by
+     * a supply-chain attack but not yet detected and removed from the registry.
+     * <p>
+     * For npm this is translated to a {@code --min-release-age=<days>}
+     * argument, or {@code --before=<date>} for npm older than 11.10.0; for pnpm
+     * it becomes {@code --config.minimum-release-age=<minutes>} (requires pnpm
+     * &ge; 10.16.0); for bun it becomes {@code --minimum-release-age=<seconds>}
+     * (requires bun &ge; 1.3.0). Since these are command line arguments, they
+     * take precedence over anything the package manager reads from its own
+     * configuration.
+     * <p>
+     * When set to {@code null}, no such argument is passed if npm or pnpm
+     * already resolves a minimum release age from its own configuration
+     * ({@code .npmrc} or {@code pnpm-workspace.yaml}), so that a manually run
+     * {@code npm install} behaves the same way. Only if nothing is configured
+     * there,
+     * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} is
+     * used. The configuration of bun cannot be read, so the default always
+     * applies for it.
+     *
+     * @param minimumFrontendPackageAgeDays
+     *            minimum allowed age in days, {@code 0} to disable the check,
+     *            or {@code null} to use the package manager configuration
+     * @return this builder
+     * @throws IllegalArgumentException
+     *             if {@code minimumFrontendPackageAgeDays} is negative
+     * @since 25.1.6
+     */
+    public Options withMinimumFrontendPackageAgeDays(
+            @Nullable Integer minimumFrontendPackageAgeDays) {
+        if (minimumFrontendPackageAgeDays != null
+                && minimumFrontendPackageAgeDays < 0) {
+            throw new IllegalArgumentException(
+                    "minimumFrontendPackageAgeDays must be >= 0");
+        }
+        this.minimumFrontendPackageAgeDays = minimumFrontendPackageAgeDays;
+        return this;
+    }
+
+    /**
+     * Gets the minimum age (in days) a frontend package version must have
+     * before npm, pnpm or bun is allowed to install it. {@code 0} means the
+     * check is disabled and {@code null} means that nothing has been configured
+     * on the Vaadin side, in which case the package manager configuration
+     * decides. See {@link #withMinimumFrontendPackageAgeDays(Integer)}.
+     *
+     * @return the minimum allowed age in days, or {@code null} if not
+     *         configured
+     * @since 25.1.6
+     */
+    public @Nullable Integer getMinimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
+    }
+
+    /**
      * Gets the frontend dependencies scanner to use. If not is not pre-set,
      * this initializes a new one based on the Options set.
      *
      * @return frontend dependencies scanner
+     * @since 24.8
      */
     public FrontendDependenciesScanner getFrontendDependenciesScanner() {
         if (frontendDependenciesScanner == null) {
@@ -1119,6 +1257,7 @@ public class Options implements Serializable {
      * @param copyAssets
      *            boolean value indicating if npm assets should be copied.
      * @return this builder
+     * @since 24.9
      */
     public Options setCopyAssets(boolean copyAssets) {
         this.copyAssets = copyAssets;
@@ -1131,6 +1270,7 @@ public class Options implements Serializable {
      * NOTE! For a devBundleBuild copy assets will always be true!
      *
      * @return {@code false} to skip copying except for devBundleBuild.
+     * @since 24.9
      */
     public boolean copyAssets() {
         if (isDevBundleBuild()) {
@@ -1145,6 +1285,7 @@ public class Options implements Serializable {
      * @param resourcesDirectory
      *            META-INF resources directory
      * @return this builder
+     * @since 25.0
      */
     public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
         this.resourcesDirectory = resourcesDirectory;
@@ -1155,6 +1296,7 @@ public class Options implements Serializable {
      * Get the resources directory if defined.
      *
      * @return META-INF resources directory
+     * @since 25.0
      */
     public File getMetaInfResourcesDirectory() {
         return resourcesDirectory;
@@ -1172,6 +1314,8 @@ public class Options implements Serializable {
      * @param defaultValue
      *            the value to return if the property is not set
      * @return the property value, or empty if configuration is unavailable
+     *
+     * @since 25.1.6
      */
     public Optional<String> getApplicationStringProperty(String name,
             String defaultValue) {
@@ -1191,6 +1335,8 @@ public class Options implements Serializable {
      * @param defaultValue
      *            the value to return if the property is not set
      * @return the property value, or empty if configuration is unavailable
+     *
+     * @since 25.1.6
      */
     public Optional<Boolean> getApplicationBooleanProperty(String name,
             boolean defaultValue) {

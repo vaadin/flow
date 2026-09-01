@@ -38,6 +38,7 @@ import com.vaadin.flow.signals.SignalCommand.ScopeOwnerCommand;
  * up the tree and any insert commands that are owned by this revision.
  *
  * @see MutableTreeRevision
+ * @since 25.1
  */
 public abstract class TreeRevision implements Serializable {
     private final Map<Id, Node> nodes;

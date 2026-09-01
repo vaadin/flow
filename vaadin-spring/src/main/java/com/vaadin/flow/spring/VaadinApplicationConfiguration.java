@@ -16,13 +16,14 @@
 package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -41,8 +42,9 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  *
  * @author Vaadin Ltd
  *
+ * @since 16.0
  */
-@Configuration
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 public class VaadinApplicationConfiguration {
 
     /**
@@ -75,6 +77,7 @@ public class VaadinApplicationConfiguration {
      * @param locationPattern
      *            the location pattern for i18n resource files
      * @return default I18N provider
+     * @since 24.3
      */
     @Bean
     @ConditionalOnMissingBean(value = I18NProvider.class)
@@ -91,6 +94,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.4
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)
@@ -104,6 +108,7 @@ public class VaadinApplicationConfiguration {
      * there's no {@link MenuAccessControl} bean declared.
      *
      * @return default menu access control
+     * @since 24.5.1
      */
     @Bean
     @ConditionalOnMissingBean(value = MenuAccessControl.class)

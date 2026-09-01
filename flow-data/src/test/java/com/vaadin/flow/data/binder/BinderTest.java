@@ -1527,6 +1527,24 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    void nullValueForPrimitiveDoubleField_showsValidationError() {
+        Binder<ExampleDouble> binder = new Binder<>(ExampleDouble.class);
+        TestTextField field = new TestTextField();
+        Binder.Binding<ExampleDouble, ?> binding = binder.forField(field)
+                .withConverter(new StringToDoubleConverter("")).bind("value");
+        binder.setBean(new ExampleDouble());
+
+        field.setValue("");
+
+        BindingValidationStatus<?> status = binding.validate();
+        assertTrue(status.isError());
+        assertEquals(
+                "Null value cannot be assigned to a primitive bean property. "
+                        + "Use asRequired() before any converter to prevent null values.",
+                status.getMessage().get());
+    }
+
+    @Test
     void remove_field_binding() {
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter("Can't convert"))
@@ -1633,6 +1651,46 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals(ageBeforeUnbind, String.valueOf(item.getAge()),
                 "Binding still affects bean even after unbind");
 
+    }
+
+    @Test
+    void setBean_bindingReplacedInAnotherFieldsValueChangeListener_fieldInitializedWithoutException() {
+        // Rebinding a field while the binder is initializing the fields, see
+        // https://github.com/vaadin/flow/issues/24790
+        ageField.addValueChangeListener(event -> {
+            binder.removeBinding(nameField);
+            binder.forField(nameField).asRequired("Name is required")
+                    .bind(Person::getFirstName, Person::setFirstName);
+        });
+
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+
+        assertEquals(item.getFirstName(), nameField.getValue(),
+                "Replacement binding should have initialized the field");
+    }
+
+    @Test
+    void removeBean_bindingRemovedInAnotherFieldsValueChangeListener_fieldsClearedWithoutException() {
+        // Removing a binding while the binder is clearing the fields, see
+        // https://github.com/vaadin/flow/issues/24790
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+        Binding<Person, String> nameBinding = binder.bind(nameField,
+                Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+        ageField.addValueChangeListener(
+                event -> binder.removeBinding(nameBinding));
+
+        binder.removeBean();
+
+        assertTrue(ageField.isEmpty(), "Field not cleared");
     }
 
     @Test
@@ -3028,6 +3086,18 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 ((DecimalFormat) format).setMinimumFractionDigits(2);
             }
             return format;
+        }
+    }
+
+    private static class ExampleDouble {
+        private double value;
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
         }
     }
 

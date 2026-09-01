@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasAriaLabelTest {
 
@@ -76,7 +77,7 @@ class HasAriaLabelTest {
     @Test
     void withNullAriaLabelledBy_getAriaLabelledByReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
-        component.setAriaLabelledBy(null);
+        component.setAriaLabelledBy((String) null);
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
@@ -92,7 +93,7 @@ class HasAriaLabelTest {
         TestComponent component = new TestComponent();
         component.setAriaLabelledBy("test AriaLabelledBy");
 
-        component.setAriaLabelledBy(null);
+        component.setAriaLabelledBy((String) null);
         assertFalse(component.getAriaLabelledBy().isPresent());
     }
 
@@ -103,5 +104,98 @@ class HasAriaLabelTest {
 
         assertEquals("test AriaLabelledBy",
                 component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_withExistingId() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        labelComponent.setId("the-label");
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("the-label", component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_withoutId_generatesId() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        assertFalse(labelComponent.getId().isPresent());
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertTrue(labelComponent.getId().isPresent());
+        assertTrue(labelComponent.getId().get().startsWith("arialabelledby-"));
+        assertEquals(labelComponent.getId().get(),
+                component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_explicitValueSetLater_explicitValueWins() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        component.setAriaLabelledBy("explicit-id");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("explicit-id", component.getAriaLabelledBy().get());
+        assertFalse(labelComponent.getId().isPresent());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_clearedLater_ariaLabelledByIsCleared() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        component.setAriaLabelledBy((String) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(component.getAriaLabelledBy().isPresent());
+        assertFalse(labelComponent.getId().isPresent());
+    }
+
+    @Test
+    void setAriaLabelledByComponent_calledTwice_lastComponentWins() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent firstLabel = new TestComponent();
+        TestComponent secondLabel = new TestComponent();
+        ui.add(component, firstLabel, secondLabel);
+
+        component.setAriaLabelledBy(firstLabel);
+        component.setAriaLabelledBy(secondLabel);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(firstLabel.getId().isPresent(),
+                "The superseded label should keep its original id");
+        assertEquals(secondLabel.getId().orElse(null),
+                component.getAriaLabelledBy().orElse(null));
+    }
+
+    @Test
+    void setAriaLabelledByComponent_idSetLater() {
+        UI ui = new UI();
+        TestComponent component = new TestComponent();
+        TestComponent labelComponent = new TestComponent();
+        ui.add(component, labelComponent);
+
+        component.setAriaLabelledBy(labelComponent);
+        labelComponent.setId("manually-set-id");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("manually-set-id", component.getAriaLabelledBy().get());
     }
 }

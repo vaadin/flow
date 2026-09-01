@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring-tests</artifactId>
-    <version>25.2-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>test-ts-mvc-without-endpoints</artifactId>
   <packaging>jar</packaging>
@@ -18,13 +18,6 @@
       <groupId>com.vaadin</groupId>
       <artifactId>vaadin-spring</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <!-- There are no vaadin components in the test UIs -->
-        <exclusion>
-          <groupId>com.vaadin</groupId>
-          <artifactId>vaadin-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>

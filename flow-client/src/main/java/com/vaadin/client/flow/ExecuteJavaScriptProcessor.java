@@ -223,6 +223,12 @@ public class ExecuteJavaScriptProcessor {
           object.stopApplication = $entry(function() {
               stopApplication.@java.lang.Runnable::run(*)();
           });
+          object.registerInitializer = $entry(function(node, id, cleanup) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerInitializer(*)(node, id, cleanup);
+          });
+          object.disposeInitializer = $entry(function(node, id) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::disposeInitializer(*)(node, id);
+          });
           return object;
     }-*/;
 }

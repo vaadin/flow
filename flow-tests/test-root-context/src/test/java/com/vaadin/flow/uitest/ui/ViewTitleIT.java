@@ -64,6 +64,14 @@ public class ViewTitleIT extends ChromeBrowserTest {
         verifyTitle("dynamic title view");
     }
 
+    @Test
+    public void testViewDynamicPageTitleAnnotation() {
+        open();
+        openView("DynamicPageTitleView");
+
+        verifyTitle("generated dynamic title");
+    }
+
     private void openView(String viewName) {
         SelectElement input = $(SelectElement.class).first();
         input.selectByText(viewName);

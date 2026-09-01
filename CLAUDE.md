@@ -201,6 +201,6 @@ Components extend `Component` and use:
 - Use `test:` instead of `fix:` when fixing only tests
 
 See [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for design-level guidance
-(API shape, signals, sealed types, DOM event naming, browser-wrapping
-conventions, supported browsers, bootstrap data flow, Javadoc for wrapped
-browser APIs).
+(API shape, signals, sealed types, naming of components that wrap HTML
+elements, DOM event naming, browser-wrapping conventions, supported
+browsers, bootstrap data flow, Javadoc for wrapped browser APIs).

@@ -29,11 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +65,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class TaskUpdatePackagesNpmTest {
 
-    private static final String PLATFORM_DIALOG_VERSION = "2.5.2";
+    private static final String PINNED_DIALOG_VERSION = "2.5.2";
     private static final String USER_SPECIFIED_MIXIN_VERSION = "2.4.1";
     private static final String VAADIN_ELEMENT_MIXIN = "@vaadin/vaadin-element-mixin";
     private static final String VAADIN_DIALOG = "@vaadin/vaadin-dialog";
@@ -75,8 +76,8 @@ class TaskUpdatePackagesNpmTest {
 
     private static final String REACT_COMPONENTS = "@vaadin/react-components";
 
-    private static final String PLATFORM_ELEMENT_MIXIN_VERSION = "2.4.2";
-    private static final String PLATFORM_OVERLAY_VERSION = "3.5.1";
+    private static final String PINNED_ELEMENT_MIXIN_VERSION = "2.4.2";
+    private static final String PINNED_OVERLAY_VERSION = "3.5.1";
 
     @TempDir
     File temporaryFolder;
@@ -108,7 +109,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned()
+    void npmIsInUse_versionsJsonHasPinnedVersions_versionsArePinned()
             throws IOException {
         runTestWithoutPreexistingPackageJson();
     }
@@ -119,13 +120,13 @@ class TaskUpdatePackagesNpmTest {
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates we're not written");
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
-    void npmIsInUse_userHasPinnedPlatformProvidedVersionInPackageJson_userPinnedVersionUsed()
+    void npmIsInUse_userHasPinnedTheProvidedVersionInPackageJson_userPinnedVersionUsed()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -145,12 +146,12 @@ class TaskUpdatePackagesNpmTest {
                 "User's updates in package.json should have been noticed.");
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
     }
 
     @Test
-    void npmIsInUse_applicationHasPinnedPlatformProvidedVersionInAddon_applicationPinnedVersionIsUsed()
+    void npmIsInUse_applicationHasPinnedTheProvidedVersionInAddon_applicationPinnedVersionIsUsed()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -166,12 +167,12 @@ class TaskUpdatePackagesNpmTest {
                 "User's added application dependency updates should have been noticed");
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PINNED_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
     }
 
     @Test
-    void npmIsInUse_platformVersionIsBumped_versionsAreUpdated()
+    void npmIsInUse_pinnedVersionIsBumped_versionsAreUpdated()
             throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
@@ -186,12 +187,11 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersions(newVersion, newVersion, newVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
-    void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
-            throws IOException {
+    void npmIsInUse_noVersionsJsonPresent_noFailure() throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         final TaskUpdatePackages task = createTask(
@@ -202,13 +202,12 @@ class TaskUpdatePackagesNpmTest {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         JsonNode dependencies = getOrCreatePackageJson().get(DEPENDENCIES);
-        assertEquals(PLATFORM_DIALOG_VERSION,
+        assertEquals(PINNED_DIALOG_VERSION,
                 dependencies.get(VAADIN_DIALOG).asString());
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
-            throws IOException {
+    void npmIsInUse_versionsJsonAdded_versionsPinned() throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         createTask(createApplicationDependencies()).execute();
@@ -225,11 +224,11 @@ class TaskUpdatePackagesNpmTest {
         assertTrue(task.modified, "Updates not picked");
 
         verifyVersions(newVersion, newVersion, newVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
-    void overridesContainPinnedVersion_platformVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
+    void overridesContainPinnedVersion_pinnedVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
             throws IOException {
 
         ObjectNode packageJson = getOrCreatePackageJson();
@@ -278,50 +277,48 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
-        verifyPlatformDependenciesAreAdded(true);
+    void pnpmIsInUse_versionsJsonAdded_dependenciesAdded() throws IOException {
+        verifyPinnedDependenciesAreAdded(true);
     }
 
     @Test
-    void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
-        verifyPlatformDependenciesAreAdded(false);
+    void npmIsInUse_versionsJsonAdded_dependenciesAdded() throws IOException {
+        verifyPinnedDependenciesAreAdded(false);
     }
 
     @Test
     void npmIsInUse_versionJsonHasBadVersion_noFailureNothingAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
 
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
     @Test
     void npmIsInUse_executionAfterDependencyRemoved_overlayIsCleanedOfDependency()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -336,26 +333,26 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
     void npmIsInUse_dependencyMovedToDevDependencies_overrideNotRemoved()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -365,7 +362,7 @@ class TaskUpdatePackagesNpmTest {
         // Move element-mixin to devDependencies
         ObjectNode packageJson = getOrCreatePackageJson();
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
-                .put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+                .put(VAADIN_ELEMENT_MIXIN, PINNED_ELEMENT_MIXIN_VERSION);
         // Remove VAADIN_ELEMENT_MIXIN override from Vaadin overrides
         JacksonUtils.removeNestedKey(packageJson,
                 List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_ELEMENT_MIXIN));
@@ -381,23 +378,23 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
     void npmIsInUse_emptyVaadinOverrides_obsoleteOverride_overrideRemoved()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_OVERLAY, PINNED_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
 
-        // Remove platform lock for vaadin-element-mixin
+        // Remove the pin for vaadin-element-mixin
         final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
@@ -421,23 +418,23 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
     void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
 
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
     @Test
@@ -457,9 +454,9 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar",
-                PLATFORM_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, false, true);
+        verifyVersions(PINNED_DIALOG_VERSION, "file:../foobar",
+                PINNED_OVERLAY_VERSION);
+        verifyVersionPinningWithNpmOverrides(true, false, true);
     }
 
     @Test
@@ -515,7 +512,7 @@ class TaskUpdatePackagesNpmTest {
         packageJson.set(VAADIN_DEP_KEY, vaadinSection);
         vaadinSection.set(DEPENDENCIES, vaadinDependencies);
         vaadinDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
+                PINNED_ELEMENT_MIXIN_VERSION);
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
 
@@ -528,7 +525,7 @@ class TaskUpdatePackagesNpmTest {
         JsonNode newVaadinDeps = getOrCreatePackageJson().get(VAADIN_DEP_KEY)
                 .get(DEPENDENCIES);
 
-        assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION,
+        assertEquals(PINNED_ELEMENT_MIXIN_VERSION,
                 newVaadinDeps.get(VAADIN_ELEMENT_MIXIN).asString());
     }
 
@@ -558,9 +555,9 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
+        verifyVersions(PINNED_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
-        verifyVersionLockingWithNpmOverrides(true, true, false);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
         final ObjectNode packageJson = getOrCreatePackageJson();
         JsonNode dependencies = packageJson.get(DEPENDENCIES);
 
@@ -679,7 +676,7 @@ class TaskUpdatePackagesNpmTest {
         //@formatter:off
                           "{ \"core\": {"
                         + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
+                        + "    \"jsVersion\": \"" + PINNED_DIALOG_VERSION + "\",\n"
                         + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
                         + "}\n"
                         + "}}\n";
@@ -726,9 +723,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -737,9 +734,9 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -748,9 +745,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -760,9 +757,9 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
-        verifyVersionLockingWithPnpmOverrides(true, true, true);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
+        verifyVersionPinningWithPnpmOverrides(true, true, true);
     }
 
     @Test
@@ -771,9 +768,9 @@ class TaskUpdatePackagesNpmTest {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
-        final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        final String oldPinnedVersion = "1.0.0";
+        createVaadinVersionsJson(oldPinnedVersion, oldPinnedVersion,
+                oldPinnedVersion);
 
         String CUSTOM_COMPONENT = "@custom/component";
 
@@ -802,25 +799,23 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
-        verifyVersionLockingWithPnpmOverrides(true, true, true);
+        verifyVersions(appDependencyVersion, oldPinnedVersion,
+                oldPinnedVersion);
+        verifyVersionPinningWithPnpmOverrides(true, true, true);
 
-        JsonNode pnpm = getOrCreatePackageJson().get(PNPM);
-        assertNotNull(pnpm, "Object for 'pnpm' should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
-        assertNotNull(overrides, "Object for 'overrides' should exist");
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
-        assertTrue(overrides.has(CUSTOM_COMPONENT),
+        assertTrue(overrides.containsKey(CUSTOM_COMPONENT),
                 "Custom component override was not present");
-        assertEquals("1.2.1", overrides.get(CUSTOM_COMPONENT).asString());
+        assertEquals("1.2.1", overrides.get(CUSTOM_COMPONENT));
     }
 
     @Test
     void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -851,8 +846,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void reactEnabled_scannerDependenciesAndExclusions_excludedDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG, VAADIN_OVERLAY));
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
@@ -884,8 +879,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void reactEnabled_noScannerDependencies_coreDependenciesNotAdded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -915,8 +910,8 @@ class TaskUpdatePackagesNpmTest {
 
     @Test
     void reactDisabled_coreDependenciesAdded() throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -948,8 +943,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactDisabled_noExclusionsInVersions()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(false)
@@ -980,8 +975,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactDisabled_exclusionsInVersions_noWebComponentsIncluded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG));
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
@@ -1014,8 +1009,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactEnabled_noExclusionsInVersions()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true)
@@ -1047,8 +1042,8 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void webComponentsExcluded_reactEnabled_exclusionsInVersions_noWebComponentsIncluded()
             throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG));
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
@@ -1104,8 +1099,8 @@ class TaskUpdatePackagesNpmTest {
     }
 
     private void createBasicVaadinVersionsJson() {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
     }
 
     private void createVaadinVersionsJson(String dialogVersion,
@@ -1160,7 +1155,7 @@ class TaskUpdatePackagesNpmTest {
     private Map<String, String> createApplicationDependencies() {
         Map<String, String> applicationScannedDependencies = new HashMap<>();
         applicationScannedDependencies.put(VAADIN_DIALOG,
-                PLATFORM_DIALOG_VERSION);
+                PINNED_DIALOG_VERSION);
         return applicationScannedDependencies;
     }
 
@@ -1223,13 +1218,13 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyVersionLockingWithNpmOverrides(boolean hasDialogLocking,
-            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+    private void verifyVersionPinningWithNpmOverrides(boolean hasDialogPinning,
+            boolean hasElementMixinPinning, boolean hasOverlayPinning)
             throws IOException {
         JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
         assertNotNull(overrides, "Object for 'overrides' should exist");
 
-        if (hasDialogLocking) {
+        if (hasDialogPinning) {
             assertTrue(overrides.has(VAADIN_DIALOG),
                     "Dialog override was not present");
             assertEquals("$" + VAADIN_DIALOG,
@@ -1238,7 +1233,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_DIALOG),
                     "vaadin-dialog dependency should not be present");
         }
-        if (hasElementMixinLocking) {
+        if (hasElementMixinPinning) {
             assertTrue(overrides.has(VAADIN_ELEMENT_MIXIN),
                     "Element-Mixin override was not present");
             assertEquals("$" + VAADIN_ELEMENT_MIXIN,
@@ -1247,7 +1242,7 @@ class TaskUpdatePackagesNpmTest {
             assertNull(overrides.get(VAADIN_ELEMENT_MIXIN),
                     "vaadin-element-mixin dependency should not be present");
         }
-        if (hasOverlayLocking) {
+        if (hasOverlayPinning) {
             assertTrue(overrides.has(VAADIN_OVERLAY),
                     "Overlay override was not present");
             assertEquals("$" + VAADIN_OVERLAY,
@@ -1258,44 +1253,40 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyVersionLockingWithPnpmOverrides(boolean hasDialogLocking,
-            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+    private void verifyVersionPinningWithPnpmOverrides(boolean hasDialogPinning,
+            boolean hasElementMixinPinning, boolean hasOverlayPinning)
             throws IOException {
-        JsonNode pnpm = getOrCreatePackageJson().get(PNPM);
-        assertNotNull(pnpm, "Object for 'pnpm' should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
-        assertNotNull(overrides, "Object for 'overrides' should exist");
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
-        if (hasDialogLocking) {
-            assertTrue(overrides.has(VAADIN_DIALOG),
+        if (hasDialogPinning) {
+            assertTrue(overrides.containsKey(VAADIN_DIALOG),
                     "Dialog override was not present");
-            assertEquals("$" + VAADIN_DIALOG,
-                    overrides.get(VAADIN_DIALOG).asString());
+            assertEquals("$" + VAADIN_DIALOG, overrides.get(VAADIN_DIALOG));
         } else {
             assertNull(overrides.get(VAADIN_DIALOG),
                     "vaadin-dialog dependency should not be present");
         }
-        if (hasElementMixinLocking) {
-            assertTrue(overrides.has(VAADIN_ELEMENT_MIXIN),
+        if (hasElementMixinPinning) {
+            assertTrue(overrides.containsKey(VAADIN_ELEMENT_MIXIN),
                     "Element-Mixin override was not present");
             assertEquals("$" + VAADIN_ELEMENT_MIXIN,
-                    overrides.get(VAADIN_ELEMENT_MIXIN).asString());
+                    overrides.get(VAADIN_ELEMENT_MIXIN));
         } else {
             assertNull(overrides.get(VAADIN_ELEMENT_MIXIN),
                     "vaadin-element-mixin dependency should not be present");
         }
-        if (hasOverlayLocking) {
-            assertTrue(overrides.has(VAADIN_OVERLAY),
+        if (hasOverlayPinning) {
+            assertTrue(overrides.containsKey(VAADIN_OVERLAY),
                     "Overlay override was not present");
-            assertEquals("$" + VAADIN_OVERLAY,
-                    overrides.get(VAADIN_OVERLAY).asString());
+            assertEquals("$" + VAADIN_OVERLAY, overrides.get(VAADIN_OVERLAY));
         } else {
             assertNull(overrides.get(VAADIN_OVERLAY),
                     "vaadin-overlay dependency should not be present");
         }
     }
 
-    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
+    private void verifyPinnedDependenciesAreAdded(boolean enablePnpm)
             throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
@@ -1332,8 +1323,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
     }
 
     @Test
@@ -1353,7 +1344,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_pwaOfflineEnabled_overridesTrackedInVaadinSection()
+    void npmIsInUse_pwaOfflineEnabled_overridesNotTrackedInVaadinSection()
             throws IOException {
         createBasicVaadinVersionsJson();
         final TaskUpdatePackages task = createTaskWithPwa(
@@ -1361,15 +1352,66 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
 
         ObjectNode pkgJson = getOrCreatePackageJson();
-        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
-        JsonNode vaadin = pkgJson.get(VAADIN_DEP_KEY);
-        assertTrue(vaadin.has(OVERRIDES),
-                "vaadin.overrides section should exist");
-        JsonNode vaadinOverrides = vaadin.get(OVERRIDES);
+        // The workbox override is added to the main overrides section
+        assertTrue(pkgJson.get(OVERRIDES).has("workbox-build"),
+                "workbox-build override should be present");
 
-        // Verify workbox-build is tracked in vaadin.overrides
-        assertTrue(vaadinOverrides.has("workbox-build"),
-                "workbox-build should be tracked in vaadin.overrides");
+        // The obsolete vaadin.overrides tracking section is not written
+        assertTrue(pkgJson.has(VAADIN_DEP_KEY), "vaadin section should exist");
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides should not be written");
+    }
+
+    @Test
+    void npmIsInUse_staleOverridesAndTrackingSection_healedToPinnedVersionsOnBump()
+            throws IOException {
+        // Reproduces the upgrade scenario from #24702: a project carried over
+        // from an earlier Vaadin version where the "overrides" section and the
+        // obsolete "vaadin.overrides" tracking section have drifted out of sync
+        // and pin the packages to an older version. On the next run with
+        // newer pinned versions, all pins must heal to the new versions and
+        // the tracking section must be dropped, without needing clean-frontend.
+        final String oldVersion = "1.0.0";
+        final String newVersion = "2.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        // Dialog is a direct dependency pinned to the old version; overlay is a
+        // transitive pinned package pinned to the old version directly.
+        ((ObjectNode) pkgJson.get(DEPENDENCIES)).put(VAADIN_DIALOG, oldVersion);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put(VAADIN_DIALOG, "$" + VAADIN_DIALOG);
+        overrides.put(VAADIN_OVERLAY, oldVersion);
+        pkgJson.set(OVERRIDES, overrides);
+        // Drifted tracking section: differs from the live overrides so the old
+        // diff logic would treat the live values as user opt-outs and freeze
+        // them at the old version.
+        JacksonUtils.setNestedKey(pkgJson,
+                List.of(VAADIN_DEP_KEY, OVERRIDES, VAADIN_OVERLAY),
+                StringNode.valueOf(newVersion),
+                (nonObjectNode) -> JacksonUtils.createObjectNode());
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        pkgJson = getOrCreatePackageJson();
+        JsonNode healed = pkgJson.get(OVERRIDES);
+        // The direct dependency was bumped to the new version and stays pinned
+        // by reference.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_DIALOG).asString());
+        assertEquals("$" + VAADIN_DIALOG, healed.get(VAADIN_DIALOG).asString());
+        // The overlay pin was frozen at the old version by the drifted
+        // tracking section; it now heals to the bumped pinned version. The
+        // old diff logic would have left it stuck at oldVersion.
+        assertEquals(newVersion,
+                pkgJson.get(DEPENDENCIES).get(VAADIN_OVERLAY).asString());
+        assertEquals("$" + VAADIN_OVERLAY,
+                healed.get(VAADIN_OVERLAY).asString());
+        // The obsolete tracking section is removed.
+        assertFalse(pkgJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
+                "vaadin.overrides tracking section should be removed on upgrade");
     }
 
     @Test
@@ -1453,7 +1495,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_nestedObjectOverrides_handledCorrectlyInVersionLocking()
+    void npmIsInUse_nestedObjectOverrides_handledCorrectlyInVersionPinning()
             throws IOException {
         createBasicVaadinVersionsJson();
 
@@ -1532,27 +1574,20 @@ class TaskUpdatePackagesNpmTest {
         assertFalse(pkgJson.has(OVERRIDES),
                 "npm overrides should not exist at root when pnpm is enabled");
 
-        // Verify pnpm.overrides section exists
-        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
-        JsonNode pnpm = pkgJson.get(PNPM);
-        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
+        // Verify the pnpm field is not left in package.json
+        assertFalse(pkgJson.has(PNPM),
+                "pnpm field should not be written to package.json");
+
+        // Verify overrides are flattened into pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
-        assertTrue(overrides.has("workbox-build>glob"),
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
-        // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
-                "Flattened override should be a string value");
-
         // Verify nested object form does NOT exist
-        assertFalse(overrides.has("workbox-build"),
+        assertFalse(overrides.containsKey("workbox-build"),
                 "Nested object workbox-build should not exist in pnpm overrides");
     }
 
@@ -1568,10 +1603,9 @@ class TaskUpdatePackagesNpmTest {
 
         // Verify flattened overrides were added
         ObjectNode pkgJson = getOrCreatePackageJson();
-        assertTrue(pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES));
-        assertTrue(
-                pkgJson.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened override should be present after first run");
 
         // Second run with PWA offline disabled
@@ -1580,15 +1614,9 @@ class TaskUpdatePackagesNpmTest {
 
         // Verify all flattened workbox overrides were removed
         pkgJson = getOrCreatePackageJson();
-        if (pkgJson.has(PNPM) && pkgJson.get(PNPM).has(OVERRIDES)) {
-            JsonNode overrides = pkgJson.get(PNPM).get(OVERRIDES);
-            assertFalse(overrides.has("workbox-build>serialize-javascript"),
-                    "Flattened workbox-build>serialize-javascript should be removed");
-            assertFalse(overrides.has("workbox-build>@rollup/plugin-terser"),
-                    "Flattened workbox-build>@rollup/plugin-terser should be removed");
-            assertFalse(overrides.has("workbox-build>glob"),
-                    "Flattened workbox-build>glob should be removed");
-        }
+        overrides = new PnpmWorkspaceFile(npmFolder).getOverrides();
+        assertFalse(overrides.containsKey("workbox-build>glob"),
+                "Flattened workbox-build>glob should be removed");
 
         // Also verify vaadin.overrides was cleaned up
         if (pkgJson.has(VAADIN_DEP_KEY)
@@ -1600,24 +1628,88 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
+    /**
+     * This tests that other systems generate the same hash as we get for a
+     * Windows machine. There was an issue in the jackson indenter that used
+     * different line separators on windows (\r\n) and linux (\n).
+     */
+    @Test
+    void windowsHashedPackageJson_otherSystemsGetSameHash() {
+        var json = """
+                {
+                  "name": "no-name",
+                  "license": "UNLICENSED",
+                  "type": "module",
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.23",
+                    "@vaadin/react-components": "25.1.2",
+                    "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                    "adaptivecards": "1.2.6",
+                    "brace": "0.11.1",
+                    "date-fns": "4.1.0",
+                    "lit": "3.3.2",
+                    "react": "19.2.4",
+                    "react-dom": "19.2.4",
+                    "react-router": "7.13.1"
+                  },
+                  "devDependencies": {
+                    "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                    "@types/node": "25.5.0",
+                    "@types/react": "19.2.14",
+                    "@types/react-dom": "19.2.3",
+                    "typescript": "5.9.3",
+                    "vite": "7.3.2",
+                    "vite-plugin-checker": "0.12.0"
+                  },
+                  "vaadin": {
+                    "dependencies": {
+                        "@vaadin/common-frontend": "0.0.23",
+                        "@vaadin/react-components": "25.1.2",
+                        "@vaadin/vaadin-development-mode-detector": "2.0.7",
+                        "adaptivecards": "1.2.6",
+                        "brace": "0.11.1",
+                        "date-fns": "4.1.0",
+                        "lit": "3.3.2",
+                        "react": "19.2.4",
+                        "react-dom": "19.2.4",
+                        "react-router": "7.13.1"
+                    },
+                    "devDependencies": {
+                        "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+                        "@types/node": "25.5.0",
+                        "@types/react": "19.2.14",
+                        "@types/react-dom": "19.2.3",
+                        "typescript": "5.9.3",
+                        "vite": "7.3.2",
+                        "vite-plugin-checker": "0.12.0"
+                    },
+                    "hash": "3e24abefab9213fc1c8c312e7bb14eb645dfefda1f0ce799eef30bc00d2eb9c4"
+                  }
+                }
+                """;
+
+        var packageJson = JacksonUtils.readTree(json);
+        var hash = TaskUpdatePackages.generatePackageJsonHash(packageJson,
+                Map.of());
+        Assert.assertEquals(packageJson.get("vaadin").get("hash").asString(),
+                hash);
+    }
+
     @Test
     void generatePackageJsonHash_pnpmOverrides_includedInHash()
             throws IOException {
-        // Create package.json with pnpm overrides
+        // Create package.json and pnpm overrides (stored in
+        // pnpm-workspace.yaml, passed in separately from package.json)
         ObjectNode pkgJson = getOrCreatePackageJson();
-        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
-        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
-        pnpmOverrides.put("some-package", "1.0.0");
-        pnpmSection.set(OVERRIDES, pnpmOverrides);
-        pkgJson.set(PNPM, pnpmSection);
 
         String hashWithPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("some-package", "1.0.0"));
 
         // Modify pnpm overrides and verify hash changes
-        pnpmOverrides.put("some-package", "2.0.0");
         String hashWithModifiedOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("some-package", "2.0.0"));
 
         assertNotEquals(hashWithPnpmOverrides, hashWithModifiedOverrides,
                 "Hash should change when pnpm overrides are modified");
@@ -1629,17 +1721,12 @@ class TaskUpdatePackagesNpmTest {
         // Create package.json without pnpm overrides
         ObjectNode pkgJson = getOrCreatePackageJson();
         String hashWithoutPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson, Map.of());
 
-        // Add pnpm overrides
-        ObjectNode pnpmSection = JacksonUtils.createObjectNode();
-        ObjectNode pnpmOverrides = JacksonUtils.createObjectNode();
-        pnpmOverrides.put("workbox-build>serialize-javascript", "7.0.4");
-        pnpmSection.set(OVERRIDES, pnpmOverrides);
-        pkgJson.set(PNPM, pnpmSection);
-
+        // Add pnpm overrides (stored in pnpm-workspace.yaml)
         String hashWithPnpmOverrides = TaskUpdatePackages
-                .generatePackageJsonHash(pkgJson);
+                .generatePackageJsonHash(pkgJson,
+                        Map.of("workbox-build>glob", "13.0.5"));
 
         assertNotEquals(hashWithoutPnpmOverrides, hashWithPnpmOverrides,
                 "Hash should change when pnpm overrides are added");
@@ -1675,12 +1762,10 @@ class TaskUpdatePackagesNpmTest {
         assertNotEquals(hashWithoutWorkboxOverrides, hashWithWorkboxOverrides,
                 "Hash should be different when workbox overrides are added");
 
-        // Verify flattened overrides exist
-        assertTrue(pkgJsonWithPwa.has(PNPM));
-        assertTrue(pkgJsonWithPwa.get(PNPM).has(OVERRIDES));
-        assertTrue(
-                pkgJsonWithPwa.get(PNPM).get(OVERRIDES)
-                        .has("workbox-build>serialize-javascript"),
+        // Verify flattened overrides exist in pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox override should be present");
     }
 
@@ -1710,33 +1795,26 @@ class TaskUpdatePackagesNpmTest {
         assertFalse(pkgJson.has(OVERRIDES),
                 "npm overrides should not exist at root when pnpm is enabled");
 
-        // Verify pnpm.overrides section exists
-        assertTrue(pkgJson.has(PNPM), "pnpm section should exist");
-        JsonNode pnpm = pkgJson.get(PNPM);
-        assertTrue(pnpm.has(OVERRIDES), "pnpm.overrides should exist");
-        JsonNode overrides = pnpm.get(OVERRIDES);
+        // Verify the pnpm field is not left in package.json
+        assertFalse(pkgJson.has(PNPM),
+                "pnpm field should not be written to package.json");
+
+        // Verify overrides are flattened into pnpm-workspace.yaml
+        Map<String, String> overrides = new PnpmWorkspaceFile(npmFolder)
+                .getOverrides();
 
         // Verify workbox-build nested overrides are flattened with > separator
-        assertTrue(overrides.has("workbox-build>serialize-javascript"),
-                "Flattened workbox-build>serialize-javascript should be present");
-        assertTrue(overrides.has("workbox-build>@rollup/plugin-terser"),
-                "Flattened workbox-build>@rollup/plugin-terser should be present");
-        assertTrue(overrides.has("workbox-build>glob"),
+        assertTrue(overrides.containsKey("workbox-build>glob"),
                 "Flattened workbox-build>glob should be present");
 
         // Verify user overrides are converted to pnpm format
-        assertTrue(overrides.has("user-nested"),
+        assertTrue(overrides.containsKey("user-nested"),
                 "Flattened user-nested should be present");
-        assertTrue(overrides.has("user-nested>dep"),
+        assertTrue(overrides.containsKey("user-nested>dep"),
                 "Flattened user-nested>dep should be present");
 
-        // Verify the values are strings, not nested objects
-        assertTrue(
-                overrides.get("workbox-build>serialize-javascript").isString(),
-                "Flattened override should be a string value");
-
         // Verify nested object form does NOT exist
-        assertFalse(overrides.has("workbox-build"),
+        assertFalse(overrides.containsKey("workbox-build"),
                 "Nested object workbox-build should not exist in pnpm overrides");
     }
 
@@ -1749,12 +1827,17 @@ class TaskUpdatePackagesNpmTest {
                 createApplicationDependencies(), true, true);
         task.execute();
 
-        // Add user nested override (pnpm format)
+        // Simulate a user override left in package.json.pnpm.overrides by an
+        // older Flow version; this legacy location must still be migrated
+        // when switching to npm, even though current pnpm runs write
+        // overrides to pnpm-workspace.yaml instead.
         ObjectNode pkgJson = getOrCreatePackageJson();
-        ((ObjectNode) pkgJson.get(PNPM).get(OVERRIDES))
-                .put("user-nested", "1.0").put("user-nested>dep", "2.0")
+        ObjectNode legacyOverrides = JacksonUtils.createObjectNode();
+        legacyOverrides.put("user-nested", "1.0").put("user-nested>dep", "2.0")
                 .put("user-nested-reverse>dep", "3.0")
                 .put("user-nested-reverse", "4.0");
+        pkgJson.set(PNPM, JacksonUtils.createObjectNode().set(OVERRIDES,
+                legacyOverrides));
         FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
                 StandardCharsets.UTF_8);
 
@@ -1772,8 +1855,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         assertTrue(workboxBuildOverride.isObject(),
                 "workbox-build override should be a nested object");
-        assertTrue(workboxBuildOverride.has("serialize-javascript"),
-                "workbox-build override should contain serialize-javascript");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
 
         // Verify user overrides are converted to npm format
         JsonNode nestedOverride = overrides.get("user-nested");

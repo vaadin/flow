@@ -2,8 +2,3 @@
   color: white;
   background-color: purple;
 }
-
-/* This is the same rule that Lumo utilities define */
-.bg-contrast-40 {
-  background-color: purple;
-}

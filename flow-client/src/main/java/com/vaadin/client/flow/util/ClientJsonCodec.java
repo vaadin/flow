@@ -129,6 +129,19 @@ public class ClientJsonCodec {
                         tree.getRegistry().getServerConnector());
             }
 
+            // Check for @v-fn format
+            JsonValue fnValue = jsonObject.get("@v-fn");
+            if (fnValue != null) {
+                if (fnValue.getType() != JsonType.OBJECT) {
+                    throw new IllegalArgumentException(
+                            "@v-fn value must be an object, got "
+                                    + fnValue.getType() + " in "
+                                    + json.toJson());
+                }
+                return decodeJsFunction(tree, (JsonObject) fnValue,
+                        json.toJson());
+            }
+
             // Check for unknown @v- types
             for (String key : jsonObject.keys()) {
                 if (key.startsWith("@v-")) {
@@ -152,6 +165,75 @@ public class ClientJsonCodec {
           var args = Array.prototype.slice.call(arguments);
           serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
         });
+    }-*/;
+
+    private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,
+            String originalJson) {
+        JsonValue bodyValue = fnObject.get("body");
+        if (bodyValue == null || bodyValue.getType() != JsonType.STRING) {
+            throw new IllegalArgumentException(
+                    "@v-fn 'body' must be a string in " + originalJson);
+        }
+        JsonValue capturesValue = fnObject.get("captures");
+        if (capturesValue == null
+                || capturesValue.getType() != JsonType.ARRAY) {
+            throw new IllegalArgumentException(
+                    "@v-fn 'captures' must be an array in " + originalJson);
+        }
+        String body = bodyValue.asString();
+        JsonArray capturesJson = (JsonArray) capturesValue;
+        int captureCount = capturesJson.length();
+        JsArray<Object> captures = JsCollections.array();
+        for (int i = 0; i < captureCount; i++) {
+            captures.push(decodeWithTypeInfo(tree, capturesJson.get(i)));
+        }
+        // Optional 'args' field: names of runtime parameters the manifested
+        // function should accept at call time, after the bound captures.
+        JsonArray argsJson;
+        JsonValue argsValue = fnObject.get("args");
+        if (argsValue == null) {
+            argsJson = null;
+        } else {
+            if (argsValue.getType() != JsonType.ARRAY) {
+                throw new IllegalArgumentException(
+                        "@v-fn 'args' must be an array in " + originalJson);
+            }
+            argsJson = (JsonArray) argsValue;
+        }
+        int argCount = argsJson == null ? 0 : argsJson.length();
+        String[] paramsAndCode = new String[captureCount + argCount + 1];
+        for (int i = 0; i < captureCount; i++) {
+            paramsAndCode[i] = "$" + i;
+        }
+        for (int i = 0; i < argCount; i++) {
+            paramsAndCode[captureCount + i] = argsJson.getString(i);
+        }
+        paramsAndCode[captureCount + argCount] = body;
+        NativeFunction fn = new NativeFunction(paramsAndCode);
+        return applyCaptures(fn, captures);
+    }
+
+    /**
+     * Wraps {@code fn} in a function that prepends {@code captures} to the
+     * runtime arguments before delegating, while leaving {@code this}
+     * controlled by the caller. {@code Function.prototype.bind} would also
+     * pre-bind {@code this} to {@code undefined}, which prevents callers from
+     * setting {@code this} via {@code .call()} or {@code .apply()} on the
+     * resulting function.
+     */
+    private static native Object applyCaptures(NativeFunction fn,
+            JsArray<Object> captures)
+    /*-{
+        return function() {
+            var args = new Array(captures.length + arguments.length);
+            for (var i = 0; i < captures.length; i++) {
+                args[i] = captures[i];
+            }
+            for (var j = 0; j < arguments.length; j++) {
+                args[captures.length + j] = arguments[j];
+            }
+            return fn.apply(this, args);
+        };
     }-*/;
 
     /**

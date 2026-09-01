@@ -36,6 +36,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -1909,5 +1910,45 @@ public class StateNodeTest {
                 "Only structural attributes should be collected for invisible nodes");
         assertEquals("slot", attributeChanges.get(0).getKey());
         assertEquals("drawer", attributeChanges.get(0).getValue());
+    }
+
+    @Test
+    void describe_element_nodeIdAndTagIncluded() {
+        UI ui = new UI();
+        Element element = ElementFactory.createAnchor();
+        ui.getElement().appendChild(element);
+
+        String description = element.getNode().describe();
+
+        assertTrue(description.contains("node id=" + element.getNode().getId()),
+                description);
+        assertTrue(description.contains("'a'"), description);
+    }
+
+    @Test
+    void describe_component_componentClassIncluded() {
+        UI ui = new UI();
+        TestDescribedComponent component = new TestDescribedComponent();
+        ui.getElement().appendChild(component.getElement());
+
+        String description = component.getElement().getNode().describe();
+
+        assertTrue(description.contains(TestDescribedComponent.class.getName()),
+                description);
+        // The creation location is not asserted here since ComponentTracker
+        // ignores stack frames from framework packages, which is where a
+        // component created by this test comes from
+    }
+
+    @Test
+    void describe_nodeWithoutElementFeatures_onlyNodeIdIncluded() {
+        StateNode node = new StateNode(ElementPropertyMap.class);
+
+        assertEquals("node id=" + node.getId(), node.describe());
+    }
+
+    @Tag("div")
+    private static class TestDescribedComponent
+            extends com.vaadin.flow.component.Component {
     }
 }

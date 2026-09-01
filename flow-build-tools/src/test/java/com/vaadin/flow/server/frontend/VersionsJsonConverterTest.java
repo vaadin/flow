@@ -35,7 +35,7 @@ class VersionsJsonConverterTest {
     File temporaryFolder;
 
     @Test
-    void convertPlatformVersions() throws IOException {
+    void convertPinnedNpmVersions() throws IOException {
         // @formatter:off
         String json = "{\"core\": {"+
                             "\"flow\": { "

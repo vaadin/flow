@@ -40,6 +40,8 @@ import com.vaadin.flow.server.VaadinService;
  * module using {@link #get(VaadinService)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.0
  */
 public final class ActiveStyleSheetTracker implements Serializable {
 

@@ -40,6 +40,8 @@ public @interface Tag {
     String A = "a";
     /**
      * Tag for an <code>&lt;abbr&gt;</code>.
+     * 
+     * @since 25.0
      */
     String ABBR = "abbr";
     /**
@@ -60,18 +62,32 @@ public @interface Tag {
     String BUTTON = "button";
     /**
      * Tag for an <code>&lt;caption&gt;</code>.
+     * 
+     * @since 24.5
      */
     String CAPTION = "caption";
     /**
      * Tag for a <code>&lt;code&gt;</code>.
+     * 
+     * @since 24.9
      */
     String CODE = "code";
+    /**
+     * Tag for a <code>&lt;col&gt;</code>.
+     */
+    String COL = "col";
+    /**
+     * Tag for a <code>&lt;colgroup&gt;</code>.
+     */
+    String COLGROUP = "colgroup";
     /**
      * Tag for an <code>&lt;dd&gt;</code>.
      */
     String DD = "dd";
     /**
      * Tag for an <code>&lt;details&gt;</code>.
+     * 
+     * @since 6.0
      */
     String DETAILS = "details";
     /**
@@ -128,6 +144,8 @@ public @interface Tag {
     String HR = "hr";
     /**
      * Tag for an <code>&lt;iframe&gt;</code>.
+     * 
+     * @since 1.3
      */
     String IFRAME = "iframe";
     /**
@@ -157,6 +175,8 @@ public @interface Tag {
 
     /**
      * Tag for an <code>&lt;object&gt;</code>.
+     * 
+     * @since 9.0
      */
     String OBJECT = "object";
     /**
@@ -174,6 +194,8 @@ public @interface Tag {
 
     /**
      * Tag for an <code>&lt;param&gt;</code>.
+     * 
+     * @since 9.0
      */
     String PARAM = "param";
     /**
@@ -198,18 +220,26 @@ public @interface Tag {
     String STRONG = "strong";
     /**
      * Tag for an <code>&lt;summary&gt;</code>.
+     * 
+     * @since 6.0
      */
     String SUMMARY = "summary";
     /**
      * Tag for a <code>&lt;table&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TABLE = "table";
     /**
      * Tag for a <code>&lt;tbody&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TBODY = "tbody";
     /**
      * Tag for a <code>&lt;td&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TD = "td";
     /**
@@ -218,18 +248,26 @@ public @interface Tag {
     String TEXTAREA = "textarea";
     /**
      * Tag for a <code>&lt;tfoot&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TFOOT = "tfoot";
     /**
      * Tag for a <code>&lt;th&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TH = "th";
     /**
      * Tag for a <code>&lt;thead&gt;</code>.
+     * 
+     * @since 24.5
      */
     String THEAD = "thead";
     /**
      * Tag for a <code>&lt;tr&gt;</code>.
+     * 
+     * @since 24.5
      */
     String TR = "tr";
     /**

@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -24,7 +23,6 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme(value = "app-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME, assets = {
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
@@ -34,6 +32,5 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 // url(...) inside an @import-ed CSS file must still resolve correctly when
 // the entry CSS is loaded.
 @StyleSheet("context://relurl-test/styles.css")
-@CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 public class AppShell implements AppShellConfigurator {
 }

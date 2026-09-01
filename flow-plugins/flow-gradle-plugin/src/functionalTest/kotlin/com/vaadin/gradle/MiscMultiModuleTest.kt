@@ -19,6 +19,7 @@ package com.vaadin.flow.gradle
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
+import com.vaadin.flow.server.frontend.TaskUpdateSettingsFile
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
 import java.io.File
@@ -124,6 +125,121 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         expect("app-" + StringUtil.getHash("web",
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+    }
+
+    @Test
+    fun projectDependency_coldAndRelocatedBuilds_remainIncremental() {
+        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
+
+        testProject.settingsFile.writeText(
+            """
+            rootProject.name = 'multi-project-cache-test'
+            include 'lib', 'web'
+            buildCache {
+                local {
+                    directory = '$buildCachePath'
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+            project(':web') {
+                apply plugin: 'java'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation project(':lib')
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                vaadin {
+                    eagerServerLoad = false
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.newFile(
+            "lib/src/main/java/example/Library.java",
+            """
+            package example;
+
+            public class Library {
+            }
+            """.trimIndent()
+        )
+        testProject.newFolder("web/src/main/frontend")
+
+        var relocated: TestProject? = null
+        try {
+            var result = testProject.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend"
+            )
+            assertContains(result.output, "Configuration cache entry stored")
+
+            result = testProject.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.UP_TO_DATE
+            )
+            assertContains(result.output, "Reusing configuration cache")
+
+            relocated = TestProject()
+            val excludedDirs = setOf("build", ".gradle", "node_modules")
+            testProject.dir.walkTopDown()
+                .onEnter { it.name !in excludedDirs }
+                .filter { it.isFile }
+                .forEach { source ->
+                    val target = File(
+                        relocated.dir,
+                        source.relativeTo(testProject.dir).path
+                    )
+                    target.parentFile.mkdirs()
+                    source.copyTo(target, overwrite = true)
+                }
+
+            result = relocated.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.FROM_CACHE
+            )
+            assertContains(result.output, "Configuration cache entry stored")
+
+            result = relocated.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.UP_TO_DATE
+            )
+            assertContains(result.output, "Reusing configuration cache")
+        } finally {
+            relocated?.delete()
+            buildCacheDir.deleteRecursively()
+        }
     }
 
     @Test
@@ -279,6 +395,60 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)
         result2.expectTaskOutcome("web:vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
         assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    /**
+     * When the build directory is relocated outside the module project directory, the plugin must still write
+     * vaadin-dev-server-settings.json into that build directory.
+     */
+    @Test
+    fun `build dir relocated outside project dir writes settings into build dir`() {
+        testProject.settingsFile.writeText("include 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':web') {
+                apply plugin: 'war'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                // Relocate the build dir outside the :web project dir (here a sibling of
+                // the module, like builds that share one top-level build/ folder). The
+                // resulting value is absolute and is not a sub-directory of projectDir.
+                layout.buildDirectory = file("${'$'}{rootDir}/custom-build")
+
+                vaadin {
+                    eagerServerLoad = false
+                }
+            }
+        """.trimIndent())
+        testProject.newFolder("web")
+
+        testProject.build("web:vaadinPrepareFrontend")
+
+        // The settings file must be written into the relocated build dir...
+        val settingsInBuildDir = File(testProject.dir,
+                "custom-build/${TaskUpdateSettingsFile.DEV_SETTINGS_FILE}")
+        expect(true, "$settingsInBuildDir should exist") { settingsInBuildDir.exists() }
+
+        // ...and must not leak into a junk tree under the :web source directory.
+        val leaked = File(testProject.dir, "web").walkTopDown()
+                .filter { it.name == TaskUpdateSettingsFile.DEV_SETTINGS_FILE }
+                .toList()
+        expect(emptyList<File>(),
+                "vaadin-dev-server-settings.json leaked under the web source dir: $leaked") { leaked }
     }
 
 

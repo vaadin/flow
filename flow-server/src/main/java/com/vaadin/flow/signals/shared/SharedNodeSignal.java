@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
@@ -54,6 +55,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * the context of a node in a tree. You can use the various <code>as</code>
  * methods to get an instance of that specific type that you can use for
  * applying some specific operation.
+ * 
+ * @since 25.1
  */
 public class SharedNodeSignal
         extends AbstractSharedSignal<SharedNodeSignal.SharedNodeSignalState> {
@@ -103,7 +106,23 @@ public class SharedNodeSignal
          * @return the value, or <code>null</code> if there is no value
          */
         public <T> @Nullable T value(Class<T> valueType) {
-            return fromJson(value, valueType);
+            return fromJson(value, constructType(valueType));
+        }
+
+        /**
+         * Gets the value as the given type. In contrast to
+         * {@link #value(Class)}, the type arguments of a parameterized value
+         * type such as <code>Set&lt;String&gt;</code> are retained.
+         *
+         * @param <T>
+         *            the value type
+         * @param valueType
+         *            the value type, not <code>null</code>
+         * @return the value, or <code>null</code> if there is no value
+         * @since 25.3
+         */
+        public <T> @Nullable T value(TypeReference<T> valueType) {
+            return fromJson(value, constructType(valueType));
         }
 
         /**
@@ -197,7 +216,26 @@ public class SharedNodeSignal
      * @return this signal as a value signal, not <code>null</code>
      */
     public <T> SharedValueSignal<T> asValue(Class<T> valueType) {
-        return new SharedValueSignal<>(tree(), id(), validator(), valueType);
+        return new SharedValueSignal<>(tree(), id(), validator(),
+                constructType(valueType));
+    }
+
+    /**
+     * Creates a value signal backed by the node value of this node. In contrast
+     * to {@link #asValue(Class)}, the type arguments of a parameterized value
+     * type such as <code>Set&lt;String&gt;</code> are retained. The new signal
+     * uses the same validator as this signal.
+     *
+     * @param <T>
+     *            the value type
+     * @param valueType
+     *            the value type, not <code>null</code>
+     * @return this signal as a value signal, not <code>null</code>
+     * @since 25.3
+     */
+    public <T> SharedValueSignal<T> asValue(TypeReference<T> valueType) {
+        return new SharedValueSignal<>(tree(), id(), validator(),
+                constructType(valueType));
     }
 
     /**
@@ -228,7 +266,26 @@ public class SharedNodeSignal
      * @return this signal as a list signal, not <code>null</code>
      */
     public <T> SharedListSignal<T> asList(Class<T> elementType) {
-        return new SharedListSignal<>(tree(), id(), validator(), elementType);
+        return new SharedListSignal<>(tree(), id(), validator(),
+                constructType(elementType));
+    }
+
+    /**
+     * Creates a list signal backed by the list children of this node. In
+     * contrast to {@link #asList(Class)}, the type arguments of a parameterized
+     * element type such as <code>Set&lt;String&gt;</code> are retained. The new
+     * signal uses the same validator as this signal.
+     *
+     * @param <T>
+     *            the element type
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @return this signal as a list signal, not <code>null</code>
+     * @since 25.3
+     */
+    public <T> SharedListSignal<T> asList(TypeReference<T> elementType) {
+        return new SharedListSignal<>(tree(), id(), validator(),
+                constructType(elementType));
     }
 
     /**
@@ -246,7 +303,26 @@ public class SharedNodeSignal
      * @return this signal as a map signal, not <code>null</code>
      */
     public <T> SharedMapSignal<T> asMap(Class<T> elementType) {
-        return new SharedMapSignal<>(tree(), id(), validator(), elementType);
+        return new SharedMapSignal<>(tree(), id(), validator(),
+                constructType(elementType));
+    }
+
+    /**
+     * Creates a map signal backed by the map children of this node. In contrast
+     * to {@link #asMap(Class)}, the type arguments of a parameterized element
+     * type such as <code>Set&lt;String&gt;</code> are retained. The new signal
+     * uses the same validator as this signal.
+     *
+     * @param <T>
+     *            the element type
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @return this signal as a map signal, not <code>null</code>
+     * @since 25.3
+     */
+    public <T> SharedMapSignal<T> asMap(TypeReference<T> elementType) {
+        return new SharedMapSignal<>(tree(), id(), validator(),
+                constructType(elementType));
     }
 
     /**

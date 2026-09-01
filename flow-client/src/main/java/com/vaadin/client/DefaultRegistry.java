@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
+import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.Poller;
@@ -87,6 +88,8 @@ public class DefaultRegistry extends Registry {
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
         set(Poller.class, new Poller(this));
+        set(LoadingIndicatorStateHandler.class,
+                new LoadingIndicatorStateHandler(this));
     }
 
 }

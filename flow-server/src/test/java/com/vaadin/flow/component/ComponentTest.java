@@ -584,6 +584,25 @@ public class ComponentTest {
     }
 
     @Test
+    public void whenAttached_attachAndDetach_handlerAndCleanupRun() {
+        TestComponent component = new TestComponent();
+        UI ui = new UI();
+        List<String> log = new ArrayList<>();
+
+        component.whenAttached(handlerUi -> {
+            log.add("attach:" + (handlerUi == ui));
+            return () -> log.add("detach");
+        });
+        assertEquals(List.of(), log);
+
+        ui.add(component);
+        assertEquals(List.of("attach:true"), log);
+
+        ui.remove(component);
+        assertEquals(List.of("attach:true", "detach"), log);
+    }
+
+    @Test
     public void getUI_attachedToUI() {
         TestComponent child = new TestComponent();
         UI ui = new UI();
@@ -1030,6 +1049,22 @@ public class ComponentTest {
     }
 
     @Test
+    public void getAllChildren_throwsForWrappedComponent() {
+        // Element.as creates a Component that references the Element but the
+        // Element does not reference the Component back, so getAllChildren
+        // cannot resolve children mapped to the wrapped component. This
+        // mirrors the behavior asserted for getChildren above.
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        button.as(TestButton.class);
+        TestDiv wrappedDiv = div.as(TestDiv.class);
+        assertThrows(IllegalStateException.class,
+                () -> ComponentUtil.getAllChildren(wrappedDiv));
+    }
+
+    @Test
     public void componentFromHierarchy() {
         Element div = new Element("div");
         Element button = new Element("button");
@@ -1322,7 +1357,7 @@ public class ComponentTest {
                 ui.getInternals().getDependencyList().getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
@@ -1337,7 +1372,7 @@ public class ComponentTest {
                 internals.getDependencyList().getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
@@ -1351,9 +1386,9 @@ public class ComponentTest {
                 dependencyList.getPendingSendToClient());
         assertEquals(2, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css2.css",
                 pendingDependencies);
 
         internals = new MockUI().getInternals();
@@ -1362,9 +1397,9 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css2.css",
                 pendingDependencies);
 
     }
@@ -1386,7 +1421,7 @@ public class ComponentTest {
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         assertEquals(1, pendingDependencies.size());
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
     }
 
@@ -2055,12 +2090,12 @@ public class ComponentTest {
         // Verify it uses parameter passing
         String expression = inv.getExpression();
         MatcherAssert.assertThat(expression,
-                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+                CoreMatchers.containsString("this.scrollIntoView($0)"));
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
                     CoreMatchers.containsString(expectedPart));

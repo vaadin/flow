@@ -47,6 +47,29 @@ public class GeolocationIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void listener_receivesPositionUpdatesUntilStopped() {
+        open();
+        findElement(By.id("listenerButton")).click();
+
+        waitUntil(d -> findElement(By.id("listenerResult2")));
+        Assert.assertEquals("lat=60.1699, lon=24.9384",
+                findElement(By.id("listenerResult1")).getText());
+
+        findElement(By.id("stopListenerButton")).click();
+        waitUntil(d -> findElement(By.id("stopListenerResult")));
+        sleep(100);
+        int countAtStop = findElements(By.cssSelector("[id^='listenerResult']"))
+                .size();
+
+        sleep(1000);
+        int countAfterWait = findElements(
+                By.cssSelector("[id^='listenerResult']")).size();
+        Assert.assertEquals(
+                "No new listenerResult divs should appear after stop()",
+                countAtStop, countAfterWait);
+    }
+
+    @Test
     public void track_receivesPositionUpdatesUntilStopped() {
         open();
         findElement(By.id("trackButton")).click();

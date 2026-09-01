@@ -27,8 +27,11 @@ public class SwaggerIT extends AbstractSpringTest {
     @Test
     public void swaggerUIShown() {
         open();
-        waitUntil(
-                driver -> driver.getPageSource().contains("OpenAPI definition")
-                        || driver.getPageSource().contains("Swagger Petstore"));
+        // Swagger UI must render the application's own OpenAPI definition. The
+        // page must not fall back to the bundled petstore demo, which would
+        // mean the spec was not reachable (e.g. wrong URL behind a proxy) and
+        // would make the test depend on external network availability.
+        waitUntil(driver -> driver.getPageSource()
+                .contains("OpenAPI definition"));
     }
 }

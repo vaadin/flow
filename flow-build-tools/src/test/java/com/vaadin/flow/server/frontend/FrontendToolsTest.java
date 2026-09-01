@@ -25,13 +25,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -43,10 +44,14 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.internal.ReflectTools;
@@ -67,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-@NotThreadSafe
+@Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class FrontendToolsTest {
 
@@ -81,7 +86,7 @@ class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
+    private static final String SUPPORTED_PNPM_VERSION = "10.16.0";
 
     private String baseDir;
 
@@ -349,15 +354,13 @@ class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         // Running npm using node and npm-cli.js script by default
-        assertEquals(5, tools.getNpmExecutable().size());
+        assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("node"));
         assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
                 containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(4),
-                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
@@ -379,8 +382,9 @@ class FrontendToolsTest {
     @Test
     void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
-        // command line should contain --shamefully-hoist=true option
-        assertTrue(executable.contains("--shamefully-hoist=true"));
+        // command line should force hoisted node-linker so transitive
+        // deps are always installed at the project root
+        assertTrue(executable.contains("--config.node-linker=hoisted"));
         assertTrue(executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
 
@@ -629,7 +633,8 @@ class FrontendToolsTest {
             IllegalStateException exception = assertThrows(
                     IllegalStateException.class, () -> tools.getSuitablePnpm());
             assertTrue(exception.getMessage().contains(
-                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 7.0.0"),
+                    "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
+                            + SUPPORTED_PNPM_VERSION),
                     "Unexpected exception message content '"
                             + exception.getMessage() + "'");
         } finally {
@@ -910,4 +915,126 @@ class FrontendToolsTest {
                         + "/lib/node_modules/npm/bin/npm-cli.js";
     }
 
+    @Test
+    void customRegistries_defaultRegistryOnly_isEmpty() {
+        assertTrue(FrontendTools
+                .customRegistries(
+                        Map.of("registry", "https://registry.npmjs.org/"))
+                .isEmpty());
+        // npm may report the default without a trailing slash
+        assertTrue(FrontendTools
+                .customRegistries(
+                        Map.of("registry", "https://registry.npmjs.org"))
+                .isEmpty());
+    }
+
+    @Test
+    void customRegistries_noRegistryResolved_isEmpty() {
+        assertTrue(FrontendTools.customRegistries(Map.of()).isEmpty());
+    }
+
+    @Test
+    void customRegistries_customGlobalRegistry_isReturnedWithTrailingSlash() {
+        assertEquals(Set.of("https://nexus.corp/repository/npm/"),
+                FrontendTools.customRegistries(Map.of("registry",
+                        "https://nexus.corp/repository/npm")),
+                "the custom registry URL should be returned normalized with a trailing slash");
+    }
+
+    @Test
+    void customRegistries_customScopedRegistryWithDefaultGlobal_onlyCustomReturned() {
+        assertEquals(Set.of("https://nexus.corp/repository/npm/"),
+                FrontendTools.customRegistries(Map.of("registry",
+                        "https://registry.npmjs.org/", "@vaadin:registry",
+                        "https://nexus.corp/repository/npm/")),
+                "only the non-default scoped registry should be returned");
+    }
+
+    @Test
+    void getConfiguredSetting_pnpm_readsTheConfigurationWithConfigList()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"minimumReleaseAge\": 4320}");
+
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
+
+            // the subcommand has to be 'list', as pnpm does not know the 'ls'
+            // alias npm accepts
+            frontendUtils.verify(() -> FrontendUtils.executeCommand(Mockito.eq(
+                    List.of("node", "pnpm.cjs", "config", "list", "--json")),
+                    Mockito.any()));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_firstKeyMissing_fallsBackToTheNextOne()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // pnpm 10 reports the setting kebab-cased, pnpm 11 camel-cased
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"minimum-release-age\": 4320}");
+
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_keyWithoutScalarValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // npm lists every key it knows, using null for the unconfigured
+            // ones and an array for some of the others, while pnpm lists only
+            // the configured ones
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"min-release-age\": null, \"omit\": []}");
+
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "min-release-age"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "before"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "omit"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_configurationCannotBeRead_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenThrow(new CommandExecutionException(1, "",
+                            "unknown subcommand"))
+                    .thenReturn("minimum-release-age=4320\n");
+
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge"),
+                    "a tool that fails should be ignored rather than failing the build");
+            // the key the output would yield if it were read as key=value
+            // pairs, so that only JSON is accepted
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimum-release-age"),
+                    "a tool answering in some other format should be ignored rather than failing the build");
+        }
+    }
 }

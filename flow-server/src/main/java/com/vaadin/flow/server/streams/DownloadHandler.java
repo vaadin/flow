@@ -18,6 +18,7 @@ package com.vaadin.flow.server.streams;
 import java.io.File;
 import java.io.IOException;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -76,6 +77,22 @@ import com.vaadin.flow.server.VaadinSession;
  *     }
  * };
  * </pre>
+ * <p>
+ * A download is served independently of the owning component's lifecycle. The
+ * owner's attached, visible, enabled and inert state is checked when the
+ * download request is received, but not while the download is being served.
+ * Once handling has started, detaching the owner component, navigating to
+ * another view or closing the browser tab does not abort the transfer on the
+ * server: it runs to completion as long as the client keeps reading the
+ * response, and browsers typically keep an ongoing download running after the
+ * tab that started it has been closed. This is intentional and supported
+ * behavior, so that a download the user has already started is not lost when
+ * the view that started it goes away.
+ * <p>
+ * The exception is a handler with transfer progress listeners: notifying them
+ * uses the UI that started the download, so the transfer is interrupted if that
+ * UI has been detached from the session by the time the next notification is
+ * sent, see {@link TransferProgressListener}.
  *
  * @since 24.8
  */
@@ -85,6 +102,11 @@ public interface DownloadHandler extends ElementRequestHandler {
     /**
      * Method that is called when the client wants to download from the url
      * stored for this specific handler registration.
+     * <p>
+     * Once this method has been called, the download is no longer bound to the
+     * owner component's lifecycle and is not interrupted by detaching the owner
+     * or by closing the browser tab, see the {@link DownloadHandler class-level
+     * documentation}.
      *
      * @param event
      *            download event containing the necessary data for writing the
@@ -100,6 +122,60 @@ public interface DownloadHandler extends ElementRequestHandler {
                 session, owner);
 
         handleDownloadRequest(downloadEvent);
+    }
+
+    /**
+     * Returns a view of this handler that is served even when the owning
+     * component is disabled.
+     * <p>
+     * By default a {@link DownloadHandler} inherits
+     * {@link DisabledUpdateMode#ONLY_WHEN_ENABLED} from
+     * {@link ElementRequestHandler}, which causes the framework to respond with
+     * HTTP 403 when the owning element is disabled. That is appropriate for
+     * action-style downloads such as a "save file" link on an
+     * {@code com.vaadin.flow.component.html.Anchor}, but not for resources that
+     * the browser fetches passively as part of rendering, such as the
+     * {@code src} of an icon or image inside a disabled container.
+     * <p>
+     * This method returns a wrapper that delegates
+     * {@link #handleDownloadRequest}, {@link #getUrlPostfix()} and
+     * {@link #isAllowInert()} to this handler and overrides
+     * {@link #getDisabledUpdateMode()} to return
+     * {@link DisabledUpdateMode#ALWAYS}. If this handler already reports
+     * {@code ALWAYS}, the same instance is returned.
+     *
+     * @return a {@link DownloadHandler} that is served regardless of the
+     *         owner's enabled state, or {@code this} if the disabled mode is
+     *         already {@link DisabledUpdateMode#ALWAYS}
+     * @since 25.1.6
+     */
+    default DownloadHandler allowDisabled() {
+        if (getDisabledUpdateMode() == DisabledUpdateMode.ALWAYS) {
+            return this;
+        }
+        DownloadHandler delegate = this;
+        return new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event)
+                    throws IOException {
+                delegate.handleDownloadRequest(event);
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return delegate.getUrlPostfix();
+            }
+
+            @Override
+            public boolean isAllowInert() {
+                return delegate.isAllowInert();
+            }
+
+            @Override
+            public DisabledUpdateMode getDisabledUpdateMode() {
+                return DisabledUpdateMode.ALWAYS;
+            }
+        };
     }
 
     /**
@@ -390,6 +466,8 @@ public interface DownloadHandler extends ElementRequestHandler {
      *            <code>path</code> and also used as a download request URL
      *            postfix
      * @return DownloadHandler implementation for download from an input stream
+     *
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride) {
@@ -441,6 +519,8 @@ public interface DownloadHandler extends ElementRequestHandler {
      * @param listener
      *            listener for transfer progress events
      * @return DownloadHandler implementation for download from an input stream
+     *
+     * @since 25.2
      */
     static InputStreamDownloadHandler fromInputStream(
             InputStreamDownloadCallback callback, String fileNameOverride,

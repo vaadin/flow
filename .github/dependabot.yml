@@ -9,3 +9,5 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    exclude-paths:
+      - "flow-plugins/flow-maven-plugin/src/it"

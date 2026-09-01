@@ -52,6 +52,7 @@ public interface FileRouterRequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request is targeting a route that allows
      *         anonymous access, {@code false} otherwise
+     * @since 25.0
      */
     boolean isAnonymousRoute(HttpServletRequest request);
 
@@ -62,6 +63,7 @@ public interface FileRouterRequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request is targeting a route that requires
      *         authentication, {@code false} otherwise
+     * @since 25.0
      */
     boolean isSecuredRoute(HttpServletRequest request);
 
@@ -72,6 +74,7 @@ public interface FileRouterRequestUtil {
      *            the HTTP request to check
      * @return the set of authorities that are allowed to access the given
      *         request, or an empty set if no authority is required
+     * @since 25.0
      */
     Set<String> getAllowedAuthorities(HttpServletRequest request);
 }

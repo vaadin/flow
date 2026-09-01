@@ -23,6 +23,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.plugin.base.PluginAdapterBuild
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.scanner.ClassFinder
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
@@ -32,7 +33,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.bundling.War
-import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 
 private val servletApiJarRegex =
     Regex(".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$")
@@ -47,8 +47,6 @@ internal class GradlePluginAdapter private constructor(
 
     private val projectDir = config.projectDir
     private val projectName = config.projectName
-    private val buildResourcesDir: File =
-        project.getBuildResourcesDir(config.sourceSetName.get())
     private val jarProject: Boolean =
         project.tasks.withType(War::class.java).isEmpty()
     private val jarFiles: FileCollection
@@ -66,7 +64,7 @@ internal class GradlePluginAdapter private constructor(
             project.configurations.getByName(config.dependencyScope.get())
         resolvedArtifacts =
             dependencyConfiguration.incoming.artifacts.resolvedArtifacts.map { result ->
-                result.filter { it.id is ModuleComponentArtifactIdentifier }
+                result.filter { it.id.componentIdentifier is ModuleComponentIdentifier }
                     .map { (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier }
                     .toSet()
             } ?: project.provider { emptySet() }
@@ -128,17 +126,10 @@ internal class GradlePluginAdapter private constructor(
     ): FileCollection {
         val dependencyConfigurationJars: FileCollection =
             if (dependencyConfiguration != null) {
-                val artifactFilter = config.classpathFilter.toPredicate()
                 val artifacts = dependencyConfiguration.incoming.artifactView {
-                    it.componentFilter { componentId ->
-                        // a componentId different ModuleComponentIdentifier
-                        // could be a local library, should not be filtered out
-                        val accepted =
-                            componentId !is ModuleComponentIdentifier || artifactFilter.test(
-                                componentId.moduleIdentifier
-                            )
-                        accepted
-                    }
+                    it.componentFilter(
+                        ClasspathComponentFilter(config.classpathFilter)
+                    )
                 }.files
                 artifacts
             } else project.files()
@@ -234,15 +225,42 @@ internal class GradlePluginAdapter private constructor(
         // generate stuff to build/vaadin-generated.
         //
         // However, after processResources is done, anything generated into
-        // build/vaadin-generated would simply be ignored. In such case we therefore
-        // need to generate stuff directly to build/resources/main.
+        // build/vaadin-generated would simply be ignored. In such cases,
+        // production resources are generated into the task-owned frontend
+        // output tree, next to the webapp bundle, so that the whole
+        // META-INF/VAADIN tree is packaged into the application archive as a
+        // single, task-owned unit.
         if (isBeforeProcessResources) {
             return File(
                 config.resourceOutputDirectory.get(),
                 Constants.VAADIN_SERVLET_RESOURCES
             )
         }
-        return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
+        val frontendOutputDirectory = frontendOutputDirectory()
+        if (frontendOutputDirectory.hasVaadinWebappResourcesPath()) {
+            return frontendOutputDirectory.parentFile
+        }
+        // The servlet resources (config, token, stats.json) must sit next to
+        // the webapp bundle so the whole META-INF/VAADIN tree can be packaged
+        // together, which is only possible when frontendOutputDirectory follows
+        // the META-INF/VAADIN/webapp layout. Falling back to the source set
+        // resources directory (build/resources/main) instead would make
+        // vaadinBuildFrontend share outputs with processResources/jar, which
+        // silently drops the bundle from the archive and, on Gradle 9, fails
+        // the build with an implicit task-dependency error. Such a
+        // frontendOutputDirectory is a misconfiguration that never produced a
+        // servable archive, so reject it with an actionable message instead of
+        // producing a broken package.
+        val webappResourcesPath =
+            Constants.VAADIN_WEBAPP_RESOURCES.removeSuffix("/")
+        throw GradleException(
+            "The Vaadin 'frontendOutputDirectory' is set to " +
+            "'${frontendOutputDirectory.path}', which does not end in " +
+            "'$webappResourcesPath'. The production frontend bundle can only " +
+            "be packaged when this directory follows the '$webappResourcesPath' " +
+            "layout. Either leave 'frontendOutputDirectory' at its default or " +
+            "set it to a path ending in '$webappResourcesPath'."
+        )
     }
 
     override fun webpackOutputDirectory(): File = frontendOutputDirectory()
@@ -267,14 +285,26 @@ internal class GradlePluginAdapter private constructor(
 
     override fun buildFolder(): String {
         val projectBuildDir = config.projectBuildDir.get()
-        if (projectBuildDir.startsWith(projectDir.toString())) {
-            return File(projectBuildDir).relativeTo(projectDir).toString()
+        val buildDirFile = File(projectBuildDir)
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // projectDir. When the build dir is outside projectDir this yields a "../"
+        // path. Returning the absolute path would instead append it to the project
+        // folder and point outside the build dir.
+        // relativeToOrNull() needs a shared root; projectDir is always absolute
+        // in a real build, absoluteFile only guards exotic setups.
+        return when {
+            !buildDirFile.isAbsolute -> projectBuildDir
+            else -> buildDirFile.relativeToOrNull(projectDir.absoluteFile)
+                    ?.toString() ?: projectBuildDir
         }
-        return projectBuildDir
     }
 
     override fun postinstallPackages(): List<String> =
         config.postinstallPackages.get()
+
+    override fun excludePostinstallPackages(): List<String> =
+        config.excludePostinstallPackages.get()
 
     override fun isFrontendHotdeploy(): Boolean = config.frontendHotdeploy.get()
 
@@ -335,5 +365,10 @@ internal class GradlePluginAdapter private constructor(
     override fun isCommercialBannerEnabled(): Boolean {
         return config.commercialWithBanner.get()
     }
+
+    // Null when not configured, so that the value configured for the package
+    // manager itself is used instead of being overridden
+    override fun minimumFrontendPackageAgeDays(): Int? =
+        config.minimumFrontendPackageAgeDays.orNull
 
 }

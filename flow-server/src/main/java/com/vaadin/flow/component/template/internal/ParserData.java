@@ -27,6 +27,7 @@ import java.util.Map;
  *
  * @author Vaadin Ltd
  *
+ * @since 5.0
  */
 public class ParserData {
 

@@ -42,6 +42,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 9.0
  */
 public final class ViteHandler extends AbstractDevServerRunner {
     /**
@@ -156,7 +157,9 @@ public final class ViteHandler extends AbstractDevServerRunner {
         for (String fileInSerlvetPath : FILES_IN_ROOT) {
             if (path.equals("/" + fileInSerlvetPath)) {
                 return super.prepareConnection(
-                        getPathToVaadin() + fileInSerlvetPath, method);
+                        getPathToVaadin()
+                                + resolveRootFileViteSubPath(fileInSerlvetPath),
+                        method);
             }
         }
 
@@ -169,9 +172,35 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     /**
+     * Resolves the path, relative to the Vite root (the frontend folder), where
+     * Vite serves one of the {@link #FILES_IN_ROOT} files.
+     * <p>
+     * The default {@code index.html} is generated into the frontend
+     * {@code generated/} folder so it is not committed to source control, and
+     * Vite serves it from there. A user-provided {@code index.html} in the
+     * frontend folder takes precedence and is served from the root. The other
+     * root files are always served from the frontend root.
+     *
+     * @param fileInServletPath
+     *            the file served at the servlet root
+     * @return the path Vite serves the file from, relative to the Vite root
+     */
+    private String resolveRootFileViteSubPath(String fileInServletPath) {
+        if (FrontendUtils.INDEX_HTML.equals(fileInServletPath)) {
+            File frontendFolder = FrontendUtils
+                    .getProjectFrontendDir(getApplicationConfiguration());
+            if (!new File(frontendFolder, FrontendUtils.INDEX_HTML).exists()) {
+                return FrontendUtils.GENERATED + fileInServletPath;
+            }
+        }
+        return fileInServletPath;
+    }
+
+    /**
      * Gets the url path to the /VAADIN folder.
      *
      * @return the url path to the /VAADIN folder, relative to the host root
+     * @since 24.1.2
      */
     public String getPathToVaadin() {
         return getContextPath() + getPathToVaadinInContext();
@@ -181,6 +210,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * Gets the url path to the /VAADIN folder inside the context root.
      *
      * @return the url path to the /VAADIN folder, relative to the context root
+     * @since 24.0
      */
     public String getPathToVaadinInContext() {
         return FrontendUtils.getFrontendServletPath(

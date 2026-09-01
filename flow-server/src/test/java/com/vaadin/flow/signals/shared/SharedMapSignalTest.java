@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -51,6 +53,20 @@ class SharedMapSignalTest extends SignalTestBase {
         int size = signal.peek().size();
 
         assertEquals(0, size);
+    }
+
+    @Test
+    void constructor_typeReference_parameterizedElementTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedMapSignal<Set<UUID>> signal = new SharedMapSignal<>(
+                new TypeReference<Set<UUID>>() {
+                });
+
+        signal.put("key", Set.of(id));
+
+        SharedValueSignal<Set<UUID>> child = signal.peek().get("key");
+        assertNotNull(child);
+        assertEquals(Set.of(id), child.peek());
     }
 
     /*

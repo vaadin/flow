@@ -22,6 +22,8 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 
 /**
  * Immutable data representing one url parameter.
+ * 
+ * @since 4.0
  */
 public class RouteParameterData implements Serializable {
 
@@ -64,6 +66,7 @@ public class RouteParameterData implements Serializable {
      * Return true for optional parameter.
      *
      * @return true for optional parameter
+     * @since 24.5
      */
     public boolean isOptional() {
         return new ParameterInfo(getTemplate()).isOptional();
@@ -73,6 +76,7 @@ public class RouteParameterData implements Serializable {
      * Return true for parameter with varargs.
      *
      * @return true for parameter with varargs
+     * @since 24.5
      */
     public boolean isVarargs() {
         return new ParameterInfo(getTemplate()).isVarargs();

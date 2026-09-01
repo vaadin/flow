@@ -24,11 +24,6 @@ import java.util.List;
  */
 public class FlowComponentsFeatureFlagProvider implements FeatureFlagProvider {
 
-    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
-            "Master Detail Layout component", "masterDetailLayoutComponent",
-            "https://github.com/vaadin/platform/issues/7173", true,
-            "com.vaadin.flow.component.masterdetaillayout.MasterDetailLayout");
-
     public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
             "HorizontalLayout and VerticalLayout improvements",
             "layoutComponentImprovements",
@@ -42,8 +37,7 @@ public class FlowComponentsFeatureFlagProvider implements FeatureFlagProvider {
 
     @Override
     public List<Feature> getFeatures() {
-        return List.of(MASTER_DETAIL_LAYOUT_COMPONENT,
-                LAYOUT_COMPONENT_IMPROVEMENTS,
+        return List.of(LAYOUT_COMPONENT_IMPROVEMENTS,
                 DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT);
     }
 }

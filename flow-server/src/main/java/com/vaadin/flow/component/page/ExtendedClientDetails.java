@@ -19,16 +19,20 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.fullscreen.Fullscreen;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
+import com.vaadin.flow.component.screenorientation.ScreenOrientation;
+import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
+import com.vaadin.flow.component.wakelock.WakeLockAvailability;
+import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -106,6 +110,7 @@ public class ExtendedClientDetails implements Serializable {
      *            the current color scheme
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
+     * @since 25.0
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -389,11 +394,34 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the raw platform string reported by the browser through
+     * {@code window.navigator.platform}, for example {@code "iPhone"},
+     * {@code "MacIntel"} or {@code "Linux x86_64"}.
+     * <p>
+     * The underlying browser API is deprecated and the values it reports are
+     * neither standardized nor reliable: browsers freeze, spoof or omit them,
+     * and the same platform string is reported for different devices (iPadOS
+     * reports {@code "MacIntel"}, the same value as a desktop Mac). Prefer
+     * feature detection over branching on this value.
+     *
+     * @return the platform reported by the browser, or {@code null} if the
+     *         browser did not report one
+     * @since 25.3
+     */
+    public String getNavigatorPlatform() {
+        return navigatorPlatform;
+    }
+
+    /**
      * Check if the browser is run on IPad.
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information from the browser is present
+     * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIPad() {
         return navigatorPlatform != null && (navigatorPlatform
                 .startsWith("iPad")
@@ -405,20 +433,52 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
+     * @since 2.2
+     * @deprecated use feature detection instead of platform detection, or
+     *             inspect {@link #getNavigatorPlatform()} directly
      */
+    @Deprecated(since = "25.3")
     public boolean isIOS() {
-        return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
-                || (navigatorPlatform != null
-                        && navigatorPlatform.startsWith("iPod"));
+        return isIPad() || (navigatorPlatform != null
+                && (navigatorPlatform.startsWith("iPhone")
+                        || navigatorPlatform.startsWith("iPod")));
     }
 
     /**
      * Gets the color scheme.
      *
      * @return the color scheme, never {@code null}
+     * @since 25.0
      */
     public ColorScheme.Value getColorScheme() {
         return colorScheme;
+    }
+
+    /**
+     * Returns whether the browser implements the <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
+     * Orientation API</a>.
+     * <p>
+     * Mirrors the current state of
+     * {@link ScreenOrientation#orientationSignal()}: {@code true} once the
+     * bootstrap has seeded the signal with a real orientation, {@code false}
+     * when the browser reports {@link ScreenOrientationType#UNSUPPORTED} or
+     * before the client handshake has completed (signal is still
+     * {@link ScreenOrientationType#UNKNOWN}). Lets callers decide synchronously
+     * whether to expose UI affordances that rely on the API (such as an
+     * orientation lock button) without subscribing to the signal first.
+     *
+     * @return {@code true} if the Screen Orientation API is available
+     * @since 25.2
+     */
+    public boolean isScreenOrientationSupported() {
+        if (ui == null) {
+            return false;
+        }
+        ScreenOrientationType type = ScreenOrientation.orientationSignal(ui)
+                .peek().type();
+        return type != ScreenOrientationType.UNKNOWN
+                && type != ScreenOrientationType.UNSUPPORTED;
     }
 
     /**
@@ -426,6 +486,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the theme name (e.g., "lumo", "aura"), or empty string if not
      *         detected
+     * @since 25.0
      */
     public String getThemeName() {
         return themeName;
@@ -445,8 +506,9 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Parses browser details from the given JSON and updates the UI from them:
      * stores the resulting {@link ExtendedClientDetails} on the UI's internals
-     * and seeds the page-visibility and geolocation-availability signals from
-     * the same payload.
+     * and seeds the page-visibility, geolocation-availability,
+     * wake-lock-availability and web-share-support signals from the same
+     * payload.
      * <p>
      * For internal use only.
      *
@@ -457,26 +519,48 @@ public class ExtendedClientDetails implements Serializable {
      * @return the parsed details
      * @throws RuntimeException
      *             if the JSON is not a valid object
+     * @since 25.2
      */
     public static ExtendedClientDetails updateFromJson(UI ui, JsonNode json) {
         Objects.requireNonNull(ui, "UI must not be null");
-        if (!(json instanceof ObjectNode)) {
-            throw new RuntimeException("Expected a JSON object");
+        if (!(json instanceof ObjectNode jsonObj)) {
+            throw new IllegalArgumentException("Expected a JSON object");
         }
-        final ObjectNode jsonObj = (ObjectNode) json;
 
-        // Note that JSON returned is a plain string -> string map, the actual
-        // parsing of the fields happens in ExtendedClient's constructor. If a
-        // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
+        // The values are plain strings; the actual parsing of the fields
+        // happens in ExtendedClient's constructor. If a field is missing or
+        // the wrong type, pass on null for default.
+        return updateFromValues(ui, key -> {
             final JsonNode jsValue = jsonObj.get(key);
             if (jsValue != null
-                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                    && jsValue.getNodeType() == JsonNodeType.STRING) {
                 return jsValue.asString();
             } else {
                 return null;
             }
-        };
+        });
+    }
+
+    /**
+     * Updates the UI from browser details resolved through the given value
+     * provider, which maps a browser-detail key (e.g. {@code v-sw},
+     * {@code v-tzid}) to its raw string value, or {@code null} when the value
+     * is absent. Used to populate the details directly from individual request
+     * parameters during bootstrap, avoiding a JSON round-trip.
+     * <p>
+     * For internal use only.
+     *
+     * @param ui
+     *            the UI to update, not {@code null}
+     * @param getStringElseNull
+     *            resolves a browser-detail key to its raw string value, or
+     *            {@code null} if not present
+     * @return the parsed details
+     * @since 25.2.1
+     */
+    public static ExtendedClientDetails updateFromValues(UI ui,
+            UnaryOperator<String> getStringElseNull) {
+        Objects.requireNonNull(ui, "UI must not be null");
 
         ExtendedClientDetails details = new ExtendedClientDetails(ui,
                 getStringElseNull.apply("v-sw"),
@@ -498,6 +582,11 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
         ui.getInternals().setExtendedClientDetails(details);
+        ui.getPage().setPageVisibility(getStringElseNull.apply("v-pv"));
+        ui.getInternals().setScreenOrientationFromClient(
+                getStringElseNull.apply("v-so"),
+                getStringElseNull.apply("v-soa"));
+        Fullscreen.setStateFromClient(ui, getStringElseNull.apply("v-fs"));
         String ga = getStringElseNull.apply("v-ga");
         if (ga != null) {
             try {
@@ -506,6 +595,21 @@ public class ExtendedClientDetails implements Serializable {
             } catch (IllegalArgumentException e) {
                 // unknown value; leave the current availability alone
             }
+        }
+        String wla = getStringElseNull.apply("v-wla");
+        if (wla != null) {
+            try {
+                ui.getInternals().setWakeLockAvailability(
+                        WakeLockAvailability.valueOf(wla));
+            } catch (IllegalArgumentException e) {
+                // unknown value; leave the current availability alone
+            }
+        }
+        String ws = getStringElseNull.apply("v-ws");
+        if (ws != null) {
+            ui.getInternals().setWebShareSupport(
+                    Boolean.parseBoolean(ws) ? WebShareSupport.SUPPORTED
+                            : WebShareSupport.UNSUPPORTED);
         }
         return details;
     }
@@ -519,6 +623,7 @@ public class ExtendedClientDetails implements Serializable {
      * @param callback
      *            a callback that will be invoked with the updated
      *            ExtendedClientDetails when the refresh is complete
+     * @since 25.0
      */
     public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";

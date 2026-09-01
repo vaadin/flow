@@ -61,6 +61,7 @@ public class DomEvent extends EventObject {
      *
      * @see Element#addEventListener(String, DomEventListener)
      * @see DomEventListener
+     * @since 25.0
      */
     public DomEvent(Element source, String eventType, JsonNode eventData) {
         super(source);
@@ -121,7 +122,11 @@ public class DomEvent extends EventObject {
         }
         final Element mappedElementOrNull = matchingNode.get();
         // prevent spoofing invisible elements by sending bad state node ids
-        if (mappedElementOrNull != null && !mappedElementOrNull.isVisible()) {
+        // — use the state-node check that also walks ancestors so an
+        // element whose own flag is true but whose ancestor was hidden is
+        // also rejected.
+        if (mappedElementOrNull != null
+                && !mappedElementOrNull.getNode().isVisible()) {
             return null;
         }
         return mappedElementOrNull;
@@ -178,6 +183,7 @@ public class DomEvent extends EventObject {
      *            <code>null</code>
      * @return the event data deserialized as the given type
      * @see DomListenerRegistration#addEventData(String)
+     * @since 25.0
      */
     public <T> T getEventData(Class<T> type) {
         return JacksonCodec.decodeAs(eventData, type);
@@ -204,6 +210,7 @@ public class DomEvent extends EventObject {
      *            <code>null</code>
      * @return the event data deserialized as the given type
      * @see DomListenerRegistration#addEventData(String)
+     * @since 25.0
      */
     public <T> T getEventData(TypeReference<T> typeReference) {
         return JacksonCodec.decodeAs(eventData, typeReference);
@@ -303,6 +310,7 @@ public class DomEvent extends EventObject {
      * @return the event detail deserialized as the given type, or
      *         <code>null</code> if event detail is not present or is null
      * @see DomListenerRegistration#addEventDetail()
+     * @since 25.0
      */
     public <T> T getEventDetail(Class<T> type) {
         JsonNode detailNode = getDetailNode();
@@ -340,6 +348,7 @@ public class DomEvent extends EventObject {
      * @return the event detail deserialized as the given type, or
      *         <code>null</code> if event detail is not present or is null
      * @see DomListenerRegistration#addEventDetail()
+     * @since 25.0
      */
     public <T> T getEventDetail(TypeReference<T> typeReference) {
         JsonNode detailNode = getDetailNode();

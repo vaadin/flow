@@ -45,6 +45,19 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private boolean canceled = false;
 
     /**
+     * The UI internals whose undelivered invocation count includes this
+     * invocation, or <code>null</code> if it is not counted, either because its
+     * owner does not belong to a UI or because it is no longer waiting to be
+     * sent.
+     * <p>
+     * Only ever set to the internals of the UI that the owner belongs to, so
+     * this reaches nothing that the owner does not reach anyway. That also
+     * makes it safe to serialize: an invocation restored with its UI keeps
+     * updating the count that was restored with it.
+     */
+    private UIInternals countedIn;
+
+    /**
      * Creates a new pending invocation for the given owner node and invocation.
      *
      * @param owner
@@ -60,6 +73,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
         this.owner = owner;
         this.invocation = invocation;
+
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     /**
@@ -88,6 +103,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      *
      * @param value
      *            the JSON return value from the client
+     * @since 25.0
      */
     public void complete(JsonNode value) {
         assert isSubscribed();
@@ -101,6 +117,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      *
      * @param value
      *            the JSON exception value from the client
+     * @since 25.0
      */
     public void completeExceptionally(JsonNode value) {
         assert isSubscribed();
@@ -120,6 +137,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return false;
         }
         canceled = true;
+        stopCounting();
 
         if (errorHandler != null) {
             errorHandler.accept(EXECUTION_CANCELED);
@@ -133,10 +151,40 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         return sentToBrowser;
     }
 
+    /**
+     * Counts this invocation as undelivered in the UI that its owner now
+     * belongs to, unless it is already counted or no longer waiting to be sent.
+     * <p>
+     * An invocation scheduled for an owner that was not attached to any UI is
+     * not counted when it is created, since there is no UI to count it in. It
+     * starts counting once the owner is attached, which is also when it starts
+     * being on its way to a client. Called by the framework when the owner is
+     * attached.
+     */
+    public void countWhenAttached() {
+        if (countedIn != null || sentToBrowser || canceled) {
+            return;
+        }
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
+    }
+
     // Non-private for testing purposes
     void setSentToBrowser() {
         assert !sentToBrowser;
         sentToBrowser = true;
+        stopCounting();
+    }
+
+    private void stopCounting() {
+        if (countedIn == null) {
+            return;
+        }
+        if (countedIn.getSession() != null) {
+            countedIn.addUndeliveredJsInvocations(-1);
+        }
+        // A closed UI has no session to lock and its count is discarded with
+        // it, so there is nothing to update for one
+        countedIn = null;
     }
 
     @Override

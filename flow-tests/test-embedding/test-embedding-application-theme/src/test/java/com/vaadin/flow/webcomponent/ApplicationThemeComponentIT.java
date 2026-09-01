@@ -24,14 +24,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.component.html.testbench.H1Element;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
-import static com.vaadin.flow.webcomponent.ThemedComponent.MY_COMPONENT_ID;
 
 public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
@@ -112,22 +110,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Color fom CSSImport annotation should have been applied",
                 "rgba(255, 215, 0, 1)", cssImportElement.getCssValue("color"));
 
-    }
-
-    @Test
-    public void componentThemeIsApplied() {
-        open();
-
-        final TestBenchElement themedComponent = $("themed-component").first();
-        final TestBenchElement embeddedComponent = themedComponent
-                .$(DivElement.class).id(EMBEDDED_ID);
-
-        TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
 
     @Test
@@ -232,28 +214,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
         Assert.assertEquals(
-                "Project contains 4 css injections to document and all should be hashed",
-                4l, getCommandExecutor().executeScript(
+                "Project contains 2 css injections to document and all should be hashed",
+                2l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
-    }
-
-    @Test
-    public void lumoImports_doNotLeakEmbeddingPage() {
-        open();
-        checkLogsForErrors();
-
-        // Ensure embedded components are loaded before testing embedding page
-        validateEmbeddedComponent($("themed-component").id("first"), "first");
-        validateEmbeddedComponent($("themed-component").id("second"), "second");
-
-        final H1Element element = $(H1Element.class).waitForFirst();
-        Assert.assertFalse(
-                "Lumo styles (typography) should not have been applied to elements in embedding page",
-                element.getCssValue("font-family").contains("Roboto"));
-        Assert.assertEquals(
-                "Lumo styles (colors) should not have been applied to elements in embedding page",
-                "rgba(0, 0, 0, 1)", element.getCssValue("color"));
-
     }
 
     @Test

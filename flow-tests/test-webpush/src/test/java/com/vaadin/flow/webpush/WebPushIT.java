@@ -135,7 +135,8 @@ public class WebPushIT extends ChromeBrowserTest {
             Assert.assertTrue("", eventLog.$(DivElement.class).id("event-3")
                     .getText().equals("3: Sent notification"));
 
-            waitUntil(driver -> isNotificationPresent(driver));
+            // Use the same generous timeout as the subscribe step above.
+            waitUntil(driver -> isNotificationPresent(driver), 60);
         } finally {
             $(NativeButtonElement.class).id(UNSUBSCRIBE_ID).click();
         }

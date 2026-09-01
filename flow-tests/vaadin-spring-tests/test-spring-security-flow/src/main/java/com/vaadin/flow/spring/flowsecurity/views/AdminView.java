@@ -23,10 +23,9 @@ import org.springframework.security.concurrent.DelegatingSecurityContextRunnable
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -36,11 +35,13 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 @PageTitle("Admin View")
 @RolesAllowed("admin")
 @Menu(order = 3)
-public class AdminView extends VerticalLayout {
+public class AdminView extends Div {
 
     public final static String ROLE_PREFIX_TEST_BUTTON_ID = "role-prefix-test-button";
 
     public AdminView(SecurityUtils securityUtils) {
+        getStyle().set("display", "flex").set("flex-direction", "column");
+
         H1 welcome = new H1("Welcome to the admin page, "
                 + securityUtils.getAuthenticatedUserInfo().getFullName());
         welcome.setId("welcome");
@@ -50,7 +51,7 @@ public class AdminView extends VerticalLayout {
                 "This page is full of dangerous controls and secret information");
         add(div);
 
-        Button accessRolePrefixedAdminPageFromThread = new Button(
+        NativeButton accessRolePrefixedAdminPageFromThread = new NativeButton(
                 "Access ROLE_ prefixed admin view from another thread");
         accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
         accessRolePrefixedAdminPageFromThread.addClickListener(event -> {

@@ -24,7 +24,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TSIT extends ChromeBrowserTest {
 
     @Test
-    public void lumoBadgeIsRenderedCorrectly() {
+    public void inlineComponentStylesApplied() {
         open();
         checkLogsForErrors();
 

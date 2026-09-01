@@ -23,7 +23,6 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.uitest.ui.theme.ParentThemeView")
 public class ParentThemeView extends Div {
 
-    public static final String MY_POLYMER_ID = "field";
     public static final String TEST_TEXT_ID = "test-text";
     public static final String SNOWFLAKE_ID = "fortawesome";
     public static final String KEYBOARD_ID = "keyboard";
@@ -77,6 +76,5 @@ public class ParentThemeView extends Div {
                 sunIconFromParentTheme);
 
         add(new Div());
-        add(new MyPolymerField().withId(MY_POLYMER_ID));
     }
 }

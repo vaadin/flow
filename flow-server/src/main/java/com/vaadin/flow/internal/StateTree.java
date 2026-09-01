@@ -249,6 +249,7 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
     @Override
@@ -478,10 +479,17 @@ public class StateTree implements NodeOwner {
      * Prepares the tree for resynchronization, meaning that the client will
      * receive the same changes as when the component tree was initially
      * attached, so that it can build the DOM tree from scratch.
+     * 
+     * @since 3.1
      */
     public void prepareForResync() {
         preparingForResync = true;
         try {
+            // The client rebuilds its state from scratch, and the components
+            // reinitialize it from the initial attach events that preparing
+            // dispatches. Anything still queued predates that, so it would run
+            // against a client side that no longer expects it.
+            uiInternals.discardPendingJavaScriptInvocations();
             rootNode.prepareForResync();
         } finally {
             preparingForResync = false;
@@ -498,6 +506,7 @@ public class StateTree implements NodeOwner {
      *
      * @return {@code true} if the tree is preparing for resynchronization,
      *         {@code false} otherwise
+     * @since 24.7.5
      */
     public boolean isPreparingForResync() {
         return preparingForResync;
