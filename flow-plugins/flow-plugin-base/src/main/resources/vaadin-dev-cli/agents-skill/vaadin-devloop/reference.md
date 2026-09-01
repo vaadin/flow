@@ -143,8 +143,32 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.idleSeconds=60, -Dvaadin.dev.reactorRoot=<dir>,
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
-                         -Dvaadin.dev.daemonJar=<path>
+                         -Dvaadin.dev.daemonJar=<path>.
+                         Read ONLY when a daemon is spawned: a daemon that is already
+                         running ignores it, so `shutdown` first when changing a value.
+                         Every vaadin.* and spring.* property is passed on to the
+                         application JVM.
 ```
+
+## Passing properties to the application
+
+The application is launched with no program arguments, so `--spring.profiles.active=dev`
+has nowhere to go. Pass it as a daemon property instead, and shut the daemon down first
+so the new value is actually read:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS="-Dspring.profiles.active=dev" .vaadin/vaadin-dev start
+```
+
+Every `spring.*` property works this way, not just the profile. Three exceptions the loop
+sets itself and will not forward: `spring.devtools.restart.enabled`,
+`vaadin.launch-browser`, `vaadin.devloop.classes`.
+
+A property set here lives as long as the daemon and appears in no file, so it is for
+steering one local run. If a profile is what the project normally runs under,
+`spring.profiles.active` in `application.properties` is the better answer and needs none
+of this.
 
 `.vaadin/vaadin-dev --help` lists the rest, including the `redefine <a.b.C,...>` diagnostic.
 

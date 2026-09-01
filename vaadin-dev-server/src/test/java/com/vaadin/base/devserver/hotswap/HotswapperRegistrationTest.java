@@ -23,9 +23,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -101,6 +103,38 @@ class HotswapperRegistrationTest {
         // Handing one service's hotswapper to another would refresh the wrong
         // UIs.
         assertTrue(Hotswapper.getRegistered(mockService()).isEmpty());
+    }
+
+    @Test
+    void register_secondServiceInTheSameContext_keepsTheFirstsRegistration() {
+        // Two VaadinServlets in one web app are two services sharing one
+        // ServletContext, which is where the registration lives.
+        Hotswapper first = Hotswapper.register(service).orElseThrow();
+        VaadinService other = mockService();
+
+        Hotswapper second = Hotswapper.register(other).orElseThrow();
+
+        assertNotSame(first, second, "each service needs its own hotswapper");
+        // Evicting the first is what made the dev loop's connector answer
+        // ERR kind=no-hotswapper for whichever service registered earlier.
+        assertSame(first, Hotswapper.getRegistered(service).orElseThrow());
+        assertSame(second, Hotswapper.getRegistered(other).orElseThrow());
+        // And with the first still findable, registering it again reuses it
+        // rather than building a second one that doubles every refresh.
+        assertSame(first, Hotswapper.register(service).orElseThrow());
+        Mockito.verify(service, Mockito.times(1))
+                .addUIInitListener(Mockito.any());
+    }
+
+    @Test
+    void serviceDestroy_forgetsTheRegistration() {
+        Hotswapper hotswapper = Hotswapper.register(service).orElseThrow();
+
+        hotswapper.serviceDestroy(new ServiceDestroyEvent(service));
+
+        // The registration outlives the service otherwise: it is held in a
+        // context attribute, and the context outlives every service in it.
+        assertTrue(Hotswapper.getRegistered(service).isEmpty());
     }
 
     @Test

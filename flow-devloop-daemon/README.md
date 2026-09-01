@@ -147,7 +147,31 @@ latest bytes on disk matter. The superseded caller still gets a terminal answer.
 All are system properties on the daemon JVM
 (`VAADIN_DEV_DAEMON_OPTS="-Dfoo=bar"` from the CLI). Any `vaadin.*` property the
 daemon was started with is also forwarded to the app JVM, which is how
-`-Dvaadin.frontend.hotdeploy=true` reaches Vite.
+`-Dvaadin.frontend.hotdeploy=true` reaches Vite. So is every `spring.*`
+property — the app is launched with no program arguments, so this is the only
+way to hand it one:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS="-Dspring.profiles.active=dev" .vaadin/vaadin-dev start
+```
+
+The `shutdown` is not optional. `VAADIN_DEV_DAEMON_OPTS` is read by the CLI only
+when it *spawns* a daemon; every later command reuses the daemon that is already
+running and ignores the variable, so setting it in front of `restart` changes
+nothing. That applies to every property in this table, not only these.
+
+Three are held back because the loop sets them itself, and a forwarded copy
+would override rather than repeat them (a later `-D` wins):
+`spring.devtools.restart.enabled`, `vaadin.launch-browser` and
+`vaadin.devloop.classes`. Devtools is the one that matters — two things
+restarting the application on their own schedules is what the transaction model
+exists to prevent.
+
+Anything set this way lives as long as the daemon and appears in no file, so it
+is for steering one local run. What the project always needs belongs in its own
+properties files, where the rest of the team can see it (see
+`Launch.forwardedToApp`).
 
 | Property | Default | Effect |
 |---|---|---|
@@ -300,7 +324,10 @@ The decision logic is covered by `FrontendTest` in both modes. To check it end t
 
 ```bash
 cd <app>
-VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev restart
+.vaadin/vaadin-dev shutdown
+#   the variable is read only when a daemon is spawned, so a running one
+#   would ignore it - see Knobs
+VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev start
 #   edit src/main/frontend/<something>.ts
 .vaadin/vaadin-dev apply
 #   expect: hmr: N frontend file(s), applied by Vite (dev server up:<port>)

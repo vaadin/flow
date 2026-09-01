@@ -21,7 +21,9 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Classpath membership is what decides whether a pom edit restarts the app.
@@ -58,6 +60,39 @@ class LaunchTest {
         assertEquals(
                 Path.of(System.getProperty("user.home"), ".vaadin", "devloop"),
                 cache);
+    }
+
+    @Test
+    void forwardedToApp_carriesTheVaadinAndSpringNamespaces() {
+        // VAADIN_DEV_DAEMON_OPTS is the only channel there is - the app is
+        // launched with no program arguments - so anything a developer has to
+        // set on the application has to come through here.
+        assertTrue(Launch.forwardedToApp("spring.profiles.active"));
+        assertTrue(Launch.forwardedToApp("spring.datasource.url"));
+        assertTrue(Launch.forwardedToApp("spring.main.banner-mode"));
+        // The steering case this allowlist already existed for.
+        assertTrue(Launch.forwardedToApp("vaadin.frontend.hotdeploy"));
+    }
+
+    @Test
+    void forwardedToApp_holdsBackWhatTheLoopItselfSets() {
+        // These three are put on the app's command line with the value the loop
+        // requires. The forwarding runs after them and a later -D wins, so a
+        // forwarded copy does not merely duplicate - it overrides. For
+        // devtools that would put Spring's own restart back in the ring
+        // against the daemon, which is the one thing the loop cannot share.
+        assertFalse(Launch.forwardedToApp("spring.devtools.restart.enabled"));
+        assertFalse(Launch.forwardedToApp("vaadin.launch-browser"));
+        assertFalse(Launch.forwardedToApp("vaadin.devloop.classes"));
+    }
+
+    @Test
+    void forwardedToApp_leavesTheDaemonsOwnJvmPropertiesBehind() {
+        // Not "forward everything": these describe the daemon's process, and
+        // another process's answers are worse than none.
+        assertFalse(Launch.forwardedToApp("user.dir"));
+        assertFalse(Launch.forwardedToApp("java.class.path"));
+        assertFalse(Launch.forwardedToApp("os.name"));
     }
 
     private static String classpath(String... entries) {
