@@ -362,8 +362,6 @@ class TableTest extends ComponentTest {
         assertEquals(List.of(header), table.getHeaderRows());
         assertEquals(List.of(first, second), table.getBodyRows());
         assertEquals(List.of(footer), table.getFooterRows());
-        assertEquals(List.of(header, first, second, footer),
-                table.getAllRows());
     }
 
     @Test

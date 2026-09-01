@@ -372,7 +372,9 @@ public class Table extends HtmlComponent
 
     /**
      * Returns the first {@code <tbody>} of this table, creating one if the
-     * table has none.
+     * table has none. Reading through this accessor therefore has a side
+     * effect; use {@link #getBodies()} or {@link #getBodyRows()} to inspect the
+     * table without adding a body to it.
      *
      * @return the table's first body.
      */
@@ -419,9 +421,12 @@ public class Table extends HtmlComponent
      * <code>&lt;tbody&gt;</code>, then the <code>&lt;tfoot&gt;</code> rows.
      * <p>
      * The name says {@code All} because this is the only row accessor that
-     * crosses sections: {@link TableHead#getRows()},
+     * crosses section kinds. {@link #getHeaderRows()}, {@link #getBodyRows()}
+     * and {@link #getFooterRows()} each stay within one kind, though
+     * {@code getBodyRows} does flatten several {@code <tbody>} elements when
+     * the table has them, and {@link TableHead#getRows()},
      * {@link TableBody#getRows()} and {@link TableFoot#getRows()} each return
-     * the rows of one container, and {@link #addRow()} appends to the body.
+     * the rows of one container. {@link #addRow()} appends to the body.
      *
      * @return all the rows of this table.
      */
