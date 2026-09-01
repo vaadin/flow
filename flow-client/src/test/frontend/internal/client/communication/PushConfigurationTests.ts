@@ -1,5 +1,6 @@
 // Beyond the Java suite: PushConfiguration has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
+import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { PushConfiguration } from '../../../../../main/frontend/internal/client/communication/PushConfiguration';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
@@ -29,8 +30,10 @@ function makeRegistry(values: Record<string, unknown>) {
   return {
     setPushCalls,
     configMap,
-    getStateTree: () => tree,
-    getMessageSender: () => ({ setPushEnabled: (enabled: boolean) => setPushCalls.push(enabled) })
+    registry: testRegistry({
+      StateTree: tree,
+      MessageSender: { setPushEnabled: (enabled: boolean) => setPushCalls.push(enabled) }
+    })
   };
 }
 
@@ -38,14 +41,14 @@ describe('PushConfiguration', () => {
   afterEach(() => Reactive.flush());
 
   it('reports whether push is enabled from the push mode', () => {
-    expect(new PushConfiguration(makeRegistry({ pushMode: 'AUTOMATIC' })).isPushEnabled()).to.be.true;
-    expect(new PushConfiguration(makeRegistry({ pushMode: 'DISABLED' })).isPushEnabled()).to.be.false;
-    expect(new PushConfiguration(makeRegistry({})).isPushEnabled()).to.be.false;
+    expect(new PushConfiguration(makeRegistry({ pushMode: 'AUTOMATIC' }).registry).isPushEnabled()).to.be.true;
+    expect(new PushConfiguration(makeRegistry({ pushMode: 'DISABLED' }).registry).isPushEnabled()).to.be.false;
+    expect(new PushConfiguration(makeRegistry({}).registry).isPushEnabled()).to.be.false;
   });
 
   it('enables push (deferred to flush) when the mode switches on', () => {
     const registry = makeRegistry({ pushMode: 'DISABLED' });
-    new PushConfiguration(registry);
+    new PushConfiguration(registry.registry);
     registry.configMap.getProperty('pushMode').setValue('AUTOMATIC');
     expect(registry.setPushCalls).to.deep.equal([]); // deferred
     Reactive.flush();
@@ -54,7 +57,7 @@ describe('PushConfiguration', () => {
 
   it('disables push when the mode switches off', () => {
     const registry = makeRegistry({ pushMode: 'AUTOMATIC' });
-    new PushConfiguration(registry);
+    new PushConfiguration(registry.registry);
     registry.configMap.getProperty('pushMode').setValue('DISABLED');
     Reactive.flush();
     expect(registry.setPushCalls).to.deep.equal([false]);
@@ -66,12 +69,12 @@ describe('PushConfiguration', () => {
       pushServletMapping: '/vaadinPush/',
       alwaysXhrToServer: true
     });
-    const config = new PushConfiguration(registry);
+    const config = new PushConfiguration(registry.registry);
     expect(config.getPushServletMapping()).to.equal('/vaadinPush/');
     expect(config.isAlwaysXhrToServer()).to.be.true;
     expect(config.getParameters().get('transports')).to.equal('websocket,long-polling');
 
-    const noMapping = new PushConfiguration(makeRegistry({ pushMode: 'AUTOMATIC' }));
+    const noMapping = new PushConfiguration(makeRegistry({ pushMode: 'AUTOMATIC' }).registry);
     expect(noMapping.getPushServletMapping()).to.equal(null);
     expect(noMapping.isAlwaysXhrToServer()).to.be.false;
   });

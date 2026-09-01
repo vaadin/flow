@@ -17,19 +17,10 @@
 // TypeScript port of com.vaadin.client.communication.MessageSender, built
 // alongside the Java version. It sends UIDL requests to the server over XHR
 // and/or push, managing the client-to-server message id, the resynchronization
-// state machine, an outgoing message queue, and a resend timer. The
-// XhrConnection / PushConnection / MessageHandler and the rest of the Registry
-// are contracts satisfied at cutover; push connections are created through an
-// injected factory (GWT.create in the Java version).
+// state machine, an outgoing message queue, and a resend timer. Push connections
+// are created through an injected factory (GWT.create in the Java version).
 
 import type { Registry } from '../Registry';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
-import type { MessageHandler } from './MessageHandler';
-import type { PushConfiguration } from './PushConfiguration';
-import type { RequestResponseTracker } from './RequestResponseTracker';
-import type { ServerRpcQueue } from './ServerRpcQueue';
-import type { UILifecycle } from '../UILifecycle';
 import type { XhrConnection } from './XhrConnection';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
@@ -45,21 +36,6 @@ const RESYNCHRONIZE_ID = 'resynchronize';
 const UNLOAD_BEACON = 'UNLOAD';
 
 type Payload = Record<string, unknown>;
-
-/** The slice of {@link Registry} that MessageSender uses. */
-export interface MessageSenderRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
-  getRequestResponseTracker(): Pick<
-    RequestResponseTracker,
-    'hasActiveRequest' | 'startRequest' | 'addReconnectionAttemptHandler'
-  >;
-  getServerRpcQueue(): Pick<ServerRpcQueue, 'isEmpty' | 'toJson' | 'clear' | 'isFlushPending' | 'flush'>;
-  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'startLoading'>;
-  getMessageHandler(): Pick<MessageHandler, 'getCsrfToken' | 'getLastSeenServerSyncId'>;
-  getXhrConnection(): Pick<XhrConnection, 'send' | 'getUri'>;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getMaxMessageSuspendTimeout'>;
-  getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
-}
 
 /** The state of a resynchronization request; mirrors MessageSender.ResynchronizationState. */
 export const ResynchronizationState = {
@@ -82,7 +58,7 @@ export class MessageSender {
 
   #push: PushConnection | null = null;
 
-  readonly #registry: MessageSenderRegistry;
+  readonly #registry: Registry;
 
   readonly #pushConnectionFactory: PushConnectionFactory | null;
 
@@ -99,7 +75,7 @@ export class MessageSender {
    *
    * @param registry - the global registry
    */
-  constructor(registry: MessageSenderRegistry, pushConnectionFactory: PushConnectionFactory | null = null) {
+  constructor(registry: Registry, pushConnectionFactory: PushConnectionFactory | null = null) {
     this.#registry = registry;
     this.#pushConnectionFactory = pushConnectionFactory;
     this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((event) => {

@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import type { Registry } from '../../../../../main/frontend/internal/client/Registry';
 import { inertRegistry } from './stateTreeTestRegistry';
 import type { NodeFeature } from '../../../../../main/frontend/internal/client/flow/nodefeature/NodeFeature';
 

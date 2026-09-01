@@ -21,7 +21,6 @@
 
 import type { Registry } from '../Registry';
 import { getScheduler } from '../TrackingScheduler';
-import type { RequestResponseTracker } from './RequestResponseTracker';
 import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
@@ -43,11 +42,6 @@ const SILENT_EVENT_TYPES = new Set<string>([
   'dragover'
 ]);
 
-/** The slice of {@link Registry} that LoadingIndicatorStateHandler uses. */
-interface LoadingIndicatorRegistry {
-  getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest'>;
-}
-
 /**
  * Manages the state of loading indicator based on active RPC requests, event
  * types, and lifecycle events. This class ensures appropriate visual feedback
@@ -57,7 +51,7 @@ interface LoadingIndicatorRegistry {
  * (mousemove and such) to avoid excessive visual noise in these cases.
  */
 export class LoadingIndicatorStateHandler {
-  readonly #registry: LoadingIndicatorRegistry;
+  readonly #registry: Registry;
 
   #loading = false;
 
@@ -68,7 +62,7 @@ export class LoadingIndicatorStateHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: LoadingIndicatorRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

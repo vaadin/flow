@@ -14,7 +14,7 @@
  * the License.
  */
 
-import type { SystemErrorHandler } from './SystemErrorHandler';
+import type { Registry } from './Registry';
 import type { ResourceLoader } from './ResourceLoader';
 import { Console } from './Console';
 
@@ -72,11 +72,6 @@ export interface ResourceLoadListener {
   onError(event: ResourceLoadEvent): void;
 }
 
-/** Reports resource load errors. */
-interface ResourceRegistryRegistry {
-  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleError'>;
-}
-
 /** Tracks loaded resources and their listeners; the dedup/fanout kernel of ResourceLoader. */
 export class ResourceRegistry {
   readonly #loadedResources = new Set<string>();
@@ -86,9 +81,9 @@ export class ResourceRegistry {
   // Maps a dependency id to its resource key (URL/content) for removal.
   readonly #dependencyIdToResourceKey = new Map<string, string>();
 
-  readonly #registry: ResourceRegistryRegistry;
+  readonly #registry: Registry;
 
-  constructor(registry: ResourceRegistryRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

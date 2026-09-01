@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { testRegistry } from '../testRegistry';
 import {
   AtmospherePushConnection,
   FragmentedMessage
@@ -61,7 +62,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     // The real resolver, so the push url is built from the context root as in
     // production.
     getURIResolver: () =>
-      new URIResolver({ getApplicationConfiguration: () => ({ getContextRootUrl: () => contextRootUrl }) }),
+      new URIResolver(testRegistry({ ApplicationConfiguration: { getContextRootUrl: () => contextRootUrl } })),
     getMessageHandler: () => ({
       getPushId: () => null,
       getLastSeenServerSyncId: () => 5,

@@ -114,7 +114,7 @@ function hasTag(node: Node, tag: string): boolean {
 export function populateModelProperties(node: StateNode, properties: string[]): void {
   const map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
   if (node.getDomNode() === null) {
-    invokeWhenDefined(getTag(node as never), () =>
+    invokeWhenDefined(getTag(node), () =>
       Reactive.addPostFlushListener(() => populateModelProperties(node, properties))
     );
     return;

@@ -2,7 +2,8 @@ import { inertRegistry } from './stateTreeTestRegistry';
 import { expect } from '@open-wc/testing';
 import { processChange, processChanges } from '../../../../../main/frontend/internal/client/flow/TreeChangeProcessor';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import type { Registry } from '../../../../../main/frontend/internal/client/Registry';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
 

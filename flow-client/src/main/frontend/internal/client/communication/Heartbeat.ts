@@ -17,14 +17,9 @@
 // TypeScript port of com.vaadin.client.communication.Heartbeat, built alongside
 // the Java version. It periodically POSTs a heartbeat request to keep the
 // server-side UI alive, rescheduling after each response and disabling itself
-// when the UI terminates. The GWT Timer maps to setTimeout; the
-// Registry/ApplicationConfiguration/UILifecycle/ConnectionStateHandler are
-// contracts satisfied at cutover.
+// when the UI terminates. The GWT Timer maps to setTimeout.
 
 import type { Registry } from '../Registry';
-import type { UILifecycle } from '../UILifecycle';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import { Console } from '../Console';
 
@@ -32,16 +27,6 @@ import { Console } from '../Console';
 const REQUEST_TYPE_PARAMETER = 'v-r';
 const REQUEST_TYPE_HEARTBEAT = 'heartbeat';
 const UI_ID_PARAMETER = 'v-uiId';
-
-/** The slice of {@link Registry} that Heartbeat uses. */
-interface HeartbeatRegistry {
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getHeartbeatInterval' | 'getServiceUrl' | 'getUIId'>;
-  getUILifecycle(): Pick<UILifecycle, 'addHandler'>;
-  getConnectionStateHandler(): Pick<
-    ConnectionStateHandler,
-    'heartbeatOk' | 'heartbeatInvalidStatusCode' | 'heartbeatException'
-  >;
-}
 
 // One-shot reschedulable timer; mirrors the GWT Timer used by Heartbeat.
 class HeartbeatTimer {
@@ -84,9 +69,9 @@ export class Heartbeat {
 
   #interval = -1;
 
-  readonly #registry: HeartbeatRegistry;
+  readonly #registry: Registry;
 
-  constructor(registry: HeartbeatRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     const configuration = registry.getApplicationConfiguration();
     this.setInterval(configuration.getHeartbeatInterval());

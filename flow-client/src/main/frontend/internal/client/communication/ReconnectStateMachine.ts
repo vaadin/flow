@@ -25,23 +25,9 @@
 
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
-import type { Heartbeat } from './Heartbeat';
-import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
-import type { ReconnectConfiguration } from './ReconnectConfiguration';
-import type { RequestResponseTracker } from './RequestResponseTracker';
-import type { UILifecycle } from '../UILifecycle';
 import { CONNECTED, CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
-
-/** The slice of {@link Registry} the reconnect state machine uses. */
-interface ReconnectRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
-  getReconnectConfiguration(): Pick<ReconnectConfiguration, 'getReconnectAttempts'>;
-  getRequestResponseTracker(): Pick<RequestResponseTracker, 'hasActiveRequest' | 'endRequest'>;
-  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
-  getHeartbeat(): Pick<Heartbeat, 'setInterval'>;
-}
 
 /**
  * Tracks reconnection state and decides retry/give-up; mirrors the
@@ -53,7 +39,7 @@ export class ReconnectStateMachine {
 
   #reconnectAttempt = 0;
 
-  readonly #registry: ReconnectRegistry;
+  readonly #registry: Registry;
 
   // Performs the actual reconnect retry (timer + payload re-send) — supplied by
   // the full handler; cancels any scheduled retry on resolution.
@@ -74,7 +60,7 @@ export class ReconnectStateMachine {
    *          schedules nothing cancellable
    */
   constructor(
-    registry: ReconnectRegistry,
+    registry: Registry,
     scheduleReconnect: (payload: unknown) => void,
     cancelScheduledReconnect: Command = () => {}
   ) {

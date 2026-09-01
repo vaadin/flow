@@ -1,4 +1,5 @@
 import { wiredRegistryBase } from '../flow/stateTreeTestRegistry';
+import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { CONNECTED, getState, LOADING } from '../../../../../main/frontend/internal/client/ConnectionIndicator';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
@@ -38,7 +39,7 @@ function installConnectionState() {
 
 function makeHandler(hasActiveRequest = false) {
   const tracker = installConnectionState();
-  const registry = { getRequestResponseTracker: () => ({ hasActiveRequest: () => hasActiveRequest }) };
+  const registry = testRegistry({ RequestResponseTracker: { hasActiveRequest: () => hasActiveRequest } });
   return { handler: new LoadingIndicatorStateHandler(registry), tracker };
 }
 
@@ -61,15 +62,12 @@ function makeWiredRegistry() {
   registry.getApplicationConfiguration().setContextRootUrl('/');
 
   const tree = new StateTree(registry);
-  registry.getStateTree = () => tree;
-  const responseTracker = new RequestResponseTracker(registry);
-  registry.getRequestResponseTracker = () => responseTracker;
-  const indicator = new LoadingIndicatorStateHandler(registry);
-  registry.getLoadingIndicatorStateHandler = () => indicator;
-  const rpcQueue = new ServerRpcQueue(registry);
-  registry.getServerRpcQueue = () => rpcQueue;
-  const connector = new ServerConnector(registry);
-  registry.getServerConnector = () => connector;
+  registry.register('StateTree', tree);
+  registry.register('RequestResponseTracker', new RequestResponseTracker(registry));
+  registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
+  registry.register('ServerRpcQueue', new ServerRpcQueue(registry));
+  registry.register('ServerConnector', new ServerConnector(registry));
+  const responseTracker = registry.getRequestResponseTracker();
 
   class TestMessageSender extends MessageSender {
     override send(): void {
@@ -78,8 +76,7 @@ function makeWiredRegistry() {
       }
     }
   }
-  const sender = new TestMessageSender(registry);
-  registry.getMessageSender = () => sender;
+  registry.register('MessageSender', new TestMessageSender(registry));
 
   class TestMessageHandler extends MessageHandler {
     simulateResponse(): void {
@@ -87,13 +84,14 @@ function makeWiredRegistry() {
     }
   }
   const messageHandler = new TestMessageHandler(registry);
-  registry.getMessageHandler = () => messageHandler;
+  registry.register('MessageHandler', messageHandler);
 
   // Reached only by paths these two cases do not take.
-  registry.getExecuteJavaScriptProcessor = () => ({ execute: () => {} });
-  registry.getDependencyLoader = () => ({ loadDependencies: () => {} });
-  registry.getSystemErrorHandler = () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} });
-  registry.getResourceLoader = () => ({ clearLoadedResourceById: () => {} });
+  registry
+    .register('ExecuteJavaScriptProcessor', { execute: () => {} })
+    .register('DependencyLoader', { loadDependencies: () => {} })
+    .register('SystemErrorHandler', { handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} })
+    .register('ResourceLoader', { clearLoadedResourceById: () => {} });
 
   const node = new StateNode(2, tree);
   tree.registerNode(node);

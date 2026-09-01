@@ -239,13 +239,12 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
       will ever port, so each review re-read them as open work.)
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
-    future ported class will satisfy at cutover — see `Registry` /
-    `ServerConnector` / `InitialPropertiesHandler` in `StateTree.ts`, standing in
-    for the not-yet-ported `com.vaadin.client.Registry` and its
-    server-communication layer. A slice is only for a class that is **not yet
-    ported**, never a permanent decoupling from one that is: once the referenced
-    class lands, replace the slice with a real `import` of the ported type and
-    delete the interface. (E.g. `StateNode` and `ClientJsonCodec` import the real
+    future ported class will satisfy at cutover — as `StateTree.ts` did for
+    `com.vaadin.client.Registry` and its server-communication layer until #24952
+    ported them. A slice is only for a class that is **not yet ported**, never a
+    permanent decoupling from one that is: once the referenced class lands,
+    replace the slice with a real `import` of the ported type and delete the
+    interface. (E.g. `StateNode` and `ClientJsonCodec` import the real
     `StateTree` rather than re-declaring a `getNode` / `getRegistry` slice; and
     once `StateTree`/`StateNode`/`NodeMap` landed in #24948, `MapProperty` and
     `NodeFeature` dropped their `MapPropertyTree` / `MapPropertyNode` /
@@ -259,21 +258,26 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     to cover it.) If the PR that ports the class cannot collapse a slice in the
     same change, it files a retrofit-backlog row naming the slice: a slice never
     outlives its port silently.
-    - **A registry slice still names its members after the ported class.** The
-      `Registry` container itself stays a local interface until `DefaultRegistry`
-      lands (a suite cannot otherwise build one), but each getter's return type
-      is `Pick<PortedClass, 'onlyTheMembersUsed'>` rather than an inline object
-      type — the slice keeps naming only what the module calls, while no
-      signature is duplicated and nothing can drift from the class. Only a
-      getter whose class is genuinely unported spells its shape out inline.
-      _Introduced during #24951, which folded every remaining slice of a ported
-      class this way — the 64 inline registry getters plus `StateTree.ts`'s own
-      `ServerConnector` and `InitialPropertiesHandler` contracts. The sweep found six
-      places where a slice and its class had drifted apart (five slices looser
-      than the real signature, and `sendExistingElementWithIdAttachToServer`
-      declaring a non-null `id` the binding layer already calls it with as null)
-      plus one member, `handlePropertyUpdate`, that `StateTree`'s slice omitted
-      although the tree calls it._
+    - **A service takes the registry, not a slice of it.** `Registry` declares the
+      24 typed getters `Registry.java` declares, so a module's constructor takes
+      `Registry` and no module re-declares the getters it happens to call. There
+      is no registry slice left to keep in step with anything.
+      _First stated during #24951, when the container was still local and each
+      getter's return type was narrowed to `Pick<PortedClass, 'membersUsed'>`; that
+      sweep found six places where a slice and its class had drifted apart (five
+      slices looser than the real signature, and
+      `sendExistingElementWithIdAttachToServer` declaring a non-null `id` the
+      binding layer already calls it with as null) plus one member,
+      `handlePropertyUpdate`, that `StateTree`'s slice omitted although the tree
+      calls it. #24952 then ported `DefaultRegistry` and dropped all 23 local
+      contracts for the real class, which also removed the last four `as never`
+      casts the loose slices had needed._
+    - **A suite builds a real registry.** Because `Registry.set` is protected, as
+      in Java, a suite registers its services through the `TestRegistry` subclass
+      in `src/test/frontend/internal/client/testRegistry.ts` — `testRegistry({ StateTree: tree })`
+      — rather than casting an object literal into the registry type. Services a
+      suite does not register stay unregistered, so a lookup the code under test
+      should not make throws instead of silently returning a stub.
 
 ## Tests
 
@@ -502,9 +506,16 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are still omitted, now blocked on `ApplicationConnection` alone (the other 23 return types are ported). Twenty-two modules therefore still declare a local registry interface, though every member of those now derives from the ported class via `Pick<…>`, so only the container is local. They collapse into the real `Registry` once `DefaultRegistry` can assemble one, so a suite can build it | the PR that ports `ApplicationConnection` and `DefaultRegistry` | open |
 | 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
 | 17 | Eleven base-layer modules measure short of their Java original's comment lines: `Console` (2/7), `SharedUtil` (10/13), `TreeChangeProcessor` (4/6), `JsArray` (0/2), `BrowserDetails` (34/36), `ExistingElementMap` (1/2), `MapProperty` (14/15), `ClientJsonCodec` (9/10), `SimpleElementBindingStrategy` (107/109), `ServerEventHandlerBinder` (0/1), `NodeFeatures` (0/1). Each needs the read-through the count only points at, since part of the gap is the GWT mechanics the rule exempts (`Console`'s `$entry` deferral, `JsArray`'s private constructor) and part is genuinely dropped (`ClientJsonCodec` has none of the five `// Check for @v-…` branch markers (`@v-node` twice, `@v-return`, `@v-fn`, and the unknown-`@v-` fallback); `MapProperty` carries one of the two `// mark as server update is in progress` sites) | a follow-up on the state-tree and support-services layers | open |
+
+The rule-12 row for `Registry`'s typed getters was closed in #24952: the getters
+moved from `DefaultRegistry` to `Registry`, where `Registry.java` has them, all
+23 local registry contracts were deleted, and the suites that used to cast an
+object literal into a registry now build a real one through `TestRegistry`.
+`getApplicationConnection` is registered by `DefaultRegistry.setApplicationConnection`,
+since the port assembles the registry before the connection that Java passes into
+its constructor exists.
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on

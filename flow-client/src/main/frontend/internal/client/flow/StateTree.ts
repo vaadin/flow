@@ -19,8 +19,8 @@
 // layer that StateTree needs are declared here as contracts that the
 // Registry/connector satisfy.
 
+import type { Registry } from '../Registry';
 import type { processChanges } from './TreeChangeProcessor';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import { assert } from '../../assert';
 import type { MapProperty } from './nodefeature/MapProperty';
 import { NodeList } from './nodefeature/NodeList';
@@ -28,32 +28,8 @@ import type { NodeMap } from './nodefeature/NodeMap';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../flow/internal/nodefeature/NodeProperties';
 import { StateNode } from './StateNode';
-import type { InitialPropertiesHandler } from '../InitialPropertiesHandler';
-import type { ServerConnector } from '../communication/ServerConnector';
-import type { ConstantPool } from './ConstantPool';
-import type { ExistingElementMap } from '../ExistingElementMap';
 import { Console } from '../Console';
 import { getIfPresent, rejectPromises } from './binding/ServerEventObject';
-
-/** The slice of Registry that StateTree and the binding layer use. */
-export interface Registry {
-  getInitialPropertiesHandler(): Pick<
-    InitialPropertiesHandler,
-    'flushPropertyUpdates' | 'nodeRegistered' | 'handlePropertyUpdate'
-  >;
-  getServerConnector(): Pick<
-    ServerConnector,
-    | 'sendEventMessage'
-    | 'sendNodeSyncMessage'
-    | 'sendTemplateEventMessage'
-    | 'sendExistingElementAttachToServer'
-    | 'sendExistingElementWithIdAttachToServer'
-    | 'sendReturnChannelMessage'
-  >;
-  getApplicationConfiguration(): ApplicationConfiguration;
-  getConstantPool(): ConstantPool;
-  getExistingElementMap(): ExistingElementMap;
-}
 
 /**
  * A client-side representation of a server-side state tree.

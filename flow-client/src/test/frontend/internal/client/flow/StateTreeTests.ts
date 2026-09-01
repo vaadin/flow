@@ -1,9 +1,12 @@
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { testRegistry } from '../testRegistry';
+import { unavailableRegistry } from './stateTreeTestRegistry';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import type { NodeUnregisterEvent } from '../../../../../main/frontend/internal/client/flow/NodeUnregisterEvent';
-import { StateTree, type Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import type { Registry } from '../../../../../main/frontend/internal/client/Registry';
 import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { get as getServerEventObject } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
@@ -37,11 +40,8 @@ class RecordingInitialPropertiesHandler extends InitialPropertiesHandler {
   readonly #propertyUpdateResult: boolean;
 
   constructor(propertyUpdateResult: boolean) {
-    super({
-      getStateTree: () => {
-        throw new Error('state tree not available in this test');
-      }
-    });
+    // Nothing registered: this handler must not reach the tree.
+    super(unavailableRegistry());
     this.#propertyUpdateResult = propertyUpdateResult;
   }
 
@@ -72,21 +72,23 @@ function makeTree(handlePropertyUpdateResult = false): {
   // so a fresh instance per call would hide anything written by an earlier one.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
-  const registry: Registry = {
-    getInitialPropertiesHandler: () => initialPropertiesHandler,
-    getServerConnector: () => ({
+  const registry: Registry = testRegistry({
+    InitialPropertiesHandler: initialPropertiesHandler,
+    ServerConnector: {
       sendEventMessage: () => {},
-      sendNodeSyncMessage: (node, mapId, name, value) => syncs.push({ node, mapId, name, value }),
-      sendTemplateEventMessage: (node, methodName, args, promiseId) =>
+      sendNodeSyncMessage: (node: StateNode, mapId: number, name: string, value: unknown) =>
+        syncs.push({ node, mapId, name, value }),
+
+      sendTemplateEventMessage: (node: StateNode, methodName: string, args: unknown[], promiseId: number) =>
         templateEvents.push({ node, methodName, args, promiseId }),
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
-    }),
-    getApplicationConfiguration: () => new ApplicationConfiguration(),
-    getConstantPool: () => constantPool,
-    getExistingElementMap: () => existingElementMap
-  };
+    },
+    ApplicationConfiguration: new ApplicationConfiguration(),
+    ConstantPool: constantPool,
+    ExistingElementMap: existingElementMap
+  });
   return {
     tree: new StateTree(registry),
     syncs,

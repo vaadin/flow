@@ -37,16 +37,7 @@ import {
   reset as resetProfiler
 } from '../Profiler';
 import { redirect } from '../WidgetUtil';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { ConstantPool } from '../flow/ConstantPool';
-import type { Dependency, DependencyLoader, LoadMode } from '../DependencyLoader';
-import type { ExecuteJavaScriptProcessor } from '../flow/ExecuteJavaScriptProcessor';
-import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
-import type { MessageSender } from './MessageSender';
-import type { RequestResponseTracker } from './RequestResponseTracker';
-import type { ResourceLoader } from '../ResourceLoader';
-import type { SystemErrorHandler } from '../SystemErrorHandler';
-import type { UILifecycle } from '../UILifecycle';
+import type { Dependency, LoadMode } from '../DependencyLoader';
 import type { ValueMap } from '../ValueMap';
 import { getServerId, isResynchronize, PendingMessageQueue, UNDEFINED_SYNC_ID } from './MessageOrdering';
 import { ResynchronizationState } from './MessageSender';
@@ -105,31 +96,6 @@ const META_ASYNC = 'async';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
-/** The slice of {@link Registry} MessageHandler uses. */
-interface MessageHandlerRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'getState' | 'setState'>;
-  getMessageSender(): Pick<
-    MessageSender,
-    | 'getResynchronizationState'
-    | 'clearResynchronizationState'
-    | 'setClientToServerMessageId'
-    | 'requestResynchronize'
-    | 'resynchronize'
-  >;
-  getStateTree(): unknown & { prepareForResync(): void };
-  getRequestResponseTracker(): Pick<
-    RequestResponseTracker,
-    'fireResponseHandlingStarted' | 'endRequest' | 'hasActiveRequest'
-  >;
-  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
-  getConstantPool(): Pick<ConstantPool, 'importFromJson'>;
-  getExecuteJavaScriptProcessor(): Pick<ExecuteJavaScriptProcessor, 'execute'>;
-  getDependencyLoader(): Pick<DependencyLoader, 'loadDependencies'>;
-  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleSessionExpiredError' | 'handleUnrecoverableError'>;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getMaxMessageSuspendTimeout'>;
-  getResourceLoader(): Pick<ResourceLoader, 'clearLoadedResourceById'>;
-}
-
 /** A state node whose DOM updates should be flushed after a server message. */
 interface UpdatedNode {
   isUnregistered(): boolean;
@@ -142,7 +108,7 @@ interface UpdatedNode {
  * connectors are updated accordingly.
  */
 export class MessageHandler {
-  readonly #registry: MessageHandlerRegistry;
+  readonly #registry: Registry;
 
   // Locks; while non-empty, response handling is suspended.
   readonly #responseHandlingLocks = new Set<object>();
@@ -174,7 +140,7 @@ export class MessageHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: MessageHandlerRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 
@@ -466,7 +432,7 @@ export class MessageHandler {
     // meta.appError handling runs, so coerce it to an empty list.
     const changes = Array.isArray(json.changes) ? (json.changes as Array<Record<string, unknown>>) : [];
     // The StateTree satisfies TreeChangeProcessor's contract.
-    const updatedNodes = applyTreeChanges(tree as never, changes);
+    const updatedNodes = applyTreeChanges(tree, changes);
     Reactive.addPostFlushListener(() =>
       // Through the tracking scheduler, as Scheduler.get().scheduleDeferred is,
       // so the pending callbacks keep the application active.

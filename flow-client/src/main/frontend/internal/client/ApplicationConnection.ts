@@ -32,27 +32,8 @@ import { publishClient } from './publishClient';
 import type { ApplicationConnection as PublishedClient } from './clientApi';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler, type TrackingScheduler } from './TrackingScheduler';
-import type { MessageHandler } from './communication/MessageHandler';
-import type { MessageSender } from './communication/MessageSender';
-import type { Poller } from './communication/Poller';
 import type { Registry } from './Registry';
-import type { RequestResponseTracker } from './communication/RequestResponseTracker';
-import type { ServerConnector } from './communication/ServerConnector';
-import type { StateTree } from './flow/StateTree';
-import type { URIResolver } from './URIResolver';
 import type { ValueMap } from './ValueMap';
-
-/** The slice of {@link Registry} ApplicationConnection uses. */
-interface ApplicationConnectionRegistry {
-  getMessageSender(): Pick<MessageSender, 'resynchronize' | 'sendUnloadBeacon'>;
-  getRequestResponseTracker(): Pick<RequestResponseTracker, 'startRequest' | 'hasActiveRequest'>;
-  getMessageHandler(): Pick<MessageHandler, 'handleMessage' | 'isInitialUidlHandled' | 'getProfilingData'>;
-  getPoller(): Pick<Poller, 'poll'>;
-  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
-  getServerConnector(): Pick<ServerConnector, 'sendEventMessage'>;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getUIId'>;
-  getStateTree(): Pick<StateTree, 'getRootNode' | 'getNode' | 'getStateNodeForDomNode'>;
-}
 
 /** The main class for an application/UI; mirrors ApplicationConnection.java's engine API. */
 // GWT's uncaught exception handler is a single, replaceable slot: creating
@@ -75,11 +56,11 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
 }
 
 export class ApplicationConnection implements PublishedClient {
-  readonly #registry: ApplicationConnectionRegistry;
+  readonly #registry: Registry;
 
   readonly #scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>;
 
-  constructor(registry: ApplicationConnectionRegistry, scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>) {
+  constructor(registry: Registry, scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>) {
     this.#registry = registry;
     this.#scheduler = scheduler;
   }

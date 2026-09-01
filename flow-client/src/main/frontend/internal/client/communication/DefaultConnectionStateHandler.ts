@@ -23,14 +23,6 @@
 
 import type { Registry } from '../Registry';
 import { redirect } from '../WidgetUtil';
-import type { UILifecycle } from '../UILifecycle';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
-import type { Heartbeat } from './Heartbeat';
-import type { LoadingIndicatorStateHandler } from './LoadingIndicatorStateHandler';
-import type { MessageSender } from './MessageSender';
-import type { ReconnectConfiguration } from './ReconnectConfiguration';
-import type { RequestResponseTracker } from './RequestResponseTracker';
-import type { SystemErrorHandler } from '../SystemErrorHandler';
 import { setProperty } from '../ConnectionIndicator';
 import { ConnectionMessageType } from './ConnectionMessageType';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
@@ -47,24 +39,6 @@ const SC_UNAUTHORIZED = 401;
 // com.vaadin.client.UILifecycle.UIState
 const TERMINATED = 'TERMINATED';
 
-/** The slice of {@link Registry} DefaultConnectionStateHandler uses. */
-interface DefaultConnectionStateRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'isRunning' | 'getState' | 'setState' | 'addHandler'>;
-  getReconnectConfiguration(): Pick<
-    ReconnectConfiguration,
-    'getReconnectAttempts' | 'getReconnectInterval' | 'getDialogText' | 'getDialogTextGaveUp'
-  >;
-  getRequestResponseTracker(): Pick<
-    RequestResponseTracker,
-    'hasActiveRequest' | 'endRequest' | 'fireReconnectionAttempt'
-  >;
-  getLoadingIndicatorStateHandler(): Pick<LoadingIndicatorStateHandler, 'stopLoading'>;
-  getHeartbeat(): Pick<Heartbeat, 'setInterval' | 'getInterval' | 'send'>;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getHeartbeatInterval'>;
-  getMessageSender(): Pick<MessageSender, 'sendInvocationsToServer'>;
-  getSystemErrorHandler(): Pick<SystemErrorHandler, 'handleSessionExpiredError' | 'handleUnrecoverableError'>;
-}
-
 /**
  * Default implementation of the connection state handler. Handles temporary
  * errors by showing a reconnect dialog to the user while trying to re-establish
@@ -72,7 +46,7 @@ interface DefaultConnectionStateRegistry {
  * permanent errors by showing a critical system notification to the user
  */
 export class DefaultConnectionStateHandler implements ConnectionStateHandler {
-  readonly #registry: DefaultConnectionStateRegistry;
+  readonly #registry: Registry;
 
   readonly #machine: ReconnectStateMachine;
 
@@ -83,7 +57,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: DefaultConnectionStateRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     this.#machine = new ReconnectStateMachine(
       registry,

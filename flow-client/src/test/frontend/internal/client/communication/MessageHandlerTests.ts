@@ -83,7 +83,7 @@ function makeWiredRegistry() {
   const uiLifecycle = new UILifecycle();
   uiLifecycle.setState(UIState.RUNNING);
   const registry = wiredRegistryBase(uiLifecycle);
-  registry.getServerConnector = () => ({
+  registry.register('ServerConnector', {
     sendEventMessage: () => {},
     sendNodeSyncMessage: () => {},
     sendTemplateEventMessage: () => {},
@@ -102,7 +102,7 @@ function makeWiredRegistry() {
     }
   }
   const tree = new RecordingStateTree(registry);
-  registry.getStateTree = () => tree;
+  registry.register('StateTree', tree);
 
   // Records the load, as the Java suite's TestResourceLoader does, and completes
   // it on a later task: a real load is asynchronous, and only then does the
@@ -123,38 +123,37 @@ function makeWiredRegistry() {
     scriptUrls.push(url);
     complete(listener);
   };
-  registry.getResourceLoader = () => ({
-    loadJsModule: recordScript,
-    loadScript: recordScript,
-    loadDynamicImport: (expression: string, listener: { onLoad(e: unknown): void }) => {
-      setTimeout(() => {
-        new Function(expression)();
-        order.push('ResourceLoader');
-        listener.onLoad(event);
-      }, 0);
-    },
-    clearLoadedResourceById: () => {}
-  });
-  registry.getURIResolver = () => ({ resolveVaadinUri: (uri: string) => uri });
-  registry.getDependencyLoader = () => dependencyLoader;
-  const dependencyLoader = new DependencyLoader(registry);
-
-  registry.getRequestResponseTracker = () => ({
-    fireResponseHandlingStarted: () => {},
-    // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
-    endRequest: () => {},
-    hasActiveRequest: () => false
-  });
-  registry.getLoadingIndicatorStateHandler = () => ({ stopLoading: () => {} });
-  registry.getMessageSender = () => ({
-    getResynchronizationState: () => 'NOT_ACTIVE',
-    clearResynchronizationState: () => {},
-    setClientToServerMessageId: () => {},
-    requestResynchronize: () => true,
-    resynchronize: () => {}
-  });
-  registry.getExecuteJavaScriptProcessor = () => ({ execute: () => {} });
-  registry.getSystemErrorHandler = () => ({ handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} });
+  registry
+    .register('ResourceLoader', {
+      loadJsModule: recordScript,
+      loadScript: recordScript,
+      loadDynamicImport: (expression: string, listener: { onLoad(e: unknown): void }) => {
+        setTimeout(() => {
+          new Function(expression)();
+          order.push('ResourceLoader');
+          listener.onLoad(event);
+        }, 0);
+      },
+      clearLoadedResourceById: () => {}
+    })
+    .register('URIResolver', { resolveVaadinUri: (uri: string) => uri })
+    .register('RequestResponseTracker', {
+      fireResponseHandlingStarted: () => {},
+      // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
+      endRequest: () => {},
+      hasActiveRequest: () => false
+    })
+    .register('LoadingIndicatorStateHandler', { stopLoading: () => {} })
+    .register('MessageSender', {
+      getResynchronizationState: () => 'NOT_ACTIVE',
+      clearResynchronizationState: () => {},
+      setClientToServerMessageId: () => {},
+      requestResynchronize: () => true,
+      resynchronize: () => {}
+    })
+    .register('ExecuteJavaScriptProcessor', { execute: () => {} })
+    .register('SystemErrorHandler', { handleSessionExpiredError: () => {}, handleUnrecoverableError: () => {} });
+  registry.register('DependencyLoader', new DependencyLoader(registry));
 
   const messageHandler = new TestMessageHandler(registry);
   return { order, scriptUrls, tree, messageHandler };

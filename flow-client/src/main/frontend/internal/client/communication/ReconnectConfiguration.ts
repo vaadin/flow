@@ -21,7 +21,6 @@
 // changes (reactively).
 
 import type { Registry } from '../Registry';
-import type { StateTree } from '../flow/StateTree';
 import type { MapProperty } from '../flow/nodefeature/MapProperty';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
@@ -35,11 +34,6 @@ const RECONNECT_ATTEMPTS_DEFAULT = 10000;
 const RECONNECT_INTERVAL_KEY = 'reconnectInterval';
 const RECONNECT_INTERVAL_DEFAULT = 5000;
 
-/** The slice of {@link Registry} ReconnectConfiguration reads. */
-interface ReconnectRegistry {
-  getStateTree(): StateTree;
-}
-
 /**
  * Tracks the reconnect configuration stored in the root node and provides it
  * with an easier to use API. Also triggers
@@ -47,14 +41,14 @@ interface ReconnectRegistry {
  * configuration changes.
  */
 export class ReconnectConfiguration {
-  readonly #registry: ReconnectRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new instance using the given registry.
    *
    * @param registry - the registry
    */
-  constructor(registry: ReconnectRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

@@ -18,12 +18,6 @@
 
 import type { Registry } from './Registry';
 import { parseJson } from './communication/MessageHandler';
-import type { ApplicationConfiguration } from './ApplicationConfiguration';
-import type { Heartbeat } from './communication/Heartbeat';
-import type { MessageHandler } from './communication/MessageHandler';
-import type { MessageSender } from './communication/MessageSender';
-import type { PushConfiguration } from './communication/PushConfiguration';
-import type { UILifecycle } from './UILifecycle';
 import type { ErrorMessage } from './ApplicationConfiguration';
 import { addGetParameters } from '../flow/shared/util/SharedUtil';
 import { getScheduler } from './TrackingScheduler';
@@ -64,33 +58,13 @@ function getWithCredentials(
 // components orchestration; the unrecoverable-error notification flow
 // (handleUnrecoverableError) and the web-component session resynchronization
 // (resynchronizeSession, XHR + heartbeat/push/reset) are DOM/network-bound and
-// IT-validated. The Registry is a contract satisfied at cutover.
-
-/** The slice of {@link Registry} SystemErrorHandler uses. */
-interface SystemErrorRegistry {
-  getApplicationConfiguration(): Pick<
-    ApplicationConfiguration,
-    | 'isWebComponentMode'
-    | 'getExportedWebComponents'
-    | 'getSessionExpiredError'
-    | 'getServiceUrl'
-    | 'getUIId'
-    | 'setUIId'
-    | 'getHeartbeatInterval'
-  >;
-  getHeartbeat(): Pick<Heartbeat, 'setInterval'>;
-  getPushConfiguration(): Pick<PushConfiguration, 'isPushEnabled'>;
-  getMessageSender(): Pick<MessageSender, 'setPushEnabled'>;
-  getUILifecycle(): Pick<UILifecycle, 'setState'>;
-  getMessageHandler(): Pick<MessageHandler, 'handleMessage'>;
-  reset(): void;
-}
+// IT-validated.
 
 /**
  * Handles system errors in the application.
  */
 export class SystemErrorHandler {
-  readonly #registry: SystemErrorRegistry;
+  readonly #registry: Registry;
 
   #resyncInProgress = false;
 
@@ -99,7 +73,7 @@ export class SystemErrorHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: SystemErrorRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

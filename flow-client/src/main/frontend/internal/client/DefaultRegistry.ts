@@ -17,14 +17,14 @@
 // TypeScript port of com.vaadin.client.DefaultRegistry — the concrete service
 // assembly used by ApplicationConnection. It instantiates the ported TS services
 // in dependency order (initialization order matters: later constructors read
-// earlier services via the getters) and exposes the typed getters every service
-// resolves its collaborators through. This is the cutover-assembly step that
-// takes the build-alongside TS engine into use.
+// earlier services through the Registry getters). This is the cutover-assembly
+// step that takes the build-alongside TS engine into use.
 //
 // Push is wired via the AtmospherePushConnection factory, so setPushEnabled(true)
 // creates a real Atmosphere connection (loading vaadinPush.js on demand).
 
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
+import type { ApplicationConnection } from './ApplicationConnection';
 import { atmospherePushConnectionFactory } from './communication/AtmospherePushConnection';
 import { ConstantPool } from './flow/ConstantPool';
 import { DependencyLoader } from './DependencyLoader';
@@ -36,7 +36,7 @@ import { MessageSender } from './communication/MessageSender';
 import { Poller } from './communication/Poller';
 import { PushConfiguration } from './communication/PushConfiguration';
 import { ReconnectConfiguration } from './communication/ReconnectConfiguration';
-import { Registry } from './Registry';
+import { Registry, TOKEN } from './Registry';
 import { RequestResponseTracker } from './communication/RequestResponseTracker';
 import { ResourceLoader } from './ResourceLoader';
 import { ServerConnector } from './communication/ServerConnector';
@@ -50,33 +50,6 @@ import { SystemErrorHandler } from './SystemErrorHandler';
 import { UILifecycle } from './UILifecycle';
 import { URIResolver } from './URIResolver';
 import { XhrConnection } from './communication/XhrConnection';
-
-// Service lookup tokens (one per registered singleton).
-const TOKEN = {
-  ApplicationConfiguration: 'ApplicationConfiguration',
-  ResourceLoader: 'ResourceLoader',
-  URIResolver: 'URIResolver',
-  DependencyLoader: 'DependencyLoader',
-  SystemErrorHandler: 'SystemErrorHandler',
-  UILifecycle: 'UILifecycle',
-  StateTree: 'StateTree',
-  RequestResponseTracker: 'RequestResponseTracker',
-  MessageHandler: 'MessageHandler',
-  MessageSender: 'MessageSender',
-  ServerRpcQueue: 'ServerRpcQueue',
-  ServerConnector: 'ServerConnector',
-  ExecuteJavaScriptProcessor: 'ExecuteJavaScriptProcessor',
-  ConstantPool: 'ConstantPool',
-  ExistingElementMap: 'ExistingElementMap',
-  InitialPropertiesHandler: 'InitialPropertiesHandler',
-  Heartbeat: 'Heartbeat',
-  ConnectionStateHandler: 'ConnectionStateHandler',
-  XhrConnection: 'XhrConnection',
-  PushConfiguration: 'PushConfiguration',
-  ReconnectConfiguration: 'ReconnectConfiguration',
-  Poller: 'Poller',
-  LoadingIndicatorStateHandler: 'LoadingIndicatorStateHandler'
-} as const;
 
 /** The concrete registry that wires the TS services; mirrors DefaultRegistry.java. */
 export class DefaultRegistry extends Registry {
@@ -119,95 +92,17 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.LoadingIndicatorStateHandler, new LoadingIndicatorStateHandler(self));
   }
 
-  getApplicationConfiguration(): ApplicationConfiguration {
-    return this.get(TOKEN.ApplicationConfiguration);
-  }
-
-  getResourceLoader(): ResourceLoader {
-    return this.get(TOKEN.ResourceLoader);
-  }
-
-  getURIResolver(): URIResolver {
-    return this.get(TOKEN.URIResolver);
-  }
-
-  getDependencyLoader(): DependencyLoader {
-    return this.get(TOKEN.DependencyLoader);
-  }
-
-  getSystemErrorHandler(): SystemErrorHandler {
-    return this.get(TOKEN.SystemErrorHandler);
-  }
-
-  getUILifecycle(): UILifecycle {
-    return this.get(TOKEN.UILifecycle);
-  }
-
-  getStateTree(): StateTree {
-    return this.get(TOKEN.StateTree);
-  }
-
-  getRequestResponseTracker(): RequestResponseTracker {
-    return this.get(TOKEN.RequestResponseTracker);
-  }
-
-  getMessageHandler(): MessageHandler {
-    return this.get(TOKEN.MessageHandler);
-  }
-
-  getMessageSender(): MessageSender {
-    return this.get(TOKEN.MessageSender);
-  }
-
-  getServerRpcQueue(): ServerRpcQueue {
-    return this.get(TOKEN.ServerRpcQueue);
-  }
-
-  getServerConnector(): ServerConnector {
-    return this.get(TOKEN.ServerConnector);
-  }
-
-  getExecuteJavaScriptProcessor(): ExecuteJavaScriptProcessor {
-    return this.get(TOKEN.ExecuteJavaScriptProcessor);
-  }
-
-  getConstantPool(): ConstantPool {
-    return this.get(TOKEN.ConstantPool);
-  }
-
-  getExistingElementMap(): ExistingElementMap {
-    return this.get(TOKEN.ExistingElementMap);
-  }
-
-  getInitialPropertiesHandler(): InitialPropertiesHandler {
-    return this.get(TOKEN.InitialPropertiesHandler);
-  }
-
-  getHeartbeat(): Heartbeat {
-    return this.get(TOKEN.Heartbeat);
-  }
-
-  getConnectionStateHandler(): DefaultConnectionStateHandler {
-    return this.get(TOKEN.ConnectionStateHandler);
-  }
-
-  getXhrConnection(): XhrConnection {
-    return this.get(TOKEN.XhrConnection);
-  }
-
-  getPushConfiguration(): PushConfiguration {
-    return this.get(TOKEN.PushConfiguration);
-  }
-
-  getReconnectConfiguration(): ReconnectConfiguration {
-    return this.get(TOKEN.ReconnectConfiguration);
-  }
-
-  getPoller(): Poller {
-    return this.get(TOKEN.Poller);
-  }
-
-  getLoadingIndicatorStateHandler(): LoadingIndicatorStateHandler {
-    return this.get(TOKEN.LoadingIndicatorStateHandler);
+  /**
+   * Stores the application connection this registry belongs to.
+   *
+   * Java takes the connection as the first constructor parameter, because the
+   * registry is constructed from inside ApplicationConnection's constructor. The
+   * port assembles the registry first and hands the connection over as soon as it
+   * exists, which is before anything can look it up.
+   *
+   * @param connection - the application connection
+   */
+  setApplicationConnection(connection: ApplicationConnection): void {
+    this.set(TOKEN.ApplicationConnection, connection);
   }
 }

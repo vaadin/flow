@@ -2,6 +2,7 @@
 // case is ported at the end of this file. com.vaadin.client.ApplicationConnection
 // has no JRE-side test class, so every other case here is beyond the Java suite.
 
+import { testRegistry } from './testRegistry';
 import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
@@ -25,32 +26,30 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
   // Something on the root node, so debug() has to reach that node rather than
   // any empty one. 'tag' in feature 0 is what the server writes for an element.
   tree.getRootNode().getMap(0).getProperty('tag').setValue('body');
-  const registry = {
-    log,
-    tree,
-    getMessageSender: () => ({
+  const registry = testRegistry({
+    MessageSender: {
       resynchronize: () => log.resynchronized++,
       sendUnloadBeacon: () => {}
-    }),
-    getRequestResponseTracker: () => ({
+    },
+    RequestResponseTracker: {
       startRequest: () => log.startedRequests++,
       hasActiveRequest: () => opts.activeRequest ?? false
-    }),
-    getMessageHandler: () => ({
+    },
+    MessageHandler: {
       handleMessage: (json: unknown) => log.handled.push(json),
       isInitialUidlHandled: () => opts.initialUidlHandled ?? false,
       getProfilingData: () => [1, 2]
-    }),
-    getPoller: () => ({ poll: () => log.polled++ }),
-    getURIResolver: () => ({ resolveVaadinUri: (uri: string) => `resolved:${uri}` }),
-    getServerConnector: () => ({
+    },
+    Poller: { poll: () => log.polled++ },
+    URIResolver: { resolveVaadinUri: (uri: string) => `resolved:${uri}` },
+    ServerConnector: {
       sendEventMessage: (nodeId: number, eventType: string, data: unknown) =>
         log.events.push({ nodeId, eventType, data })
-    }),
-    getApplicationConfiguration: () => ({ getUIId: () => 7 }),
-    getStateTree: () => tree
-  };
-  return registry;
+    },
+    ApplicationConfiguration: { getUIId: () => 7 },
+    StateTree: tree
+  });
+  return { registry, log, tree };
 }
 
 const idleScheduler = { hasWorkQueued: () => false };
@@ -71,46 +70,46 @@ function observeAddedEvents(target: EventTarget, into: string[]): () => void {
 describe('ApplicationConnection', () => {
   it('resynchronizes when there is no initial UIDL', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry, idleScheduler).start(null);
+    new ApplicationConnection(registry.registry, idleScheduler).start(null);
     expect(registry.log.resynchronized).to.equal(1);
     expect(registry.log.handled).to.deep.equal([]);
   });
 
   it('handles the initial UIDL (after starting a request) when provided', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry, idleScheduler).start({ syncId: 0 });
+    new ApplicationConnection(registry.registry, idleScheduler).start({ syncId: 0 });
     expect(registry.log.startedRequests).to.equal(1);
     expect(registry.log.handled).to.deep.equal([{ syncId: 0 }]);
     expect(registry.log.resynchronized).to.equal(0);
   });
 
   it('isActive while the initial UIDL is not yet handled', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }), idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }).registry, idleScheduler);
     expect(connection.isActive()).to.be.true;
   });
 
   it('isActive while a request is active or deferred work is queued', () => {
     expect(
       new ApplicationConnection(
-        makeRegistry({ initialUidlHandled: true, activeRequest: true }),
+        makeRegistry({ initialUidlHandled: true, activeRequest: true }).registry,
         idleScheduler
       ).isActive()
     ).to.be.true;
     expect(
-      new ApplicationConnection(makeRegistry({ initialUidlHandled: true }), {
+      new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry, {
         hasWorkQueued: () => true
       }).isActive()
     ).to.be.true;
   });
 
   it('is idle when the initial UIDL is handled with no request or deferred work', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }), idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }).registry, idleScheduler);
     expect(connection.isActive()).to.be.false;
   });
 
   it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, debug', () => {
     const registry = makeRegistry();
-    const connection = new ApplicationConnection(registry, idleScheduler);
+    const connection = new ApplicationConnection(registry.registry, idleScheduler);
 
     connection.poll();
     expect(registry.log.polled).to.equal(1);
@@ -144,7 +143,7 @@ describe('ApplicationConnection', () => {
       elementData.getProperty('visible').setValue(false);
       node.getMap(12).getProperty('color').setValue('red');
       const domNode = document.createElement('div');
-      const registry = makeRegistry({ tree });
+      const { registry } = makeRegistry({ tree });
       // The DOM node is attached on demand: setDomNode is what notifies the
       // dom-set listeners, and a state node only takes one.
       return { registry, node, domNode, attach: () => node.setDomNode(domNode) };

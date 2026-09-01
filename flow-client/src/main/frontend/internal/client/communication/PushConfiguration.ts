@@ -18,14 +18,11 @@
 // alongside the Java version. It exposes the push configuration stored in the
 // root node's UI_PUSHCONFIGURATION feature and, when the push mode changes,
 // informs the MessageSender to enable/disable push (deferred to a flush listener
-// so all parts of the configuration are updated first). The Registry/StateTree/
-// MessageSender are contracts satisfied at cutover.
+// so all parts of the configuration are updated first).
 
 import type { Registry } from '../Registry';
 import type { StateNode } from '../flow/StateNode';
-import type { StateTree } from '../flow/StateTree';
 import type { NodeMap } from '../flow/nodefeature/NodeMap';
-import type { MessageSender } from './MessageSender';
 import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { Reactive } from '../flow/reactive/Reactive';
 
@@ -34,12 +31,6 @@ const PUSHMODE_KEY = 'pushMode';
 const PUSH_SERVLET_MAPPING_KEY = 'pushServletMapping';
 const ALWAYS_USE_XHR_TO_SERVER = 'alwaysXhrToServer';
 const PARAMETERS_KEY = 'parameters';
-
-/** The slice of {@link Registry} PushConfiguration uses. */
-interface PushConfigRegistry {
-  getStateTree(): StateTree;
-  getMessageSender(): Pick<MessageSender, 'setPushEnabled'>;
-}
 
 // Whether a PUSHMODE value enables push (anything other than DISABLED).
 function isPushModeEnabled(propertyValue: unknown): boolean {
@@ -58,14 +49,14 @@ function isPushModeEnabled(propertyValue: unknown): boolean {
  * MessageSender}.
  */
 export class PushConfiguration {
-  readonly #registry: PushConfigRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new instance connected to the given registry.
    *
    * @param registry - the global registry
    */
-  constructor(registry: PushConfigRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     this.#getConfigurationMap()
       .getProperty(PUSHMODE_KEY)

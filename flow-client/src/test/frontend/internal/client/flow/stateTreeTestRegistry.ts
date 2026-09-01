@@ -3,7 +3,7 @@
 // added to Registry is filled in once rather than in every suite.
 
 import type { UILifecycle } from '../../../../../main/frontend/internal/client/UILifecycle';
-import type { Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
+import { type TestRegistry, testRegistry } from '../testRegistry';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
@@ -11,7 +11,7 @@ import { ApplicationConfiguration } from '../../../../../main/frontend/internal/
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 
 /** A registry whose members are all present but inert. */
-export function inertRegistry(): Registry {
+export function inertRegistry(): TestRegistry {
   // One instance each per registry: the binding path reads these through
   // several calls, so handing out a fresh one per call would hide anything
   // written through an earlier call.
@@ -19,24 +19,24 @@ export function inertRegistry(): Registry {
   const existingElementMap = new ExistingElementMap();
   // The real ApplicationConfiguration, which is ported and needs nothing else.
   const applicationConfiguration = new ApplicationConfiguration();
-  return {
-    getInitialPropertiesHandler: () => ({
+  return testRegistry({
+    InitialPropertiesHandler: {
       flushPropertyUpdates: () => {},
       nodeRegistered: () => {},
       handlePropertyUpdate: () => false
-    }),
-    getServerConnector: () => ({
+    },
+    ServerConnector: {
       sendEventMessage: () => {},
       sendNodeSyncMessage: () => {},
       sendTemplateEventMessage: () => {},
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
-    }),
-    getApplicationConfiguration: () => applicationConfiguration,
-    getConstantPool: () => constantPool,
-    getExistingElementMap: () => existingElementMap
-  };
+    },
+    ApplicationConfiguration: applicationConfiguration,
+    ConstantPool: constantPool,
+    ExistingElementMap: existingElementMap
+  });
 }
 
 /** What a recording registry collected from the server-facing calls. */
@@ -55,17 +55,28 @@ export interface RecordedCalls {
  * An inert registry that also records what was sent to the server, for suites
  * that assert on the round trip.
  */
-export function recordingRegistry(): { registry: Registry; recorded: RecordedCalls } {
+export function recordingRegistry(): { registry: TestRegistry; recorded: RecordedCalls } {
   const recorded: RecordedCalls = {
     syncs: new Map(),
     existingElementAttaches: [],
     returnChannelMessages: [],
     events: []
   };
-  const registry = inertRegistry();
-  const base = registry.getServerConnector();
-  registry.getServerConnector = () => ({
-    ...base,
+  // The recording connector replaces the inert one, so the registry is built
+  // here rather than by extending inertRegistry: a service is registered once.
+  const registry = testRegistry({
+    InitialPropertiesHandler: {
+      flushPropertyUpdates: () => {},
+      nodeRegistered: () => {},
+      handlePropertyUpdate: () => false
+    },
+    ApplicationConfiguration: new ApplicationConfiguration(),
+    ConstantPool: new ConstantPool(),
+    ExistingElementMap: new ExistingElementMap()
+  });
+  registry.register('ServerConnector', {
+    sendTemplateEventMessage: () => {},
+    sendExistingElementWithIdAttachToServer: () => {},
     sendEventMessage: (node: StateNode, eventType: string, eventData: unknown) => {
       recorded.events.push({ nodeId: node.getId(), eventType, eventData });
     },
@@ -95,17 +106,9 @@ export function recordingRegistry(): { registry: Registry; recorded: RecordedCal
  * A registry whose every member throws: for suites that must fail loudly if the
  * code under test reaches the registry at all.
  */
-export function unavailableRegistry(): Registry {
-  const unavailable = (): never => {
-    throw new Error('registry not available in this test');
-  };
-  return {
-    getInitialPropertiesHandler: unavailable,
-    getServerConnector: unavailable,
-    getApplicationConfiguration: unavailable,
-    getConstantPool: unavailable,
-    getExistingElementMap: unavailable
-  };
+export function unavailableRegistry(): TestRegistry {
+  // Nothing registered: the registry itself throws on any lookup.
+  return testRegistry({});
 }
 
 /**
@@ -128,20 +131,16 @@ export function inertNode(id = 2): StateNode {
  * @returns the registry, to be extended with the services under test
  */
 
-export function wiredRegistryBase(uiLifecycle: UILifecycle): any {
-  const configuration = new ApplicationConfiguration();
-  const constantPool = new ConstantPool();
-  const existingElementMap = new ExistingElementMap();
-
-  const registry: any = {};
-  registry.getUILifecycle = () => uiLifecycle;
-  registry.getApplicationConfiguration = () => configuration;
-  registry.getConstantPool = () => constantPool;
-  registry.getExistingElementMap = () => existingElementMap;
-  registry.getInitialPropertiesHandler = () => ({
-    flushPropertyUpdates: () => {},
-    nodeRegistered: () => {},
-    handlePropertyUpdate: () => false
+export function wiredRegistryBase(uiLifecycle: UILifecycle): TestRegistry {
+  return testRegistry({
+    UILifecycle: uiLifecycle,
+    ApplicationConfiguration: new ApplicationConfiguration(),
+    ConstantPool: new ConstantPool(),
+    ExistingElementMap: new ExistingElementMap(),
+    InitialPropertiesHandler: {
+      flushPropertyUpdates: () => {},
+      nodeRegistered: () => {},
+      handlePropertyUpdate: () => false
+    }
   });
-  return registry;
 }

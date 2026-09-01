@@ -22,9 +22,6 @@
 // twice, and one removal detaches one registration.
 
 import type { Registry } from '../Registry';
-import type { MessageSender } from './MessageSender';
-import type { ServerRpcQueue } from './ServerRpcQueue';
-import type { UILifecycle } from '../UILifecycle';
 import type { EventRemover } from '../../EventRemover';
 import type { ReconnectionAttemptEventHandler } from './ReconnectionAttemptEvent';
 import type { RequestStartingEventHandler } from './RequestStartingEvent';
@@ -35,16 +32,6 @@ import { RequestStartingEvent } from './RequestStartingEvent';
 import { ResponseHandlingEndedEvent } from './ResponseHandlingEndedEvent';
 import { ResponseHandlingStartedEvent } from './ResponseHandlingStartedEvent';
 import { ResynchronizationState } from './MessageSender';
-
-/** The slice of {@link Registry} that RequestResponseTracker uses. */
-interface RequestResponseRegistry {
-  getUILifecycle(): Pick<UILifecycle, 'isRunning'>;
-  getServerRpcQueue(): Pick<ServerRpcQueue, 'isFlushPending'>;
-  getMessageSender(): Pick<
-    MessageSender,
-    'getResynchronizationState' | 'hasQueuedMessages' | 'sendInvocationsToServer'
-  >;
-}
 
 function addListener<T>(listeners: T[], listener: T): EventRemover {
   listeners.push(listener);
@@ -62,7 +49,7 @@ function addListener<T>(listeners: T[], listener: T): EventRemover {
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
-  readonly #registry: RequestResponseRegistry;
+  readonly #registry: Registry;
 
   readonly #requestStartingHandlers: RequestStartingEventHandler[] = [];
 
@@ -77,7 +64,7 @@ export class RequestResponseTracker {
    *
    * @param registry - the global registry
    */
-  constructor(registry: RequestResponseRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 

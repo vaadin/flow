@@ -20,24 +20,18 @@
 // browser-loadable URLs; other protocols pass through unchanged.
 
 import type { Registry } from './Registry';
-import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { VaadinUriResolver } from '../flow/shared/VaadinUriResolver';
-
-/** The slice of {@link Registry} that URIResolver uses. */
-interface URIResolverRegistry {
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getContextRootUrl'>;
-}
 
 /** Client side URL resolver for vaadin protocols. */
 export class URIResolver extends VaadinUriResolver {
-  readonly #registry: URIResolverRegistry;
+  readonly #registry: Registry;
 
   /**
    * Creates a new instance connected to the given registry.
    *
    * @param registry - the global registry
    */
-  constructor(registry: URIResolverRegistry) {
+  constructor(registry: Registry) {
     super();
     this.#registry = registry;
   }

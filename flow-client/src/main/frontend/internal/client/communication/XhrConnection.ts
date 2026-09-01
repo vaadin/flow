@@ -21,10 +21,8 @@
 import type { Registry } from '../Registry';
 import { stringify } from '../WidgetUtil';
 import { Console } from '../Console';
-import type { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
 import type { MessageHandler } from './MessageHandler';
-import type { RequestResponseTracker } from './RequestResponseTracker';
 import { BrowserInfo } from '../BrowserInfo';
 import { XhrConnectionError } from './XhrConnectionError';
 import { parseJson } from './MessageHandler';
@@ -58,24 +56,13 @@ function resendRequest(xhr: XMLHttpRequest): boolean {
 
 type Payload = Record<string, unknown>;
 
-/** The slice of {@link Registry} that XhrConnection uses. */
-export interface XhrConnectionRegistry {
-  getRequestResponseTracker(): Pick<RequestResponseTracker, 'addResponseHandlingEndedHandler'>;
-  getConnectionStateHandler(): Pick<
-    ConnectionStateHandler,
-    'xhrInvalidStatusCode' | 'xhrException' | 'xhrInvalidContent' | 'xhrOk'
-  >;
-  getMessageHandler(): Pick<MessageHandler, 'handleMessage'>;
-  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getServiceUrl' | 'getUIId'>;
-}
-
 /**
  * Handles the response from the server by forwarding the received message to
  * {@link MessageHandler} or failures to the appropriate method in
  * {@link ConnectionStateHandler}.
  */
 export class XhrResponseHandler {
-  readonly #registry: XhrConnectionRegistry;
+  readonly #registry: Registry;
 
   #payload: Payload | null = null;
 
@@ -90,7 +77,7 @@ export class XhrResponseHandler {
    *
    * @param registry - the global registry
    */
-  constructor(registry: XhrConnectionRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
   }
 
@@ -165,9 +152,9 @@ export class XhrConnection {
   // (beforeunload); when set, retry sending until there is a response.
   #webkitMaybeIgnoringRequests = false;
 
-  readonly #registry: XhrConnectionRegistry;
+  readonly #registry: Registry;
 
-  constructor(registry: XhrConnectionRegistry) {
+  constructor(registry: Registry) {
     this.#registry = registry;
     window.addEventListener(
       'beforeunload',

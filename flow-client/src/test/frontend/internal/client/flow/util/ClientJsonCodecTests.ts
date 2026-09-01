@@ -1,4 +1,5 @@
 import { inertRegistry } from '../stateTreeTestRegistry';
+import { testRegistry } from '../../testRegistry';
 import { ConstantPool } from '../../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { ExistingElementMap } from '../../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
@@ -8,7 +9,8 @@ import {
   decodeWithoutTypeInfo
 } from '../../../../../../main/frontend/internal/client/flow/util/ClientJsonCodec';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
-import { StateTree, type Registry } from '../../../../../../main/frontend/internal/client/flow/StateTree';
+import { StateTree } from '../../../../../../main/frontend/internal/client/flow/StateTree';
+import type { Registry } from '../../../../../../main/frontend/internal/client/Registry';
 
 interface ReturnMessage {
   nodeId: number;
@@ -26,20 +28,21 @@ function makeTree(sent: ReturnMessage[] = []): StateTree {
   // The configuration and the initial-properties handler are the real classes,
   // taken from the shared helper.
   const shared = inertRegistry();
-  const registry: Registry = {
-    getInitialPropertiesHandler: () => shared.getInitialPropertiesHandler(),
-    getServerConnector: () => ({
+  const registry: Registry = testRegistry({
+    InitialPropertiesHandler: shared.getInitialPropertiesHandler(),
+    ServerConnector: {
       sendEventMessage: () => {},
       sendNodeSyncMessage: () => {},
       sendTemplateEventMessage: () => {},
       sendExistingElementAttachToServer: () => {},
       sendExistingElementWithIdAttachToServer: () => {},
-      sendReturnChannelMessage: (nodeId, channelId, args) => sent.push({ nodeId, channelId, args })
-    }),
-    getApplicationConfiguration: () => shared.getApplicationConfiguration(),
-    getConstantPool: () => constantPool,
-    getExistingElementMap: () => existingElementMap
-  };
+      sendReturnChannelMessage: (nodeId: number, channelId: number, args: unknown[]) =>
+        sent.push({ nodeId, channelId, args })
+    },
+    ApplicationConfiguration: shared.getApplicationConfiguration(),
+    ConstantPool: constantPool,
+    ExistingElementMap: existingElementMap
+  });
   return new StateTree(registry);
 }
 
