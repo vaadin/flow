@@ -251,7 +251,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeInstallations",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.PnpmWorkspaceFile",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.PnpmWorkspaceFile(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
