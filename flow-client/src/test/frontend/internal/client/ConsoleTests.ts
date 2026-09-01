@@ -25,8 +25,9 @@ describe('Console', () => {
   });
 
   afterEach(() => {
-    // The production-mode flag is module state shared by all engine logging.
-    Console.setProductionMode(false);
+    // The production-mode flag is module state shared by all engine logging, so
+    // put it back the way the configuration sets it.
+    new ApplicationConfiguration().setProductionMode(false);
     LEVELS.forEach((level) => stubs[level].restore());
     if (saved === null) {
       window.localStorage.removeItem(KEY);
