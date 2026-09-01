@@ -82,6 +82,8 @@ class TableColumnGroupTest extends ComponentTest {
         spanning.setSpan(3);
         assertThrows(IllegalStateException.class, spanning::addColumn);
         assertThrows(IllegalStateException.class,
+                () -> spanning.insertColumn(0));
+        assertThrows(IllegalStateException.class,
                 () -> spanning.add(new TableColumn()));
 
         TableColumnGroup withColumns = new TableColumnGroup();
@@ -147,16 +149,6 @@ class TableColumnGroupTest extends ComponentTest {
         TableColumn middle = group.insertColumn(1);
 
         assertEquals(List.of(first, middle, last), group.getColumns());
-    }
-
-    @Test
-    void insertColumn_refusedWhileTheGroupCarriesASpan() {
-        TableColumnGroup group = new TableColumnGroup();
-        group.setSpan(3);
-
-        assertThrows(IllegalStateException.class, () -> group.insertColumn(0));
-
-        assertTrue(group.getColumns().isEmpty());
     }
 
     @Test
