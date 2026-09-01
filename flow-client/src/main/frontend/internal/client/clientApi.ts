@@ -14,6 +14,8 @@
  * the License.
  */
 
+import type { ValueMap } from './ValueMap';
+
 /**
  * Type contracts for the client API. `ApplicationConnection` is the public
  * surface of the running client engine; `ApplicationConfiguration` is the
@@ -50,5 +52,5 @@ export interface ApplicationConnection {
   isHiddenByServer(nodeId: number): boolean;
   getElementStyleProperties(nodeId: number): Record<string, unknown>;
   getProfilingData(): number[];
-  start(initialUidl: Record<string, unknown> | null): void;
+  start(initialUidl: ValueMap | null): void;
 }

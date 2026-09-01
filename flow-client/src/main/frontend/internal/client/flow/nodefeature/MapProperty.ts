@@ -212,8 +212,8 @@ export class MapProperty implements ReactiveValue {
    * @returns the value of the property or the default value if the property
    *         does not have a value or the property value is null
    */
-  getValueOrDefault(defaultValue: string): string;
-  getValueOrDefault(defaultValue: number | boolean | string): number | boolean | string {
+  getValueOrDefault(defaultValue: string | null): string | null;
+  getValueOrDefault(defaultValue: number | boolean | string | null): number | boolean | string | null {
     if (this.hasValue()) {
       const v = this.getValue();
       if (v === null || v === undefined) {

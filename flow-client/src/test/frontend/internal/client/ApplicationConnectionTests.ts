@@ -6,8 +6,14 @@ import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
+import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
+import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import { inertRegistry } from './flow/stateTreeTestRegistry';
 
-function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: boolean } = {}) {
+// A registry whose services are fakes but whose state tree is real: the fakes
+// are checked against the signatures the engine slices name, and the tree, node
+// and property reads the client API makes go through the ported classes.
+function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: boolean; tree?: StateTree } = {}) {
   const log = {
     resynchronized: 0,
     startedRequests: 0,
@@ -15,8 +21,10 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
     polled: 0,
     events: [] as Array<{ nodeId: number; eventType: string; data: unknown }>
   };
+  const tree = opts.tree ?? new StateTree(inertRegistry());
   const registry = {
     log,
+    tree,
     getMessageSender: () => ({
       resynchronize: () => log.resynchronized++,
       sendUnloadBeacon: () => {}
@@ -27,7 +35,8 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
     }),
     getMessageHandler: () => ({
       handleMessage: (json: unknown) => log.handled.push(json),
-      isInitialUidlHandled: () => opts.initialUidlHandled ?? false
+      isInitialUidlHandled: () => opts.initialUidlHandled ?? false,
+      getProfilingData: () => [1, 2]
     }),
     getPoller: () => ({ poll: () => log.polled++ }),
     getURIResolver: () => ({ resolveVaadinUri: (uri: string) => `resolved:${uri}` }),
@@ -36,7 +45,7 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
         log.events.push({ nodeId, eventType, data })
     }),
     getApplicationConfiguration: () => ({ getUIId: () => 7 }),
-    getStateTree: () => ({ getRootNode: () => ({ getId: () => 1, getDebugJson: () => ({ root: true }) }) })
+    getStateTree: () => tree
   };
   return registry;
 }
@@ -59,46 +68,46 @@ function observeAddedEvents(target: EventTarget, into: string[]): () => void {
 describe('ApplicationConnection', () => {
   it('resynchronizes when there is no initial UIDL', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry as never, idleScheduler).start(null);
+    new ApplicationConnection(registry, idleScheduler).start(null);
     expect(registry.log.resynchronized).to.equal(1);
     expect(registry.log.handled).to.deep.equal([]);
   });
 
   it('handles the initial UIDL (after starting a request) when provided', () => {
     const registry = makeRegistry();
-    new ApplicationConnection(registry as never, idleScheduler).start({ syncId: 0 });
+    new ApplicationConnection(registry, idleScheduler).start({ syncId: 0 });
     expect(registry.log.startedRequests).to.equal(1);
     expect(registry.log.handled).to.deep.equal([{ syncId: 0 }]);
     expect(registry.log.resynchronized).to.equal(0);
   });
 
   it('isActive while the initial UIDL is not yet handled', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }) as never, idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }), idleScheduler);
     expect(connection.isActive()).to.be.true;
   });
 
   it('isActive while a request is active or deferred work is queued', () => {
     expect(
       new ApplicationConnection(
-        makeRegistry({ initialUidlHandled: true, activeRequest: true }) as never,
+        makeRegistry({ initialUidlHandled: true, activeRequest: true }),
         idleScheduler
       ).isActive()
     ).to.be.true;
     expect(
-      new ApplicationConnection(makeRegistry({ initialUidlHandled: true }) as never, {
+      new ApplicationConnection(makeRegistry({ initialUidlHandled: true }), {
         hasWorkQueued: () => true
       }).isActive()
     ).to.be.true;
   });
 
   it('is idle when the initial UIDL is handled with no request or deferred work', () => {
-    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }) as never, idleScheduler);
+    const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: true }), idleScheduler);
     expect(connection.isActive()).to.be.false;
   });
 
   it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, debug', () => {
     const registry = makeRegistry();
-    const connection = new ApplicationConnection(registry as never, idleScheduler);
+    const connection = new ApplicationConnection(registry, idleScheduler);
 
     connection.poll();
     expect(registry.log.polled).to.equal(1);
@@ -110,7 +119,7 @@ describe('ApplicationConnection', () => {
       { nodeId: 1, eventType: 'connect-web-component', data: { tag: 'my-el' } }
     ]);
     expect(connection.getUIId()).to.equal(7);
-    expect(connection.debug()).to.deep.equal({ root: true });
+    expect(connection.debug()).to.deep.equal(registry.tree.getRootNode().getDebugJson());
   });
 
   describe('published client API', () => {
@@ -119,59 +128,45 @@ describe('ApplicationConnection', () => {
     // property. The keys are the wire names the server actually writes, so a
     // wrong constant in the engine shows up here as a missing value.
     function makeRegistryWithNode() {
+      const tree = new StateTree(inertRegistry());
+      const node = new StateNode(5, tree);
+      tree.registerNode(node);
+      // Written with the feature ids and property keys the server actually puts
+      // on the wire (ELEMENT_DATA = 0, ELEMENT_STYLE_PROPERTIES = 12), not with
+      // the engine's own constants: a wrong constant in the engine then shows up
+      // here as a missing value instead of cancelling out.
+      const elementData = node.getMap(0);
+      elementData.getProperty('jc').setValue('com.example.MyView');
+      elementData.getProperty('visible').setValue(false);
+      node.getMap(12).getProperty('color').setValue('red');
       const domNode = document.createElement('div');
-      const properties: Record<number, Record<string, unknown>> = {
-        0: { jc: 'com.example.MyView', visible: false }, // ELEMENT_DATA
-        12: { color: 'red' } // ELEMENT_STYLE_PROPERTIES
-      };
-      let domListener: ((node: unknown) => boolean) | null = null;
-      const node = {
-        getId: () => 5,
-        getDomNode: () => domNode,
-        getDebugJson: () => ({}),
-        getMap: (feature: number) => ({
-          getProperty: (key: string) => ({
-            getValue: () => properties[feature]?.[key],
-            getValueOrDefault: (d: unknown) => properties[feature]?.[key] ?? d
-          }),
-          getPropertyNames: () => Object.keys(properties[feature] ?? {})
-        }),
-        addDomNodeSetListener: (listener: (n: unknown) => boolean) => {
-          domListener = listener;
-        }
-      };
-      const tree = {
-        getRootNode: () => node,
-        getNode: (id: number) => (id === 5 ? node : null),
-        getStateNodeForDomNode: (el: Node) => (el === domNode ? node : null)
-      };
-      return { tree, node, domNode, fireDomSet: () => domListener?.(node) };
+      const registry = makeRegistry({ tree });
+      // The DOM node is attached on demand: setDomNode is what notifies the
+      // dom-set listeners, and a state node only takes one.
+      return { registry, node, domNode, attach: () => node.setDomNode(domNode) };
     }
 
     it('getByNodeId / getNodeId resolve node<->element both ways', () => {
-      const fake = makeRegistryWithNode();
-      const registry = { ...makeRegistry(), getStateTree: () => fake.tree };
-      const connection = new ApplicationConnection(registry as never, idleScheduler);
-      expect(connection.getByNodeId(5)).to.equal(fake.domNode);
+      const fixture = makeRegistryWithNode();
+      fixture.attach();
+      const connection = new ApplicationConnection(fixture.registry, idleScheduler);
+      expect(connection.getByNodeId(5)).to.equal(fixture.domNode);
       expect(connection.getByNodeId(99)).to.equal(null);
-      expect(connection.getNodeId(fake.domNode)).to.equal(5);
+      expect(connection.getNodeId(fixture.domNode)).to.equal(5);
       expect(connection.getNodeId(document.createElement('span'))).to.equal(-1);
     });
 
     it('addDomBindingListener fires the callback when the matching node is bound', () => {
-      const fake = makeRegistryWithNode();
-      const registry = { ...makeRegistry(), getStateTree: () => fake.tree };
-      const connection = new ApplicationConnection(registry as never, idleScheduler);
+      const fixture = makeRegistryWithNode();
+      const connection = new ApplicationConnection(fixture.registry, idleScheduler);
       let fired = 0;
       connection.addDomBindingListener(5, () => fired++);
-      fake.fireDomSet();
+      fixture.attach();
       expect(fired).to.equal(1);
     });
 
     it('exposes javaClass, hidden-by-server and style properties for dev tools', () => {
-      const fake = makeRegistryWithNode();
-      const registry = { ...makeRegistry(), getStateTree: () => fake.tree };
-      const connection = new ApplicationConnection(registry as never, idleScheduler);
+      const connection = new ApplicationConnection(makeRegistryWithNode().registry, idleScheduler);
       expect(connection.getJavaClass(5)).to.equal('com.example.MyView');
       expect(connection.isHiddenByServer(5)).to.be.true; // visible=false
       expect(connection.getElementStyleProperties(5)).to.deep.equal({ color: 'red' });

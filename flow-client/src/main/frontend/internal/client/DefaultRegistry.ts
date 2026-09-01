@@ -83,7 +83,7 @@ export class DefaultRegistry extends Registry {
   constructor(applicationConfiguration: ApplicationConfiguration) {
     super();
     // Initialization order matters: many constructors read earlier services.
-    const self = this as never;
+    const self = this;
 
     this.set(TOKEN.ApplicationConfiguration, applicationConfiguration);
 

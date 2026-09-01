@@ -31,46 +31,27 @@ import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
 import type { ApplicationConnection as PublishedClient } from './clientApi';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
-import { getScheduler } from './TrackingScheduler';
+import { getScheduler, type TrackingScheduler } from './TrackingScheduler';
+import type { MessageHandler } from './communication/MessageHandler';
+import type { MessageSender } from './communication/MessageSender';
+import type { Poller } from './communication/Poller';
+import type { Registry } from './Registry';
+import type { RequestResponseTracker } from './communication/RequestResponseTracker';
+import type { ServerConnector } from './communication/ServerConnector';
+import type { StateTree } from './flow/StateTree';
+import type { URIResolver } from './URIResolver';
+import type { ValueMap } from './ValueMap';
 
-/** A state node, as far as the published client API needs it. */
-interface NodeLike {
-  getId(): number;
-  getDomNode(): Node | null;
-  getDebugJson(): unknown;
-  getMap(feature: number): {
-    getProperty(key: string): { getValue(): unknown; getValueOrDefault(defaultValue: never): never };
-    getPropertyNames(): string[];
-  };
-  addDomNodeSetListener(listener: (node: NodeLike) => boolean): unknown;
-}
-
-/** The state tree, as far as the published client API needs it. */
-interface StateTreeLike {
-  getRootNode(): NodeLike;
-  getNode(id: number): NodeLike | null;
-  getStateNodeForDomNode(node: Node): NodeLike | null;
-}
-
-/** The slice of Registry ApplicationConnection uses. */
+/** The slice of {@link Registry} ApplicationConnection uses. */
 interface ApplicationConnectionRegistry {
-  getMessageSender(): { resynchronize(): void; sendUnloadBeacon(): void };
-  getRequestResponseTracker(): { startRequest(): void; hasActiveRequest(): boolean };
-  getMessageHandler(): {
-    handleMessage(json: Record<string, unknown>): void;
-    isInitialUidlHandled(): boolean;
-    getProfilingData(): number[];
-  };
-  getPoller(): { poll(): void };
-  getURIResolver(): { resolveVaadinUri(uri: string): string | null };
-  getServerConnector(): { sendEventMessage(nodeId: number, eventType: string, eventData: unknown): void };
-  getApplicationConfiguration(): { getUIId(): number };
-  getStateTree(): StateTreeLike;
-}
-
-/** Reports whether deferred commands are still executing (the TrackingScheduler). */
-interface DeferredWorkScheduler {
-  hasWorkQueued(): boolean;
+  getMessageSender(): Pick<MessageSender, 'resynchronize' | 'sendUnloadBeacon'>;
+  getRequestResponseTracker(): Pick<RequestResponseTracker, 'startRequest' | 'hasActiveRequest'>;
+  getMessageHandler(): Pick<MessageHandler, 'handleMessage' | 'isInitialUidlHandled' | 'getProfilingData'>;
+  getPoller(): Pick<Poller, 'poll'>;
+  getURIResolver(): Pick<URIResolver, 'resolveVaadinUri'>;
+  getServerConnector(): Pick<ServerConnector, 'sendEventMessage'>;
+  getApplicationConfiguration(): Pick<ApplicationConfiguration, 'getUIId'>;
+  getStateTree(): Pick<StateTree, 'getRootNode' | 'getNode' | 'getStateNodeForDomNode'>;
 }
 
 /** The main class for an application/UI; mirrors ApplicationConnection.java's engine API. */
@@ -96,9 +77,9 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
 export class ApplicationConnection implements PublishedClient {
   readonly #registry: ApplicationConnectionRegistry;
 
-  readonly #scheduler: DeferredWorkScheduler;
+  readonly #scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>;
 
-  constructor(registry: ApplicationConnectionRegistry, scheduler: DeferredWorkScheduler) {
+  constructor(registry: ApplicationConnectionRegistry, scheduler: Pick<TrackingScheduler, 'hasWorkQueued'>) {
     this.#registry = registry;
     this.#scheduler = scheduler;
   }
@@ -121,20 +102,20 @@ export class ApplicationConnection implements PublishedClient {
     const rootNode = registry.getStateTree().getRootNode();
 
     // Bind the UI configuration objects.
-    observePoll(rootNode as never, registry.getPoller());
+    observePoll(rootNode, registry.getPoller());
     ReconnectConfiguration.bind(registry.getConnectionStateHandler());
-    observeLoadingIndicator(rootNode as never);
+    observeLoadingIndicator(rootNode);
 
     rootNode.setDomNode(rootElement);
     bind(rootNode, rootElement);
 
-    const connection = new ApplicationConnection(registry as never, getScheduler());
+    const connection = new ApplicationConnection(registry, getScheduler());
     publishClient(connection, applicationConfiguration);
     return connection;
   }
 
   /** Starts the application from the initial UIDL, or resynchronizes if none. */
-  start(initialUidl: Record<string, unknown> | null): void {
+  start(initialUidl: ValueMap | null): void {
     if (initialUidl === null) {
       // Initial UIDL not in the DOM; request it from the server.
       this.#registry.getMessageSender().resynchronize();
@@ -230,10 +211,7 @@ export class ApplicationConnection implements PublishedClient {
     if (node === null) {
       return null;
     }
-    return node
-      .getMap(NodeFeatures.ELEMENT_DATA)
-      .getProperty(NodeProperties.JAVA_CLASS)
-      .getValueOrDefault(null as never) as string | null;
+    return node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.JAVA_CLASS).getValueOrDefault(null);
   }
 
   /** Whether the element for the given state node id is hidden by the server. */
@@ -242,10 +220,7 @@ export class ApplicationConnection implements PublishedClient {
     const visible =
       node === null
         ? true
-        : (node
-            .getMap(NodeFeatures.ELEMENT_DATA)
-            .getProperty(NodeProperties.VISIBLE)
-            .getValueOrDefault(true as never) as boolean);
+        : node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE).getValueOrDefault(true);
     return !visible;
   }
 

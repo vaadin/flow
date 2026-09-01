@@ -35,6 +35,7 @@ import {
 import { getScheduler } from '../TrackingScheduler';
 import { getAbsoluteUrl } from '../WidgetUtil';
 import { Console } from '../Console';
+import type { ValueMap } from '../ValueMap';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVICE_URL = 'serviceUrl';
@@ -141,7 +142,7 @@ export function doStartApplication(applicationId: string): void {
   conf.setApplicationId(applicationId);
   populateApplicationConfiguration(conf, toJsoConfiguration(rawConfig));
 
-  const initialUidl = getConfigValueMap(rawConfig as RawConfigObject, 'uidl') as Record<string, unknown> | null;
+  const initialUidl = getConfigValueMap(rawConfig as RawConfigObject, 'uidl') as ValueMap | null;
 
   // Load the engine lazily: this keeps ApplicationConnection/DefaultRegistry and
   // the rest of the modern-JS engine out of the registerInternals bundle, which
