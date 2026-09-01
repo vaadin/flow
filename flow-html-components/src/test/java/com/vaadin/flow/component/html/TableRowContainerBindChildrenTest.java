@@ -67,6 +67,25 @@ class TableRowContainerBindChildrenTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindChildren_moveToLastIndex_putsTheEntryAtTheEnd() {
+        Table table = new Table();
+        UI.getCurrent().add(table);
+        ListSignal<String> planets = new ListSignal<>();
+        table.getBody().bindChildren(planets,
+                signal -> new TableRow(new TableDataCell(signal)));
+        var first = planets.insertLast("Mercury");
+        planets.insertLast("Venus");
+
+        // moveTo rejects an index equal to the size, so the last position is
+        // size - 1
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> planets.moveTo(first, planets.peek().size()));
+        planets.moveTo(first, planets.peek().size() - 1);
+
+        assertEquals(List.of("Venus", "Mercury"), texts(table));
+    }
+
+    @Test
     void bindChildren_followsRemovalsReordersAndValueChanges() {
         Table table = new Table();
         UI.getCurrent().add(table);
