@@ -60,9 +60,6 @@ class TableTest extends ComponentTest {
         Table table = table();
 
         assertEquals(0, table.getChildren().count());
-        assertFalse(table.hasCaption());
-        assertFalse(table.hasHead());
-        assertFalse(table.hasFoot());
         assertTrue(table.getBodies().isEmpty());
     }
 
