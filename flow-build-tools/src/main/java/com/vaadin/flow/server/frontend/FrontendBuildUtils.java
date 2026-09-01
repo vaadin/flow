@@ -179,12 +179,16 @@ public class FrontendBuildUtils {
     }
 
     /**
-     * Gets the current Vaadin platform version from the core versions JSON
-     * resource.
+     * Gets the current Vaadin version, as declared by the versions files the
+     * platform ships.
+     * <p>
+     * The files are read in turn and the version is the one the first of them
+     * declaring it gives, so it is found whichever of them is on the classpath.
      *
      * @param finder
-     *            the class finder to use for locating the versions resource
-     * @return the platform version as a string, or empty if not found
+     *            the class finder to use for locating the versions files
+     * @return the Vaadin version as a string, or empty if none of the files
+     *         declares one
      */
     protected static Optional<String> getVaadinVersion(ClassFinder finder) {
         try {
