@@ -209,7 +209,8 @@ export function registerCallback(widgetsetName: string): void {
   (window as unknown as FlowWidgetsetRegistrar).Vaadin.Flow.registerWidgetset(widgetsetName, startApplication);
 }
 
-// The client widgetset/module name (ClientEngine.gwt.xml rename-to="client").
+// The client widgetset name, matching the one the server bootstrap registers
+// the pending startup under (BootstrapHandler.js: var widgetset = "client").
 const WIDGETSET_NAME = 'client';
 
 /**
