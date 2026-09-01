@@ -117,6 +117,14 @@ public class TableRow extends HtmlComponent
      * Appends a sequence of data cells (<code>&lt;td&gt;</code>) with the given
      * text contents to this row.
      *
+     * <p>
+     * For example, {@code addDataCells("4.87", "12,104")} renders as:
+     *
+     * <pre>{@code
+     * <td>4.87</td>
+     * <td>12,104</td>
+     * }</pre>
+     *
      * @param cellTexts
      *            the text content for each data cell.
      * @return this row, for fluent chaining.
@@ -140,6 +148,14 @@ public class TableRow extends HtmlComponent
     /**
      * Appends a sequence of header cells (<code>&lt;th&gt;</code>) with the
      * given text contents to this row.
+     *
+     * <p>
+     * For example, {@code addHeaderCells("Mon", "Tue")} renders as:
+     *
+     * <pre>{@code
+     * <th>Mon</th>
+     * <th>Tue</th>
+     * }</pre>
      *
      * @param cellTexts
      *            the text content for each header cell.
@@ -166,6 +182,14 @@ public class TableRow extends HtmlComponent
      * column it sits in with {@code scope="col"}. This is the bulk form of
      * {@link #addColumnHeaderCell(String)} and the usual way to fill a row in a
      * {@link TableHead}.
+     *
+     * <p>
+     * For example, {@code addColumnHeaderCells("Mon", "Tue")} renders as:
+     *
+     * <pre>{@code
+     * <th scope="col">Mon</th>
+     * <th scope="col">Tue</th>
+     * }</pre>
      *
      * @param cellTexts
      *            the text content of the cells, one cell per entry.
@@ -238,6 +262,13 @@ public class TableRow extends HtmlComponent
      * <code>&lt;th&gt;</code> as a row label, which assistive technologies
      * announce as the header for the data cells in the same row.
      *
+     * <p>
+     * For example, {@code addRowHeaderCell("Breed")} renders as:
+     *
+     * <pre>{@code
+     * <th scope="row">Breed</th>
+     * }</pre>
+     *
      * @param text
      *            the text content.
      * @return the new {@code <th>} with {@code scope="row"}.
@@ -253,6 +284,13 @@ public class TableRow extends HtmlComponent
      * {@code scope="col"} set on the resulting <code>&lt;th&gt;</code>. This is
      * the counterpart of {@link #addRowHeaderCell(String)} and the usual shape
      * of a cell in a {@link TableHead}.
+     *
+     * <p>
+     * For example, {@code addColumnHeaderCell("Name")} renders as:
+     *
+     * <pre>{@code
+     * <th scope="col">Name</th>
+     * }</pre>
      *
      * @param text
      *            the text content.
@@ -286,6 +324,13 @@ public class TableRow extends HtmlComponent
      * "Terrestrial planets" in front of the four rows describing them, as
      * opposed to {@link #addRowHeaderCell(String)}, which labels one row.
      *
+     * <p>
+     * For example, {@code addRowGroupHeaderCell("Dwarf planets")} renders as:
+     *
+     * <pre>{@code
+     * <th scope="rowgroup">Dwarf planets</th>
+     * }</pre>
+     *
      * @param text
      *            the text content.
      * @return the new {@code <th>} with {@code scope="rowgroup"}.
@@ -304,6 +349,15 @@ public class TableRow extends HtmlComponent
      *
      * @param text
      *            the text content.
+     *            <p>
+     *            For example,
+     *            {@code addRowGroupHeaderCell("Terrestrial planets", 4)}
+     *            renders as:
+     *
+     *            <pre>{@code
+     * <th scope="rowgroup" rowspan="4">Terrestrial planets</th>
+     * }</pre>
+     *
      * @param rowspan
      *            the number of rows the header covers, or {@code 0} to cover
      *            the rest of the row group.
@@ -326,6 +380,13 @@ public class TableRow extends HtmlComponent
      * This is the counterpart of {@link #addRowGroupHeaderCell(String)}, for a
      * cell that names a group of consecutive columns rather than a single one.
      *
+     * <p>
+     * For example, {@code addColumnGroupHeaderCell("Measurements")} renders as:
+     *
+     * <pre>{@code
+     * <th scope="colgroup">Measurements</th>
+     * }</pre>
+     *
      * @param text
      *            the text content.
      * @return the new {@code <th>} with {@code scope="colgroup"}.
@@ -344,6 +405,15 @@ public class TableRow extends HtmlComponent
      *
      * @param text
      *            the text content.
+     *            <p>
+     *            For example,
+     *            {@code addColumnGroupHeaderCell("Measurements", 3)} renders
+     *            as:
+     *
+     *            <pre>{@code
+     * <th scope="colgroup" colspan="3">Measurements</th>
+     * }</pre>
+     *
      * @param colspan
      *            the number of columns the header covers.
      * @return the new {@code <th>} with {@code scope="colgroup"}.

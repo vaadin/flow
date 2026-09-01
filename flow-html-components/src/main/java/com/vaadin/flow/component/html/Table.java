@@ -528,6 +528,18 @@ public class Table extends HtmlComponent
      * Appends a row of data cells with the given texts to this table's
      * <code>&lt;tbody&gt;</code>.
      *
+     * <p>
+     * For example, {@code addRow("Mercury", "0.330")} renders as:
+     *
+     * <pre>{@code
+     * <tbody>
+     *   <tr>
+     *     <td>Mercury</td>
+     *     <td>0.330</td>
+     *   </tr>
+     * </tbody>
+     * }</pre>
+     *
      * @param cellTexts
      *            the text content for each data cell.
      * @return the new row.
@@ -555,6 +567,21 @@ public class Table extends HtmlComponent
      *
      * @param header
      *            the text of the leading header cell.
+     *            <p>
+     *            For example,
+     *            {@code addRowWithHeader("Venus", "4.87", "12,104")} renders
+     *            as:
+     *
+     *            <pre>{@code
+     * <tbody>
+     *   <tr>
+     *     <th scope="row">Venus</th>
+     *     <td>4.87</td>
+     *     <td>12,104</td>
+     *   </tr>
+     * </tbody>
+     * }</pre>
+     *
      * @param cellTexts
      *            the text content for each data cell after it.
      * @return the new row.
@@ -612,6 +639,18 @@ public class Table extends HtmlComponent
      * Appends a row of header cells with the given texts to this table's
      * <code>&lt;thead&gt;</code>.
      *
+     * <p>
+     * For example, {@code addHeaderRow("Name", "Mass")} renders as:
+     *
+     * <pre>{@code
+     * <thead>
+     *   <tr>
+     *     <th scope="col">Name</th>
+     *     <th scope="col">Mass</th>
+     *   </tr>
+     * </thead>
+     * }</pre>
+     *
      * @param cellTexts
      *            the text content for each header cell.
      * @return the new row.
@@ -664,6 +703,18 @@ public class Table extends HtmlComponent
     /**
      * Appends a row of data cells with the given texts to this table's
      * <code>&lt;tfoot&gt;</code>.
+     *
+     * <p>
+     * For example, {@code addFooterRow("Total", "1234")} renders as:
+     *
+     * <pre>{@code
+     * <tfoot>
+     *   <tr>
+     *     <td>Total</td>
+     *     <td>1234</td>
+     *   </tr>
+     * </tfoot>
+     * }</pre>
      *
      * @param cellTexts
      *            the text content for each data cell.
