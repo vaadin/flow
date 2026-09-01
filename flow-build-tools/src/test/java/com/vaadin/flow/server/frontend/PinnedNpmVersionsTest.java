@@ -190,6 +190,37 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void theCoreFileOfThePlatformGivesTheVaadinVersion() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "platform": "42.0.0",
+                  "core": {
+                    "button": {
+                      "npmName": "@vaadin/button",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "platform": "25.1.0",
+                  "react": {
+                    "react-components": {
+                      "npmName": "@vaadin/react-components",
+                      "jsVersion": "25.1.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """);
+
+        // The core versions file of the platform declares the React
+        // components, and no other jar does
+        assertEquals(Optional.of("25.1.0"),
+                pinnedNpmVersions.getVaadinVersion());
+    }
+
+    @Test
     void onlyThePlatformFileGivesTheVaadinVersion() throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
                 {

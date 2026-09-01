@@ -67,6 +67,13 @@ class PinnedNpmVersions {
     private static final String PLATFORM = "platform";
 
     /**
+     * The npm packages only the platform declares, which tell a versions file
+     * of the platform from one of any other jar.
+     */
+    private static final Set<String> PLATFORM_PACKAGES = Set
+            .of(VAADIN_CORE_NPM_PACKAGE, "@vaadin/react-components");
+
+    /**
      * A versions file and the location it was read from.
      */
     private record VersionsFile(String origin, JsonNode content) {
@@ -160,12 +167,12 @@ class PinnedNpmVersions {
      * Gets the Vaadin version, i.e. the version of the platform the versions
      * files come from, as declared in their {@code platform} field.
      * <p>
-     * Only the files of the platform itself, the ones declaring the npm package
-     * {@value VersionsJsonConverter#VAADIN_CORE_NPM_PACKAGE}, say what the
-     * version is; what any other file declares is ignored, so that a jar that
-     * is not the platform cannot set it. Where no file declares that package,
-     * the version of the Vaadin on the classpath is used rather than anything
-     * the files say.
+     * Only the files of the platform itself, the ones declaring one of the npm
+     * packages the platform ships under its own name, say what the version is;
+     * what any other file declares is ignored, so that a jar that is not the
+     * platform cannot set it. Where no file declares one of those packages, the
+     * version of the Vaadin on the classpath is used rather than anything the
+     * files say.
      * <p>
      * The files that count are expected to declare the same version; if they do
      * not, the newest one wins and a warning is logged, as for the packages.
@@ -183,9 +190,9 @@ class PinnedNpmVersions {
             // No file of the platform to read it from, and what another file
             // says about it is not to be trusted
             declaringFiles.forEach(file -> log().debug(
-                    "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'.",
+                    "Ignoring the Vaadin version '{}' of {}, as the file declares none of the packages of the platform {}.",
                     file.content().get(PLATFORM).asString(), file.origin(),
-                    VAADIN_CORE_NPM_PACKAGE));
+                    PLATFORM_PACKAGES));
             return Platform.getVaadinVersion(classLoader);
         }
         Optional<String> vaadinVersion = getVaadinVersion(platformFiles);
@@ -193,9 +200,9 @@ class PinnedNpmVersions {
                 && !vaadinVersion.orElseThrow()
                         .equals(file.content().get(PLATFORM).asString()))
                 .forEach(file -> log().warn(
-                        "Ignoring the Vaadin version '{}' of {}, as the file does not declare the platform package '{}'. Using '{}'.",
+                        "Ignoring the Vaadin version '{}' of {}, as the file declares none of the packages of the platform {}. Using '{}'.",
                         file.content().get(PLATFORM).asString(), file.origin(),
-                        VAADIN_CORE_NPM_PACKAGE, vaadinVersion.orElseThrow()));
+                        PLATFORM_PACKAGES, vaadinVersion.orElseThrow()));
         return vaadinVersion;
     }
 
@@ -206,7 +213,9 @@ class PinnedNpmVersions {
 
     /**
      * Checks whether the versions file is one of the platform itself, which is
-     * the file declaring the npm package of the platform.
+     * a file declaring one of the npm packages the platform ships under its own
+     * name: the core file declares the React components, and the commercial one
+     * the package of the platform.
      */
     private static boolean declaresPlatformPackage(JsonNode obj) {
         for (String key : JacksonUtils.getKeys(obj)) {
@@ -215,8 +224,8 @@ class PinnedNpmVersions {
                 continue;
             }
             if (value.has(NPM_NAME)) {
-                if (Objects.equals(value.get(NPM_NAME).asString(),
-                        VAADIN_CORE_NPM_PACKAGE)) {
+                if (PLATFORM_PACKAGES
+                        .contains(value.get(NPM_NAME).asString())) {
                     return true;
                 }
             } else if (declaresPlatformPackage(value)) {
