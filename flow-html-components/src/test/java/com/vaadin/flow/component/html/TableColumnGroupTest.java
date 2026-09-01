@@ -139,6 +139,27 @@ class TableColumnGroupTest extends ComponentTest {
     }
 
     @Test
+    void insertColumn_placesTheColumnAtTheGivenPosition() {
+        TableColumnGroup group = new TableColumnGroup();
+        TableColumn first = group.addColumn();
+        TableColumn last = group.addColumn();
+
+        TableColumn middle = group.insertColumn(1);
+
+        assertEquals(List.of(first, middle, last), group.getColumns());
+    }
+
+    @Test
+    void insertColumn_refusedWhileTheGroupCarriesASpan() {
+        TableColumnGroup group = new TableColumnGroup();
+        group.setSpan(3);
+
+        assertThrows(IllegalStateException.class, () -> group.insertColumn(0));
+
+        assertTrue(group.getColumns().isEmpty());
+    }
+
+    @Test
     void removeColumn_detachesOnlyThatColumn() {
         TableColumnGroup group = group();
         TableColumn first = group.addColumn();

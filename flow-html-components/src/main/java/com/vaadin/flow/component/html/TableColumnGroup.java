@@ -108,6 +108,27 @@ public class TableColumnGroup extends HtmlComponent
     }
 
     /**
+     * Creates a new empty {@code <col>} and inserts it at the given position in
+     * this group. This is the counterpart of {@link #addColumn()}, matching
+     * {@code insertRow}, {@code insertHeaderCell} and {@code insertDataCell}
+     * elsewhere in the family.
+     *
+     * @param position
+     *            the position to insert the column at, between 0 and the number
+     *            of columns in this group.
+     * @return the new column.
+     * @throws IllegalStateException
+     *             if this group carries a {@code span}, which a
+     *             {@code <colgroup>} may not do alongside {@code <col>}
+     *             children. Call {@link #resetSpan()} first.
+     */
+    public TableColumn insertColumn(int position) {
+        TableColumn column = new TableColumn();
+        addComponentAtIndex(position, column);
+        return column;
+    }
+
+    /**
      * Returns the columns inside this group.
      *
      * @return the list of {@code <col>} children.
