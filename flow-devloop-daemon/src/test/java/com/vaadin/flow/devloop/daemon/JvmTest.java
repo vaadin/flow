@@ -123,6 +123,21 @@ class JvmTest {
         assertEquals(newest, chosen(0).home());
     }
 
+    @Test
+    void aJdkInstalledAsAMacOsBundleIsFoundThroughItsHome() throws IOException {
+        Path home = jdk("jbrsdk-21.0.11.jdk/Contents/Home", "21.0.11",
+                "JetBrains s.r.o.");
+
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes());
+
+        // homes() lists the bundle root, which has neither the launcher nor the
+        // release file - so the JBR a JetBrains IDE downloaded is only a
+        // candidate if the home inside it is resolved.
+        assertEquals(List.of(home),
+                candidates.stream().map(Jvm.Jdk::home).toList());
+        assertTrue(candidates.get(0).jbr());
+    }
+
     /**
      * The chosen JVM for a requirement, or for none when {@code required} is 0,
      * over the temporary JDKs alone.
@@ -139,7 +154,14 @@ class JvmTest {
         }
     }
 
-    /** A JDK home as an installer leaves it: a launcher and a release file. */
+    /**
+     * A JDK home as an installer leaves it: a launcher and a release file.
+     * <p>
+     * Returned canonical, because that is the spelling {@code candidates()}
+     * reports: on macOS the temporary directory is reached through a symlink,
+     * so comparing against the path as built here would compare
+     * {@code /var/folders/...} with {@code /private/var/folders/...}.
+     */
     private Path jdk(String name, String version, String implementor)
             throws IOException {
         Path home = jdks.resolve(name);
@@ -148,6 +170,6 @@ class JvmTest {
         Files.writeString(home.resolve("bin").resolve("java.exe"), "");
         Files.writeString(home.resolve("release"), "JAVA_VERSION=\"" + version
                 + "\"\nIMPLEMENTOR=\"" + implementor + "\"\n");
-        return home;
+        return Reactor.real(home);
     }
 }
