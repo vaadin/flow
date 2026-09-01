@@ -202,13 +202,26 @@ the [retrofit backlog](#retrofit-backlog) at the end of this file.
     finding. (A code span for a symbol that is not ported at all stays correct
     under rule 11, whichever branch it is in.)
 
-## References to not-yet-ported symbols
+## References to symbols the port does not have
 
 11. When Javadoc references a Java identifier that is **not yet ported**, keep
-    the reference as a code span (e.g. `` `ElementData` ``) rather than a
+    the reference as a code span (e.g. `` `ErrorMessage` ``) rather than a
     dangling `{@link}`, and add a `TODO(flow-client-ts)` note in the module so
     it is restored to a real `{@link …}` (with an import) in the follow-up PR
     that ports the referenced class.
+    - **A class outside the port's scope never gets that note.** This migration
+      covers the GWT client (`com.vaadin.client.*`) and the shared constants it
+      reads, so a reference into `flow-server` — `com.vaadin.flow.internal.JacksonCodec`,
+      `com.vaadin.flow.dom.DebouncePhase`, the node-feature classes such as
+      `ElementData` — will never resolve to a ported symbol. Its code span is
+      **permanent**: state that at the site, naming the class, and add no
+      `TODO(flow-client-ts)` and no retrofit-backlog row, because there is no
+      follow-up PR to wait for. Server-side constant *values* the port has to
+      duplicate rather than import (`ApplicationConstants`' `v-r` and `uiId` in
+      `SystemErrorHandler.ts`) are the same case: group them under a comment
+      naming the Java class. _Introduced during #24950._ (The distinction matters
+      because a `TODO` is a promise: four sites carried one for classes nobody
+      will ever port, so each review re-read them as open work.)
 12. Where the port needs a slice of a not-yet-ported class, declare a minimal
     TypeScript `interface` contract (documented as a port deviation) that the
     future ported class will satisfy at cutover — see `Registry` /
@@ -410,7 +423,10 @@ removed when the retrofit lands; see [`PORTING-REVIEW.md`](./PORTING-REVIEW.md)
 
 | Rule | Affected modules | Retrofit lands in | Status |
 | --- | --- | --- | --- |
-| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()` | the PR that ports `InitialPropertiesHandler` | open |
+| 13.1 | `SimpleElementBindingStrategyVirtualChildrenTests` — `testBindVirtualChild_withDeferredElementInShadowRoot_byId` and `..._byIndicesPath` have no `it()`: both need the deferred-attach round trip, which runs through the message layer | the PR that ports the message layer | open |
+| 12 | `Registry.ts` ports only the container half of `Registry.java`; its 24 typed getters are omitted while 14 of their return types are unported, so `DependencyLoader`, `SystemErrorHandler`, `InitialPropertiesHandler`, `ExecuteJavaScriptProcessor`, `ResourceLoader` and `StateTree` each declare a local interface for the getters they call | the PR that ports the remaining services (`MessageSender`, `MessageHandler`, `ApplicationConnection`, …) | open |
+| 12 | `StateTree.ts` keeps a narrow contract for the now-ported `InitialPropertiesHandler`: the handler resolves its state tree through the registry while the tree is built from that same registry, so only a concrete registry can wire the two together | the PR that ports `DefaultRegistry` | open |
+| 13.1 | `ExecuteJavaScriptProcessorTests` has no `it()` for the five `execute_*` and seven `isBound_*` cases of `ExecuteJavaScriptProcessorTest`. `invoke`/`isBound` are `protected` again, so the Java approach - a subclass that overrides them - now ports directly; what remains is building the state nodes each case needs | a follow-up on the support-services layer | open |
 
 The virtual-child rows are blocked rather than overlooked: both cases assert
 that `InitialPropertiesHandler` reverts a deferred element's properties on

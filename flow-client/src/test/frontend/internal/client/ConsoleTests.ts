@@ -1,10 +1,12 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { Console } from '../../../../main/frontend/internal/client/Console';
 
 type Level = 'debug' | 'log' | 'warn' | 'error';
 const LEVELS: Level[] = ['debug', 'log', 'warn', 'error'];
 
+// Beyond the Java suite: com.vaadin.client.Console has no test class of its own.
 describe('Console', () => {
   // Every case here is beyond the Java suite: com.vaadin.client.Console has no Java test,
   // so there is nothing to port 1:1 and all coverage below is additional.
@@ -102,6 +104,21 @@ describe('Console', () => {
       } finally {
         setTimeoutStub.restore();
       }
+    });
+  });
+
+  describe('ApplicationConfiguration wiring', () => {
+    it('applies the configured production mode to the logger', () => {
+      window.localStorage.removeItem(KEY);
+      const configuration = new ApplicationConfiguration();
+
+      configuration.setProductionMode(true);
+      Console.warn('suppressed');
+      expect(stubs.warn.called).to.be.false;
+
+      configuration.setProductionMode(false);
+      Console.warn('logged');
+      expect(stubs.warn.calledOnceWithExactly('logged')).to.be.true;
     });
   });
 });

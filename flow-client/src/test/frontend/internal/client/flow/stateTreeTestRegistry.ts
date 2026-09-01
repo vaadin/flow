@@ -4,6 +4,7 @@
 
 import type { Registry } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
 
 /** A registry whose members are all present but inert. */
@@ -13,6 +14,8 @@ export function inertRegistry(): Registry {
   // written through an earlier call.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
+  // The real ApplicationConfiguration, which is ported and needs nothing else.
+  const applicationConfiguration = new ApplicationConfiguration();
   return {
     getInitialPropertiesHandler: () => ({
       flushPropertyUpdates: () => {},
@@ -27,13 +30,52 @@ export function inertRegistry(): Registry {
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
     }),
-    getApplicationConfiguration: () => ({
-      isWebComponentMode: () => false,
-      getServiceUrl: () => ''
-    }),
+    getApplicationConfiguration: () => applicationConfiguration,
     getConstantPool: () => constantPool,
     getExistingElementMap: () => existingElementMap
   };
+}
+
+/** What a recording registry collected from the server-facing calls. */
+export interface RecordedCalls {
+  // Per node id, the property name -> value pairs sent by sendNodeSyncMessage.
+  syncs: Map<number, Map<string, unknown>>;
+  // The arguments of each sendExistingElementAttachToServer call.
+  existingElementAttaches: Array<{ nodeId: number; id: number; existingId: number; tagName: string; index: number }>;
+  // The arguments of each sendReturnChannelMessage call.
+  returnChannelMessages: Array<{ nodeId: number; channelId: number; args: unknown[] }>;
+}
+
+/**
+ * An inert registry that also records what was sent to the server, for suites
+ * that assert on the round trip.
+ */
+export function recordingRegistry(): { registry: Registry; recorded: RecordedCalls } {
+  const recorded: RecordedCalls = { syncs: new Map(), existingElementAttaches: [], returnChannelMessages: [] };
+  const registry = inertRegistry();
+  const base = registry.getServerConnector();
+  registry.getServerConnector = () => ({
+    ...base,
+    sendReturnChannelMessage: (nodeId: number, channelId: number, args: unknown[]) => {
+      recorded.returnChannelMessages.push({ nodeId, channelId, args });
+    },
+    sendNodeSyncMessage: (node: { getId(): number }, _featureId: number, name: string, value: unknown) => {
+      const byName = recorded.syncs.get(node.getId()) ?? new Map<string, unknown>();
+      byName.set(name, value);
+      recorded.syncs.set(node.getId(), byName);
+    },
+    // eslint-disable-next-line @typescript-eslint/max-params -- mirrors the ServerConnector signature
+    sendExistingElementAttachToServer: (
+      node: { getId(): number },
+      id: number,
+      existingId: number,
+      tagName: string,
+      index: number
+    ) => {
+      recorded.existingElementAttaches.push({ nodeId: node.getId(), id, existingId, tagName, index });
+    }
+  });
+  return { registry, recorded };
 }
 
 /**

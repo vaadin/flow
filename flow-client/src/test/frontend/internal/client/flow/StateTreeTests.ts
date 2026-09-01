@@ -7,6 +7,8 @@ import { StateTree, type Registry } from '../../../../../main/frontend/internal/
 import { bind } from '../../../../../main/frontend/internal/client/flow/binding/Binder';
 import { get as getServerEventObject } from '../../../../../main/frontend/internal/client/flow/binding/ServerEventObject';
 import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared/JsonConstants';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
+import { InitialPropertiesHandler } from '../../../../../main/frontend/internal/client/InitialPropertiesHandler';
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
@@ -25,6 +27,37 @@ interface TemplateEvent {
   promiseId: number;
 }
 
+// The real handler, with the three members these cases observe overridden; the
+// class is ported, so a stand-in would no longer satisfy the registry.
+class RecordingInitialPropertiesHandler extends InitialPropertiesHandler {
+  flushCount = 0;
+
+  readonly registeredNodes: StateNode[] = [];
+
+  readonly #propertyUpdateResult: boolean;
+
+  constructor(propertyUpdateResult: boolean) {
+    super({
+      getStateTree: () => {
+        throw new Error('state tree not available in this test');
+      }
+    });
+    this.#propertyUpdateResult = propertyUpdateResult;
+  }
+
+  override flushPropertyUpdates(): void {
+    this.flushCount++;
+  }
+
+  override nodeRegistered(node: StateNode): void {
+    this.registeredNodes.push(node);
+  }
+
+  override handlePropertyUpdate(): boolean {
+    return this.#propertyUpdateResult;
+  }
+}
+
 function makeTree(handlePropertyUpdateResult = false): {
   tree: StateTree;
   syncs: Sync[];
@@ -34,22 +67,13 @@ function makeTree(handlePropertyUpdateResult = false): {
 } {
   const syncs: Sync[] = [];
   const templateEvents: TemplateEvent[] = [];
-  let flushCount = 0;
-  const registeredNodes: StateNode[] = [];
+  const initialPropertiesHandler = new RecordingInitialPropertiesHandler(handlePropertyUpdateResult);
   // One instance each: the code under test reads these through several calls,
   // so a fresh instance per call would hide anything written by an earlier one.
   const constantPool = new ConstantPool();
   const existingElementMap = new ExistingElementMap();
   const registry: Registry = {
-    getInitialPropertiesHandler: () => ({
-      flushPropertyUpdates: () => {
-        flushCount++;
-      },
-      nodeRegistered: (node) => {
-        registeredNodes.push(node);
-      },
-      handlePropertyUpdate: () => handlePropertyUpdateResult
-    }),
+    getInitialPropertiesHandler: () => initialPropertiesHandler,
     getServerConnector: () => ({
       sendEventMessage: () => {},
       sendNodeSyncMessage: (node, mapId, name, value) => syncs.push({ node, mapId, name, value }),
@@ -59,7 +83,7 @@ function makeTree(handlePropertyUpdateResult = false): {
       sendExistingElementWithIdAttachToServer: () => {},
       sendReturnChannelMessage: () => {}
     }),
-    getApplicationConfiguration: () => ({ isWebComponentMode: () => false, getServiceUrl: () => '' }),
+    getApplicationConfiguration: () => new ApplicationConfiguration(),
     getConstantPool: () => constantPool,
     getExistingElementMap: () => existingElementMap
   };
@@ -67,8 +91,8 @@ function makeTree(handlePropertyUpdateResult = false): {
     tree: new StateTree(registry),
     syncs,
     templateEvents,
-    getFlushCount: () => flushCount,
-    getRegisteredNodes: () => registeredNodes
+    getFlushCount: () => initialPropertiesHandler.flushCount,
+    getRegisteredNodes: () => initialPropertiesHandler.registeredNodes
   };
 }
 
@@ -76,8 +100,11 @@ function setVisible(node: StateNode, value: boolean): void {
   node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE).setValue(value);
 }
 
+// Ported from com.vaadin.client.flow.StateTreeTest and
+// com.vaadin.client.flow.GwtStateTreeTest.
 describe('StateTree', () => {
   it('maps registered nodes by id', () => {
+    // Ported from testIdMappings.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
 
@@ -89,6 +116,7 @@ describe('StateTree', () => {
   });
 
   it('throws when registering an already-registered node', () => {
+    // Ported from testRegisterExistingThrows.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -96,6 +124,7 @@ describe('StateTree', () => {
   });
 
   it('throws when registering a null node', () => {
+    // Ported from testRegisterNullThrows.
     // testRegisterNullThrows: registering null is rejected. Java asserts an
     // AssertionError via `assert node != null`; TypeScript reaches the argument
     // with a cast and registration throws before completing.
@@ -104,6 +133,7 @@ describe('StateTree', () => {
   });
 
   it('fires the unregister event exactly once with the right node', () => {
+    // Ported from testNodeUnregister.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -124,6 +154,7 @@ describe('StateTree', () => {
   });
 
   it('does not fire a removed unregister listener', () => {
+    // Ported from testRemoveUnregisterListener.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -135,12 +166,14 @@ describe('StateTree', () => {
   });
 
   it('throws when unregistering a node that was never registered', () => {
+    // Ported from unregisterNonRegisteredNode.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     expect(() => tree.unregisterNode(node)).to.throw();
   });
 
   it('throws when unregistering a node twice', () => {
+    // Ported from unregisterUnregisteredNode.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -166,6 +199,7 @@ describe('StateTree', () => {
 
   describe('sendNodePropertySyncToServer', () => {
     it('sends a non-initial property of a valid node', () => {
+      // Ported from sendNodePropertySyncToServer_notInitialProperty_propertyIsSent.
       const { tree, syncs } = makeTree(false);
       const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
       property.setValue('bar');
@@ -177,6 +211,7 @@ describe('StateTree', () => {
     });
 
     it('does not send a property of a detached node', () => {
+      // Ported from sendNodePropertySyncToServer_nodeDetached_propertyNotIsSent.
       const { tree, syncs } = makeTree(false);
       const node = new StateNode(7, tree);
       tree.registerNode(node);
@@ -188,6 +223,7 @@ describe('StateTree', () => {
     });
 
     it('does not send an initial property', () => {
+      // Ported from sendNodePropertySyncToServer_initialProperty_propertyIsNoSent.
       const { tree, syncs } = makeTree(true);
       const property = tree.getRootNode().getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty('foo');
       property.setValue('bar');
@@ -197,6 +233,7 @@ describe('StateTree', () => {
   });
 
   it('setUpdateInProgress flushes property updates', () => {
+    // Ported from setUpdateInProgress_flushPropertyUpdates.
     // One Java @Test asserts the flush fires once after setUpdateInProgress(true)
     // and again (twice total) after setUpdateInProgress(false); kept as a single
     // it() so the case maps 1:1 to the Java method.
@@ -210,6 +247,7 @@ describe('StateTree', () => {
   });
 
   it('does not call the property handler when registering while no update is in progress', () => {
+    // Ported from registerNode_updateIsNotInProgress_noPropertyHandlerCalls.
     const { tree, getFlushCount, getRegisteredNodes } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -218,6 +256,7 @@ describe('StateTree', () => {
   });
 
   it('notifies the property handler when registering while an update is in progress', () => {
+    // Ported from registerNode_updateIsInProgress_noPropertyHandlerCalls.
     const { tree, getRegisteredNodes } = makeTree();
     tree.setUpdateInProgress(true);
     const node = new StateNode(5, tree);
@@ -227,23 +266,27 @@ describe('StateTree', () => {
 
   describe('isVisible', () => {
     it('is true when the node has no element-data feature', () => {
+      // Ported from isVisible_nodeHasNoFeature_nodeIsVisible.
       const { tree } = makeTree();
       expect(tree.isVisible(tree.getRootNode())).to.equal(true);
     });
 
     it('is true when visible is explicitly true', () => {
+      // Ported from isVisible_nodeHasFeatureAndVisibleValue_nodeIsVisible.
       const { tree } = makeTree();
       setVisible(tree.getRootNode(), true);
       expect(tree.isVisible(tree.getRootNode())).to.equal(true);
     });
 
     it('is true when the feature exists but has no value', () => {
+      // Ported from isVisible_nodeHasFeatureAndNoValue_nodeIsVisible.
       const { tree } = makeTree();
       tree.getRootNode().getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBLE);
       expect(tree.isVisible(tree.getRootNode())).to.equal(true);
     });
 
     it('is false when visible is explicitly false', () => {
+      // Ported from isVisible_nodeHasFeatureAndNotVisibleValue_nodeIsNotVisible.
       const { tree } = makeTree();
       setVisible(tree.getRootNode(), false);
       expect(tree.isVisible(tree.getRootNode())).to.equal(false);
@@ -252,12 +295,14 @@ describe('StateTree', () => {
 
   describe('isActive', () => {
     it('is true for a visible node without a parent', () => {
+      // Ported from isActive_nodeIsVisibleAndNoParent_nodeIsActive.
       const { tree } = makeTree();
       const node = new StateNode(2, tree);
       expect(tree.isActive(node)).to.equal(true);
     });
 
     it('is false for an invisible node without a parent', () => {
+      // Ported from isActive_nodeIsInvisibleAndNoParent_nodeIsActive.
       const { tree } = makeTree();
       const node = new StateNode(2, tree);
       setVisible(node, false);
@@ -265,6 +310,7 @@ describe('StateTree', () => {
     });
 
     it('is true for a visible node with a visible parent', () => {
+      // Ported from isActive_nodeIsVisibleAndVisibleParent_nodeIsActive.
       const { tree } = makeTree();
       const parent = new StateNode(2, tree);
       const node = new StateNode(3, tree);
@@ -273,6 +319,7 @@ describe('StateTree', () => {
     });
 
     it('is false for a visible node with an invisible parent', () => {
+      // Ported from isActive_nodeIsVisibleAndInvisibleParent_nodeIsNotActive.
       const { tree } = makeTree();
       const parent = new StateNode(2, tree);
       setVisible(parent, false);
@@ -283,6 +330,7 @@ describe('StateTree', () => {
   });
 
   it('prepareForResync leaves only the root registered', () => {
+    // Ported from treeHasChildren_prepareForResync_onlyRootRemainsRegistered.
     const { tree } = makeTree();
     const node = new StateNode(5, tree);
     tree.registerNode(node);
@@ -298,7 +346,7 @@ describe('StateTree', () => {
   // run under GWTTestCase and are ported 1:1 here.
   describe('GwtStateTreeTest', () => {
     it('delegates a template event to the server connector', () => {
-      // testSendTemplateEventToServer_delegateToServerConnector
+      // Ported from GwtStateTreeTest.testSendTemplateEventToServer_delegateToServerConnector.
       const { tree, templateEvents } = makeTree();
       const node = new StateNode(2, tree);
       tree.registerNode(node);
@@ -316,7 +364,7 @@ describe('StateTree', () => {
     });
 
     it('ignores a deferred template event once the node is unregistered', () => {
-      // testDeferredTemplateMessage_isIgnored
+      // Ported from GwtStateTreeTest.testDeferredTemplateMessage_isIgnored.
       const { tree, templateEvents } = makeTree();
       const node = new StateNode(2, tree);
       tree.registerNode(node);
@@ -333,6 +381,7 @@ describe('StateTree', () => {
     });
 
     it('unregisters descendants and clears the root child lists on resync', () => {
+      // Ported from GwtStateTreeTest.testPrepareForResync_unregistersDescendantsAndClearsRootChildren.
       // testPrepareForResync_unregistersDescendantsAndClearsRootChildren
       const { tree } = makeTree();
       const root = tree.getRootNode();

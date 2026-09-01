@@ -22,10 +22,9 @@
  *
  * TypeScript port of com.vaadin.flow.internal.nodefeature.NodeFeatures.
  *
- * TODO(flow-client-ts): each id's Javadoc below references the server-side
- * feature class it identifies (e.g. `ElementData`), none of which are ported to
- * TypeScript yet. They are kept as code spans for now; restore them as
- * `{@link ...}` links once those classes are available in follow-up PRs.
+ * Each id's Javadoc below references the server-side feature class it identifies
+ * (e.g. `ElementData`). Those classes live in `com.vaadin.flow.internal.nodefeature`,
+ * outside this port's scope, so the references stay code spans permanently.
  */
 export const NodeFeatures = {
   /**

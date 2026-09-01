@@ -57,9 +57,47 @@ For a **test** suite that mapping gives the file location, not the counterpart
 set: enumerate the Java test classes per rule 13.9 — the JRE-side `XTest`, the
 `GwtXTest` under `src/test-gwt`, a `JreXTest` where one exists, and the
 `flow-server` test for a class ported from `com.vaadin.flow.*` — and compare
-against the **union** of their `@Test` methods. *Decision procedure:* the report
-lists the counterparts found per suite and the union's case count, so a suite that
-claims to have none has demonstrably looked.
+against the **union** of their `@Test` methods.
+
+Compare it in **both directions**, and say so per direction. Checking that every
+`// Ported from X` names a real `@Test` proves the citations are honest; it does
+**not** prove the coverage is complete. Only the reverse — every `@Test` in the
+union appearing in some citation — finds a case nobody ported and nobody
+recorded. *Decision procedure:* the report gives two counts, citations that
+resolve to a Java `@Test` and union cases that appear in a citation, and names
+every case missing from the second.
+
+> Regression this prevents: a review reported test parity as clean with all 56
+> citations verified, while `GwtDependencyLoaderTest.testDependenciesWithAllLoadModesAreProcessed`
+> had no `it()` and no backlog row — the forward check cannot see an absence.
+
+Two things make the reverse count easy to get wrong, and both have already
+produced a false clean:
+
+- **A mention is not a citation.** Match the Java name only where it appears in a
+  `// Ported from` line. A case whose name sits in a bare comment above the
+  `it()` — or in the suite's prose — reads as covered while the case itself is
+  labelled *Beyond the Java suite*.
+- **Citations wrap.** A citation naming two Java cases, or one long name, spans
+  two comment lines; matching only the first line reports the second name as
+  uncited.
+
+Filter to test methods as well: a JRE-side test class also declares its mock
+collaborators' methods (`sendNodeSyncMessage`, `inlineStyleSheet`, …), and
+counting those as cases invents uncited names. A method counts when it is
+**`@Test`-annotated *or* named `test…`** — `src/test-gwt` mixes both conventions,
+`GwtClientJsonCodecTest` annotating its cases while `GwtDependencyLoaderTest`,
+`GwtExecuteJavaScriptElementUtilsTest` and `GwtStateTreeTest` rely on the JUnit 3
+naming their `GWTTestCase` base needs. Requiring the annotation alone drops those
+classes to zero cases, which reads as a clean reverse count over the part of the
+suite with the most coverage.
+
+> Regression this prevents: two `StateTreeTests` cases were labelled *Beyond the
+> Java suite* directly above a bare comment naming their `GwtStateTreeTest`
+> counterpart, and a reverse check that accepted any mention read them as covered.
+
+*Decision procedure:* the report lists the counterparts found per suite and the
+union's case count, so a suite that claims to have none has demonstrably looked.
 
 **Report evidence, not verdicts.** The grid may be summarised **per rule** — never
 per module — and each rule row carries what established it: the counts compared,
