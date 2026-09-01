@@ -1,3 +1,7 @@
+// Every case here is beyond the Java suite: publishClient is the TypeScript split
+// of the publishJavascriptMethods / publishDevelopmentModeJavascriptMethods JSNI
+// blocks in ApplicationConnection.java, which no Java test exercises.
+
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';

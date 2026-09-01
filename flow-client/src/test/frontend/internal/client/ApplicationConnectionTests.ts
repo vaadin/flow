@@ -1,6 +1,11 @@
-import { expect } from '@open-wc/testing';
+// The Java counterpart is GwtApplicationConnectionTest in src/test-gwt; its single
+// case is ported at the end of this file. com.vaadin.client.ApplicationConnection
+// has no JRE-side test class, so every other case here is beyond the Java suite.
+
+import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
+import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 
 function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: boolean } = {}) {
   const log = {
@@ -211,6 +216,79 @@ describe('ApplicationConnection', () => {
         expect(registeredTypes.filter((type) => type === 'error')).to.have.length.at.most(1);
       } finally {
         window.addEventListener = originalAddEventListener;
+        (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
+      }
+    });
+  });
+
+  describe('bootstrap', () => {
+    // Records the event types registered on a target, the way the Java case's
+    // addEventsObserver monkey-patches addEventListener.
+    function observeAddedEvents(target: EventTarget, into: string[]): () => void {
+      const original = target.addEventListener;
+      target.addEventListener = function observed(this: EventTarget, type: string, ...rest: unknown[]) {
+        into.push(type);
+        return (original as (...args: unknown[]) => void).call(this, type, ...rest);
+      } as typeof target.addEventListener;
+      return () => {
+        target.addEventListener = original;
+      };
+    }
+
+    it('does not add navigation events for web components', async () => {
+      // Ported from GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents.
+      const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
+      const windowEvents: string[] = [];
+      const bodyEvents: string[] = [];
+      const restoreWindow = observeAddedEvents(window, windowEvents);
+      const restoreBody = observeAddedEvents(document.body, bodyEvents);
+      try {
+        // Mirrors mockFlowBootstrapScript(true) and createDummyConnectionState from
+        // the Java test base. The initial UIDL is the one addition: the GWT test
+        // leaves it out, so the application resynchronizes over XHR against a
+        // service URL nothing answers, which a browser test cannot leave pending.
+        const configuration: Record<string, unknown> = {
+          heartbeatInterval: 300,
+          maxMessageSuspendTimeout: 5000,
+          contextRootUrl: '../',
+          debug: true,
+          'v-uiId': 0,
+          serviceUrl: '//localhost:8080/flow/',
+          webComponentMode: true,
+          uidl: { syncId: 0, changes: [] }
+        };
+        (window as { Vaadin?: unknown }).Vaadin = {
+          Flow: {
+            clients: {},
+            registerWidgetset: (name: string, callback: (applicationId: string) => void) => callback(name),
+            getApp: () => ({ getConfig: (key: string) => configuration[key] })
+          },
+          connectionState: {
+            state: 'connected',
+            requestCount: 0,
+            setState(state: string) {
+              this.state = state;
+            },
+            loadingStarted() {},
+            loadingFinished() {},
+            loadingFailed() {}
+          }
+        };
+
+        onModuleLoad();
+
+        // The widgetset callback runs immediately, but the application starts on a
+        // deferred command and the engine module is imported asynchronously; the
+        // published client is the signal that it has started.
+        const clients = (window as unknown as { Vaadin: { Flow: { clients: Record<string, unknown> } } }).Vaadin.Flow
+          .clients;
+        await waitUntil(() => clients.client !== undefined, 'the application was never started');
+
+        expect(windowEvents).to.not.contain('popstate');
+        expect(bodyEvents).to.not.contain('click');
+      } finally {
+        restoreBody();
+        restoreWindow();
         (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
       }
     });

@@ -1,3 +1,7 @@
+// Every case here is beyond the Java suite: com.vaadin.client.DefaultRegistry has
+// no Java test class. RegistryTest covers the base Registry it extends, and is
+// ported in RegistryTests.
+
 import { expect } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { DefaultConnectionStateHandler } from '../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';

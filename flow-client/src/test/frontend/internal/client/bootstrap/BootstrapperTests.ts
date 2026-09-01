@@ -1,3 +1,8 @@
+// Every case here is beyond the Java suite: com.vaadin.client.bootstrap.Bootstrapper
+// has no test class of its own. The one Java-side case that drives it,
+// GwtApplicationConnectionTest.test_should_not_addNavigationEvents_forWebComponents,
+// is ported in ApplicationConnectionTests, next to the class it is written against.
+
 import { expect } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 import {
