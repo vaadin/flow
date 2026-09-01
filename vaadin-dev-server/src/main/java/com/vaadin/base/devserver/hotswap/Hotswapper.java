@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -610,6 +612,9 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     public void serviceDestroy(ServiceDestroyEvent event) {
         serviceDestroyed = true;
         sessions.clear();
+        // The registration is held in the context, which outlives the service,
+        // so nothing else would ever drop it.
+        getRegistrationHolder(vaadinService).remove(vaadinService);
     }
 
     @Override
@@ -684,26 +689,52 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     }
 
     /**
-     * Where the registered hotswapper is kept, so a second registration attempt
-     * can find the first.
+     * Where the registered hotswappers are kept, so a second registration
+     * attempt can find the first.
      * <p>
-     * Keyed by service identity as well: a context can in principle serve more
-     * than one {@link VaadinService}, and handing one service's hotswapper to
-     * another would refresh the wrong UIs.
+     * One entry per {@link VaadinService} rather than one entry in total. The
+     * holder lives in the {@link com.vaadin.flow.server.VaadinContext}, which a
+     * web app with two {@code VaadinServlet}s shares between two services - so
+     * a single slot means the second registration evicts the first, and the
+     * first service then has no findable hotswapper while
+     * {@link #register(VaadinService)} would build it a second one and add
+     * every listener again.
+     * <p>
+     * Keyed by identity, because that is what "this service" means here;
+     * {@link VaadinService} does not override {@code equals}, but an identity
+     * map says so rather than relying on it.
      */
     private static class RegistrationHolder implements Serializable {
 
-        private transient VaadinService service;
-        private transient Hotswapper hotswapper;
+        /**
+         * Not final, and read through {@link #map()}: a transient field comes
+         * back null from deserialization, and answering "nothing is registered"
+         * there is what the two transient fields this replaced did.
+         */
+        private transient Map<VaadinService, Hotswapper> hotswappers;
+
+        private Map<VaadinService, Hotswapper> map() {
+            if (hotswappers == null) {
+                hotswappers = new IdentityHashMap<>();
+            }
+            return hotswappers;
+        }
 
         synchronized Optional<Hotswapper> get(VaadinService forService) {
-            return service == forService ? Optional.ofNullable(hotswapper)
-                    : Optional.empty();
+            return Optional.ofNullable(map().get(forService));
         }
 
         synchronized void set(VaadinService forService, Hotswapper instance) {
-            this.service = forService;
-            this.hotswapper = instance;
+            map().put(forService, instance);
+        }
+
+        /**
+         * Drops a destroyed service's entry. Without it the map holds the
+         * service and its hotswapper for as long as the context lives, which is
+         * longer than any service in it.
+         */
+        synchronized void remove(VaadinService forService) {
+            map().remove(forService);
         }
     }
 
