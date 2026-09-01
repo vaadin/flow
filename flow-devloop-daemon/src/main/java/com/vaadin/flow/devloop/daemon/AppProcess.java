@@ -240,7 +240,7 @@ final class AppProcess {
     Startup start(Launch.Log log) throws IOException {
         lifecycle.lock();
         try {
-            if (state == State.RUNNING || state == State.STARTING) {
+            if (alreadyLaunching()) {
                 return Startup.ok(state == State.STARTING ? "already starting"
                         : "already running");
             }
@@ -249,10 +249,7 @@ final class AppProcess {
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
 
-            registered = false;
-            failureReason = null;
-            exitCode = null;
-            state = State.STARTING;
+            markStarting();
 
             log.line("launching " + command.get(0));
             // The launch line is worth showing - nine flags that all have to be
@@ -306,7 +303,9 @@ final class AppProcess {
                             appLog);
                 }
                 if (!up && System.nanoTime() >= registerBy) {
-                    return failed(
+                    // Still alive, so this launch has to be ended rather than
+                    // merely reported: see abandon.
+                    return abandon(current,
                             "app did not register within "
                                     + STARTUP_TIMEOUT.toMinutes() + " minutes",
                             appLog);
@@ -328,7 +327,9 @@ final class AppProcess {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    return failed(
+                    // Alive too, and for the same reason it must not be left
+                    // that way: nobody is waiting on it any more.
+                    return abandon(current,
                             "interrupted while waiting for the app to start",
                             appLog);
                 }
@@ -367,6 +368,51 @@ final class AppProcess {
     }
 
     /**
+     * Gives up on a launch whose process is still running.
+     * <p>
+     * Every other way a start ends is self-cleaning: the process exited, so its
+     * exit callback records the outcome and moves the state off
+     * {@link State#STARTING}. These do not. The JVM is alive and simply never
+     * called home, so nothing is coming to tidy up - and a start that returns
+     * with the state left at {@code STARTING} makes the next one answer
+     * "already starting" with a success code, over an app that is never going
+     * to serve anything and is still holding its port.
+     * <p>
+     * So the launch is ended here: the process is killed as an expected stop -
+     * it is this daemon doing the killing - which keeps the exit callback from
+     * overwriting the reason below with a bare exit code, and the state is put
+     * where a retry is allowed before this returns, because the caller's answer
+     * is what the next start races.
+     */
+    Startup abandon(Run current, String message, Path appLog) {
+        // The reason first, so it is recorded before the kill can produce a
+        // competing one.
+        Startup startup = failed(message, appLog);
+        // This daemon is doing the killing, so the exit is expected: the flag
+        // is what stops handleExit replacing the reason above with "app exited
+        // unexpectedly with code 1", which says nothing about never having
+        // registered.
+        current.stopExpected.set(true);
+        Process victim = current.process;
+        if (victim.isAlive()) {
+            victim.destroy();
+            try {
+                if (!victim.waitFor(10, TimeUnit.SECONDS)) {
+                    victim.destroyForcibly();
+                    victim.waitFor(10, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        // Same state the exit callback will settle on, so what a caller sees
+        // does not depend on which of the two got there first.
+        registered = false;
+        state = State.STOPPED;
+        return startup;
+    }
+
+    /**
      * Turns a dead or unreachable app into an answer that stands on its own.
      * The app's log holds the only copy of the real reason - "Port 8080 was
      * already in use" is printed by the app, nothing here can observe it - so
@@ -395,6 +441,24 @@ final class AppProcess {
         detail.add("--- " + excerpt.size() + " lines from " + appLog + " ---");
         detail.addAll(excerpt);
         return new Startup(false, full, detail);
+    }
+
+    /**
+     * Whether a launch is already up or on its way, which is the one condition
+     * under which {@link #start} answers without launching anything. Named
+     * because it is also what a failed start has to leave false - see
+     * {@link #abandon}.
+     */
+    boolean alreadyLaunching() {
+        return state == State.RUNNING || state == State.STARTING;
+    }
+
+    /** Clears the previous launch's verdict and opens this one. */
+    void markStarting() {
+        registered = false;
+        failureReason = null;
+        exitCode = null;
+        state = State.STARTING;
     }
 
     /**
