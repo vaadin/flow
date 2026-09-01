@@ -128,6 +128,131 @@ class MiscMultiModuleTest : AbstractGradleTest() {
     }
 
     @Test
+    fun projectDependency_coldAndRelocatedBuilds_remainIncremental() {
+        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
+
+        testProject.settingsFile.writeText(
+            """
+            rootProject.name = 'multi-project-cache-test'
+            include 'lib', 'web'
+            buildCache {
+                local {
+                    directory = '$buildCachePath'
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+            }
+            project(':web') {
+                apply plugin: 'java'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation project(':lib')
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                vaadin {
+                    eagerServerLoad = false
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.newFile(
+            "lib/src/main/java/example/Library.java",
+            """
+            package example;
+
+            public class Library {
+            }
+            """.trimIndent()
+        )
+        testProject.newFolder("web/src/main/frontend")
+
+        var relocated: TestProject? = null
+        try {
+            var result = testProject.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend"
+            )
+            assertContains(result.output, "Configuration cache entry stored")
+
+            result = testProject.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.UP_TO_DATE
+            )
+            assertContains(result.output, "Reusing configuration cache")
+
+            relocated = TestProject()
+            val excludedDirs = setOf("build", ".gradle", "node_modules")
+            // The default index.html is generated into the frontend folder
+            // and is declared as an output of vaadinBuildFrontend. A fresh
+            // checkout does not carry it, and copying it over would make
+            // Gradle see an output file it cannot attribute to the task,
+            // which disables caching for the whole task.
+            val generatedIndexHtml =
+                File("web/src/main/frontend", "index.html").path
+            testProject.dir.walkTopDown()
+                .onEnter { it.name !in excludedDirs }
+                .filter {
+                    it.isFile && it.relativeTo(testProject.dir).path !=
+                            generatedIndexHtml
+                }
+                .forEach { source ->
+                    val target = File(
+                        relocated.dir,
+                        source.relativeTo(testProject.dir).path
+                    )
+                    target.parentFile.mkdirs()
+                    source.copyTo(target, overwrite = true)
+                }
+
+            result = relocated.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.FROM_CACHE
+            )
+            assertContains(result.output, "Configuration cache entry stored")
+
+            result = relocated.build(
+                "--build-cache", "--configuration-cache",
+                "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+                checkTasksSuccessful = false
+            )
+            result.expectTaskOutcome(
+                "web:vaadinBuildFrontend", TaskOutcome.UP_TO_DATE
+            )
+            assertContains(result.output, "Reusing configuration cache")
+        } finally {
+            relocated?.delete()
+            buildCacheDir.deleteRecursively()
+        }
+    }
+
+    @Test
     fun `vaadinBuildFrontend application identifier from custom project name`() {
         testProject.settingsFile.writeText("""
             include 'lib', 'web'
