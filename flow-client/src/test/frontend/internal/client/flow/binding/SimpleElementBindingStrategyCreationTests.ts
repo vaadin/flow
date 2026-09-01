@@ -46,6 +46,17 @@ describe('SimpleElementBindingStrategy creation & identity', () => {
       expect(element.namespaceURI).to.equal(SVG_NS);
     });
 
+    it('create keeps the HTML namespace under a shadow root parent', () => {
+      // A shadow root is not an element and has no namespaceURI at all, where
+      // Java reads null off it. The child has to stay a real HTML element: in
+      // the null namespace a style element is not a stylesheet at all, so its
+      // CSS would render as text instead of being applied.
+      const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
+      const element = create(fakeNode({ tag: 'style' }, { parent: fakeNode({}, { domNode: shadowRoot }) }));
+      expect(element.namespaceURI).to.equal('http://www.w3.org/1999/xhtml');
+      expect(element).to.be.instanceOf(HTMLStyleElement);
+    });
+
     it('create falls back to a plain HTML element', () => {
       const element = create(fakeNode({ tag: 'div' }));
       expect(element.namespaceURI).to.equal('http://www.w3.org/1999/xhtml');
