@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -65,6 +66,13 @@ class PinnedNpmVersions {
     private static final String JSON_SUFFIX = ".json";
 
     private static final String PLATFORM = "platform";
+
+    /**
+     * The versions files already warned about, as they are read again for every
+     * thing the build asks the versions for.
+     */
+    private static final Set<String> WARNED_ABOUT_FILES = ConcurrentHashMap
+            .newKeySet();
 
     /**
      * The npm packages only the platform declares, which tell a versions file
@@ -158,13 +166,15 @@ class PinnedNpmVersions {
 
     /**
      * Warns about the packages a versions file gives no version for, once for
-     * the file rather than once for every time it is read through.
+     * the file however many times it is read, as the build reads the versions
+     * files for one thing after another.
      */
     private static void warnAboutPackagesWithoutVersion(
             VersionsFile versionsFile) {
         Set<String> packages = new TreeSet<>();
         collectPackagesWithoutVersion(versionsFile.content(), packages);
-        if (!packages.isEmpty()) {
+        if (!packages.isEmpty()
+                && WARNED_ABOUT_FILES.add(versionsFile.origin())) {
             log().warn(
                     "The npm packages {} of '{}' have no 'npmVersion' or 'jsVersion',"
                             + " so their versions are not pinned. Report it to whoever ships the file.",

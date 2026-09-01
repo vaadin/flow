@@ -36,9 +36,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -363,6 +365,45 @@ class PinnedNpmVersionsTest {
         assertTrue(dependencies.has("@vaadin/button"));
         assertTrue(
                 pinnedNpmVersions.getAllDependencies().has("@vaadin/button"));
+    }
+
+    @Test
+    void packageWithoutAVersion_isWarnedAboutOnceForTheFile()
+            throws IOException {
+        String versionsFile = """
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid"
+                    }
+                  }
+                }
+                """;
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(PinnedNpmVersions.class))
+                    .thenReturn(logger);
+
+            File folder = new File(temporaryFolder, "jar" + fileCount++);
+            folder.mkdirs();
+            Files.writeString(new File(folder, "versions.json").toPath(),
+                    versionsFile, StandardCharsets.UTF_8);
+            ClassFinder finder = Mockito.mock(ClassFinder.class);
+            Mockito.when(
+                    finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                    .thenReturn(List.of(folder.toURI().toURL()));
+
+            // The build reads the versions files for one thing after another
+            new PinnedNpmVersions(finder);
+            new PinnedNpmVersions(finder);
+        }
+
+        assertEquals(1, logger.getLogs().lines()
+                .filter(line -> line.startsWith(MockLogger.WARN)).count(),
+                "The file should be warned about once, logs were "
+                        + logger.getLogs());
     }
 
     @Test
