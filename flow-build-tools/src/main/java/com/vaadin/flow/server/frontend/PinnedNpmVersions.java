@@ -68,10 +68,12 @@ class PinnedNpmVersions {
     private static final String PLATFORM = "platform";
 
     /**
-     * The versions files already warned about, as they are read again for every
-     * thing the build asks the versions for.
+     * The warnings about packages without a version already said, as the
+     * versions files are read again for every thing the build asks the versions
+     * for. A file that starts leaving out another package is warned about
+     * again, as the warning is then a different one.
      */
-    private static final Set<String> WARNED_ABOUT_FILES = ConcurrentHashMap
+    private static final Set<String> WARNINGS_SAID = ConcurrentHashMap
             .newKeySet();
 
     /**
@@ -165,16 +167,16 @@ class PinnedNpmVersions {
     }
 
     /**
-     * Warns about the packages a versions file gives no version for, once for
-     * the file however many times it is read, as the build reads the versions
-     * files for one thing after another.
+     * Warns about the packages a versions file gives no version for, saying the
+     * same warning once however many times the file is read, as the build reads
+     * the versions files for one thing after another.
      */
     private static void warnAboutPackagesWithoutVersion(
             VersionsFile versionsFile) {
         Set<String> packages = new TreeSet<>();
         collectPackagesWithoutVersion(versionsFile.content(), packages);
         if (!packages.isEmpty()
-                && WARNED_ABOUT_FILES.add(versionsFile.origin())) {
+                && WARNINGS_SAID.add(versionsFile.origin() + packages)) {
             log().warn(
                     "The npm packages {} of '{}' have no 'npmVersion' or 'jsVersion',"
                             + " so their versions are not pinned. Report it to whoever ships the file.",
