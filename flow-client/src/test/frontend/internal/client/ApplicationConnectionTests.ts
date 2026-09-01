@@ -22,6 +22,9 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
     events: [] as Array<{ nodeId: number; eventType: string; data: unknown }>
   };
   const tree = opts.tree ?? new StateTree(inertRegistry());
+  // Something on the root node, so debug() has to reach that node rather than
+  // any empty one. 'tag' in feature 0 is what the server writes for an element.
+  tree.getRootNode().getMap(0).getProperty('tag').setValue('body');
   const registry = {
     log,
     tree,
@@ -119,7 +122,8 @@ describe('ApplicationConnection', () => {
       { nodeId: 1, eventType: 'connect-web-component', data: { tag: 'my-el' } }
     ]);
     expect(connection.getUIId()).to.equal(7);
-    expect(connection.debug()).to.deep.equal(registry.tree.getRootNode().getDebugJson());
+    expect(connection.getProfilingData()).to.deep.equal([1, 2]);
+    expect(connection.debug()).to.deep.equal({ elementData: { tag: 'body' } });
   });
 
   describe('published client API', () => {
