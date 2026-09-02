@@ -78,6 +78,11 @@ public class TableElement extends TestBenchElement {
      * index runs across the sections, as in {@link #getAllRows()}; equivalent
      * to {@code getRow(row).getCells().get(column)}.
      * <p>
+     * The resemblance to {@code GridElement.getCell} stops at the numbering,
+     * though. A grid is a strict rectangle whose column index picks a column
+     * rather than a position, so there every row has one cell per column and
+     * the two always agree. A table does not have to be rectangular.
+     * <p>
      * <b>Both indices count elements as they are written, not grid
      * positions.</b> A cell carrying a {@code colspan} or {@code rowspan}
      * occupies one position in the row it is written in and none at all in the
