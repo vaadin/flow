@@ -189,7 +189,9 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
-        expectedDependencies.add("typescript");
+        // Flow ships the TypeScript compiler it needs under a name of its own
+        // so that it never replaces the application's own typescript version.
+        expectedDependencies.add("@vaadin/typescript");
         return expectedDependencies;
     }
 
@@ -243,12 +245,12 @@ class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
-                .put("typescript", "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("vite",
+                "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         assertNotEquals("1.0.0", packageJson.get(NodeUpdater.DEV_DEPENDENCIES)
-                .get("typescript").stringValue());
+                .get("vite").stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
