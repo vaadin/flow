@@ -111,6 +111,13 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         List<List<TableCellElement>> grid = table.getCellGrid();
         Assert.assertEquals(rows.size(), grid.size());
         grid.forEach(gridRow -> Assert.assertEquals(2, gridRow.size()));
+        // every slot of this table is covered, none is left null
+        grid.forEach(gridRow -> gridRow.forEach(Assert::assertNotNull));
+
+        Assert.assertThrows(NoSuchElementException.class,
+                () -> table.getCellCovering(rows.size(), 0));
+        Assert.assertThrows(NoSuchElementException.class,
+                () -> table.getCellCovering(0, 2));
     }
 
     @Test
@@ -149,6 +156,22 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         Assert.assertEquals("rowgroup", terrestrial.getDomAttribute("scope"));
         Assert.assertEquals("4", terrestrial.getDomAttribute("rowspan"));
         Assert.assertEquals("2", terrestrial.getDomAttribute("colspan"));
+
+        // The grid counts the thead row first, so the four body rows the
+        // rowgroup header spans are grid rows 1 to 4, over both its columns.
+        List<List<TableCellElement>> grid = table.getCellGrid();
+        Assert.assertEquals(table.getAllRows().size(), grid.size());
+        for (int row = 1; row <= 4; row++) {
+            for (int column = 0; column <= 1; column++) {
+                Assert.assertEquals("Terrestrial planets",
+                        table.getCellCovering(row, column).getText());
+            }
+        }
+        // the row after the span belongs to the next rowgroup header
+        Assert.assertEquals("Jovian planets",
+                table.getCellCovering(5, 0).getText());
+        // and the cell written after it in its own row is untouched
+        Assert.assertEquals("Mercury", table.getCellCovering(1, 2).getText());
     }
 
     @Test

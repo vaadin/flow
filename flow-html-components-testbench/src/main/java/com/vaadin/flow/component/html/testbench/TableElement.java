@@ -321,8 +321,8 @@ public class TableElement extends TestBenchElement {
                 while (column < gridRow.size() && gridRow.get(column) != null) {
                     column++;
                 }
-                int colspan = span(cell, "colspan");
-                int rowspan = span(cell, "rowspan");
+                int colspan = span(cell, "colSpan");
+                int rowspan = span(cell, "rowSpan");
                 // 0 means "to the end of the row group", and anything longer
                 // than the group is cut off there
                 int rows0 = rows.size() - r;
@@ -339,20 +339,16 @@ public class TableElement extends TestBenchElement {
     }
 
     /**
-     * Reads a span attribute, defaulting to 1 when it is absent or not a
-     * number. A {@code rowspan} of 0 is meaningful and so is kept; anything
-     * negative is not, and reads as 1.
+     * Reads a span through its DOM property rather than its attribute, so that
+     * the browser has already applied the rules: an absent, negative or
+     * unparseable span reads as 1, {@code colSpan} of 0 reads as 1 because that
+     * value was dropped from HTML, and only {@code rowSpan} keeps a meaningful
+     * 0. Reading the raw attribute would leave those to us and let a bogus
+     * value place the cell somewhere the browser does not.
      */
-    private static int span(TableCellElement cell, String attribute) {
-        String value = cell.getDomAttribute(attribute);
-        if (value == null) {
-            return 1;
-        }
-        try {
-            return Math.max(0, Integer.parseInt(value.trim()));
-        } catch (NumberFormatException e) {
-            return 1;
-        }
+    private static int span(TableCellElement cell, String property) {
+        String value = cell.getDomProperty(property);
+        return value == null ? 1 : Integer.parseInt(value);
     }
 
     private static void set(List<TableCellElement> row, int index,
