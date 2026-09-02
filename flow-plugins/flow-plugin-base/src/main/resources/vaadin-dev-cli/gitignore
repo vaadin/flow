@@ -7,3 +7,4 @@
 # rewritten by it whenever it changes.
 daemon.properties
 daemon.properties.tmp
+daemon.lock

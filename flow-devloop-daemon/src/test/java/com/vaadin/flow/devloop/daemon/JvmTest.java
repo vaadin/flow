@@ -63,15 +63,6 @@ class JvmTest {
     }
 
     @Test
-    void supportsEnhancedRedefinition_fallsBackToThePathWithoutAReleaseFile() {
-        // Neither home exists, which is the case the path test is kept for.
-        assertTrue(Jvm.supportsEnhancedRedefinition(
-                Path.of("C:/Users/dev/.jdks/jbr-21.0.5/bin/java.exe")));
-        assertFalse(Jvm.supportsEnhancedRedefinition(
-                Path.of("/usr/lib/jvm/temurin-21/bin/java")));
-    }
-
-    @Test
     void belowTheFloorIsNeverACandidate() throws IOException {
         jdk("jbr-17", "17.0.13", "JetBrains s.r.o.");
         jdk("corretto-8", "1.8.0_442", "Amazon.com Inc.");

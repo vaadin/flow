@@ -268,7 +268,8 @@ final class Frontend {
         String[] segments = relative.split("/");
         String name = segments[segments.length - 1];
 
-        if (segments.length > 0 && isPruned(segments[0])) {
+        // split always yields at least one element, so segments[0] is safe.
+        if (isPruned(segments[0])) {
             return Kind.IGNORED;
         }
         if (isTemporary(name)) {

@@ -434,31 +434,42 @@ function Send-Command([int] $port, [string] $token, [string[]] $words) {
         $encoding = New-Object System.Text.UTF8Encoding($false)
         $writer = New-Object System.IO.StreamWriter($stream, $encoding)
         $writer.AutoFlush = $true
-        $reader = New-Object System.IO.StreamReader($stream, $encoding)
         $writer.WriteLine(($token + ' ' + ($words -join ' ')))
 
         Start-Spinner ($words -join ' ')
-        # A read timeout is what makes room for a frame between two replies. A
-        # timeout leaves the characters StreamReader has already decoded in its
-        # own buffer, so the next call continues the same line rather than losing
-        # its start - which is what bash's partial-read handling does by hand.
+        # A read timeout is what makes room for a frame between two replies.
+        # Bytes are accumulated in $buffer rather than left to a StreamReader:
+        # StreamReader.ReadLine discards the partial line it was building when
+        # ReadBuffer throws on a timeout, so a reply that straddles a 200 ms gap
+        # would reach the caller truncated and, for --json, unparseable. Reading
+        # a byte at a time keeps every byte that has arrived across as many
+        # timeouts as it takes - which is what bash's buf+="$chunk" partial-read
+        # handling does by hand.
         $stream.ReadTimeout = 200
         $status = 1
+        $buffer = New-Object System.Collections.Generic.List[byte]
         while ($true) {
-            $chunk = $null
+            $b = -2
             try {
-                $chunk = $reader.ReadLine()
+                $b = $stream.ReadByte()
             } catch [System.IO.IOException] {
                 Step-Spinner
                 continue
             }
-            if ($null -eq $chunk) {
+            if ($b -lt 0) {
                 # End of stream, which for a command that never sent EXIT means
                 # the daemon went away mid-reply.
                 Clear-Spinner
                 break
             }
-            $line = $chunk.TrimEnd("`r")
+            if ($b -ne 10) {
+                # Not a newline yet: hold the byte until the line is complete, so
+                # a timeout mid-line loses nothing that has already arrived.
+                [void]$buffer.Add([byte]$b)
+                continue
+            }
+            $line = $encoding.GetString($buffer.ToArray()).TrimEnd("`r")
+            $buffer.Clear()
             # Erase first: a reply line must never be printed onto a drawn frame.
             Clear-Spinner
             if ($line -like 'EXIT *') {

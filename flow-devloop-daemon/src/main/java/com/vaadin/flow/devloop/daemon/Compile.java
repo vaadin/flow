@@ -17,7 +17,10 @@ package com.vaadin.flow.devloop.daemon;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
@@ -1001,10 +1004,32 @@ final class Compile {
             List<Path> sources, Launch.Project project) {
         long started = System.nanoTime();
         DiagnosticCollector<JavaFileObject> collected = new DiagnosticCollector<>();
-        long before = System.currentTimeMillis();
-        try (StandardJavaFileManager fm = compiler.getStandardFileManager(
+        // Recorded from javac's own output requests rather than inferred from
+        // class-file mtimes: a filesystem that truncates modification times to
+        // whole seconds - HFS+, exFAT and many Docker bind mounts - rounds a
+        // class written a few milliseconds after a wall-clock baseline below
+        // that baseline, so a time-based scan silently drops it and REDEFINE
+        // ships stale bytecode for it. The compiler names every class it emits,
+        // inner classes included, so this set is exact.
+        Set<String> written = new LinkedHashSet<>();
+        try (StandardJavaFileManager base = compiler.getStandardFileManager(
                 collected, null, StandardCharsets.UTF_8)) {
-            Iterable<? extends JavaFileObject> units = fm
+            JavaFileManager fm = new ForwardingJavaFileManager<StandardJavaFileManager>(
+                    base) {
+                @Override
+                public JavaFileObject getJavaFileForOutput(
+                        JavaFileManager.Location location, String className,
+                        JavaFileObject.Kind kind, FileObject sibling)
+                        throws IOException {
+                    if (kind == JavaFileObject.Kind.CLASS
+                            && className != null) {
+                        written.add(className);
+                    }
+                    return super.getJavaFileForOutput(location, className, kind,
+                            sibling);
+                }
+            };
+            Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
             List<String> options = new ArrayList<>(
@@ -1033,7 +1058,7 @@ final class Compile {
                         Optional.empty()));
             }
             long millis = (System.nanoTime() - started) / 1_000_000;
-            List<String> classes = ok ? classesWrittenSince(module, before)
+            List<String> classes = ok ? written.stream().sorted().toList()
                     : List.of();
             if (ok) {
                 // Only on success: a failed compile has to stay forced, or the
@@ -1126,27 +1151,6 @@ final class Compile {
             Optional.of("syntax error - check brackets and semicolons nearby");
         default -> Optional.empty();
         };
-    }
-
-    private List<String> classesWrittenSince(Reactor.Module module,
-            long epochMillis) {
-        Path classesDir = module.classesDir();
-        if (!Files.isDirectory(classesDir)) {
-            return List.of();
-        }
-        try (Stream<Path> walk = Files.walk(classesDir)) {
-            return walk.filter(p -> p.toString().endsWith(".class"))
-                    .filter(p -> {
-                        try {
-                            return Files.getLastModifiedTime(p)
-                                    .toMillis() >= epochMillis;
-                        } catch (IOException e) {
-                            return false;
-                        }
-                    }).map(module::binaryNameOf).sorted().toList();
-        } catch (IOException e) {
-            return List.of();
-        }
     }
 
     /**

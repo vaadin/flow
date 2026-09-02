@@ -75,6 +75,37 @@ final class Connector {
         }
         lock.lock();
         try {
+            return exchange(request, timeoutSeconds);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Like {@link #command}, but gives up immediately when another command
+     * holds the connector rather than waiting for it.
+     * <p>
+     * For {@code status}, which must answer in milliseconds and must never
+     * block behind an in-flight {@code REDEFINE} that can hold the connector
+     * for the length of a restart: the whole point of {@code status} is to tell
+     * whether an apply is stuck, so it cannot wait on the very lock the stuck
+     * apply holds. An empty answer here reads as {@code frontend=unknown},
+     * which is the honest thing to say while the app is busy.
+     */
+    Optional<String> commandIfIdle(String request, long timeoutSeconds) {
+        if (closed || !lock.tryLock()) {
+            return Optional.empty();
+        }
+        try {
+            return exchange(request, timeoutSeconds);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Sends the request and waits for the single reply line. Lock held. */
+    private Optional<String> exchange(String request, long timeoutSeconds) {
+        try {
             replies.clear();
             out.println(request);
             if (out.checkError()) {
@@ -85,8 +116,6 @@ final class Connector {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return Optional.empty();
-        } finally {
-            lock.unlock();
         }
     }
 

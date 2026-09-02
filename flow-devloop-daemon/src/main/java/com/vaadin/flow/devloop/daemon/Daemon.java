@@ -475,7 +475,7 @@ public final class Daemon {
         if (active == null || !active.isOpen()) {
             return Optional.empty();
         }
-        return active.command("FRONTEND", 5).map(reply -> Connector
+        return active.commandIfIdle("FRONTEND", 5).map(reply -> Connector
                 .fields(reply).getOrDefault("frontend", "unknown"));
     }
 

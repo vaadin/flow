@@ -202,10 +202,18 @@ final class Reactor {
      */
     static Reactor discover(Path appModule, Launch.Log log) {
         Path app = real(appModule);
+        // Every candidate root re-walks the aggregation graph beneath it, and
+        // the ancestor loop below tries each level from the app up to the
+        // filesystem root - so without a shared cache a pom is DOM-parsed once
+        // per ancestor above it, hundreds of parses for an app deep in a large
+        // reactor. Keyed by directory, it makes each pom parsed exactly once
+        // across the whole discovery, and again on every pom edit that re-runs
+        // it.
+        Map<Path, Pom> cache = new LinkedHashMap<>();
         String override = System.getProperty("vaadin.dev.reactorRoot");
         if (override != null && !override.isBlank()) {
             Path forced = real(Path.of(override).toAbsolutePath());
-            Optional<Reactor> built = build(forced, app, log);
+            Optional<Reactor> built = build(forced, app, cache, log);
             if (built.isPresent()) {
                 return built.get();
             }
@@ -224,7 +232,7 @@ final class Reactor {
             // No early return: a higher aggregator may aggregate this one, and
             // it
             // is the top of the chain that -pl/-am has to run against.
-            Optional<Reactor> built = build(ancestor, app, log);
+            Optional<Reactor> built = build(ancestor, app, cache, log);
             if (built.isPresent()) {
                 found = built.get();
             }
@@ -248,9 +256,9 @@ final class Reactor {
      * candidate does not aggregate the application.
      */
     private static Optional<Reactor> build(Path candidateRoot, Path appModule,
-            Launch.Log log) {
+            Map<Path, Pom> cache, Launch.Log log) {
         Map<Path, Pom> poms = new LinkedHashMap<>();
-        collect(candidateRoot, poms, log);
+        collect(candidateRoot, poms, cache, log);
         if (!poms.containsKey(appModule)) {
             return Optional.empty();
         }
@@ -272,13 +280,18 @@ final class Reactor {
                 .of(new Reactor(candidateRoot, app, candidates, pomFiles));
     }
 
-    /** Walks the aggregation graph; the visited map is also the cycle guard. */
-    private static void collect(Path dir, Map<Path, Pom> into, Launch.Log log) {
+    /**
+     * Walks the aggregation graph; the visited map is also the cycle guard. The
+     * cache spans the whole discovery so a pom shared by two candidate roots is
+     * parsed once, not once per root.
+     */
+    private static void collect(Path dir, Map<Path, Pom> into,
+            Map<Path, Pom> cache, Launch.Log log) {
         Path pomFile = dir.resolve("pom.xml");
         if (into.containsKey(dir) || !Files.isRegularFile(pomFile)) {
             return;
         }
-        Pom pom = Pom.read(pomFile);
+        Pom pom = cache.computeIfAbsent(dir, d -> Pom.read(pomFile));
         into.put(dir, pom);
         for (String declared : pom.modules()) {
             String resolved = interpolate(declared, pom.properties());
@@ -293,7 +306,7 @@ final class Reactor {
             Path moduleDir = Files.isRegularFile(target) ? target.getParent()
                     : target;
             if (moduleDir != null) {
-                collect(real(moduleDir), into, log);
+                collect(real(moduleDir), into, cache, log);
             }
         }
     }

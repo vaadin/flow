@@ -184,23 +184,6 @@ final class Jvm {
                 : Optional.empty();
     }
 
-    /**
-     * Whether this JVM honours {@code -XX:+AllowEnhancedClassRedefinition}.
-     * <p>
-     * By {@code IMPLEMENTOR} in the JDK's own {@code release} file, so a JBR
-     * installed anywhere is recognised and a stock JDK under a path that
-     * happens to contain {@code jbr} is not. The path test remains for a home
-     * with no readable {@code release} - it is what the daemon always used, and
-     * a wrong answer there is no worse than before.
-     */
-    static boolean supportsEnhancedRedefinition(Path javaBinary) {
-        Path bin = javaBinary.getParent();
-        Path home = bin == null ? null : bin.getParent();
-        return isJetBrains(
-                home == null ? null : release(home).get("IMPLEMENTOR"),
-                javaBinary);
-    }
-
     private static boolean isJetBrains(String implementor, Path javaBinary) {
         if (implementor != null) {
             return implementor.toLowerCase(Locale.ROOT).contains("jetbrains");

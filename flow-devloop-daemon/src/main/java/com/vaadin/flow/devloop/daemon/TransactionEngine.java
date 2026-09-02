@@ -98,8 +98,25 @@ final class TransactionEngine {
         volatile String frontend = "";
         /** Frontend files this change touched, however they were handled. */
         volatile int frontendFiles;
-        /** Theme stylesheets pushed into the open page. */
+        /**
+         * Theme folders pushed into the open page. One push re-bundles a whole
+         * theme, so editing three stylesheets in one theme is one push - which
+         * is why this is not a file count and must not be rendered or
+         * subtracted as one; see {@link #themeFiles}.
+         */
         volatile int themePushed;
+        /**
+         * Theme stylesheets in this change-set, the count a reader expects
+         * behind "theme file(s) pushed". Distinct from {@link #themePushed},
+         * which counts the folders those files live in.
+         */
+        volatile int themeFiles;
+        /**
+         * Frontend files served from disk that a page reload was actually sent
+         * for. Zero means no {@code RELOAD} went out, so nothing may claim a
+         * reload happened.
+         */
+        volatile int servedLive;
         /**
          * Which frontend the app is running: {@code vite}, {@code dev-bundle}.
          */
@@ -184,6 +201,23 @@ final class TransactionEngine {
     private final AppProcess app;
     private final AtomicInteger ids = new AtomicInteger();
     private final ReentrantLock compileLock = new ReentrantLock(true);
+    /**
+     * Serializes the whole body of {@link #apply}, not just the javac call.
+     * <p>
+     * Superseding a transaction lets a newer apply take over, but the
+     * superseded one keeps running until its next {@code bailIfSuperseded}
+     * check - and the first of those is well past the Maven re-resolve and the
+     * change baseline. Each client connection runs on its own virtual thread,
+     * so two applies (an agent and a developer) would otherwise resolve Maven
+     * and re-seed the compile concurrently: two reactors compiling into one
+     * {@code
+     * target/classes}, both rewriting every module's {@code cp.txt}/{@code
+     * cp.stamp} so a read can see a half-written classpath, and the loser
+     * baselining against the winner's fresh {@code Compile} and then reporting
+     * a real edit as "no changes". Fair, so applies run in arrival order; the
+     * superseded one bails at once when it finally acquires it.
+     */
+    private final ReentrantLock applyLock = new ReentrantLock(true);
 
     /**
      * Built from the resolved module set rather than at construction, because
@@ -234,7 +268,6 @@ final class TransactionEngine {
         return fresh;
     }
 
-    /** The poms that moved, named while there are few enough to name. */
     /**
      * The change-set, named and then counted, in the shape
      * {@code 2 file(s): a, b}. Truncated past {@link #PATHS_SHOWN} so a
@@ -301,7 +334,19 @@ final class TransactionEngine {
             inFlight = tx;
         }
 
+        // Held across the whole body so no two applies touch Maven or the
+        // compile baseline at once; see the field. Acquired after the
+        // supersession above so a running apply already knows it lost before
+        // this one takes over.
+        applyLock.lock();
         try {
+            // A newer apply may have superseded this one while it waited for
+            // the
+            // lock, or the apply it superseded may have finished the work this
+            // change-set needed - either way, bail before starting Maven.
+            if (bailIfSuperseded(tx, started)) {
+                return tx;
+            }
             // Resolved before anything is scanned: which modules are in the
             // loop
             // is what decides where the change-set is even looked for.
@@ -429,9 +474,10 @@ final class TransactionEngine {
                 // JVM will not read it again, so reporting Stable here would be
                 // a green answer over values the app is not using.
                 if (!staleResources.startup().isEmpty()) {
-                    tx.escalation = resourceEscalation(
+                    String reason = resourceEscalation(
                             staleResources.startup());
-                    log.line("resources: " + tx.escalation
+                    escalate(tx, reason);
+                    log.line("resources: " + reason
                             + "; only a restart can apply that");
                 }
             }
@@ -454,7 +500,7 @@ final class TransactionEngine {
                 // Only a Vite build folds a frontend file into the dev bundle,
                 // and that runs at startup - so the restart is not a fallback
                 // here, it is the mechanism.
-                tx.escalation = plan.escalation();
+                escalate(tx, plan.escalation());
             }
 
             if (!changes.deleted().isEmpty()) {
@@ -471,14 +517,13 @@ final class TransactionEngine {
                             "check file permissions under target/classes",
                             started);
                 }
-                // Last of the escalation legs and an unconditional assignment,
-                // because this is the one no mechanism short of a restart can
-                // apply: a JVM cannot un-define a class it has loaded, so
-                // whatever else this change-set carries, the removed type is
-                // still live until the application starts again.
-                tx.escalation = sourceEscalation(changes.deleted());
-                log.line("sources: " + tx.escalation + "; removed "
-                        + tx.classesRemoved
+                // One of the escalation legs, and the one no mechanism short of
+                // a restart can apply: a JVM cannot un-define a class it has
+                // loaded, so whatever else this change-set carries, the removed
+                // type is still live until the application starts again.
+                String reason = sourceEscalation(changes.deleted());
+                escalate(tx, reason);
+                log.line("sources: " + reason + "; removed " + tx.classesRemoved
                         + " class file(s); only a restart can apply that");
             }
 
@@ -584,8 +629,8 @@ final class TransactionEngine {
             // would
             // keep the dependencies it was started with whatever the bytes say.
             // So the runtime leg is skipped rather than attempted and undone.
-            drift.ifPresent(detail -> tx.escalation = "classpath changed ("
-                    + detail + ")");
+            drift.ifPresent(detail -> escalate(tx,
+                    "classpath changed (" + detail + ")"));
 
             // --- runtime leg: attempt the atomic redefine, escalate if it
             // cannot
@@ -643,13 +688,13 @@ final class TransactionEngine {
                         }
                         log.line("redefine applied but " + blocker.get()
                                 + "; escalating to restart");
-                        tx.escalation = blocker.get();
+                        escalate(tx, blocker.get());
                     } else {
                         String detail = fields.getOrDefault("message",
                                 reply.get());
                         log.line("redefine rejected: " + detail
                                 + "; escalating to restart");
-                        tx.escalation = detail;
+                        escalate(tx, detail);
                     }
                 }
             }
@@ -696,7 +741,28 @@ final class TransactionEngine {
         } catch (RuntimeException e) {
             return finish(tx, Outcome.FAILED, "internal: " + e, "none",
                     "see daemon.log", started);
+        } finally {
+            applyLock.unlock();
         }
+    }
+
+    /**
+     * Records one more reason this change-set cannot go live, keeping the ones
+     * already recorded.
+     * <p>
+     * A single change-set can fail to redefine for several independent reasons
+     * at once - a startup-only resource, a deleted source and a drifted
+     * classpath - and each is a separate thing the reader may need to act on.
+     * Assigning would leave only whichever leg ran last; joining names the
+     * whole truth in the one {@code restart:} line the report prints and the
+     * one {@code escalation} field an agent reads.
+     */
+    private static void escalate(Transaction tx, String reason) {
+        if (reason == null || reason.isEmpty()) {
+            return;
+        }
+        tx.escalation = tx.escalation.isEmpty() ? reason
+                : tx.escalation + "; " + reason;
     }
 
     /**
@@ -904,6 +970,12 @@ final class TransactionEngine {
             }
             tx.themePushed = parseInt(
                     Connector.fields(reply.get()).get("pushed"));
+            // The files a reader expects behind "theme file(s) pushed", set
+            // only
+            // now that the push has actually landed - and kept apart from the
+            // folder count above, since three stylesheets in one theme are one
+            // push but three files.
+            tx.themeFiles = plan.themeCss().size();
         }
         if (!plan.servedLive().isEmpty()) {
             // index.html and theme assets are read from the frontend folder per
@@ -913,6 +985,11 @@ final class TransactionEngine {
             if (reply.isEmpty() || !reply.get().startsWith("OK")) {
                 return false;
             }
+            // A reload was actually sent, so the served-live clause may now
+            // name
+            // the files it covered - and only now, so it never claims a reload
+            // that did not happen.
+            tx.servedLive = plan.servedLive().size();
         }
         markFrontendApplied(plan);
         return true;
@@ -1399,15 +1476,18 @@ final class TransactionEngine {
                 && !tx.hotswapDetail.isEmpty()) {
             clauses.add(tx.hotswapDetail);
         }
-        if (tx.themePushed > 0) {
-            clauses.add(tx.themePushed + " theme file(s) pushed in place");
+        if (tx.themeFiles > 0) {
+            clauses.add(tx.themeFiles + " theme file(s) pushed in place");
         }
         if ("vite".equals(tx.frontendMode)) {
             clauses.add(tx.frontendFiles
                     + " frontend file(s), applied by Vite (dev server "
                     + tx.frontend + ")");
-        } else if (tx.frontendFiles > tx.themePushed) {
-            clauses.add((tx.frontendFiles - tx.themePushed)
+        } else if (tx.servedLive > 0) {
+            // Only when a RELOAD actually went out: servedLive is the count the
+            // reload covered, so the clause never claims a reload that the
+            // change-set never triggered.
+            clauses.add(tx.servedLive
                     + " frontend file(s) served live, browser reloaded");
         }
         if (clauses.isEmpty()) {
