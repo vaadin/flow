@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.SignalTypeUtils;
 
@@ -167,7 +168,9 @@ public class SignalBindingFeature extends ServerSideFeature {
      * a value is rejected instead of passed on to the write callback, which
      * would either fail with a {@link ClassCastException} or, when generic code
      * has erased the type of the callback, store a value that the signal cannot
-     * read back.
+     * read back. A value that the write callback itself rejects because of its
+     * type is ignored in the same way, which is the case for a signal that
+     * doesn't declare its value type.
      *
      * @param key
      *            the key for which to update the signal value
@@ -213,16 +216,16 @@ public class SignalBindingFeature extends ServerSideFeature {
 
         try {
             ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        } catch (InvalidSignalValueTypeException e) {
+            // The callback wrote the value into a signal that rejected its type
+            return rejectRefusedValue(key, e, signal, revertCallback);
         } catch (ClassCastException e) {
-            /*
-             * The write callback of a signal without a declared value type
-             * casts the value to the type it expects, which fails for a value
-             * that the client made up.
-             */
-            getLogger().warn(
-                    "Ignoring a value for the signal binding '{}' since the write callback of the bound signal rejected its type.",
-                    key, e);
-            return revertToSignalValue(signal, revertCallback);
+            // The callback cast the value to the type that it expects
+            if (!isFailedCastOf(e, newValue)) {
+                // Unrelated failure, handled like any other callback exception
+                throw e;
+            }
+            return rejectRefusedValue(key, e, signal, revertCallback);
         }
 
         // Re-consult the signal after the callback
@@ -234,6 +237,38 @@ public class SignalBindingFeature extends ServerSideFeature {
             return false;
         }
         return true;
+    }
+
+    private static <T extends @Nullable Object> boolean rejectRefusedValue(
+            String key, RuntimeException cause, Signal<T> signal,
+            SerializableConsumer<T> revertCallback) {
+        getLogger().warn(
+                "Ignoring a value for the signal binding '{}' since the write callback of the bound signal rejected its type.",
+                key, cause);
+        return revertToSignalValue(signal, revertCallback);
+    }
+
+    /**
+     * Checks whether the given exception was thrown by casting the given value
+     * to another type, rather than by something unrelated inside the write
+     * callback. The message of the exception is the only thing to go by since
+     * the failing cast is generated into the callback itself, and it starts
+     * with the name of the type that couldn't be cast. Any cast that the
+     * message doesn't attribute to the value is treated as a regular callback
+     * failure and left to propagate.
+     */
+    private static boolean isFailedCastOf(ClassCastException exception,
+            @Nullable Object value) {
+        if (value == null) {
+            return false;
+        }
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        String typeName = value.getClass().getName();
+        return message.startsWith(typeName)
+                || message.startsWith("class " + typeName);
     }
 
     private static <T extends @Nullable Object> boolean revertToSignalValue(

@@ -25,6 +25,7 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
@@ -187,7 +188,7 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param value
      *            the value to set
      * @return an operation containing the eventual result
-     * @throws IllegalArgumentException
+     * @throws InvalidSignalValueTypeException
      *             if the value is not an instance of the value type of this
      *             signal
      */
@@ -236,7 +237,7 @@ public class SharedValueSignal<T extends @Nullable Object>
      */
     private void checkValueType(@Nullable Object value) {
         if (value != null && !valueType.getRawClass().isInstance(value)) {
-            throw new IllegalArgumentException(
+            throw new InvalidSignalValueTypeException(
                     "Cannot use a value of type " + value.getClass().getName()
                             + " with a signal that has the value type "
                             + valueType + ".");
@@ -257,7 +258,7 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param newValue
      *            the new value
      * @return an operation containing the eventual result
-     * @throws IllegalArgumentException
+     * @throws InvalidSignalValueTypeException
      *             if the new value is not an instance of the value type of this
      *             signal
      */
