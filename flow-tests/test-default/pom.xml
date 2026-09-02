@@ -123,6 +123,17 @@
             <goals>
               <goal>start</goal>
             </goals>
+            <configuration>
+              <!-- DevServerReadyGate holds back the readiness signal until the
+                   frontend dev server can serve the application, which on a
+                   cold machine takes minutes. The defaults here amount to 30
+                   seconds, so without a longer limit the plugin gives up while
+                   the dev server is still installing packages. Kept above the
+                   gate's own limit so that its clearer error message is the one
+                   that surfaces. -->
+              <wait>500</wait>
+              <maxAttempts>1400</maxAttempts>
+            </configuration>
           </execution>
           <execution>
             <id>post-integration-test</id>
