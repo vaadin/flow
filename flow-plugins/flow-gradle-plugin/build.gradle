@@ -135,6 +135,14 @@ task functionalTest(type: Test) {
     classpath = sourceSets.functionalTest.runtimeClasspath
     maxParallelForks = 1
     jvmArgs('-Xms512M', '-Xmx1024M')
+    // The applications the tests generate resolve com.vaadin:flow from this
+    // variable, see AbstractGradleTest. Default it to the version being built
+    // so the tests exercise the working copy instead of a published snapshot.
+    // It has to be set here: Gradle drops environment variables whose names
+    // are not valid identifiers, so `vaadin.version` cannot be passed in from
+    // the command line. Override with -Pvaadin.version, which also sets the
+    // project version.
+    environment('vaadin.version', version.toString())
     testLogging {
         exceptionFormat = 'full'
         showStandardStreams = true
