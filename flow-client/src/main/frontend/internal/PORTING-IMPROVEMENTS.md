@@ -37,10 +37,10 @@ An entry qualifies only if all three hold:
 
 The porting conventions the series was written against (`PORTING.md`) and the
 procedure a port was reviewed with (`PORTING-REVIEW.md`) were both removed once
-the review was done and the retrofit backlog they tracked was empty, so this
-file is the only one of the three left. A parity debt is therefore an ordinary
-bug report now, not a backlog row, and only entries meeting the tests above
-belong here.
+the porting series had landed and the retrofit backlog they tracked was empty,
+so this file is the only one of the three left. A parity debt is therefore an
+ordinary bug report now, not a backlog row, and only entries meeting the tests
+above belong here.
 
 ## Stronger typing
 
@@ -165,13 +165,15 @@ belong here.
 
 - **Site**: `client/flow/collection/JsArray.ts` and its call sites
 - **Java shape**: `JsArray<T>` is a JS-array wrapper with `@JsOverlay` helpers, and
-  rule 1 gives it its own module because Java gives it its own file.
+  it gets its own module because the port maps one Java source file to one
+  TypeScript module.
 - **What TypeScript could do**: nothing at all — every helper is a one-liner over a
   native array (`pushArray` → `push(...values)`, `clear` → `length = 0`,
   `isEmpty` → `length === 0`). Post-cutover the module can go and the call sites
   can inline the native operation.
 - **Why it waits**: the module documents the Java→native mapping that reviewers
-  check against, and rule 1 requires it while the Java file exists.
+  check against, and one-module-per-Java-source-file keeps it while the Java file
+  exists.
 - **Spotted in**: #24933
 
 ### `ClientJsonCodec.decodeWithoutTypeInfo` / `encodeWithoutTypeInfo`
@@ -181,7 +183,8 @@ belong here.
   the JVM-side conversions exist for tests only.
 - **What TypeScript could do**: delete them and let the call sites use the value
   directly, once nothing has to line up with the Java public API.
-- **Why it waits**: rule 4 requires the complete public API of the ported class.
+- **Why it waits**: the port carries the complete public API of the ported class,
+  so a member is absent only when Java has none.
 - **Spotted in**: #24948
 
 ### Always-on `assert` and runtime `Profiler` enablement
@@ -221,7 +224,7 @@ belong here.
 - **What TypeScript could do**: exactly what the deprecation asks. The pair reduces
   to a thin adapter over a parser, and the version/OS matrices the suite pins today
   become the library's problem.
-- **Why it waits**: rule 4 requires the complete public API of the ported class
+- **Why it waits**: the port carries the complete public API of the ported class
   while the Java class exists, deprecated or not.
 - **Spotted in**: #24933
 
