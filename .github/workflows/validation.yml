@@ -255,8 +255,10 @@ jobs:
     # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
     # as a required check, but the expensive steps are gated on whether
     # anything the Gradle plugin builds on actually changed, so unrelated PRs
-    # pass immediately. Unlike the other test jobs this one needs no secrets,
-    # so it runs for pull requests from forks too.
+    # pass immediately. On this branch a production mode build always validates
+    # the license, which the functional tests do, so unlike on main the job
+    # needs the TestBench secret and is skipped for pull requests from forks,
+    # as the other test jobs on this branch are.
     needs: build
     timeout-minutes: 120
     runs-on: ubuntu-24.04
@@ -280,10 +282,19 @@ jobs:
         # builds. run stays true whenever the comparison cannot be made: a gate
         # that does not know what changed has to run the job, not report green.
         id: decide
+        env:
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
         run: |
           set -euo pipefail
           run=true
           DIFF_BASE=
+          if [ "${IS_FORK:-}" = "true" ]; then
+            # No TestBench secret is available, and every production mode
+            # functional test validates the license on this branch.
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Pull request from a fork, no license available, skipping."
+            exit 0
+          fi
           case "$GITHUB_EVENT_NAME" in
             pull_request)
               # The checkout is by sha, which leaves no remote-tracking branch
@@ -369,6 +380,13 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Set TB License
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Run Gradle build and functionalTests
         if: ${{ steps.decide.outputs.run == 'true' }}
         working-directory: flow-plugins/flow-gradle-plugin
