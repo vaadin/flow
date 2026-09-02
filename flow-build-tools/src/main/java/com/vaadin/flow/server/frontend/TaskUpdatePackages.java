@@ -501,9 +501,10 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Collect all npm dependencies the versions files the platform ships
-     * declare, regardless of the mode they apply to, so that any component
-     * version gets pinned even when it is only used transitively.
+     * Collect all npm dependencies the versions files declare, that is the json
+     * files of the versions folders on the classpath, regardless of the mode
+     * they apply to, so that any component version gets pinned even when it is
+     * only used transitively.
      *
      * @return the version each versions file declares, by npm package name
      * @throws IOException
@@ -511,7 +512,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        return new PinnedNpmVersions(finder).getAllDependencies();
+        return getPinnedNpmVersions().getAllDependencies();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -619,7 +620,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         int added = 0;
 
         Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                finder,
+                options,
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
@@ -681,7 +682,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
         doCleanUp = doCleanUp || (!enablePnpm && FrontendBuildUtils
-                .isPlatformVersionUpdated(finder, options.getNpmFolder(),
+                .isPlatformVersionUpdated(options, options.getNpmFolder(),
                         options.getNodeModulesFolder()));
 
         // Remove obsolete devDependencies

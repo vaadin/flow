@@ -818,8 +818,13 @@ public class UIInternals implements Serializable {
         if (!pendingJsInvocationOwners.remove(owner)) {
             return;
         }
-        pendingJsInvocations
-                .removeIf(invocation -> invocation.getOwner() == owner);
+        pendingJsInvocations.removeIf(invocation -> {
+            if (invocation.getOwner() != owner) {
+                return false;
+            }
+            invocation.stopCounting();
+            return true;
+        });
     }
 
     /**
@@ -831,6 +836,7 @@ public class UIInternals implements Serializable {
      */
     public void discardPendingJavaScriptInvocations() {
         checkInvocationQueueLock();
+        pendingJsInvocations.forEach(PendingJavaScriptInvocation::stopCounting);
         pendingJsInvocations.clear();
         pendingJsInvocationOwners.clear();
     }

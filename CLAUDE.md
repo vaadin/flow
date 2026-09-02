@@ -50,6 +50,7 @@ React support).
 - `flow-data`: Data binding and validation
 - `flow-router`: Navigation and routing
 - `flow-html-components`: Basic HTML component wrappers
+- `flow-devloop-daemon`: Daemon for the `vaadin-dev` dev loop
 - `flow-tests/`: Extensive integration test suite
 - `vaadin-spring`: Spring Framework integration
 

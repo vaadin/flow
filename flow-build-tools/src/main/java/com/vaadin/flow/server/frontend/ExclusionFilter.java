@@ -49,6 +49,8 @@ public class ExclusionFilter implements Serializable {
             "lit-element", "lit", "lit-html", "lit", "@lit/reactive-element",
             "lit");
 
+    private final Options options;
+
     private final ClassFinder finder;
 
     private final boolean reactEnabled;
@@ -80,7 +82,27 @@ public class ExclusionFilter implements Serializable {
      */
     public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
             boolean excludeWebComponentNpmPackages) {
+        this.options = null;
         this.finder = finder;
+        this.reactEnabled = reactEnabled;
+        this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
+    }
+
+    /**
+     * Create a new exclusion filter that shares the pinned npm versions the
+     * build has already read.
+     *
+     * @param options
+     *            the task options to take the pinned npm versions from
+     * @param reactEnabled
+     *            whether React is enabled
+     * @param excludeWebComponentNpmPackages
+     *            whether to exclude web component npm packages
+     */
+    ExclusionFilter(Options options, boolean reactEnabled,
+            boolean excludeWebComponentNpmPackages) {
+        this.options = options;
+        this.finder = options.getClassFinder();
         this.reactEnabled = reactEnabled;
         this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
     }
@@ -127,7 +149,16 @@ public class ExclusionFilter implements Serializable {
     }
 
     private Set<String> getExclusions() throws IOException {
-        return new PinnedNpmVersions(finder).getExclusions(reactEnabled,
+        return getPinnedNpmVersions().getExclusions(reactEnabled,
                 excludeWebComponentNpmPackages);
+    }
+
+    /**
+     * Gets the pinned npm versions of the build, or reads them for this filter
+     * alone if it was given only a class finder to find them with.
+     */
+    private PinnedNpmVersions getPinnedNpmVersions() throws IOException {
+        return options != null ? options.getPinnedNpmVersions()
+                : new PinnedNpmVersions(finder);
     }
 }

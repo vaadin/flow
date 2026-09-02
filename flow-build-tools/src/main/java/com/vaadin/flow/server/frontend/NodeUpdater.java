@@ -129,12 +129,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when versions file could not be read
      */
     ObjectNode getPinnedNpmDependencies() throws IOException {
-        PinnedNpmVersions pinnedNpmVersions = new PinnedNpmVersions(finder);
+        PinnedNpmVersions pinnedNpmVersions = getPinnedNpmVersions();
         if (pinnedNpmVersions.isEmpty()) {
-            log().info("Couldn't find {} or {} to pin dependency versions."
-                    + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON,
-                    Constants.VAADIN_VERSIONS_JSON);
+            log().info(
+                    "Couldn't find any versions file in {} to pin npm dependency versions."
+                            + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
             return JacksonUtils.createObjectNode();
         }
 
@@ -143,6 +143,18 @@ public abstract class NodeUpdater implements FallibleCommand {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents(),
                 new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
+    }
+
+    /**
+     * Gets the npm packages whose versions are pinned, as read once for the
+     * whole build.
+     *
+     * @return the pinned npm versions of the classpath
+     * @throws IOException
+     *             if the versions folders cannot be looked up
+     */
+    PinnedNpmVersions getPinnedNpmVersions() throws IOException {
+        return options.getPinnedNpmVersions();
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
