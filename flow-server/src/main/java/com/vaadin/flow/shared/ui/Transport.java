@@ -34,7 +34,16 @@ public enum Transport {
     /**
      * HTTP long polling.
      */
-    LONG_POLLING("long-polling");
+    LONG_POLLING("long-polling"),
+    /**
+     * Server-sent events for server-to-client messages, XHR for
+     * client-to-server messages.
+     * <p>
+     * The connection is unidirectional at the transport level: the browser's
+     * {@code EventSource} API streams messages from the server, while
+     * client-to-server messages are sent as separate XHR requests.
+     */
+    SERVER_SENT_EVENTS("sse");
 
     private String identifier;
 
