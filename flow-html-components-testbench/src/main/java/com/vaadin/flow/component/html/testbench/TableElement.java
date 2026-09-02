@@ -60,11 +60,12 @@ public class TableElement extends TestBenchElement {
     }
 
     /**
-     * Returns the row at the given position in {@link #getAllRows()}, so the
-     * index runs across the sections rather than within one.
+     * Returns the row at the given zero-based position in
+     * {@link #getAllRows()}, so the index runs across the sections rather than
+     * within one.
      *
      * @param index
-     *            the position of the row.
+     *            the zero-based position of the row.
      * @return the row at that position.
      */
     public TableRowElement getRow(int index) {
@@ -72,13 +73,37 @@ public class TableElement extends TestBenchElement {
     }
 
     /**
-     * Returns the cell at the given row and column of this table, with the row
-     * index running across the sections as in {@link #getAllRows()}.
+     * Returns the cell at the given zero-based row and column of this table.
+     * Both indices are zero-based, as in {@code GridElement.getCell}. The row
+     * index runs across the sections, as in {@link #getAllRows()}; equivalent
+     * to {@code getRow(row).getCells().get(column)}.
+     * <p>
+     * <b>Both indices count elements as they are written, not grid
+     * positions.</b> A cell carrying a {@code colspan} or {@code rowspan}
+     * occupies one position in the row it is written in and none at all in the
+     * rows or columns it reaches into, so on a table with spans these indices
+     * drift away from what is on screen. Given:
+     *
+     * <pre>{@code
+     * <tr><th rowspan="2">Helsinki</th><td>Travel</td></tr>
+     * <tr><td>Design</td></tr>
+     * }</pre>
+     *
+     * {@code getCell(0, 0)} is the {@code 
+     * 
+    <th>} and {@code getCell(0, 1)} is "Travel", while {@code getCell(1, 0)} is
+     * "Design" — not the {@code 
+     * 
+    <th>} that visually covers that position, and there is no index at which the
+     * second row yields it. To assert on a spanned cell, reach it through the
+     * row that writes it and check its {@code rowspan} or {@code colspan}
+     * attribute.
      *
      * @param row
-     *            the position of the row.
+     *            the zero-based position of the row in {@link #getAllRows()}.
      * @param column
-     *            the position of the cell within that row.
+     *            the zero-based position of the cell within that row, counting
+     *            only the cells that row writes.
      * @return the cell at that position.
      */
     public TableCellElement getCell(int row, int column) {

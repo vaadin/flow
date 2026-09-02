@@ -40,10 +40,15 @@ public class TableRowElement extends TestBenchElement {
     }
 
     /**
-     * Returns the cell at the given position among all the cells of this row.
+     * Returns the cell at the given zero-based position among the cells this
+     * row writes, header and data alike.
+     * <p>
+     * The index counts elements rather than grid positions, so a cell that an
+     * earlier row spans into with a {@code rowspan} takes up no position here,
+     * and a cell of this row carrying a {@code colspan} takes up exactly one.
      *
      * @param index
-     *            the position of the cell.
+     *            the zero-based position of the cell.
      * @return the cell at that position.
      */
     public TableCellElement getCell(int index) {
