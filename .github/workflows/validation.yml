@@ -291,6 +291,7 @@ jobs:
     # pass immediately. Unlike the other test jobs this one needs no secrets,
     # so it runs for pull requests from forks too.
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
     runs-on: ubuntu-24.04
     steps:
