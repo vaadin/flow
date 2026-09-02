@@ -34,6 +34,17 @@
       <version>${project.version}</version>
       <classifier>shaded</classifier>
     </dependency>
+    <!-- The dev-loop daemon. Not used from this module's code: it is here so
+         that it travels the route this module already travels - in through the
+         optional com.vaadin:vaadin-dev dependency a starter declares, and out of
+         a production build by the same mechanism that excludes the dev server.
+         The vaadin-dev CLI then resolves the jar from the project's own
+         dependencies rather than having anything staged into the project. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-devloop-daemon</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>

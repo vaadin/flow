@@ -34,7 +34,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -93,6 +92,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
         this.resourceProvider = lookup != null
                 ? lookup.lookup(ResourceProvider.class)
                 : null;
+        // Published before the live-reload check below, because a tool that
+        // suspends this watcher still needs the bundler and the roots it
+        // resolved. Whether a browser is connected is asked again at push time.
+        context.setAttribute(PublicResourcesLiveUpdater.class, this);
         if (liveReload.isEmpty()) {
             getLogger().error(
                     "Browser live reload is not available. Unable to watch public resources for changes");
@@ -111,9 +114,165 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }
     }
 
+    /**
+     * Stops this watcher from pushing CSS changes for the given context.
+     * <p>
+     * For a tool that owns the edit-to-running-app loop, watching on
+     * <em>save</em> is the wrong trigger: the loop decides when a change goes
+     * live, and a second watcher pushing on its own makes "what is the state of
+     * my last change?" unanswerable. Such a tool suspends this and performs the
+     * resource leg itself.
+     * <p>
+     * A context attribute rather than a field, so it can be set before or after
+     * the watcher is created - the check happens when a file changes.
+     *
+     * @param context
+     *            the current Vaadin context
+     */
+    public static void suspend(VaadinContext context) {
+        Objects.requireNonNull(context, "context cannot be null");
+        context.setAttribute(Suspended.class, new Suspended());
+        LoggerFactory.getLogger(PublicResourcesLiveUpdater.class).debug(
+                "Public resource live updates suspended; another tool owns the resource leg");
+    }
+
+    private static boolean isSuspended(VaadinContext context) {
+        return context.getAttribute(Suspended.class) != null;
+    }
+
+    /**
+     * Re-bundles every active {@code @StyleSheet} URL and pushes the result to
+     * the browser, which is what the watcher does when a public CSS file is
+     * saved.
+     * <p>
+     * Separate from the watcher so a tool that owns the apply loop can perform
+     * exactly the same update at the moment it decides a change goes live,
+     * rather than reimplementing the bundling and the URL. See
+     * {@link #suspend(VaadinContext)}, and {@link ThemeLiveUpdater#push} for
+     * the theme leg's equivalent.
+     * <p>
+     * Every active URL rather than only the file that changed, because an
+     * {@code @import} means the stylesheet the browser knows is not the file
+     * that was edited - and the URL the browser knows it by is what the update
+     * has to be keyed on.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param context
+     *            the current Vaadin context
+     * @param extraRoots
+     *            public resource roots to resolve against in addition to this
+     *            project's own, for a caller that knows of roots this watcher
+     *            does not - a reactor sibling's, say. Empty for the watcher
+     *            itself.
+     * @return how many stylesheets reached the browser
+     */
+    public static int push(VaadinContext context, List<File> extraRoots) {
+        Objects.requireNonNull(context, "context cannot be null");
+        Objects.requireNonNull(extraRoots, "extraRoots cannot be null");
+        PublicResourcesLiveUpdater updater = context
+                .getAttribute(PublicResourcesLiveUpdater.class);
+        if (updater == null) {
+            getStaticLogger().debug(
+                    "No public resource updater for this context; nothing to push");
+            return 0;
+        }
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromContext(context);
+        if (liveReload.isEmpty()) {
+            getStaticLogger().debug(
+                    "Browser live reload is not available; nothing to push");
+            return 0;
+        }
+        try {
+            return updater.pushActiveStyleSheets(liveReload.get(),
+                    updater.bundlerFor(extraRoots));
+        } catch (Exception e) {
+            getStaticLogger().error(
+                    "Unable to push public stylesheet updates; the caller decides whether to reload",
+                    e);
+            return 0;
+        }
+    }
+
+    /**
+     * The bundler to resolve this push against.
+     * <p>
+     * This project's own roots first, so a file that exists in both resolves to
+     * the application's copy - the same precedence the classpath gives it.
+     */
+    private PublicStyleSheetBundler bundlerFor(List<File> extraRoots) {
+        if (extraRoots.isEmpty()) {
+            return bundler;
+        }
+        List<File> combined = new ArrayList<>(roots);
+        extraRoots.stream().filter(root -> !combined.contains(root))
+                .forEach(combined::add);
+        return PublicStyleSheetBundler.forResourceLocations(combined);
+    }
+
+    /**
+     * Pushes the current content of every active {@code @StyleSheet} URL this
+     * project owns, keyed by the URL the browser knows it as.
+     * <p>
+     * The {@code context://} prefix is part of that key, not decoration: the
+     * debug window strips it unconditionally before matching the stylesheet
+     * already on the page, so a path sent without it does not identify anything
+     * and the stylesheet the page bootstrapped with is left in place - which
+     * shows up as a removed CSS rule that goes on applying.
+     *
+     * @param liveReload
+     *            the connection to push over
+     * @param bundler
+     *            the bundler to resolve the entry files with
+     * @return how many stylesheets were pushed
+     */
+    private int pushActiveStyleSheets(BrowserLiveReload liveReload,
+            PublicStyleSheetBundler bundler) {
+        // When any css file under public roots changes, rebundle all
+        // active @StyleSheet URLs
+        Set<String> activeUrls = ActiveStyleSheetTracker.get(context)
+                .getActiveUrls();
+        int pushed = 0;
+        for (String url : activeUrls) {
+            if (isVaadinThemeUrl(url) || isExternalUrl(url)) {
+                // ignore external urls, and Aura and Lumo urls
+                continue;
+            }
+            String normalized = PublicStyleSheetBundler.normalizeUrl(url);
+            String contextPath = getContextPath();
+            Optional<String> content = bundler.bundle(url, contextPath);
+            if (content.isEmpty() && isClasspathResource(normalized)) {
+                // Resource exists on classpath (e.g. from an addon
+                // JAR) but not in local source roots — leave it
+                // untouched
+                continue;
+            }
+            String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                    + normalized;
+            // Null content for a stylesheet that is gone, which is what takes
+            // it off the page rather than leaving it there stale.
+            liveReload.update(path, content.orElse(null));
+            getLogger().debug("Pushed bundled stylesheet update for {}", path);
+            pushed++;
+        }
+        return pushed;
+    }
+
+    private static Logger getStaticLogger() {
+        return LoggerFactory.getLogger(PublicResourcesLiveUpdater.class);
+    }
+
+    /** Marker for {@link #suspend(VaadinContext)}. */
+    private static final class Suspended implements java.io.Serializable {
+    }
+
     private FileWatcher getFileWatcher(File root, BrowserLiveReload liveReload)
             throws IOException {
         FileWatcher watcher = new FileWatcher(file -> {
+            if (isSuspended(context)) {
+                return;
+            }
             if (file.isDirectory()) {
                 return;
             }
@@ -127,35 +286,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 return;
             }
             try {
-                // When any css file under public roots changes, rebundle all
-                // active @StyleSheet URLs
-                Set<String> activeUrls = ActiveStyleSheetTracker.get(context)
-                        .getActiveUrls();
-                if (activeUrls.isEmpty()) {
-                    return;
-                }
-                for (String url : activeUrls) {
-                    if (isVaadinThemeUrl(url) || isExternalUrl(url)) {
-                        // ignore external urls, and Aura and Lumo urls
-                        continue;
-                    }
-                    String normalized = PublicStyleSheetBundler
-                            .normalizeUrl(url);
-                    String contextPath = getContextPath();
-                    Optional<String> content = bundler.bundle(url, contextPath);
-                    if (content.isEmpty() && isClasspathResource(normalized)) {
-                        // Resource exists on classpath (e.g. from an addon
-                        // JAR) but not in local source roots — leave it
-                        // untouched
-                        continue;
-                    }
-                    String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                            + normalized;
-                    liveReload.update(path, content.orElse(null));
-                    getLogger().debug("Pushed bundled stylesheet update for {}",
-                            path);
-
-                }
+                pushActiveStyleSheets(liveReload, bundler);
             } catch (Exception e) {
                 getLogger().error(
                         "Unable to perform hot update for CSS change under root {}, fall back to page reload",
@@ -184,9 +315,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
     }
 
     private boolean isVaadinThemeUrl(String url) {
-        url = FrontendUtils.getUnixPath(new File(url).toPath());
         // all known urls from Aura and Lumo classes
-        return THEME_URLS_PATTERN.matcher(url).matches();
+        return THEME_URLS_PATTERN
+                .matcher(PublicStyleSheetBundler.toUnixSeparators(url))
+                .matches();
     }
 
     private Logger getLogger() {
@@ -195,6 +327,9 @@ public class PublicResourcesLiveUpdater implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (context.getAttribute(PublicResourcesLiveUpdater.class) == this) {
+            context.removeAttribute(PublicResourcesLiveUpdater.class);
+        }
         for (FileWatcher watcher : watchers) {
             try {
                 watcher.stop();

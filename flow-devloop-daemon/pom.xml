@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-project</artifactId>
+    <version>25.3-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-devloop-daemon</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow Dev Loop Daemon</name>
+  <description>JDK-only daemon that runs the vaadin-dev dev loop.</description>
+
+  <properties>
+    <!-- Not an OSGi bundle: this jar is run, not imported. -->
+    <bnd.skip>true</bnd.skip>
+    <!-- No public API contract; everything here is internal to the dev loop. -->
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+
+  <!-- No dependencies, deliberately. See the enforcer rule below and README.md. -->
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <!-- The zero-dependency rule, checked by the build rather than left
+               to review: anything from these packages would either put the
+               application's classpath into the daemon JVM or slow its start. -->
+          <execution>
+            <id>check-daemon-is-dependency-free</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <rules>
+                <RestrictImports>
+                  <reason>The dev-loop daemon must depend on the JDK only, so that it starts fast and can never drag the application's classpath into the daemon JVM</reason>
+                  <bannedImports>
+                    <bannedImport>com.vaadin.**</bannedImport>
+                    <bannedImport>org.slf4j.**</bannedImport>
+                    <bannedImport>jakarta.**</bannedImport>
+                    <bannedImport>org.springframework.**</bannedImport>
+                  </bannedImports>
+                </RestrictImports>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.vaadin.flow.devloop.daemon.Daemon</mainClass>
+            </manifest>
+            <!-- The same jar is also the javaagent loaded into the application
+                 JVM, so that there is one artifact to resolve rather than two
+                 to keep in step. Only DevLoopAgent loads over there. -->
+            <manifestEntries>
+              <Premain-Class>com.vaadin.flow.devloop.agent.DevLoopAgent</Premain-Class>
+              <Agent-Class>com.vaadin.flow.devloop.agent.DevLoopAgent</Agent-Class>
+              <Can-Redefine-Classes>true</Can-Redefine-Classes>
+              <Can-Retransform-Classes>true</Can-Retransform-Classes>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
