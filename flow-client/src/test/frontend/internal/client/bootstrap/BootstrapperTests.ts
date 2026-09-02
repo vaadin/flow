@@ -22,6 +22,7 @@ import {
   startApplication
 } from '../../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import type { ConfigObject } from '../../../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
+import { ApplicationConfiguration } from '../../../../../main/frontend/internal/client/ApplicationConfiguration';
 
 // The bootstrap configuration object the server writes into the page, read
 // through the ported JsoConfiguration accessors as in production.
@@ -163,6 +164,9 @@ describe('Bootstrapper', () => {
     afterEach(() => {
       win.Vaadin = savedVaadin;
       win.WebComponents = savedWebComponents;
+      // A started application applies its own production mode, which is module
+      // state shared by the engine logging.
+      new ApplicationConfiguration().setProductionMode(false);
     });
 
     it('reads the configuration from the DOM into the published client', async () => {
