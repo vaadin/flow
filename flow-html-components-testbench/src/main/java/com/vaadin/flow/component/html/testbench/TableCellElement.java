@@ -27,4 +27,68 @@ import com.vaadin.testbench.TestBenchElement;
  * @since 25.3
  */
 public class TableCellElement extends TestBenchElement {
+
+    /**
+     * Resolves how many rows the cell actually covers, which its own
+     * {@code rowSpan} does not always say. Confines the span to the row group
+     * holding the cell, so a {@code rowspan} of 0 becomes the number of rows
+     * left in that group and one reaching past the end of the group is cut off
+     * there.
+     */
+    private static final String RESOLVED_ROWSPAN_SCRIPT = """
+            const cell = arguments[0];
+            const row = cell.parentElement;
+            const group = row.parentElement;
+            const rows = Array.from(group.children)
+                    .filter(e => e.tagName === 'TR');
+            const remaining = rows.length - rows.indexOf(row);
+            return cell.rowSpan === 0 ? remaining
+                    : Math.min(cell.rowSpan, remaining);
+            """;
+
+    /**
+     * Returns the {@code colspan} of this cell, or 1 if it carries none. The
+     * value comes from the DOM property, so the browser has already applied the
+     * rules: an absent, negative or unparseable {@code colspan} reads as 1, and
+     * so does 0, that value having been dropped from HTML.
+     *
+     * @return the number of columns this cell covers, at least 1.
+     */
+    public int getColspan() {
+        return Integer.parseInt(getDomProperty("colSpan"));
+    }
+
+    /**
+     * Returns the {@code rowspan} of this cell as written, or 1 if it carries
+     * none. The value comes from the DOM property, so an absent, negative or
+     * unparseable {@code rowspan} reads as 1 — but 0 is kept, since it is
+     * meaningful in HTML and means the cell reaches to the end of its row
+     * group. Use {@link #getResolvedRowspan()} for the number of rows that
+     * works out to.
+     *
+     * @return the {@code rowspan} of this cell, where 0 means to the end of the
+     *         row group.
+     */
+    public int getRowspan() {
+        return Integer.parseInt(getDomProperty("rowSpan"));
+    }
+
+    /**
+     * Returns how many rows this cell actually covers, which is what
+     * {@link #getRowspan()} says only when the cell neither uses 0 nor reaches
+     * past the end of its row group. A {@code rowspan} of 0 resolves to the
+     * number of rows left in the {@code <thead>}, {@code <tbody>} or
+     * {@code <tfoot>} holding the cell, and a span longer than that group is
+     * cut off at its end, because a row span may not cross from one row group
+     * into the next.
+     * <p>
+     * There is no counterpart for {@code colspan}: 0 is not a legal value for
+     * it, so {@link #getColspan()} is already the number of columns covered.
+     *
+     * @return the number of rows this cell covers, at least 1.
+     */
+    public int getResolvedRowspan() {
+        return ((Number) executeScript(RESOLVED_ROWSPAN_SCRIPT, this))
+                .intValue();
+    }
 }

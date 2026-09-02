@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 
+import com.vaadin.flow.component.html.testbench.TableCellElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -51,6 +52,12 @@ public class TableSpanGridIT extends ChromeBrowserTest {
         // the foot is a row group of its own, so the span stops before it
         Assert.assertEquals("f1", table.getCellCovering(3, 0).getText());
         Assert.assertEquals("f2", table.getCellCovering(3, 1).getText());
+
+        // the cell reports the 0 it was given, and what it works out to
+        TableCellElement all = table.getCell(0, 0);
+        Assert.assertEquals(0, all.getRowspan());
+        Assert.assertEquals(3, all.getResolvedRowspan());
+        Assert.assertEquals(1, all.getColspan());
     }
 
     @Test
@@ -66,6 +73,16 @@ public class TableSpanGridIT extends ChromeBrowserTest {
         // the span claimed nine rows but the group holds two
         Assert.assertThrows(NoSuchElementException.class,
                 () -> table.getCellCovering(2, 0));
+
+        TableCellElement led = table.getCell(0, 0);
+        Assert.assertEquals(9, led.getRowspan());
+        Assert.assertEquals(2, led.getResolvedRowspan());
+
+        // a cell with no span of its own reports 1 either way
+        TableCellElement plain = table.getCell(0, 1);
+        Assert.assertEquals(1, plain.getRowspan());
+        Assert.assertEquals(1, plain.getResolvedRowspan());
+        Assert.assertEquals(1, plain.getColspan());
     }
 
     @Test
