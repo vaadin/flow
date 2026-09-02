@@ -37,8 +37,7 @@ import com.vaadin.flow.component.Tag;
  *             order they are added in; and it carries a good deal more API,
  *             including {@code <colgroup>} and <code>&lt;col&gt;</code>
  *             support, row and cell factories that set {@code scope},
- *             {@code colspan} and {@code rowspan}, several
- *             <code>&lt;tbody&gt;</code> elements, and binding a section's rows
+ *             {@code colspan} and {@code rowspan}, and binding a section's rows
  *             to a signal.
  */
 @Deprecated(since = "25.3", forRemoval = true)
