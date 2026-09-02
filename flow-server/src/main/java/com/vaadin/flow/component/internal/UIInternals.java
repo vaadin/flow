@@ -2057,11 +2057,16 @@ public class UIInternals implements Serializable {
      * invalidated for a security critical reason such as a password reset.
      */
     public void terminateActiveTransfers() {
-        for (ActiveTransfer transfer : activeTransfers) {
-            transfer.terminate();
-            getLogger().warn(
-                    "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
-                    ui.getUIId(), transfer.getDescription());
-        }
+        /*
+         * Terminating every transfer before describing any of them, since
+         * describing one renders the owner component and thus runs application
+         * code that must not be able to leave the remaining transfers running.
+         */
+        List<ActiveTransfer> terminated = new ArrayList<>(activeTransfers);
+        terminated.forEach(ActiveTransfer::terminate);
+
+        terminated.forEach(transfer -> getLogger().warn(
+                "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                ui.getUIId(), transfer.getDescription()));
     }
 }

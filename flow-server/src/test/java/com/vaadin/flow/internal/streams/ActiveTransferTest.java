@@ -121,6 +121,8 @@ class ActiveTransferTest {
         transfer.terminate();
 
         writer.write("second");
+        writer.write(new char[] { 'x' });
+        writer.write((int) 'y');
         writer.flush();
 
         assertEquals("first !", writtenText.toString(),
@@ -147,8 +149,7 @@ class ActiveTransferTest {
     @Test
     void reader_terminated_refusesToReadMore() throws IOException {
         BufferedReader reader = wrapRequest().getReader();
-        assertEquals(CHUNK[0], reader.read());
-        assertEquals("123456789", reader.readLine());
+        assertEquals("0123456789", reader.readLine());
 
         transfer.terminate();
 
@@ -169,12 +170,15 @@ class ActiveTransferTest {
         Part wrappedPart = wrapRequest().getParts().iterator().next();
 
         InputStream partStream = wrappedPart.getInputStream();
-        assertEquals(CHUNK.length, partStream.read(new byte[CHUNK.length]));
+        assertEquals(1, partStream.skip(1));
+        assertEquals(CHUNK.length - 1, partStream.read(new byte[CHUNK.length]));
 
         transfer.terminate();
 
         assertThrows(IOException.class, partStream::read,
                 "A terminated transfer should not read more of a part");
+        assertThrows(IOException.class, () -> partStream.skip(1),
+                "A terminated transfer should not skip through a part either");
     }
 
     @Test
@@ -260,10 +264,13 @@ class ActiveTransferTest {
     void description_containsPathAndOwner() {
         String description = transfer.getDescription();
 
-        assertTrue(description.contains("file.bin"),
+        assertTrue(
+                description.contains(
+                        "path=VAADIN/dynamic/resource/0/key/file.bin"),
                 "Description should contain the path: " + description);
-        assertTrue(description.contains("a"),
-                "Description should contain the owner: " + description);
+        assertTrue(description.contains("no component"),
+                "Description should describe the owner element that has no component: "
+                        + description);
     }
 
     private VaadinServletRequest wrapRequest() {

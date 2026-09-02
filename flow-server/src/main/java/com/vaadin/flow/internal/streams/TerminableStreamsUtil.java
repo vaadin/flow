@@ -223,6 +223,10 @@ final class TerminableStreamsUtil {
         }
     }
 
+    /**
+     * Skipping is checked as well, since FilterInputStream passes it straight
+     * to the wrapped stream instead of reading through the methods above.
+     */
     private static class TerminableInputStream extends FilterInputStream {
 
         private final ActiveTransfer transfer;
@@ -243,6 +247,12 @@ final class TerminableStreamsUtil {
         public int read(byte[] b, int off, int len) throws IOException {
             transfer.checkNotTerminated();
             return super.read(b, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            transfer.checkNotTerminated();
+            return super.skip(n);
         }
     }
 
@@ -383,6 +393,10 @@ final class TerminableStreamsUtil {
         }
     }
 
+    /**
+     * Skipping is checked as well, since FilterReader passes it straight to the
+     * wrapped reader instead of reading through the methods above.
+     */
     private static class TerminableReader extends FilterReader {
 
         private final ActiveTransfer transfer;
@@ -402,6 +416,12 @@ final class TerminableStreamsUtil {
         public int read(char[] cbuf, int off, int len) throws IOException {
             transfer.checkNotTerminated();
             return super.read(cbuf, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            transfer.checkNotTerminated();
+            return super.skip(n);
         }
     }
 }
