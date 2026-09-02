@@ -16,12 +16,14 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;caption&gt;</code> element — the title of
@@ -75,5 +77,17 @@ public class TableCaption extends HtmlContainer {
     public TableCaption(String text) {
         super();
         setText(text);
+    }
+
+    /**
+     * Creates a new caption with its text content bound to the given signal.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public TableCaption(Signal<String> textSignal) {
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 }

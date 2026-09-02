@@ -26,6 +26,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasComponentsOfType;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;tr&gt;</code> element — a row of a
@@ -238,6 +239,20 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a new header cell whose text content follows the given signal.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a header whose label is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <th>}.
+     */
+    public TableHeaderCell addHeaderCell(Signal<String> textSignal) {
+        return append(new TableHeaderCell(textSignal));
+    }
+
+    /**
      * Appends a new header cell holding the given content to this row, for a
      * header that is more than plain text.
      *
@@ -293,6 +308,24 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell labelling the row it leads, with
+     * {@code scope="row"} set on the resulting <code>&lt;th&gt;</code> and its
+     * text content following the given signal.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a header whose label is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <th>} with {@code scope="row"}.
+     */
+    public TableHeaderCell addRowHeaderCell(Signal<String> textSignal) {
+        TableHeaderCell cell = addHeaderCell(textSignal);
+        cell.setScope(TableHeaderCell.Scope.ROW);
+        return cell;
+    }
+
+    /**
      * Appends a header cell holding the given content and labelling the row it
      * leads, with {@code scope="row"} set on the resulting
      * <code>&lt;th&gt;</code>. This is the content-taking form of
@@ -343,6 +376,24 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell labelling the column it sits in, with
+     * {@code scope="col"} set on the resulting <code>&lt;th&gt;</code> and its
+     * text content following the given signal.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a header whose label is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <th>} with {@code scope="col"}.
+     */
+    public TableHeaderCell addColumnHeaderCell(Signal<String> textSignal) {
+        TableHeaderCell cell = addHeaderCell(textSignal);
+        cell.setScope(TableHeaderCell.Scope.COL);
+        return cell;
+    }
+
+    /**
      * Appends a header cell holding the given content and labelling the column
      * it sits in, with {@code scope="col"} set on the resulting
      * <code>&lt;th&gt;</code>. This is the content-taking form of
@@ -384,6 +435,25 @@ public class TableRow extends HtmlComponent
      */
     public TableHeaderCell addRowGroupHeaderCell(String text) {
         TableHeaderCell cell = addHeaderCell(text);
+        cell.setScope(TableHeaderCell.Scope.ROWGROUP);
+        return cell;
+    }
+
+    /**
+     * Appends a header cell labelling the band of rows it heads, with
+     * {@code scope="rowgroup"} set on the resulting <code>&lt;th&gt;</code> and
+     * its text content following the given signal. Set the span on the returned
+     * cell with {@link TableCell#setRowspan(int)}.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a header whose label is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <th>} with {@code scope="rowgroup"}.
+     */
+    public TableHeaderCell addRowGroupHeaderCell(Signal<String> textSignal) {
+        TableHeaderCell cell = addHeaderCell(textSignal);
         cell.setScope(TableHeaderCell.Scope.ROWGROUP);
         return cell;
     }
@@ -469,6 +539,25 @@ public class TableRow extends HtmlComponent
     }
 
     /**
+     * Appends a header cell labelling the band of columns it heads, with
+     * {@code scope="colgroup"} set on the resulting <code>&lt;th&gt;</code> and
+     * its text content following the given signal. Set the span on the returned
+     * cell with {@link TableCell#setColspan(int)}.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a header whose label is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <th>} with {@code scope="colgroup"}.
+     */
+    public TableHeaderCell addColumnGroupHeaderCell(Signal<String> textSignal) {
+        TableHeaderCell cell = addHeaderCell(textSignal);
+        cell.setScope(TableHeaderCell.Scope.COLGROUP);
+        return cell;
+    }
+
+    /**
      * Appends a header cell holding the given content and labelling the band of
      * columns it heads, with {@code scope="colgroup"} set on the resulting
      * <code>&lt;th&gt;</code>. This is the content-taking form of
@@ -542,6 +631,20 @@ public class TableRow extends HtmlComponent
      */
     public TableDataCell addDataCell(String text) {
         return append(new TableDataCell(text));
+    }
+
+    /**
+     * Appends a new data cell whose text content follows the given signal.
+     * <p>
+     * The cell follows the signal for as long as it is attached, so this is the
+     * factory to use for a value that is reactive rather than fixed.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @return the new {@code <td>}.
+     */
+    public TableDataCell addDataCell(Signal<String> textSignal) {
+        return append(new TableDataCell(textSignal));
     }
 
     /**
