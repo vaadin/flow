@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.util.Objects;
-
-import org.jspecify.annotations.Nullable;
-
-import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -74,23 +69,15 @@ public class SignalUtils {
     }
 
     /**
-     * Gets the type that values of the given signal are read as, if the signal
-     * declares one. Only signals that store their value as JSON declare a value
-     * type, which means that <code>null</code> is returned for e.g. local
-     * signals and computed signals.
+     * Gets the raw type that values of the given signal are read as. A value of
+     * any other type cannot be stored in the signal since it would be
+     * serialized into JSON that cannot be deserialized back.
      *
      * @param signal
      *            the signal to get the value type for, not <code>null</code>
-     * @return the raw value type of the signal, or <code>null</code> if the
-     *         signal doesn't declare a value type
+     * @return the raw value type of the signal, not <code>null</code>
      */
-    public static @Nullable Class<?> valueTypeOf(Signal<?> signal) {
-        Objects.requireNonNull(signal);
-
-        if (signal instanceof SharedValueSignal<?> valueSignal) {
-            return valueSignal.valueType().getRawClass();
-        } else {
-            return null;
-        }
+    public static Class<?> rawValueTypeOf(SharedValueSignal<?> signal) {
+        return signal.valueType().getRawClass();
     }
 }

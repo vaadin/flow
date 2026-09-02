@@ -28,7 +28,7 @@ import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.shared.SignalUtils;
+import com.vaadin.flow.signals.impl.SignalTypeUtils;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -202,7 +202,7 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
         Signal<T> signal = (Signal<T>) binding.signal;
 
-        Class<?> valueType = SignalUtils.valueTypeOf(signal);
+        Class<?> valueType = SignalTypeUtils.rawValueTypeOf(signal);
         if (newValue != null && valueType != null
                 && !valueType.isInstance(newValue)) {
             getLogger().warn(

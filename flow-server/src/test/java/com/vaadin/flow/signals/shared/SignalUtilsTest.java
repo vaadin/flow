@@ -23,11 +23,9 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,16 +54,11 @@ class SignalUtilsTest {
     }
 
     @Test
-    void valueTypeOf_valueSignal_returnsDeclaredType() {
-        assertEquals(String.class,
-                SignalUtils.valueTypeOf(new SharedValueSignal<>(String.class)));
-        assertEquals(Set.class, SignalUtils.valueTypeOf(
+    void rawValueTypeOf_returnsRawDeclaredType() {
+        assertEquals(String.class, SignalUtils
+                .rawValueTypeOf(new SharedValueSignal<>(String.class)));
+        assertEquals(Set.class, SignalUtils.rawValueTypeOf(
                 new SharedValueSignal<>(new TypeReference<Set<String>>() {
                 })));
-    }
-
-    @Test
-    void valueTypeOf_signalWithoutDeclaredType_returnsNull() {
-        assertNull(SignalUtils.valueTypeOf(new ValueSignal<>("a string")));
     }
 }
