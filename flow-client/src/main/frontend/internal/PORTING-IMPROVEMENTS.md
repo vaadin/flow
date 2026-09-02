@@ -23,8 +23,8 @@ can be read line-by-line against its Java original, and an improvement that
 deviates from the Java shape destroys that for the sake of a change that can just
 as well happen later.
 
-The cutover PR — the one that removes the Java client and, with it,
-[`PORTING.md`](./PORTING.md) — owns this list and empties it.
+The cutover PR — the one that removes the Java client — owns this list and
+empties it.
 
 An entry qualifies only if all three hold:
 
@@ -35,10 +35,12 @@ An entry qualifies only if all three hold:
 3. the benefit is **concrete** — a class of bug the compiler would catch, a cast
    removed, an API callers can no longer misuse, or code that disappears.
 
-A convention belongs in [`PORTING.md`](./PORTING.md); ported code that a later rule
-says is wrong belongs in that file's retrofit backlog; only the above belongs here.
-[`PORTING-REVIEW.md`](./PORTING-REVIEW.md) §9 is the review step that fills this
-file.
+The porting conventions the series was written against (`PORTING.md`) and the
+procedure a port was reviewed with (`PORTING-REVIEW.md`) were both removed once
+the review was done and the retrofit backlog they tracked was empty, so this
+file is the only one of the three left. A parity debt is therefore an ordinary
+bug report now, not a backlog row, and only entries meeting the tests above
+belong here.
 
 ## Stronger typing
 
