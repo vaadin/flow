@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -43,7 +42,6 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -131,51 +129,20 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when versions file could not be read
      */
     ObjectNode getPinnedNpmDependencies() throws IOException {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-        if (coreVersionsResource == null) {
-            log().info(
-                    "Couldn't find {} file to pin dependency versions for core components."
-                            + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+        PinnedNpmVersions pinnedNpmVersions = new PinnedNpmVersions(finder);
+        if (pinnedNpmVersions.isEmpty()) {
+            log().info("Couldn't find {} or {} to pin dependency versions."
+                    + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
+                    Constants.VAADIN_CORE_VERSIONS_JSON,
+                    Constants.VAADIN_VERSIONS_JSON);
             return JacksonUtils.createObjectNode();
         }
 
-        ObjectNode versionsJson = getFilteredVersionsFromResource(
-                coreVersionsResource, Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (vaadinVersionsResource == null) {
-            // vaadin is not on the classpath, only vaadin-core is present.
-            return versionsJson;
-        }
-
-        ObjectNode vaadinVersionsJson = getFilteredVersionsFromResource(
-                vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
-        for (String key : JacksonUtils.getKeys(vaadinVersionsJson)) {
-            versionsJson.put(key, vaadinVersionsJson.get(key).asString());
-        }
-
-        return versionsJson;
-    }
-
-    private ObjectNode getFilteredVersionsFromResource(URL versionsResource,
-            String versionsOrigin) throws IOException {
-        ObjectNode versionsJson;
-
-        try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    options.isReactEnabled() && FrontendBuildUtils
-                            .isReactModuleAvailable(options),
-                    options.isNpmExcludeWebComponents());
-            versionsJson = convert.getConvertedJson();
-            versionsJson = new VersionsJsonFilter(getPackageJson(),
-                    DEPENDENCIES)
-                    .getFilteredVersions(versionsJson, versionsOrigin);
-        }
-        return versionsJson;
+        return pinnedNpmVersions.getDependencies(
+                options.isReactEnabled()
+                        && FrontendBuildUtils.isReactModuleAvailable(options),
+                options.isNpmExcludeWebComponents(),
+                new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {

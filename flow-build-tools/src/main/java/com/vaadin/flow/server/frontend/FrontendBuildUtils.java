@@ -32,7 +32,6 @@ import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
@@ -180,33 +179,25 @@ public class FrontendBuildUtils {
     }
 
     /**
-     * Gets the current Vaadin platform version from the core versions JSON
-     * resource.
+     * Gets the current Vaadin version, as declared by the versions files the
+     * platform ships.
+     * <p>
+     * The files are read in turn and the version is the one the first of them
+     * declaring it gives, so it is found whichever of them is on the classpath.
      *
      * @param finder
-     *            the class finder to use for locating the versions resource
-     * @return the platform version as a string, or empty if not found
+     *            the class finder to use for locating the versions files
+     * @return the Vaadin version as a string, or empty if none of the files
+     *         declares one
      */
     protected static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        if (coreVersionsResource == null) {
-            return Optional.empty();
-        }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonNode versionsJson = JacksonUtils
-                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
-            if (versionsJson.has("platform")) {
-                return Optional.of(versionsJson.get("platform").asString());
-            }
+        try {
+            return new PinnedNpmVersions(finder).getVaadinVersion();
         } catch (Exception e) {
             LoggerFactory.getLogger(Platform.class)
                     .error("Unable to determine version information", e);
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     /**
