@@ -167,6 +167,10 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
                 table.getCellCovering(5, 0).getText());
         // and the cell written after it in its own row is untouched
         Assert.assertEquals("Mercury", table.getCellCovering(1, 2).getText());
+        // the spans must not invent grid rows: the thead row plus the body
+        // rows is all there is, so one past the last is out of range
+        Assert.assertThrows(NoSuchElementException.class,
+                () -> table.getCellCovering(table.getAllRows().size(), 0));
     }
 
     @Test

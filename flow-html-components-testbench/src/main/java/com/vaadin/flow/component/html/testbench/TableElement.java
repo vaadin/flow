@@ -249,9 +249,13 @@ public class TableElement extends TestBenchElement {
     /**
      * Returns how many columns wide this table is once {@code colspan} and
      * {@code rowspan} are resolved, which is what the widest row occupies on
-     * screen rather than the largest number of cells any row writes. Together
-     * with {@link #getAllRows()} it bounds a loop over
-     * {@link #getCellCovering(int, int)}.
+     * screen rather than the largest number of cells any row writes.
+     * <p>
+     * This lays the whole table out and reads two properties from every cell,
+     * and so does {@link #getCellCovering(int, int)}. Neither result is cached,
+     * because the page is free to change between calls, so reach for these to
+     * assert the shape of a table or the contents of a few interesting slots
+     * rather than to walk every slot of a large one.
      *
      * @return the number of columns, or 0 for a table with no cells.
      */
@@ -284,6 +288,10 @@ public class TableElement extends TestBenchElement {
      * {@link #getCell(int, int)} counts the cells a row writes, this counts the
      * positions a reader sees, so a cell spanning two rows is returned for both
      * of them.
+     * <p>
+     * Each call lays the whole table out afresh, so this costs a couple of
+     * round trips per cell of the table, not per cell returned. See
+     * {@link #getColumnCount()}.
      *
      * @param row
      *            the zero-based row of the slot.
