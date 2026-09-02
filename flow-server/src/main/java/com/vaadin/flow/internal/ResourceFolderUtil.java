@@ -174,12 +174,10 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInVfsFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
-        // The virtual file system says where it created each file, which is
-        // not necessarily inside the folder they belong to
-        for (File file : JBossVfsUtil.materializeFiles(folder)) {
-            if (file.isFile()) {
-                visitor.visit(new FileSystemFile(file.toPath()));
-            }
+        // Read as they are, so that the virtual file system does not have to
+        // create them on disk first
+        for (JBossVfsUtil.VfsFile file : JBossVfsUtil.listFiles(folder)) {
+            visitor.visit(new VfsFolderFile(folder, file));
         }
     }
 
@@ -272,8 +270,37 @@ public final class ResourceFolderUtil {
         }
     }
 
+    /**
+     * Gets the location of a file of the given folder, for a folder that is not
+     * read through the file system.
+     */
+    private static String locationIn(URL folder, String name) {
+        String folderUrl = folder.toExternalForm();
+        return folderUrl.endsWith("/") ? folderUrl + name
+                : folderUrl + "/" + name;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ResourceFolderUtil.class);
+    }
+
+    private record VfsFolderFile(URL folder,
+            JBossVfsUtil.VfsFile file) implements FolderFile {
+
+        @Override
+        public String getName() {
+            return file.getName();
+        }
+
+        @Override
+        public String getLocation() {
+            return locationIn(folder, getName());
+        }
+
+        @Override
+        public InputStream open() throws IOException {
+            return file.open();
+        }
     }
 
     private record FileSystemFile(Path path) implements FolderFile {
@@ -304,9 +331,7 @@ public final class ResourceFolderUtil {
 
         @Override
         public String getLocation() {
-            String folderUrl = folder.toExternalForm();
-            return folderUrl.endsWith("/") ? folderUrl + getName()
-                    : folderUrl + "/" + getName();
+            return locationIn(folder, getName());
         }
 
         @Override
