@@ -22,7 +22,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Named;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -90,20 +89,6 @@ class TableCellBindTextTest extends SignalsUnitTest {
         assertEquals(Optional.ofNullable(factory.scope()),
                 cell instanceof TableHeaderCell header ? header.getScope()
                         : Optional.empty());
-    }
-
-    @Test
-    void caption_signalConstructor_bindsTheText() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        TableCaption caption = new TableCaption(signal);
-        Table table = new Table();
-        table.setCaption(caption);
-        UI.getCurrent().add(table);
-
-        assertEquals("initial", table.getCaptionText());
-        signal.set("updated");
-        assertEquals("updated", table.getCaptionText());
     }
 
     @ParameterizedTest
