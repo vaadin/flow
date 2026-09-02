@@ -15,13 +15,19 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,5 +53,19 @@ class SignalUtilsTest {
         Mockito.when(signal.isValid(any())).thenReturn(true);
         assertTrue(SignalUtils.isValid(signal, command));
         Mockito.verify(signal, Mockito.times(1)).isValid(command);
+    }
+
+    @Test
+    void valueTypeOf_valueSignal_returnsDeclaredType() {
+        assertEquals(String.class,
+                SignalUtils.valueTypeOf(new SharedValueSignal<>(String.class)));
+        assertEquals(Set.class, SignalUtils.valueTypeOf(
+                new SharedValueSignal<>(new TypeReference<Set<String>>() {
+                })));
+    }
+
+    @Test
+    void valueTypeOf_signalWithoutDeclaredType_returnsNull() {
+        assertNull(SignalUtils.valueTypeOf(new ValueSignal<>("a string")));
     }
 }

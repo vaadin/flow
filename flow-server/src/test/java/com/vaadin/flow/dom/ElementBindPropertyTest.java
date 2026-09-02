@@ -1045,6 +1045,24 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("foo", component.getElement().getProperty("prop"));
     }
 
+    @Test
+    void bindProperty_clientSendsObjectForLocalStringSignal_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        // A local signal has no declared value type, so the mismatch is only
+        // detected by the write callback itself
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        emulateClientUpdate(component.getElement(), "prop", evilJson());
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
     private <T> void bindPropertyGenerically(Element element, String property,
             SharedValueSignal<T> signal) {
         element.bindProperty(property, signal, signal::set);

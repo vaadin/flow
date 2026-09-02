@@ -21,11 +21,14 @@ import java.util.Map;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.shared.SignalUtils;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -158,6 +161,13 @@ public class SignalBindingFeature extends ServerSideFeature {
      * value. If the signal value differs from the expected new value after the
      * callback, the revert callback will be invoked with the current signal
      * value to revert the change.
+     * <p>
+     * The new value may originate from the client, in which case there is no
+     * guarantee that its type matches the value type of the bound signal. Such
+     * a value is rejected instead of passed on to the write callback, which
+     * would either fail with a {@link ClassCastException} or, when generic code
+     * has erased the type of the callback, store a value that the signal cannot
+     * read back.
      *
      * @param key
      *            the key for which to update the signal value
@@ -190,9 +200,33 @@ public class SignalBindingFeature extends ServerSideFeature {
                     "Cannot set value on a read-only signal binding. "
                             + "Provide a write callback to enable two-way binding.");
         }
-        ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        Signal<T> signal = (Signal<T>) binding.signal;
+
+        Class<?> valueType = SignalUtils.valueTypeOf(signal);
+        if (newValue != null && valueType != null
+                && !valueType.isInstance(newValue)) {
+            getLogger().warn(
+                    "Ignoring a value of type {} for the signal binding '{}' since the bound signal has the value type {}.",
+                    newValue.getClass().getName(), key, valueType.getName());
+            return revertToSignalValue(signal, revertCallback);
+        }
+
+        try {
+            ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        } catch (ClassCastException e) {
+            /*
+             * The write callback of a signal without a declared value type
+             * casts the value to the type it expects, which fails for a value
+             * that the client made up.
+             */
+            getLogger().warn(
+                    "Ignoring a value for the signal binding '{}' since the write callback of the bound signal rejected its type.",
+                    key, e);
+            return revertToSignalValue(signal, revertCallback);
+        }
+
         // Re-consult the signal after the callback
-        T signalValue = ((Signal<T>) binding.signal).peek();
+        T signalValue = signal.peek();
         if (!valueEquals.test(signalValue, newValue)) {
             // Signal value differs, revert
             revertCallback.accept(signalValue);
@@ -200,6 +234,17 @@ public class SignalBindingFeature extends ServerSideFeature {
             return false;
         }
         return true;
+    }
+
+    private static <T extends @Nullable Object> boolean revertToSignalValue(
+            Signal<T> signal, SerializableConsumer<T> revertCallback) {
+        revertCallback.accept(signal.peek());
+        // no need to fire event since the signal value didn't change
+        return false;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(SignalBindingFeature.class);
     }
 
 }
