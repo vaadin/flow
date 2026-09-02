@@ -17,3 +17,10 @@
 .gitignore text
 
 .github/workflows/*.lock.yml linguist-generated=true merge=ours
+
+vaadin-dev text eol=lf
+*.ps1 text eol=lf
+*.cmd text eol=crlf
+
+flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/** text eol=lf
+flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/*.cmd text eol=crlf

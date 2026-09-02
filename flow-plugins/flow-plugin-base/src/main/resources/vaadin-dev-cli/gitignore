@@ -1,0 +1,10 @@
+# The dev-loop daemon's handshake: this machine's pid, the port it listens on and
+# a per-run token that authorizes commands to it. Runtime state, and never worth
+# sharing - unlike the vaadin-dev scripts beside it, which are project tooling and
+# are meant to be committed.
+#
+# Installed as .vaadin/.gitignore by `mvn vaadin:install-dev-cli`, and
+# rewritten by it whenever it changes.
+daemon.properties
+daemon.properties.tmp
+daemon.lock
