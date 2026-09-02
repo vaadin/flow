@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
@@ -37,6 +38,57 @@ public class TableElement extends TestBenchElement {
     private static final String THEAD = "thead";
     private static final String TBODY = "tbody";
     private static final String TFOOT = "tfoot";
+
+    /**
+     * Builds the covering grid in the page and returns it flattened row-major,
+     * so that the whole layout costs one round trip. A row span is confined to
+     * its own row group, which is what lets 0 mean "to the end of this group",
+     * and the spans are read as the already-normalised colSpan and rowSpan
+     * properties rather than the raw attributes.
+     */
+    private static final String CELL_GRID_SCRIPT = """
+            const table = arguments[0];
+            const grid = [];
+            const groups = Array.from(table.children).filter(
+                    e => ['THEAD', 'TBODY', 'TFOOT'].includes(e.tagName));
+            for (const group of groups) {
+                const rows = Array.from(group.children)
+                        .filter(e => e.tagName === 'TR');
+                const offset = grid.length;
+                for (let i = 0; i < rows.length; i++) { grid.push([]); }
+                for (let r = 0; r < rows.length; r++) {
+                    const gridRow = grid[offset + r];
+                    let column = 0;
+                    const cells = Array.from(rows[r].children).filter(
+                            e => e.tagName === 'TD' || e.tagName === 'TH');
+                    for (const cell of cells) {
+                        while (gridRow[column] != null) { column++; }
+                        const colspan = cell.colSpan;
+                        const remaining = rows.length - r;
+                        const rowspan = cell.rowSpan === 0 ? remaining
+                                : Math.min(cell.rowSpan, remaining);
+                        for (let dr = 0; dr < rowspan; dr++) {
+                            const target = grid[offset + r + dr];
+                            for (let dc = 0; dc < colspan; dc++) {
+                                while (target.length < column + dc + 1) {
+                                    target.push(null);
+                                }
+                                target[column + dc] = cell;
+                            }
+                        }
+                        column += colspan;
+                    }
+                }
+            }
+            const columns = grid.reduce((w, row) => Math.max(w, row.length), 0);
+            const cells = [];
+            for (const row of grid) {
+                for (let c = 0; c < columns; c++) {
+                    cells.push(row[c] === undefined ? null : row[c]);
+                }
+            }
+            return { columns: columns, cells: cells };
+            """;
 
     /**
      * Returns every row of this table, walking its sections in document order.
@@ -251,16 +303,16 @@ public class TableElement extends TestBenchElement {
      * {@code rowspan} are resolved, which is what the widest row occupies on
      * screen rather than the largest number of cells any row writes.
      * <p>
-     * This lays the whole table out and reads two properties from every cell,
-     * and so does {@link #getCellCovering(int, int)}. Neither result is cached,
-     * because the page is free to change between calls, so reach for these to
-     * assert the shape of a table or the contents of a few interesting slots
-     * rather than to walk every slot of a large one.
+     * Together with {@link #getAllRows()} this bounds a loop over
+     * {@link #getCellCovering(int, int)}. The layout is computed in the browser
+     * and read back in one call, so each of those is a single round trip
+     * whatever the size of the table; nothing is cached, since the page is free
+     * to change between calls.
      *
      * @return the number of columns, or 0 for a table with no cells.
      */
     public int getColumnCount() {
-        return cellGrid().stream().mapToInt(List::size).max().orElse(0);
+        return cellGrid().columns();
     }
 
     /**
@@ -269,17 +321,44 @@ public class TableElement extends TestBenchElement {
      * screen. A spanning cell appears in every slot it covers; a slot no cell
      * reaches is {@code null}, which a ragged table can produce.
      * <p>
-     * Rows are walked as in {@link #getAllRows()}. A {@code rowspan} of 0
+     * Row groups are walked as in {@link #getAllRows()}. A {@code rowspan} of 0
      * reaches to the end of the row group holding it, as the HTML specification
-     * says, and one that overruns its row group is cut off there.
+     * says, and one that overruns its row group is cut off there. The spans are
+     * read as DOM properties, which the browser has already normalised: an
+     * absent, negative or unparseable span reads as 1, a {@code colSpan} of 0
+     * reads as 1 because that value was dropped from HTML, and only
+     * {@code rowSpan} keeps a meaningful 0.
      */
-    private List<List<TableCellElement>> cellGrid() {
-        List<List<TableCellElement>> grid = new ArrayList<>();
-        sections(THEAD, TBODY, TFOOT)
-                .forEach(section -> addRowGroup(section.getRows(), grid));
-        int width = grid.stream().mapToInt(List::size).max().orElse(0);
-        grid.forEach(row -> pad(row, width));
-        return grid;
+    private CellGrid cellGrid() {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) executeScript(
+                CELL_GRID_SCRIPT, this);
+        @SuppressWarnings("unchecked")
+        List<Object> slots = (List<Object>) result.get("cells");
+        return new CellGrid(((Number) result.get("columns")).intValue(), slots
+                .stream()
+                .map(slot -> slot == null ? null
+                        : wrapElement((WebElement) slot, getCommandExecutor())
+                                .wrap(TableCellElement.class))
+                .toList());
+    }
+
+    /**
+     * A table laid out slot by slot, row-major, with {@code null} for a slot no
+     * cell reaches.
+     */
+    private record CellGrid(int columns, List<TableCellElement> cells) {
+
+        int rows() {
+            return columns == 0 ? 0 : cells.size() / columns;
+        }
+
+        TableCellElement at(int row, int column) {
+            if (row < 0 || column < 0 || row >= rows() || column >= columns) {
+                return null;
+            }
+            return cells.get(row * columns + column);
+        }
     }
 
     /**
@@ -303,75 +382,12 @@ public class TableElement extends TestBenchElement {
      * @see #getColumnCount()
      */
     public TableCellElement getCellCovering(int row, int column) {
-        List<List<TableCellElement>> grid = cellGrid();
-        TableCellElement cell = row >= 0 && row < grid.size() && column >= 0
-                && column < grid.get(row).size() ? grid.get(row).get(column)
-                        : null;
+        TableCellElement cell = cellGrid().at(row, column);
         if (cell == null) {
             throw new NoSuchElementException("No cell covers row " + row
                     + " and column " + column + " of this table");
         }
         return cell;
-    }
-
-    /**
-     * Lays the rows of one row group into the grid, starting below whatever is
-     * already there. A {@code rowspan} is confined to its own row group, which
-     * is what lets a span of 0 mean "to the end of this group".
-     */
-    private static void addRowGroup(List<TableRowElement> rows,
-            List<List<TableCellElement>> grid) {
-        int offset = grid.size();
-        for (int i = 0; i < rows.size(); i++) {
-            grid.add(new ArrayList<>());
-        }
-        for (int r = 0; r < rows.size(); r++) {
-            List<TableCellElement> gridRow = grid.get(offset + r);
-            int column = 0;
-            for (TableCellElement cell : rows.get(r).getCells()) {
-                while (column < gridRow.size() && gridRow.get(column) != null) {
-                    column++;
-                }
-                int colspan = span(cell, "colSpan");
-                int rowspan = span(cell, "rowSpan");
-                // 0 means "to the end of the row group", and anything longer
-                // than the group is cut off there
-                int rows0 = rows.size() - r;
-                rowspan = rowspan == 0 ? rows0 : Math.min(rowspan, rows0);
-                for (int dr = 0; dr < rowspan; dr++) {
-                    List<TableCellElement> target = grid.get(offset + r + dr);
-                    for (int dc = 0; dc < colspan; dc++) {
-                        set(target, column + dc, cell);
-                    }
-                }
-                column += colspan;
-            }
-        }
-    }
-
-    /**
-     * Reads a span through its DOM property rather than its attribute, so that
-     * the browser has already applied the rules: an absent, negative or
-     * unparseable span reads as 1, {@code colSpan} of 0 reads as 1 because that
-     * value was dropped from HTML, and only {@code rowSpan} keeps a meaningful
-     * 0. Reading the raw attribute would leave those to us and let a bogus
-     * value place the cell somewhere the browser does not.
-     */
-    private static int span(TableCellElement cell, String property) {
-        String value = cell.getDomProperty(property);
-        return value == null ? 1 : Integer.parseInt(value);
-    }
-
-    private static void set(List<TableCellElement> row, int index,
-            TableCellElement cell) {
-        pad(row, index + 1);
-        row.set(index, cell);
-    }
-
-    private static void pad(List<TableCellElement> row, int width) {
-        while (row.size() < width) {
-            row.add(null);
-        }
     }
 
     private static List<TableRowElement> rowsOf(
