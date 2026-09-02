@@ -146,6 +146,36 @@ class ComponentUtilTest {
     }
 
     @Test
+    void getChildrenOfType_returnsMatchingChildrenInOrder() {
+        // parent
+        // ├── div1 (TestDiv)
+        // ├── span (TestComponent)
+        // └── div2 (TestDiv)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        TestDiv div1 = new TestDiv();
+        TestComponent span = new TestComponent(ElementFactory.createSpan());
+        TestDiv div2 = new TestDiv();
+        parent.getElement().appendChild(div1.getElement(), span.getElement(),
+                div2.getElement());
+
+        assertEquals(List.of(div1, div2),
+                ComponentUtil.getChildrenOfType(parent, TestDiv.class).toList(),
+                "Only the children of the given type must be returned, in child order");
+        assertEquals(Optional.of(div1),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
+    }
+
+    @Test
+    void getFirstChildOfType_withNoMatchingChild_returnsEmpty() {
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        parent.getElement().appendChild(
+                new TestComponent(ElementFactory.createSpan()).getElement());
+
+        assertEquals(Optional.empty(),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
+    }
+
+    @Test
     void getAllChildren_includesVirtualChildren() {
         // parent
         // ├── regular (direct DOM child)
