@@ -30,6 +30,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.devloop.daemon.HotswapAgentJar;
 import com.vaadin.flow.internal.FileIOUtils;
 
 /**
@@ -40,6 +41,12 @@ import com.vaadin.flow.internal.FileIOUtils;
  * Gradle task reads the same bytes from the same jar. Nothing generated and no
  * jars are copied: the CLI resolves the dev-loop daemon from the project's own
  * dependencies at first use.
+ * <p>
+ * {@link #provisionHotswapAgent} is the second half of an install, and the only
+ * part that needs the network: it puts the one asset the loop cannot resolve
+ * from a Maven repository into the machine-level cache, so that a machine
+ * prepared here - a container image built while it had network access, say -
+ * can run the loop later with none.
  * <p>
  * Everything is installed relative to one directory, and the two skill trees
  * are installed as siblings, because the Claude adapter links to the shared
@@ -151,6 +158,36 @@ public final class DevCliInstaller {
             setExecutableIfNeeded(relative, target);
         }
         return new Result(List.copyOf(written), List.copyOf(unchanged));
+    }
+
+    /**
+     * Provisions the HotswapAgent jar into the machine-level dev-loop cache,
+     * which is the one thing the loop would otherwise download the first time
+     * someone runs {@code vaadin-dev start}.
+     * <p>
+     * Doing it here rather than there is what makes the loop usable on a
+     * machine that has no network access by the time anyone develops on it. The
+     * daemon still provisions on demand, through the same code and into the
+     * same cache, so this only ever moves the download earlier - it never
+     * becomes a second copy or a second version.
+     * <p>
+     * Nothing is written into the project: the cache is under
+     * {@code ~/.vaadin/devloop}, so one download serves every application on
+     * the machine and a {@code mvn clean} does not throw it away.
+     *
+     * @param adapter
+     *            the plugin adapter to report through
+     * @return the provisioned jar
+     * @throws IOException
+     *             if the jar can neither be found in the cache nor downloaded
+     */
+    public static Path provisionHotswapAgent(PluginAdapterBase adapter)
+            throws IOException {
+        Path jar = HotswapAgentJar.provision(adapter::logInfo);
+        adapter.logInfo(
+                "HotswapAgent " + HotswapAgentJar.VERSION + " is ready at "
+                        + jar + " - the dev loop needs no network for it");
+        return jar;
     }
 
     /**

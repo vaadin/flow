@@ -23,6 +23,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.vaadin.flow.devloop.daemon.HotswapAgentJar;
 import com.vaadin.flow.plugin.base.DevCliInstaller;
 
 /**
@@ -31,9 +32,18 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * Creates {@code .vaadin/vaadin-dev} (plus the {@code .ps1} and {@code .cmd}
  * launchers), the shared instructions under
  * {@code .agents/skills/vaadin-devloop/} and the Claude adapter under
- * {@code .claude/skills/vaadin-devloop/}. Nothing else: no jars are staged, and
- * no agent configuration is touched - the CLI resolves the dev-loop daemon from
- * the project's own dependencies at first use.
+ * {@code .claude/skills/vaadin-devloop/}. No jars are staged into the project
+ * and no agent configuration is touched - the CLI resolves the dev-loop daemon
+ * from the project's own dependencies at first use.
+ * <p>
+ * It also provisions HotswapAgent into {@code ~/.vaadin/devloop}, which is the
+ * only asset the loop downloads rather than resolving from a Maven repository.
+ * That is deliberately the goal's job and not the first {@code vaadin-dev
+ * start}: an image built with network access and developed in without it - a
+ * container, a sandboxed agent environment - would otherwise install fine and
+ * then fail to start the loop at all. Once the goal has succeeded, nothing in
+ * the loop needs the network again. Machine-level, so nothing lands in the
+ * project and one download serves every application on the machine.
  * <p>
  * Everything it writes is meant to be committed, like {@code mvnw}: it is
  * project tooling, and the point is that every developer and every agent on the
@@ -59,6 +69,17 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
     @Parameter(property = "vaadin.devcli.targetDirectory", defaultValue = "${project.basedir}")
     private File targetDirectory;
 
+    /**
+     * Installs the project files only, leaving HotswapAgent to be downloaded by
+     * the first {@code vaadin-dev start} that needs it.
+     * <p>
+     * For a run that has no network and does not need one to succeed. Skipping
+     * it gives up the guarantee the provisioning exists for: that the loop
+     * starts afterwards without reaching the network.
+     */
+    @Parameter(property = "vaadin.devcli.skipHotswapAgent", defaultValue = "false")
+    private boolean skipHotswapAgent;
+
     @Override
     protected void executeInternal() throws MojoFailureException {
         Path target = targetDirectory.toPath();
@@ -68,6 +89,28 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
         } catch (IOException e) {
             throw new MojoFailureException(
                     "Could not install the vaadin-dev CLI into " + target, e);
+        }
+        // After the files: they are the part of the install that cannot fail
+        // for a reason outside the machine, so an unreachable GitHub still
+        // leaves a project with a working CLI to report the problem from.
+        if (skipHotswapAgent) {
+            logInfo("Skipping HotswapAgent; the first `vaadin-dev start` will "
+                    + "download it, and will need network access to do so");
+            return;
+        }
+        try {
+            DevCliInstaller.provisionHotswapAgent(this);
+        } catch (IOException e) {
+            throw new MojoFailureException("Could not provision HotswapAgent "
+                    + HotswapAgentJar.VERSION + " into "
+                    + HotswapAgentJar.cacheDir()
+                    + ", so the dev loop would have to download it on first "
+                    + "use. Run this goal where " + HotswapAgentJar.URL
+                    + " is reachable, or place that file in the cache "
+                    + "directory by hand - it is verified against a pinned "
+                    + "checksum either way. Pass "
+                    + "-Dvaadin.devcli.skipHotswapAgent=true to install the "
+                    + "CLI without it.", e);
         }
     }
 }
