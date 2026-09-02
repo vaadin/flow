@@ -29,21 +29,25 @@ import com.vaadin.testbench.TestBenchElement;
 public class TableCellElement extends TestBenchElement {
 
     /**
-     * Resolves how many rows the cell actually covers, which its own
-     * {@code rowSpan} does not always say. Confines the span to the row group
-     * holding the cell, so a {@code rowspan} of 0 becomes the number of rows
-     * left in that group and one reaching past the end of the group is cut off
-     * there.
+     * Declares {@code resolveRowspan}, which confines a row span to the rows
+     * left in its own row group: 0 means all of them, and a span reaching past
+     * the end of the group is cut off there. Shared with the grid script in
+     * {@link TableElement} so that {@link #getResolvedRowspan()} and
+     * {@code getCellCovering} cannot come to differ about the same cell.
      */
-    private static final String RESOLVED_ROWSPAN_SCRIPT = """
+    static final String RESOLVE_ROWSPAN = """
+            const resolveRowspan = (span, remaining) =>
+                    span === 0 ? remaining : Math.min(span, remaining);
+            """;
+
+    private static final String RESOLVED_ROWSPAN_SCRIPT = RESOLVE_ROWSPAN + """
             const cell = arguments[0];
             const row = cell.parentElement;
             const group = row.parentElement;
             const rows = Array.from(group.children)
                     .filter(e => e.tagName === 'TR');
-            const remaining = rows.length - rows.indexOf(row);
-            return cell.rowSpan === 0 ? remaining
-                    : Math.min(cell.rowSpan, remaining);
+            return resolveRowspan(cell.rowSpan,
+                    rows.length - rows.indexOf(row));
             """;
 
     /**

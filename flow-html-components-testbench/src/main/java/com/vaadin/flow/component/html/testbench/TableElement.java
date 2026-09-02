@@ -46,51 +46,51 @@ public class TableElement extends TestBenchElement {
      * and the spans are read as the already-normalised colSpan and rowSpan
      * properties rather than the raw attributes.
      */
-    private static final String CELL_GRID_SCRIPT = """
-            const table = arguments[0];
-            const cellsWanted = arguments[1];
-            const grid = [];
-            const groups = Array.from(table.children).filter(
-                    e => ['THEAD', 'TBODY', 'TFOOT'].includes(e.tagName));
-            for (const group of groups) {
-                const rows = Array.from(group.children)
-                        .filter(e => e.tagName === 'TR');
-                const offset = grid.length;
-                for (let i = 0; i < rows.length; i++) { grid.push([]); }
-                for (let r = 0; r < rows.length; r++) {
-                    const gridRow = grid[offset + r];
-                    let column = 0;
-                    const cells = Array.from(rows[r].children).filter(
-                            e => e.tagName === 'TD' || e.tagName === 'TH');
-                    for (const cell of cells) {
-                        while (gridRow[column] != null) { column++; }
-                        const colspan = cell.colSpan;
-                        const remaining = rows.length - r;
-                        const rowspan = cell.rowSpan === 0 ? remaining
-                                : Math.min(cell.rowSpan, remaining);
-                        for (let dr = 0; dr < rowspan; dr++) {
-                            const target = grid[offset + r + dr];
-                            for (let dc = 0; dc < colspan; dc++) {
-                                while (target.length < column + dc + 1) {
-                                    target.push(null);
+    private static final String CELL_GRID_SCRIPT = TableCellElement.RESOLVE_ROWSPAN
+            + """
+                    const table = arguments[0];
+                    const cellsWanted = arguments[1];
+                    const grid = [];
+                    const groups = Array.from(table.children).filter(
+                            e => ['THEAD', 'TBODY', 'TFOOT'].includes(e.tagName));
+                    for (const group of groups) {
+                        const rows = Array.from(group.children)
+                                .filter(e => e.tagName === 'TR');
+                        const offset = grid.length;
+                        for (let i = 0; i < rows.length; i++) { grid.push([]); }
+                        for (let r = 0; r < rows.length; r++) {
+                            const gridRow = grid[offset + r];
+                            let column = 0;
+                            const cells = Array.from(rows[r].children).filter(
+                                    e => e.tagName === 'TD' || e.tagName === 'TH');
+                            for (const cell of cells) {
+                                while (gridRow[column] != null) { column++; }
+                                const colspan = cell.colSpan;
+                                const rowspan = resolveRowspan(cell.rowSpan,
+                                        rows.length - r);
+                                for (let dr = 0; dr < rowspan; dr++) {
+                                    const target = grid[offset + r + dr];
+                                    for (let dc = 0; dc < colspan; dc++) {
+                                        while (target.length < column + dc + 1) {
+                                            target.push(null);
+                                        }
+                                        target[column + dc] = cell;
+                                    }
                                 }
-                                target[column + dc] = cell;
+                                column += colspan;
                             }
                         }
-                        column += colspan;
                     }
-                }
-            }
-            const columns = grid.reduce((w, row) => Math.max(w, row.length), 0);
-            if (!cellsWanted) { return { columns: columns, cells: [] }; }
-            const cells = [];
-            for (const row of grid) {
-                for (let c = 0; c < columns; c++) {
-                    cells.push(row[c] === undefined ? null : row[c]);
-                }
-            }
-            return { columns: columns, cells: cells };
-            """;
+                    const columns = grid.reduce((w, row) => Math.max(w, row.length), 0);
+                    if (!cellsWanted) { return { columns: columns, cells: [] }; }
+                    const cells = [];
+                    for (const row of grid) {
+                        for (let c = 0; c < columns; c++) {
+                            cells.push(row[c] === undefined ? null : row[c]);
+                        }
+                    }
+                    return { columns: columns, cells: cells };
+                    """;
 
     /**
      * Returns every row of this table, walking its sections in document order.

@@ -57,7 +57,24 @@ public class TableSpanGridIT extends ChromeBrowserTest {
         TableCellElement all = table.getCell(0, 0);
         Assert.assertEquals(0, all.getRowspan());
         Assert.assertEquals(3, all.getResolvedRowspan());
-        Assert.assertEquals(1, all.getColspan());
+
+        // the resolved span and the grid must agree about the same cell
+        Assert.assertEquals(all.getResolvedRowspan(), rowsCovering(table, 0));
+    }
+
+    /**
+     * Counts the rows whose given column is covered by the cell the first row
+     * writes there.
+     */
+    private int rowsCovering(TableElement table, int column) {
+        String text = table.getCell(0, column).getText();
+        int covered = 0;
+        for (int row = 0; row < table.getAllRows().size(); row++) {
+            if (text.equals(table.getCellCovering(row, column).getText())) {
+                covered++;
+            }
+        }
+        return covered;
     }
 
     @Test
@@ -77,6 +94,7 @@ public class TableSpanGridIT extends ChromeBrowserTest {
         TableCellElement led = table.getCell(0, 0);
         Assert.assertEquals(9, led.getRowspan());
         Assert.assertEquals(2, led.getResolvedRowspan());
+        Assert.assertEquals(led.getResolvedRowspan(), rowsCovering(table, 0));
 
         // a cell with no span of its own reports 1 either way
         TableCellElement plain = table.getCell(0, 1);

@@ -88,11 +88,11 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         TableHeaderCellElement animals = rows.get(0).getHeaderCells().get(0);
         Assert.assertEquals("Animals", animals.getText());
-        Assert.assertEquals("2", animals.getDomAttribute("colspan"));
+        Assert.assertEquals(2, animals.getColspan());
 
         TableHeaderCellElement horse = rows.get(2).getHeaderCells().get(0);
         Assert.assertEquals("Horse", horse.getText());
-        Assert.assertEquals("2", horse.getDomAttribute("rowspan"));
+        Assert.assertEquals(2, horse.getRowspan());
         Assert.assertEquals("row", horse.getDomAttribute("scope"));
 
         // The <th rowspan=2> means the following row holds only its own cell.
@@ -151,8 +151,9 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
                 .getHeaderCells().get(0);
         Assert.assertEquals("Terrestrial planets", terrestrial.getText());
         Assert.assertEquals("rowgroup", terrestrial.getDomAttribute("scope"));
-        Assert.assertEquals("4", terrestrial.getDomAttribute("rowspan"));
-        Assert.assertEquals("2", terrestrial.getDomAttribute("colspan"));
+        Assert.assertEquals(4, terrestrial.getRowspan());
+        Assert.assertEquals(4, terrestrial.getResolvedRowspan());
+        Assert.assertEquals(2, terrestrial.getColspan());
 
         // The grid counts the thead row first, so the four body rows the
         // rowgroup header spans are grid rows 1 to 4, over both its columns:
