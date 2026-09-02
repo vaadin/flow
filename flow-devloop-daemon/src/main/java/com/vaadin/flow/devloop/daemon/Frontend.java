@@ -350,8 +350,9 @@ final class Frontend {
             return deleted.size()
                     + " frontend file(s) removed (dev bundle rebuild)";
         }
-        boolean themeJson = bundled.stream().anyMatch(
-                path -> path.getFileName().toString().equals("theme.json"));
+        boolean themeJson = bundled.stream()
+                .anyMatch(path -> path.getFileName() != null
+                        && path.getFileName().toString().equals("theme.json"));
         if (themeJson && bundled.size() == 1) {
             return "theme.json changed (dev bundle rebuild)";
         }

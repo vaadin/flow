@@ -152,8 +152,8 @@ final class MainClass {
             return walk.filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".class"))
                     // Nested and synthetic classes are never entry points.
-                    .filter(path -> !path.getFileName().toString()
-                            .contains("$"))
+                    .filter(path -> path.getFileName() != null
+                            && !path.getFileName().toString().contains("$"))
                     .sorted(Comparator.comparingInt(Path::getNameCount)
                             .thenComparing(Path::toString))
                     .toList();

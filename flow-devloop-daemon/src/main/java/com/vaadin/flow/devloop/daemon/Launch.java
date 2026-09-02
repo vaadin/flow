@@ -197,15 +197,20 @@ final class Launch {
             return Optional.of(Path.of(configured));
         }
         try {
-            Path own = Path.of(Launch.class.getProtectionDomain()
-                    .getCodeSource().getLocation().toURI());
-            if (own.getFileName() != null
-                    && own.getFileName().toString().endsWith(".jar")) {
-                return Optional.of(own);
+            java.security.CodeSource source = Launch.class.getProtectionDomain()
+                    .getCodeSource();
+            java.net.URL location = source == null ? null
+                    : source.getLocation();
+            if (location != null) {
+                Path own = Path.of(location.toURI());
+                if (own.getFileName() != null
+                        && own.getFileName().toString().endsWith(".jar")) {
+                    return Optional.of(own);
+                }
+                log.line("the daemon is running from " + own
+                        + " rather than from a jar, so it cannot also be the "
+                        + "javaagent; pass -Dvaadin.dev.agentJar=<jar> to supply one");
             }
-            log.line("the daemon is running from " + own
-                    + " rather than from a jar, so it cannot also be the "
-                    + "javaagent; pass -Dvaadin.dev.agentJar=<jar> to supply one");
         } catch (java.net.URISyntaxException | RuntimeException e) {
             log.line("could not locate the daemon's own jar: " + e);
         }

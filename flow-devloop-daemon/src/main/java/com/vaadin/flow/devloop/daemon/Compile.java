@@ -1086,7 +1086,8 @@ final class Compile {
         String file = "-";
         if (d.getSource() != null) {
             Path path = Path.of(d.getSource().getName());
-            file = path.getFileName().toString();
+            Path name = path.getFileName();
+            file = name == null ? path.toString() : name.toString();
             Optional<Reactor.Module> owner = moduleOf(path);
             if (owner.isPresent() && !owner.get().equals(app())) {
                 file = owner.get().name() + "/" + file;

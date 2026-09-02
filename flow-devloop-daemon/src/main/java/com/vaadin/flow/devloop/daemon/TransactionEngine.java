@@ -801,8 +801,9 @@ final class TransactionEngine {
      * {@code application.properties changed}, or {@code 3 resource(s) changed}.
      */
     private static String named(List<Path> paths, String verb) {
-        return (paths.size() == 1 ? paths.get(0).getFileName().toString()
-                : paths.size() + " resource(s)") + " " + verb;
+        Path only = paths.size() == 1 ? paths.get(0).getFileName() : null;
+        return (only != null ? only.toString() : paths.size() + " resource(s)")
+                + " " + verb;
     }
 
     /**
