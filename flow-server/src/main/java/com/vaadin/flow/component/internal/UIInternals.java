@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -316,6 +315,12 @@ public class UIInternals implements Serializable {
 
     private Element wrapperElement;
 
+    /*
+     * Unlike the rest of the UI state, this is not protected by the session
+     * lock: an upload or download request is served without holding the lock,
+     * so the request thread registers and removes its own transfer while other
+     * threads may be checking or terminating the transfers of this UI.
+     */
     private final Set<ActiveTransfer> activeTransfers = ConcurrentHashMap
             .newKeySet();
 
@@ -2029,8 +2034,7 @@ public class UIInternals implements Serializable {
      * @return a registration for removing the transfer
      */
     public Registration registerActiveTransfer(ActiveTransfer transfer) {
-        activeTransfers.add(transfer);
-        return () -> activeTransfers.remove(transfer);
+        return Registration.addAndRemove(activeTransfers, transfer);
     }
 
     /**
@@ -2045,12 +2049,19 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Gets the upload and download requests that are currently being served for
-     * this UI.
-     *
-     * @return an unmodifiable collection of the active transfers
+     * Terminates the upload and download requests that are currently being
+     * served for this UI, since the session they belong to is no longer valid.
+     * <p>
+     * The reason for the invalidation is not known here, so a session that has
+     * merely timed out is treated in the same way as one that has been
+     * invalidated for a security critical reason such as a password reset.
      */
-    public Collection<ActiveTransfer> getActiveTransfers() {
-        return Collections.unmodifiableCollection(activeTransfers);
+    public void terminateActiveTransfers() {
+        for (ActiveTransfer transfer : activeTransfers) {
+            transfer.terminate();
+            getLogger().warn(
+                    "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                    ui.getUIId(), transfer.getDescription());
+        }
     }
 }

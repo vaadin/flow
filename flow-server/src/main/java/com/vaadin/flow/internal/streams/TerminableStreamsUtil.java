@@ -23,12 +23,18 @@ import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.Part;
 
 import java.io.BufferedReader;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -51,6 +57,8 @@ import com.vaadin.flow.server.VaadinServletResponse;
  */
 final class TerminableStreamsUtil {
 
+    private static final AtomicBoolean unwrappableTypeWarned = new AtomicBoolean();
+
     private TerminableStreamsUtil() {
         // Only static helpers
     }
@@ -60,6 +68,7 @@ final class TerminableStreamsUtil {
         if (request instanceof VaadinServletRequest servletRequest) {
             return new TerminableVaadinServletRequest(servletRequest, transfer);
         }
+        warnAboutUnwrappable(request);
         return request;
     }
 
@@ -69,7 +78,20 @@ final class TerminableStreamsUtil {
             return new TerminableVaadinServletResponse(servletResponse,
                     transfer);
         }
+        warnAboutUnwrappable(response);
         return response;
+    }
+
+    /**
+     * Warns once per JVM that transfers cannot be terminated for a request or
+     * response implementation that is not servlet based.
+     */
+    private static void warnAboutUnwrappable(Object requestOrResponse) {
+        if (unwrappableTypeWarned.compareAndSet(false, true)) {
+            LoggerFactory.getLogger(TerminableStreamsUtil.class).warn(
+                    "Ongoing upload and download requests cannot be terminated when the session is invalidated, since {} is not based on the servlet API.",
+                    requestOrResponse.getClass().getName());
+        }
     }
 
     private static class TerminableVaadinServletRequest
@@ -201,37 +223,26 @@ final class TerminableStreamsUtil {
         }
     }
 
-    private static class TerminableInputStream extends InputStream {
+    private static class TerminableInputStream extends FilterInputStream {
 
-        private final InputStream delegate;
         private final ActiveTransfer transfer;
 
         private TerminableInputStream(InputStream delegate,
                 ActiveTransfer transfer) {
-            this.delegate = delegate;
+            super(delegate);
             this.transfer = transfer;
         }
 
         @Override
         public int read() throws IOException {
             transfer.checkNotTerminated();
-            return delegate.read();
+            return super.read();
         }
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             transfer.checkNotTerminated();
-            return delegate.read(b, off, len);
-        }
-
-        @Override
-        public int available() throws IOException {
-            return delegate.available();
-        }
-
-        @Override
-        public void close() throws IOException {
-            delegate.close();
+            return super.read(b, off, len);
         }
     }
 
@@ -333,53 +344,64 @@ final class TerminableStreamsUtil {
         }
     }
 
-    private static class TerminableWriter extends Writer {
+    /**
+     * Every write variant is checked, since FilterWriter passes each of them
+     * straight to the wrapped writer instead of funneling them through one
+     * method.
+     */
+    private static class TerminableWriter extends FilterWriter {
 
-        private final Writer delegate;
         private final ActiveTransfer transfer;
 
         private TerminableWriter(Writer delegate, ActiveTransfer transfer) {
-            this.delegate = delegate;
+            super(delegate);
             this.transfer = transfer;
+        }
+
+        @Override
+        public void write(int c) throws IOException {
+            transfer.checkNotTerminated();
+            super.write(c);
         }
 
         @Override
         public void write(char[] cbuf, int off, int len) throws IOException {
             transfer.checkNotTerminated();
-            delegate.write(cbuf, off, len);
+            super.write(cbuf, off, len);
+        }
+
+        @Override
+        public void write(String str, int off, int len) throws IOException {
+            transfer.checkNotTerminated();
+            super.write(str, off, len);
         }
 
         @Override
         public void flush() throws IOException {
             transfer.checkNotTerminated();
-            delegate.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            delegate.close();
+            super.flush();
         }
     }
 
-    private static class TerminableReader extends Reader {
+    private static class TerminableReader extends FilterReader {
 
-        private final Reader delegate;
         private final ActiveTransfer transfer;
 
         private TerminableReader(Reader delegate, ActiveTransfer transfer) {
-            this.delegate = delegate;
+            super(delegate);
             this.transfer = transfer;
+        }
+
+        @Override
+        public int read() throws IOException {
+            transfer.checkNotTerminated();
+            return super.read();
         }
 
         @Override
         public int read(char[] cbuf, int off, int len) throws IOException {
             transfer.checkNotTerminated();
-            return delegate.read(cbuf, off, len);
-        }
-
-        @Override
-        public void close() throws IOException {
-            delegate.close();
+            return super.read(cbuf, off, len);
         }
     }
 }

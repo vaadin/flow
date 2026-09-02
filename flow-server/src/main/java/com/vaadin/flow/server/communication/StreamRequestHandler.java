@@ -143,6 +143,7 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
+        PathData parts = parsePath(pathInfo);
         ActiveTransfer transfer = new ActiveTransfer(pathInfo, owner);
         Registration transferRegistration = null;
 
@@ -160,7 +161,6 @@ public class StreamRequestHandler implements RequestHandler {
                     .getElementRequestHandler() instanceof UploadHandler) {
                 // Validate upload security key. Else respond with
                 // FORBIDDEN.
-                PathData parts = parsePath(pathInfo);
                 String secKey = elementRequest.getId();
                 if (secKey == null || !MessageDigest.isEqual(
                         secKey.getBytes(StandardCharsets.UTF_8),
@@ -197,12 +197,16 @@ public class StreamRequestHandler implements RequestHandler {
             }
 
             /*
+             * The path has been matched against a registered resource, whose
+             * URI is generated from the id of the UI that registered it, so the
+             * UI id is a number here.
+             *
              * Registered while the session is locked, so that an invalidation
              * either runs after this and terminates the transfer, or has
              * already detached the UI, in which case the owner element is no
              * longer attached and the request has been rejected above.
              */
-            UI ui = findUI(session, pathInfo);
+            UI ui = session.getUIById(Integer.parseInt(parts.UIid));
             if (ui != null) {
                 transferRegistration = ui.getInternals()
                         .registerActiveTransfer(transfer);
@@ -220,19 +224,6 @@ public class StreamRequestHandler implements RequestHandler {
                 transferRegistration.remove();
             }
         }
-    }
-
-    /**
-     * Finds the UI that the request for the given path was made for, based on
-     * the UI id that is part of the resource path. The path has already been
-     * matched against a registered resource, whose URI is generated from the id
-     * of the UI that registered it, so the id is a number here.
-     *
-     * @return the UI, or <code>null</code> if it is no longer available in the
-     *         session
-     */
-    private UI findUI(VaadinSession session, String pathInfo) {
-        return session.getUIById(Integer.parseInt(parsePath(pathInfo).UIid));
     }
 
     private static boolean blockDisabled(

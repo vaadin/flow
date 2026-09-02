@@ -114,6 +114,8 @@ class ActiveTransferTest {
     void writer_terminated_refusesToWriteMore() throws IOException {
         PrintWriter writer = wrapResponse().getWriter();
         writer.write("first");
+        writer.write(new char[] { ' ' });
+        writer.write((int) '!');
         writer.flush();
 
         transfer.terminate();
@@ -121,7 +123,7 @@ class ActiveTransferTest {
         writer.write("second");
         writer.flush();
 
-        assertEquals("first", writtenText.toString(),
+        assertEquals("first !", writtenText.toString(),
                 "Nothing should have reached the response after termination");
         assertTrue(writer.checkError(),
                 "The writer should report the failure of a terminated transfer");
@@ -145,7 +147,8 @@ class ActiveTransferTest {
     @Test
     void reader_terminated_refusesToReadMore() throws IOException {
         BufferedReader reader = wrapRequest().getReader();
-        assertEquals("0123456789", reader.readLine());
+        assertEquals(CHUNK[0], reader.read());
+        assertEquals("123456789", reader.readLine());
 
         transfer.terminate();
 

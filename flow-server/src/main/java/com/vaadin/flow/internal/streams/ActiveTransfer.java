@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -111,9 +110,8 @@ public class ActiveTransfer implements Serializable {
      * @return a description of this transfer
      */
     public String getDescription() {
-        String ownerDescription = owner.getComponent().map(Component::getClass)
-                .map(Class::getName).orElseGet(owner::getTag);
-        return "path=" + path + ", owner=" + ownerDescription;
+        return "path=" + path + ", owner="
+                + owner.getNode().formatOwnerComponentToString();
     }
 
     /**

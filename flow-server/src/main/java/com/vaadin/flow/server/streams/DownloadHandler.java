@@ -92,7 +92,7 @@ import com.vaadin.flow.server.VaadinSession;
  * A UI that is closed while a download for it is ongoing is kept attached to
  * its session until the download has completed, so that transfer progress
  * listeners bound to that UI are still notified even though there is no client
- * left to receive the UI changes, see {@link TransferProgressListener}.
+ * left to receive the UI changes.
  * <p>
  * A download does not, however, outlive its session: if the session is
  * invalidated, either explicitly or by timing out, an ongoing download is
