@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -243,6 +244,127 @@ public class TableElement extends TestBenchElement {
         return childrenNamed(COLGROUP).stream()
                 .map(child -> child.wrap(TableColumnGroupElement.class))
                 .toList();
+    }
+
+    /**
+     * Returns the cells of this table laid out as a grid, resolving
+     * {@code colspan} and {@code rowspan} so that each entry is the cell
+     * occupying that slot on screen. A spanning cell appears in every slot it
+     * covers, so the same element is returned more than once; a slot no cell
+     * reaches is {@code null}, which a ragged table can produce.
+     * <p>
+     * This is the span-aware counterpart of {@link #getCell(int, int)}, which
+     * counts elements as they are written. Use it either directly —
+     * {@code getCellGrid().get(2).get(1)} — or to work out the written position
+     * of a cell you located visually.
+     * <p>
+     * Rows are walked as in {@link #getAllRows()}. A {@code rowspan} of 0
+     * reaches to the end of the row group holding it, as the HTML specification
+     * says, and one that overruns its row group is cut off there. Each cell is
+     * queried for its attributes, so this costs a handful of round trips per
+     * cell and is meant for assertions rather than for polling.
+     *
+     * @return the grid of cells, outer list by row and inner by column.
+     */
+    public List<List<TableCellElement>> getCellGrid() {
+        List<List<TableCellElement>> grid = new ArrayList<>();
+        sections(THEAD, TBODY, TFOOT)
+                .forEach(section -> addRowGroup(section.getRows(), grid));
+        int width = grid.stream().mapToInt(List::size).max().orElse(0);
+        grid.forEach(row -> pad(row, width));
+        return grid;
+    }
+
+    /**
+     * Returns the cell covering the given zero-based slot of this table as it
+     * appears on screen, resolving {@code colspan} and {@code rowspan}. Where
+     * {@link #getCell(int, int)} counts the cells a row writes, this counts the
+     * positions a reader sees, so a cell spanning two rows is returned for both
+     * of them.
+     *
+     * @param row
+     *            the zero-based row of the slot.
+     * @param column
+     *            the zero-based column of the slot.
+     * @return the cell covering that slot.
+     * @throws NoSuchElementException
+     *             if the table has no such slot, or no cell reaches it.
+     * @see #getCellGrid()
+     */
+    public TableCellElement getCellCovering(int row, int column) {
+        List<List<TableCellElement>> grid = getCellGrid();
+        TableCellElement cell = row >= 0 && row < grid.size() && column >= 0
+                && column < grid.get(row).size() ? grid.get(row).get(column)
+                        : null;
+        if (cell == null) {
+            throw new NoSuchElementException("No cell covers row " + row
+                    + " and column " + column + " of this table");
+        }
+        return cell;
+    }
+
+    /**
+     * Lays the rows of one row group into the grid, starting below whatever is
+     * already there. A {@code rowspan} is confined to its own row group, which
+     * is what lets a span of 0 mean "to the end of this group".
+     */
+    private static void addRowGroup(List<TableRowElement> rows,
+            List<List<TableCellElement>> grid) {
+        int offset = grid.size();
+        for (int i = 0; i < rows.size(); i++) {
+            grid.add(new ArrayList<>());
+        }
+        for (int r = 0; r < rows.size(); r++) {
+            List<TableCellElement> gridRow = grid.get(offset + r);
+            int column = 0;
+            for (TableCellElement cell : rows.get(r).getCells()) {
+                while (column < gridRow.size() && gridRow.get(column) != null) {
+                    column++;
+                }
+                int colspan = span(cell, "colspan");
+                int rowspan = span(cell, "rowspan");
+                // 0 means "to the end of the row group", and anything longer
+                // than the group is cut off there
+                int rows0 = rows.size() - r;
+                rowspan = rowspan == 0 ? rows0 : Math.min(rowspan, rows0);
+                for (int dr = 0; dr < rowspan; dr++) {
+                    List<TableCellElement> target = grid.get(offset + r + dr);
+                    for (int dc = 0; dc < colspan; dc++) {
+                        set(target, column + dc, cell);
+                    }
+                }
+                column += colspan;
+            }
+        }
+    }
+
+    /**
+     * Reads a span attribute, defaulting to 1 when it is absent or not a
+     * number. A {@code rowspan} of 0 is meaningful and so is kept; anything
+     * negative is not, and reads as 1.
+     */
+    private static int span(TableCellElement cell, String attribute) {
+        String value = cell.getDomAttribute(attribute);
+        if (value == null) {
+            return 1;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(value.trim()));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private static void set(List<TableCellElement> row, int index,
+            TableCellElement cell) {
+        pad(row, index + 1);
+        row.set(index, cell);
+    }
+
+    private static void pad(List<TableCellElement> row, int width) {
+        while (row.size() < width) {
+            row.add(null);
+        }
     }
 
     private static List<TableRowElement> rowsOf(

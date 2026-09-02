@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.component.html.testbench.TableCaptionElement;
+import com.vaadin.flow.component.html.testbench.TableCellElement;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
@@ -97,6 +98,19 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
 
         // The <th rowspan=2> means the following row holds only its own cell.
         Assert.assertEquals(1, rows.get(3).getDataCells().size());
+
+        // getCell counts the cells a row writes, so row 3 starts at "Stallion"
+        Assert.assertEquals("Stallion", table.getCell(3, 0).getText());
+        // getCellCovering resolves the span, so the same slot is the <th>
+        Assert.assertEquals("Horse", table.getCellCovering(3, 0).getText());
+        Assert.assertEquals("Stallion", table.getCellCovering(3, 1).getText());
+        // and a colspan fills both slots of its row with the one cell
+        Assert.assertEquals("Animals", table.getCellCovering(0, 0).getText());
+        Assert.assertEquals("Animals", table.getCellCovering(0, 1).getText());
+
+        List<List<TableCellElement>> grid = table.getCellGrid();
+        Assert.assertEquals(rows.size(), grid.size());
+        grid.forEach(gridRow -> Assert.assertEquals(2, gridRow.size()));
     }
 
     @Test
