@@ -48,6 +48,7 @@ public class TableElement extends TestBenchElement {
      */
     private static final String CELL_GRID_SCRIPT = """
             const table = arguments[0];
+            const cellsWanted = arguments[1];
             const grid = [];
             const groups = Array.from(table.children).filter(
                     e => ['THEAD', 'TBODY', 'TFOOT'].includes(e.tagName));
@@ -81,6 +82,7 @@ public class TableElement extends TestBenchElement {
                 }
             }
             const columns = grid.reduce((w, row) => Math.max(w, row.length), 0);
+            if (!cellsWanted) { return { columns: columns, cells: [] }; }
             const cells = [];
             for (const row of grid) {
                 for (let c = 0; c < columns; c++) {
@@ -303,16 +305,13 @@ public class TableElement extends TestBenchElement {
      * {@code rowspan} are resolved, which is what the widest row occupies on
      * screen rather than the largest number of cells any row writes.
      * <p>
-     * Together with {@link #getAllRows()} this bounds a loop over
-     * {@link #getCellCovering(int, int)}. The layout is computed in the browser
-     * and read back in one call, so each of those is a single round trip
-     * whatever the size of the table; nothing is cached, since the page is free
-     * to change between calls.
+     * The layout is computed in the browser, and only the count comes back, so
+     * this is one round trip whatever the size of the table.
      *
      * @return the number of columns, or 0 for a table with no cells.
      */
     public int getColumnCount() {
-        return cellGrid().columns();
+        return grid(false).columns();
     }
 
     /**
@@ -330,9 +329,18 @@ public class TableElement extends TestBenchElement {
      * {@code rowSpan} keeps a meaningful 0.
      */
     private CellGrid cellGrid() {
+        return grid(true);
+    }
+
+    /**
+     * Runs the layout script, asking for the cells themselves only when they
+     * are going to be used — counting the columns does not need one element
+     * reference per slot coming back over the wire.
+     */
+    private CellGrid grid(boolean withCells) {
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) executeScript(
-                CELL_GRID_SCRIPT, this);
+                CELL_GRID_SCRIPT, this, withCells);
         @SuppressWarnings("unchecked")
         List<Object> slots = (List<Object>) result.get("cells");
         return new CellGrid(((Number) result.get("columns")).intValue(), slots
@@ -368,9 +376,11 @@ public class TableElement extends TestBenchElement {
      * positions a reader sees, so a cell spanning two rows is returned for both
      * of them.
      * <p>
-     * Each call lays the whole table out afresh, so this costs a couple of
-     * round trips per cell of the table, not per cell returned. See
-     * {@link #getColumnCount()}.
+     * The layout is computed in the browser, so this is a single round trip
+     * rather than one per cell; the whole grid comes back with it, though, and
+     * nothing is cached, since the page is free to change between calls. Reach
+     * for the slots an assertion is about rather than walking every slot of a
+     * large table.
      *
      * @param row
      *            the zero-based row of the slot.
