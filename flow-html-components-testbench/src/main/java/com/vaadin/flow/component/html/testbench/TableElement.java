@@ -247,26 +247,29 @@ public class TableElement extends TestBenchElement {
     }
 
     /**
-     * Returns the cells of this table laid out as a grid, resolving
-     * {@code colspan} and {@code rowspan} so that each entry is the cell
-     * occupying that slot on screen. A spanning cell appears in every slot it
-     * covers, so the same element is returned more than once; a slot no cell
+     * Returns how many columns wide this table is once {@code colspan} and
+     * {@code rowspan} are resolved, which is what the widest row occupies on
+     * screen rather than the largest number of cells any row writes. Together
+     * with {@link #getAllRows()} it bounds a loop over
+     * {@link #getCellCovering(int, int)}.
+     *
+     * @return the number of columns, or 0 for a table with no cells.
+     */
+    public int getColumnCount() {
+        return cellGrid().stream().mapToInt(List::size).max().orElse(0);
+    }
+
+    /**
+     * Lays the cells of this table out as a grid, resolving {@code colspan} and
+     * {@code rowspan} so that each entry is the cell occupying that slot on
+     * screen. A spanning cell appears in every slot it covers; a slot no cell
      * reaches is {@code null}, which a ragged table can produce.
-     * <p>
-     * This is the span-aware counterpart of {@link #getCell(int, int)}, which
-     * counts elements as they are written. Use it either directly —
-     * {@code getCellGrid().get(2).get(1)} — or to work out the written position
-     * of a cell you located visually.
      * <p>
      * Rows are walked as in {@link #getAllRows()}. A {@code rowspan} of 0
      * reaches to the end of the row group holding it, as the HTML specification
-     * says, and one that overruns its row group is cut off there. Each cell is
-     * queried for its attributes, so this costs a handful of round trips per
-     * cell and is meant for assertions rather than for polling.
-     *
-     * @return the grid of cells, outer list by row and inner by column.
+     * says, and one that overruns its row group is cut off there.
      */
-    public List<List<TableCellElement>> getCellGrid() {
+    private List<List<TableCellElement>> cellGrid() {
         List<List<TableCellElement>> grid = new ArrayList<>();
         sections(THEAD, TBODY, TFOOT)
                 .forEach(section -> addRowGroup(section.getRows(), grid));
@@ -289,10 +292,10 @@ public class TableElement extends TestBenchElement {
      * @return the cell covering that slot.
      * @throws NoSuchElementException
      *             if the table has no such slot, or no cell reaches it.
-     * @see #getCellGrid()
+     * @see #getColumnCount()
      */
     public TableCellElement getCellCovering(int row, int column) {
-        List<List<TableCellElement>> grid = getCellGrid();
+        List<List<TableCellElement>> grid = cellGrid();
         TableCellElement cell = row >= 0 && row < grid.size() && column >= 0
                 && column < grid.get(row).size() ? grid.get(row).get(column)
                         : null;

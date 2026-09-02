@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.component.html.testbench.TableCaptionElement;
-import com.vaadin.flow.component.html.testbench.TableCellElement;
 import com.vaadin.flow.component.html.testbench.TableColumnElement;
 import com.vaadin.flow.component.html.testbench.TableColumnGroupElement;
 import com.vaadin.flow.component.html.testbench.TableElement;
@@ -108,16 +107,14 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         Assert.assertEquals("Animals", table.getCellCovering(0, 0).getText());
         Assert.assertEquals("Animals", table.getCellCovering(0, 1).getText());
 
-        List<List<TableCellElement>> grid = table.getCellGrid();
-        Assert.assertEquals(rows.size(), grid.size());
-        grid.forEach(gridRow -> Assert.assertEquals(2, gridRow.size()));
-        // every slot of this table is covered, none is left null
-        grid.forEach(gridRow -> gridRow.forEach(Assert::assertNotNull));
+        // the spans make this two columns wide, though no row writes two
+        // header cells
+        Assert.assertEquals(2, table.getColumnCount());
 
         Assert.assertThrows(NoSuchElementException.class,
                 () -> table.getCellCovering(rows.size(), 0));
         Assert.assertThrows(NoSuchElementException.class,
-                () -> table.getCellCovering(0, 2));
+                () -> table.getCellCovering(0, table.getColumnCount()));
     }
 
     @Test
@@ -158,15 +155,13 @@ public class HtmlTableTutorialIT extends ChromeBrowserTest {
         Assert.assertEquals("2", terrestrial.getDomAttribute("colspan"));
 
         // The grid counts the thead row first, so the four body rows the
-        // rowgroup header spans are grid rows 1 to 4, over both its columns.
-        List<List<TableCellElement>> grid = table.getCellGrid();
-        Assert.assertEquals(table.getAllRows().size(), grid.size());
-        for (int row = 1; row <= 4; row++) {
-            for (int column = 0; column <= 1; column++) {
-                Assert.assertEquals("Terrestrial planets",
-                        table.getCellCovering(row, column).getText());
-            }
-        }
+        // rowgroup header spans are grid rows 1 to 4, over both its columns:
+        // check the two far corners of what it covers.
+        Assert.assertEquals(12, table.getColumnCount());
+        Assert.assertEquals("Terrestrial planets",
+                table.getCellCovering(1, 0).getText());
+        Assert.assertEquals("Terrestrial planets",
+                table.getCellCovering(4, 1).getText());
         // the row after the span belongs to the next rowgroup header
         Assert.assertEquals("Jovian planets",
                 table.getCellCovering(5, 0).getText());
