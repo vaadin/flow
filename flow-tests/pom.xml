@@ -38,10 +38,13 @@
     <exclude.windows.failed.it.tests/>
     <testListener/>
 
-    <!-- Skip these categories in validation, use -Pslow-tests to run them -->
-    <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
+    <!-- Skip these categories in validation, use -Pslow-tests to run them.
+            The list lives in its own property so that the slow-tests profile
+            can select exactly what is excluded here without restating it. -->
+    <validation.excluded.categories>com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,
-            com.vaadin.flow.testcategory.PushTests,</excludedGroups>
+            com.vaadin.flow.testcategory.PushTests</validation.excluded.categories>
+    <excludedGroups>${validation.excluded.categories}</excludedGroups>
 
     <!-- Surefire/Failsafe test framework provider for the IT modules. Defaults
             to the JUnit 4 provider; modules running their ITs on JUnit Platform
@@ -473,7 +476,11 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>${excludedGroups}</groups>
+        <!-- Run exactly the categories that validation skips. Referencing
+             ${excludedGroups} here would resolve to the empty value set
+             below, since interpolation happens after the model is merged,
+             leaving no filter at all. -->
+        <groups>${validation.excluded.categories}</groups>
         <excludedGroups/>
       </properties>
     </profile>
