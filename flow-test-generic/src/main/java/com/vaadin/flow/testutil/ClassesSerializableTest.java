@@ -100,6 +100,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
                 "com\\.vaadin\\.base\\.devserver\\.hotswap\\..*",
+                "com\\.vaadin\\.base\\.devserver\\.devloop\\..*",
+                // The dev-loop daemon is a separate program, not part of any
+                // application's session state
+                "com\\.vaadin\\.flow\\.devloop\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",

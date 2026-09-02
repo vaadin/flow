@@ -77,8 +77,10 @@ copying the test. Never add the same test in two places.
 
 Some tests need irreducible special infrastructure and keep their own modules:
 `servlet-containers` (non-Jetty containers), `test-multi-war`,
-`test-commercial-banner`, the proxy-based fault-tolerance tests, and
-`test-npm-performance-regression`.
+`test-commercial-banner`, the proxy-based fault-tolerance tests,
+`test-npm-performance-regression`, and `test-devloop` (its own two-module Maven
+reactor, and the dev-loop daemon owns the application process instead of a Maven
+plugin — see [test-devloop/README.md](test-devloop/README.md)).
 
 ---
 
