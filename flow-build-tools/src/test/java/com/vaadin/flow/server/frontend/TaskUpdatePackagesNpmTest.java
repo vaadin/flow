@@ -94,16 +94,20 @@ class TaskUpdatePackagesNpmTest {
 
     private File packageJson;
 
+    private File versionsFolder;
+
     @BeforeEach
     void setUp() throws IOException {
         npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
         generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
-        versionJsonFile = new File(npmFolder, "versions.json");
+        versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        versionJsonFile = new File(versionsFolder, "versions.json");
         finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageJson = new File(npmFolder, PACKAGE_JSON);
     }
@@ -192,15 +196,15 @@ class TaskUpdatePackagesNpmTest {
 
     @Test
     void npmIsInUse_noVersionsJsonPresent_noFailure() throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         assertTrue(task.modified, "Updates not picked");
 
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
         JsonNode dependencies = getOrCreatePackageJson().get(DEPENDENCIES);
         assertEquals(PINNED_DIALOG_VERSION,
                 dependencies.get(VAADIN_DIALOG).asString());
@@ -208,12 +212,12 @@ class TaskUpdatePackagesNpmTest {
 
     @Test
     void npmIsInUse_versionsJsonAdded_versionsPinned() throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
         createTask(createApplicationDependencies()).execute();
 
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
 
@@ -246,8 +250,8 @@ class TaskUpdatePackagesNpmTest {
         JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
         assertEquals("1.0", overrides.get("@vaadin/aura").asString());
 
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
         String versionJsonString = """
                 {
                   "core": {
@@ -1288,8 +1292,8 @@ class TaskUpdatePackagesNpmTest {
 
     private void verifyPinnedDependenciesAreAdded(boolean enablePnpm)
             throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
 

@@ -76,9 +76,11 @@ public class UIScopeTarget extends Div {
                 event.unregisterListener();
             });
 
-            // simulate resynchronization
-            ui.getInternals().getStateTree().prepareForResync();
-            ui.getInternals().getDependencyList().clearPendingSendToClient();
+            // Skipping a server sync id makes the client see a gap in the
+            // message sequence and request a resynchronization. The response
+            // to that request carries the resynchronize flag, so the client
+            // rebuilds its state tree from scratch.
+            ui.getInternals().incrementServerId();
         });
         resynchronize.setId("resynchronize");
         add(resynchronize);
