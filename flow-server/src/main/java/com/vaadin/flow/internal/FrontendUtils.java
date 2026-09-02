@@ -698,12 +698,24 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
-            }
+        // The legacy folder is probed FIRST on purpose. frontendDir is
+        // src/main/frontend, which build tools create themselves (it is the
+        // parent of an optional task output) and which is gitignored, so it is
+        // absent on a fresh checkout and present after the first build. Under
+        // Gradle's configuration cache a File.exists() call made while
+        // configuring is recorded as an input of the entry, so probing that
+        // path first invalidates the entry on the build right after the one
+        // that created the directory - for a check whose answer never changes,
+        // since with no legacy folder both branches return frontendDir. The
+        // legacy folder is not created by any build, so probing it first is
+        // stable, and && short-circuits away the unstable probe on every
+        // project that has no legacy frontend folder.
+        File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+        if (legacy.exists()
+                && frontendDir.toPath()
+                        .endsWith(DEFAULT_FRONTEND_DIR.substring(2))
+                && !frontendDir.exists()) {
+            return legacy;
         }
         return frontendDir;
     }
