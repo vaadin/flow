@@ -215,19 +215,13 @@ final class TerminableStreamsUtil {
         @Override
         public int read() throws IOException {
             transfer.checkNotTerminated();
-            int read = delegate.read();
-            if (read != -1) {
-                transfer.addTransferredBytes(1);
-            }
-            return read;
+            return delegate.read();
         }
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             transfer.checkNotTerminated();
-            int read = delegate.read(b, off, len);
-            transfer.addTransferredBytes(read);
-            return read;
+            return delegate.read(b, off, len);
         }
 
         @Override
@@ -309,14 +303,12 @@ final class TerminableStreamsUtil {
         public void write(int b) throws IOException {
             transfer.checkNotTerminated();
             delegate.write(b);
-            transfer.addTransferredBytes(1);
         }
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             transfer.checkNotTerminated();
             delegate.write(b, off, len);
-            transfer.addTransferredBytes(len);
         }
 
         @Override
@@ -355,7 +347,6 @@ final class TerminableStreamsUtil {
         public void write(char[] cbuf, int off, int len) throws IOException {
             transfer.checkNotTerminated();
             delegate.write(cbuf, off, len);
-            transfer.addTransferredBytes(len);
         }
 
         @Override
@@ -383,9 +374,7 @@ final class TerminableStreamsUtil {
         @Override
         public int read(char[] cbuf, int off, int len) throws IOException {
             transfer.checkNotTerminated();
-            int read = delegate.read(cbuf, off, len);
-            transfer.addTransferredBytes(read);
-            return read;
+            return delegate.read(cbuf, off, len);
         }
 
         @Override

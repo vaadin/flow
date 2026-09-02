@@ -18,7 +18,6 @@ package com.vaadin.flow.internal.streams;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -40,7 +39,6 @@ public class ActiveTransfer implements Serializable {
 
     private final String path;
     private final Element owner;
-    private final AtomicLong transferredBytes = new AtomicLong();
 
     private volatile boolean terminated;
 
@@ -75,16 +73,6 @@ public class ActiveTransfer implements Serializable {
      */
     public boolean isTerminated() {
         return terminated;
-    }
-
-    /**
-     * Gets the number of bytes that have been transferred through the streams
-     * handed out for this transfer.
-     *
-     * @return the number of transferred bytes
-     */
-    public long getTransferredBytes() {
-        return transferredBytes.get();
     }
 
     /**
@@ -125,21 +113,7 @@ public class ActiveTransfer implements Serializable {
     public String getDescription() {
         String ownerDescription = owner.getComponent().map(Component::getClass)
                 .map(Class::getName).orElseGet(owner::getTag);
-        return "path=" + path + ", owner=" + ownerDescription + ", "
-                + getTransferredBytes() + " bytes transferred";
-    }
-
-    /**
-     * Registers bytes as transferred through the streams handed out for this
-     * transfer.
-     *
-     * @param bytes
-     *            the number of bytes that were transferred
-     */
-    void addTransferredBytes(long bytes) {
-        if (bytes > 0) {
-            transferredBytes.addAndGet(bytes);
-        }
+        return "path=" + path + ", owner=" + ownerDescription;
     }
 
     /**

@@ -98,8 +98,6 @@ class ActiveTransferTest {
         outputStream.write(CHUNK);
         outputStream.write(CHUNK[0]);
 
-        assertEquals(CHUNK.length + 1, transfer.getTransferredBytes(),
-                "Written bytes should be counted for the transfer");
         assertFalse(transfer.isTerminated());
 
         transfer.terminate();
@@ -137,8 +135,6 @@ class ActiveTransferTest {
         assertEquals(CHUNK.length - 1,
                 inputStream.read(new byte[CHUNK.length]));
         assertEquals(-1, inputStream.read(), "The content should be consumed");
-        assertEquals(CHUNK.length, transfer.getTransferredBytes(),
-                "Read bytes should be counted for the transfer");
 
         transfer.terminate();
 
@@ -258,18 +254,13 @@ class ActiveTransferTest {
     }
 
     @Test
-    void description_containsOwnerAndTransferredBytes() throws IOException {
-        wrapResponse().getOutputStream().write(CHUNK);
-
+    void description_containsPathAndOwner() {
         String description = transfer.getDescription();
 
         assertTrue(description.contains("file.bin"),
                 "Description should contain the path: " + description);
         assertTrue(description.contains("a"),
                 "Description should contain the owner: " + description);
-        assertTrue(description.contains(CHUNK.length + " bytes"),
-                "Description should contain the transferred bytes: "
-                        + description);
     }
 
     private VaadinServletRequest wrapRequest() {
