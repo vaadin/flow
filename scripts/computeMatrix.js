@@ -129,6 +129,8 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
+  'flow-tests/test-devloop/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
