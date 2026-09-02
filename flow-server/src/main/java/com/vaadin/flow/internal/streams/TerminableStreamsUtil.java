@@ -241,44 +241,40 @@ final class TerminableStreamsUtil {
         }
     }
 
+    /**
+     * The servlet flavor of {@link TerminableInputStream}, which reads through
+     * that same wrapper so that both kinds of input behave identically.
+     */
     private static class TerminableServletInputStream
             extends ServletInputStream {
 
         private final ServletInputStream delegate;
-        private final ActiveTransfer transfer;
+        private final TerminableInputStream terminableDelegate;
 
         private TerminableServletInputStream(ServletInputStream delegate,
                 ActiveTransfer transfer) {
             this.delegate = delegate;
-            this.transfer = transfer;
+            terminableDelegate = new TerminableInputStream(delegate, transfer);
         }
 
         @Override
         public int read() throws IOException {
-            transfer.checkNotTerminated();
-            int read = delegate.read();
-            if (read != -1) {
-                transfer.addTransferredBytes(1);
-            }
-            return read;
+            return terminableDelegate.read();
         }
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
-            transfer.checkNotTerminated();
-            int read = delegate.read(b, off, len);
-            transfer.addTransferredBytes(read);
-            return read;
+            return terminableDelegate.read(b, off, len);
         }
 
         @Override
         public int available() throws IOException {
-            return delegate.available();
+            return terminableDelegate.available();
         }
 
         @Override
         public void close() throws IOException {
-            delegate.close();
+            terminableDelegate.close();
         }
 
         @Override

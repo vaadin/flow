@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ReadListener;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -51,6 +47,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+import com.vaadin.tests.util.TestServletStreams;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -111,21 +108,7 @@ class ActiveTransferLifecycleTest {
         HttpServletResponse httpResponse = Mockito
                 .mock(HttpServletResponse.class);
         Mockito.when(httpResponse.getOutputStream())
-                .thenReturn(new ServletOutputStream() {
-                    @Override
-                    public boolean isReady() {
-                        return true;
-                    }
-
-                    @Override
-                    public void setWriteListener(WriteListener listener) {
-                    }
-
-                    @Override
-                    public void write(int b) {
-                        responseBody.write(b);
-                    }
-                });
+                .thenReturn(TestServletStreams.outputStream(responseBody));
         response = new VaadinServletResponse(httpResponse, service);
 
         ui = new MockUI(session);
@@ -286,47 +269,9 @@ class ActiveTransferLifecycleTest {
         Mockito.when(httpRequest.getContentLengthLong())
                 .thenReturn((long) contents.length());
         Mockito.when(httpRequest.getInputStream())
-                .thenReturn(uploadStream(contents, onFirstRead));
+                .thenReturn(TestServletStreams.inputStream(
+                        contents.getBytes(StandardCharsets.UTF_8),
+                        onFirstRead));
     }
 
-    private static ServletInputStream uploadStream(String contents,
-            Runnable onFirstRead) {
-        InputStream delegate = new ByteArrayInputStream(
-                contents.getBytes(StandardCharsets.UTF_8));
-        return new ServletInputStream() {
-            private boolean firstRead = true;
-
-            @Override
-            public boolean isFinished() {
-                return false;
-            }
-
-            @Override
-            public boolean isReady() {
-                return true;
-            }
-
-            @Override
-            public void setReadListener(ReadListener readListener) {
-            }
-
-            @Override
-            public int read() throws IOException {
-                if (firstRead) {
-                    firstRead = false;
-                    onFirstRead.run();
-                }
-                return delegate.read();
-            }
-
-            @Override
-            public int read(byte[] b, int off, int len) throws IOException {
-                if (firstRead) {
-                    firstRead = false;
-                    onFirstRead.run();
-                }
-                return delegate.read(b, off, len);
-            }
-        };
-    }
 }

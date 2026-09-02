@@ -17,6 +17,7 @@ package com.vaadin.flow.internal.streams;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
@@ -50,11 +51,12 @@ public class ActiveTransfer implements Serializable {
      * @param path
      *            the path of the request being served, used for logging
      * @param owner
-     *            the element that owns the request handler, used for logging
+     *            the element that owns the request handler, used for logging,
+     *            not <code>null</code>
      */
     public ActiveTransfer(String path, Element owner) {
         this.path = path;
-        this.owner = owner;
+        this.owner = Objects.requireNonNull(owner);
     }
 
     /**
@@ -121,9 +123,8 @@ public class ActiveTransfer implements Serializable {
      * @return a description of this transfer
      */
     public String getDescription() {
-        String ownerDescription = owner == null ? "unknown"
-                : owner.getComponent().map(Component::getClass)
-                        .map(Class::getName).orElseGet(owner::getTag);
+        String ownerDescription = owner.getComponent().map(Component::getClass)
+                .map(Class::getName).orElseGet(owner::getTag);
         return "path=" + path + ", owner=" + ownerDescription + ", "
                 + getTransferredBytes() + " bytes transferred";
     }

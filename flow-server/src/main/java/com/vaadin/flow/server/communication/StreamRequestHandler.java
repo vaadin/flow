@@ -224,20 +224,15 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Finds the UI that the request for the given path was made for, based on
-     * the UI id that is part of the resource path.
+     * the UI id that is part of the resource path. The path has already been
+     * matched against a registered resource, whose URI is generated from the id
+     * of the UI that registered it, so the id is a number here.
      *
-     * @return the UI, or <code>null</code> if it is not available in the
+     * @return the UI, or <code>null</code> if it is no longer available in the
      *         session
      */
     private UI findUI(VaadinSession session, String pathInfo) {
-        try {
-            return session
-                    .getUIById(Integer.parseInt(parsePath(pathInfo).UIid));
-        } catch (NumberFormatException e) {
-            getLogger().debug("Stream request path '{}' has no valid UI id",
-                    pathInfo, e);
-            return null;
-        }
+        return session.getUIById(Integer.parseInt(parsePath(pathInfo).UIid));
     }
 
     private static boolean blockDisabled(
