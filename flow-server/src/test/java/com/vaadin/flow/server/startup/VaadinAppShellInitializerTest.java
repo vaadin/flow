@@ -448,8 +448,8 @@ public class VaadinAppShellInitializerTest {
         assertTrue(thrown.getMessage().contains(
                 "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
                         + " which was encountered on class"));
-        assertTrue(thrown.getMessage().contains(
-                "Please move the annotations to the class "
+        assertTrue(thrown.getMessage()
+                .contains("Please move the annotations to the class "
                         + MyAppShellWithoutAnnotations.class.getName()
                         + " which already implements `AppShellConfigurator`"));
     }
@@ -467,9 +467,9 @@ public class VaadinAppShellInitializerTest {
         assertTrue(thrown.getMessage().contains(
                 "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
                         + " which was encountered on class"));
-        assertTrue(thrown.getMessage().contains("Please make "
-                + OffendingClass.class.getName()
-                + " implement `AppShellConfigurator`"));
+        assertTrue(thrown.getMessage()
+                .contains("Please make " + OffendingClass.class.getName()
+                        + " implement `AppShellConfigurator`"));
     }
 
     @Test

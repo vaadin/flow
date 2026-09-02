@@ -134,8 +134,7 @@ public class VaadinAppShellInitializer
             String details = String.join("\n  ", offendingAnnotations);
             String hint;
             if (registry.getShell() != null) {
-                hint = String.format(
-                        AppShellRegistry.ERROR_HINT_EXISTING_SHELL,
+                hint = String.format(AppShellRegistry.ERROR_HINT_EXISTING_SHELL,
                         registry.getShell().getName());
             } else {
                 hint = String.format(AppShellRegistry.ERROR_HINT_NO_SHELL,
@@ -145,10 +144,9 @@ public class VaadinAppShellInitializer
             if (disregardOffendingAnnotations) {
                 boolean hasPwa = offendingAnnotations.stream()
                         .anyMatch(err -> err.matches(".*@PWA.*"));
-                String message = String.format(
-                        hasPwa ? ERROR_HEADER_OFFENDING_PWA
-                                : ERROR_HEADER_NO_SHELL,
-                        payload);
+                String message = String
+                        .format(hasPwa ? ERROR_HEADER_OFFENDING_PWA
+                                : ERROR_HEADER_NO_SHELL, payload);
                 getLogger().error(message);
             } else {
                 String message = String.format(ERROR_HEADER_NO_SHELL, payload);
