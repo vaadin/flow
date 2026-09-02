@@ -48,7 +48,7 @@ public class BackNavIT extends AbstractDefaultIT {
 
     private void navigateAndPressBack(
             Supplier<TestBenchElement> navigationElement) {
-        getDriver().get(getRootURL() + BACK_NAV_FIRST_VIEW);
+        open(BACK_NAV_FIRST_VIEW);
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
@@ -84,7 +84,7 @@ public class BackNavIT extends AbstractDefaultIT {
 
     @BrowserTest
     public void backButtonWorksAndContentUpdatesAfterPageRefresh() {
-        getDriver().get(getRootURL() + BACK_NAV_FIRST_VIEW);
+        open(BACK_NAV_FIRST_VIEW);
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
@@ -127,7 +127,7 @@ public class BackNavIT extends AbstractDefaultIT {
 
     @BrowserTest
     public void validateNoAfterNavigationForReplaceState() {
-        getDriver().get(getRootURL() + BACK_NAV_FIRST_VIEW);
+        open(BACK_NAV_FIRST_VIEW);
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()

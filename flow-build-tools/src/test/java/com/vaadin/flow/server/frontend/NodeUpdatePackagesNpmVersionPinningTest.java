@@ -73,8 +73,10 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         classFinder = Mockito.spy(getClassFinder());
-        File versions = Files
-                .createTempFile(temporaryFolder.toPath(), "tmp", null).toFile();
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        File versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions,
                 String.format(
                         "{" + "\"vaadin-overlay\": {"
@@ -85,8 +87,8 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
         // @formatter:on
 
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
     }
 
     @Test
@@ -109,8 +111,8 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
             throws IOException {
         // Test when there is no vaadin-version-core.json available
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
@@ -282,8 +284,8 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
     void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
         ObjectNode packageJson = packageUpdater.getPackageJson();
