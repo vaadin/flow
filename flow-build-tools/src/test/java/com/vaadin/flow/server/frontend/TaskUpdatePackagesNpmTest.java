@@ -155,6 +155,36 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void npmIsInUse_applicationPinsOwnTypescript_versionLeftAloneAndNotOverridden()
+            throws IOException {
+        // Flow ships the TypeScript it needs under a name of its own
+        // (@vaadin/typescript), so the application keeps whatever typescript
+        // version it declares, e.g. one that @typescript-eslint accepts.
+        createBasicVaadinVersionsJson();
+
+        final ObjectNode packageJsonJson = getOrCreatePackageJson();
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put("typescript", "6.0.3");
+        packageJsonJson.set(DEV_DEPENDENCIES, devDependencies);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJsonJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        final ObjectNode result = getOrCreatePackageJson();
+        assertEquals("6.0.3",
+                result.get(DEV_DEPENDENCIES).get("typescript").asString(),
+                "Application's own typescript version must not be replaced");
+        JsonNode overrides = result.get(OVERRIDES);
+        if (overrides != null) {
+            assertNull(overrides.get("typescript"),
+                    "Flow must not write an override for the application's typescript");
+        }
+    }
+
+    @Test
     void npmIsInUse_applicationHasPinnedTheProvidedVersionInAddon_applicationPinnedVersionIsUsed()
             throws IOException {
         // run the basic test to produce an existing package.json
