@@ -106,22 +106,11 @@ public class ActiveTransfer implements Serializable {
 
     /**
      * Describes this transfer for logging purposes.
-     * <p>
-     * Describing the owner renders the owner component, which is application
-     * code that might fail. Since a description is only used for logging, a
-     * failure is reported as part of the description instead of being thrown to
-     * the caller.
      *
      * @return a description of this transfer
      */
     public String getDescription() {
-        String ownerDescription;
-        try {
-            ownerDescription = owner.getNode().formatOwnerComponentToString();
-        } catch (RuntimeException e) {
-            ownerDescription = "could not be described: " + e;
-        }
-        return "path=" + path + ", owner=" + ownerDescription;
+        return "path=" + path + ", owner: " + owner.getNode().describe();
     }
 
     /**

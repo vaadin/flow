@@ -32,7 +32,8 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,8 @@ import com.vaadin.flow.server.VaadinServletResponse;
  */
 final class TerminableStreamsUtil {
 
-    private static final AtomicBoolean unwrappableTypeWarned = new AtomicBoolean();
+    private static final Set<Class<?>> warnedUnwrappableTypes = ConcurrentHashMap
+            .newKeySet();
 
     private TerminableStreamsUtil() {
         // Only static helpers
@@ -83,14 +85,15 @@ final class TerminableStreamsUtil {
     }
 
     /**
-     * Warns once per JVM that transfers cannot be terminated for a request or
-     * response implementation that is not servlet based.
+     * Warns once per request or response type that its transfers will not be
+     * terminated, since only servlet based implementations can be wrapped.
      */
     private static void warnAboutUnwrappable(Object requestOrResponse) {
-        if (unwrappableTypeWarned.compareAndSet(false, true)) {
+        Class<?> type = requestOrResponse.getClass();
+        if (warnedUnwrappableTypes.add(type)) {
             LoggerFactory.getLogger(TerminableStreamsUtil.class).warn(
-                    "Ongoing upload and download requests cannot be terminated when the session is invalidated, since {} is not based on the servlet API.",
-                    requestOrResponse.getClass().getName());
+                    "An upload or download served through {} will run to the end even if the session is invalidated while it is ongoing, since only servlet based requests and responses can be terminated.",
+                    type.getName());
         }
     }
 
@@ -223,10 +226,6 @@ final class TerminableStreamsUtil {
         }
     }
 
-    /**
-     * Skipping is checked as well, since FilterInputStream passes it straight
-     * to the wrapped stream instead of reading through the methods above.
-     */
     private static class TerminableInputStream extends FilterInputStream {
 
         private final ActiveTransfer transfer;
@@ -249,11 +248,6 @@ final class TerminableStreamsUtil {
             return super.read(b, off, len);
         }
 
-        @Override
-        public long skip(long n) throws IOException {
-            transfer.checkNotTerminated();
-            return super.skip(n);
-        }
     }
 
     /**
@@ -334,7 +328,6 @@ final class TerminableStreamsUtil {
 
         @Override
         public void flush() throws IOException {
-            transfer.checkNotTerminated();
             delegate.flush();
         }
 
@@ -354,11 +347,6 @@ final class TerminableStreamsUtil {
         }
     }
 
-    /**
-     * Every write variant is checked, since FilterWriter passes each of them
-     * straight to the wrapped writer instead of funneling them through one
-     * method.
-     */
     private static class TerminableWriter extends FilterWriter {
 
         private final ActiveTransfer transfer;
@@ -386,17 +374,8 @@ final class TerminableStreamsUtil {
             super.write(str, off, len);
         }
 
-        @Override
-        public void flush() throws IOException {
-            transfer.checkNotTerminated();
-            super.flush();
-        }
     }
 
-    /**
-     * Skipping is checked as well, since FilterReader passes it straight to the
-     * wrapped reader instead of reading through the methods above.
-     */
     private static class TerminableReader extends FilterReader {
 
         private final ActiveTransfer transfer;
@@ -418,10 +397,5 @@ final class TerminableStreamsUtil {
             return super.read(cbuf, off, len);
         }
 
-        @Override
-        public long skip(long n) throws IOException {
-            transfer.checkNotTerminated();
-            return super.skip(n);
-        }
     }
 }

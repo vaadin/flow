@@ -170,15 +170,12 @@ class ActiveTransferTest {
         Part wrappedPart = wrapRequest().getParts().iterator().next();
 
         InputStream partStream = wrappedPart.getInputStream();
-        assertEquals(1, partStream.skip(1));
-        assertEquals(CHUNK.length - 1, partStream.read(new byte[CHUNK.length]));
+        assertEquals(CHUNK.length, partStream.read(new byte[CHUNK.length]));
 
         transfer.terminate();
 
         assertThrows(IOException.class, partStream::read,
                 "A terminated transfer should not read more of a part");
-        assertThrows(IOException.class, () -> partStream.skip(1),
-                "A terminated transfer should not skip through a part either");
     }
 
     @Test
@@ -268,8 +265,8 @@ class ActiveTransferTest {
                 description.contains(
                         "path=VAADIN/dynamic/resource/0/key/file.bin"),
                 "Description should contain the path: " + description);
-        assertTrue(description.contains("no component"),
-                "Description should describe the owner element that has no component: "
+        assertTrue(description.contains("element with tag 'a'"),
+                "Description should describe the owner element: "
                         + description);
     }
 

@@ -846,15 +846,7 @@ public class StateNode implements Serializable {
         owner = tree;
     }
 
-    /**
-     * Describes the component that owns this node, for use in log messages and
-     * exception messages. The description contains the locations where the
-     * component was created and attached when that information is available,
-     * and otherwise the component's own string representation.
-     *
-     * @return a description of the owner component, not <code>null</code>
-     */
-    public String formatOwnerComponentToString() {
+    private String formatOwnerComponentToString() {
         final Element ownerElement = ElementUtil.from(this).orElse(null);
         if (ownerElement == null) {
             return "unknown element";

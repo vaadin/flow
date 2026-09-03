@@ -2064,11 +2064,10 @@ public class UIInternals implements Serializable {
      */
     public void terminateActiveTransfers() {
         /*
-         * Terminating every transfer before describing any of them, since
-         * describing one renders the owner component and thus runs application
-         * code that must not be able to leave the remaining transfers running.
+         * Terminating every transfer before logging about any of them, so that
+         * a failure while describing one cannot leave the rest running.
          */
-        List<ActiveTransfer> terminated = new ArrayList<>(activeTransfers);
+        List<ActiveTransfer> terminated = List.copyOf(activeTransfers);
         terminated.forEach(ActiveTransfer::terminate);
 
         terminated.forEach(transfer -> getLogger().warn(
