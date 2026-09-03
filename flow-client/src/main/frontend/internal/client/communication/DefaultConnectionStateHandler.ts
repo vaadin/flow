@@ -129,12 +129,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     // not need to start a new one.
     if (this.#machine.getReconnectAttempt() === 1) {
       // Try once immediately
-      Console.debug(`Immediate reconnect attempt for ${payload}`);
+      Console.debug(`Immediate reconnect attempt for ${JSON.stringify(payload)}`);
       this.doReconnect(payload);
     } else {
       this.#scheduledReconnect = setTimeout(() => {
         this.#scheduledReconnect = null;
-        Console.debug(`Scheduled reconnect attempt ${this.#machine.getReconnectAttempt()} for ${payload}`);
+        Console.debug(
+          `Scheduled reconnect attempt ${this.#machine.getReconnectAttempt()} for ${JSON.stringify(payload)}`
+        );
         this.doReconnect(payload);
       }, this.#registry.getReconnectConfiguration().getReconnectInterval());
     }
