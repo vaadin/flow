@@ -135,6 +135,21 @@ final class TransactionEngine {
          * the previous apply instead, and this is that carry-over.
          */
         volatile List<String> carriedLogErrors = List.of();
+
+        /**
+         * What the dev server said when asked to serve this change's frontend
+         * files, if it refused one. Null when it served them all, when there
+         * was nothing to ask about, or when the app could not be asked.
+         */
+        volatile String devServerRefusal;
+
+        /**
+         * Whether the dev server actually answered about this change. Told
+         * apart from {@link #devServerRefusal} being null because "it served
+         * every file" and "nobody could be asked" are opposite answers: the
+         * first one overrules the log, the second one has to trust it.
+         */
+        volatile boolean devServerAsked;
         long detectMs;
         long compileMs;
         long runtimeMs;
@@ -493,6 +508,10 @@ final class TransactionEngine {
             tx.frontendMode = plan.hasWork()
                     ? (plan.vite() ? "vite" : "dev-bundle")
                     : "";
+            // Asked before the plan is described, not after: the line
+            // below says what became of these files, and "Vite applied them on
+            // save" is not true of one Vite refused to compile.
+            askDevServer(plan, tx, log);
             if (plan.hasWork()) {
                 describeFrontend(plan, tx, log);
             }
@@ -862,7 +881,9 @@ final class TransactionEngine {
             Launch.Log log) {
         String where = plan.vite() ? "Vite " + tx.frontend : "dev bundle";
         String consequence;
-        if (plan.vite()) {
+        if (plan.vite() && tx.devServerRefusal != null) {
+            consequence = "the dev server refused one of them";
+        } else if (plan.vite()) {
             consequence = "Vite applied them on save";
         } else if (!plan.escalation().isEmpty()) {
             consequence = "a restart rebuilds the bundle";
@@ -955,8 +976,11 @@ final class TransactionEngine {
         if (!plan.hasWork() || plan.vite() || active == null
                 || !active.isOpen()) {
             // Nothing to do, but the bytes are accounted for either way: Vite
-            // already applied them, so offering them again would be a lie.
-            markFrontendApplied(plan);
+            // already applied them, so offering them again would be a lie -
+            // unless it would, because Vite refused to compile them.
+            if (mayMarkApplied(tx)) {
+                markFrontendApplied(plan);
+            }
             return true;
         }
         if (!plan.themeCss().isEmpty()) {
@@ -992,8 +1016,83 @@ final class TransactionEngine {
             // that did not happen.
             tx.servedLive = plan.servedLive().size();
         }
-        markFrontendApplied(plan);
+        if (mayMarkApplied(tx)) {
+            markFrontendApplied(plan);
+        }
         return true;
+    }
+
+    /**
+     * Whether these frontend bytes may be written off as live.
+     * <p>
+     * A file the dev server refused is not, however the leg above went: the
+     * page is still loading the last version that compiled. Marking it anyway
+     * is what made the apply after a refused one report {@code no changes} -
+     * the file was accounted for, so nothing was left to notice - which is the
+     * same green answer over a broken module, one apply later.
+     */
+    private boolean mayMarkApplied(Transaction tx) {
+        return tx.devServerRefusal == null;
+    }
+
+    /**
+     * Asks the dev server to serve every frontend file in this change, and
+     * remembers what it said if it refused one.
+     * <p>
+     * Vite compiles a module when something requests it, not when {@code apply}
+     * runs. So whether its complaint lands in the log while the daemon is
+     * watching depends on whether a browser happened to re-fetch the module
+     * during those few hundred milliseconds - and a page already showing the
+     * error overlay does not re-fetch at all. The report then sits in the log
+     * from an earlier window, this window is silent, and the apply reports a
+     * clean {@code Stable} over a file the page cannot load. Asking turns that
+     * race into a question with an answer, and one that is right in both
+     * directions: the dev server refuses the module while it is broken and
+     * serves it once it is fixed, so nothing has to remember a stale verdict.
+     * <p>
+     * Only in Vite mode. A dev bundle was built before the app started, so
+     * there is no dev server to ask - and no on-demand compile to be wrong
+     * about.
+     * <p>
+     * Silence is not a refusal. An app too old to know the command, one whose
+     * connector cannot answer, or a dev server that is unreachable all leave
+     * this unset, and the verdict falls back to what the log says - which is
+     * what it was before.
+     */
+    private void askDevServer(Frontend.Plan plan, Transaction tx,
+            Launch.Log log) {
+        Connector active = this.connector;
+        if (!plan.vite() || active == null || !active.isOpen()) {
+            return;
+        }
+        List<Path> modules = new ArrayList<>();
+        modules.addAll(plan.themeCss());
+        modules.addAll(plan.servedLive());
+        modules.addAll(plan.bundled());
+        if (modules.isEmpty()) {
+            return;
+        }
+        Optional<String> reply = active
+                .command("FRONTEND_CHECK " + join(modules), 30);
+        if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+            return;
+        }
+        Map<String, String> fields = Connector.fields(reply.get());
+        // Recorded even when nothing was refused, and that is the load-bearing
+        // half: it is what lets a clean answer overrule a log that still holds
+        // the report from before the file was fixed.
+        tx.devServerAsked = true;
+        if (parseInt(fields.get("refused")) == 0) {
+            return;
+        }
+        String file = fields.getOrDefault("file", "a frontend file");
+        tx.devServerRefusal = file + ": " + fields.getOrDefault("message",
+                "the dev server would not compile it");
+        // Said plainly rather than left to the verdict line: a restart is the
+        // usual answer to "not live", and it is the wrong one here - nothing
+        // but an edit to the file can make this compile.
+        log.line("dev server refused " + file
+                + "; only fixing the file can apply that");
     }
 
     private void markFrontendApplied(Frontend.Plan plan) {
@@ -1180,8 +1279,16 @@ final class TransactionEngine {
      * hands an agent a green answer for a file the browser cannot load, which
      * is the one answer this daemon must never give.
      * <p>
-     * Both windows are read. An error Vite logged when the file was saved sits
-     * in {@code carriedLogErrors} - it happened before this apply started,
+     * The dev server's own answer settles it whenever there is one, in both
+     * directions, because it was asked about this change and answers for the
+     * files as they are on disk now. A clean answer therefore overrules the
+     * log: an error in it describes the file as it was before this edit fixed
+     * it, and the daemon's own request is one of the things that put it there.
+     * The log is the fallback for what cannot be asked - an app too old for the
+     * command, or a dev server that has gone away.
+     * <p>
+     * Both log windows are read. An error Vite logged when the file was saved
+     * sits in {@code carriedLogErrors} - it happened before this apply started,
      * which is precisely why it was carried across - and one logged while the
      * apply ran is in what settling collected.
      * <p>
@@ -1194,6 +1301,12 @@ final class TransactionEngine {
             // server is complaining about. Anything else in the log belongs to
             // an edit this apply was not asked about, and failing over it would
             // be a worse answer than the truth.
+            return Optional.empty();
+        }
+        if (tx.devServerRefusal != null) {
+            return Optional.of(tx.devServerRefusal);
+        }
+        if (tx.devServerAsked) {
             return Optional.empty();
         }
         return java.util.stream.Stream
@@ -1446,6 +1559,17 @@ final class TransactionEngine {
                 tx.logErrors.stream().filter(line -> !merged.contains(line))
                         .forEach(merged::add);
                 tx.logErrors = List.copyOf(merged);
+            }
+            // The dev server was asked about these very files and served them
+            // all, so its reports in the log describe the version this edit
+            // replaced - the daemon's own request for the broken one among
+            // them. Quoting a parse error under a Stable verdict reads as a
+            // green answer over a broken page, which is the confusion this
+            // whole leg exists to prevent. What the app logged itself stays:
+            // that is still about the run.
+            if (tx.devServerAsked && tx.devServerRefusal == null) {
+                tx.logErrors = tx.logErrors.stream()
+                        .filter(line -> !AppLog.devServerError(line)).toList();
             }
             // A superseded transaction is not the answer to "what is the
             // state?".

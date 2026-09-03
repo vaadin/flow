@@ -23,6 +23,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.PublicResourcesLiveUpdater;
 import com.vaadin.base.devserver.ThemeLiveUpdater;
+import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -108,6 +110,12 @@ final class DevLoopRedefiner {
     private static final String[] PUBLIC_RESOURCE_ROOTS = {
             "/META-INF/resources/", "/static/", "/public/", "/resources/",
             "/webapp/" };
+
+    /**
+     * Where Vite puts the failure in the error page it serves for a module it
+     * could not transform - the JSON its own overlay renders.
+     */
+    private static final String VITE_ERROR_MESSAGE_KEY = "\"message\":\"";
 
     private DevLoopRedefiner() {
     }
@@ -552,6 +560,163 @@ final class DevLoopRedefiner {
         return "OK frontend=" + frontendStatus() + " mode=" + mode + " themes="
                 + join(activeThemes(service)) + " agree="
                 + agreesOnFolder(service, daemonFolder);
+    }
+
+    /**
+     * Whether the dev server can actually compile the frontend files this
+     * change touched, asked by fetching each one exactly as the browser would.
+     * <p>
+     * The log cannot answer this. Vite compiles a module when something
+     * requests it, not when {@code apply} runs, so whether an error is written
+     * while the daemon is watching depends on whether a browser happened to
+     * re-fetch - and one already showing the error overlay does not. The report
+     * then sits in the log from an earlier window, the new window is silent,
+     * and the apply reports a clean {@code Stable} over a file the page cannot
+     * load. A request is the same question with a definite answer, and it
+     * answers in both directions: {@code 500} while the file is broken,
+     * {@code 200} once it is fixed, so no stale verdict has to be remembered.
+     * <p>
+     * Only a {@code 500} is a refusal. A {@code 404} means the dev server does
+     * not serve that path at all - a file outside its root - which is not this
+     * change being broken, and failing an apply over one would be a worse
+     * answer than the truth.
+     *
+     * @param csv
+     *            the changed files, absolute, comma-separated: they ride in as
+     *            the argument rather than as a reply field because a Windows
+     *            path can contain a space
+     * @return the reply line, naming the first file the dev server refused
+     */
+    static String frontendCheck(String csv) {
+        VaadinService service = DevLoopRegistration.service();
+        if (service == null) {
+            return "ERR kind=no-service message=service-not-registered";
+        }
+        ViteHandler vite = viteHandler(service);
+        if (vite == null) {
+            // A dev bundle was built before the app started, so there is no
+            // dev server to ask and nothing compiles on demand.
+            return "OK checked=0 refused=0";
+        }
+        Path root = frontendRoot(service);
+        if (root == null) {
+            return "OK checked=0 refused=0";
+        }
+        int checked = 0;
+        for (String value : csv.split(",")) {
+            String trimmed = value.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            String relative = relativeName(root, trimmed);
+            if (relative == null) {
+                continue;
+            }
+            checked++;
+            String refusal = refusalFor(vite,
+                    vite.getPathToVaadin() + "/" + relative);
+            if (refusal != null) {
+                return "OK checked=" + checked + " refused=1 file="
+                        + oneLine(relative) + " message=" + oneLine(refusal);
+            }
+        }
+        return "OK checked=" + checked + " refused=0";
+    }
+
+    private static Path frontendRoot(VaadinService service) {
+        try {
+            return service.getDeploymentConfiguration().getFrontendFolder()
+                    .toPath().toAbsolutePath().normalize();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * The file's path under the frontend folder, with forward slashes, or
+     * {@code null} for one that does not live there - the dev server's root is
+     * that folder, so nothing else has a URL on it.
+     */
+    private static String relativeName(Path root, String file) {
+        try {
+            Path path = Paths.get(file).toAbsolutePath().normalize();
+            if (!path.startsWith(root) || path.equals(root)) {
+                return null;
+            }
+            return root.relativize(path).toString().replace(File.separatorChar,
+                    '/');
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * What the dev server said about one module, or {@code null} if it served
+     * it. A connection that cannot be made is not a refusal either: a dev
+     * server that is unreachable is what {@link #frontendStatus()} answers, and
+     * failing an apply here would report the same thing twice.
+     */
+    private static String refusalFor(ViteHandler vite, String url) {
+        try {
+            HttpURLConnection connection = vite.prepareConnection(url, "GET");
+            int code = connection.getResponseCode();
+            if (code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
+                return null;
+            }
+            return viteErrorMessage(errorBody(connection), url);
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static String errorBody(HttpURLConnection connection) {
+        try (java.io.InputStream in = connection.getErrorStream()) {
+            return in == null ? ""
+                    : new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    /**
+     * The diagnosis out of the dev server's error page.
+     * <p>
+     * Vite answers a module it could not transform with an HTML page carrying
+     * the failure as a JSON object for its own overlay to render, so the
+     * {@code message} field in it is the same text Vite logs. Read best-effort
+     * and never load-bearing: the refusal is the verdict, and a page whose
+     * shape has moved still fails the apply - it just says so less precisely.
+     */
+    private static String viteErrorMessage(String body, String url) {
+        int at = body.indexOf(VITE_ERROR_MESSAGE_KEY);
+        if (at < 0) {
+            return "the dev server could not compile " + url;
+        }
+        StringBuilder text = new StringBuilder();
+        for (int i = at + VITE_ERROR_MESSAGE_KEY.length(); i < body
+                .length(); i++) {
+            char c = body.charAt(i);
+            if (c == '\\' && i + 1 < body.length()) {
+                // The excerpt and caret diagram are drawn with newlines and
+                // tabs; flattened to spaces because this answer is one line.
+                char next = body.charAt(++i);
+                text.append(next == 'n' || next == 't' ? ' ' : next);
+            } else if (c == '"') {
+                break;
+            } else {
+                text.append(c);
+            }
+        }
+        String message = text.toString().trim();
+        return message.isEmpty() ? "the dev server could not compile " + url
+                : message;
+    }
+
+    /** The dev server, or {@code null} when the app runs off a dev bundle. */
+    private static ViteHandler viteHandler(VaadinService service) {
+        return DevModeHandlerManager.getDevModeHandler(service)
+                .filter(ViteHandler.class::isInstance)
+                .map(ViteHandler.class::cast).orElse(null);
     }
 
     private static Set<String> activeThemes(VaadinService service) {

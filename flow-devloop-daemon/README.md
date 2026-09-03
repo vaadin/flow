@@ -284,20 +284,43 @@ load-bearing rather than tidiness: a bundled edit escalates to a restart, the re
 re-registers, and without the re-seed the same file would be offered again after the restart
 that already folded it into the bundle — restarting the app for ever.
 
-**A Vite compile error is found through the log, not the protocol.** Flow pipes every line
-Vite writes through `DevServerOutputTracker` at `INFO`, so a TypeScript syntax error arrives
-looking like progress: the level says `INFO` and the word "error" is lower case, and even the
-detail line does not help because `[PARSE_ERROR]` has no word boundary before `ERROR`. `AppLog`
-matches those openers separately (`DEV_SERVER_ERROR`), on the first line of a report rather
-than on anything containing "error" - the report runs to a source excerpt, a caret diagram and
-a JavaScript stack, and counting each line would turn one broken file into a dozen errors.
+**A Vite compile error is found by asking the dev server, with the log as the fallback.**
+Vite compiles a module when something *requests* it - not when the file is saved, and not when
+`apply` runs. So the log alone cannot answer whether the frontend half of a change is live: it
+holds a report only if a browser happened to re-fetch the module while the daemon was watching,
+and a page already showing the error overlay does not re-fetch at all. Every other signal then
+says the change went fine, and the apply reports a clean `Stable` over a file the page cannot
+load.
 
-Two things follow from Vite compiling on **save** rather than on apply. The error is already in
-the log when `apply` starts, so `Watch.mark()` would drop it as somebody else's; only
-dev-server errors, and only when a frontend file actually changed, are carried across that
-boundary (`Transaction.carriedLogErrors`, merged in `finish`). And when the browser fetches the
-module during the apply instead, the error lands asynchronously, so the frontend leg settles in
-Vite mode exactly as the redefine leg does.
+So the frontend leg asks. `FRONTEND_CHECK <paths>` has the connector fetch each changed file
+through `DevModeHandler.prepareConnection`, exactly as the browser would and on the base Vite
+was actually launched with (`ViteHandler.getPathToVaadin()`, so an app on a context path works
+too). A `500` is a refusal and carries Vite's own message in the error page it serves for its
+overlay; a `200` means the module compiles. Only `500` counts - a `404` means the dev server
+does not serve that path at all, and failing an apply over one would be a worse answer than the
+truth.
+
+The answer is authoritative **in both directions**, which is the point. A refusal fails the
+apply (`Transaction.devServerRefusal`) and leaves the file unmarked, so the next apply asks
+again rather than reporting `no changes` over a module that never compiled. And a clean answer
+*overrules the log* (`Transaction.devServerAsked`): once the file is fixed, the report still in
+the log describes the version before the fix - and the daemon's own request for the broken one
+is among the things that put it there - so trusting the log would fail the very apply that
+repaired the problem.
+
+The log is still read, for the dev server that cannot be asked: an app too old to know the
+command, or one whose dev server has gone away. Flow pipes every line Vite writes through
+`DevServerOutputTracker` at `INFO`, so a TypeScript syntax error arrives looking like progress:
+the level says `INFO` and the word "error" is lower case, and even the detail line does not
+help because `[PARSE_ERROR]` has no word boundary before `ERROR`. `AppLog` matches those
+openers separately (`DEV_SERVER_ERROR`), on the first line of a report rather than on anything
+containing "error" - the report runs to a source excerpt, a caret diagram and a JavaScript
+stack, and counting each line would turn one broken file into a dozen errors. Because Vite
+compiles on save, that error is already in the log when `apply` starts and `Watch.mark()` would
+drop it as somebody else's; only dev-server errors, and only when a frontend file actually
+changed, are carried across that boundary (`Transaction.carriedLogErrors`, merged in `finish`).
+And when the browser fetches the module during the apply instead, the error lands
+asynchronously, so the frontend leg settles in Vite mode exactly as the redefine leg does.
 
 The quoted line is wrapped, not truncated, and its layout prefix is stripped first. Spring
 Boot spends about a hundred characters on a timestamp, a level, a pid, a thread and an
@@ -331,6 +354,15 @@ VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev sta
 #   edit src/main/frontend/<something>.ts
 .vaadin/vaadin-dev apply
 #   expect: hmr: N frontend file(s), applied by Vite (dev server up:<port>)
+
+#   then break the same file - a missing brace is enough - and, with nothing
+#   open in a browser, so the log stays silent about it:
+.vaadin/vaadin-dev apply
+#   expect: exit 1, "dev server: <file>: Transform failed ...", and the same
+#   answer again on a repeat apply and after re-saving the file still broken
+#   fix the file
+.vaadin/vaadin-dev apply
+#   expect: exit 0, Stable - the report left in the log must not fail this one
 ```
 
 ## Known limits
