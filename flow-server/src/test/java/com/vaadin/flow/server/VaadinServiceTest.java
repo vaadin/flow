@@ -277,6 +277,30 @@ class VaadinServiceTest {
     }
 
     @Test
+    void productionMode_noUsageStatisticsCollected() {
+        UsageStatistics.resetEntries();
+
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope()
+                .setRoute("test", AnnotatedTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration, false);
+
+        service.init(new MockInstantiator(initListener));
+
+        assertFalse(
+                UsageStatistics.getEntries()
+                        .anyMatch(e -> Constants.STATISTIC_HAS_FLOW_ROUTE
+                                .equals(e.getName())
+                                || "flow/pnpm".equals(e.getName())),
+                "Usage statistics should only be collected in development mode");
+    }
+
+    @Test
     void should_reported_routing_hybrid() {
         UsageStatistics.resetEntries();
         VaadinServiceInitListener initListener = event -> {
