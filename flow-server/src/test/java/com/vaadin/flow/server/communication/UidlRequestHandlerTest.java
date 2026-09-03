@@ -213,6 +213,8 @@ class UidlRequestHandlerTest {
 
         handler.synchronizedHandleRequest(session, request, response,
                 requestBody).orElseThrow().writeResponse();
+        ObjectNode firstResponse = JacksonUtils.readTree(
+                CommunicationUtil.getStringWhenWriteString(outputStream));
 
         // The answer to the message the client is about to re-send was never
         // produced, so there is nothing recorded to send again. This is the
@@ -228,9 +230,23 @@ class UidlRequestHandlerTest {
                 requestBody).orElseThrow().writeResponse();
         String resendResponseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
-
         assertTrue(resendResponseContent.startsWith("{"),
-                "The client should get a response it can parse, was: "
+                "The client should get a JSON response, was: "
+                        + resendResponseContent);
+        ObjectNode resendResponse = JacksonUtils
+                .readTree(resendResponseContent);
+
+        // A sync id means a UIDL was written, which rules out the refresh and
+        // critical-notification responses this handler can also produce, and a
+        // sync id that moved on means it is a new one rather than the recorded
+        // response being sent again.
+        assertTrue(resendResponse.has(ApplicationConstants.SERVER_SYNC_ID),
+                "The client should get a UIDL response, was: "
+                        + resendResponseContent);
+        assertTrue(resendResponse.get(ApplicationConstants.SERVER_SYNC_ID)
+                .intValue() > firstResponse
+                        .get(ApplicationConstants.SERVER_SYNC_ID).intValue(),
+                "The response should be a newly created one, was: "
                         + resendResponseContent);
     }
 
