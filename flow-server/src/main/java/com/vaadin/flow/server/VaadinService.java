@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -483,8 +482,10 @@ public abstract class VaadinService implements Serializable {
                         Stream.of(routeData.getNavigationTarget()),
                         routeData.getParentLayouts().stream()))
                 .map(VaadinService::getKotlinMetadata).filter(Objects::nonNull)
-                .findFirst().ifPresent(metadata -> UsageStatistics.markAsUsed(
-                        STATISTIC_KOTLIN, getKotlinVersion(metadata)));
+                .findFirst()
+                .ifPresent(metadata -> UsageStatistics
+                        .markAsUsed(STATISTIC_KOTLIN, getKotlinVersion(
+                                metadata.annotationType().getClassLoader())));
     }
 
     /**
@@ -507,36 +508,21 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Resolves the Kotlin version to report.
-     * <p>
-     * The version of kotlin-stdlib is used when available, as it is the exact
-     * version in use. Otherwise the metadata version of the compiled class,
-     * which follows the Kotlin language version, is used.
+     * Resolves the version of kotlin-stdlib in use.
      *
-     * @param metadata
-     *            the Kotlin metadata annotation of a class of the application
+     * @param kotlinClassLoader
+     *            the class loader that provides the Kotlin classes
      * @return the Kotlin version, or {@code unknown} if it cannot be resolved
      */
-    private static String getKotlinVersion(Annotation metadata) {
-        ClassLoader kotlinClassLoader = metadata.annotationType()
-                .getClassLoader();
+    private static String getKotlinVersion(ClassLoader kotlinClassLoader) {
         try {
             Class<?> kotlinVersion = Class.forName("kotlin.KotlinVersion", true,
                     kotlinClassLoader);
             return kotlinVersion.getField("CURRENT").get(null).toString();
         } catch (Exception e) { // NOSONAR
-            getLogger().debug("kotlin-stdlib is not available, "
-                    + "falling back to the Kotlin metadata version", e);
+            getLogger().debug("Cannot resolve the Kotlin version", e);
+            return "unknown";
         }
-        try {
-            int[] metadataVersion = (int[]) metadata.annotationType()
-                    .getMethod("mv").invoke(metadata);
-            return IntStream.of(metadataVersion).mapToObj(String::valueOf)
-                    .collect(Collectors.joining("."));
-        } catch (Exception e) { // NOSONAR
-            getLogger().debug("Cannot read the Kotlin metadata version", e);
-        }
-        return "unknown";
     }
 
     /**

@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,7 +115,7 @@ class VaadinServiceTest {
      * Stands in for a view written in Kotlin: the Kotlin compiler adds
      * {@code @kotlin.Metadata} to every class it produces.
      */
-    @kotlin.Metadata(mv = { 2, 1, 0 })
+    @kotlin.Metadata
     @Tag("div")
     public static class KotlinTestView extends Component {
 
@@ -313,14 +314,14 @@ class VaadinServiceTest {
 
         service.init(new MockInstantiator(initListener));
 
-        UsageStatistics.UsageEntry kotlin = UsageStatistics.getEntries()
+        UsageStatistics.UsageEntry kotlinEntry = UsageStatistics.getEntries()
                 .filter(e -> "kotlin".equals(e.getName())).findFirst()
                 .orElse(null);
-        assertNotNull(kotlin,
+        assertNotNull(kotlinEntry,
                 "Kotlin should be reported for a project with a Kotlin view");
         // An entry with no version of its own reports the Flow version, so
-        // this also verifies that a version is actually resolved
-        assertEquals("2.1.0", kotlin.getVersion(),
+        // this also verifies that the kotlin-stdlib version is resolved
+        assertEquals(KotlinVersion.CURRENT.toString(), kotlinEntry.getVersion(),
                 "Kotlin version should be reported along with the usage");
     }
 
