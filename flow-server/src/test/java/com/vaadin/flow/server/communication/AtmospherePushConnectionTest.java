@@ -122,18 +122,10 @@ class AtmospherePushConnectionTest {
         assertEquals(State.DISCONNECTED, connection.getState());
     }
 
-    /**
-     * Answers a client message the server has just handled, which is the only
-     * push that records a response for a later resend.
-     */
-    private void answerClientMessage() {
-        connection.pushResponse();
-    }
-
     @Test
     void resendLastResponse_sendsThePreviousResponseAgain() throws Exception {
         vaadinSession.runWithLock(() -> {
-            answerClientMessage();
+            connection.push(false);
             return null;
         });
         String recorded = connection.getUI().getInternals()
@@ -158,7 +150,7 @@ class AtmospherePushConnectionTest {
     void resendLastResponse_keepsTheSyncIdOfTheOriginalResponse()
             throws Exception {
         vaadinSession.runWithLock(() -> {
-            answerClientMessage();
+            connection.push(false);
             return null;
         });
         ArgumentCaptor<Object> first = ArgumentCaptor.forClass(Object.class);
@@ -219,31 +211,27 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void pushResponse_deferred_forgetsTheRecordedResponse() throws Exception {
+    void newClientMessageProcessed_forgetsTheRecordedResponse()
+            throws Exception {
         vaadinSession.runWithLock(() -> {
-            answerClientMessage();
+            connection.push(false);
             return null;
         });
         assertNotNull(
                 connection.getUI().getInternals().getLastRequestResponse());
 
-        // The answer to the next client message cannot be created, so what is
-        // recorded is an older answer the client has already seen.
-        connection.connectionLost();
-        vaadinSession.runWithLock(() -> {
-            answerClientMessage();
-            return null;
-        });
+        connection.getUI().getInternals().setLastProcessedClientToServerId(1,
+                new byte[0]);
 
         assertNull(connection.getUI().getInternals().getLastRequestResponse(),
-                "A response that could not be created must not leave an older one to send again");
+                "The recorded response answers the previous message, so it must not be sent as this one's");
     }
 
     @Test
     void resendLastResponse_notConnected_sendsNothingAndOwesNothing()
             throws Exception {
         vaadinSession.runWithLock(() -> {
-            answerClientMessage();
+            connection.push(false);
             return null;
         });
         connection.connectionLost();
@@ -319,19 +307,19 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void push_doesNotRecordAResponseToSendAgain() throws Exception {
+    void push_asynchronous_doesNotRecordAResponseToSendAgain()
+            throws Exception {
         String recorded = "{\"marker\":1}";
         connection.getUI().getInternals().setLastRequestResponse(recorded, 7);
 
         vaadinSession.runWithLock(() -> {
             connection.push(true);
-            connection.push(false);
             return null;
         });
 
         assertEquals(recorded,
                 connection.getUI().getInternals().getLastRequestResponse(),
-                "Only a response created for a client message may be sent again");
+                "A server initiated push is not a response the client can ask for again");
     }
 
     @Test

@@ -173,7 +173,7 @@ public class PushHandler {
                             SynchronizedRequestHandler
                                     .getMaxRequestBodySize(vaadinRequest)),
                     vaadinRequest);
-            connection.pushResponse();
+            connection.push(false);
         } catch (ClientResentPayloadException e) {
             // The client re-sent a message the server has already handled, for
             // example after the push channel was reconnected. Send the response

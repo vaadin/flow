@@ -393,6 +393,11 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+        // A new message is being processed, so the recorded response answers
+        // the previous one. It can be sent again only once the answer to this
+        // message exists.
+        this.lastRequestResponse = null;
+        this.lastRequestResponseSyncId = -1;
     }
 
     /**
