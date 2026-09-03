@@ -21,6 +21,16 @@
     <!-- The parent's excludedGroups are JUnit 4 @Category classes that do not
          apply to the JUnit Platform provider. -->
     <excludedGroups/>
+    <!-- How many ITs, and therefore Chrome instances, run at the same time.
+         TestBench drives the JUnit Platform parallelism through its own
+         ParallelConfigurationStrategy, so the parent's ${failsafe.parallel} and
+         ${failsafe.threadCount} (JUnit 4 provider settings) do not apply here.
+         Without a cap the default is 50, which starts every IT in the module at
+         once and floods the dev server while it is still installing packages
+         and pre-bundling dependencies. The name matches the system property so
+         that passing -Dcom.vaadin.testbench.Parameters.testsInParallel on the
+         command line still overrides it. -->
+    <com.vaadin.testbench.Parameters.testsInParallel>4</com.vaadin.testbench.Parameters.testsInParallel>
   </properties>
 
   <dependencyManagement>
@@ -93,6 +103,15 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <com.vaadin.testbench.Parameters.testsInParallel>${com.vaadin.testbench.Parameters.testsInParallel}</com.vaadin.testbench.Parameters.testsInParallel>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
       <!-- Start and stop the Spring Boot application around the ITs -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -104,6 +123,17 @@
             <goals>
               <goal>start</goal>
             </goals>
+            <configuration>
+              <!-- DevServerReadyGate holds back the readiness signal until the
+                   frontend dev server can serve the application, which on a
+                   cold machine takes minutes. The defaults here amount to 30
+                   seconds, so without a longer limit the plugin gives up while
+                   the dev server is still installing packages. Kept above the
+                   gate's own limit so that its clearer error message is the one
+                   that surfaces. -->
+              <wait>500</wait>
+              <maxAttempts>1400</maxAttempts>
+            </configuration>
           </execution>
           <execution>
             <id>post-integration-test</id>
