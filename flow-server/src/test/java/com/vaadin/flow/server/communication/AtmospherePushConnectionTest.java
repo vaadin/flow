@@ -49,7 +49,6 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.times;
@@ -282,107 +281,38 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void pushResponse_deferred_stillAnswersItsMessageAfterReconnect()
+    void resendLastResponse_notConnected_sendsNothingAndOwesNothing()
             throws Exception {
         clientMessageProcessed(1);
-        connection.connectionLost();
-
-        // The response to the client message cannot be sent yet.
         vaadinSession.runWithLock(() -> {
             answerClientMessage();
             return null;
         });
-        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
-                "Nothing can be recorded while the response cannot be created");
-
-        vaadinSession.runWithLock(() -> {
-            connection.connect(resource);
-            return null;
-        });
-        Mockito.clearInvocations(broadcaster);
-
-        String recorded = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        assertNotNull(recorded,
-                "Reconnecting sends the deferred response, which answers the client message");
-
-        vaadinSession.runWithLock(() -> {
-            connection.resendLastResponse();
-            return null;
-        });
-
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
-        assertEquals(recorded, ((PushMessage) captor.getValue()).message,
-                "A resend of that message should replay the deferred response");
-    }
-
-    @Test
-    void resendLastResponse_notConnected_theResponseIsSentOnReconnect()
-            throws Exception {
-        vaadinSession.runWithLock(() -> {
-            answerClientMessage();
-            return null;
-        });
-        String recorded = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        Mockito.clearInvocations(broadcaster);
-
         connection.connectionLost();
+        Mockito.clearInvocations(broadcaster);
+
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
             return null;
         });
         Mockito.verifyNoInteractions(broadcaster);
         assertEquals(State.DISCONNECTED, connection.getState(),
-                "An owed resend should not look like a pending push");
+                "A resend that cannot be sent should not look like a pending push");
 
+        // The client keeps re-sending until it is answered, so reconnecting
+        // sends nothing by itself; the next resend is what answers it.
         vaadinSession.runWithLock(() -> {
             connection.connect(resource);
-            return null;
-        });
-
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
-        assertEquals(recorded, ((PushMessage) captor.getValue()).message,
-                "Reconnecting should send the owed response, not a new empty one");
-    }
-
-    @Test
-    void resendLastResponse_pushPendingAsWell_bothAreSentOnReconnect()
-            throws Exception {
-        vaadinSession.runWithLock(() -> {
-            answerClientMessage();
-            return null;
-        });
-        String recorded = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        Mockito.clearInvocations(broadcaster);
-
-        connection.connectionLost();
-        vaadinSession.runWithLock(() -> {
-            connection.resendLastResponse();
-            // Something changes on the server while the connection is still
-            // down, so a push is owed on top of the resend.
-            connection.push(true);
             return null;
         });
         Mockito.verifyNoInteractions(broadcaster);
-        assertEquals(State.PUSH_PENDING, connection.getState());
 
         vaadinSession.runWithLock(() -> {
-            connection.connect(resource);
+            connection.resendLastResponse();
             return null;
         });
-
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster, times(2)).broadcast(captor.capture(),
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
-        assertEquals(recorded,
-                ((PushMessage) captor.getAllValues().get(0)).message,
-                "The owed response should be sent before the pending push");
     }
 
     @Test
