@@ -50,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Vaadin Ltd
@@ -136,8 +138,8 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(broadcaster, Mockito.times(2))
-                .broadcast(captor.capture(), ArgumentMatchers.eq(resource));
+        verify(broadcaster, times(2)).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
         assertEquals(recorded,
                 ((PushMessage) captor.getAllValues().get(1)).message,
                 "The client should get the previous response again, not a new one");
@@ -153,7 +155,7 @@ class AtmospherePushConnectionTest {
             return null;
         });
 
-        Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
         assertNotNull(
                 connection.getUI().getInternals().getLastRequestResponse(),
@@ -186,7 +188,7 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(broadcaster).broadcast(captor.capture(),
+        verify(broadcaster).broadcast(captor.capture(),
                 ArgumentMatchers.eq(resource));
         assertEquals(recorded, ((PushMessage) captor.getValue()).message,
                 "Reconnecting should send the owed response, not a new empty one");
@@ -220,8 +222,8 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(broadcaster, Mockito.times(2))
-                .broadcast(captor.capture(), ArgumentMatchers.eq(resource));
+        verify(broadcaster, times(2)).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
         assertEquals(recorded,
                 ((PushMessage) captor.getAllValues().get(0)).message,
                 "The owed response should be sent before the pending push");

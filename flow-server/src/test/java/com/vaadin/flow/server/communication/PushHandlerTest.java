@@ -54,6 +54,10 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class PushHandlerTest {
 
@@ -80,21 +84,20 @@ class PushHandlerTest {
         MockVaadinSession session = new MockVaadinSession(service);
         currentSession.set(session);
 
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
-        Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(resource.uuid()).thenReturn("1");
-        Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+        AtmosphereResource resource = mock(AtmosphereResource.class);
+        AtmosphereRequest request = mock(AtmosphereRequest.class);
+        when(resource.getRequest()).thenReturn(request);
+        when(resource.uuid()).thenReturn("1");
+        when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
 
-        AtmospherePushConnection connection;
-        session.lock();
-        try {
+        AtmospherePushConnection connection = session.runWithLock(() -> {
             UI ui = new MockUI(session);
             currentUi.set(ui);
             ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
-            connection = Mockito.spy(new AtmospherePushConnection(ui));
-            connection.connect(resource);
-            ui.getInternals().setPushConnection(connection);
+            AtmospherePushConnection pushConnection = spy(
+                    new AtmospherePushConnection(ui));
+            pushConnection.connect(resource);
+            ui.getInternals().setPushConnection(pushConnection);
 
             // The message the client re-sends: the server has already handled
             // it, so its id is one behind the expected one and its hash is the
@@ -103,18 +106,17 @@ class PushHandlerTest {
                     + "\",\"rpc\":[],\"syncId\":0,\"clientId\":1}";
             ui.getInternals().setLastProcessedClientToServerId(1,
                     MessageDigestUtil.sha256(message));
-            Mockito.when(request.getReader()).thenReturn(new BufferedReader(
-                    new StringReader(message.length() + "|" + message)));
-        } finally {
-            session.unlock();
-        }
+            when(request.getReader())
+                    .thenReturn(reader(message.length() + "|" + message));
+            return pushConnection;
+        });
 
         new PushHandler(service).onMessage(resource);
 
         // Without this the ClientResentPayloadException would escape to the
         // error handler and the client would get an "Internal error" instead of
         // the response it is waiting for.
-        Mockito.verify(connection).resendLastResponse();
+        verify(connection).resendLastResponse();
     }
 
     @Test
@@ -455,6 +457,10 @@ class PushHandlerTest {
         assertTrue(sessionIsSet.get());
 
         return service;
+    }
+
+    private static BufferedReader reader(String content) {
+        return new BufferedReader(new StringReader(content));
     }
 
     private VaadinServletService runTest(VaadinServletService service,

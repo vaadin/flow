@@ -179,7 +179,8 @@ public class PushHandler {
             // example after the push channel was reconnected. Send the response
             // of that message again instead of failing, as the XHR path does.
             getLogger().debug(
-                    "Client re-sent an already handled message, re-sending the previous response");
+                    "Client re-sent an already handled message, re-sending the previous response",
+                    e);
             connection.resendLastResponse();
         } catch (RequestBodyTooLargeException e) {
             getLogger().warn(
