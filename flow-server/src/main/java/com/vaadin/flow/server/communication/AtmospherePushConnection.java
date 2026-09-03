@@ -255,6 +255,15 @@ public class AtmospherePushConnection
             push(false);
             return;
         }
+        // A disconnect that has already started counts as no connection, as in
+        // push(boolean). Sending anyway would usually still work, since
+        // disconnect() waits for the broadcast before closing, but that wait
+        // times out after a second: the response would then be neither
+        // delivered nor owed, which is the exact case this resend exists for.
+        if (disconnecting.get() || !isConnected()) {
+            resendPending = true;
+            return;
+        }
         synchronized (lock) {
             // The connection may have been closed while waiting for the lock.
             if (!isConnected()) {

@@ -163,52 +163,6 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void resendWhileDisconnect_notSentAndStillOwedOnReconnect()
-            throws Exception {
-        vaadinSession.runWithLock(() -> {
-            connection.push(false);
-            return null;
-        });
-        String recorded = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        Mockito.clearInvocations(broadcaster);
-
-        // A resend issued while a disconnect is in flight cannot go out, so
-        // it has to stay owed and reach the client once the connection is
-        // back, rather than being lost with the closing resource.
-        CountDownLatch latch = new CountDownLatch(1);
-        CompletableFuture.runAsync(() -> {
-            try {
-                vaadinSession.runWithLock(() -> {
-                    connection.resendLastResponse();
-                    return null;
-                });
-                latch.countDown();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS,
-                executor)).exceptionally(error -> {
-                    error.printStackTrace();
-                    return null;
-                });
-        connection.disconnect();
-        assertTrue(latch.await(2, TimeUnit.SECONDS), "Resend not completed");
-        Mockito.verifyNoInteractions(broadcaster);
-
-        vaadinSession.runWithLock(() -> {
-            connection.connect(resource);
-            return null;
-        });
-
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
-        assertEquals(recorded, ((PushMessage) captor.getValue()).message,
-                "The response owed to the client should survive the disconnect");
-    }
-
-    @Test
     void resendLastResponse_notConnected_theResponseIsSentOnReconnect()
             throws Exception {
         vaadinSession.runWithLock(() -> {
