@@ -255,12 +255,6 @@ public class AtmospherePushConnection
             push(false);
             return;
         }
-        // As in push(boolean), a disconnect that has already started counts as
-        // no connection: its resource is about to be closed.
-        if (disconnecting.get() || !isConnected()) {
-            resendPending = true;
-            return;
-        }
         synchronized (lock) {
             // The connection may have been closed while waiting for the lock.
             if (!isConnected()) {
