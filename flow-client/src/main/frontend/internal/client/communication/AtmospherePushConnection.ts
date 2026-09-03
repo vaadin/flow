@@ -257,6 +257,7 @@ export class AtmospherePushConnection implements PushConnection {
       pushUrl = addGetParameter(pushUrl, PUSH_ID_PARAMETER, pushId);
     }
 
+    Console.debug('Establishing push connection');
     this.#pushUri = pushUrl;
     this.#socket = doConnect(pushUrl, this.#config, {
       onOpen: (response) => this.onOpen(response as AtmosphereResponse),
@@ -324,6 +325,7 @@ export class AtmospherePushConnection implements PushConnection {
     }
     if (this.#state === State.CONNECTED) {
       const messageJson = stringify(message);
+      Console.debug(`Sending push (${this.#transport}) message to server: ${messageJson}`);
       if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
         while (fragmented.hasNextFragment()) {
@@ -346,10 +348,12 @@ export class AtmospherePushConnection implements PushConnection {
   }
 
   protected onReopen(response: AtmosphereResponse): void {
+    Console.debug(`Push connection re-established using ${response.transport}`);
     this.onConnect(response);
   }
 
   protected onOpen(response: AtmosphereResponse): void {
+    Console.debug(`Push connection established using ${response.transport}`);
     this.onConnect(response);
   }
 
@@ -390,6 +394,7 @@ export class AtmospherePushConnection implements PushConnection {
         break;
       case State.CONNECTED:
         // Normal disconnect
+        Console.debug('Closing push connection');
         doDisconnect(this.#pushUri!);
         this.#state = State.DISCONNECTED;
         command();
@@ -411,6 +416,7 @@ export class AtmospherePushConnection implements PushConnection {
       // Invalid JSON string
       this.#getConnectionStateHandler().pushInvalidContent(this, message);
     } else {
+      Console.debug(`Received push (${this.getTransportType()}) message: ${message}`);
       this.#registry.getMessageHandler().handleMessage(json);
     }
   }
@@ -505,9 +511,11 @@ export class AtmospherePushConnection implements PushConnection {
       ? VAADIN_PUSH_JS
       : VAADIN_PUSH_DEBUG_JS;
     const pushScriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + pushJs;
+    Console.debug(`Loading ${pushJs}`);
     const listener: ResourceLoadListener = {
       onLoad: (event: ResourceLoadEvent) => {
         if (isAtmosphereLoaded()) {
+          Console.debug(`${pushJs} loaded`);
           command();
         } else {
           // ResourceLoader assumes bootstrap's vaadinPush.js load succeeded even

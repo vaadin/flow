@@ -1,0 +1,6 @@
+/* Served from this module's target/classes and loaded by the application's view.
+   Here rather than in the application so the CSS leg of an apply is exercised
+   across a module boundary too. DevLoopCssIT rewrites the gap and reverts it. */
+.task-list-view {
+  row-gap: 12px;
+}

@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { type StateChangeHandler, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
@@ -94,6 +95,29 @@ describe('DefaultConnectionStateHandler', () => {
     expect(registry.log.reconnectionAttempts).to.deep.equal([1]);
   });
 
+  it('runs one reconnect when failures overlap, not one per failure', () => {
+    // Beyond the Java suite: No Java case covers overlapping scheduled
+    // reconnects. Each failure schedules its own retry, but only one of them
+    // may run: firing them all makes the client retry faster than it is
+    // configured to and re-send the same payload more often than intended.
+    const clock = sinon.useFakeTimers();
+    try {
+      const registry = makeRegistry(10);
+      const handler = new DefaultConnectionStateHandler(registry.registry);
+
+      // The first failure retries immediately, the next two each schedule one.
+      handler.xhrException(xhrError({ rpc: 1 }));
+      handler.xhrException(xhrError({ rpc: 2 }));
+      clock.tick(2000);
+      handler.xhrException(xhrError({ rpc: 3 }));
+      clock.tick(20000);
+
+      expect(registry.log.reconnectionAttempts).to.deep.equal([1, 3]);
+    } finally {
+      clock.restore();
+    }
+  });
+
   it('sends a heartbeat (not a payload) to reconnect a heartbeat failure', () => {
     // Beyond the Java suite: No Java case covers the heartbeat reconnect path.
     const registry = makeRegistry(3);
@@ -137,6 +161,24 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushError({ isBidirectional: () => true } as never, { transport: 'websocket' });
     expect(registry.log.unrecoverable[0]).to.contain('websocket');
   });
+  it('reconnects a pending push reconnect only for a bidirectional transport', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const initialState = getState();
+
+    // Long polling does not necessarily know when the connection is available
+    // again, so the reconnect is left to the next failing xhr.
+    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(0);
+
+    // A bidirectional transport tells us when it is back, so reconnect now.
+    handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    expect(getState()).to.equal(RECONNECTING);
+    expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
   it('stops heartbeats while the browser is offline and resumes them', () => {
     // Ported from test_browserEvents_stopsHeartbeats.
     // The Java suite configures the same interval it sets on the heartbeat,

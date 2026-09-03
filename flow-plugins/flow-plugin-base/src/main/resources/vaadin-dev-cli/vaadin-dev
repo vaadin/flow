@@ -1,0 +1,500 @@
+#!/usr/bin/env bash
+# vaadin-dev - thin client over the dev-loop daemon's local RPC.
+#
+# Nobody starts the daemon by hand: the first command auto-spawns it and every
+# later command from any shell, agent or IDE reuses that same instance, so there
+# is exactly one authoritative answer to "what is the state of my last change?"
+#
+# Exit code is the outcome: 0 success, non-zero failure. Progress goes to stdout.
+# Deliberately no JVM start per command - the handshake file is a properties file
+# and the transport is bash's /dev/tcp, so `vaadin-dev status` costs milliseconds.
+#
+# Installed by `mvn vaadin:install-dev-cli` and meant to be committed, like
+# mvnw. Rewritten by that goal whenever it changes, so edits here do not
+# survive an upgrade.
+set -uo pipefail
+
+# Two different questions, kept apart: SCRIPT_DIR is where this file lives, ROOT
+# is the application the command acts on. They are the same until --app (or
+# VAADIN_DEV_APP) says otherwise, which is what lets one copy of this script serve
+# every Vaadin application in a reactor rather than only the one beside it.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# SCRIPT_APP is the application this copy of the script belongs to. The install
+# goal puts it in the application's own .vaadin/ directory - the same one the
+# daemon keeps its handshake in - which is a directory of tooling and state and
+# never an application, so the application is the one above it. Anywhere else, the
+# script sits in the application directory and that is the answer.
+if [[ "$(basename "$SCRIPT_DIR")" == ".vaadin" ]]; then
+    SCRIPT_APP="$(dirname "$SCRIPT_DIR")"
+else
+    SCRIPT_APP="$SCRIPT_DIR"
+fi
+
+# --app is consumed here, before anything derives a path from ROOT, and is stripped
+# from the arguments so the daemon never sees it. Accepted anywhere in the command
+# line: "vaadin-dev --app ../admin apply" and "vaadin-dev apply --app ../admin"
+# mean the same thing.
+app_override="${VAADIN_DEV_APP:-}"
+args=()
+while (( $# )); do
+    case "$1" in
+        --app)
+            shift
+            (( $# )) || { echo "vaadin-dev: --app needs a directory" >&2; exit 64; }
+            app_override="$1"
+            ;;
+        --app=*) app_override="${1#--app=}" ;;
+        *)       args+=("$1") ;;
+    esac
+    shift
+done
+# The ${args+...} guard keeps an empty array from tripping set -u on bash 3.2,
+# which is still what macOS ships.
+set -- ${args+"${args[@]}"}
+
+if [[ -n "$app_override" ]]; then
+    if ! ROOT="$(cd "$app_override" 2>/dev/null && pwd)"; then
+        echo "vaadin-dev: no such directory: $app_override" >&2
+        exit 64
+    fi
+    if [[ ! -f "$ROOT/pom.xml" ]]; then
+        echo "vaadin-dev: not a Maven module (no pom.xml): $ROOT" >&2
+        exit 64
+    fi
+    # An override is the one case where the subject of the answer is not obvious
+    # from where the script sits, so the answer says which application it is for.
+    if [[ "$ROOT" != "$SCRIPT_APP" ]]; then
+        echo "vaadin-dev: application $ROOT" >&2
+    fi
+else
+    ROOT="$SCRIPT_APP"
+fi
+
+# Everything the daemon touches for this application - sources, target/, .vaadin/,
+# the Maven wrapper - lives under ROOT, because the daemon serves one app and uses
+# only that app's build. One daemon per application follows from this: the
+# handshake is per-ROOT, so a second application gets a second daemon on its own
+# port rather than a wrong answer from the first one's.
+#
+# The handshake stays outside target/ on purpose: `mvn clean` must not orphan a
+# running daemon and leave the next command spawning a second one to fight for
+# port 8080.
+HANDSHAKE="$ROOT/.vaadin/daemon.properties"
+WORK_DIR="$ROOT/target/devloop"
+DAEMON_LOG="$WORK_DIR/daemon.log"
+
+# Where the resolved daemon jar is remembered, and the stamp that invalidates it.
+# The daemon rewrites cp.stamp whenever any pom in the reactor changes, so a
+# Vaadin version bump re-resolves and nothing else does.
+DAEMON_JAR_CACHE="$WORK_DIR/daemon-jar.txt"
+POM_STAMP="$WORK_DIR/cp.stamp"
+
+usage() {
+    cat <<'EOF'
+usage: vaadin-dev [--app <dir>] <command> [options]
+
+  status [--json]   app up? owner? dev server? current/last transaction
+  apply [--json]    commit pending edits; blocks until Stable or Failed
+                    (--no-restart to stop after the compile gate)
+  start             launch the app in dev mode (daemon owns it); blocks until
+                    the app is serving or has failed, and a failure names the
+                    reason and prints the tail of app.log
+  stop              stop the app
+  restart           stop then start
+  shutdown          stop the daemon (and the app it owns)
+  ping              check the daemon is alive
+
+  redefine <a.b.C,...>
+                    diagnostic: push named classes at the running app and print
+                    the raw reply, without apply's escalation policy
+
+The daemon starts automatically on first use and serves this application only. When the
+application is one module of a Maven reactor, every reactor module it depends on is in the
+loop too: apply scans, compiles and hot-reloads those the same way. status names them.
+
+  --app <dir>              the application to act on (default: the directory this
+                           script is in, or the one above it when the script is
+                           installed in an application's .vaadin/). One daemon, one
+                           .vaadin/ and one target/devloop/ per application, so a
+                           reactor holding several Vaadin applications is driven by
+                           this one script:  vaadin-dev --app ../admin apply
+  VAADIN_DEV_APP           the same, as an environment variable; --app wins
+  VAADIN_DEV_HOME          a directory holding flow-devloop-daemon.jar, for an
+                           air-gapped setup or a jar built by hand. Otherwise the
+                           jar is resolved once from the project's own dependencies
+                           and the answer cached under target/devloop/
+  VAADIN_DEV_PROGRESS      auto (default: a moving phase line on stderr when it is
+                           a terminal), never, or always
+  VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g.
+                           -Dvaadin.dev.daemonJar=<path> to pin the daemon jar,
+                           -Dvaadin.frontend.hotdeploy=true (any vaadin.* property
+                           is forwarded on to the app), -Dvaadin.dev.idleSeconds=60
+                           or -Dvaadin.dev.startSettleMillis=15000 (how long a
+                           registered app is given to report a listening web
+                           server; only reached if it never logs one).
+                           Multi-module: -Dvaadin.dev.reactorRoot=<dir> when the
+                           reactor root is not an ancestor of the application,
+                           -Dvaadin.dev.modules=<dirs> to set the loop by hand
+                           ("." for this module alone), -Dvaadin.dev.maven=<path>
+                           to pick the Maven that resolves the classpath,
+                           -Dvaadin.dev.mavenArgs=<args> to add arguments to it
+                           (a profile the resolve must not run, say),
+                           -Dvaadin.dev.mainClass=<class> when the application
+                           class cannot be discovered
+EOF
+}
+
+read_prop() { # $1=key
+    [[ -f "$HANDSHAKE" ]] || return 1
+    local value
+    value="$(grep -E "^$1=" "$HANDSHAKE" 2>/dev/null | head -1 | cut -d= -f2-)"
+    [[ -n "$value" ]] || return 1
+    printf '%s' "$value"
+}
+
+java_bin() {
+    if [[ -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/java" ]]; then
+        printf '%s' "$JAVA_HOME/bin/java"
+    else
+        printf '%s' java
+    fi
+}
+
+# The Maven that resolves the daemon jar: the wrapper nearest the application,
+# then any wrapper above it, then mvn on the PATH. The wrapper reads
+# .mvn/wrapper/maven-wrapper.properties relative to itself, so an absolute path to
+# it works from anywhere.
+maven_bin() {
+    local dir="$ROOT"
+    while [[ -n "$dir" && "$dir" != "/" ]]; do
+        if [[ -x "$dir/mvnw" ]]; then printf '%s' "$dir/mvnw"; return 0; fi
+        if [[ -f "$dir/mvnw" ]]; then printf '%s' "$dir/mvnw"; return 0; fi
+        dir="$(dirname "$dir")"
+    done
+    command -v mvn >/dev/null && { printf '%s' mvn; return 0; }
+    return 1
+}
+
+# The daemon jar named by a resolved-classpath file.
+#
+# Normally the file holds exactly that one path, because the resolve filters by
+# artifact id. It is parsed rather than read whole anyway, so a plugin version
+# that ignores the filter - or a hand-written cache holding a full classpath - is
+# read correctly instead of failing with "this project does not depend on the
+# daemon". The separator is decided by content and not by platform: a Windows path
+# carries a colon of its own, so splitting on one unconditionally would cut the
+# drive letter off the front of every entry.
+extract_daemon_jar() { # $1=file
+    local content jar sep=':'
+    content="$(tr -d '\r\n' < "$1" 2>/dev/null)"
+    [[ -n "$content" ]] || return 1
+    if [[ -f "$content" ]]; then
+        printf '%s' "$content"
+        return 0
+    fi
+    [[ "$content" == *";"* ]] && sep=';'
+    jar="$(printf '%s' "$content" | tr "$sep" '\n' \
+        | grep -E 'flow-devloop-daemon[^/\]*[.]jar$' | head -1)"
+    [[ -n "$jar" && -f "$jar" ]] || return 1
+    printf '%s' "$jar"
+}
+
+# The daemon jar, from the cache when nothing has changed. Answering from a
+# one-line file is what keeps `vaadin-dev status` in the milliseconds.
+daemon_jar_cached() {
+    [[ -f "$DAEMON_JAR_CACHE" ]] || return 1
+    local jar
+    jar="$(extract_daemon_jar "$DAEMON_JAR_CACHE")" || return 1
+    # A pom edit anywhere in the reactor moves the stamp the daemon maintains;
+    # the application's own pom covers the case where no daemon has run yet.
+    [[ "$ROOT/pom.xml" -nt "$DAEMON_JAR_CACHE" ]] && return 1
+    [[ -f "$POM_STAMP" && "$POM_STAMP" -nt "$DAEMON_JAR_CACHE" ]] && return 1
+    printf '%s' "$jar"
+}
+
+# Asks Maven where the daemon jar is, once, and caches the answer.
+#
+# build-classpath rather than a hard-coded local-repository path: the jar's
+# version follows the project's Vaadin version, the local repository is not always
+# ~/.m2, and this is also the check that the project declares com.vaadin:vaadin-dev
+# at all. No scope filter, deliberately: the daemon travels in as an optional
+# dependency and a project is free to declare it provided or test instead. That is
+# a different question from the app classpath the daemon itself resolves, which
+# must not have provided on it.
+daemon_jar_resolve() {
+    local maven
+    if ! maven="$(maven_bin)"; then
+        echo "vaadin-dev: no Maven wrapper and no mvn on PATH, so the daemon jar" \
+             "cannot be resolved. Set VAADIN_DEV_HOME to a directory containing" \
+             "flow-devloop-daemon.jar." >&2
+        return 70
+    fi
+    mkdir -p "$WORK_DIR"
+    local relative="target/devloop/daemon-jar.txt"
+    spin_begin "resolving the dev-loop daemon"
+    local log output=1
+    log="$WORK_DIR/daemon-jar-resolve.log"
+    # Truncated once, then appended to per attempt, so a failure report shows the
+    # offline attempt as well as the online one rather than only the last.
+    : >"$log"
+    # Offline first: it is the fast path, and the jar is already in the local
+    # repository whenever the project has been built once.
+    for offline in -o -nsu; do
+        printf -- '--- %s %s ---\n' "$maven" "$offline" >>"$log"
+        if ( cd "$ROOT" && "$maven" -B -ntp -q $offline \
+                dependency:build-classpath \
+                -DincludeArtifactIds=flow-devloop-daemon \
+                -Dmdep.outputFile="$relative" \
+                -Dmdep.regenerateFile=true ) >>"$log" 2>&1; then
+            output=0
+            break
+        fi
+        spin_tick
+    done
+    spin_erase
+    if (( output != 0 )); then
+        echo "vaadin-dev: could not resolve flow-devloop-daemon; last lines of $log:" >&2
+        tail -n 15 "$log" 2>/dev/null | sed 's/^/  /' >&2
+        return 70
+    fi
+    local jar
+    if ! jar="$(extract_daemon_jar "$DAEMON_JAR_CACHE")"; then
+        echo "vaadin-dev: this project does not depend on the dev-loop daemon." \
+             "Add com.vaadin:vaadin-dev (optional) to $ROOT/pom.xml." >&2
+        return 70
+    fi
+    printf '%s' "$jar"
+}
+
+# -Dvaadin.dev.daemonJar=<path> out of VAADIN_DEV_DAEMON_OPTS. Read here rather
+# than passed through to the JVM, because it selects the jar the JVM is given: a
+# system property could not.
+daemon_jar_option() {
+    local opts="${VAADIN_DEV_DAEMON_OPTS:-}"
+    [[ "$opts" == *-Dvaadin.dev.daemonJar=* ]] || return 1
+    local rest="${opts#*-Dvaadin.dev.daemonJar=}"
+    printf '%s' "${rest%% -D*}"
+}
+
+# Overrides first, then the cache, then Maven. The daemon jar is also the
+# javaagent - it carries Premain-Class alongside Main-Class - so this one path is
+# all the app JVM needs.
+daemon_jar() {
+    local configured
+    if configured="$(daemon_jar_option)"; then
+        if [[ ! -f "$configured" ]]; then
+            echo "vaadin-dev: -Dvaadin.dev.daemonJar does not exist: $configured" >&2
+            return 70
+        fi
+        printf '%s' "$configured"
+        return 0
+    fi
+    if [[ -n "${VAADIN_DEV_HOME:-}" ]]; then
+        local home_jar="$VAADIN_DEV_HOME/flow-devloop-daemon.jar"
+        if [[ ! -f "$home_jar" ]]; then
+            echo "vaadin-dev: no flow-devloop-daemon.jar in VAADIN_DEV_HOME=$VAADIN_DEV_HOME" >&2
+            return 70
+        fi
+        printf '%s' "$home_jar"
+        return 0
+    fi
+    daemon_jar_cached && return 0
+    daemon_jar_resolve
+}
+
+spawn_daemon() {
+    local jar
+    jar="$(daemon_jar)" || return 70
+    mkdir -p "$WORK_DIR"
+    # Detached: the daemon outlives this shell so later commands reuse it.
+    nohup "$(java_bin)" ${VAADIN_DEV_DAEMON_OPTS:-} \
+        -jar "$jar" "$ROOT" \
+        >>"$DAEMON_LOG" 2>&1 &
+    disown 2>/dev/null || true
+
+    # Wait for the handshake file rather than sleeping a fixed amount.
+    local waited=0
+    spin_begin "starting daemon"
+    while (( waited < 200 )); do
+        if [[ -f "$HANDSHAKE" ]] && read_prop port >/dev/null; then
+            spin_erase
+            return 0
+        fi
+        sleep 0.1
+        # Every other pass: 0.1 s is a faster flicker than a spinner wants.
+        (( waited % 2 == 0 )) && spin_tick
+        (( waited++ ))
+    done
+    spin_erase
+    # Same rule as the app: the reason exists only in the log the process wrote,
+    # so it comes back with the failure instead of being left there to be found.
+    echo "vaadin-dev: daemon did not come up; last lines of $DAEMON_LOG:" >&2
+    tail -n 15 "$DAEMON_LOG" 2>/dev/null | sed 's/^/  /' >&2
+    return 70
+}
+
+# A start or an apply goes quiet for tens of seconds while a JVM boots or javac
+# runs, and a silent terminal is indistinguishable from a wedged one. So: one
+# repainted line carrying the phase the daemon last reported and how long this
+# command has been running. No percentage - nothing here knows one, and a made-up
+# bar would be a claim the tool cannot back.
+#
+# Drawn on stderr, and only for a human: stdout stays exactly the lines the daemon
+# sent, so `status --json`, a pipe and an agent all see what they saw before.
+# VAADIN_DEV_PROGRESS=never turns it off, always forces it on (for a pty-less test).
+SPIN_FRAMES='|/-\'
+spin_i=0 spin_label='' spin_since=0 spin_quiet=0 spin_drawn=0 spin_cols=80
+
+spin_on() {
+    case "${VAADIN_DEV_PROGRESS:-auto}" in
+        never)  return 1 ;;
+        always) return 0 ;;
+        *)      [[ -t 2 ]] ;;
+    esac
+}
+
+spin_begin() { # $1=label
+    spin_label="$1"
+    spin_since=$SECONDS
+    spin_quiet=$SECONDS
+    spin_i=0
+    # Width resolved once per command, not per frame: COLUMNS is unset in a
+    # script, and one tput next to a JVM boot costs nothing.
+    if spin_on; then
+        spin_cols="${COLUMNS:-0}"
+        (( spin_cols > 0 )) || spin_cols="$(tput cols 2>/dev/null || echo 80)"
+    fi
+}
+
+# Wiped by overwriting with spaces rather than an erase escape: this runs in every
+# terminal the three platforms offer, including the ones that show \033[K raw.
+spin_erase() {
+    if spin_on && (( spin_drawn > 0 )); then
+        printf '\r%*s\r' "$spin_drawn" '' >&2
+        spin_drawn=0
+    fi
+}
+
+spin_tick() {
+    spin_on || return 0
+    local frame="${SPIN_FRAMES:$spin_i:1}"
+    spin_i=$(( (spin_i + 1) % ${#SPIN_FRAMES} ))
+    # The frames turn on a local timer, which says nothing about the daemon still
+    # working - so when it has gone quiet, say so instead of implying progress.
+    local quiet=$(( SECONDS - spin_quiet )) note='' text
+    if (( quiet > 20 )); then
+        note="  (quiet ${quiet}s)"
+    fi
+    # Sized to the window: a label that wraps to a second row would leave the
+    # first one behind on the next repaint.
+    local room=$(( spin_cols - 20 ))
+    (( room < 20 )) && room=20
+    printf -v text '%s %.*s  %ds%s' "$frame" "$room" "$spin_label" \
+        $(( SECONDS - spin_since )) "$note"
+    printf '\r%*s\r%s' "$spin_drawn" '' "$text" >&2
+    spin_drawn=${#text}
+}
+
+# A command that ends - normally or on Ctrl-C - must not leave a half-drawn frame
+# as the last thing in the scrollback.
+trap spin_erase EXIT
+trap 'spin_erase; exit 130' INT
+
+# The frame between two replies is made by a read that times out, and that is a
+# bash 4 feature three times over: a fractional -t, an exit status above 128 that
+# separates a timeout from end of stream, and partial input kept in the variable
+# instead of dropped. macOS still ships bash 3.2, which has none of the three, so
+# there the read blocks and the phase line moves only when the daemon speaks -
+# a reply must never be truncated to make room for a spinner.
+if (( BASH_VERSINFO[0] >= 4 )); then
+    RECV_TIMEOUT=(-t 0.2)
+else
+    RECV_TIMEOUT=()
+fi
+
+# Sends one command and streams the reply. Response lines are "> text" progress
+# followed by a final "EXIT <code>" which becomes this script's exit status.
+send() { # $1=port $2=token $3...=command words
+    local port="$1" token="$2"; shift 2
+    # The braces matter: bash reports a failed /dev/tcp redirection itself, so the
+    # suppression has to wrap the redirection, not the command.
+    if ! { exec 3<>"/dev/tcp/127.0.0.1/$port"; } 2>/dev/null; then
+        return 99
+    fi
+    printf '%s %s\n' "$token" "$*" >&3
+    local line status=1 buf='' chunk='' rc
+    spin_begin "$*"
+    while :; do
+        # Where the timeout is armed it is what makes room for a frame between two
+        # replies. Anything read before it fires is kept: bash leaves a partial
+        # line in the variable, and dropping it would silently truncate the reply.
+        # The ${RECV_TIMEOUT+...} guard keeps an empty array from tripping set -u.
+        IFS= read -r ${RECV_TIMEOUT+"${RECV_TIMEOUT[@]}"} chunk <&3
+        rc=$?
+        if (( rc > 128 )); then
+            buf+="$chunk"
+            spin_tick
+            continue
+        fi
+        line="$buf$chunk"
+        buf=''
+        line="${line%$'\r'}"
+        # Erase first: a reply line must never be printed onto a drawn frame.
+        spin_erase
+        # An unterminated last line is a reply like any other and can carry the
+        # verdict, so end of stream decides when to stop reading and never how to
+        # read the line in hand.
+        if [[ -n "$line" ]]; then
+            case "$line" in
+                "EXIT "*)
+                    status="${line#EXIT }"
+                    # A verdict cut in half is no verdict: fail rather than hand
+                    # `return` something that is not a number.
+                    [[ -n "$status" && -z "${status//[0-9]/}" ]] || status=1
+                    break
+                    ;;
+                # The last thing the daemon said is the truest label available: it
+                # names the phase, so the frame moves under "restarting", not "start".
+                "> "*)  printf '%s\n' "${line#> }"; spin_label="${line#> }" ;;
+                *)      printf '%s\n' "$line" ;;
+            esac
+        fi
+        (( rc != 0 )) && break
+        spin_quiet=$SECONDS
+    done
+    spin_erase
+    exec 3<&- 2>/dev/null || true
+    return "$status"
+}
+
+main() {
+    local cmd="${1:-}"
+    case "$cmd" in
+        ""|-h|--help|help) usage; exit 0 ;;
+    esac
+    shift
+
+    local port token
+    if ! port="$(read_prop port)" || ! token="$(read_prop token)"; then
+        spawn_daemon || exit 70
+        port="$(read_prop port)"; token="$(read_prop token)"
+    fi
+
+    send "$port" "$token" "$cmd" "$@"
+    local status=$?
+
+    # 99 means the recorded daemon is not answering: the record is stale, so reap
+    # it and try once more with a fresh daemon.
+    if (( status == 99 )); then
+        rm -f "$HANDSHAKE"
+        spawn_daemon || exit 70
+        port="$(read_prop port)"; token="$(read_prop token)"
+        send "$port" "$token" "$cmd" "$@"
+        status=$?
+        (( status == 99 )) && { echo "vaadin-dev: cannot reach daemon" >&2; exit 70; }
+    fi
+    exit "$status"
+}
+
+main "$@"

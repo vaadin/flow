@@ -138,6 +138,7 @@ jobs:
           cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
           LOG=mvn-unit-tests-${{matrix.current}}.out
+          : > "$LOG"
           $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
@@ -247,6 +248,10 @@ jobs:
             cmd="mvn install -B -ntp -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
+          if [ ${{matrix.current}} -eq 7 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl devloop-shared -am"
+            $cmd || $cmd
+          fi
       - name: Run ITs
         timeout-minutes: 22
         run: |
@@ -256,6 +261,7 @@ jobs:
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
+          : > "$LOG"
           # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
           # the step open by holding the pipe to tee.
@@ -285,6 +291,7 @@ jobs:
     # pass immediately. Unlike the other test jobs this one needs no secrets,
     # so it runs for pull requests from forks too.
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
     runs-on: ubuntu-24.04
     steps:
