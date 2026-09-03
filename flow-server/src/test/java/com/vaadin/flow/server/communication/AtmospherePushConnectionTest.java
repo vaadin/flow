@@ -177,7 +177,8 @@ class AtmospherePushConnectionTest {
             return null;
         });
         Mockito.verifyNoInteractions(broadcaster);
-        assertEquals(State.RESPONSE_PENDING, connection.getState());
+        assertEquals(State.DISCONNECTED, connection.getState(),
+                "An owed resend should not look like a pending push");
 
         vaadinSession.runWithLock(() -> {
             connection.connect(resource);
@@ -189,6 +190,41 @@ class AtmospherePushConnectionTest {
                 ArgumentMatchers.eq(resource));
         assertEquals(recorded, ((PushMessage) captor.getValue()).message,
                 "Reconnecting should send the owed response, not a new empty one");
+    }
+
+    @Test
+    void resendLastResponse_pushPendingAsWell_bothAreSentOnReconnect()
+            throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        Mockito.clearInvocations(broadcaster);
+
+        connection.connectionLost();
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            // Something changes on the server while the connection is still
+            // down, so a push is owed on top of the resend.
+            connection.push(true);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.PUSH_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(broadcaster, Mockito.times(2))
+                .broadcast(captor.capture(), ArgumentMatchers.eq(resource));
+        assertEquals(recorded,
+                ((PushMessage) captor.getAllValues().get(0)).message,
+                "The owed response should be sent before the pending push");
     }
 
     @Test

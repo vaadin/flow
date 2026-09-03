@@ -259,8 +259,9 @@ public class AtmospherePushConnection
                 // not take over then: the changes it would describe are no
                 // longer dirty, so the client would get an empty response and
                 // stay out of sync, which is what the resend prevents.
+                // The state is left alone, so that it keeps describing the
+                // pushes that are pending on their own.
                 resendPending = true;
-                state = State.RESPONSE_PENDING;
                 return;
             }
             sendMessage(lastResponse);
@@ -354,10 +355,15 @@ public class AtmospherePushConnection
             // response push(boolean) would create.
             resendPending = false;
             resendLastResponse();
-        } else if (oldState == State.PUSH_PENDING
+        }
+
+        if (oldState == State.PUSH_PENDING
                 || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
-            // pending push, but not vice versa
+            // pending push, but not vice versa. Note that this runs in addition
+            // to a resend: the resend only repeats what the client already
+            // missed, so anything that became dirty afterwards still has to go
+            // out.
             push(oldState == State.PUSH_PENDING);
         }
     }
