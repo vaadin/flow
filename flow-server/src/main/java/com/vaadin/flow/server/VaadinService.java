@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.Thread.Builder.OfVirtual;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -50,6 +52,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -144,6 +148,10 @@ public abstract class VaadinService implements Serializable {
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class
             .getName() + ".reinitializing";
+
+    private static final String STATISTIC_KOTLIN = "kotlin";
+
+    private static final String KOTLIN_METADATA_ANNOTATION = "kotlin.Metadata";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
@@ -337,6 +345,7 @@ public abstract class VaadinService implements Serializable {
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
             addAutoLayoutUsageStatistics();
+            addKotlinUsageStatistics(routeDataList);
             DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
@@ -454,6 +463,80 @@ public abstract class VaadinService implements Serializable {
                         null);
             }
         }
+    }
+
+    /**
+     * Reports Kotlin usage if any of the application's views is written in
+     * Kotlin.
+     * <p>
+     * Kotlin on the classpath is not enough, as kotlin-stdlib is a common
+     * transitive dependency of Java-only projects. Instead, the routing targets
+     * and their layouts are checked for the annotation that the Kotlin compiler
+     * adds to every class it compiles.
+     *
+     * @param routeDataList
+     *            the routes registered for the application
+     */
+    private void addKotlinUsageStatistics(List<RouteData> routeDataList) {
+        routeDataList.stream()
+                .flatMap(routeData -> Stream.concat(
+                        Stream.of(routeData.getNavigationTarget()),
+                        routeData.getParentLayouts().stream()))
+                .map(VaadinService::getKotlinMetadata).filter(Objects::nonNull)
+                .findFirst().ifPresent(metadata -> UsageStatistics.markAsUsed(
+                        STATISTIC_KOTLIN, getKotlinVersion(metadata)));
+    }
+
+    /**
+     * Gets the {@code kotlin.Metadata} annotation of the given class, if the
+     * class was compiled by the Kotlin compiler.
+     * <p>
+     * The annotation is looked up by name, as Flow does not depend on
+     * kotlin-stdlib.
+     *
+     * @param clazz
+     *            the class to check
+     * @return the Kotlin metadata annotation, or {@code null} if the class was
+     *         not compiled from Kotlin
+     */
+    private static Annotation getKotlinMetadata(Class<?> clazz) {
+        return Stream.of(clazz.getAnnotations())
+                .filter(annotation -> KOTLIN_METADATA_ANNOTATION
+                        .equals(annotation.annotationType().getName()))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Resolves the Kotlin version to report.
+     * <p>
+     * The version of kotlin-stdlib is used when available, as it is the exact
+     * version in use. Otherwise the metadata version of the compiled class,
+     * which follows the Kotlin language version, is used.
+     *
+     * @param metadata
+     *            the Kotlin metadata annotation of a class of the application
+     * @return the Kotlin version, or {@code unknown} if it cannot be resolved
+     */
+    private static String getKotlinVersion(Annotation metadata) {
+        ClassLoader kotlinClassLoader = metadata.annotationType()
+                .getClassLoader();
+        try {
+            Class<?> kotlinVersion = Class.forName("kotlin.KotlinVersion", true,
+                    kotlinClassLoader);
+            return kotlinVersion.getField("CURRENT").get(null).toString();
+        } catch (Exception e) { // NOSONAR
+            getLogger().debug("kotlin-stdlib is not available, "
+                    + "falling back to the Kotlin metadata version", e);
+        }
+        try {
+            int[] metadataVersion = (int[]) metadata.annotationType()
+                    .getMethod("mv").invoke(metadata);
+            return IntStream.of(metadataVersion).mapToObj(String::valueOf)
+                    .collect(Collectors.joining("."));
+        } catch (Exception e) { // NOSONAR
+            getLogger().debug("Cannot read the Kotlin metadata version", e);
+        }
+        return "unknown";
     }
 
     /**
