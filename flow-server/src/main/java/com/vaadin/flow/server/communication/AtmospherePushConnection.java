@@ -55,6 +55,7 @@ public class AtmospherePushConnection
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
+    private transient boolean resendPending = false;
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
@@ -247,13 +248,18 @@ public class AtmospherePushConnection
     void resendLastResponse() {
         String lastResponse = getUI().getInternals().getLastRequestResponse();
         if (lastResponse == null) {
+            // Nothing recorded to send again, so a freshly created response is
+            // all this connection can offer.
             push(false);
             return;
         }
         synchronized (lock) {
-            if (disconnecting.get() || !isConnected()) {
-                // Nothing to send on: let the next push carry the state, as
-                // push(boolean) does when the connection is not available.
+            if (!isConnected()) {
+                // Send it once there is a connection again. push(boolean) must
+                // not take over then: the changes it would describe are no
+                // longer dirty, so the client would get an empty response and
+                // stay out of sync, which is what the resend prevents.
+                resendPending = true;
                 state = State.RESPONSE_PENDING;
                 return;
             }
@@ -342,7 +348,13 @@ public class AtmospherePushConnection
         State oldState = state;
         state = State.CONNECTED;
 
-        if (oldState == State.PUSH_PENDING
+        if (resendPending) {
+            // A response owed to a re-sent client message could not be sent
+            // while the connection was down; send it now instead of the empty
+            // response push(boolean) would create.
+            resendPending = false;
+            resendLastResponse();
+        } else if (oldState == State.PUSH_PENDING
                 || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa

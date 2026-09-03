@@ -161,6 +161,37 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
+    void resendLastResponse_notConnected_theResponseIsSentOnReconnect()
+            throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        Mockito.clearInvocations(broadcaster);
+
+        connection.connectionLost();
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.RESPONSE_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(recorded, ((PushMessage) captor.getValue()).message,
+                "Reconnecting should send the owed response, not a new empty one");
+    }
+
+    @Test
     void push_asynchronousPushKeepsTheRecordedResponse() throws Exception {
         String recorded = "{\"marker\":1}";
         connection.getUI().getInternals().setLastRequestResponse(recorded);
