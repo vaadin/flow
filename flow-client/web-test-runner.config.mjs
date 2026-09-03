@@ -26,6 +26,16 @@ export default {
       </body>
     </html>`,
   plugins: [
+    {
+      // Flow.ts loads the client through the bare `vaadin-flow-client`
+      // specifier, which an application's generated Vite config aliases to
+      // jar-resources. Point it at the sources so the dynamic import resolves
+      // when the tests run in the browser.
+      name: 'vaadin-flow-client-resolver',
+      resolveImport({ source }) {
+        return source === 'vaadin-flow-client' ? '/src/main/frontend/FlowClient.js' : undefined;
+      }
+    },
     esbuildPlugin({
       ts: true,
       tsconfig: fileURLToPath(new URL('./tsconfig.json', import.meta.url))

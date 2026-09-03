@@ -78,6 +78,29 @@ class TaskUpdateViteTest {
     }
 
     @Test
+    void generatedTemplate_clientAliasedAsDependencyAndPreBundled()
+            throws IOException {
+        new TaskUpdateVite(options, null).execute();
+
+        File configFile = new File(temporaryFolder,
+                FrontendUtils.VITE_GENERATED_CONFIG);
+
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        assertTrue(
+                template.contains("const flowClientId = 'vaadin-flow-client';"),
+                "The client should be reachable through the bare specifier that Flow.ts imports");
+        assertTrue(template.contains(
+                "[flowClientId]: `${flowClientEntry}?v=${flowClientHash()}`"),
+                "The bare specifier should be aliased to the client entry, with a hash that re-optimizes the client when it changes");
+        assertTrue(
+                template.contains(
+                        "include: hasFlowClient ? [flowClientId] : []"),
+                "The client should be listed in optimizeDeps so that Vite pre-bundles it instead of serving its modules one by one");
+    }
+
+    @Test
     void configFileExists_fileNotOverwritten() throws IOException {
         File configFile = new File(temporaryFolder, FrontendUtils.VITE_CONFIG);
         final String importString = "Hello Fake configuration";

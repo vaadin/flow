@@ -61,8 +61,10 @@ public class TaskGenerateWebComponentBootstrap
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
-        lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                + "FlowClient.js';");
+        // Same specifier as Flow.ts uses, so that both entry points end up with
+        // the same client instance and, in dev mode, with the pre-bundled copy
+        // the generated Vite config aliases this name to.
+        lines.add("import { init } from 'vaadin-flow-client';");
         lines.add("init();");
 
         applyCssImportWhenNoTheme(lines);
