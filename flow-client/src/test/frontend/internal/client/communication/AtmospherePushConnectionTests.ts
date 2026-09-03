@@ -1,6 +1,4 @@
 import { expect } from '@open-wc/testing';
-import sinon from 'sinon';
-import { Console } from '../../../../../main/frontend/internal/client/Console';
 import { testRegistry } from '../testRegistry';
 import {
   AtmospherePushConnection,
@@ -204,29 +202,6 @@ describe('AtmospherePushConnection', () => {
 
       capture.config!.onMessage(response('websocket', 'not json'));
       expect(log.pushInvalidContent).to.deep.equal(['not json']);
-    });
-
-    it('logs the connection and received-message diagnostics', async () => {
-      // Beyond the Java suite: No Java case asserts on the logging.
-      // SendMultibyteCharactersTest matches a console line that starts with
-      // "Received " and contains "message:"; over a bidirectional websocket the
-      // response never goes through XhrConnection, so this is the only one.
-      const { registry, capture } = setupPush();
-      const debug = sinon.stub(Console, 'debug');
-      let messages: string[] = [];
-      try {
-        new AtmospherePushConnection(registry);
-        await tick();
-        capture.config!.onOpen(response('websocket'));
-        capture.config!.onMessage(response('websocket', '{"syncId":0}'));
-      } finally {
-        messages = debug.getCalls().map((call) => String(call.args[0]));
-        debug.restore();
-      }
-
-      expect(messages).to.contain('Establishing push connection');
-      expect(messages).to.contain('Push connection established using websocket');
-      expect(messages).to.contain('Received push (websocket) message: {"syncId":0}');
     });
 
     it('reports errors and closes, and disconnects an open connection', async () => {

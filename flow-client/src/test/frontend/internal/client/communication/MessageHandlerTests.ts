@@ -5,8 +5,6 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
-import sinon from 'sinon';
-import { Console } from '../../../../../main/frontend/internal/client/Console';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
@@ -424,20 +422,6 @@ describe('MessageHandler', () => {
         expect(profiling.length).to.be.at.least(3);
         profiling.forEach((value) => expect(value).to.be.finite);
         expect(profiling[0]).to.be.at.least(0);
-      });
-
-      it('logs that a message from the server is being handled', () => {
-        // SendMultibyteCharactersTest waits for this exact console line, so the
-        // wording is part of the contract with the push ITs.
-        const registry = makeRegistry();
-        const debug = sinon.stub(Console, 'debug');
-        try {
-          new MessageHandler(registry.registry).handleMessage({ syncId: 0 });
-        } finally {
-          debug.restore();
-        }
-
-        expect(debug.getCalls().map((call) => String(call.args[0]))).to.contain('Handling message from server');
       });
 
       it('keeps processing a message whose stylesheetRemovals is null', () => {

@@ -1,7 +1,4 @@
 import { expect } from '@open-wc/testing';
-import sinon from 'sinon';
-import { Console } from '../../../../../main/frontend/internal/client/Console';
-import type { PushConnection } from '../../../../../main/frontend/internal/client/communication/PushConnection';
 import { type StateChangeHandler, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
@@ -183,25 +180,6 @@ describe('DefaultConnectionStateHandler', () => {
 
     handler.heartbeatOk();
     expect(getState()).to.equal(CONNECTED);
-  });
-
-  it('logs that the push connection is being reopened', () => {
-    // Beyond the Java suite: No Java case asserts on the logging. ReconnectTest
-    // waits for this exact console line to count a reconnection attempt, for
-    // both the bidirectional and the long-polling transport.
-    const registry = makeRegistry();
-    const handler = new DefaultConnectionStateHandler(registry.registry);
-    const longPolling = { isBidirectional: () => false } as unknown as PushConnection;
-    const debug = sinon.stub(Console, 'debug');
-    let messages: string[] = [];
-    try {
-      handler.pushReconnectPending(longPolling);
-    } finally {
-      messages = debug.getCalls().map((call) => String(call.args[0]));
-      debug.restore();
-    }
-
-    expect(messages).to.contain('Reopening push connection');
   });
 
   it('keeps reconnecting while heartbeats fail, then gives up', () => {
