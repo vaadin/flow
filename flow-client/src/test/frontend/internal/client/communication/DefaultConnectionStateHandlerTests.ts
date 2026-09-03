@@ -137,6 +137,24 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushError({ isBidirectional: () => true } as never, { transport: 'websocket' });
     expect(registry.log.unrecoverable[0]).to.contain('websocket');
   });
+  it('reconnects a pending push reconnect only for a bidirectional transport', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const initialState = getState();
+
+    // Long polling does not necessarily know when the connection is available
+    // again, so the reconnect is left to the next failing xhr.
+    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(0);
+
+    // A bidirectional transport tells us when it is back, so reconnect now.
+    handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    expect(getState()).to.equal(RECONNECTING);
+    expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
   it('stops heartbeats while the browser is offline and resumes them', () => {
     // Ported from test_browserEvents_stopsHeartbeats.
     // The Java suite configures the same interval it sets on the heartbeat,
