@@ -581,8 +581,8 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. A regular {@code Binder} does not add
-         * a {@link BeanValidator} even if a JSR-303 implementation is on the
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
          * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method. It need not have
@@ -622,8 +622,8 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. A regular {@code Binder} does not add
-         * a {@link BeanValidator} even if a JSR-303 implementation is on the
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
          * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method.
