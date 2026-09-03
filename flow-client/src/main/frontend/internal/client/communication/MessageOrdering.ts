@@ -21,6 +21,7 @@
 // until the missing ones arrive. MessageHandler composes this.
 
 import type { ValueMap } from '../ValueMap';
+import { Console } from '../Console';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const SERVER_SYNC_ID = 'syncId';
@@ -139,6 +140,7 @@ export class PendingMessageQueue {
     for (let i = 0; i < this.#pending.length; i++) {
       const serverId = getServerId(this.#pending[i].getJson());
       if (serverId !== -1 && serverId < this.getExpectedServerId()) {
+        Console.debug(`Removing old message with id ${serverId}`);
         this.#pending.splice(i, 1);
         i--;
       }
