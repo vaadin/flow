@@ -279,25 +279,33 @@ class VaadinServiceTest {
     @Test
     void productionMode_noUsageStatisticsCollected() {
         UsageStatistics.resetEntries();
+        List<String> defaultEntries = getUsageStatisticsNames();
+        @Layout
+        class AutoLayout extends Component implements RouterLayout {
+        }
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
         configuration.setApplicationOrSystemProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
-        VaadinServiceInitListener initListener = event -> RouteConfiguration
-                .forApplicationScope()
-                .setRoute("test", AnnotatedTestView.class);
+        VaadinServiceInitListener initListener = event -> {
+            ApplicationRouteRegistry.getInstance(event.getSource().getContext())
+                    .setLayout(AutoLayout.class);
+            RouteConfiguration.forApplicationScope()
+                    .setAnnotatedRoute(AnnotatedTestView.class);
+        };
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration, false);
 
         service.init(new MockInstantiator(initListener));
 
-        assertFalse(
-                UsageStatistics.getEntries()
-                        .anyMatch(e -> Constants.STATISTIC_HAS_FLOW_ROUTE
-                                .equals(e.getName())
-                                || "flow/pnpm".equals(e.getName())),
+        assertEquals(defaultEntries, getUsageStatisticsNames(),
                 "Usage statistics should only be collected in development mode");
+    }
+
+    private static List<String> getUsageStatisticsNames() {
+        return UsageStatistics.getEntries()
+                .map(UsageStatistics.UsageEntry::getName).sorted().toList();
     }
 
     @Test
