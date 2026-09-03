@@ -211,8 +211,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void newClientMessageProcessed_forgetsTheRecordedResponse()
-            throws Exception {
+    void push_deferred_leavesNothingToSendAgain() throws Exception {
         vaadinSession.runWithLock(() -> {
             connection.push(false);
             return null;
@@ -220,11 +219,19 @@ class AtmospherePushConnectionTest {
         assertNotNull(
                 connection.getUI().getInternals().getLastRequestResponse());
 
+        // The next client message is processed, which forgets the answer to
+        // the previous one, and its own answer cannot be created because the
+        // connection is gone.
         connection.getUI().getInternals().setLastProcessedClientToServerId(1,
                 new byte[0]);
+        connection.connectionLost();
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
 
         assertNull(connection.getUI().getInternals().getLastRequestResponse(),
-                "The recorded response answers the previous message, so it must not be sent as this one's");
+                "A deferred response must not leave an older answer to send again");
     }
 
     @Test

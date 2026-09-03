@@ -382,6 +382,11 @@ public class UIInternals implements Serializable {
      * Sets the last processed server message id.
      * <p>
      * Used internally for communication tracking.
+     * <p>
+     * Also forgets the response recorded for the previous message, as it stops
+     * being an answer this UI may send again once a new message is processed. A
+     * caller that sets the id for any other reason, such as restoring tracking
+     * state, would discard a response the client may still ask for.
      *
      * @param lastProcessedClientToServerId
      *            the id of the last processed server message
