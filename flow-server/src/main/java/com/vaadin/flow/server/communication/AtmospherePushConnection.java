@@ -56,8 +56,6 @@ public class AtmospherePushConnection
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
-    // The client is owed the response of its previous message but it could
-    // not be sent yet; connect() sends it once there is a connection again.
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**

@@ -311,6 +311,51 @@ class AtmospherePushConnectionTest {
             connection.resendLastResponse();
             return null;
         });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(connection.getUI().getInternals().getLastRequestResponse(),
+                ((PushMessage) captor.getValue()).message,
+                "The resend after reconnecting answers the client message");
+    }
+
+    @Test
+    void connect_deferredResponse_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.RESPONSE_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.eq(resource));
+    }
+
+    @Test
+    void connect_deferredAsynchronousPush_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.PUSH_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
         verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }
