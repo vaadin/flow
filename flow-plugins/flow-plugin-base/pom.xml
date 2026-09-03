@@ -19,15 +19,6 @@
       <artifactId>flow-server</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <!-- The dev-loop daemon owns the pinned HotswapAgent coordinates and the
-         cache layout; install-dev-cli provisions through it rather than
-         restating them. Zero transitive dependencies of its own, by an
-         enforcer rule in that module. -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-devloop-daemon</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-build-tools</artifactId>

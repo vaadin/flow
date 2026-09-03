@@ -18,12 +18,15 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import com.vaadin.flow.devloop.daemon.HotswapAgentJar;
 import com.vaadin.flow.plugin.base.DevCliInstaller;
 
 /**
@@ -45,6 +48,13 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * the loop needs the network again. Machine-level, so nothing lands in the
  * project and one download serves every application on the machine.
  * <p>
+ * The provisioning runs out of the daemon jar the project itself resolves - the
+ * same one the CLI will run - so the pinned agent version is the version the
+ * running daemon goes on to ask for. Hence the dependency resolution this goal
+ * requires, and hence no scope filter when looking for it: the daemon travels
+ * in as an optional dependency of the dev server, and a project is free to
+ * declare it provided or test instead.
+ * <p>
  * Everything it writes is meant to be committed, like {@code mvnw}: it is
  * project tooling, and the point is that every developer and every agent on the
  * repository gets the same instructions. It is also rewritten whenever it
@@ -57,7 +67,7 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-@Mojo(name = "install-dev-cli")
+@Mojo(name = "install-dev-cli", requiresDependencyResolution = ResolutionScope.TEST)
 public class InstallDevCliMojo extends FlowModeAbstractMojo {
 
     /**
@@ -98,19 +108,48 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
                     + "download it, and will need network access to do so");
             return;
         }
-        try {
-            DevCliInstaller.provisionHotswapAgent(this);
-        } catch (IOException e) {
-            throw new MojoFailureException("Could not provision HotswapAgent "
-                    + HotswapAgentJar.VERSION + " into "
-                    + HotswapAgentJar.cacheDir()
-                    + ", so the dev loop would have to download it on first "
-                    + "use. Run this goal where " + HotswapAgentJar.URL
-                    + " is reachable, or place that file in the cache "
-                    + "directory by hand - it is verified against a pinned "
-                    + "checksum either way. Pass "
-                    + "-Dvaadin.devcli.skipHotswapAgent=true to install the "
-                    + "CLI without it.", e);
+        Optional<Path> daemon = daemonJar();
+        if (daemon.isEmpty()) {
+            // Not a failure: the scripts are installed and correct, and the
+            // CLI itself reports this with the same remedy the moment it is
+            // run. Saying it now saves finding out then.
+            logWarn("This project does not depend on the dev-loop daemon, so "
+                    + "there was no HotswapAgent to provision - and "
+                    + "`vaadin-dev` cannot run either until it does. Add "
+                    + "com.vaadin:vaadin-dev (optional) to the project.");
+            return;
         }
+        try {
+            DevCliInstaller.provisionHotswapAgent(daemon.get(), this);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Could not provision HotswapAgent, so the dev loop would "
+                            + "have to download it the first time it runs: "
+                            + e.getMessage()
+                            + ". It is fetched once per machine into "
+                            + "~/.vaadin/devloop from a HotswapAgent GitHub "
+                            + "release, so run this goal somewhere that is "
+                            + "reachable, or put the jar there by hand - it is "
+                            + "verified against a pinned checksum either way. "
+                            + "Pass -Dvaadin.devcli.skipHotswapAgent=true to "
+                            + "install the CLI without it.",
+                    e);
+        }
+    }
+
+    /**
+     * The dev-loop daemon jar among the project dependencies, which is the one
+     * the CLI resolves and runs.
+     * <p>
+     * By coordinates rather than by file name, and with no scope filter, so
+     * that it is found however the project came to declare it.
+     */
+    private Optional<Path> daemonJar() {
+        return project.getArtifacts().stream()
+                .filter(artifact -> "com.vaadin".equals(artifact.getGroupId())
+                        && "flow-devloop-daemon"
+                                .equals(artifact.getArtifactId()))
+                .map(Artifact::getFile).filter(Objects::nonNull)
+                .filter(File::isFile).map(File::toPath).findFirst();
     }
 }

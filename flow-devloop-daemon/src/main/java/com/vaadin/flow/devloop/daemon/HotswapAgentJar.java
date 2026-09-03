@@ -39,6 +39,14 @@ import java.util.function.Consumer;
  * so there is one pinned version, one checksum and one cache location rather
  * than two that can drift.
  * <p>
+ * The build reaches it by name, through a class loader over this jar: the Maven
+ * and Gradle plugins must not depend on the daemon, and the version that has to
+ * be provisioned is the one in the jar the project resolves and the CLI will
+ * run. So this class name, the {@link #VERSION} field and the signature of
+ * {@link #provision(Consumer)} are a contract with
+ * {@code DevCliInstaller.provisionHotswapAgent} that no compiler checks -
+ * renaming any of them turns the install goal into a no-op that only warns.
+ * <p>
  * This is the only asset the loop downloads. Everything else it needs - the
  * daemon jar, which is also the javaagent - travels in as a project dependency
  * and is resolved from the local Maven repository.

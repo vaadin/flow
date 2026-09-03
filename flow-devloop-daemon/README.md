@@ -126,11 +126,17 @@ anything.
 It is provisioned by `mvn flow:install-dev-cli`, not by the first `start`, so a
 machine set up while it had network access can run the loop afterwards with
 none — which is what a container image or a sandboxed agent environment needs.
-The daemon still provisions on demand through the same code and into the same
-cache, so a project that never ran the goal is unaffected and a project that did
-never downloads twice. `-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI
-without it; dropping the release asset into `~/.vaadin/devloop/` by hand works
-too, since what is there is checksum-verified either way.
+The goal runs `HotswapAgentJar` out of the daemon jar the project resolves,
+reflectively, over a class loader of its own: the plugin must not carry the
+daemon into every build it runs in, and the version worth pre-downloading is the
+one the daemon that will actually run has pinned. So a project whose daemon
+predates this only gets a warning, and the goal and the `start` can never
+disagree about the version. The daemon still provisions on demand through the
+same code and into the same cache, so a project that never ran the goal is
+unaffected and one that did never downloads twice.
+`-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
+the release asset into `~/.vaadin/devloop/` by hand works too, since what is
+there is checksum-verified either way.
 
 ## Outcomes and exit codes
 

@@ -17,6 +17,9 @@ package com.vaadin.flow.plugin.base;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,12 +28,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.devloop.daemon.HotswapAgentJar;
 import com.vaadin.flow.internal.FileIOUtils;
 
 /**
@@ -46,7 +50,9 @@ import com.vaadin.flow.internal.FileIOUtils;
  * part that needs the network: it puts the one asset the loop cannot resolve
  * from a Maven repository into the machine-level cache, so that a machine
  * prepared here - a container image built while it had network access, say -
- * can run the loop later with none.
+ * can run the loop later with none. It runs the provisioning code out of the
+ * daemon jar the project resolves, which is deliberately not a dependency of
+ * this module; see there for why.
  * <p>
  * Everything is installed relative to one directory, and the two skill trees
  * are installed as siblings, because the Claude adapter links to the shared
@@ -64,6 +70,12 @@ public final class DevCliInstaller {
             .getLogger(DevCliInstaller.class);
 
     private static final String RESOURCE_ROOT = "vaadin-dev-cli/";
+
+    /**
+     * Loaded out of the daemon jar the project resolves rather than imported;
+     * see {@link #provisionHotswapAgent}.
+     */
+    private static final String PROVISIONER = "com.vaadin.flow.devloop.daemon.HotswapAgentJar";
 
     /**
      * What is installed where, resource path to project-relative path.
@@ -174,20 +186,76 @@ public final class DevCliInstaller {
      * Nothing is written into the project: the cache is under
      * {@code ~/.vaadin/devloop}, so one download serves every application on
      * the machine and a {@code mvn clean} does not throw it away.
+     * <p>
+     * The work is done by {@code HotswapAgentJar} inside {@code daemonJar},
+     * reached through a throwaway class loader rather than by depending on the
+     * daemon from here. Two reasons, and the second is the one that decides it.
+     * A plugin dependency is resolved into the plugin realm before any goal
+     * runs, so every build - {@code -Pproduction} included, and every Gradle
+     * buildscript - would fetch dev-loop tooling nothing in it can call. And
+     * the version that matters is the one the project resolves: the CLI runs
+     * that daemon, so pre-downloading whatever version another copy of the
+     * daemon pins would leave the running daemon asking for a different one and
+     * reaching for the network anyway - in exactly the air-gapped container
+     * this feature exists for. Reading the pin out of the jar that will run
+     * makes the two agree by construction.
+     * <p>
+     * Reflection is safe here because the daemon is dependency-free, by an
+     * enforcer rule in its own module: the platform class loader is a
+     * sufficient parent, and using that rather than this module loader also
+     * means nothing already in the plugin realm can shadow what is loaded.
      *
+     * @param daemonJar
+     *            the {@code flow-devloop-daemon} jar the project resolves
      * @param adapter
      *            the plugin adapter to report through
-     * @return the provisioned jar
+     * @return the provisioned jar, or empty when that daemon is too old to
+     *         carry the provisioning code - in which case a warning has been
+     *         reported and the first {@code start} downloads as before
      * @throws IOException
-     *             if the jar can neither be found in the cache nor downloaded
+     *             if provisioning was attempted and the jar could neither be
+     *             found in the cache nor downloaded
      */
-    public static Path provisionHotswapAgent(PluginAdapterBase adapter)
-            throws IOException {
-        Path jar = HotswapAgentJar.provision(adapter::logInfo);
-        adapter.logInfo(
-                "HotswapAgent " + HotswapAgentJar.VERSION + " is ready at "
-                        + jar + " - the dev loop needs no network for it");
-        return jar;
+    public static Optional<Path> provisionHotswapAgent(Path daemonJar,
+            PluginAdapterBase adapter) throws IOException {
+        try (URLClassLoader loader = new URLClassLoader(
+                new URL[] { daemonJar.toUri().toURL() },
+                ClassLoader.getPlatformClassLoader())) {
+            Class<?> provisioner;
+            try {
+                provisioner = loader.loadClass(PROVISIONER);
+            } catch (ClassNotFoundException e) {
+                LOGGER.debug("No {} in {}", PROVISIONER, daemonJar, e);
+                adapter.logWarn("The dev-loop daemon in " + daemonJar
+                        + " is older than this plugin and cannot provision "
+                        + "HotswapAgent, so the first `vaadin-dev start` will "
+                        + "download it and will need network access to do so");
+                return Optional.empty();
+            }
+            // Parameter and return type both come from java.base, so the two
+            // class loaders agree on them with nothing to adapt between them.
+            Consumer<String> progress = adapter::logInfo;
+            String version = (String) provisioner.getField("VERSION").get(null);
+            Path jar = (Path) provisioner.getMethod("provision", Consumer.class)
+                    .invoke(null, progress);
+            adapter.logInfo("HotswapAgent " + version + " is ready at " + jar
+                    + " - the dev loop needs no network for it");
+            return Optional.of(jar);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException failure) {
+                throw failure;
+            }
+            if (cause instanceof RuntimeException failure) {
+                throw failure;
+            }
+            throw new IOException("provisioning HotswapAgent through "
+                    + daemonJar + " failed: " + cause, cause);
+        } catch (ReflectiveOperationException e) {
+            throw new IOException("the dev-loop daemon in " + daemonJar
+                    + " does not expose the provisioning API this plugin "
+                    + "expects", e);
+        }
     }
 
     /**
