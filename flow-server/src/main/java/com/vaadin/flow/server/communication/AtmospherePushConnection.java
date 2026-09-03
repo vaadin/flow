@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 
 /**
@@ -270,8 +272,30 @@ public class AtmospherePushConnection
                 resendPending = true;
                 return;
             }
-            sendMessage(lastResponse);
+            sendMessage(lastResponse, serverSyncIdOf(lastResponse));
         }
+    }
+
+    /**
+     * Reads the server sync id the given response was created with, so that a
+     * response sent again keeps the id it originally had instead of looking
+     * newer than it is. Falls back to the id a newly created message would get
+     * if the response carries no usable one, which is the case when the sync id
+     * check is disabled.
+     */
+    private int serverSyncIdOf(String response) {
+        try {
+            JsonNode syncId = JacksonUtils.readTree(response)
+                    .get(ApplicationConstants.SERVER_SYNC_ID);
+            if (syncId != null && syncId.isInt() && syncId.intValue() >= 0) {
+                return syncId.intValue();
+            }
+        } catch (Exception e) {
+            getLogger().debug(
+                    "Could not read the server sync id of the response to send again",
+                    e);
+        }
+        return ui.getInternals().getServerSyncId() - 1;
     }
 
     /**
@@ -282,12 +306,14 @@ public class AtmospherePushConnection
      *            The message to send
      */
     protected void sendMessage(String message) {
+        sendMessage(message, ui.getInternals().getServerSyncId() - 1);
+    }
+
+    private void sendMessage(String message, int serverSyncId) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
         outgoingMessage = getResource().getBroadcaster().broadcast(
-                new PushMessage(ui.getInternals().getServerSyncId() - 1,
-                        message),
-                getResource());
+                new PushMessage(serverSyncId, message), getResource());
     }
 
     /**

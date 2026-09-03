@@ -146,6 +146,38 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
+    void resendLastResponse_keepsTheSyncIdOfTheOriginalResponse()
+            throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        ArgumentCaptor<Object> first = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(first.capture(),
+                ArgumentMatchers.eq(resource));
+        int originalSyncId = ((PushMessage) first.getValue()).serverSyncId;
+
+        // Something else goes out, moving the sync id on.
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+        Mockito.clearInvocations(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> resent = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(resent.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(originalSyncId,
+                ((PushMessage) resent.getValue()).serverSyncId,
+                "A response sent again should keep the sync id it was created with");
+    }
+
+    @Test
     void resendLastResponse_noRecordedResponse_sendsARegularResponse()
             throws Exception {
         connection.getUI().getInternals().setLastRequestResponse(null);
