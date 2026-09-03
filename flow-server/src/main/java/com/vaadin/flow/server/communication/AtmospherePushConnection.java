@@ -55,6 +55,7 @@ public class AtmospherePushConnection
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
+    private transient boolean resendPending = false;
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
@@ -222,11 +223,47 @@ public class AtmospherePushConnection
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage(response.toString());
+                    String responseString = response.toString();
+                    if (!async) {
+                        // Remember the response to the client's message so that
+                        // it can be sent again if the client re-sends the same
+                        // message, e.g. after reconnecting the push channel.
+                        getUI().getInternals()
+                                .setLastRequestResponse(responseString);
+                    }
+                    sendMessage(responseString);
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Sends the response of the previous client message again, instead of
+     * creating a new one, as a reaction to the client re-sending a message the
+     * server has already handled. Falls back to a regular response if no
+     * previous response has been recorded.
+     */
+    void resendLastResponse() {
+        String lastResponse = getUI().getInternals().getLastRequestResponse();
+        if (lastResponse == null) {
+            // Nothing recorded to send again, so a freshly created response is
+            // all this connection can offer.
+            push(false);
+            return;
+        }
+        synchronized (lock) {
+            if (!isConnected()) {
+                // Send it once there is a connection again. push(boolean) must
+                // not take over then: the changes it would describe are no
+                // longer dirty, so the client would get an empty response and
+                // stay out of sync, which is what the resend prevents.
+                resendPending = true;
+                state = State.RESPONSE_PENDING;
+                return;
+            }
+            sendMessage(lastResponse);
         }
     }
 
@@ -311,7 +348,13 @@ public class AtmospherePushConnection
         State oldState = state;
         state = State.CONNECTED;
 
-        if (oldState == State.PUSH_PENDING
+        if (resendPending) {
+            // A response owed to a re-sent client message could not be sent
+            // while the connection was down; send it now instead of the empty
+            // response push(boolean) would create.
+            resendPending = false;
+            resendLastResponse();
+        } else if (oldState == State.PUSH_PENDING
                 || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa
