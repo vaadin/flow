@@ -189,6 +189,52 @@ class UidlRequestHandlerTest {
     }
 
     @Test
+    void clientRequestsPreviousIdAndPayload_nothingRecorded_writesANewResponse()
+            throws IOException {
+
+        UI ui = getUi();
+        VaadinSession session = ui.getSession();
+        VaadinService service = session.getService();
+        DeploymentConfiguration conf = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
+        Mockito.when(conf.isRequestTiming()).thenReturn(false);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(conf.isSyncIdCheckEnabled()).thenReturn(true);
+
+        String requestBody = """
+                {
+                   "csrfToken": "d1f44a6f-bbe5-4493-a8a9-3f5f234a2a93",
+                   "rpc": [],
+                   "syncId": 0,
+                   "clientId": 0
+                 }
+                """;
+
+        handler.synchronizedHandleRequest(session, request, response,
+                requestBody).orElseThrow().writeResponse();
+
+        // The answer to the message the client is about to re-send was never
+        // produced, so there is nothing recorded to send again. This is the
+        // state left behind when creating a response fails, and the state the
+        // push connection leaves when it cannot create one.
+        ui.getInternals().setLastRequestResponse(null, -1);
+
+        response = Mockito.mock(VaadinResponse.class);
+        outputStream = Mockito.mock(OutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        handler.synchronizedHandleRequest(session, request, response,
+                requestBody).orElseThrow().writeResponse();
+        String resendResponseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        assertTrue(resendResponseContent.startsWith("{"),
+                "The client should get a response it can parse, was: "
+                        + resendResponseContent);
+    }
+
+    @Test
     void should_modifyUidl_when_MPR() throws Exception {
         UI ui = getUi();
 
