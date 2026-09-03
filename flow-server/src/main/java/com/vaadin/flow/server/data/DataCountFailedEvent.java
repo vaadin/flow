@@ -1,0 +1,61 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.data;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinService;
+
+/**
+ * Event fired through the {@link VaadinService#getEventBus() service event bus}
+ * when a count query threw, before the matching {@link DataCountEndedEvent}.
+ * The framework propagates the throwable independently of this event.
+ *
+ * @see AbstractDataCountEvent
+ * @since 25.3
+ */
+public class DataCountFailedEvent extends AbstractDataCountEvent {
+
+    private final transient Throwable error;
+
+    /**
+     * Creates a new event.
+     *
+     * @param ui
+     *            the UI the counting component belongs to, not {@code null}
+     * @param component
+     *            the component whose data is being counted, or {@code null} if
+     *            it could not be resolved
+     * @param filtered
+     *            whether a filter was set on the query
+     * @param error
+     *            the throwable raised by the data provider
+     */
+    public DataCountFailedEvent(UI ui, Component component, boolean filtered,
+            Throwable error) {
+        super(ui, component, filtered);
+        this.error = error;
+    }
+
+    /**
+     * Gets the throwable raised by the data provider.
+     *
+     * @return the throwable
+     */
+    public Throwable getError() {
+        return error;
+    }
+}

@@ -18,6 +18,8 @@ package com.vaadin.flow.gradle
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
@@ -480,11 +482,14 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun testPrepareFrontend_configurationCache() {
-        // Create frontend folder, that will otherwise be created by the first
-        // execution of vaadinPrepareFrontend, invalidating the cache on the
-        // second run
-        testProject.newFolder("src/main/frontend")
+    fun testPrepareFrontend_configurationCache_freshCheckout() {
+        // Same fresh-checkout premise as
+        // testBuildFrontend_configurationCache_freshCheckout, for the task
+        // that runs on every build: src/main/frontend does not exist on a
+        // clean clone, the first build creates it, and the second build must
+        // still reuse the entry.
+        val frontendFolder = File(testProject.dir, "src/main/frontend")
+        expect(false, "the test must start without $frontendFolder") { frontendFolder.exists() }
 
         val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinPrepareFrontend")
@@ -660,14 +665,63 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun testBuildFrontend_configurationCache() {
-        // Create frontend folder, that will otherwise be created by the first
-        // execution, invalidating the cache on the second run
-        testProject.newFolder("src/main/frontend")
+    fun testBuildFrontend_configurationCache_freshCheckout() {
+        // Regression test for the configuration-cache entry being discarded on
+        // the second build of a fresh checkout. src/main/frontend is generated
+        // and gitignored, so it does not exist on a clean clone; the first
+        // build creates it, as the parent of vaadinBuildFrontend's optional
+        // src/main/frontend/index.html output. If the plugin probes that same
+        // path while configuring, Gradle records a file-system-entry input on
+        // a path the build itself creates, and the next build reports
+        //   configuration cache cannot be reused because the file system entry
+        //   'src/main/frontend' has been created
+        // although nothing in the project changed. Unlike the other
+        // configuration cache tests here, this one deliberately does NOT
+        // pre-create the folder: that pre-creation is what hides the defect.
+        val frontendFolder = File(testProject.dir, "src/main/frontend")
+        expect(false, "the test must start without $frontendFolder") { frontendFolder.exists() }
 
         val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinBuildFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testBuildFrontend_configurationCache_fileDependency() {
+        // Regression test for the configuration cache failure on a project
+        // that declares a file-based dependency. Such a dependency makes
+        // Gradle keep the classpath artifact view's component filter alive in
+        // the serialized task graph instead of flattening it away, so the
+        // classpath filter predicate has to be storable. Built out of the
+        // Predicate.and()/or()/negate() combinators it was not: those return
+        // lambdas hosted in java.base/java.util.function, and the build failed
+        // with `module java.base does not "opens java.util.function"`.
+
+        // Create frontend folder, that will otherwise be created by the first
+        // execution, invalidating the cache on the second run
+        testProject.newFolder("src/main/frontend")
+
+        val localJar = testProject.newFile("libs/local.jar")
+        JarOutputStream(localJar.outputStream()).use { jar ->
+            jar.putNextEntry(JarEntry("marker.txt"))
+            jar.write("placeholder".toByteArray())
+            jar.closeEntry()
+        }
+        testProject.buildFile.writeText(
+            testProject.buildFile.readText().replace(
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")""",
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation(files("libs/local.jar"))"""
+            )
+        )
+
+        val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Configuration cache entry stored")
 
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)

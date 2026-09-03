@@ -187,6 +187,15 @@ public class UITest {
     }
 
     @Test
+    public void getLastUpdateSentTimestamp_delegatesToInternals() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(ui.getInternals().getLastUpdateSentTimestamp(),
+                ui.getLastUpdateSentTimestamp());
+    }
+
+    @Test
     public void elementIsBody() {
         UI ui = new UI();
 

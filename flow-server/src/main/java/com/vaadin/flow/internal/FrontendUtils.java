@@ -19,15 +19,12 @@ import jakarta.servlet.ServletContext;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +55,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -359,13 +355,37 @@ public class FrontendUtils {
     public static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     public static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+    /**
+     * ANSI foreground colors usable with {@link #console(AnsiColor, String)}.
+     */
+    public enum AnsiColor {
+        YELLOW("\u001b[38;5;220m"),
+        RED("\u001b[38;5;196m"),
+        GREEN("\u001b[38;5;35m"),
+        BRIGHT_BLUE("\u001b[94m");
 
-    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+        private static final String RESET = "\u001b[0m";
 
-    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
+        private final String code;
 
-    public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+        AnsiColor(String code) {
+            this.code = code;
+        }
+
+        /**
+         * Wraps {@code message} with this color's ANSI escape sequence and the
+         * reset sequence. The message is never interpreted as a
+         * {@link String#format(String, Object...)} format string.
+         *
+         * @param message
+         *            the message to wrap, printed literally
+         * @return the message prefixed with this color's escape sequence and
+         *         suffixed with the reset sequence
+         */
+        String wrap(String message) {
+            return code + message + RESET;
+        }
+    }
 
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
@@ -682,12 +702,24 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
-            }
+        // The legacy folder is probed FIRST on purpose. frontendDir is
+        // src/main/frontend, which build tools create themselves (it is the
+        // parent of an optional task output) and which is gitignored, so it is
+        // absent on a fresh checkout and present after the first build. Under
+        // Gradle's configuration cache a File.exists() call made while
+        // configuring is recorded as an input of the entry, so probing that
+        // path first invalidates the entry on the build right after the one
+        // that created the directory - for a check whose answer never changes,
+        // since with no legacy folder both branches return frontendDir. The
+        // legacy folder is not created by any build, so probing it first is
+        // stable, and && short-circuits away the unstable probe on every
+        // project that has no legacy frontend folder.
+        File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+        if (legacy.exists()
+                && frontendDir.toPath()
+                        .endsWith(DEFAULT_FRONTEND_DIR.substring(2))
+                && !frontendDir.exists()) {
+            return legacy;
         }
         return frontendDir;
     }
@@ -1137,16 +1169,19 @@ public class FrontendUtils {
     /**
      * Intentionally send to console instead to log, useful when executing
      * external processes.
+     * <p>
+     * The message is printed as-is, wrapped with the given ANSI color escape
+     * sequence and {@link AnsiColor#RESET}; it is never interpreted as a
+     * {@link String#format(String, Object...)} format string.
      *
-     * @param format
-     *            Format of the line to send to console, it must contain a `%s`
-     *            outlet for the message
+     * @param ansiColor
+     *            the ANSI color to wrap the message with
      * @param message
-     *            the string to show
+     *            the message to show, printed literally
      */
     @SuppressWarnings("squid:S106")
-    public static void console(String format, Object message) {
-        System.out.print(format(format, message));
+    public static void console(AnsiColor ansiColor, String message) {
+        System.out.print(ansiColor.wrap(message));
     }
 
     /**
@@ -1187,83 +1222,11 @@ public class FrontendUtils {
      *             on failure to delete or read any one file
      */
     public static void deleteDirectory(File directory) throws IOException {
-        if (!directory.exists() || !directory.isDirectory()) {
+        if (!directory.isDirectory()) {
             return;
         }
 
-        if (!(Files.isSymbolicLink(directory.toPath())
-                || isJunction(directory.toPath()))) {
-            cleanDirectory(directory);
-        }
-
-        if (!directory.delete()) {
-            String message = "Unable to delete directory " + directory + ".";
-            throw new IOException(message);
-        }
-    }
-
-    /**
-     * Check that directory is not a windows junction which is basically a
-     * symlink.
-     *
-     * @param directory
-     *            directory path to check
-     * @return true if directory is a windows junction
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    private static boolean isJunction(Path directory) throws IOException {
-        boolean isWindows = System.getProperty("os.name").toLowerCase()
-                .contains("windows");
-        BasicFileAttributes attrs = Files.readAttributes(directory,
-                BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        return isWindows && attrs.isDirectory() && attrs.isOther();
-    }
-
-    private static void cleanDirectory(File directory) throws IOException {
-        if (!directory.exists()) {
-            String message = directory + " does not exist";
-            throw new IllegalArgumentException(message);
-        }
-
-        if (!directory.isDirectory()) {
-            String message = directory + " is not a directory";
-            throw new IllegalArgumentException(message);
-        }
-
-        File[] files = directory.listFiles();
-        if (files == null) { // null if security restricted
-            throw new IOException("Failed to list contents of " + directory);
-        }
-
-        IOException exception = null;
-        for (File file : files) {
-            try {
-                forceDelete(file);
-            } catch (IOException ioe) {
-                exception = ioe;
-            }
-        }
-
-        if (exception != null) {
-            throw exception;
-        }
-    }
-
-    private static void forceDelete(File file) throws IOException {
-        if (file.isDirectory()) {
-            deleteDirectory(file);
-        } else {
-            boolean filePresent = file.exists();
-            if (!file.delete()) {
-                if (!filePresent) {
-                    throw new FileNotFoundException(
-                            "File does not exist: " + file);
-                }
-                String message = "Unable to delete file: " + file;
-                throw new IOException(message);
-            }
-        }
+        FileIOUtils.delete(directory);
     }
 
     /**

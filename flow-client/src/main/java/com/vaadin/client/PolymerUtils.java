@@ -20,7 +20,6 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
-import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
@@ -613,13 +612,13 @@ public final class PolymerUtils {
     }
 
     private static Node getChildIgnoringStyles(Node parent, int index) {
-        HTMLCollection children = DomApi.wrap(parent).getChildren();
+        HTMLCollection children = ((Element) parent).getChildren();
         int filteredIndex = -1;
         for (int i = 0; i < children.getLength(); i++) {
             Node next = children.item(i);
             assert next instanceof Element
                     : "Unexpected element type in the collection of children. "
-                            + "DomElement::getChildren is supposed to return Element chidren only, but got "
+                            + "Element::getChildren is supposed to return Element chidren only, but got "
                             + next.getClass();
             Element element = (Element) next;
             if (!"style".equalsIgnoreCase(element.getTagName())) {

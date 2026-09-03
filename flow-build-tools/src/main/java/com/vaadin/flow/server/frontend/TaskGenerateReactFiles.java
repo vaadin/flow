@@ -268,17 +268,17 @@ public class TaskGenerateReactFiles
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
-            FileIOUtils.deleteFileQuietly(flowTsx);
-            FileIOUtils.deleteFileQuietly(
+            FileIOUtils.deleteQuietly(flowTsx);
+            FileIOUtils.deleteQuietly(
                     new File(frontendGeneratedFolder, JSX_TRANSFORM_INDEX));
-            FileIOUtils.deleteFileQuietly(new File(frontendGeneratedFolder,
+            FileIOUtils.deleteQuietly(new File(frontendGeneratedFolder,
                     JSX_TRANSFORM_DEV_RUNTIME));
-            FileIOUtils.deleteFileQuietly(
+            FileIOUtils.deleteQuietly(
                     new File(frontendGeneratedFolder, JSX_TRANSFORM_RUNTIME));
-            FileIOUtils.deleteFileQuietly(layoutsJson);
-            FileIOUtils.deleteFileQuietly(vaadinReactTsx);
-            FileIOUtils.deleteFileQuietly(reactAdapterTsx);
-            FileIOUtils.deleteFileQuietly(frontendGeneratedFolderRoutesTsx);
+            FileIOUtils.deleteQuietly(layoutsJson);
+            FileIOUtils.deleteQuietly(vaadinReactTsx);
+            FileIOUtils.deleteQuietly(reactAdapterTsx);
+            FileIOUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
 
             File routesTsx = new File(frontendDirectory,
                     FrontendUtils.ROUTES_TSX);
@@ -289,7 +289,7 @@ public class TaskGenerateReactFiles
                         defaultRoutesContent,
                         getFileContent(FrontendUtils.ROUTES_TSX),
                         String::equals)) {
-                    routesTsx.delete();
+                    FileIOUtils.deleteQuietly(routesTsx);
                     log().debug("Default {} file has been removed.",
                             FrontendUtils.ROUTES_TSX);
                 } else {
@@ -298,7 +298,7 @@ public class TaskGenerateReactFiles
                                     FrontendUtils.ROUTES_TSX + ".flowBackup")
                                     .toPath(),
                             StandardCopyOption.REPLACE_EXISTING);
-                    routesTsx.delete();
+                    FileIOUtils.deleteQuietly(routesTsx);
                     log().warn(
                             "Custom {} file has been removed. Backup is created in {}.flowBackup file.",
                             FrontendUtils.ROUTES_TSX, FrontendUtils.ROUTES_TSX);

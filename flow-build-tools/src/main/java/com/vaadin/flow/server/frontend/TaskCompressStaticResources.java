@@ -36,6 +36,7 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 
 /**
@@ -57,6 +58,8 @@ import com.vaadin.flow.internal.FrontendUtils;
  * client accepts.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.3
  */
 public class TaskCompressStaticResources implements FallibleCommand {
 
@@ -178,7 +181,7 @@ public class TaskCompressStaticResources implements FallibleCommand {
                             + "be served uncompressed",
                     e);
         } finally {
-            script.delete();
+            FileIOUtils.deleteQuietly(script);
         }
     }
 
@@ -212,13 +215,13 @@ public class TaskCompressStaticResources implements FallibleCommand {
         }
 
         // Always delete br file if exists as we only remake the gzip
-        Files.deleteIfExists(file.resolveSibling(file.getFileName() + ".br"));
+        FileIOUtils.delete(file.resolveSibling(file.getFileName() + ".br"));
         Path gz = file.resolveSibling(file.getFileName() + ".gz");
         if (size < MIN_SIZE_BYTES) {
             // Remove any variants left by an earlier build where this file was
             // still above the threshold, so no stale compressed variant is
             // served now that it is served uncompressed.
-            Files.deleteIfExists(gz);
+            FileIOUtils.delete(gz);
             return;
         }
         try (InputStream in = Files.newInputStream(file);

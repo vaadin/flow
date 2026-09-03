@@ -414,18 +414,14 @@ public final class Constants implements Serializable {
     public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
     /**
-     * The name of platform core components and tools versions file.
-     * 
-     * @since 23.1.3
+     * The path of the folder containing the versions files, listing the npm
+     * packages whose versions are pinned and the versions to pin them to.
+     * <p>
+     * Every jar pinning npm package versions ships one or more {@code .json}
+     * files in this folder and all of them are read and merged.
      */
-    public static final String VAADIN_CORE_VERSIONS_JSON = "vaadin-core-versions.json";
-
-    /**
-     * The name of platform commercial components and tools versions file.
-     * 
-     * @since 2.2
-     */
-    public static final String VAADIN_VERSIONS_JSON = "vaadin-versions.json";
+    public static final String PINNED_NPM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
+            + "versions/";
 
     /**
      * Default live reload port as defined in Spring Boot Dev Tools.
@@ -577,7 +573,11 @@ public final class Constants implements Serializable {
      * Script-capable schemes such as {@code javascript} and {@code data} are
      * intentionally excluded as they can be used to execute scripts in the
      * browser when used as a link or frame target.
-     * 
+     * <p>
+     * Note that the {@code about:blank} URL is considered safe regardless of
+     * the configured schemes, whereas other {@code about:} URLs are not safe
+     * unless the {@code about} scheme is explicitly configured as safe.
+     *
      * @since 25.2
      */
     public static final Set<String> DEFAULT_URL_SAFE_SCHEMES = Set.of("http",

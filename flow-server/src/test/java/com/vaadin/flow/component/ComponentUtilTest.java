@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -25,6 +30,8 @@ import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -139,6 +146,36 @@ class ComponentUtilTest {
     }
 
     @Test
+    void getChildrenOfType_returnsMatchingChildrenInOrder() {
+        // parent
+        // ├── div1 (TestDiv)
+        // ├── span (TestComponent)
+        // └── div2 (TestDiv)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        TestDiv div1 = new TestDiv();
+        TestComponent span = new TestComponent(ElementFactory.createSpan());
+        TestDiv div2 = new TestDiv();
+        parent.getElement().appendChild(div1.getElement(), span.getElement(),
+                div2.getElement());
+
+        assertEquals(List.of(div1, div2),
+                ComponentUtil.getChildrenOfType(parent, TestDiv.class).toList(),
+                "Only the children of the given type must be returned, in child order");
+        assertEquals(Optional.of(div1),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
+    }
+
+    @Test
+    void getFirstChildOfType_withNoMatchingChild_returnsEmpty() {
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        parent.getElement().appendChild(
+                new TestComponent(ElementFactory.createSpan()).getElement());
+
+        assertEquals(Optional.empty(),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
+    }
+
+    @Test
     void getAllChildren_includesVirtualChildren() {
         // parent
         // ├── regular (direct DOM child)
@@ -246,6 +283,129 @@ class ComponentUtilTest {
         assertEquals(List.of(contentWithChild, grandchild),
                 ComponentUtil.streamDescendants(composite).toList(),
                 "streamDescendants must recurse through Composite content");
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_existingId_valueSetImmediately() {
+        UI ui = new UI();
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        target.setId("the-target");
+        ui.add(source, target);
+
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                () -> Optional
+                        .ofNullable(sourceElement.getAttribute("data-target")),
+                id -> sourceElement.setAttribute("data-target", id));
+
+        assertEquals("the-target", sourceElement.getAttribute("data-target"),
+                "The value should be available before the resolution runs");
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_explicitValueSetLater_resolutionSuperseded() {
+        UI ui = new UI();
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        ui.add(source, target);
+
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                () -> Optional
+                        .ofNullable(sourceElement.getAttribute("data-target")),
+                id -> sourceElement.setAttribute("data-target", id));
+        sourceElement.setAttribute("data-target", "explicit");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("explicit", sourceElement.getAttribute("data-target"));
+        assertFalse(target.getId().isPresent(),
+                "No id should be generated for a superseded target");
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_calledTwice_firstResolutionSuperseded() {
+        UI ui = new UI();
+        TestDiv source = new TestDiv();
+        TestDiv firstTarget = new TestDiv();
+        TestDiv secondTarget = new TestDiv();
+        ui.add(source, firstTarget, secondTarget);
+
+        Element sourceElement = source.getElement();
+        SerializableSupplier<Optional<String>> valueGetter = () -> Optional
+                .ofNullable(sourceElement.getAttribute("data-target"));
+        SerializableConsumer<String> valueSetter = id -> sourceElement
+                .setAttribute("data-target", id);
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, firstTarget,
+                "prefix-", valueGetter, valueSetter);
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, secondTarget,
+                "prefix-", valueGetter, valueSetter);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(firstTarget.getId().isPresent(),
+                "No id should be generated for a superseded target");
+        assertEquals(secondTarget.getId().orElse(null),
+                sourceElement.getAttribute("data-target"));
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_attached_pendingResolutionIsSerializable()
+            throws Exception {
+        UI ui = new UI();
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        target.setId("the-target");
+        ui.add(source, target);
+
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                () -> Optional
+                        .ofNullable(sourceElement.getAttribute("data-target")),
+                id -> sourceElement.setAttribute("data-target", id));
+
+        UI uiCopy = serializeAndDeserialize(ui);
+        uiCopy.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        assertEquals("the-target", uiCopy.getChildren().findFirst()
+                .orElseThrow().getElement().getAttribute("data-target"));
+    }
+
+    @Test
+    void resolveOrGenerateIdLater_detached_pendingResolutionIsSerializable()
+            throws Exception {
+        TestDiv source = new TestDiv();
+        TestDiv target = new TestDiv();
+        target.setId("the-target");
+
+        // not attached yet, so the resolution is kept as an attach listener
+        Element sourceElement = source.getElement();
+        ComponentUtil.resolveOrGenerateIdLater(sourceElement, target, "prefix-",
+                () -> Optional
+                        .ofNullable(sourceElement.getAttribute("data-target")),
+                id -> sourceElement.setAttribute("data-target", id));
+
+        TestDiv sourceCopy = serializeAndDeserialize(source);
+        UI ui = new UI();
+        ui.add(sourceCopy);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("the-target",
+                sourceCopy.getElement().getAttribute("data-target"));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T serializeAndDeserialize(T instance) throws Exception {
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+            out.writeObject(instance);
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bs.toByteArray()))) {
+            return (T) in.readObject();
+        }
     }
 
 }

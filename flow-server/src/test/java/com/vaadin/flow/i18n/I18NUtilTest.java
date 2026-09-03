@@ -17,6 +17,8 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -41,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -92,6 +95,48 @@ class I18NUtilTest {
                 "Missing German bundle");
         assertTrue(defaultTranslationLocales.contains(new Locale("en", "GB")),
                 "Missing English bundle");
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Missing Finnish bundle");
+    }
+
+    // A class loader percent-encodes the URL it returns, so a space in any
+    // parent folder arrives as %20 and must be decoded before use.
+    @Test
+    void resourceFolderPathContainsSpace_returnsExpectedLocales()
+            throws IOException {
+        File spacedResources = Files
+                .createDirectory(temporaryFolder.resolve("folder with space"))
+                .toFile();
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(spacedResources.toURI().toURL());
+
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME + ".properties")
+                        .toPath(),
+                "title=Default lang", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME + "_de.properties")
+                        .toPath(),
+                "title=deutsch", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+        Files.writeString(
+                new File(spacedResources,
+                        DefaultI18NProvider.BUNDLE_FILENAME
+                                + "_fi_FI.properties")
+                        .toPath(),
+                "title=Suomi", StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files should be found even though the path contains a space");
+        assertTrue(defaultTranslationLocales.contains(new Locale("de")),
+                "Missing German bundle");
         assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Missing Finnish bundle");
     }
@@ -176,6 +221,31 @@ class I18NUtilTest {
                 "Japan locale translation should have been found");
     }
 
+    // The jar path is cut out of the percent-encoded URL, so a space in any
+    // parent folder must be decoded before the jar can be opened.
+    @Test
+    void jarPathContainsSpace_translationFilesInJar_findsLanguages()
+            throws IOException {
+        Path spacedFolder = Files
+                .createDirectory(temporaryFolder.resolve("folder with space"));
+        Path path = generateZipArchive(spacedFolder);
+
+        ClassLoader urlClassLoader = new URLClassLoader(
+                new URL[] { path.toUri().toURL() });
+
+        assertTrue(I18NUtil.containsDefaultTranslation(urlClassLoader),
+                "Default file should return true");
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a JAR should be resolved even though the path contains a space");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
     // Open Liberty may use 'wsjar' as protocol of JAR resources
     // https://openliberty.io/docs/latest/reference/config/classloading.html
     @Test
@@ -186,8 +256,8 @@ class I18NUtilTest {
         URLStreamHandler wsjarMockHandler = new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL url) throws IOException {
-                url = new URL("jar", url.getPath(), url.getFile());
-                return url.openConnection();
+                // The file of a wsjar URL is a jar URL without its protocol
+                return new URL("jar:" + url.getFile()).openConnection();
             }
         };
         URLStreamHandlerFactory wsjarMockHandlerFactory = protocol -> {
@@ -227,6 +297,178 @@ class I18NUtilTest {
                 "Japan locale translation should have been found");
     }
 
+    // A jar connection hands out an instance shared with everything else
+    // reading that jar while its cache is on, and closing that instance would
+    // break the other readers.
+    @Test
+    void jarOpenedThroughConnection_sharedJarIsLeftOpen() throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+        JarFile sharedJar = new JarFile(path.toFile());
+
+        URLStreamHandler cachingJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                return new JarURLConnection(url) {
+                    @Override
+                    public JarFile getJarFile() throws IOException {
+                        return getUseCaches() ? sharedJar
+                                : new JarFile(path.toFile());
+                    }
+
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                cachingJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        assertEquals(2,
+                I18NUtil.getDefaultTranslationLocales(mockLoader).size(),
+                "Translation files inside the jar should be resolved");
+
+        assertDoesNotThrow(
+                () -> sharedJar
+                        .getEntry(DefaultI18NProvider.BUNDLE_FOLDER + "/"),
+                "The jar shared through the connection cache should still be open");
+        sharedJar.close();
+    }
+
+    // A container may serve a jar resource through a connection that is not a
+    // jar connection, and then the location has to be resolved as a file.
+    @Test
+    void connectionIsNotAJarConnection_findsLanguages() throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        URLStreamHandler plainConnectionHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) {
+                return new URLConnection(url) {
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                plainConnectionHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside the jar should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // Where the connection gives no jar to work with, the location is resolved
+    // as a file, and it is percent-encoded just like any other URL, so a space
+    // in a parent folder arrives as %20 and must be decoded.
+    @Test
+    void connectionWithoutJar_jarPathContainsSpace_findsLanguages()
+            throws IOException {
+        Path spacedFolder = Files.createDirectory(
+                temporaryFolder.resolve("jar in a spaced folder"));
+        Path path = generateZipArchive(spacedFolder);
+
+        URLStreamHandler noJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                throw new IOException("No connection for this jar");
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                noJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a JAR should be resolved even though the path contains a space");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // A jar nested inside another archive, as in a Spring Boot executable jar,
+    // is not a file on disk, and only the connection of the resource can reach
+    // it. The translations must be read through that connection.
+    // https://github.com/vaadin/flow/issues/25269
+    @Test
+    void nestedJarServedThroughItsOwnConnection_findsLanguages()
+            throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        URLStreamHandler nestedJarHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                return new JarURLConnection(url) {
+                    @Override
+                    public JarFile getJarFile() throws IOException {
+                        return new JarFile(path.toFile());
+                    }
+
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:file:/app.jar!/BOOT-INF/lib/fake.jar!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                nestedJarHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside a nested jar should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
+    // A Spring Boot executable jar exposes its classpath through Spring's
+    // 'nested:' scheme, backed by a file system provider of its own.
+    // Resolving such a jar must not fail servlet init. 'jrt:' is a
+    // JDK-provided stand-in for any non-default file system.
+    // https://github.com/vaadin/flow/issues/25269
+    @Test
+    void jarOnNonDefaultFileSystem_doesNotFailResourceLookup()
+            throws IOException {
+        URL resource = new URL("jar:jrt:/java.base!/"
+                + DefaultI18NProvider.BUNDLE_FOLDER + "/");
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = assertDoesNotThrow(
+                () -> I18NUtil.getDefaultTranslationLocales(mockLoader),
+                "A jar that does not live on the default file system should not fail the lookup");
+        assertTrue(defaultTranslationLocales.isEmpty(),
+                "No locales are expected from a jar that cannot be read");
+    }
+
     public static class MockVirtualFile {
 
         private final JarEntry entry;
@@ -246,8 +488,19 @@ class I18NUtilTest {
                     .map(e -> new MockVirtualFile(jarFile, e)).toList();
         }
 
-        public File getPhysicalFile() {
-            return new File(entry.getName());
+        public String getName() {
+            String name = entry.getName();
+            name = name.endsWith("/") ? name.substring(0, name.length() - 1)
+                    : name;
+            return name.substring(name.lastIndexOf('/') + 1);
+        }
+
+        public boolean isFile() {
+            return !entry.isDirectory();
+        }
+
+        public InputStream openStream() throws IOException {
+            return jarFile.getInputStream(entry);
         }
     }
 

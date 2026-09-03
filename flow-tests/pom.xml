@@ -386,11 +386,11 @@
 
         <module>vaadin-spring-tests</module>
         <module>test-vaadin-router</module>
-        <module>test-react-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
         <module>test-legacy-frontend</module>
         <module>test-client-queue</module>
+        <module>test-devloop</module>
         <module>test-commercial-banner</module>
       </modules>
     </profile>
@@ -488,15 +488,28 @@
               <filesets>
                 <fileset>
                   <directory>${project.basedir}</directory>
+                  <!-- Only generated frontend artifacts are listed here. Do not
+                       add package*.json or vite.config.ts: several modules
+                       (e.g. test-frontend/vite-basics, vite-context-path,
+                       vite-production, test-npm) commit these files as source
+                       with local module references or custom config, so
+                       deleting them breaks the module. package.json is
+                       repopulated by prepare-frontend on the next build and
+                       does not need cleaning; when a genuine frontend reset is
+                       required, use the flow-maven-plugin clean-frontend goal,
+                       which strips only the Vaadin-managed block and keeps the
+                       file. vite.generated.ts (below) is the generated file;
+                       vite.config.ts is user-owned scaffolding. -->
                   <includes>
-                    <include>package*.json</include>
                     <include>types.d.ts</include>
                     <include>tsconfig.json</include>
                     <include>pnpm-lock.yaml</include>
                     <include>bun.lockb</include>
-                    <include>vite.config.ts</include>
                     <include>vite.generated.ts</include>
                     <include>node_modules/**</include>
+                    <!-- Generated dev/prod bundles left behind between runs;
+                         stale bundles can be reused and mask changes. -->
+                    <include>src/main/bundles/**</include>
                   </includes>
                 </fileset>
               </filesets>

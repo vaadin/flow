@@ -42,6 +42,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -52,6 +53,9 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.DiscardAwareExecution;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -1663,6 +1667,41 @@ public class Element extends Node<Element> {
                 });
     }
 
+    /**
+     * Runs the given handler each time this element is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the element is
+     * detached again. The handler is run immediately if the element is already
+     * attached.
+     * <p>
+     * This makes it possible to set up state that should live exactly as long
+     * as the element is attached, and to carry that state over from an attach
+     * to the matching detach without keeping it in a field:
+     *
+     * <pre>
+     * element.whenAttached(ui -&gt; registerForPush(element, ui));
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whenAttached(
+            SerializableFunction<UI, Registration> attachHandler) {
+        return new AttachScope(this, attachHandler);
+    }
+
     @Override
     public String toString() {
         return getOuterHTML();
@@ -1918,15 +1957,48 @@ public class Element extends Node<Element> {
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> {
+            // Counts the invocation if the node was not attached to any UI
+            // when it was scheduled, and there was no count to add it to
+            pending.countWhenAttached();
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    new QueueJavaScriptInvocation(pending));
+        });
 
         return pending;
+    }
+
+    /**
+     * Queues a scheduled invocation for the client when a response is written
+     * for the tree of its owner, and keeps the invocation out of the count of
+     * undelivered invocations while no response is coming for it.
+     */
+    private static class QueueJavaScriptInvocation
+            implements DiscardAwareExecution {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
+        }
+
+        @Override
+        public void executionDiscarded() {
+            invocation.stopCounting();
+        }
+
+        @Override
+        public void executionRestored() {
+            invocation.countWhenAttached();
+        }
     }
 
     /**

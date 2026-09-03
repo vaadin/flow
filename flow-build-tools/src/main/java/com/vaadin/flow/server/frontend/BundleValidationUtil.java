@@ -361,7 +361,7 @@ public final class BundleValidationUtil {
                     .getPackages();
 
             Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                    options.getClassFinder(),
+                    options,
                     options.isReactEnabled() && FrontendBuildUtils
                             .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents())
@@ -383,16 +383,15 @@ public final class BundleValidationUtil {
             ((ObjectNode) packageJson.get(NodeUpdater.VAADIN_DEP_KEY))
                     .put(NodeUpdater.HASH_KEY, hash);
 
-            final JsonNode platformPinnedDependencies = nodeUpdater
-                    .getPlatformPinnedDependencies();
-            for (String key : JacksonUtils
-                    .getKeys(platformPinnedDependencies)) {
+            final JsonNode pinnedNpmDependencies = nodeUpdater
+                    .getPinnedNpmDependencies();
+            for (String key : JacksonUtils.getKeys(pinnedNpmDependencies)) {
                 // need to double check that not overriding a scanned
                 // dependency since add-ons should be able to downgrade
                 // version through exclusion
                 if (!filteredApplicationDependencies.containsKey(key)) {
-                    TaskUpdatePackages.pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key);
+                    TaskUpdatePackages.pinNpmDependency(packageJson,
+                            pinnedNpmDependencies, key);
                 }
             }
 
@@ -1005,7 +1004,7 @@ public final class BundleValidationUtil {
                     "Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
-            FileIOUtils.deleteFileQuietly(needsBuildFile);
+            FileIOUtils.deleteQuietly(needsBuildFile);
         }
     }
 

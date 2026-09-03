@@ -129,6 +129,8 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
+  'flow-tests/test-devloop/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -238,8 +240,15 @@ function getFiles(files, folder, pattern) {
  */
 function setVersion(newVersion) {
   const pomContent = fs.readFileSync('pom.xml').toString();
-  const current = RegExp(regexVersion.replace('VERSION', '\\d+\\.\\d+\\-SNAPSHOT')).exec(pomContent)[2];
-  if (current && current != newVersion) {
+  // Match any SNAPSHOT version, including extra qualifier segments such as
+  // `25.3.tsclient-SNAPSHOT`, not just the `\d+\.\d+-SNAPSHOT` shape.
+  const match = RegExp(regexVersion.replace('VERSION', '[\\w.\\-]+?-SNAPSHOT')).exec(pomContent);
+  const current = match && match[2];
+  if (!current) {
+    console.log('No SNAPSHOT version found in pom.xml, nothing to replace');
+    return;
+  }
+  if (current != newVersion) {
     const regexChangeVersion = RegExp(regexVersion.replace('VERSION', current), 'g');
     const files = getFiles([], '.', /.*\/pom.*\.xml$/);
     files.forEach(file => {

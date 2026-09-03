@@ -26,16 +26,16 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.boot.version}</version>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-testbench-bom</artifactId>
-        <version>${testbench.version}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -57,6 +57,12 @@
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- React adapter (ReactAdapterComponent) for React-in-Flow views -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-react</artifactId>
       <version>${project.version}</version>
     </dependency>
 

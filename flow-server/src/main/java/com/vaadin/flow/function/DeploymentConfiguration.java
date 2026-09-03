@@ -181,6 +181,12 @@ public interface DeploymentConfiguration
     /**
      * Gets the properties configured for the deployment, e.g. as init
      * parameters to the servlet.
+     * <p>
+     * The configuration is not meant to be changed after it has been created,
+     * so the returned properties should be treated as read-only. The
+     * implementations provided by Flow throw an
+     * {@link UnsupportedOperationException} if the returned properties are
+     * modified.
      *
      * @return properties for the application.
      */

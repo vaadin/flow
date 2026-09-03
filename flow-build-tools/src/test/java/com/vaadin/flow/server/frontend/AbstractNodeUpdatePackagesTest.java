@@ -91,12 +91,14 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .withBuildDirectory(TARGET).withBundleBuild(true)
                 .withFrontendDependenciesScanner(getScanner(classFinder));
         packageCreator = new TaskGeneratePackageJson(options);
-        versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
                 .toFile();
+        versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageUpdater = new TaskUpdatePackages(options);
         packageJson = new File(baseDir, PACKAGE_JSON);
@@ -321,8 +323,17 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageUpdater.updateVaadinJsonContents(
                 Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        FileUtils.write(versions, "{\"platform\": \"1.2.3\"}",
-                StandardCharsets.UTF_8);
+        FileUtils.write(versions, """
+                {
+                  "platform": "1.2.3",
+                  "core": {
+                    "vaadin-core": {
+                      "npmName": "@vaadin/vaadin-core",
+                      "jsVersion": "1.2.3"
+                    }
+                  }
+                }
+                """, StandardCharsets.UTF_8);
         packageUpdater.execute();
         assertCleanUp();
     }
