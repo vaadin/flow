@@ -576,7 +576,16 @@ public class MessageHandler {
         if (isResponse(json)) {
             // End the request if the received message was a
             // response, not sent asynchronously
-            registry.getRequestResponseTracker().endRequest();
+            RequestResponseTracker requestResponseTracker = registry
+                    .getRequestResponseTracker();
+            if (requestResponseTracker.hasActiveRequest()) {
+                requestResponseTracker.endRequest();
+            } else {
+                // No request to end, e.g. a duplicate of a response that
+                // already ended it. endRequest would throw for that.
+                Console.debug(
+                        "Received a response while no request is active. Not ending a request.");
+            }
             registry.getLoadingIndicatorStateHandler().stopLoading();
         }
     }
