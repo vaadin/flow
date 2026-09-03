@@ -180,6 +180,8 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
+    private int lastRequestResponseSyncId = -1;
+
     private int nextJsInitializerId = 0;
 
     private final StateTree stateTree;
@@ -402,6 +404,21 @@ public class UIInternals implements Serializable {
      */
     public void setLastRequestResponse(String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
+        // UidlWriter puts the current sync id into the response it creates and
+        // then increments the counter, so this is the id of the response that
+        // was just created. Recording it here means a response that has to be
+        // sent again can keep the id it was sent with the first time.
+        this.lastRequestResponseSyncId = serverSyncId - 1;
+    }
+
+    /**
+     * Returns the server sync id of the response created for the last UIDL
+     * request, or -1 if no response has been created yet.
+     *
+     * @return the server sync id of the last UIDL response
+     */
+    public int getLastRequestResponseSyncId() {
+        return lastRequestResponseSyncId;
     }
 
     /**
