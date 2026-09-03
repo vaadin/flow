@@ -35,6 +35,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -847,27 +849,42 @@ public class StateNode implements Serializable {
     }
 
     private String formatOwnerComponentToString() {
-        final Element ownerElement = ElementUtil.from(this).orElse(null);
-        if (ownerElement == null) {
-            return "unknown element";
+        // This is only used to describe a component in an error message, so a
+        // misbehaving application implementation of e.g. toString() or
+        // hashCode() must not replace the original error with its own.
+        Component component = null;
+        try {
+            final Element ownerElement = ElementUtil.from(this).orElse(null);
+            if (ownerElement == null) {
+                return "unknown element";
+            }
+            component = ownerElement.getComponent().orElse(null);
+            if (component == null) {
+                return "element " + ownerElement + ", no component";
+            }
+            final ComponentTracker.Location createLocation = ComponentTracker
+                    .findCreate(component);
+            final ComponentTracker.Location attachLocation = ComponentTracker
+                    .findAttach(component);
+            if (createLocation != null || attachLocation != null) {
+                // the location.toString() includes the component class as well
+                return "created: " + createLocation + ", attached: "
+                        + attachLocation;
+            }
+            // createLocation is null in production mode. Just return the
+            // component's toString() which should provide enough information to
+            // the programmer.
+            return component.toString();
+        } catch (RuntimeException e) {
+            final String describedComponent = component == null
+                    ? "the component"
+                    : "the component of type " + component.getClass().getName();
+            LoggerFactory.getLogger(StateNode.class).debug(
+                    "Failed to describe the owner component of a state node",
+                    e);
+            return "unavailable, describing " + describedComponent + " threw "
+                    + e.getClass().getName();
         }
-        final Component component = ownerElement.getComponent().orElse(null);
-        if (component == null) {
-            return "element " + ownerElement + ", no component";
-        }
-        final ComponentTracker.Location createLocation = ComponentTracker
-                .findCreate(component);
-        final ComponentTracker.Location attachLocation = ComponentTracker
-                .findAttach(component);
-        if (createLocation != null || attachLocation != null) {
-            // the location.toString() includes the component class as well
-            return "created: " + createLocation + ", attached: "
-                    + attachLocation;
-        }
-        // createLocation is null in production mode. Just return the
-        // component's toString() which should provide enough information to the
-        // programmer.
-        return component.toString();
     }
 
     private boolean handleOnAttach() {

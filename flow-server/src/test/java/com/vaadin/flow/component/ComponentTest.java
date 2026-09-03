@@ -160,6 +160,14 @@ public class ComponentTest {
     public static class TestOtherButton extends Component {
     }
 
+    @Tag("button")
+    public static class BrokenToStringButton extends Component {
+        @Override
+        public String toString() {
+            throw new UnsupportedOperationException("broken toString");
+        }
+    }
+
     private Component divWithTextComponent;
     private Component parentDivComponent;
     private Component child1SpanComponent;
@@ -2121,6 +2129,22 @@ public class ComponentTest {
                         + "singleton scoped beans and referencing them from "
                         + "multiple UIs. Offending component: com.vaadin.flow."
                         + "component.ComponentTest$TestButton@"),
+                ex.getMessage());
+    }
+
+    @Test
+    public void cannotMoveComponentsToOtherUI_componentToStringThrows_originalErrorIsReported() {
+        final UI otherUI = createMockedUI();
+        final BrokenToStringButton button = new BrokenToStringButton();
+        otherUI.add(button);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> testUI.add(button));
+        assertTrue(
+                ex.getMessage().endsWith("Offending component: unavailable, "
+                        + "describing the component of type "
+                        + BrokenToStringButton.class.getName() + " threw "
+                        + UnsupportedOperationException.class.getName()),
                 ex.getMessage());
     }
 
