@@ -295,8 +295,12 @@ class VaadinServiceTest {
         configuration.setProductionMode(true);
         configuration.setApplicationOrSystemProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
-        VaadinServiceInitListener initListener = event -> RouteConfiguration
-                .forApplicationScope().setRoute("kotlin", KotlinTestView.class);
+        VaadinServiceInitListener initListener = event -> {
+            RouteConfiguration.forApplicationScope().setRoute("test",
+                    AnnotatedTestView.class);
+            RouteConfiguration.forApplicationScope().setRoute("kotlin",
+                    KotlinTestView.class);
+        };
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration, false);
 
@@ -304,8 +308,10 @@ class VaadinServiceTest {
 
         assertFalse(
                 UsageStatistics.getEntries()
-                        .anyMatch(e -> "kotlin".equals(e.getName())
-                                || "flow/pnpm".equals(e.getName())),
+                        .anyMatch(e -> Constants.STATISTIC_HAS_FLOW_ROUTE
+                                .equals(e.getName())
+                                || "flow/pnpm".equals(e.getName())
+                                || "kotlin".equals(e.getName())),
                 "Usage statistics should only be collected in development mode");
     }
 

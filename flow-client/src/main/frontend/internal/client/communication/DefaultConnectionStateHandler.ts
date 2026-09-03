@@ -129,10 +129,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     // not need to start a new one.
     if (this.#machine.getReconnectAttempt() === 1) {
       // Try once immediately
+      Console.debug(`Immediate reconnect attempt for ${JSON.stringify(payload)}`);
       this.doReconnect(payload);
     } else {
       this.#scheduledReconnect = setTimeout(() => {
         this.#scheduledReconnect = null;
+        Console.debug(
+          `Scheduled reconnect attempt ${this.#machine.getReconnectAttempt()} for ${JSON.stringify(payload)}`
+        );
         this.doReconnect(payload);
       }, this.#registry.getReconnectConfiguration().getReconnectInterval());
     }
@@ -161,9 +165,11 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
     if (payload !== null && payload !== undefined) {
       // Re-send the queued UIDL via the reconnection-attempt listener.
+      Console.debug('Trying to re-establish server connection (UIDL)...');
       this.#registry.getRequestResponseTracker().fireReconnectionAttempt(this.#machine.getReconnectAttempt());
     } else {
       // Use heartbeat
+      Console.debug('Trying to re-establish server connection (heartbeat)...');
       this.#registry.getHeartbeat().send();
     }
   }
@@ -300,6 +306,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // reconnection payload, so push the pending changes immediately on
         // reconnect.
         if (pushConnection.isBidirectional()) {
+          Console.debug('Flush pending messages after PUSH reconnection.');
           this.#registry.getMessageSender().sendInvocationsToServer();
         }
       }
@@ -315,6 +322,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushReconnectPending(pushConnection: PushConnection): void {
+    Console.debug('Reopening push connection');
     if (pushConnection.isBidirectional()) {
       // Lost connection for a connection which will tell us when the connection
       // is available again

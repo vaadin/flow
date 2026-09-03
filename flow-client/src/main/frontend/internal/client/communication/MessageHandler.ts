@@ -214,6 +214,9 @@ export class MessageHandler {
       // Resynchronize request. We must remove any old pending messages and
       // ensure this is handled next. Otherwise we would keep waiting for an
       // older message forever (if this is triggered by forceMessageHandling).
+      Console.debug(
+        `Received resync message with id ${serverId} while waiting for ${this.#ordering.getExpectedServerId()}`
+      );
       this.#ordering.setLastSeenServerSyncId(serverId - 1);
       this.#ordering.removeOld();
     }
@@ -222,7 +225,11 @@ export class MessageHandler {
     // Cannot or should not handle this message right now, either because of
     // locks or because it's an out-of-order message.
     if (locked || !this.#ordering.isNextExpectedMessage(serverId)) {
-      if (!locked) {
+      if (locked) {
+        // Some component is doing something that can't be interrupted (e.g. an
+        // animation that should be smooth).
+        Console.debug('Postponing UIDL handling due to lock...');
+      } else {
         // Unexpected server id
         if (this.#ordering.isAlreadySeen(serverId)) {
           // Why is the server re-sending an old package? Ignore it
@@ -230,10 +237,13 @@ export class MessageHandler {
           this.#endRequestIfResponse(valueMap);
           return;
         }
+        // We are waiting for an earlier message...
+        Console.debug(
+          `Received message with server id ${serverId} but expected ${this.#ordering.getExpectedServerId()}. ` +
+            'Postponing handling until the missing message(s) have been received'
+        );
       }
-      // Some component is doing something that can't be interrupted (e.g. an
-      // animation that should be smooth), or an earlier message is still
-      // missing. Enqueue the UIDL message for later processing.
+      // Enqueue the UIDL message for later processing.
       this.#ordering.push(valueMap);
       if (this.#forceHandleMessage === null) {
         const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout();
@@ -250,6 +260,7 @@ export class MessageHandler {
     const lock = {};
     this.suspendReponseHandling(lock);
 
+    Console.debug('Handling message from server');
     this.#registry.getRequestResponseTracker().fireResponseHandlingStarted();
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
@@ -281,6 +292,7 @@ export class MessageHandler {
   }
 
   #handleDependencies(inputJson: ValueMap): void {
+    Console.debug('Handling dependencies');
     const dependencies = new Map<LoadMode, Dependency[]>();
     for (const loadMode of ['INLINE', 'EAGER', 'LAZY'] as LoadMode[]) {
       if (loadMode in inputJson) {
@@ -316,6 +328,7 @@ export class MessageHandler {
       this.#serverTimingInfo = valueMap.timings as number[];
     }
     try {
+      const processUidlStart = performance.now();
       if ('constants' in valueMap) {
         this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
       }
@@ -334,6 +347,8 @@ export class MessageHandler {
           )
         );
       }
+
+      Console.debug(`handleUIDLMessage: ${Math.round(performance.now() - processUidlStart)} ms`);
 
       Reactive.flush();
 
@@ -428,6 +443,17 @@ export class MessageHandler {
     const changes = Array.isArray(json.changes) ? (json.changes as Array<Record<string, unknown>>) : [];
     // The StateTree satisfies TreeChangeProcessor's contract.
     const updatedNodes = applyTreeChanges(tree, changes);
+
+    if (!this.#registry.getApplicationConfiguration().isProductionMode()) {
+      try {
+        Console.debug('StateTree after applying changes:');
+        Console.debug(tree.getRootNode().getDebugJson());
+      } catch (e) {
+        Console.error('Failed to log state tree');
+        Console.error(e);
+      }
+    }
+
     Reactive.addPostFlushListener(() =>
       // Through the tracking scheduler, as Scheduler.get().scheduleDeferred is,
       // so the pending callbacks keep the application active.
@@ -513,6 +539,7 @@ export class MessageHandler {
       // Cancel the timer that breaks the lock
       this.#resetForceHandleTimer();
       if (!this.#ordering.isEmpty()) {
+        Console.debug('No more response handling locks, handling pending requests.');
         this.#handlePendingMessages();
       }
     }
