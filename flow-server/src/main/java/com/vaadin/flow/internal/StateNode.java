@@ -1250,6 +1250,9 @@ public class StateNode implements Serializable {
      * contains the element tag and, when available, the component class, the
      * routing target the component is used in, and the location where the
      * component was created.
+     * <p>
+     * This method never throws: if describing the node fails, the description
+     * says so instead and contains the details gathered so far.
      *
      * @return a description of this node, not <code>null</code>
      */
@@ -1258,39 +1261,48 @@ public class StateNode implements Serializable {
                 .append(getId());
         // The node is not necessarily usable as an element even when it has
         // the feature, and a description for a log message must never throw
-        if (BasicElementStateProvider.get().supports(this)) {
-            Element element = Element.get(this);
-            targetInfo.append(", element with tag '").append(element.getTag())
-                    .append("'");
-            Optional<Component> component = element.getComponent();
-            if (component.isPresent()) {
-                targetInfo.append(", component '")
-                        .append(component.get().getClass().getName())
-                        .append("'");
-                /*
-                 * The routing target is identified by its class since the path
-                 * in its annotation is not necessarily the path it is served
-                 * from: the path may be a placeholder for a name derived from
-                 * the class, and it doesn't include the prefixes that parent
-                 * layouts contribute.
-                 */
-                ComponentUtil.getRouteComponent(component.get()).filter(
-                        routeComponent -> routeComponent != component.get())
-                        .ifPresent(routeComponent -> targetInfo
-                                .append(", used in '")
-                                .append(routeComponent.getClass().getName())
-                                .append("'"));
+        try {
+            if (BasicElementStateProvider.get().supports(this)) {
+                Element element = Element.get(this);
+                targetInfo.append(", element with tag '")
+                        .append(element.getTag()).append("'");
+                Optional<Component> component = element.getComponent();
+                if (component.isPresent()) {
+                    targetInfo.append(", component '")
+                            .append(component.get().getClass().getName())
+                            .append("'");
+                    /*
+                     * The routing target is identified by its class since the
+                     * path in its annotation is not necessarily the path it is
+                     * served from: the path may be a placeholder for a name
+                     * derived from the class, and it doesn't include the
+                     * prefixes that parent layouts contribute.
+                     */
+                    ComponentUtil.getRouteComponent(component.get()).filter(
+                            routeComponent -> routeComponent != component.get())
+                            .ifPresent(routeComponent -> targetInfo
+                                    .append(", used in '")
+                                    .append(routeComponent.getClass().getName())
+                                    .append("'"));
 
-                // Only available while component tracking is enabled, which
-                // is the case in development mode
-                ComponentTracker.Location location = ComponentTracker
-                        .findCreate(component.get());
-                if (location != null) {
-                    targetInfo.append(", created at ")
-                            .append(location.filename()).append(":")
-                            .append(location.lineNumber());
+                    // Only available while component tracking is enabled,
+                    // which is the case in development mode
+                    ComponentTracker.Location location = ComponentTracker
+                            .findCreate(component.get());
+                    if (location != null) {
+                        targetInfo.append(", created at ")
+                                .append(location.filename()).append(":")
+                                .append(location.lineNumber());
+                    }
                 }
             }
+        } catch (RuntimeException e) {
+            // Application code, e.g. an overridden getParent() or hashCode(),
+            // must not turn a log message into an error
+            LoggerFactory.getLogger(StateNode.class)
+                    .debug("Failed to describe a state node", e);
+            targetInfo.append(", describing it further threw ")
+                    .append(e.getClass().getName());
         }
         return targetInfo.toString();
     }
