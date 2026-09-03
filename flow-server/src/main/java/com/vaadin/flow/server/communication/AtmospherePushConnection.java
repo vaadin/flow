@@ -253,14 +253,23 @@ public class AtmospherePushConnection
             push(false);
             return;
         }
+        // Owe the resend until there is a connection again, and note that
+        // push(boolean) must not take over then: the changes it would describe
+        // are no longer dirty, so the client would get an empty response and
+        // stay out of sync, which is what the resend prevents. The state is
+        // left alone, so that it keeps describing the pushes that are pending
+        // on their own.
+        //
+        // As in push(boolean), a disconnect in progress counts as no
+        // connection: it has already flagged itself but may not have entered
+        // the monitor yet, and broadcasting onto the resource it is about to
+        // close would drop the message without owing it again.
+        if (disconnecting.get() || !isConnected()) {
+            resendPending = true;
+            return;
+        }
         synchronized (lock) {
             if (!isConnected()) {
-                // Send it once there is a connection again. push(boolean) must
-                // not take over then: the changes it would describe are no
-                // longer dirty, so the client would get an empty response and
-                // stay out of sync, which is what the resend prevents.
-                // The state is left alone, so that it keeps describing the
-                // pushes that are pending on their own.
                 resendPending = true;
                 return;
             }
