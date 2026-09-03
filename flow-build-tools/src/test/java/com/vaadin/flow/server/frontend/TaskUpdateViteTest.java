@@ -92,8 +92,8 @@ class TaskUpdateViteTest {
                 template.contains("const flowClientId = 'vaadin-flow-client';"),
                 "The client should be reachable through the bare specifier that Flow.ts imports");
         assertTrue(template.contains(
-                "[flowClientId]: `${flowClientEntry}?v=${flowClientHash()}`"),
-                "The bare specifier should be aliased to the client entry, with a hash that re-optimizes the client when it changes");
+                "[flowClientId]: devMode ? `${flowClientEntry}?v=${flowClientHash()}` : flowClientEntry"),
+                "The bare specifier should be aliased to the client entry, with a hash that re-optimizes the client when it changes in dev mode");
         assertTrue(
                 template.contains(
                         "include: hasFlowClient ? [flowClientId] : []"),

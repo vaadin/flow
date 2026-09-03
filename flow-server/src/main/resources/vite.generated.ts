@@ -59,13 +59,12 @@ const i18nFolder = path.resolve(dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
-// The Flow client engine, which Flow.ts and the exported web component
-// bootstrap load through the bare `vaadin-flow-client` specifier. The engine is
-// shipped as ~90 individual ES modules, so in dev mode the browser would fetch
-// them one by one on every page load. Aliasing a bare specifier to the entry
-// and listing it in optimizeDeps.include makes Vite pre-bundle it instead: Vite
-// only redirects bare specifiers to an optimized dependency, never relative
-// ones.
+// The Flow client engine, which Flow.ts loads through the bare
+// `vaadin-flow-client` specifier. The engine is shipped as ~90 individual ES
+// modules, so in dev mode the browser would fetch them one by one on every page
+// load. Aliasing a bare specifier to the entry and listing it in
+// optimizeDeps.include makes Vite pre-bundle it instead: Vite only redirects
+// bare specifiers to an optimized dependency, never relative ones.
 const flowClientId = 'vaadin-flow-client';
 const flowClientEntry = path.resolve(jarResourcesFolder, 'FlowClient.js');
 const hasFlowClient = existsSync(flowClientEntry);
@@ -505,7 +504,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
         Frontend: frontendFolder,
-        ...(hasFlowClient ? { [flowClientId]: `${flowClientEntry}?v=${flowClientHash()}` } : {})
+        // The hash is only needed for the dev-mode dependency optimizer. A
+        // build must resolve to the bare path, so that the engine is not
+        // bundled a second time for the exported web component entry point,
+        // which imports it directly.
+        ...(hasFlowClient
+          ? { [flowClientId]: devMode ? `${flowClientEntry}?v=${flowClientHash()}` : flowClientEntry }
+          : {})
       },
       preserveSymlinks: true
     },
