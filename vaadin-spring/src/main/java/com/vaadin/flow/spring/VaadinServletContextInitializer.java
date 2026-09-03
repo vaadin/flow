@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -113,6 +114,7 @@ public class VaadinServletContextInitializer
 
     private static boolean devModeCachingEnabled;
     private ApplicationContext appContext;
+    private Consumer<Runnable> contextInitializedExecutor;
     private ResourceLoader customLoader;
     private MetadataReaderFactory metadataReaderFactory;
 
@@ -233,17 +235,26 @@ public class VaadinServletContextInitializer
     private static class CompositeServletContextListener
             implements ServletContextListener, Serializable {
         private final List<FailFastServletContextListener> listeners = new ArrayList<>();
+        private final Consumer<Runnable> contextInitializedExecutor;
+
+        public CompositeServletContextListener(
+                Consumer<Runnable> contextInitializedExecutor) {
+            this.contextInitializedExecutor = contextInitializedExecutor;
+        }
 
         @Override
         public void contextInitialized(ServletContextEvent event) {
-            long start = System.nanoTime();
+            contextInitializedExecutor.accept(() -> {
+                long start = System.nanoTime();
 
-            listeners.forEach(listener -> listener.contextInitialized(event));
+                listeners.forEach(
+                        listener -> listener.contextInitialized(event));
 
-            long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().debug(
-                    "Total time for Vaadin Servlet Context Init took {} ms",
-                    ms);
+                long ms = (System.nanoTime() - start) / 1000000;
+                getLogger().debug(
+                        "Total time for Vaadin Servlet Context Init took {} ms",
+                        ms);
+            });
         }
 
         @Override
@@ -728,7 +739,22 @@ public class VaadinServletContextInitializer
      *            the application context
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
+        this(context, Runnable::run);
+    }
+
+    /**
+     * Creates a new {@link ServletContextInitializer} instance with application
+     * {@code context} provided.
+     *
+     * @param context
+     *            the application context
+     * @param contextInitializedExecutor
+     *            execution function for context initialized
+     */
+    public VaadinServletContextInitializer(ApplicationContext context,
+            Consumer<Runnable> contextInitializedExecutor) {
         appContext = context;
+        this.contextInitializedExecutor = contextInitializedExecutor;
 
         String neverScanProperty = appContext.getEnvironment()
                 .getProperty("vaadin.blocked-packages");
@@ -777,9 +803,7 @@ public class VaadinServletContextInitializer
     }
 
     @Override
-    public void onStartup(ServletContext servletContext)
-            throws ServletException {
-
+    public void onStartup(ServletContext servletContext) {
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
         servletContext.addListener(createCompositeListener(vaadinContext));
@@ -823,7 +847,8 @@ public class VaadinServletContextInitializer
 
     private CompositeServletContextListener createCompositeListener(
             VaadinServletContext context) {
-        CompositeServletContextListener compositeListener = new CompositeServletContextListener();
+        CompositeServletContextListener compositeListener = new CompositeServletContextListener(
+                this.contextInitializedExecutor);
 
         compositeListener.addListener(new LookupInitializerListener());
 
