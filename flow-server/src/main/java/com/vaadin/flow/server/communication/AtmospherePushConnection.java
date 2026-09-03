@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
 
@@ -59,6 +60,12 @@ public class AtmospherePushConnection
     // not be sent yet; connect() sends it once there is a connection again.
     private transient boolean resendPending = false;
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
+
+    /**
+     * Marks a push that is not the response to any client message. Not -1,
+     * which is a real client-to-server id meaning none has been processed yet.
+     */
+    private static final int NO_CLIENT_MESSAGE = Integer.MIN_VALUE;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -195,6 +202,22 @@ public class AtmospherePushConnection
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
+        push(async, NO_CLIENT_MESSAGE);
+    }
+
+    /**
+     * Sends the response to the client message with the given id, remembering
+     * it so that it can be sent again if the client re-sends that message
+     * because it never saw the answer.
+     *
+     * @param clientToServerId
+     *            the id of the client message being answered
+     */
+    void pushResponse(int clientToServerId) {
+        push(false, clientToServerId);
+    }
+
+    private void push(boolean async, int clientToServerId) {
         boolean isDisconnecting = disconnecting.get();
         if (isDisconnecting || !isConnected()) {
             if (isDisconnecting) {
@@ -226,14 +249,17 @@ public class AtmospherePushConnection
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
                     String responseString = response.toString();
-                    if (!async) {
-                        // Remember the response to the client's message so that
-                        // it can be sent again if the client re-sends the same
-                        // message, e.g. after reconnecting the push channel.
-                        getUI().getInternals()
-                                .setLastRequestResponse(responseString);
+                    // UidlWriter put the current sync id into the response and
+                    // then incremented the counter.
+                    int serverSyncId = getUI().getInternals().getServerSyncId()
+                            - 1;
+                    if (clientToServerId != NO_CLIENT_MESSAGE) {
+                        // Only a response to a client message can be sent
+                        // again, and only as the answer to that message.
+                        getUI().getInternals().setLastRequestResponse(
+                                responseString, serverSyncId, clientToServerId);
                     }
-                    sendMessage(responseString);
+                    sendMessage(responseString, serverSyncId);
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
@@ -248,10 +274,16 @@ public class AtmospherePushConnection
      * previous response has been recorded.
      */
     void resendLastResponse() {
-        String lastResponse = getUI().getInternals().getLastRequestResponse();
-        if (lastResponse == null) {
-            // Nothing recorded to send again, so a freshly created response is
-            // all this connection can offer.
+        UIInternals internals = getUI().getInternals();
+        String lastResponse = internals.getLastRequestResponse();
+        if (lastResponse == null || internals
+                .getLastRequestResponseClientToServerId() != internals
+                        .getLastProcessedClientToServerId()) {
+            // What is recorded does not answer the message the client re-sent,
+            // which happens when the response to it could not be sent and was
+            // never created. Creating one now is all this connection can
+            // offer; sending the recorded response instead would send the
+            // client something it has already seen.
             push(false);
             return;
         }
@@ -272,8 +304,7 @@ public class AtmospherePushConnection
             }
             // Sent with the id it had the first time, so that the client and
             // the long polling cache do not mistake it for a newer message.
-            sendMessage(lastResponse,
-                    getUI().getInternals().getLastRequestResponseSyncId());
+            sendMessage(lastResponse, internals.getLastRequestResponseSyncId());
         }
     }
 

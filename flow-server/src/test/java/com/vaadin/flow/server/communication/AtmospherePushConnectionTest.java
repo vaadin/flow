@@ -47,7 +47,9 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.times;
@@ -121,10 +123,20 @@ class AtmospherePushConnectionTest {
         assertEquals(State.DISCONNECTED, connection.getState());
     }
 
+    /**
+     * Answers a client message the server has just processed, which is the only
+     * push that records a response for a later resend.
+     */
+    private void answerClientMessage() {
+        int clientToServerId = connection.getUI().getInternals()
+                .getLastProcessedClientToServerId();
+        connection.pushResponse(clientToServerId);
+    }
+
     @Test
     void resendLastResponse_sendsThePreviousResponseAgain() throws Exception {
         vaadinSession.runWithLock(() -> {
-            connection.push(false);
+            answerClientMessage();
             return null;
         });
         String recorded = connection.getUI().getInternals()
@@ -149,7 +161,7 @@ class AtmospherePushConnectionTest {
     void resendLastResponse_keepsTheSyncIdOfTheOriginalResponse()
             throws Exception {
         vaadinSession.runWithLock(() -> {
-            connection.push(false);
+            answerClientMessage();
             return null;
         });
         ArgumentCaptor<Object> first = ArgumentCaptor.forClass(Object.class);
@@ -180,7 +192,7 @@ class AtmospherePushConnectionTest {
     @Test
     void resendLastResponse_noRecordedResponse_sendsARegularResponse()
             throws Exception {
-        connection.getUI().getInternals().setLastRequestResponse(null);
+        connection.getUI().getInternals().setLastRequestResponse(null, -1, -1);
 
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
@@ -189,16 +201,43 @@ class AtmospherePushConnectionTest {
 
         verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
-        assertNotNull(
-                connection.getUI().getInternals().getLastRequestResponse(),
-                "The regular response should be recorded for a later resend");
+        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
+                "A response created as a fallback must not become one that can be sent again");
+    }
+
+    @Test
+    void resendLastResponse_recordedForAnotherMessage_sendsANewResponse()
+            throws Exception {
+        // A response was recorded for client message 0, but the server has
+        // since processed message 1: the recording does not answer the message
+        // the client is re-sending, and the client has already seen it.
+        vaadinSession.runWithLock(() -> {
+            answerClientMessage();
+            return null;
+        });
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        connection.getUI().getInternals().setLastProcessedClientToServerId(1,
+                new byte[0]);
+        Mockito.clearInvocations(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertNotEquals(recorded, ((PushMessage) captor.getValue()).message,
+                "A stale recording must not be sent again");
     }
 
     @Test
     void resendLastResponse_notConnected_theResponseIsSentOnReconnect()
             throws Exception {
         vaadinSession.runWithLock(() -> {
-            connection.push(false);
+            answerClientMessage();
             return null;
         });
         String recorded = connection.getUI().getInternals()
@@ -230,7 +269,7 @@ class AtmospherePushConnectionTest {
     void resendLastResponse_pushPendingAsWell_bothAreSentOnReconnect()
             throws Exception {
         vaadinSession.runWithLock(() -> {
-            connection.push(false);
+            answerClientMessage();
             return null;
         });
         String recorded = connection.getUI().getInternals()
@@ -262,18 +301,20 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void push_asynchronousPushKeepsTheRecordedResponse() throws Exception {
+    void push_doesNotRecordAResponseToSendAgain() throws Exception {
         String recorded = "{\"marker\":1}";
-        connection.getUI().getInternals().setLastRequestResponse(recorded);
+        connection.getUI().getInternals().setLastRequestResponse(recorded, 7,
+                3);
 
         vaadinSession.runWithLock(() -> {
             connection.push(true);
+            connection.push(false);
             return null;
         });
 
         assertEquals(recorded,
                 connection.getUI().getInternals().getLastRequestResponse(),
-                "A server-initiated push is not a response to a client message");
+                "Only a response created for a client message may be sent again");
     }
 
     @Test

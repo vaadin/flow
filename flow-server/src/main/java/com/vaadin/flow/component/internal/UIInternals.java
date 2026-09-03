@@ -182,6 +182,8 @@ public class UIInternals implements Serializable {
 
     private int lastRequestResponseSyncId = -1;
 
+    private int lastRequestResponseClientToServerId = -1;
+
     private int nextJsInitializerId = 0;
 
     private final StateTree stateTree;
@@ -396,19 +398,22 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Sets the response created for the last UIDL request.
+     * Sets the response created for a client message, so that it can be sent
+     * again if the client re-sends that same message.
      *
      * @param lastRequestResponse
-     *            The request that was sent for the last UIDL request.
+     *            the response that was created for the client message
+     * @param serverSyncId
+     *            the server sync id the response was created with
+     * @param clientToServerId
+     *            the id of the client message the response answers
      * @since 24.7
      */
-    public void setLastRequestResponse(String lastRequestResponse) {
+    public void setLastRequestResponse(String lastRequestResponse,
+            int serverSyncId, int clientToServerId) {
         this.lastRequestResponse = lastRequestResponse;
-        // UidlWriter puts the current sync id into the response it creates and
-        // then increments the counter, so this is the id of the response that
-        // was just created. Recording it here means a response that has to be
-        // sent again can keep the id it was sent with the first time.
-        this.lastRequestResponseSyncId = serverSyncId - 1;
+        this.lastRequestResponseSyncId = serverSyncId;
+        this.lastRequestResponseClientToServerId = clientToServerId;
     }
 
     /**
@@ -419,6 +424,16 @@ public class UIInternals implements Serializable {
      */
     public int getLastRequestResponseSyncId() {
         return lastRequestResponseSyncId;
+    }
+
+    /**
+     * Returns the id of the client message the response created for the last
+     * UIDL request answers, or -1 if no response has been created yet.
+     *
+     * @return the client-to-server id the last UIDL response answers
+     */
+    public int getLastRequestResponseClientToServerId() {
+        return lastRequestResponseClientToServerId;
     }
 
     /**
