@@ -847,6 +847,19 @@ public class StateNode implements Serializable {
     }
 
     private String formatOwnerComponentToString() {
+        try {
+            return describeOwnerComponent();
+        } catch (RuntimeException e) {
+            /*
+             * This description is always embedded in a message about some other
+             * problem, so a component that fails to describe itself must not
+             * replace that message with an exception of its own.
+             */
+            return "component that could not be described: " + e;
+        }
+    }
+
+    private String describeOwnerComponent() {
         final Element ownerElement = ElementUtil.from(this).orElse(null);
         if (ownerElement == null) {
             return "unknown element";

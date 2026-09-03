@@ -1947,8 +1947,33 @@ public class StateNodeTest {
         assertEquals("node id=" + node.getId(), node.describe());
     }
 
+    @Test
+    void moveComponentBetweenTrees_componentFailsToDescribeItself_moveErrorIsStillReported() {
+        UI firstUI = new UI();
+        UI secondUI = new UI();
+        ThrowingDescriptionComponent component = new ThrowingDescriptionComponent();
+        firstUI.getElement().appendChild(component.getElement());
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> secondUI.getElement()
+                        .appendChild(component.getElement()));
+
+        assertTrue(exception.getMessage().startsWith("Can't move a node"),
+                "The move should be reported even though the component cannot describe itself: "
+                        + exception.getMessage());
+    }
+
     @Tag("div")
     private static class TestDescribedComponent
             extends com.vaadin.flow.component.Component {
+    }
+
+    @Tag("div")
+    private static class ThrowingDescriptionComponent
+            extends com.vaadin.flow.component.Component {
+        @Override
+        public String toString() {
+            throw new IllegalStateException("Cannot describe this component");
+        }
     }
 }
