@@ -110,6 +110,16 @@ class VaadinServiceTest {
 
     }
 
+    /**
+     * Stands in for a view written in Kotlin: the Kotlin compiler adds
+     * {@code @kotlin.Metadata} to every class it produces.
+     */
+    @kotlin.Metadata(mv = { 2, 1, 0 })
+    @Tag("div")
+    public static class KotlinTestView extends Component {
+
+    }
+
     private class TestSessionDestroyListener implements SessionDestroyListener {
 
         int callCount = 0;
@@ -274,6 +284,44 @@ class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
         assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_AUTO_LAYOUT.equals(e.getName())));
+    }
+
+    @Test
+    void javaOnlyProject_kotlinNotReported() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope()
+                .setRoute("test", AnnotatedTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        assertFalse(
+                UsageStatistics.getEntries()
+                        .anyMatch(e -> "kotlin".equals(e.getName())),
+                "Kotlin should not be reported for a project without Kotlin code");
+    }
+
+    @Test
+    void kotlinView_kotlinReportedWithVersion() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope().setRoute("kotlin", KotlinTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        UsageStatistics.UsageEntry kotlin = UsageStatistics.getEntries()
+                .filter(e -> "kotlin".equals(e.getName())).findFirst()
+                .orElse(null);
+        assertNotNull(kotlin,
+                "Kotlin should be reported for a project with a Kotlin view");
+        // An entry with no version of its own reports the Flow version, so
+        // this also verifies that a version is actually resolved
+        assertEquals("2.1.0", kotlin.getVersion(),
+                "Kotlin version should be reported along with the usage");
     }
 
     @Test
