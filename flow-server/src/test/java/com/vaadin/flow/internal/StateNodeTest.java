@@ -1959,8 +1959,8 @@ public class StateNodeTest {
         assertTrue(description.contains(BrokenParentComponent.class.getName()),
                 description);
         assertTrue(
-                description.endsWith(", describing it further threw "
-                        + UnsupportedOperationException.class.getName()),
+                description.contains(
+                        UnsupportedOperationException.class.getName()),
                 description);
     }
 

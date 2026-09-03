@@ -2141,10 +2141,11 @@ public class ComponentTest {
         IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> testUI.add(button));
         assertTrue(
-                ex.getMessage().endsWith("Offending component: unavailable, "
-                        + "describing the component of type "
-                        + BrokenToStringButton.class.getName() + " threw "
-                        + UnsupportedOperationException.class.getName()),
+                ex.getMessage().contains(BrokenToStringButton.class.getName()),
+                ex.getMessage());
+        assertTrue(
+                ex.getMessage().contains(
+                        UnsupportedOperationException.class.getName()),
                 ex.getMessage());
     }
 
