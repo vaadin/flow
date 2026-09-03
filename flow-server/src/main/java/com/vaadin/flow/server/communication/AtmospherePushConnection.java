@@ -59,6 +59,10 @@ public class AtmospherePushConnection
     // The client is owed the response of its previous message but it could
     // not be sent yet; connect() sends it once there is a connection again.
     private transient boolean resendPending = false;
+
+    // The client message a deferred response answers, so that reconnecting
+    // still records it as that message's answer.
+    private transient int pendingResponseClientToServerId = Integer.MIN_VALUE;
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
@@ -224,11 +228,7 @@ public class AtmospherePushConnection
                 getLogger().debug(
                         "Disconnection in progress, ignoring push request");
             }
-            if (async && state != State.RESPONSE_PENDING) {
-                state = State.PUSH_PENDING;
-            } else {
-                state = State.RESPONSE_PENDING;
-            }
+            deferPush(async, clientToServerId);
         } else {
             synchronized (lock) {
                 // A concurrent disconnect() may have cleared the
@@ -238,11 +238,7 @@ public class AtmospherePushConnection
                 // observed above: defer it and skip sendMessage, which
                 // would otherwise NPE on the null resource.
                 if (!isConnected()) {
-                    if (async && state != State.RESPONSE_PENDING) {
-                        state = State.PUSH_PENDING;
-                    } else {
-                        state = State.RESPONSE_PENDING;
-                    }
+                    deferPush(async, clientToServerId);
                     return;
                 }
                 try {
@@ -267,6 +263,17 @@ public class AtmospherePushConnection
         }
     }
 
+    private void deferPush(boolean async, int clientToServerId) {
+        if (async && state != State.RESPONSE_PENDING) {
+            state = State.PUSH_PENDING;
+        } else {
+            state = State.RESPONSE_PENDING;
+        }
+        if (clientToServerId != NO_CLIENT_MESSAGE) {
+            pendingResponseClientToServerId = clientToServerId;
+        }
+    }
+
     /**
      * Sends the response of the previous client message again, instead of
      * creating a new one, as a reaction to the client re-sending a message the
@@ -283,8 +290,10 @@ public class AtmospherePushConnection
             // which happens when the response to it could not be sent and was
             // never created. Creating one now is all this connection can
             // offer; sending the recorded response instead would send the
-            // client something it has already seen.
-            push(false);
+            // client something it has already seen. It still answers that
+            // message, so record it: if it is lost too, the next resend has
+            // something to replay instead of an empty response.
+            pushResponse(internals.getLastProcessedClientToServerId());
             return;
         }
         // A disconnect that has already started counts as no connection, as in
@@ -399,7 +408,14 @@ public class AtmospherePushConnection
             resendLastResponse();
         }
 
-        if (oldState == State.PUSH_PENDING
+        if (oldState == State.RESPONSE_PENDING
+                && pendingResponseClientToServerId != NO_CLIENT_MESSAGE) {
+            // The deferred response answers a client message; keep that link so
+            // it can be sent again if the client re-sends the message.
+            int clientToServerId = pendingResponseClientToServerId;
+            pendingResponseClientToServerId = NO_CLIENT_MESSAGE;
+            pushResponse(clientToServerId);
+        } else if (oldState == State.PUSH_PENDING
                 || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa. Note that this runs in addition

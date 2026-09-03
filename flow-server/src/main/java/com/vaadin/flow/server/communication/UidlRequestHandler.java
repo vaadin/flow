@@ -31,6 +31,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
@@ -147,7 +148,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             getRpcHandler().handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
         } catch (ClientResentPayloadException e) {
-            stringWriter.write(uI.getInternals().getLastRequestResponse());
+            UIInternals internals = uI.getInternals();
+            if (internals.getLastRequestResponse() != null && internals
+                    .getLastRequestResponseClientToServerId() == internals
+                            .getLastProcessedClientToServerId()) {
+                stringWriter.write(internals.getLastRequestResponse());
+            } else {
+                // Nothing recorded that answers the message the client
+                // re-sent, so describe the current state instead of sending
+                // an older response the client may already have.
+                writeUidl(uI, stringWriter, false);
+            }
         } catch (JsonDecodingException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side

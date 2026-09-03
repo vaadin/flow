@@ -128,9 +128,17 @@ class AtmospherePushConnectionTest {
      * push that records a response for a later resend.
      */
     private void answerClientMessage() {
-        int clientToServerId = connection.getUI().getInternals()
-                .getLastProcessedClientToServerId();
-        connection.pushResponse(clientToServerId);
+        connection.pushResponse(connection.getUI().getInternals()
+                .getLastProcessedClientToServerId());
+    }
+
+    /**
+     * Marks the given client message as the last one the server processed,
+     * which is the state a re-sent message arrives in.
+     */
+    private void clientMessageProcessed(int clientToServerId) {
+        connection.getUI().getInternals().setLastProcessedClientToServerId(
+                clientToServerId, new byte[0]);
     }
 
     @Test
@@ -201,8 +209,9 @@ class AtmospherePushConnectionTest {
 
         verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
-        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
-                "A response created as a fallback must not become one that can be sent again");
+        assertNotNull(
+                connection.getUI().getInternals().getLastRequestResponse(),
+                "The response created instead answers the re-sent message, so it is recorded");
     }
 
     @Test
@@ -231,6 +240,82 @@ class AtmospherePushConnectionTest {
                 ArgumentMatchers.eq(resource));
         assertNotEquals(recorded, ((PushMessage) captor.getValue()).message,
                 "A stale recording must not be sent again");
+        assertEquals(1,
+                connection.getUI().getInternals()
+                        .getLastRequestResponseClientToServerId(),
+                "The response created instead answers the re-sent message");
+    }
+
+    @Test
+    void resendLastResponse_fallbackResponseCanBeSentAgain() throws Exception {
+        clientMessageProcessed(1);
+        vaadinSession.runWithLock(() -> {
+            answerClientMessage();
+            return null;
+        });
+        // The client re-sends a later message whose response was never
+        // recorded, so the resend falls back to creating one.
+        clientMessageProcessed(2);
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+        Mockito.clearInvocations(broadcaster);
+
+        String fallback = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(fallback,
+                "The fallback response answers the re-sent message and has to be recorded");
+
+        // If that response is lost too, the next resend must replay it rather
+        // than create an empty one.
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(fallback, ((PushMessage) captor.getValue()).message,
+                "The second resend should replay the fallback response");
+    }
+
+    @Test
+    void pushResponse_deferred_stillAnswersItsMessageAfterReconnect()
+            throws Exception {
+        clientMessageProcessed(1);
+        connection.connectionLost();
+
+        // The response to the client message cannot be sent yet.
+        vaadinSession.runWithLock(() -> {
+            answerClientMessage();
+            return null;
+        });
+        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
+                "Nothing can be recorded while the response cannot be created");
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+        Mockito.clearInvocations(broadcaster);
+
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(recorded,
+                "Reconnecting sends the deferred response, which answers the client message");
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(recorded, ((PushMessage) captor.getValue()).message,
+                "A resend of that message should replay the deferred response");
     }
 
     @Test
