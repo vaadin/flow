@@ -222,11 +222,42 @@ public class AtmospherePushConnection
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage(response.toString());
+                    String responseString = response.toString();
+                    if (!async) {
+                        // Remember the response to the client's message so that
+                        // it can be sent again if the client re-sends the same
+                        // message, e.g. after reconnecting the push channel.
+                        getUI().getInternals()
+                                .setLastRequestResponse(responseString);
+                    }
+                    sendMessage(responseString);
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Sends the response of the previous client message again, instead of
+     * creating a new one, as a reaction to the client re-sending a message the
+     * server has already handled. Falls back to a regular response if no
+     * previous response has been recorded.
+     */
+    void resendLastResponse() {
+        String lastResponse = getUI().getInternals().getLastRequestResponse();
+        if (lastResponse == null) {
+            push(false);
+            return;
+        }
+        synchronized (lock) {
+            if (disconnecting.get() || !isConnected()) {
+                // Nothing to send on: let the next push carry the state, as
+                // push(boolean) does when the connection is not available.
+                state = State.RESPONSE_PENDING;
+                return;
+            }
+            sendMessage(lastResponse);
         }
     }
 
