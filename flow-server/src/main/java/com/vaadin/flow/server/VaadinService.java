@@ -70,7 +70,6 @@ import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -328,15 +327,11 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry()
-                    .getRegisteredRoutes();
-            routeDataList.stream().map(Object::toString).forEach(logger::debug);
-            UsageStatisticsCollector.collectRouteStatistics(this,
-                    routeDataList);
+            getRouteRegistry().getRegisteredRoutes().stream()
+                    .map(Object::toString).forEach(logger::debug);
             DevToolsToken.init(this);
         }
-        UsageStatisticsCollector
-                .collectFrontendToolStatistics(getDeploymentConfiguration());
+        UsageStatisticsCollector.collect(this);
 
         if (getDeploymentConfiguration().isProductionMode()) {
             // Postpone the check until dev-server is fully initialized and

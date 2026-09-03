@@ -48,29 +48,30 @@ class UsageStatisticsCollector implements Serializable {
     }
 
     /**
-     * Collects the statistics based on the routes of the application.
+     * Collects the usage statistics of the given service.
+     * <p>
+     * Statistics are only gathered in development mode.
      *
      * @param service
-     *            the service the routes belong to
-     * @param routeDataList
-     *            the routes registered for the application
+     *            the service to collect the statistics of
      */
-    static void collectRouteStatistics(VaadinService service,
-            List<RouteData> routeDataList) {
+    static void collect(VaadinService service) {
+        DeploymentConfiguration configuration = service
+                .getDeploymentConfiguration();
+        if (configuration.isProductionMode()) {
+            return;
+        }
+        List<RouteData> routeDataList = service.getRouteRegistry()
+                .getRegisteredRoutes();
         if (!routeDataList.isEmpty()) {
             addRouterUsageStatistics();
         }
         addAutoLayoutUsageStatistics(service);
         addKotlinUsageStatistics(routeDataList);
+        addFrontendToolUsageStatistics(configuration);
     }
 
-    /**
-     * Collects the statistics of the frontend tools in use.
-     *
-     * @param configuration
-     *            the deployment configuration of the application
-     */
-    static void collectFrontendToolStatistics(
+    private static void addFrontendToolUsageStatistics(
             DeploymentConfiguration configuration) {
         if (configuration.isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);
