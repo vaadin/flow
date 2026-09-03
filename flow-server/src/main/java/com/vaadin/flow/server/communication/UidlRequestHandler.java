@@ -31,7 +31,6 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
@@ -148,15 +147,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             getRpcHandler().handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
         } catch (ClientResentPayloadException e) {
-            UIInternals internals = uI.getInternals();
-            if (internals.getLastRequestResponse() != null && internals
-                    .getLastRequestResponseClientToServerId() == internals
-                            .getLastProcessedClientToServerId()) {
-                stringWriter.write(internals.getLastRequestResponse());
+            String lastResponse = uI.getInternals().getLastRequestResponse();
+            if (lastResponse != null) {
+                stringWriter.write(lastResponse);
             } else {
-                // Nothing recorded that answers the message the client
-                // re-sent, so describe the current state instead of sending
-                // an older response the client may already have.
+                // Nothing recorded to send again, so describe the current
+                // state instead.
                 writeUidl(uI, stringWriter, false);
             }
         } catch (JsonDecodingException e) {
@@ -218,8 +214,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         // createUidl put the current sync id into the response and then
         // incremented the counter.
         ui.getInternals().setLastRequestResponse(responseString,
-                ui.getInternals().getServerSyncId() - 1,
-                ui.getInternals().getLastProcessedClientToServerId());
+                ui.getInternals().getServerSyncId() - 1);
         writer.write(responseString);
     }
 

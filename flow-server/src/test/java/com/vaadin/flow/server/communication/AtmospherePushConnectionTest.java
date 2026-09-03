@@ -47,8 +47,8 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.times;
@@ -123,21 +123,11 @@ class AtmospherePushConnectionTest {
     }
 
     /**
-     * Answers a client message the server has just processed, which is the only
+     * Answers a client message the server has just handled, which is the only
      * push that records a response for a later resend.
      */
     private void answerClientMessage() {
-        connection.pushResponse(connection.getUI().getInternals()
-                .getLastProcessedClientToServerId());
-    }
-
-    /**
-     * Marks the given client message as the last one the server processed,
-     * which is the state a re-sent message arrives in.
-     */
-    private void clientMessageProcessed(int clientToServerId) {
-        connection.getUI().getInternals().setLastProcessedClientToServerId(
-                clientToServerId, new byte[0]);
+        connection.pushResponse();
     }
 
     @Test
@@ -199,7 +189,7 @@ class AtmospherePushConnectionTest {
     @Test
     void resendLastResponse_noRecordedResponse_sendsARegularResponse()
             throws Exception {
-        connection.getUI().getInternals().setLastRequestResponse(null, -1, -1);
+        connection.getUI().getInternals().setLastRequestResponse(null, -1);
 
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
@@ -214,47 +204,34 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    void resendLastResponse_recordedForAnotherMessage_sendsANewResponse()
-            throws Exception {
-        // A response was recorded for client message 0, but the server has
-        // since processed message 1: the recording does not answer the message
-        // the client is re-sending, and the client has already seen it.
+    void pushResponse_deferred_forgetsTheRecordedResponse() throws Exception {
         vaadinSession.runWithLock(() -> {
             answerClientMessage();
             return null;
         });
-        String recorded = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        connection.getUI().getInternals().setLastProcessedClientToServerId(1,
-                new byte[0]);
-        Mockito.clearInvocations(broadcaster);
+        assertNotNull(
+                connection.getUI().getInternals().getLastRequestResponse());
 
+        // The answer to the next client message cannot be created, so what is
+        // recorded is an older answer the client has already seen.
+        connection.connectionLost();
         vaadinSession.runWithLock(() -> {
-            connection.resendLastResponse();
+            answerClientMessage();
             return null;
         });
 
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
-        assertNotEquals(recorded, ((PushMessage) captor.getValue()).message,
-                "A stale recording must not be sent again");
-        assertEquals(1,
-                connection.getUI().getInternals()
-                        .getLastRequestResponseClientToServerId(),
-                "The response created instead answers the re-sent message");
+        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
+                "A response that could not be created must not leave an older one to send again");
     }
 
     @Test
     void resendLastResponse_fallbackResponseCanBeSentAgain() throws Exception {
-        clientMessageProcessed(1);
         vaadinSession.runWithLock(() -> {
             answerClientMessage();
             return null;
         });
         // The client re-sends a later message whose response was never
         // recorded, so the resend falls back to creating one.
-        clientMessageProcessed(2);
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
             return null;
@@ -283,7 +260,6 @@ class AtmospherePushConnectionTest {
     @Test
     void resendLastResponse_notConnected_sendsNothingAndOwesNothing()
             throws Exception {
-        clientMessageProcessed(1);
         vaadinSession.runWithLock(() -> {
             answerClientMessage();
             return null;
@@ -363,8 +339,7 @@ class AtmospherePushConnectionTest {
     @Test
     void push_doesNotRecordAResponseToSendAgain() throws Exception {
         String recorded = "{\"marker\":1}";
-        connection.getUI().getInternals().setLastRequestResponse(recorded, 7,
-                3);
+        connection.getUI().getInternals().setLastRequestResponse(recorded, 7);
 
         vaadinSession.runWithLock(() -> {
             connection.push(true);

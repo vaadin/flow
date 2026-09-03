@@ -59,12 +59,6 @@ public class AtmospherePushConnection
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
-     * Marks a push that is not the response to any client message. Not -1,
-     * which is a real client-to-server id meaning none has been processed yet.
-     */
-    private static final int NO_CLIENT_MESSAGE = Integer.MIN_VALUE;
-
-    /**
      * Represents a message that can arrive as multiple fragments.
      */
     public static class FragmentedMessage implements Serializable {
@@ -199,29 +193,26 @@ public class AtmospherePushConnection
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        push(async, NO_CLIENT_MESSAGE);
+        push(async, false);
     }
 
     /**
-     * Sends the response to the client message with the given id, remembering
-     * it so that it can be sent again if the client re-sends that message
-     * because it never saw the answer.
-     *
-     * @param clientToServerId
-     *            the id of the client message being answered
+     * Sends the response to the client message that was just handled,
+     * remembering it so that it can be sent again if the client re-sends that
+     * message because it never saw the answer.
      */
-    void pushResponse(int clientToServerId) {
-        push(false, clientToServerId);
+    void pushResponse() {
+        push(false, true);
     }
 
-    private void push(boolean async, int clientToServerId) {
+    private void push(boolean async, boolean answersClientMessage) {
         boolean isDisconnecting = disconnecting.get();
         if (isDisconnecting || !isConnected()) {
             if (isDisconnecting) {
                 getLogger().debug(
                         "Disconnection in progress, ignoring push request");
             }
-            deferPush(async);
+            deferPush(async, answersClientMessage);
         } else {
             synchronized (lock) {
                 // A concurrent disconnect() may have cleared the
@@ -231,7 +222,7 @@ public class AtmospherePushConnection
                 // observed above: defer it and skip sendMessage, which
                 // would otherwise NPE on the null resource.
                 if (!isConnected()) {
-                    deferPush(async);
+                    deferPush(async, answersClientMessage);
                     return;
                 }
                 try {
@@ -242,11 +233,11 @@ public class AtmospherePushConnection
                     // then incremented the counter.
                     int serverSyncId = getUI().getInternals().getServerSyncId()
                             - 1;
-                    if (clientToServerId != NO_CLIENT_MESSAGE) {
+                    if (answersClientMessage) {
                         // Only a response to a client message can be sent
-                        // again, and only as the answer to that message.
+                        // again.
                         getUI().getInternals().setLastRequestResponse(
-                                responseString, serverSyncId, clientToServerId);
+                                responseString, serverSyncId);
                     }
                     sendMessage(responseString, serverSyncId);
                 } catch (Exception e) {
@@ -256,11 +247,17 @@ public class AtmospherePushConnection
         }
     }
 
-    private void deferPush(boolean async) {
+    private void deferPush(boolean async, boolean answersClientMessage) {
         if (async && state != State.RESPONSE_PENDING) {
             state = State.PUSH_PENDING;
         } else {
             state = State.RESPONSE_PENDING;
+        }
+        if (answersClientMessage) {
+            // The answer to the latest client message could not be created, so
+            // what is recorded is an older message's answer, which the client
+            // has already seen. Forget it rather than send it again.
+            getUI().getInternals().setLastRequestResponse(null, -1);
         }
     }
 
@@ -273,17 +270,13 @@ public class AtmospherePushConnection
     void resendLastResponse() {
         UIInternals internals = getUI().getInternals();
         String lastResponse = internals.getLastRequestResponse();
-        if (lastResponse == null || internals
-                .getLastRequestResponseClientToServerId() != internals
-                        .getLastProcessedClientToServerId()) {
-            // What is recorded does not answer the message the client re-sent,
-            // which happens when the response to it could not be sent and was
-            // never created. Creating one now is all this connection can
-            // offer; sending the recorded response instead would send the
-            // client something it has already seen. It still answers that
-            // message, so record it: if it is lost too, the next resend has
-            // something to replay instead of an empty response.
-            pushResponse(internals.getLastProcessedClientToServerId());
+        if (lastResponse == null) {
+            // The answer to the message the client re-sent was never created,
+            // so creating one now is all this connection can offer. It answers
+            // that message, so pushResponse records it: if it is lost too, the
+            // next resend has something to send again instead of an empty
+            // response.
+            pushResponse();
             return;
         }
         // Nothing to send on, and nothing to remember either: the client keeps

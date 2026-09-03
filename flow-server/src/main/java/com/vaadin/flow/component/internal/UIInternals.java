@@ -182,8 +182,6 @@ public class UIInternals implements Serializable {
 
     private int lastRequestResponseSyncId = -1;
 
-    private int lastRequestResponseClientToServerId = -1;
-
     private int nextJsInitializerId = 0;
 
     private final StateTree stateTree;
@@ -405,15 +403,12 @@ public class UIInternals implements Serializable {
      *            the response that was created for the client message
      * @param serverSyncId
      *            the server sync id the response was created with
-     * @param clientToServerId
-     *            the id of the client message the response answers
      * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse,
-            int serverSyncId, int clientToServerId) {
+            int serverSyncId) {
         this.lastRequestResponse = lastRequestResponse;
         this.lastRequestResponseSyncId = serverSyncId;
-        this.lastRequestResponseClientToServerId = clientToServerId;
     }
 
     /**
@@ -424,16 +419,6 @@ public class UIInternals implements Serializable {
      */
     public int getLastRequestResponseSyncId() {
         return lastRequestResponseSyncId;
-    }
-
-    /**
-     * Returns the id of the client message the response created for the last
-     * UIDL request answers, or -1 if no response has been created yet.
-     *
-     * @return the client-to-server id the last UIDL response answers
-     */
-    public int getLastRequestResponseClientToServerId() {
-        return lastRequestResponseClientToServerId;
     }
 
     /**
