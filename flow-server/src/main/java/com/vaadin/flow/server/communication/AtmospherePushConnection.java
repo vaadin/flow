@@ -206,13 +206,20 @@ public class AtmospherePushConnection
     }
 
     private void push(boolean async, boolean answersClientMessage) {
+        if (answersClientMessage) {
+            // What is recorded answers an earlier message. It stops being the
+            // latest message's answer here and only becomes something to send
+            // again once the new answer exists, so that failing to produce it
+            // cannot leave an answer the client has already seen.
+            getUI().getInternals().setLastRequestResponse(null, -1);
+        }
         boolean isDisconnecting = disconnecting.get();
         if (isDisconnecting || !isConnected()) {
             if (isDisconnecting) {
                 getLogger().debug(
                         "Disconnection in progress, ignoring push request");
             }
-            deferPush(async, answersClientMessage);
+            deferPush(async);
         } else {
             synchronized (lock) {
                 // A concurrent disconnect() may have cleared the
@@ -222,7 +229,7 @@ public class AtmospherePushConnection
                 // observed above: defer it and skip sendMessage, which
                 // would otherwise NPE on the null resource.
                 if (!isConnected()) {
-                    deferPush(async, answersClientMessage);
+                    deferPush(async);
                     return;
                 }
                 try {
@@ -247,17 +254,11 @@ public class AtmospherePushConnection
         }
     }
 
-    private void deferPush(boolean async, boolean answersClientMessage) {
+    private void deferPush(boolean async) {
         if (async && state != State.RESPONSE_PENDING) {
             state = State.PUSH_PENDING;
         } else {
             state = State.RESPONSE_PENDING;
-        }
-        if (answersClientMessage) {
-            // The answer to the latest client message could not be created, so
-            // what is recorded is an older message's answer, which the client
-            // has already seen. Forget it rather than send it again.
-            getUI().getInternals().setLastRequestResponse(null, -1);
         }
     }
 

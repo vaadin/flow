@@ -206,6 +206,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
+        // As in AtmospherePushConnection.push: what is recorded stops being the
+        // latest message's answer here, so failing to produce the new one
+        // cannot leave an answer the client has already seen.
+        ui.getInternals().setLastRequestResponse(null, -1);
         ObjectNode uidl = createUidl(ui, resync);
 
         removeOffendingMprHashFragment(uidl);

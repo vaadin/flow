@@ -198,9 +198,24 @@ class AtmospherePushConnectionTest {
 
         verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
-        assertNotNull(
-                connection.getUI().getInternals().getLastRequestResponse(),
+        String created = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(created,
                 "The response created instead answers the re-sent message, so it is recorded");
+        Mockito.clearInvocations(broadcaster);
+
+        // If that response is lost too, the next resend sends it again rather
+        // than creating another one, which would be empty by then.
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(created, ((PushMessage) captor.getValue()).message,
+                "The response created for the re-sent message can itself be sent again");
     }
 
     @Test
@@ -222,39 +237,6 @@ class AtmospherePushConnectionTest {
 
         assertNull(connection.getUI().getInternals().getLastRequestResponse(),
                 "A response that could not be created must not leave an older one to send again");
-    }
-
-    @Test
-    void resendLastResponse_fallbackResponseCanBeSentAgain() throws Exception {
-        vaadinSession.runWithLock(() -> {
-            answerClientMessage();
-            return null;
-        });
-        // The client re-sends a later message whose response was never
-        // recorded, so the resend falls back to creating one.
-        vaadinSession.runWithLock(() -> {
-            connection.resendLastResponse();
-            return null;
-        });
-        Mockito.clearInvocations(broadcaster);
-
-        String fallback = connection.getUI().getInternals()
-                .getLastRequestResponse();
-        assertNotNull(fallback,
-                "The fallback response answers the re-sent message and has to be recorded");
-
-        // If that response is lost too, the next resend must replay it rather
-        // than create an empty one.
-        vaadinSession.runWithLock(() -> {
-            connection.resendLastResponse();
-            return null;
-        });
-
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
-        assertEquals(fallback, ((PushMessage) captor.getValue()).message,
-                "The second resend should replay the fallback response");
     }
 
     @Test
