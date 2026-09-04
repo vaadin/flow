@@ -854,6 +854,9 @@
     <profile>
       <id>install-git-hooks</id>
       <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
         <file>
           <missing>${maven.multiModuleProjectDirectory}/.husky/_</missing>
         </file>
@@ -864,6 +867,7 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>${maven.exec.plugin.version}</version>
+            <inherited>false</inherited>
             <executions>
               <execution>
                 <id>install-git-hooks</id>
