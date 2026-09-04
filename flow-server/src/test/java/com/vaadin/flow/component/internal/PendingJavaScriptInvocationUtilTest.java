@@ -122,6 +122,20 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void countInvocationForOwnerOutsideAnyUI_notCounted() {
+        MockUI ui = new MockUI();
+        StateNode neverAttachedNode = new StateNode(ElementData.class);
+
+        PendingJavaScriptInvocation invocation = scheduleInvocation(
+                neverAttachedNode);
+
+        assertEquals(0, count(ui),
+                "an invocation for an owner that does not belong to a UI should not be counted");
+        assertTrue(invocation.cancelExecution(),
+                "an uncounted invocation should still be cancelable");
+    }
+
+    @Test
     void cancelInvocationForOwnerOutsideAnyUI_notCountedWhenAttached() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
@@ -518,8 +532,8 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     /**
-     * Creates an invocation for the given attached node and counts it the way
-     * the framework does once the owner of an invocation is attached.
+     * Creates an invocation for the given node and counts it the way the
+     * framework does once the owner of an invocation is attached.
      */
     private static PendingJavaScriptInvocation scheduleInvocation(
             StateNode node) {

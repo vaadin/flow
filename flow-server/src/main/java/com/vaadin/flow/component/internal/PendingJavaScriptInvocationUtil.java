@@ -67,15 +67,14 @@ final class PendingJavaScriptInvocationUtil {
     static UIInternals invocationScheduled(
             PendingJavaScriptInvocation invocation) {
         UIInternals internals = findInternals(invocation.getOwner());
-        // An invocation is only counted while its owner is attached, which is
-        // also when the invocation is on its way to a client
-        assert internals != null
-                : "An invocation should only be counted while its owner is attached to a UI";
         if (internals == null || internals.getSession() == null) {
-            // Closing a UI tolerates a failure to detach its nodes, which
-            // leaves them attached to a UI without a session. A count that
-            // only backs a warning is not worth failing an application over,
-            // so the invocation is counted in the UI it is attached to next
+            // An invocation is counted while its owner is attached to an open
+            // UI, which is when it is on its way to a client. There is no
+            // count for it before that, and none either when closing a UI
+            // fails to detach its nodes and leaves them attached without a
+            // session, which is logged and carried on from. A count that only
+            // backs a warning is not worth failing an application over, so the
+            // invocation is counted in the UI it is attached to next
             return null;
         }
 
