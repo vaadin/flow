@@ -117,6 +117,63 @@ class TransactionEngineTest {
     }
 
     @Test
+    void devServerFailure_isTheVerdictWhenTheDevServerRefusedTheModule() {
+        // Asked rather than overheard. Vite compiles a module when something
+        // requests it, so with no browser re-fetching there is nothing in the
+        // log at all - and the apply used to call that Stable.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.devServerRefusal = "greeting.ts: Transform failed with 1 error:"
+                + " [PARSE_ERROR] Expected `}` but found `EOF`";
+
+        assertEquals(Optional.of(tx.devServerRefusal),
+                TransactionEngine.devServerFailure(tx));
+    }
+
+    @Test
+    void devServerFailure_aServedModuleOverrulesTheErrorStillInTheLog() {
+        // The edit that fixes the file: the dev server serves it now, but the
+        // log still holds the report from before - and the daemon's own
+        // request for the broken version is one of the things that put it
+        // there. Trusting the log here fails the apply that fixed the problem.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.carriedLogErrors = List.of(VITE_ERROR);
+
+        assertTrue(TransactionEngine.devServerFailure(tx).isEmpty());
+    }
+
+    @Test
+    void devServerFailure_aServedModuleDoesNotOverruleTheChecker() {
+        // The gap a clean fetch cannot close: types are stripped without being
+        // checked, so a module with a type error is served with a 200 and the
+        // fetch has no opinion on it. Treating that answer as the last word
+        // let a broken .tsx through as Stable.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.checkerFailure = " ERROR(TypeScript)  TS1382: Unexpected token.";
+
+        assertEquals(Optional.of(tx.checkerFailure),
+                TransactionEngine.devServerFailure(tx));
+    }
+
+    @Test
+    void devServerFailure_ignoresACheckerReportTheCheckerHasWithdrawn() {
+        // Break a file, save, put it back, save: the checker's report for the
+        // broken version is still in the log, but it has since said the
+        // project is clean. Reading its errors rather than its verdict failed
+        // the apply that repaired the problem.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.checkerFailure = null;
+        tx.carriedLogErrors = List
+                .of(" ERROR(TypeScript)  TS2322: Type 'number' is not"
+                        + " assignable to type 'string'.");
+
+        assertTrue(TransactionEngine.devServerFailure(tx).isEmpty());
+    }
+
+    @Test
     void devServerFailure_needsAFrontendFileInTheChangeSet() {
         // Somebody else's save, mid-apply: this change touched no frontend
         // file, so the dev server cannot be complaining about it.

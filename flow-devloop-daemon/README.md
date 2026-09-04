@@ -301,38 +301,57 @@ load-bearing rather than tidiness: a bundled edit escalates to a restart, the re
 re-registers, and without the re-seed the same file would be offered again after the restart
 that already folded it into the bundle — restarting the app for ever.
 
-**A Vite compile error is found through the log, not the protocol.** Flow pipes every line
-Vite writes through `DevServerOutputTracker` at `INFO`, so a TypeScript syntax error arrives
-looking like progress: the level says `INFO` and the word "error" is lower case, and even the
-detail line does not help because `[PARSE_ERROR]` has no word boundary before `ERROR`. `AppLog`
-matches those openers separately (`DEV_SERVER_ERROR`), on the first line of a report rather
-than on anything containing "error" - the report runs to a source excerpt, a caret diagram and
-a JavaScript stack, and counting each line would turn one broken file into a dozen errors.
+**A Vite compile error is found by asking the dev server, not by overhearing it.** Vite compiles
+a module when something *requests* it - not on save, and not when `apply` runs. So the log holds a
+report only if a browser happened to re-fetch while the daemon was watching, and a page already
+showing the error overlay does not re-fetch at all; every other signal then says the change went
+fine, and the apply reports a clean `Stable` over a file the page cannot load. So the frontend leg
+asks. `FRONTEND_CHECK <paths>` has the connector fetch each changed file through
+`DevModeHandler.prepareConnection`, on the base Vite was actually launched with
+(`ViteHandler.getPathToVaadin()`, so an app on a context path works too). A `500` is a refusal and
+carries Vite's own message; a `200` means the module compiles. Only `500` counts - a `404` means
+the dev server does not serve that path at all.
 
-Two things follow from Vite compiling on **save** rather than on apply. The error is already in
-the log when `apply` starts, so `Watch.mark()` would drop it as somebody else's; only
-dev-server errors, and only when a frontend file actually changed, are carried across that
-boundary (`Transaction.carriedLogErrors`, merged in `finish`). And when the browser fetches the
-module during the apply instead, the error lands asynchronously, so the frontend leg settles in
-Vite mode exactly as the redefine leg does.
+A `200` is not the whole story, though, because it answers only the question it was asked: can
+this module be *served*. Types are stripped without being checked, so a type error - and a
+stray `>` in JSX, which oxc tolerates and `tsc` does not - comes back `200`, runs, and is still
+wrong. That failure exists only in the log, where `vite-plugin-checker` writes it
+(`CHECKER_ERROR`, told apart from `DEV_SERVER_ERROR` for exactly this reason). It type-checks
+within about a hundred milliseconds of the *save*, so its report is already there by the time
+anyone runs `apply` - which is why the checker's errors are carried across `Watch.mark()` like
+the dev server's, and why not carrying them let a broken `.tsx` through as `Stable`. Fatal only
+when the change-set touched a frontend file, so a Java-only edit is never failed by a type
+error somebody else left behind.
 
-The quoted line is wrapped, not truncated, and its layout prefix is stripped first. Spring
-Boot spends about a hundred characters on a timestamp, a level, a pid, a thread and an
-abbreviated logger; truncating with that still attached spent the whole budget saying nothing
-and cut off the diagnosis. A compiler message is the one output whose tail matters as much as
-its head, so `TransactionEngine.quote` gives each segment its own row and wraps at 100 columns
-- letting a token longer than that overflow rather than splitting a path the reader wants to
-copy. `AppLog` carries two things out of the report, because "Transform failed with 1 error:"
-is neither: what went wrong, and where (minus the `?t=` cache-buster Vite hangs off every
-hot-updated module). The source excerpt, the caret row and the JavaScript stack are skipped
-(`REPORT_DECORATION`): the excerpt is the developer's own code, a caret diagram cannot line up
-inside an indented, wrapped summary, and the position above it is what they actually need.
+The answer is authoritative **in both directions**, which is the point. A refusal fails the apply
+(`Transaction.devServerRefusal`) and leaves the file unmarked, so the next apply asks again rather
+than reporting `no changes` over a module that never compiled. And a clean answer *overrules the
+log* (`Transaction.devServerAsked`): once the file is fixed, the report still in the log describes
+the version before the fix - the daemon's own request for the broken one is among the things that
+put it there - so trusting the log would fail the very apply that repaired the problem. That
+overruling is scoped to transform errors, the only ones the fetch answers for; the checker's
+verdict is read from the log either way. The log stays the whole fallback for a dev server that
+cannot be asked: an app too old for the command, or one
+whose dev server has gone away. It takes finding, because Flow pipes Vite's output through
+`DevServerOutputTracker` at `INFO` - the level says `INFO`, "error" is lower case, and
+`[PARSE_ERROR]` has no word boundary before `ERROR` - so `AppLog` matches those openers separately
+(`DEV_SERVER_ERROR`). An error Vite logged on save is already there when `apply` starts, so
+dev-server errors are carried across `Watch.mark()` when a frontend file actually changed
+(`Transaction.carriedLogErrors`); one logged mid-apply is caught by settling, as in the redefine
+leg.
 
-The parts of one error are joined with a unit separator rather than a `|`, because a report is
-full of pipes - when the renderer falls back to ASCII, a source excerpt is drawn as
-`1 | export function ...`, and splitting on that turned one line of the developer's code into
-two rows with the gutter missing. The separator never leaves the daemon: `--json` and the
-one-line reason both put ` | ` back.
+Either way the report is compacted to three parts and **wrapped, not truncated**. The opening
+line, the line naming the error and the source position are kept; the excerpt, caret diagram and
+JavaScript stack are dropped (`REPORT_DECORATION`), because the excerpt is the developer's own
+code and a caret diagram cannot line up inside an indented summary. `AppLog.report` does this for
+a report that arrives whole from the connector and `Watch` line by line for one read out of the
+log, which is why the connector joins its lines with the separator rather than flattening them to
+spaces. The parts are joined with a unit separator rather than a `|`, because an ASCII excerpt is
+drawn as `1 | export function ...` and splitting on that lost the gutter; it never leaves the
+daemon, as `--json` and the one-line reason both put ` | ` back. `quote` and `reasonRows` then wrap
+at 100 columns, letting a long path overflow a row rather than be cut in half - a compiler message
+is the one output whose tail matters as much as its head, and truncating a refusal at 160
+characters cut off "Unterminated string constant" on a message whose head is an absolute path.
 
 **Vite mode is verified by hand**, because `hotdeploy` is baked into the app JVM from the
 daemon's own system properties and `flow-tests/test-devloop` deliberately shares one
@@ -348,6 +367,15 @@ VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev sta
 #   edit src/main/frontend/<something>.ts
 .vaadin/vaadin-dev apply
 #   expect: hmr: N frontend file(s), applied by Vite (dev server up:<port>)
+
+#   then break the same file - a missing brace is enough - and, with nothing
+#   open in a browser, so the log stays silent about it:
+.vaadin/vaadin-dev apply
+#   expect: exit 1, "dev server: <file>: Transform failed ...", and the same
+#   answer again on a repeat apply and after re-saving the file still broken
+#   fix the file
+.vaadin/vaadin-dev apply
+#   expect: exit 0, Stable - the report left in the log must not fail this one
 ```
 
 ## Known limits

@@ -207,6 +207,46 @@ class AppLogTest {
     }
 
     @Test
+    void report_keepsTheDiagnosisAndDropsTheDrawing() {
+        // The whole message, as the dev server hands it back when asked
+        // directly rather than as lines arriving in the log. Verbatim from a
+        // real run.
+        List<String> lines = List.of("Transform failed with 1 error:", "",
+                "[PARSE_ERROR] Expected `}` but found `EOF`",
+                "   \u256d\u2500[ src/main/frontend/greeting.ts?t=1756384057:1:55 ]",
+                "   \u2502",
+                " 1 \u2502 export function greeting(): string { return 'x'",
+                "   \u2502                                    ^",
+                "    at transformWithOxc (file:///node_modules/vite/dist/node.js:1:1)");
+
+        String report = AppLog.report(lines);
+
+        // Three parts, each its own segment: what broke, why, and where. The
+        // excerpt, the caret row and the stack are the developer's own code
+        // and the log's business.
+        assertEquals(
+                List.of("Transform failed with 1 error:",
+                        "[PARSE_ERROR] Expected `}` but found `EOF`",
+                        "src/main/frontend/greeting.ts:1:55"),
+                List.of(report.split(AppLog.SEGMENT)));
+    }
+
+    @Test
+    void report_leavesAOneLineFailureWhole() {
+        // Babel puts the file, the reason and the position on a single line,
+        // and that line names a path - so nothing may be mistaken for a
+        // source location worth splitting off, and nothing may be dropped.
+        String report = AppLog.report(List.of(
+                "[BabelError] C:\\project\\src\\main\\frontend\\views\\@index.tsx:"
+                        + " Unterminated string constant. (18:20)"));
+
+        assertEquals(
+                "[BabelError] C:\\project\\src\\main\\frontend\\views\\@index.tsx:"
+                        + " Unterminated string constant. (18:20)",
+                report);
+    }
+
+    @Test
     void message_stripsTheLayoutBoilerplateAndNothingElse() {
         // Roughly a hundred characters of prefix, which is most of the budget a
         // one-line summary has to work with.
@@ -221,6 +261,66 @@ class AppLogTest {
         // A line with no prefix - a bare stack-trace header - is left alone.
         assertEquals("java.lang.IllegalStateException: boom",
                 AppLog.message("java.lang.IllegalStateException: boom"));
+    }
+
+    @Test
+    void watch_checkerTypeError_isFoundAndKeptToOneError() throws IOException {
+        Path log = log("INFO up\n");
+        AppLog.Watch watch = new AppLog.Watch(log);
+        watch.drain();
+
+        // A type error the transform cannot see: oxc strips the types without
+        // checking them, so the module is served with a 200 and only the
+        // checker knows. Verbatim from a real run, minus the timestamps.
+        append(log,
+                """
+                        INFO c.v.b.d.DevServerOutputTracker :  ERROR(TypeScript)  TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+                        INFO c.v.b.d.DevServerOutputTracker :  FILE  C:\\project\\src\\main\\frontend\\stray.tsx:4:7
+                        INFO c.v.b.d.DevServerOutputTracker :
+                        INFO c.v.b.d.DevServerOutputTracker :     2 |   return (
+                        INFO c.v.b.d.DevServerOutputTracker :   > 4 |       >
+                        INFO c.v.b.d.DevServerOutputTracker :       |       ^
+                        INFO c.v.b.d.DevServerOutputTracker : [TypeScript] Found 1 error(s)
+                        """);
+
+        List<String> errors = watch.errors();
+
+        // One error, not two: the "Found 1 error(s)" line comes after the
+        // report and would double-count it - and reads "Found 0 error(s)" on a
+        // clean run.
+        assertEquals(1, errors.size());
+        assertTrue(AppLog.checkerError(errors.get(0)), errors.get(0));
+        // A transform error it is not, which is the distinction a clean fetch
+        // turns on: fetching this module comes back 200.
+        assertFalse(AppLog.devServerError(errors.get(0)), errors.get(0));
+        // The position is carried the same way, so the reader is told which
+        // file to open; the excerpt with its "> 4 |" gutter is not.
+        assertTrue(errors.get(0).contains("stray.tsx:4:7"), errors.get(0));
+        assertFalse(errors.get(0).contains("return ("), errors.get(0));
+    }
+
+    @Test
+    void watch_checkerVerdict_isSupersededAndSurvivesAMark()
+            throws IOException {
+        Path log = log("INFO up\n");
+        AppLog.Watch watch = new AppLog.Watch(log);
+        watch.drain();
+        append(log, "INFO t :  ERROR(TypeScript)  TS2322: Type 'number' is"
+                + " not assignable to type 'string'.\n");
+
+        assertTrue(watch.checkerFailure().isPresent());
+
+        // An apply in between: the verdict is the state of the project, not an
+        // event in one window, so it has to outlive the boundary - the checker
+        // re-announces only when something changes.
+        watch.mark();
+        assertTrue(watch.checkerFailure().isPresent());
+
+        // Put the file back and save: the checker says so, and that supersedes
+        // the report still sitting in the log above it.
+        append(log, "INFO t : [TypeScript] No errors\n");
+
+        assertTrue(watch.checkerFailure().isEmpty());
     }
 
     @Test
