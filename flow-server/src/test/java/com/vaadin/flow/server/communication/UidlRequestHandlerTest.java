@@ -220,7 +220,7 @@ class UidlRequestHandlerTest {
         // produced, so there is nothing recorded to send again. This is the
         // state left behind when creating a response fails, and the state the
         // push connection leaves when it cannot create one.
-        ui.getInternals().setLastRequestResponse(null, -1);
+        ui.getInternals().setLastRequestResponse(null);
 
         response = Mockito.mock(VaadinResponse.class);
         outputStream = Mockito.mock(OutputStream.class);

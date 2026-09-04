@@ -154,13 +154,12 @@ class UIInternalsTest {
 
     @Test
     public void setLastProcessedClientToServerId_forgetsTheRecordedResponse() {
-        internals.setLastRequestResponse("{\"syncId\":0}", 0);
+        internals.setLastRequestResponse("{\"syncId\":0}");
 
         internals.setLastProcessedClientToServerId(1, new byte[0]);
 
         assertNull(internals.getLastRequestResponse(),
                 "The recorded response answers the previous message, so it must not be sent as this one's");
-        assertEquals(-1, internals.getLastRequestResponseSyncId());
     }
 
     @Test

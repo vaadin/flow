@@ -211,10 +211,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         removeOffendingMprHashFragment(uidl);
 
         String responseString = uidl.toString();
-        // createUidl put the current sync id into the response and then
-        // incremented the counter.
-        ui.getInternals().setLastRequestResponse(responseString,
-                ui.getInternals().getServerSyncId() - 1);
+        ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }
 

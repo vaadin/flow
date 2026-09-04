@@ -180,8 +180,6 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
-    private int lastRequestResponseSyncId = -1;
-
     private int nextJsInitializerId = 0;
 
     private final StateTree stateTree;
@@ -402,7 +400,6 @@ public class UIInternals implements Serializable {
         // the previous one. It can be sent again only once the answer to this
         // message exists.
         this.lastRequestResponse = null;
-        this.lastRequestResponseSyncId = -1;
     }
 
     /**
@@ -411,24 +408,10 @@ public class UIInternals implements Serializable {
      *
      * @param lastRequestResponse
      *            the response that was created for the client message
-     * @param serverSyncId
-     *            the server sync id the response was created with
      * @since 24.7
      */
-    public void setLastRequestResponse(String lastRequestResponse,
-            int serverSyncId) {
+    public void setLastRequestResponse(String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
-        this.lastRequestResponseSyncId = serverSyncId;
-    }
-
-    /**
-     * Returns the server sync id of the response created for the last UIDL
-     * request, or -1 if no response has been created yet.
-     *
-     * @return the server sync id of the last UIDL response
-     */
-    public int getLastRequestResponseSyncId() {
-        return lastRequestResponseSyncId;
     }
 
     /**

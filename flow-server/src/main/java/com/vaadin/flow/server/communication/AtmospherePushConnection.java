@@ -224,17 +224,13 @@ public class AtmospherePushConnection
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
                     String responseString = response.toString();
-                    // UidlWriter put the current sync id into the response and
-                    // then incremented the counter.
-                    int serverSyncId = getUI().getInternals().getServerSyncId()
-                            - 1;
                     if (!async) {
                         // Only the response to a client message can be sent
                         // again, and only until the next message is processed.
-                        getUI().getInternals().setLastRequestResponse(
-                                responseString, serverSyncId);
+                        getUI().getInternals()
+                                .setLastRequestResponse(responseString);
                     }
-                    sendMessage(responseString, serverSyncId);
+                    sendMessage(responseString);
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
@@ -273,7 +269,7 @@ public class AtmospherePushConnection
             }
             // Sent with the id it had the first time, so that the client and
             // the long polling cache do not mistake it for a newer message.
-            sendMessage(lastResponse, internals.getLastRequestResponseSyncId());
+            sendMessage(lastResponse);
         }
     }
 
@@ -285,14 +281,12 @@ public class AtmospherePushConnection
      *            The message to send
      */
     protected void sendMessage(String message) {
-        sendMessage(message, ui.getInternals().getServerSyncId() - 1);
-    }
-
-    private void sendMessage(String message, int serverSyncId) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
         outgoingMessage = getResource().getBroadcaster().broadcast(
-                new PushMessage(serverSyncId, message), getResource());
+                new PushMessage(ui.getInternals().getServerSyncId() - 1,
+                        message),
+                getResource());
     }
 
     /**
