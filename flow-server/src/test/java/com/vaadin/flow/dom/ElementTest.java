@@ -16,6 +16,9 @@
 package com.vaadin.flow.dom;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -2878,6 +2881,22 @@ class ElementTest extends AbstractNodeTest {
                 invocation.getExpression().contains("this.disposeInitializer"));
         // Dispose params are [element, initializerId].
         assertEquals(Integer.valueOf(0), invocation.getParameters().get(1));
+    }
+
+    @Test
+    void addJsInitializer_serializeAndDeserializeOwner_succeeds()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};");
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(element.getNode());
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            assertInstanceOf(StateNode.class, in.readObject());
+        }
     }
 
     @Test

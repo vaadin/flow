@@ -18,6 +18,7 @@ package com.vaadin.base.devserver;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -50,52 +51,103 @@ public class ThemeLiveUpdater implements Closeable {
      *            the current context
      */
     public ThemeLiveUpdater(File themeFolder, VaadinContext context) {
+        try {
+            watcher = new FileWatcher(file -> {
+                if (isSuspended(context)) {
+                    return;
+                }
+                if (file.getName().endsWith(".css")) {
+                    push(themeFolder, context);
+                } else {
+                    BrowserLiveReloadAccessor.getLiveReloadFromContext(context)
+                            .ifPresent(BrowserLiveReload::reload);
+                }
+            }, themeFolder);
+            watcher.start();
+            getLogger().debug("Watching {} for theme changes", themeFolder);
+        } catch (IOException e) {
+            getLogger().error("Unable to watch {} for theme changes",
+                    themeFolder, e);
+        }
+    }
+
+    /**
+     * Combines the theme and pushes the new stylesheet to the browser, which is
+     * what the watcher does when a theme CSS file is saved.
+     * <p>
+     * Separate from the watcher so a tool that owns the apply loop can perform
+     * exactly the same update at the moment it decides a change goes live,
+     * rather than reimplementing the combining and the URL. See
+     * {@link #suspend(VaadinContext)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param themeFolder
+     *            the theme folder, whose name is the theme name
+     * @param context
+     *            the current context
+     * @return {@code true} if the new stylesheet reached the browser
+     */
+    public static boolean push(File themeFolder, VaadinContext context) {
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                .getLiveReloadFromContext(context);
+        if (liveReload.isEmpty()) {
+            getLogger().error(
+                    "Browser live reload is not available. Unable to update {}",
+                    themeFolder);
+            return false;
+        }
         String themeName = themeFolder.getName();
         File stylesCss = new File(themeFolder, "styles.css");
         JsonNode themeJson = ThemeUtils
                 .getThemeJson(themeName, ApplicationConfiguration.get(context))
                 .orElse(null);
-
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromContext(context);
-        if (liveReload.isPresent()) {
-            try {
-                watcher = new FileWatcher(file -> {
-                    if (file.getName().endsWith(".css")) {
-                        try {
-
-                            // All changes are merged into one style block
-                            liveReload.get()
-                                    .update(ThemeUtils.getThemeFilePath(
-                                            themeName, "styles.css"),
-                                            CssBundler.inlineImportsForThemes(
-                                                    stylesCss.getParentFile(),
-                                                    stylesCss, themeJson));
-                        } catch (IOException e) {
-                            getLogger().error(
-                                    "Unable to perform hot update of " + file,
-                                    e);
-                            liveReload.get().reload();
-                        }
-                    } else {
-                        liveReload.get().reload();
-                    }
-                }, themeFolder);
-                watcher.start();
-                getLogger().debug("Watching {} for theme changes", themeFolder);
-            } catch (IOException e) {
-                getLogger().error("Unable to watch {} for theme changes",
-                        themeFolder, e);
-            }
-        } else {
-            getLogger().error(
-                    "Browser live reload is not available. Unable to watch {} for theme changes",
-                    themeFolder);
+        try {
+            // All changes are merged into one style block
+            liveReload.get().update(
+                    ThemeUtils.getThemeFilePath(themeName, "styles.css"),
+                    CssBundler.inlineImportsForThemes(stylesCss.getParentFile(),
+                            stylesCss, themeJson));
+            return true;
+        } catch (IOException e) {
+            getLogger().error("Unable to perform hot update of " + stylesCss,
+                    e);
+            liveReload.get().reload();
+            return false;
         }
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+    /**
+     * Stops this watcher from pushing on save, without stopping it.
+     * <p>
+     * A tool that owns the edit-to-running-app loop decides when a change goes
+     * live, and a second watcher pushing on its own makes "what is the state of
+     * my last change?" unanswerable. Such a tool suspends this and performs the
+     * theme update itself, through {@link #push(File, VaadinContext)}.
+     * <p>
+     * A context attribute rather than a field, so it can be set before or after
+     * the watcher is created - the check happens when a file changes.
+     *
+     * @param context
+     *            the current Vaadin context
+     */
+    public static void suspend(VaadinContext context) {
+        Objects.requireNonNull(context, "context cannot be null");
+        context.setAttribute(Suspended.class, new Suspended());
+        getLogger().debug(
+                "Theme live updates suspended; another tool owns the theme leg");
+    }
+
+    private static boolean isSuspended(VaadinContext context) {
+        return context.getAttribute(Suspended.class) != null;
+    }
+
+    /** Marker for {@link #suspend(VaadinContext)}. */
+    private static final class Suspended implements java.io.Serializable {
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ThemeLiveUpdater.class);
     }
 
     /**
@@ -103,8 +155,12 @@ public class ThemeLiveUpdater implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        watcher.stop();
-        watcher = null;
+        // Null when the watcher could not be created at all, which is a state
+        // the constructor logs and carries on from.
+        if (watcher != null) {
+            watcher.stop();
+            watcher = null;
+        }
     }
 
 }

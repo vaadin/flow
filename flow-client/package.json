@@ -13,7 +13,8 @@
     "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
-    "compile": "npm run build && npm run lint",
+    "typecheck-tests": "tsc -p src/test/frontend",
+    "compile": "npm run build && npm run typecheck-tests && npm run lint",
     "install-deps": "node node_modules/esbuild/install.js && playwright install",
     "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
     "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch"
@@ -38,6 +39,7 @@
     "eslint": "9.39.4",
     "eslint-config-vaadin": "1.0.0-beta.6",
     "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-tsdoc": "^0.4.0",
     "globals": "^17.6.0",
     "mock-xmlhttprequest": "^8.4.1",
     "prettier": "^3.8.4",
