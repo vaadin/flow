@@ -61,28 +61,17 @@ final class PendingJavaScriptInvocationUtil {
      *
      * @param invocation
      *            the invocation waiting to be sent, not <code>null</code>
-     * @return the UI internals the invocation was counted in, or
-     *         <code>null</code> if its owner does not belong to a UI, or
-     *         belongs to one that has been closed
+     * @return the UI internals the invocation was counted in, never
+     *         <code>null</code>
      */
     static UIInternals invocationScheduled(
             PendingJavaScriptInvocation invocation) {
         UIInternals internals = findInternals(invocation.getOwner());
-        if (internals == null) {
-            // An owner that has never been attached does not belong to any UI,
-            // so there is no count that the invocation could be part of. It is
-            // only reachable through that owner, which would in turn start
-            // referencing a UI of its own only because of the count
-            return null;
-        }
-        if (internals.getSession() == null) {
-            // The UI has been closed and its count is discarded with it, along
-            // with everything that was queued for it. A detached owner keeps
-            // referencing the state tree of that UI, so an owner reused in
-            // another UI resolves to the closed one until it is attached
-            // again, which is when the invocation starts being counted
-            return null;
-        }
+        // An invocation is only counted while its owner is attached, which is
+        // also when the invocation is on its way to a client. Every node of a
+        // closed UI is detached, so the UI resolved here still has a session
+        assert internals != null && internals.getSession() != null
+                : "An invocation should only be counted while its owner is attached to a UI";
 
         int count = internals.addUndeliveredJsInvocations(1);
         if (count == WARNING_THRESHOLD
@@ -101,9 +90,6 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     private static UIInternals findInternals(StateNode owner) {
-        // A node keeps its state tree when it is detached, so this also
-        // resolves the UI of an owner that is currently detached but has been
-        // attached at some point
         UI ui = getUI(owner);
         return ui == null ? null : ui.getInternals();
     }
