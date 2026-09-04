@@ -61,17 +61,23 @@ final class PendingJavaScriptInvocationUtil {
      *
      * @param invocation
      *            the invocation waiting to be sent, not <code>null</code>
-     * @return the UI internals the invocation was counted in, never
-     *         <code>null</code>
+     * @return the UI internals the invocation was counted in, or
+     *         <code>null</code> if there is no UI to count it in
      */
     static UIInternals invocationScheduled(
             PendingJavaScriptInvocation invocation) {
         UIInternals internals = findInternals(invocation.getOwner());
         // An invocation is only counted while its owner is attached, which is
-        // also when the invocation is on its way to a client. Every node of a
-        // closed UI is detached, so the UI resolved here still has a session
-        assert internals != null && internals.getSession() != null
+        // also when the invocation is on its way to a client
+        assert internals != null
                 : "An invocation should only be counted while its owner is attached to a UI";
+        if (internals == null || internals.getSession() == null) {
+            // Closing a UI tolerates a failure to detach its nodes, which
+            // leaves them attached to a UI without a session. A count that
+            // only backs a warning is not worth failing an application over,
+            // so the invocation is counted in the UI it is attached to next
+            return null;
+        }
 
         int count = internals.addUndeliveredJsInvocations(1);
         if (count == WARNING_THRESHOLD
