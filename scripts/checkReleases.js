@@ -338,9 +338,12 @@ function main() {
   );
   for (const r of results) {
     const c = r.counts;
+    const last = r.lastTag
+      ? `${r.lastTag}${r.lastTagDate ? `, ${r.lastTagDate}` : ''}`
+      : 'none';
     console.log(
       `  ${r.branch}: ${r.verdict} — ${c.releasable} feat/fix, ${c.deps} deps, ` +
-        `${c.internal} other (last ${r.lastTag || 'none'})`
+        `${c.internal} other (last ${last})`
     );
   }
 
