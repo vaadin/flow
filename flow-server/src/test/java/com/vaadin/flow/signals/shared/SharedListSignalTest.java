@@ -17,10 +17,13 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -52,6 +55,18 @@ class SharedListSignalTest extends SignalTestBase {
         int size = signal.peek().size();
 
         assertEquals(0, size);
+    }
+
+    @Test
+    void constructor_typeReference_parameterizedElementTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedListSignal<Set<UUID>> signal = new SharedListSignal<>(
+                new TypeReference<Set<UUID>>() {
+                });
+
+        signal.insertLast(Set.of(id));
+
+        assertEquals(Set.of(id), signal.peek().get(0).peek());
     }
 
     @Test

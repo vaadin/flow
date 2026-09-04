@@ -119,6 +119,13 @@ function fetchRefs(branches) {
   git(['fetch', '--quiet', '--tags', REMOTE, ...refspecs]);
 }
 
+/** The date (YYYY-MM-DD) of the commit a tag points to, or null. */
+function tagDate(tag) {
+  if (!tag) return null;
+  const date = git(['log', '-1', '--format=%as', tag]).trim();
+  return date || null;
+}
+
 /** Latest tag (release or pre-release) on a version line, or null. */
 function latestTagFor(line) {
   const prefix = `${line}.`;
@@ -208,7 +215,10 @@ function branchBody(r, now) {
   const releasable = r.commits.filter((c) => c.category === 'releasable');
   const n = releasable.length;
   const lines = [];
-  lines.push(`Branch \`${r.branch}\` has **${n}** unreleased commit${n === 1 ? '' : 's'} worth releasing since \`${r.lastTag || 'the start of the branch'}\`.`);
+  const since = r.lastTag
+    ? `\`${r.lastTag}\`${r.lastTagDate ? ` (released ${r.lastTagDate})` : ''}`
+    : 'the start of the branch';
+  lines.push(`Branch \`${r.branch}\` has **${n}** unreleased commit${n === 1 ? '' : 's'} worth releasing since ${since}.`);
   lines.push('');
   lines.push(`Suggested next release: ${target}`);
   lines.push('');
@@ -238,12 +248,12 @@ function buildSummary(results, now) {
     lines.push('No branch has unreleased changes worth a release. 🎉');
     return lines.join('\n');
   }
-  lines.push('| Branch | Last release | Next | feat/fix | deps | other | Verdict |');
-  lines.push('| --- | --- | --- | --- | --- | --- | --- |');
+  lines.push('| Branch | Last release | Released | Next | feat/fix | deps | other | Verdict |');
+  lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const r of active) {
     const c = r.counts;
     lines.push(
-      `| \`${r.branch}\` | ${r.lastTag || '—'} | ${r.next || '—'} | ` +
+      `| \`${r.branch}\` | ${r.lastTag || '—'} | ${r.lastTagDate || '—'} | ${r.next || '—'} | ` +
         `${c.releasable} | ${c.deps} | ${c.internal} | ${r.verdict} |`
     );
   }
@@ -268,6 +278,7 @@ function main() {
   const results = branches.map((branch) => {
     const version = latestTagFor(branch === MAIN_BRANCH ? readMainVersionLine() : branch);
     const lastTag = version ? version.tag : null;
+    const lastTagDate = tagDate(lastTag);
     const commits = commitsSince(lastTag, branch);
     const counts = {
       releasable: commits.filter((c) => c.category === 'releasable').length,
@@ -277,6 +288,7 @@ function main() {
     return {
       branch,
       lastTag,
+      lastTagDate,
       next: suggestNextVersion(version),
       counts,
       verdict: verdictFor(counts),

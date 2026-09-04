@@ -19,9 +19,9 @@ import com.vaadin.flow.component.UI;
 
 /**
  * Event fired to {@link RpcInvocationListener}s around the server-side handling
- * of a single client-to-server RPC invocation (a DOM event, a
- * {@code @ClientCallable}/template event handler, a server-side navigation, a
- * return channel message, and so on).
+ * of a single client-to-server RPC invocation (a DOM event, a synchronized
+ * property update, a {@code @ClientCallable}/template event handler, a
+ * server-side navigation, a return channel message, and so on).
  * <p>
  * A client request can carry several invocations; one event is fired per
  * invocation. The {@link RpcInvocationListener#invocationStarted}, (optional)
@@ -48,15 +48,15 @@ public class RpcInvocationEvent extends AbstractRpcInvocationEvent {
      *            the UI the invocation is handled against, not {@code null}
      * @param type
      *            the protocol-level invocation type (for example {@code event},
-     *            {@code publishedEventHandler}, {@code navigation},
-     *            {@code channel}), not {@code null}
+     *            {@code mSync}, {@code publishedEventHandler},
+     *            {@code navigation}, {@code channel}), not {@code null}
      * @param nodeId
      *            the id of the targeted {@code StateNode}, or {@code -1} if the
      *            invocation does not target a node
      * @param name
      *            a human-readable identifier for the invocation (the DOM event
-     *            name, the invoked method name, the navigation location, ...),
-     *            or {@code null} if none applies
+     *            name, the synchronized property name, the invoked method name,
+     *            the navigation location, ...), or {@code null} if none applies
      */
     public RpcInvocationEvent(UI ui, String type, int nodeId, String name) {
         super(ui, type, nodeId, name);

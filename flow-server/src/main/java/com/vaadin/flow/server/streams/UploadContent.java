@@ -34,6 +34,7 @@ import java.util.Optional;
  * the framework once the call returns.
  *
  * @see UploadValidator#validateComplete(UploadEvent, UploadContent)
+ * @since 25.3
  */
 public interface UploadContent extends Serializable {
 

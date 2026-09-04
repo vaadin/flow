@@ -106,8 +106,11 @@ function buildPrompt(branches) {
     const commits = b.commits.length
       ? b.commits.map((c) => `  - ${c.subject}`).join('\n')
       : '  (no commits since the last release)';
+    const lastReleased = b.lastTag
+      ? `${b.lastTag}${b.lastTagDate ? ` on ${b.lastTagDate}` : ''}`
+      : 'never';
     return (
-      `Branch ${b.branch} (last released ${b.lastTag || 'never'}, ` +
+      `Branch ${b.branch} (last released ${lastReleased}, ` +
       `next would be ${b.next || 'unknown'})\n${commits}`
     );
   });
@@ -176,9 +179,10 @@ function buildDigest(report, adviceByBranch) {
 
     lines.push('');
     lines.push(`${VERDICT_ICON[verdictOf(b)]} ${b.branch} → ${b.next || 'next version unknown'}`);
-    lines.push(
-      `    ${counts.join(', ') || 'nothing'} since ${b.lastTag || 'the start of the branch'}`
-    );
+    const since = b.lastTag
+      ? `${b.lastTag}${b.lastTagDate ? ` (${b.lastTagDate})` : ''}`
+      : 'the start of the branch';
+    lines.push(`    ${counts.join(', ') || 'nothing'} since ${since}`);
     if (advice) {
       lines.push(`    ${advice.rationale}`);
       if (advice.recommendation !== b.verdict) {

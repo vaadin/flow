@@ -58,6 +58,8 @@ import com.vaadin.flow.internal.FrontendUtils;
  * client accepts.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.3
  */
 public class TaskCompressStaticResources implements FallibleCommand {
 

@@ -23,14 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -84,52 +80,7 @@ public abstract class AbstractRpcInvocationHandler
         getLogger().info(
                 "Ignored RPC for invocation handler '{}' from "
                         + "the client side for an {} {}",
-                getClass().getName(), reason, describeTarget(node));
-    }
-
-    /**
-     * Describes the target of an RPC invocation so that an application
-     * developer can tell which part of the application it relates to. In
-     * addition to the state node id, the description contains the element tag
-     * and, when available, the component class and the routing target that the
-     * component is used in.
-     *
-     * @param node
-     *            the target node, may be {@code null}
-     * @return a description of the target, not {@code null}
-     */
-    protected static String describeTarget(StateNode node) {
-        if (node == null) {
-            return "unknown node";
-        }
-
-        StringBuilder targetInfo = new StringBuilder("node id=")
-                .append(node.getId());
-        if (node.hasFeature(ElementData.class)) {
-            Element element = Element.get(node);
-            targetInfo.append(", element with tag '").append(element.getTag())
-                    .append("'");
-            Optional<Component> component = element.getComponent();
-            if (component.isPresent()) {
-                targetInfo.append(", component '")
-                        .append(component.get().getClass().getName())
-                        .append("'");
-                /*
-                 * The routing target is identified by its class since the path
-                 * in its annotation is not necessarily the path it is served
-                 * from: the path may be a placeholder for a name derived from
-                 * the class, and it doesn't include the prefixes that parent
-                 * layouts contribute.
-                 */
-                ComponentUtil.getRouteComponent(component.get()).filter(
-                        routeComponent -> routeComponent != component.get())
-                        .ifPresent(routeComponent -> targetInfo
-                                .append(", used in '")
-                                .append(routeComponent.getClass().getName())
-                                .append("'"));
-            }
-        }
-        return targetInfo.toString();
+                getClass().getName(), reason, node.describe());
     }
 
     /**
