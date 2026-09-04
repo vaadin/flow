@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Assert;
@@ -80,8 +81,11 @@ public class CompressUtilTest {
         File notAZip = temporaryFolder.newFile("prod.bundle");
         Files.writeString(notAZip.toPath(), "not a zip");
 
-        Assert.assertThrows(IOException.class,
+        // ZipException is an IOException and is let through as it is
+        ZipException exception = Assert.assertThrows(ZipException.class,
                 () -> CompressUtil.hasFileInZip(notAZip, "config/stats.json"));
+        Assert.assertNull("The failure should not be wrapped",
+                exception.getCause());
     }
 
     @Test
