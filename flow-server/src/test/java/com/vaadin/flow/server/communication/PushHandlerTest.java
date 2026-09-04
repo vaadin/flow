@@ -27,11 +27,13 @@ import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -50,9 +52,18 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PushHandlerTest {
+
+    /** How long to wait for a held request to have been run. */
+    private static final int AWAIT_MILLIS = 10000;
+
+    /**
+     * How long to let a held request run before checking that it did nothing.
+     */
+    private static final int AWAIT_SETTLE_MILLIS = 500;
 
     @Test
     void onConnect_websocketTransport_requestStartIsCalledOnServiceInstance() {
@@ -94,6 +105,255 @@ class PushHandlerTest {
 
         Mockito.verify(service, Mockito.times(0)).requestStart(Mockito.any(),
                 Mockito.any());
+    }
+
+    @Test
+    void onConnect_serviceNotInitialized_connectionHeldUntilInitCompletes()
+            throws ServiceException, IOException, InterruptedException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+
+        AtomicReference<AtmosphereResource> connectedResource = new AtomicReference<>();
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            connectedResource.set(resource);
+            handler.onConnect(resource);
+        });
+
+        AtmosphereResource resource = connectedResource.get();
+        // Suspended so that the client does not see the connection fail while
+        // it is being held
+        Mockito.verify(resource).suspend(-1);
+        Mockito.verify(service, Mockito.never()).requestStart(Mockito.any(),
+                Mockito.any());
+
+        service.init();
+
+        Mockito.verify(service, Mockito.timeout(AWAIT_MILLIS))
+                .requestStart(Mockito.any(), Mockito.any());
+        Mockito.verify(resource, Mockito.never()).close();
+    }
+
+    @Test
+    void onMessage_connectionStillHeld_clientIsRefreshedInsteadOfLeftWaiting()
+            throws ServiceException, IOException, InterruptedException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResourceImpl resource = Mockito
+                .mock(AtmosphereResourceImpl.class);
+        AtmosphereResponse response = Mockito.mock(AtmosphereResponse.class);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(PrintWriter.class));
+        Mockito.when(resource.getRequest())
+                .thenReturn(Mockito.mock(AtmosphereRequest.class));
+        Mockito.when(resource.getResponse()).thenReturn(response);
+        Mockito.when(resource.uuid()).thenReturn("1");
+        Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+        Mockito.when(resource.isInScope()).thenReturn(true);
+
+        handler.onConnect(resource);
+
+        // Holding the connection suspends it, which lets the client believe it
+        // is connected and start sending before the connection is established
+        handler.onMessage(resource);
+
+        // Left waiting for a response that never comes the client would be
+        // stuck, so it is told to refresh instead
+        Mockito.verify(resource).resume();
+
+        service.init();
+
+        // Establishing it now would bind the UI to a connection the client has
+        // already been told to drop
+        Mockito.verify(service, Mockito.after(AWAIT_SETTLE_MILLIS).never())
+                .requestStart(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void onConnect_serviceNotInitialized_notWebsocket_connectionIsNotHeld()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+
+        AtomicReference<AtmosphereResource> connectedResource = new AtomicReference<>();
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport())
+                    .thenReturn(TRANSPORT.LONG_POLLING);
+            connectedResource.set(resource);
+            handler.onConnect(resource);
+        });
+
+        // Only a websocket reaches the handler before the service has been
+        // initialized, and holding any other transport would run it without the
+        // request context its own thread set up
+        Mockito.verify(connectedResource.get(), Mockito.never())
+                .suspend(Mockito.anyLong());
+    }
+
+    @Test
+    void onMessage_debugWindowConnectionStillHeld_connectionClosedInsteadOfRefreshed()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResourceImpl resource = Mockito
+                .mock(AtmosphereResourceImpl.class);
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(request
+                .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
+                .thenReturn("");
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(resource.uuid()).thenReturn("1");
+        Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+        Mockito.when(resource.isInScope()).thenReturn(true);
+
+        handler.onConnect(resource);
+        handler.onMessage(resource);
+
+        // The debug window does not understand a Vaadin notification, so it is
+        // given a closed connection to reopen instead
+        Mockito.verify(resource).close();
+        Mockito.verify(resource, Mockito.never()).resume();
+    }
+
+    @Test
+    void onConnect_twoConnectionsWithTheSameTrackingId_areNotMistakenForEachOther()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        // A client that reconnects while the service is still initializing
+        // sends back the tracking id it was given, so the two connections share
+        // a uuid even though they are different connections
+        AtmosphereResource first = mockWebsocketResource("shared-uuid");
+        AtmosphereResource second = mockWebsocketResource("shared-uuid");
+
+        handler.onConnect(first);
+        handler.onConnect(second);
+
+        // The second one sends before its connection has been established and
+        // is given up on. The first one must not be the one given up on.
+        handler.onMessage(second);
+        service.init();
+
+        // Answering the first connection writes to it, which only happens if
+        // it was established rather than mistaken for the second one
+        Mockito.verify(first.getResponse(), Mockito.timeout(AWAIT_MILLIS))
+                .getWriter();
+        Mockito.verify(service, Mockito.timeout(AWAIT_MILLIS))
+                .requestStart(Mockito.any(), Mockito.any());
+    }
+
+    private static AtmosphereResource mockWebsocketResource(String uuid)
+            throws IOException {
+        AtmosphereResourceImpl resource = Mockito
+                .mock(AtmosphereResourceImpl.class);
+        AtmosphereResponse response = Mockito.mock(AtmosphereResponse.class);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(PrintWriter.class));
+        Mockito.when(resource.getRequest())
+                .thenReturn(Mockito.mock(AtmosphereRequest.class));
+        Mockito.when(resource.getResponse()).thenReturn(response);
+        Mockito.when(resource.uuid()).thenReturn(uuid);
+        Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+        Mockito.when(resource.isInScope()).thenReturn(true);
+        return resource;
+    }
+
+    @Test
+    void onMessage_secondMessageOnAConnectionGivenUpOn_stillNotProcessed()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResource resource = mockWebsocketResource("1");
+        handler.onConnect(resource);
+
+        // A client that starts sending as soon as it believes it is connected
+        // can send more than once before the service is ready
+        handler.onMessage(resource);
+        handler.onMessage(resource);
+
+        // The second message must not be handled as if the connection existed,
+        // which would start a request on a service that cannot serve one
+        Mockito.verify(service, Mockito.never()).requestStart(Mockito.any(),
+                Mockito.any());
+        // Only the first message gives up on the connection
+        Mockito.verify(resource, Mockito.times(1)).resume();
+    }
+
+    @Test
+    void destroy_serviceGoesAwayBeforeInit_heldConnectionsAreClosed()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResource resource = mockWebsocketResource("1");
+        handler.onConnect(resource);
+
+        // A service that is destroyed without ever being initialized, which a
+        // servlet that is never loaded does, must not keep what it holds
+        handler.destroy();
+
+        Mockito.verify(resource).close();
+    }
+
+    @Test
+    void onConnect_serviceInitFails_connectionClosedAndRequestNotStarted()
+            throws ServiceException, IOException, InterruptedException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false) {
+                    @Override
+                    protected Instantiator createInstantiator()
+                            throws ServiceException {
+                        throw new ServiceException("intentional failure");
+                    }
+                });
+
+        AtomicReference<AtmosphereResource> connectedResource = new AtomicReference<>();
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            connectedResource.set(resource);
+            handler.onConnect(resource);
+        });
+
+        assertThrows(RuntimeException.class, service::init);
+
+        Mockito.verify(connectedResource.get(), Mockito.timeout(AWAIT_MILLIS))
+                .close();
+        Mockito.verify(service, Mockito.never()).requestStart(Mockito.any(),
+                Mockito.any());
+    }
+
+    @Test
+    void onConnect_connectionClosedWhileHeld_requestIsNotProcessed()
+            throws ServiceException, IOException, InterruptedException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResourceImpl resource = Mockito
+                .mock(AtmosphereResourceImpl.class);
+        Mockito.when(resource.getRequest())
+                .thenReturn(Mockito.mock(AtmosphereRequest.class));
+        Mockito.when(resource.uuid()).thenReturn("1");
+        Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+
+        handler.onConnect(resource);
+
+        // The client gives up on the connection while the request is held
+        Mockito.when(resource.isInScope()).thenReturn(false);
+        service.init();
+
+        Mockito.verify(service, Mockito.after(AWAIT_SETTLE_MILLIS).never())
+                .requestStart(Mockito.any(), Mockito.any());
+        Mockito.verify(resource, Mockito.never()).close();
     }
 
     @Test
@@ -319,6 +579,7 @@ class PushHandlerTest {
                 .spy(MockVaadinServletService.class);
         setProductionMode(service, true);
 
+        AtomicReference<AtmosphereResource> deniedResource = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
             Mockito.when(resource.getRequest()
@@ -326,6 +587,7 @@ class PushHandlerTest {
                     .thenReturn("");
             Mockito.doNothing().when(handler)
                     .callWithServiceAndSession(Mockito.any(), Mockito.any());
+            deniedResource.set(resource);
 
             handler.onConnect(resource);
 
@@ -334,6 +596,10 @@ class PushHandlerTest {
             Mockito.verify(handler, Mockito.never()).callWithUi(Mockito.any(),
                     Mockito.any());
         });
+
+        // The denied connection must not be left open, as it has been
+        // suspended if it was held while the service was initializing
+        Mockito.verify(deniedResource.get()).close();
 
     }
 

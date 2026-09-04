@@ -20,10 +20,15 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import org.atmosphere.cpr.AtmosphereRequest;
@@ -79,6 +84,37 @@ public class PushHandler {
      * time for handling session expiration.
      */
     private final Map<String, Long> disconnectedUuidBuffer = new ConcurrentHashMap<>();
+
+    /**
+     * The connections that are being held until the service has been
+     * initialized. A connection is in here from the moment it is held until the
+     * request that establishes it has been run.
+     * <p>
+     * Keyed by the resource itself rather than by its uuid, which is the
+     * client's tracking id and is therefore the same for every connection the
+     * client makes, and by identity, as resources compare equal by that uuid.
+     */
+    private final Map<AtmosphereResource, HeldConnection> heldConnections = Collections
+            .synchronizedMap(new IdentityHashMap<>());
+
+    /**
+     * A push request that is being held until the service has been initialized.
+     */
+    private static final class HeldConnection {
+
+        /**
+         * Held while the request runs, so that a message arriving meanwhile
+         * waits for the connection to be established instead of being answered
+         * as if it never would be.
+         */
+        private final ReentrantLock lock = new ReentrantLock();
+
+        /**
+         * Set when the connection has been given up on before it was
+         * established. Guarded by {@link #lock}.
+         */
+        private boolean cancelled;
+    }
 
     private VaadinServletService service;
 
@@ -579,8 +615,7 @@ public class PushHandler {
             AtmosphereResource resource, String notificationJson) {
         // TODO Implemented differently from sendRefreshAndDisconnect
         try {
-            if (resource instanceof AtmosphereResourceImpl
-                    && !((AtmosphereResourceImpl) resource).isInScope()) {
+            if (!isInScope(resource)) {
                 // The resource is no longer valid so we should not write
                 // anything to it
                 getLogger().debug(
@@ -631,11 +666,22 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
+        if (deferUntilServiceReady(resource, this::doOnConnect)) {
+            return;
+        }
+        doOnConnect(resource);
+    }
+
+    private void doOnConnect(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
             if (isProductionMode()) {
                 getLogger().debug(
                         "Debug window connection request denied while in production mode");
-                // No debug info must ever leak out in production
+                // No debug info must ever leak out in production. The
+                // connection is closed rather than left to the container, as it
+                // has been suspended if it was held while the service was
+                // still initializing.
+                closeResource(resource);
                 return;
             }
             callWithServiceAndSession(resource,
@@ -662,6 +708,49 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
+        HeldConnection held = heldConnections.get(resource);
+        if (held != null) {
+            // Waits if the connection is being established right now, so that
+            // a message sent the moment it came up is handled on it rather
+            // than answered as if it never would be
+            held.lock.lock();
+            try {
+                if (heldConnections.containsKey(resource)) {
+                    // Suspending the connection while it waits for the service
+                    // lets the client believe it is connected, so it may start
+                    // sending before the connection has been established. The
+                    // message cannot be answered, as there is no connection to
+                    // answer it on, and it cannot be held either, because it is
+                    // read from a request that does not outlive this call.
+                    if (held.cancelled) {
+                        // Already given up on by an earlier message
+                        return;
+                    }
+                    held.cancelled = true;
+                    if (isDebugWindowConnection(resource)) {
+                        // The debug window does not understand a Vaadin
+                        // notification, so its connection is closed for it to
+                        // open a new one
+                        getLogger().debug(
+                                "Closing the debug window connection of resource {}, which sent a message before its connection had been established",
+                                resource.uuid());
+                        closeResource(resource);
+                    } else {
+                        // Told to refresh rather than left waiting for a
+                        // response that will never come
+                        getLogger().debug(
+                                "Refreshing the client of resource {}, which sent a push message before its connection had been established",
+                                resource.uuid());
+                        sendRefreshAndDisconnect(resource);
+                    }
+                    return;
+                }
+                // The connection was established while this message waited, so
+                // it can be handled as usual
+            } finally {
+                held.lock.unlock();
+            }
+        }
         if (isDebugWindowConnection(resource)) {
             callWithServiceAndSession(resource, this::handleDebugWindowMessage);
         } else {
@@ -702,6 +791,165 @@ public class PushHandler {
                 .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
         return refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport());
+    }
+
+    /**
+     * Holds a request that arrived before the service finished initializing, so
+     * that it runs as soon as the service is ready.
+     * <p>
+     * The push endpoint is registered during servlet context initialization and
+     * is wired to this handler while {@link VaadinService#init()} is still
+     * running, so a client that is already retrying its push connection can
+     * reach the endpoint before the service is ready. The request is held
+     * rather than rejected because a websocket that is closed before it has
+     * carried a single message makes the client fall back to long polling for
+     * the rest of the page's lifetime.
+     * <p>
+     * Holding does not tie up the thread serving the connection: the resource
+     * is suspended, so it stays open while this method returns, and the request
+     * runs later on the thread that finishes initialization. If initialization
+     * fails the connection is closed, and if it never runs at all the suspended
+     * connection is eventually reaped by the Atmosphere websocket idle timeout.
+     *
+     * @param resource
+     *            the atmosphere resource for the current request
+     * @param action
+     *            what to run once the service is ready
+     * @return {@code true} if the request was held, {@code false} if it can be
+     *         run right away
+     */
+    private boolean deferUntilServiceReady(AtmosphereResource resource,
+            Consumer<AtmosphereResource> action) {
+        if (service.isInitialized()) {
+            return false;
+        }
+        if (resource.transport() != TRANSPORT.WEBSOCKET) {
+            // Only a websocket reaches this handler before the service has been
+            // initialized, as any other transport goes through the servlet
+            // first. Running one of those later would also be wrong, as it
+            // would run without the request context its own thread set up.
+            return false;
+        }
+        // Marked as held before it is suspended, as suspending lets the client
+        // believe it is connected and start sending, and a message that arrives
+        // before the mark is in place would be handled as if the connection had
+        // been established
+        HeldConnection held = new HeldConnection();
+        heldConnections.put(resource, held);
+        boolean holding = false;
+        try {
+            // Suspending twice is a no-op, so the suspend done when the
+            // connection is established later still behaves as usual
+            suspend(resource);
+            getLogger().debug(
+                    "Holding push request for resource {} until the Vaadin service has been initialized",
+                    resource.uuid());
+            service.whenInitialized(serviceReady -> runHeldRequest(resource,
+                    held, action, serviceReady));
+            holding = true;
+        } finally {
+            if (!holding) {
+                // Nothing will run the held request, so the connection must not
+                // be left behind as one that is waiting to be established
+                heldConnections.remove(resource);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Runs a request that was held until the service had been initialized,
+     * unless the connection it belongs to has been given up on meanwhile.
+     *
+     * @param resource
+     *            the atmosphere resource the request belongs to
+     * @param held
+     *            the state of the held connection
+     * @param action
+     *            what to run for the request
+     * @param serviceReady
+     *            whether the service can process requests
+     */
+    private void runHeldRequest(AtmosphereResource resource,
+            HeldConnection held, Consumer<AtmosphereResource> action,
+            boolean serviceReady) {
+        held.lock.lock();
+        try {
+            if (held.cancelled) {
+                // The client sent a message before its connection had been
+                // established and was given up on, so establishing it now would
+                // bind a UI to a connection that is already gone. Closed here,
+                // as the message may have arrived before the connection was
+                // suspended, leaving it neither resumed nor closed.
+                getLogger().debug(
+                        "Closing the held push connection {}, which has been given up on",
+                        resource.uuid());
+                closeResource(resource);
+            } else if (!isInScope(resource)) {
+                // The client gave up while the request was held, so there is
+                // nothing left to serve or to close
+                getLogger().debug(
+                        "Dropping push request for resource {} because the connection was closed while it was held",
+                        resource.uuid());
+            } else if (serviceReady) {
+                action.accept(resource);
+            } else {
+                getLogger().debug(
+                        "Closing push connection {} because the Vaadin service failed to initialize",
+                        resource.uuid());
+                closeResource(resource);
+            }
+        } finally {
+            // Removed before the lock is given up, so that a message waiting
+            // for the connection sees that it has been established
+            heldConnections.remove(resource);
+            held.lock.unlock();
+        }
+    }
+
+    /**
+     * Checks whether the given resource is still valid, which it is not once
+     * the connection it belongs to has been closed.
+     *
+     * @param resource
+     *            the atmosphere resource to check
+     * @return {@code true} if the resource can still be used
+     */
+    private static boolean isInScope(AtmosphereResource resource) {
+        return !(resource instanceof AtmosphereResourceImpl impl)
+                || impl.isInScope();
+    }
+
+    private static void closeResource(AtmosphereResource resource) {
+        try {
+            resource.close();
+        } catch (IOException | RuntimeException e) {
+            getLogger().trace("Failed to close push connection {}",
+                    resource.uuid(), e);
+        }
+    }
+
+    /**
+     * Releases what this handler is holding on to, as the service it belongs to
+     * is going away.
+     * <p>
+     * A connection held while the service was starting is only let go of when
+     * initialization finishes. A service that is destroyed without ever getting
+     * there, which a servlet that is never loaded does, would otherwise keep
+     * every connection that was held for it.
+     */
+    void destroy() {
+        List<AtmosphereResource> held;
+        synchronized (heldConnections) {
+            held = new ArrayList<>(heldConnections.keySet());
+            heldConnections.clear();
+        }
+        held.forEach(resource -> {
+            getLogger().debug(
+                    "Closing the push connection {} that was held for a service that is going away",
+                    resource.uuid());
+            closeResource(resource);
+        });
     }
 
     /**
