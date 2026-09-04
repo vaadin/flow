@@ -1,36 +1,72 @@
 ---
 name: Documentation Bot
 description: >
-  Analyzes PR changes and creates documentation updates in vaadin/docs
-  when code changes affect user-facing features, APIs, or behavior.
+  Runs on every pull request and on every push to one, and keeps a draft
+  documentation pull request in vaadin/docs in step with the change.
 
 on:
   pull_request:
-    types: [assigned]
+    types: [opened, reopened, synchronize, ready_for_review, assigned]
+    # Free first filter: a pull request that touches none of these paths never
+    # starts a runner, so the cheapest check happens before any tokens are
+    # spent. GitHub skips path filtering above 300 changed files, which is why
+    # Phase 1 classifies the files it sees rather than trusting this list.
+    paths-ignore:
+      - '**/src/test/**'
+      - '**/src/it/**'
+      - '**/*Test.java'
+      - '**/*IT.java'
+      - 'flow-tests/**'
+      - '**/pom.xml'
+      - '**/*.gradle*'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '.github/**'
+      - 'scripts/**'
+      - '**/Dockerfile'
+      - '**/*.md'
 
-# Opt-in trigger: only run when vaadin-bot is assigned to a merged PR.
+# Two ways in. Normally the bot decides for itself on every push to a
+# non-draft pull request, skipping the conventional-commit types that never
+# reach a reader of the documentation. Assigning `vaadin-bot` is the manual
+# override: it runs the bot on a pull request the type filter passed over.
 if: >
-  github.event.assignee.login == 'vaadin-bot' &&
-  github.event.pull_request.merged == true
+  github.event.pull_request.draft == false && (
+    (github.event.action == 'assigned' &&
+     github.event.assignee.login == 'vaadin-bot') ||
+    (github.event.action != 'assigned' &&
+     !startsWith(github.event.pull_request.title, 'test:') &&
+     !startsWith(github.event.pull_request.title, 'test(') &&
+     !startsWith(github.event.pull_request.title, 'ci:') &&
+     !startsWith(github.event.pull_request.title, 'ci(') &&
+     !startsWith(github.event.pull_request.title, 'refactor:') &&
+     !startsWith(github.event.pull_request.title, 'refactor(') &&
+     !startsWith(github.event.pull_request.title, 'chore:') &&
+     !startsWith(github.event.pull_request.title, 'chore(') &&
+     !startsWith(github.event.pull_request.title, 'build:') &&
+     !startsWith(github.event.pull_request.title, 'build('))
+  )
 
 permissions:
   contents: read
   pull-requests: read
 
-engine: codex
+engine: claude
 
 tools:
   github:
     # gh-proxy routes GitHub API access through the pre-authenticated gh CLI,
-    # so api.github.com does not need to be in the network allowlist.
+    # so api.github.com does not need to be in the network allowlist. The
+    # `search` toolset is gone: vaadin/docs is checked out below, so `grep`
+    # answers the same questions for free.
     mode: gh-proxy
-    toolsets: [repos, pull_requests, search]
+    toolsets: [repos, pull_requests]
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   edit:
   bash: true
 
-# Allow GitHub domains (github.com, *.githubusercontent.com, ...) so the agent
-# can read and update the vaadin/docs repository.
+# Allow GitHub domains (github.com, *.githubusercontent.com, ...) so git
+# operations against the vaadin/docs checkout can reach the remote.
 network:
   allowed:
     - defaults
@@ -38,12 +74,30 @@ network:
 
 timeout-minutes: 30
 
+# A burst of pushes to the same pull request collapses into one run of the
+# latest state. Each run analyses the whole pull request, never just the
+# increment, so a cancelled run loses nothing.
+concurrency:
+  group: doc-bot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# vaadin/docs is checked out beside this repository so the agent reads it with
+# `grep` instead of the code-search API. `doc-bot/*` brings in the branch of an
+# existing documentation pull request, which Phase 5b commits onto.
+checkout:
+  - fetch-depth: 1
+  - repository: vaadin/docs
+    path: docs-repo
+    ref: main
+    fetch: ['doc-bot/*']
+    github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
+
 env:
   SOURCE_REPO: ${{ github.repository }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
   PR_AUTHOR: ${{ github.event.pull_request.user.login }}
   PR_TITLE: ${{ github.event.pull_request.title }}
-  PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+  PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 safe-outputs:
   create-pull-request:
@@ -52,46 +106,77 @@ safe-outputs:
     title-prefix: "[docs] "
     labels: [documentation, automated]
     draft: true
-    expires: 14
+    expires: 30
+    if-no-changes: ignore
     fallback-as-issue: true
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
-  assign-to-user:
-    target-repo: "vaadin/docs"
+  # Updates the documentation pull request opened by an earlier run instead of
+  # opening a second one for the same source pull request. `target: "*"` lets
+  # the agent name the pull request to push to, so the required title prefix
+  # and labels narrow that to the ones this workflow itself opened.
+  push-to-pull-request-branch:
     target: "*"
+    target-repo: "vaadin/docs"
+    required-title-prefix: "[docs] "
+    required-labels: [documentation, automated]
+    if-no-changes: ignore
+    github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
+  assign-to-user:
+    target: "*"
+    target-repo: "vaadin/docs"
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   add-comment:
+    # One standing comment per pull request: a re-run supersedes its
+    # predecessor instead of stacking a note onto every push.
+    hide-older-comments: true
+  # Lets the agent record "nothing to document, because …" in the run log
+  # without putting anything on the pull request.
+  noop:
+    report-as-issue: false
 ---
 
 # Documentation Bot
 
-You are a documentation bot for the Vaadin project. Your job is to analyze pull requests in source code repositories and, when the changes affect user-facing behavior, create a corresponding documentation update PR in the `vaadin/docs` repository.
+You analyze a pull request in `${{ env.SOURCE_REPO }}` and, when it changes something a reader would need to know about, you keep a matching documentation pull request in `vaadin/docs` up to date with it.
 
-This workflow is **opt-in**: it runs only when a maintainer assigns `vaadin-bot` to a merged pull request. By the time you run, the source PR has already been merged.
+You run on **every push** to every non-draft pull request that survives the trigger filters. Most of your runs therefore end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
 
 ## Environment
 
-- **Source repository:** `${{ env.SOURCE_REPO }}`
-- **PR number:** `${{ env.PR_NUMBER }}`
-- **PR author:** `${{ env.PR_AUTHOR }}`
-- **PR title:** `${{ env.PR_TITLE }}`
-- **PR branch:** `${{ env.PR_BRANCH }}`
+- **PR:** `${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}` — ${{ env.PR_TITLE }}
+- **Author:** @${{ env.PR_AUTHOR }}
+- **Head commit:** `${{ env.PR_HEAD_SHA }}`
+
+Two repositories are checked out for you:
+
+- The workspace root holds `${{ env.SOURCE_REPO }}` at the pull request's merge commit, so `cat` and `sed` give you the post-change state of any file.
+- `docs-repo/` holds `vaadin/docs` at `main`, plus any `doc-bot/*` branch.
+
+Never modify a file in the workspace root. All of your edits go into `docs-repo/`.
+
+## Phase 0: Which documentation pull request is this?
+
+Every documentation pull request for this source pull request lives on the branch `doc-bot/vaadin-flow/${{ env.PR_NUMBER }}`. Check whether it exists:
+
+```bash
+git -C docs-repo rev-parse --verify "origin/doc-bot/vaadin-flow/${PR_NUMBER}"
+```
+
+If it does, find the pull request in `vaadin/docs` whose head branch is that name. What you find decides how this run ends:
+
+| State | What this run does |
+|---|---|
+| No branch, or a branch with no pull request | **Create** one (Phase 5a). |
+| An **open** pull request | **Update** it — commit onto its branch (Phase 5b). |
+| A **merged** pull request | Create a new one (Phase 5a) on branch `doc-bot/vaadin-flow/${{ env.PR_NUMBER }}-<first 7 characters of the head commit>`, covering only what changed since the merged one. |
+| A **closed, unmerged** pull request | Someone rejected the documentation for this change. Record a `noop` saying so and stop. Do not reopen it and do not open another. |
 
 ## Phase 1: Analyze the Pull Request
 
-Retrieve and read the pull request for `${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}` according to these rules:
+Always analyze the **whole** pull request, never just the commits of the latest push. A run can be cancelled by a newer push, so the increment since the previous run is not a reliable unit of work — the full diff is.
 
-1. **Never review drafts** - If the PR is a draft, stop processing. Do not proceed to further phases. 
-
-2. **Quick filter** - Get the list of changed files first. If ALL files match these patterns, skip to Phase 2 with `INTERNAL_ONLY`:
-   - `**/test/**`, `**/*Test.java`, `**/*IT.java`, `**/tests/**`
-   - `**/pom.xml`, `**/*.gradle*`, `**/package*.json`
-   - `.github/workflows/**`, `**/Dockerfile`
-
-3. **Selective diff analysis** - Only fetch diffs for user-facing files (max 20 files):
-   - Skip: Files with >500 lines changed (note in PR body)
-   - Skip: Test files, build files, generated files
-
-4. **Read PR metadata** - Title, description, and top-level comments only
+1. **List the changed files first.** Fetch diffs only for the user-facing ones, at most 20, and skip any file with more than 500 lines changed — note those in the pull request body instead.
+2. **Read the pull request metadata** — title, description, and top-level comments only.
 
 Classify each meaningful change into one or more of these categories:
 
@@ -108,163 +193,101 @@ Classify each meaningful change into one or more of these categories:
 
 ## Phase 2: Early Exit Check
 
-If **all** changes are classified as `INTERNAL_ONLY`, `TEST_ONLY`, or `BUILD_ONLY`, then:
+If **all** changes are `INTERNAL_ONLY`, `TEST_ONLY`, or `BUILD_ONLY`:
 
-1. Add a comment on the source PR using `add-comment`:
+- If no documentation pull request exists yet, record a `noop` naming the reason and stop. Do not comment on the source pull request — you run on every push, and a note saying nothing happened on each of them is noise.
+- If one exists, the change that justified it may have been reverted. Continue to Phase 3; Phase 4 decides whether the documentation still matches the pull request.
 
-   > **Documentation Bot:** Analyzed this PR and determined no documentation updates are needed. All changes are internal/test/build-only.
+## Phase 3: Plan the Documentation Changes
 
-2. Stop processing. Do not proceed to further phases.
+Flow changes almost always land in `docs-repo/articles/flow/`, component changes in `docs-repo/articles/components/`; `ls docs-repo/articles/` shows the rest (`hilla/`, `building-apps/`, `styling/`, `tools/`, `getting-started/`, `upgrading/`).
 
-## Phase 3: Explore the Documentation Repository
+For each user-facing change from Phase 1:
 
-Explore the `vaadin/docs` repository (branch: `main`) to understand the documentation structure. Use the GitHub tools to browse the repository tree.
+1. **Find the pages that already mention it** — `grep -rn "ClassName" docs-repo/articles/flow/`. Search by class name, configuration property, or feature name; searching for every method name is rarely worth it.
+2. **Pick the target files.** Prefer updating an existing page over creating a new one.
+3. **Decide what has to be added, changed, or removed** in each.
 
-Key directories under `articles/`:
+Scope:
 
-| Directory | Content |
-|---|---|
-| `articles/flow/` | Vaadin Flow (Java) framework documentation |
-| `articles/hilla/` | Hilla framework documentation |
-| `articles/components/` | UI component documentation |
-| `articles/building-apps/` | Application building guides |
-| `articles/styling/` | Theming and styling guides |
-| `articles/tools/` | Developer tooling documentation |
-| `articles/getting-started/` | Getting started tutorials |
-| `articles/upgrading/` | Migration and upgrade guides |
+- **5-8 files maximum**, so the pull request stays reviewable. When the source pull request changes more than ~50 files, cover the most significant public-API and feature changes and leave the rest as a checklist in the pull request body.
+- Mark anything you are unsure about with `// TODO: Verify this documentation change — auto-generated by doc-bot` and list it under a **Needs human review** heading in the pull request body. Never guess and never fabricate.
 
-Documentation files are **AsciiDoc** (`.adoc`) with YAML front matter blocks. Pay attention to the existing conventions:
+## Phase 4: Write the Documentation
 
-- Front matter format and required fields
-- Section heading levels and naming patterns
-- Cross-reference syntax
-- Code example formatting
-- Admonition blocks (NOTE, TIP, WARNING, IMPORTANT, CAUTION)
+Documentation is **AsciiDoc** (`.adoc`) with YAML front matter. Do not read files to learn the style — use these rules: code blocks are `[source,java]` with `----` delimiters, cross-references are `<<filename#anchor,text>>`, and admonitions are `[NOTE]`, `[TIP]`, `[WARNING]`. Preserve the heading levels, structure, and voice of any file you edit.
 
-## Phase 4: Plan Documentation Changes
+1. **Start from the right branch** inside `docs-repo/`. Both safe-outputs take the changes from a commit, so give the checkout a git identity first:
 
-For each user-facing change identified in Phase 1:
-
-1. **Search for existing references** — Use `search_code` to find mentions of the affected APIs, components, or features in `vaadin/docs`. Look for class names, method names, configuration property names, and feature names. To keep token usage low, follow these limits:
-   - **Maximum 3 `search_code` calls** — only search for the most significant API changes.
-   - **Search by class name only** — do not search for every method name.
-   - **Use file path filters** — limit searches to `articles/flow/**` for Flow changes.
-   - **Cache lookups** — if multiple changes affect the same class, search for it once and reuse the result.
-
-2. **Identify target files** — Determine which documentation file(s) need updating. Prefer updating existing files over creating new ones.
-
-3. **Define the change** — For each file, describe what needs to be added, modified, or removed.
-
-Scope guidelines:
-- Limit changes to **5-8 files maximum** to keep the PR reviewable.
-- For large source PRs, focus on the most impactful API surface changes.
-- If you are unsure whether a change needs documentation, include it but mark the section with a comment: `// TODO: Verify this documentation change — auto-generated by doc-bot`.
-
-## Phase 5: Implement Documentation Changes
-
-**Style guide** (don't read files to learn style, use these rules):
-- AsciiDoc format with YAML frontmatter
-- Code blocks: `[source,java]` with `----` delimiters
-- Cross-refs: `<<filename#anchor,text>>`
-- Admonitions: `[NOTE]`, `[TIP]`, `[WARNING]`
-
-1. **Clone** the `vaadin/docs` repository.
-2. **Create a branch** named: `doc-bot/${{ env.SOURCE_REPO }}/${{ env.PR_NUMBER }}` (replace `/` in the repo name with `-`).
-3. **Edit files** — Apply the planned changes, matching the existing AsciiDoc style and conventions found in the repository. Follow these rules:
-   - Preserve existing formatting, heading levels, and structure.
-   - Use the same code example style (language annotations, callouts).
-   - Follow the existing cross-reference patterns.
-   - Write in the same tone and voice as the surrounding documentation.
-   - Never fabricate information — only document what the source PR actually changes.
-   - Never remove existing documentation without clear justification from the source PR.
-4. **Commit** all changes with a descriptive message:
+   ```bash
+   git -C docs-repo config user.name "vaadin-bot"
+   git -C docs-repo config user.email "vaadin-bot@users.noreply.github.com"
+   git -C docs-repo switch -c "doc-bot/vaadin-flow/${PR_NUMBER}" <start point>
    ```
-   docs: update documentation for <SOURCE_REPO>#<PR_NUMBER>
 
-   Source PR: <PR_TITLE>
+   The start point is `origin/main` when you are creating (Phase 5a) and `origin/doc-bot/vaadin-flow/${PR_NUMBER}` when you are updating (Phase 5b).
+
+2. **Edit the files.**
+   - Only document what the source pull request actually changes.
+   - Never remove existing documentation without clear justification from the source pull request.
+   - When updating, revise in place rather than appending a second description of the same API, and drop documentation an earlier run wrote for something the pull request no longer does. A dropped commit has to drop its documentation with it.
+
+3. **Decide whether anything actually changed.** Run `git -C docs-repo status --porcelain`. If it is empty, the documentation already describes the current state of the pull request — the push you are reacting to changed nothing a reader would see. Record a `noop` saying so and stop. This is the common outcome on later pushes, and it is what keeps the bot quiet.
+
+4. **Commit** on that branch:
+
+   ```
+   docs: update documentation for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}
+
+   Source PR: ${{ env.PR_TITLE }}
+   Source commit: ${{ env.PR_HEAD_SHA }}
    Categories: <comma-separated list of change categories>
    ```
 
-## Phase 6: Create Documentation PR
+## Phase 5a: Create the Documentation PR
 
-Use the `create-pull-request` safe-output to create a draft PR in `vaadin/docs`.
+Use the `create-pull-request` safe-output with `repo` set to `vaadin/docs`.
 
-**PR title:** `[docs] Update docs for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}: ${{ env.PR_TITLE }}`
+**Title:** `Update docs for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}: ${{ env.PR_TITLE }}` — the `[docs] ` prefix is added for you.
 
-**PR body** (use this template):
+**Body:**
 
 ```markdown
-## Source
+Documentation for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }} by @${{ env.PR_AUTHOR }}.
 
-- **Repository:** ${{ env.SOURCE_REPO }}
-- **PR:** ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}
-- **Author:** @${{ env.PR_AUTHOR }}
+> [!NOTE]
+> The source pull request is still open. This one tracks it and is updated
+> automatically whenever the source changes what a reader sees. Merge it once
+> the source pull request is merged.
 
-## Change Categories
-
-<!-- List the categories from Phase 1 as a bulleted list -->
-
-## Documentation Changes
-
-<!-- For each changed file, briefly describe what was changed and why -->
+**Change categories:** <the categories from Phase 1>
 
 | File | Change |
 |------|--------|
-| ... | ... |
+| <file> | <what changed and why> |
 
-## Review Notes
-
-- This PR was auto-generated by the Documentation Bot.
-- Please review all changes carefully before merging.
-- Items marked with `TODO: Verify` need special attention.
-
----
-*Auto-generated by Documentation Bot from ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}*
+Auto-generated by the Documentation Bot — review before merging. Anything
+marked `TODO: Verify` needs a closer look.
 ```
 
-## Phase 7: Assign to PR Author
+Then assign the new pull request to `@${{ env.PR_AUTHOR }}` with the `assign-to-user` safe-output. If they cannot be assigned — no access to `vaadin/docs`, say — note it in the body and carry on; this is not a failure.
 
-Use the `assign-to-user` safe-output to assign the created documentation PR to `${{ env.PR_AUTHOR }}`.
+## Phase 5b: Update the Existing Documentation PR
 
-If the user cannot be assigned (e.g., they don't have access to vaadin/docs), note this in the PR description but do not fail.
+Use the `push-to-pull-request-branch` safe-output with `repo` `vaadin/docs`, the `pull_request_number` from Phase 0, `branch` `doc-bot/vaadin-flow/${{ env.PR_NUMBER }}`, and the Phase 4 commit message.
 
-## Phase 8: Comment on Source PR
+Do not re-assign the pull request and do not rewrite its description; the reviewer already has both.
 
-Use the `add-comment` safe-output to add a comment on the original PR (`${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }}`):
+## Phase 6: Comment on the Source PR
 
-> **Documentation Bot:** I've created a draft documentation PR to reflect the changes in this PR:
+Add one comment with the `add-comment` safe-output. A later run replaces it, so describe the current state rather than what this run did:
+
+> **Documentation Bot:** Draft documentation pull request for this change: vaadin/docs#\<NUMBER\>
 >
-> **Docs PR:** vaadin/docs#<NUMBER>
->
-> The following documentation files were updated:
+> Files updated:
 > - `<file1>`
 > - `<file2>`
-> - ...
 >
-> Please review the docs PR and mark it as ready for review when satisfied.
+> It is kept up to date automatically on each push here. Please review it and mark it ready for review once this pull request is ready to merge.
 
-## Edge Cases
-
-### Duplicate Detection
-
-The workflow can be triggered more than once for the same source PR (for example, if `vaadin-bot` is unassigned and reassigned). Before creating a new documentation PR, search for existing open PRs in `vaadin/docs` with the branch pattern `doc-bot/${{ env.SOURCE_REPO }}/${{ env.PR_NUMBER }}`. If one exists:
-
-1. Update the existing branch with new changes instead of creating a new PR.
-2. Add a comment on the existing docs PR noting it was updated.
-3. Do not create a duplicate PR.
-
-### Large PRs
-
-If the source PR has more than 50 changed files or an extremely large diff:
-
-1. Focus on the most significant user-facing changes (public API additions/modifications, new features).
-2. Note in the docs PR description that the source PR was large and only the most impactful changes were documented.
-3. Add a checklist of other potentially doc-worthy changes for the reviewer.
-
-### Uncertain Changes
-
-If you cannot confidently determine whether a change needs documentation or what the correct documentation should be:
-
-1. Include the change but clearly mark it with: `// TODO: Verify this documentation change — auto-generated by doc-bot`
-2. In the docs PR description, list these uncertain items under a "Needs Human Review" section.
-3. Do not guess or fabricate documentation content.
+Do not comment when you recorded a `noop`.

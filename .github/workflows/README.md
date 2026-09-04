@@ -15,12 +15,50 @@ files directly — edit the source `.md` file and regenerate.
 
 | Source (edit this) | Generated (do not edit) | Purpose |
 |---|---|---|
-| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes PRs and proposes documentation updates in `vaadin/docs`. |
+| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes every push to a pull request and keeps a draft documentation pull request in `vaadin/docs` in step with it. |
 | `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
 Pinned action versions and SHAs used by the generated workflows are
 tracked in [`../aw/actions-lock.json`](../aw/actions-lock.json).
+
+### Documentation Bot
+
+`doc-bot.md` runs on every push to every non-draft pull request. It reads
+the whole pull request — never just the commits of the latest push — and
+decides whether the change is something a reader of
+[vaadin/docs](https://github.com/vaadin/docs) would need to know about.
+When it is, the bot opens a draft documentation pull request there and
+keeps it in step with the source pull request: every later push either
+adds a commit to that same documentation pull request or, far more often,
+finds that the documentation already describes the current state and does
+nothing.
+
+Three filters keep the bot off pull requests that cannot need
+documentation, cheapest first:
+
+1. **Paths.** A pull request that touches only tests, build files,
+   `.github/`, or Markdown never starts a runner.
+2. **Conventional-commit type.** Titles starting with `test:`, `ci:`,
+   `refactor:`, `chore:`, or `build:` (with or without a scope) are
+   skipped. `fix:`, `feat:`, `docs:`, and `perf:` are not.
+3. **The agent itself.** It classifies the diff and stops when everything
+   in it is internal, test-only, or build-only, recording the reason in
+   the run log without commenting on the pull request.
+
+A burst of pushes collapses into one run of the latest state, and because
+each run analyses the full pull request, a cancelled run loses nothing.
+
+The bot leaves one standing comment on the source pull request linking to
+the documentation pull request; a later run replaces it rather than adding
+another. It says nothing at all when there is nothing to document.
+
+To ask for documentation on a pull request the type filter passed over,
+assign `vaadin-bot` to it — the same manual trigger this workflow used
+before it ran automatically.
+
+An abandoned documentation pull request closes itself: `expires: 30` marks
+it, and the scheduled `agentics-maintenance` workflow does the closing.
 
 ### Diagram Bot
 
