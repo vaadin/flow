@@ -133,7 +133,10 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       this.doReconnect(payload);
     } else {
       this.#scheduledReconnect = setTimeout(() => {
-        this.#scheduledReconnect = null;
+        // Overlapping failures each schedule a reconnect, but only one of them
+        // should run: cancel whatever is scheduled now, as the Java
+        // implementation did here.
+        this.#cancelScheduledReconnect();
         Console.debug(
           `Scheduled reconnect attempt ${this.#machine.getReconnectAttempt()} for ${JSON.stringify(payload)}`
         );
