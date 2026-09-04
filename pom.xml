@@ -159,8 +159,6 @@
     <!-- to be disabled via system property in CI until they got fixed -->
     <exclude.windows.failed.tests/>
 
-    <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
-
     <!-- Extra JVM arguments for surefire forks; modules override this
          when their tests need e.g. add-opens flags. The empty default
          keeps the argLine expression resolvable everywhere. -->
@@ -485,12 +483,6 @@
               <exclude>${exclude.windows.failed.tests}</exclude>
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
-            <properties>
-              <property>
-                <name>listener</name>
-                <value>${testListener}</value>
-              </property>
-            </properties>
             <enableAssertions>true</enableAssertions>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
