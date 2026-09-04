@@ -36,17 +36,23 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Vaadin Ltd
@@ -114,6 +120,181 @@ class AtmospherePushConnectionTest {
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
         assertEquals(State.DISCONNECTED, connection.getState());
+    }
+
+    @Test
+    void resendLastResponse_sendsThePreviousResponseAgain() throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(recorded,
+                "The response to a client message should be recorded");
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster, times(2)).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(recorded,
+                ((PushMessage) captor.getAllValues().get(1)).message,
+                "The client should get the previous response again, not a new one");
+    }
+
+    @Test
+    void resendLastResponse_noRecordedResponse_sendsARegularResponse()
+            throws Exception {
+        connection.getUI().getInternals().setLastRequestResponse(null);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.eq(resource));
+        String created = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(created,
+                "The response created instead answers the re-sent message, so it is recorded");
+        Mockito.clearInvocations(broadcaster);
+
+        // If that response is lost too, the next resend sends it again rather
+        // than creating another one, which would be empty by then.
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(created, ((PushMessage) captor.getValue()).message,
+                "The response created for the re-sent message can itself be sent again");
+    }
+
+    @Test
+    void push_deferred_leavesNothingToSendAgain() throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        assertNotNull(
+                connection.getUI().getInternals().getLastRequestResponse());
+
+        // The next client message is processed, which forgets the answer to
+        // the previous one, and its own answer cannot be created because the
+        // connection is gone.
+        connection.getUI().getInternals().setLastProcessedClientToServerId(1,
+                new byte[0]);
+        connection.connectionLost();
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+
+        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
+                "A deferred response must not leave an older answer to send again");
+    }
+
+    @Test
+    void resendLastResponse_notConnected_sendsNothingAndOwesNothing()
+            throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        connection.connectionLost();
+        Mockito.clearInvocations(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.DISCONNECTED, connection.getState(),
+                "A resend that cannot be sent should not look like a pending push");
+
+        // The client keeps re-sending until it is answered, so reconnecting
+        // sends nothing by itself; the next resend is what answers it.
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        assertEquals(connection.getUI().getInternals().getLastRequestResponse(),
+                ((PushMessage) captor.getValue()).message,
+                "The resend after reconnecting answers the client message");
+    }
+
+    @Test
+    void connect_deferredResponse_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.RESPONSE_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.eq(resource));
+    }
+
+    @Test
+    void connect_deferredAsynchronousPush_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+        Mockito.verifyNoInteractions(broadcaster);
+        assertEquals(State.PUSH_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        verify(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.eq(resource));
+    }
+
+    @Test
+    void push_asynchronous_doesNotRecordAResponseToSendAgain()
+            throws Exception {
+        String recorded = "{\"marker\":1}";
+        connection.getUI().getInternals().setLastRequestResponse(recorded);
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+
+        assertEquals(recorded,
+                connection.getUI().getInternals().getLastRequestResponse(),
+                "A server initiated push is not a response the client can ask for again");
     }
 
     @Test

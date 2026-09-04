@@ -62,6 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UIInternalsTest {
@@ -149,6 +150,16 @@ class UIInternalsTest {
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
         Mockito.when(ui.getInternals()).thenReturn(internals);
+    }
+
+    @Test
+    public void setLastProcessedClientToServerId_forgetsTheRecordedResponse() {
+        internals.setLastRequestResponse("{\"syncId\":0}");
+
+        internals.setLastProcessedClientToServerId(1, new byte[0]);
+
+        assertNull(internals.getLastRequestResponse(),
+                "The recorded response answers the previous message, so it must not be sent as this one's");
     }
 
     @Test
