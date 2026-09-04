@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,9 +47,12 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ResourceContentHash;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Registry for PWA data.
@@ -279,6 +283,9 @@ public class PwaRegistry implements Serializable {
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
+        // Add app shell stylesheets to precache
+        filesToCache.addAll(styleSheetsToCache(servletContext));
+
         // Add user defined resources. Do not serve these via dev-server, as the
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
@@ -293,6 +300,74 @@ public class PwaRegistry implements Serializable {
         stringBuilder.append("\n];\n");
 
         return stringBuilder.toString();
+    }
+
+    /**
+     * Builds the workbox precache entries for the stylesheets declared with
+     * {@code @StyleSheet} on the app shell.
+     * <p>
+     * A precache entry only ever matches a request whose URL is identical to
+     * the entry URL, so each entry has to come out exactly as the
+     * {@code <link href>} that {@code AppShellRegistry} emits for the same
+     * stylesheet. Both therefore expand the annotation value with a
+     * {@link BootstrapHandler.BootstrapUriResolver}. The base differs: there is
+     * no request here, and relative entries are resolved by the browser against
+     * the service worker script location, which is the {@code <base href>}, so
+     * {@code context://} has to expand to an absolute path built from the
+     * context path to stay correct under a non-root servlet mapping.
+     *
+     * @param servletContext
+     *            the servlet context the registry belongs to
+     * @return the precache entries, empty if the app shell declares no
+     *         stylesheets
+     */
+    private Collection<String> styleSheetsToCache(
+            ServletContext servletContext) {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
+        VaadinService service = VaadinService.getCurrent();
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
+        boolean productionMode = configuration != null
+                && configuration.isProductionMode();
+        BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
+                servletContext.getContextPath() + "/", null);
+
+        Collection<String> entries = new LinkedHashSet<>();
+        for (String styleSheet : AppShellRegistry.getInstance(context)
+                .getStyleSheets(service)) {
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet);
+            if (normalized == null || isExternal(normalized)) {
+                // Blank values and path traversals are already rejected by the
+                // resolver. External stylesheets are skipped because
+                // precaching them needs CORS, and a single failed request
+                // fails the whole service worker installation.
+                continue;
+            }
+            String url = resolver.resolveVaadinUri(normalized);
+            String hash = ResourceContentHash.getContentHash(service,
+                    normalized);
+            if (productionMode) {
+                // The emitted <link href> carries the same parameter, and
+                // workbox only ignores utm_/fbclid by default, so the entry
+                // has to carry it too to be matched at all.
+                url = UrlUtil.appendQueryParameter(url,
+                        ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+            }
+            // Revision is the stylesheet's own content hash so that editing
+            // only the CSS invalidates the entry, as PwaIcon does with its
+            // file hash. Falls back to the context identity when the resource
+            // cannot be read.
+            entries.add(String.format(WORKBOX_CACHE_FORMAT, url,
+                    hash != null ? hash : servletContext.hashCode()));
+        }
+        return entries;
+    }
+
+    private static boolean isExternal(String url) {
+        String lower = url.toLowerCase(Locale.ROOT);
+        return lower.startsWith("http://") || lower.startsWith("https://")
+                || lower.startsWith("//");
     }
 
     /**
