@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -203,6 +204,19 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
+    /**
+     * Gets the raw {@code @StyleSheet} annotation values declared by the app
+     * shell, in declaration order and without duplicates.
+     * <p>
+     * The values are returned as written in the annotation, without any URL
+     * resolution: callers that need a browser-resolvable URL pass them through
+     * {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)}
+     * themselves, which is also what rejects blank values and path traversals.
+     *
+     * @param service
+     *            the service used to probe for an available Aura stylesheet
+     * @return the declared stylesheet values, never {@code null}
+     */
     List<String> getStyleSheets(VaadinService service) {
         var styleSheets = new LinkedHashSet<String>();
         for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
@@ -268,24 +282,24 @@ public class AppShellRegistry implements Serializable {
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
 
-        var styleSheets = getStyleSheets(request.getService());
-        if (!request.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
-            ActiveStyleSheetTracker.get(request.getService())
-                    .trackForAppShell(styleSheets);
-        }
-
-        addStyleSheets(request, styleSheets, settings);
+        addStyleSheets(request, getStyleSheets(request.getService()), settings);
         return settings;
     }
 
-    private static String resolveStyleSheetHref(String href,
+    /**
+     * Expands an already normalized stylesheet value into the href to emit in
+     * the app shell, appending the content hash in production mode.
+     *
+     * @param normalized
+     *            a value already passed through
+     *            {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)},
+     *            not {@code null}
+     * @param request
+     *            the request being served
+     * @return the href to emit, or {@code null} if it cannot be resolved
+     */
+    private static String resolveStyleSheetHref(String normalized,
             VaadinRequest request) {
-        String normalized = FrontendDependencyUrlResolver
-                .resolveToContextRoot(href);
-        if (normalized == null) {
-            return null;
-        }
         // Use the servlet-relative path (e.g. "./", "../") rather than the
         // absolute context path. The emitted href is then resolved by the
         // browser against <base>, which Vaadin sets from the actual request
@@ -412,16 +426,33 @@ public class AppShellRegistry implements Serializable {
             List<String> styleSheets, AppShellSettings settings) {
         final DeploymentConfiguration config = request.getService()
                 .getDeploymentConfiguration();
-        styleSheets.forEach((sourcePath) -> {
-            String href = resolveStyleSheetHref(sourcePath, request);
-            if (href != null) {
-                Map<String, String> attributes = config.isProductionMode()
-                        ? Map.of("rel", "stylesheet")
-                        : Map.of("rel", "stylesheet", "data-file-path",
-                                sourcePath, "data-id",
-                                "appShell-" + sourcePath);
-                settings.addLink(Position.APPEND, href, attributes);
+        // Collected while emitting so that the tracker sees exactly the sheets
+        // that ended up on the page, in the canonical resolveToContextRoot
+        // form that ActiveStyleSheetTracker expects.
+        List<String> trackedUrls = new ArrayList<>();
+        for (String sourcePath : styleSheets) {
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(sourcePath);
+            if (normalized == null) {
+                continue;
             }
-        });
+            String href = resolveStyleSheetHref(normalized, request);
+            if (href == null) {
+                continue;
+            }
+            // In development the raw annotation value is exposed so that
+            // StyleSheetHotswapper and the dev tools can match a link by the
+            // same string the annotation declares.
+            Map<String, String> attributes = config.isProductionMode()
+                    ? Map.of("rel", "stylesheet")
+                    : Map.of("rel", "stylesheet", "data-file-path", sourcePath,
+                            "data-id", "appShell-" + sourcePath);
+            settings.addLink(Position.APPEND, href, attributes);
+            trackedUrls.add(normalized);
+        }
+        if (!config.isProductionMode()) {
+            ActiveStyleSheetTracker.get(request.getService())
+                    .trackForAppShell(trackedUrls);
+        }
     }
 }
