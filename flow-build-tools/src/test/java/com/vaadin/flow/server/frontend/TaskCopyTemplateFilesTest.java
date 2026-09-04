@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -127,6 +128,57 @@ class TaskCopyTemplateFilesTest {
         assertEquals("from the bundle",
                 Files.readString(bundledTemplate.toPath()),
                 "Template source from the bundle should have been kept");
+    }
+
+    @Test
+    void templateFromNpmPackage_copiedIntoBundle_foundWhenBundleIsReused()
+            throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class))
+                .thenReturn(Set.of(NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+
+        // The bundle build has run npm install, so the template source of the
+        // add-on is in node_modules
+        File nodeModules = new File(projectDirectory,
+                FrontendUtils.NODE_MODULES);
+        File source = new File(nodeModules, NPM_PACKAGE_TEMPLATE);
+        source.getParentFile().mkdirs();
+        Files.writeString(source.toPath(), "export class Breadcrumbs {}");
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
+        new TaskCopyTemplateFiles(finder, options).execute();
+
+        // The build compresses the folder the template was copied into, which
+        // is the bundle that gets committed to the project
+        ProdBundleUtils.compressBundle(projectDirectory,
+                resourceOutputDirectory);
+
+        // A clean checkout has neither node_modules nor the build output
+        FileUtils.deleteDirectory(nodeModules);
+        FileUtils.deleteDirectory(resourceOutputDirectory);
+
+        assertTrue(
+                ProdBundleUtils.hasBundleFile(projectDirectory, finder,
+                        Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE),
+                "Bundle validation should find the template source in the bundle, "
+                        + "so that reusing the bundle is allowed");
+
+        ProdBundleUtils.unpackBundle(projectDirectory, resourceOutputDirectory);
+        new TaskCopyTemplateFiles(finder, options.withBundleBuild(false))
+                .execute();
+
+        File template = new File(resourceOutputDirectory,
+                Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE);
+        assertEquals("export class Breadcrumbs {}",
+                Files.readString(template.toPath()),
+                "The template source should be available for the template parser");
     }
 
     @Test
