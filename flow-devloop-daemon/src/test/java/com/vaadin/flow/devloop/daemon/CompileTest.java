@@ -334,6 +334,50 @@ class CompileTest {
     }
 
     @Test
+    void classpathForced_recompilesWhenAReactorSiblingLeavesTheLoop()
+            throws IOException {
+        // Dropping a sibling dependency also drops the sibling from the loop,
+        // because the module set is read off the application's resolved
+        // classpath. The baseline is rebuilt for that new module set, and a
+        // baseline seeded from the project as it now stands would call the
+        // move already compiled - the apply would then restart the app into a
+        // ClassNotFoundException instead of failing with a diagnostic.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                    public static String label() {
+                        return shared.Formatter.label();
+                    }
+                }
+                """);
+        Reactor.Module shared = module("shared", "Formatter", """
+                package shared;
+                public class Formatter {
+                    public static String label() { return "shared"; }
+                }
+                """);
+        Launch.Project before = reactor(List.of(app, shared),
+                Map.of("app", List.of(shared)));
+        Compile previous = new Compile(before);
+        previous.compile(
+                List.of(source(app, "Main"), source(shared, "Formatter")),
+                before);
+        Launch.Project after = reactor(List.of(app), Map.of());
+
+        Compile compile = new Compile(after, previous);
+
+        assertEquals(List.of("app"), compile.classpathChangedModules(after));
+        List<Path> forced = compile.classpathForced(after);
+        assertEquals(List.of(source(app, "Main")), forced);
+        Compile.Result result = compile.compile(forced, after);
+        assertFalse(result.success());
+        assertTrue(
+                result.errors().stream()
+                        .anyMatch(error -> error.text().contains("shared")),
+                () -> "errors: " + result.errors());
+    }
+
+    @Test
     void relative_namesASiblingAsTheDeveloperWouldTypeIt() throws IOException {
         Reactor.Module app = module("app", "Main", """
                 package app;

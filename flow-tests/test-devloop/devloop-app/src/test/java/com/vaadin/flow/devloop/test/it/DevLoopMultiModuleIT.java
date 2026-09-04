@@ -75,6 +75,30 @@ class DevLoopMultiModuleIT extends AbstractDevLoopIT {
     }
 
     @Test
+    void droppingTheSiblingDependency_failsBeforeAnythingRestarts() {
+        // The module set is read off the application's resolved classpath, so
+        // dropping the dependency drops the sibling from the loop too - and
+        // rebuilding the baseline for that new module set is where the
+        // classpath move used to be lost. The apply then restarted the
+        // application into a ClassNotFoundException that only surfaced on the
+        // next page load, rather than failing here with the diagnostic javac
+        // already had. Swapped for another jar rather than deleted so the edit
+        // stays a single line: a multi-line literal would not match a pom
+        // checked out with CRLF.
+        patch.replace(APP.resolve("pom.xml"),
+                "<artifactId>flow-test-devloop-shared</artifactId>",
+                "<artifactId>flow-webpush</artifactId>");
+
+        VaadinDevCli.Outcome outcome = cli.run("apply").assertExitCode(1);
+
+        // No source file changed, so javac only ever sees TaskListView - which
+        // imports the sibling's formatter - because the whole module whose
+        // classpath moved is recompiled.
+        outcome.assertOutputContains("TaskListView.java");
+        outcome.assertOutputDoesNotContain("restarting");
+    }
+
+    @Test
     void compileErrorInTheSibling_isNamedByItsModule() {
         patch.replace(FORMATTER, "return dueDate == null",
                 "return nope() == null");
