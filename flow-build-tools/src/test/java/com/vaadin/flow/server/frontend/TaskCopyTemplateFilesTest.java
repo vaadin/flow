@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskCopyTemplateFilesTest {
@@ -42,6 +44,11 @@ class TaskCopyTemplateFilesTest {
     @Tag("my-lit-element-view")
     @JsModule("./my-lit-element-view.js")
     public static class MyLitElementView implements Template {
+    }
+
+    @Tag("npm-package-view")
+    @JsModule("@vaadin-component-factory/vcf-breadcrumb/dist/src/vcf-breadcrumbs.js")
+    public static class NpmPackageView implements Template {
     }
 
     @TempDir
@@ -78,6 +85,42 @@ class TaskCopyTemplateFilesTest {
     void should_copyTemplateFilesFromCustomFrontendDirectory()
             throws Exception {
         executeTaskCopyTemplateFiles("frontend-custom");
+    }
+
+    @Test
+    void bundleReused_npmPackageTemplateComesFromBundle_projectTemplateCopied()
+            throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class)).thenReturn(
+                Set.of(MyLitElementView.class, NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+        new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
+
+        // The production bundle matches, so npm install has not been run and
+        // node_modules does not exist. The npm package template is already in
+        // the resource output folder, unpacked from the reused bundle.
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory)
+                .withBundleBuild(false);
+
+        new TaskCopyTemplateFiles(finder, options).execute();
+
+        List<String> files = TestUtils
+                .listFilesRecursively(resourceOutputDirectory);
+        assertTrue(
+                files.stream().anyMatch(
+                        file -> file.contains("my-lit-element-view.js")),
+                "Project template source is always available and should be copied");
+        assertFalse(
+                files.stream()
+                        .anyMatch(file -> file.contains("vcf-breadcrumbs.js")),
+                "Templates from npm packages are part of the reused bundle and "
+                        + "cannot be resolved without node_modules");
     }
 
     private void executeTaskCopyTemplateFiles(String frontedDirectoryName)

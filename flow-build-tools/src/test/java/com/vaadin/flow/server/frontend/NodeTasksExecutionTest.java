@@ -31,20 +31,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentMatchers;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
@@ -230,57 +225,6 @@ class NodeTasksExecutionTest {
         spiedNodeTasks.execute();
         assertOnlyExpectedGeneratedFilesExists(generatedFiles);
 
-    }
-
-    @Test
-    void productionBundleReused_templateFilesAreNotCopied() throws Exception {
-        List<FallibleCommand> prodCommands = productionCommands(false);
-
-        assertTrue(
-                prodCommands.stream()
-                        .anyMatch(TaskPrepareProdBundle.class::isInstance),
-                "The production bundle should be reused");
-        assertFalse(
-                prodCommands.stream()
-                        .anyMatch(TaskCopyTemplateFiles.class::isInstance),
-                "Template sources are part of the reused bundle. Copying them again "
-                        + "resolves @JsModule values against node_modules, which "
-                        + "npm install did not create when the bundle was reused");
-    }
-
-    @Test
-    void productionBundleBuilt_templateFilesAreCopied() throws Exception {
-        List<FallibleCommand> prodCommands = productionCommands(true);
-
-        assertTrue(
-                prodCommands.stream()
-                        .anyMatch(TaskCopyTemplateFiles.class::isInstance),
-                "Template sources should be copied into the bundle that is being built");
-    }
-
-    private List<FallibleCommand> productionCommands(boolean needsBuild)
-            throws Exception {
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(scanner.getPwaConfiguration())
-                .thenReturn(new PwaConfiguration());
-        Options productionOptions = new MockOptions(
-                new ClassFinder.DefaultClassFinder(
-                        Collections.singleton(this.getClass())),
-                temporaryFolder).withBuildDirectory(TARGET)
-                .withFrontendDirectory(temporaryFolder).withProductionMode(true)
-                .withFrontendDependenciesScanner(scanner)
-                .enablePackagesUpdate(true).enableImportsUpdate(true)
-                .withCopyTemplates(true);
-
-        try (MockedStatic<BundleValidationUtil> bundleValidation = Mockito
-                .mockStatic(BundleValidationUtil.class,
-                        Mockito.CALLS_REAL_METHODS)) {
-            bundleValidation.when(() -> BundleValidationUtil.needsBuild(
-                    ArgumentMatchers.any(), ArgumentMatchers.any(),
-                    ArgumentMatchers.any())).thenReturn(needsBuild);
-            return getCommands(new NodeTasks(productionOptions));
-        }
     }
 
     private void enqueueCreateGeneratedFilesTasks(NodeTasks nodeTasks,
