@@ -338,12 +338,16 @@ public class ExtendedClientDetails implements Serializable {
      * <p>
      * The returned instant is a point on the time line and does not carry a
      * time zone. To get the date and time as shown in the end user's computer,
-     * combine it with the browser's time zone:
+     * combine it with the browser's time zone. Note that
+     * {@link #getTimeZoneId()} returns {@code null} if the browser did not
+     * report a time zone, so a fallback is needed:
      *
      * <pre>
      * ExtendedClientDetails details = ...;
-     * ZonedDateTime browserDateTime = details.getBrowserTime()
-     *         .atZone(ZoneId.of(details.getTimeZoneId()));
+     * String timeZoneId = details.getTimeZoneId();
+     * ZoneId zone = timeZoneId != null ? ZoneId.of(timeZoneId)
+     *         : ZoneId.systemDefault();
+     * ZonedDateTime browserDateTime = details.getBrowserTime().atZone(zone);
      * </pre>
      *
      * @return the current time of the browser, not {@code null}

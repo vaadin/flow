@@ -105,11 +105,13 @@ class ExtendedClientDetailsTest {
                 .setClientServerTimeDelta(Long.toString(clientTime))
                 .buildDetails();
 
-        assertEquals(clientTime, details.getBrowserTime().toEpochMilli(),
-                TIME_TOLERANCE_MS,
-                "getBrowserTime() should follow the clock of the browser");
-        assertEquals(details.getBrowserTime().toEpochMilli(),
-                details.getCurrentDate().getTime(), TIME_TOLERANCE_MS,
+        long browserTime = details.getBrowserTime().toEpochMilli();
+        assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
+                "getBrowserTime() should follow the clock of the browser, but was off by "
+                        + (browserTime - clientTime) + " ms");
+        assertTrue(
+                Math.abs(details.getCurrentDate().getTime() - details
+                        .getBrowserTime().toEpochMilli()) < TIME_TOLERANCE_MS,
                 "the deprecated getCurrentDate() should agree with getBrowserTime()");
     }
 
