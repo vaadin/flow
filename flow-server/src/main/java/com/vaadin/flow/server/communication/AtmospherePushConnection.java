@@ -267,8 +267,10 @@ public class AtmospherePushConnection
             if (!isConnected()) {
                 return;
             }
-            // Sent with the id it had the first time, so that the client and
-            // the long polling cache do not mistake it for a newer message.
+            // The message wrapper gets the current sync id, not the one
+            // this response was created with. Only LongPollingCacheFilter
+            // reads it, and only for a long polling resource, which cannot
+            // reach this resend.
             sendMessage(lastResponse);
         }
     }
