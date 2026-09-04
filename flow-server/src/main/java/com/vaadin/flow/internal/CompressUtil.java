@@ -176,8 +176,6 @@ public class CompressUtil {
             throws IOException {
         try (ZipFile zipFile = new ZipFile(zip)) {
             return zipFile.getEntry(filename) != null;
-        } catch (ZipException e) {
-            throw new IOException(e);
         }
     }
 

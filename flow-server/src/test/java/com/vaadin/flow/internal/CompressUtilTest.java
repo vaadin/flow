@@ -75,6 +75,16 @@ public class CompressUtilTest {
     }
 
     @Test
+    public void hasFileInZip_fileIsNotAZip_throwsIOException()
+            throws IOException {
+        File notAZip = temporaryFolder.newFile("prod.bundle");
+        Files.writeString(notAZip.toPath(), "not a zip");
+
+        Assert.assertThrows(IOException.class,
+                () -> CompressUtil.hasFileInZip(notAZip, "config/stats.json"));
+    }
+
+    @Test
     public void uncompressFile_zipSlipEntry_isRejected() throws IOException {
         File zip = temporaryFolder.newFile("evil.bundle");
         try (ZipOutputStream zipOut = new ZipOutputStream(
