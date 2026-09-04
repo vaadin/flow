@@ -12,21 +12,36 @@
 
 ## Module structure
 
-| Module                     | Contents                                                     |
-| -------------------------- | ------------------------------------------------------------ |
-| `flow-server`              | Core server-side framework: state tree, DOM abstraction, routing, DI, frontend asset management. |
-| `flow-client`              | Client-side TypeScript/JavaScript engine.                    |
-| `flow-data`                | Data binding and validation.                                  |
-| `flow-html-components`     | Basic HTML component wrappers (`Div`, `Anchor`, `NativeLabel`, …). |
-| `flow-react`               | React integration.                                            |
-| `flow-push`                | WebSocket-based push.                                         |
-| `flow-dnd`                 | Drag and drop.                                                |
-| `flow-webpush`             | Web Push notifications.                                       |
-| `flow-plugins`             | Maven and Gradle build plugins.                               |
-| `flow-devloop-daemon`      | Daemon for the `vaadin-dev` dev loop.                         |
-| `flow-tests/`              | Integration test suite.                                       |
-| `vaadin-spring`            | Spring Framework integration.                                 |
-| `vaadin-dev-server`        | Development tooling served to the browser.                    |
+Every top-level Maven module of the repository:
+
+| Module                           | Contents                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| `flow-server`                    | Core server-side framework: state tree, DOM abstraction, routing, DI, frontend asset management. |
+| `flow-client`                    | Client-side TypeScript/JavaScript engine.                                       |
+| `flow-data`                      | Data binding and validation.                                                    |
+| `flow-html-components`           | Basic HTML component wrappers (`Div`, `Anchor`, `NativeLabel`, …).              |
+| `flow-html-components-testbench` | TestBench elements for the HTML components.                                     |
+| `flow-react`                     | React integration.                                                              |
+| `flow-push`                      | WebSocket-based push.                                                           |
+| `flow-webpush`                   | Web Push notifications.                                                         |
+| `flow-dnd`                       | Drag and drop.                                                                  |
+| `flow-lit-template`              | Lit template support.                                                           |
+| `flow-polymer-template`          | Polymer template support (legacy).                                              |
+| `flow-polymer2lit`               | Polymer to Lit converter.                                                       |
+| `flow-plugins`                   | Build plugins: `flow-plugin-base`, `flow-maven-plugin`, `flow-gradle-plugin`, `flow-dev-bundle-plugin`. |
+| `flow-build-tools`               | Frontend build tooling shared by the plugins and the dev server.                |
+| `flow-devloop-daemon`            | Daemon for the `vaadin-dev` dev loop.                                           |
+| `vaadin-dev-server`              | Development tooling served to the browser.                                      |
+| `vaadin-spring`                  | Spring Framework integration.                                                   |
+| `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
+| `flow-jandex`                    | Jandex index of the Flow packages, for use outside Vaadin Platform.             |
+| `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |
+| `flow-bom`                       | Bill of materials.                                                              |
+| `flow-test-util`                 | Test utilities (TestBench base classes, IT helpers).                            |
+| `flow-test-generic`              | Generic test utilities shared by the modules.                                   |
+| `flow-tests/`                    | Integration test suite.                                                         |
+
+Routing lives in `flow-server` — there is no separate router module.
 
 ## Build plugins
 

@@ -178,7 +178,11 @@ Use Java text blocks for multi-line strings instead of string concatenation.
 
 Prefix commit messages with the type: `feat:`, `fix:`, `test:`, `refactor:`,
 `chore:`, `docs:`, `ci:`. Use `test:` when the change only touches tests, and
-add `!` after the prefix for a breaking change.
+add `!` after the prefix for a breaking change (`chore!:`).
+
+Add the affected module or area as a scope when it narrows the message
+usefully — `fix(flow-client):`, `feat(hilla):`, `chore(deps):`. The scope is
+optional; a bare `fix:` is fine for changes that span modules.
 
 Add `Fixes #issuenumber` to the commit message when the commit resolves an
 issue in this repository.

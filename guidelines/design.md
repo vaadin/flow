@@ -1,9 +1,17 @@
 # Design
 
-Guidance for designing new features in Vaadin Flow. Consult this before
-starting any non-trivial new API — especially anything that wraps a browser or
-JavaScript API, exposes observable state, or manages a resource with a
-lifecycle.
+Guidance for the shape of new public Java API in Vaadin Flow. Consult this
+before starting any non-trivial new API — especially anything that wraps a
+browser or JavaScript API, exposes observable state, or manages a resource with
+a lifecycle.
+
+This chapter covers the Java surface only. The rest of the material for a
+browser-API wrapper lives in sibling chapters:
+
+- [Browser Integration](browser-integration.md) — where the client-side code
+  lives, `executeJs`, DOM event naming, bootstrap data, capability detection.
+- [Documenting](documenting.md) — what the Javadoc of a wrapper has to explain.
+- [Testing](testing.md) — mocking the browser API in an integration test.
 
 ## Before you start
 
