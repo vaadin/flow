@@ -693,7 +693,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
+        <version>3.16.0</version>
         <!-- Runs NullAway over every module. OnlyNullMarked means a module
              is checked exactly as far as its packages opt in with
              @NullMarked, so modules that have not opted in yet compile
@@ -854,6 +854,9 @@
     <profile>
       <id>install-git-hooks</id>
       <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
         <file>
           <missing>${maven.multiModuleProjectDirectory}/.husky/_</missing>
         </file>
@@ -864,6 +867,7 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>${maven.exec.plugin.version}</version>
+            <inherited>false</inherited>
             <executions>
               <execution>
                 <id>install-git-hooks</id>
