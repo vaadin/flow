@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.3-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-push-startup</artifactId>
+  <packaging>jar</packaging>
+  <name>Test push connections opened while the service is initializing</name>
+  <description>Reproduces a push connection arriving in the window where the push
+    endpoint is already reachable but the Vaadin service has not finished
+    initializing. Deployed with Spring Boot on Tomcat, where the websocket
+    upgrade is handled independently of the Vaadin servlet, which is what makes
+    that window observable.</description>
+
+  <properties>
+    <!-- A port of its own, so that this module can run at the same time as the
+         other test modules. It is filtered into application.properties and
+         passed to the tests as the serverPort system property. -->
+    <server.port>8898</server.port>
+    <!-- Run the ITs on the JUnit Platform instead of the JUnit 4 provider the
+         flow-tests parent uses by default. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- The parent's excludedGroups are JUnit 4 @Category classes that do not
+         apply to the JUnit Platform provider. -->
+    <excludedGroups/>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <!-- Start and stop the Spring Boot application around the ITs -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <executions>
+          <execution>
+            <id>pre-integration-test</id>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>post-integration-test</id>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

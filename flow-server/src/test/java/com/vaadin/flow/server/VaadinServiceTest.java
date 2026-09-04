@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -931,6 +932,95 @@ class VaadinServiceTest {
 
         Mockito.when(vaadinSession.getService()).thenReturn(service);
         return session;
+    }
+
+    @Test
+    void whenInitialized_registeredBeforeInit_runsWhenInitCompletes()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false);
+
+        AtomicReference<Boolean> ready = new AtomicReference<>();
+        AtomicReference<VaadinService> currentService = new AtomicReference<>();
+        AtomicInteger runs = new AtomicInteger();
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            ready.set(serviceReady);
+            currentService.set(VaadinService.getCurrent());
+            runs.incrementAndGet();
+            done.countDown();
+        });
+        assertEquals(0, runs.get(),
+                "Action should not run before init() has been called");
+
+        service.init();
+        awaitAction(done);
+
+        assertEquals(1, runs.get(), "Action should run once init() completes");
+        assertTrue(ready.get(),
+                "Action should be told the service is ready after a successful init()");
+        assertSame(service, currentService.get(),
+                "Action should run with the service as the current one");
+    }
+
+    @Test
+    void whenInitialized_actionThrows_initSucceedsAndOtherActionsRun()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false);
+
+        AtomicInteger runs = new AtomicInteger();
+        service.whenInitialized(serviceReady -> {
+            throw new RuntimeException("intentional failure");
+        });
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            runs.incrementAndGet();
+            done.countDown();
+        });
+
+        service.init();
+        awaitAction(done);
+
+        assertTrue(service.isInitialized(),
+                "A failing action should not prevent the service from being initialized");
+        assertEquals(1, runs.get(),
+                "A failing action should not prevent other actions from running");
+    }
+
+    @Test
+    void whenInitialized_initFailed_runsWithTheFailure()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false) {
+            @Override
+            protected Instantiator createInstantiator()
+                    throws ServiceException {
+                throw new ServiceException("intentional failure");
+            }
+        };
+
+        AtomicReference<Boolean> ready = new AtomicReference<>();
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            ready.set(serviceReady);
+            done.countDown();
+        });
+        assertThrows(RuntimeException.class, service::init);
+        awaitAction(done);
+
+        assertFalse(ready.get(),
+                "Action should be told the service is not ready when init() fails");
+        assertFalse(service.isInitialized(),
+                "A service whose init() failed should not report itself as initialized");
+    }
+
+    /**
+     * Waits for the latch an action registered through
+     * {@link VaadinService#whenInitialized(java.util.function.Consumer)} counts
+     * down. Actions run on the service executor, independently of each other,
+     * so each one has to be waited for on its own.
+     */
+    private void awaitAction(CountDownLatch done) throws InterruptedException {
+        assertTrue(done.await(10, TimeUnit.SECONDS),
+                "An action registered to run once the service is initialized should have run");
     }
 
     private InstantiatorFactory createInstantiatorFactory() {
