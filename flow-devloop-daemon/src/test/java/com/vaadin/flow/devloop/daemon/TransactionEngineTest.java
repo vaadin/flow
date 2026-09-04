@@ -144,6 +144,36 @@ class TransactionEngineTest {
     }
 
     @Test
+    void devServerFailure_aServedModuleDoesNotOverruleTheChecker() {
+        // The gap a clean fetch cannot close: types are stripped without being
+        // checked, so a module with a type error is served with a 200 and the
+        // fetch has no opinion on it. Treating that answer as the last word
+        // let a broken .tsx through as Stable.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.checkerFailure = " ERROR(TypeScript)  TS1382: Unexpected token.";
+
+        assertEquals(Optional.of(tx.checkerFailure),
+                TransactionEngine.devServerFailure(tx));
+    }
+
+    @Test
+    void devServerFailure_ignoresACheckerReportTheCheckerHasWithdrawn() {
+        // Break a file, save, put it back, save: the checker's report for the
+        // broken version is still in the log, but it has since said the
+        // project is clean. Reading its errors rather than its verdict failed
+        // the apply that repaired the problem.
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        tx.checkerFailure = null;
+        tx.carriedLogErrors = List
+                .of(" ERROR(TypeScript)  TS2322: Type 'number' is not"
+                        + " assignable to type 'string'.");
+
+        assertTrue(TransactionEngine.devServerFailure(tx).isEmpty());
+    }
+
+    @Test
     void devServerFailure_needsAFrontendFileInTheChangeSet() {
         // Somebody else's save, mid-apply: this change touched no frontend
         // file, so the dev server cannot be complaining about it.

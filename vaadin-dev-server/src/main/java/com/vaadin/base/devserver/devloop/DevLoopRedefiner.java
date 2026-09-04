@@ -117,6 +117,18 @@ final class DevLoopRedefiner {
      */
     private static final String VITE_ERROR_MESSAGE_KEY = "\"message\":\"";
 
+    /**
+     * What the report's lines are joined with on the way back.
+     * <p>
+     * A reply is one line, so the newlines cannot survive as themselves - and
+     * flattening them to spaces would leave the daemon unable to tell the
+     * opening line from the caret diagram under it, which is what decides which
+     * parts are worth quoting. A unit separator cannot occur in the text; it
+     * matches {@code AppLog.SEGMENT} in the daemon, which is the only reader of
+     * this field.
+     */
+    private static final char REPORT_SEPARATOR = '\u001f';
+
     private DevLoopRedefiner() {
     }
 
@@ -697,10 +709,14 @@ final class DevLoopRedefiner {
                 .length(); i++) {
             char c = body.charAt(i);
             if (c == '\\' && i + 1 < body.length()) {
-                // The excerpt and caret diagram are drawn with newlines and
-                // tabs; flattened to spaces because this answer is one line.
+                // A line break becomes the separator the daemon splits the
+                // report on; a tab is only ever indentation inside one.
                 char next = body.charAt(++i);
-                text.append(next == 'n' || next == 't' ? ' ' : next);
+                if (next == 'n') {
+                    text.append(REPORT_SEPARATOR);
+                } else {
+                    text.append(next == 't' ? ' ' : next);
+                }
             } else if (c == '"') {
                 break;
             } else {

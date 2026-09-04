@@ -150,6 +150,15 @@ final class TransactionEngine {
          * first one overrules the log, the second one has to trust it.
          */
         volatile boolean devServerAsked;
+
+        /**
+         * The checker's verdict on the project as this apply read it: its
+         * report, or null when it says the project type-checks. Read from the
+         * log rather than asked for, because nothing serves it - but a verdict,
+         * not a sighting, so an error the developer has since fixed cannot fail
+         * this apply.
+         */
+        volatile String checkerFailure;
         long detectMs;
         long compileMs;
         long runtimeMs;
@@ -449,12 +458,13 @@ final class TransactionEngine {
             // With one exception, taken before the window closes: a dev server
             // compiles on save, so its complaint about a file in this very
             // change-set is already in the log and would be dropped as
-            // somebody else's. Only dev-server errors, and only when a frontend
+            // somebody else's - and its checker type-checks on save too, a
+            // moment later. Only frontend errors, and only when a frontend
             // file actually changed, so nothing else is carried across.
             if (!frontendChanges.isEmpty()) {
                 tx.carriedLogErrors = app.watch().map(AppLog.Watch::errors)
                         .orElse(List.of()).stream()
-                        .filter(AppLog::devServerError).toList();
+                        .filter(AppLog::frontendError).toList();
             }
             app.watch().ifPresent(AppLog.Watch::mark);
 
@@ -695,7 +705,7 @@ final class TransactionEngine {
                             Optional<String> broken = devServerFailure(tx);
                             if (broken.isPresent()) {
                                 return finish(tx, Outcome.FAILED,
-                                        "dev server: " + brief(broken.get()),
+                                        "dev server: " + detail(broken.get()),
                                         "hmr", DEV_SERVER_NEXT_ACTION, started);
                             }
                             tx.hotswapDetail = "redefineClasses("
@@ -946,14 +956,15 @@ final class TransactionEngine {
         // the instant the probe answers reads an empty log and calls a broken
         // file Stable, which is the same mistake the redefine leg settles to
         // avoid.
-        app.watch()
-                .ifPresent(watching -> tx.logErrors = plan.vite()
-                        ? watching.settle(ERROR_SETTLE_MILLIS)
-                        : watching.errors());
+        app.watch().ifPresent(watching -> {
+            tx.logErrors = plan.vite() ? watching.settle(ERROR_SETTLE_MILLIS)
+                    : watching.errors();
+            tx.checkerFailure = watching.checkerFailure().orElse(null);
+        });
         Optional<String> broken = devServerFailure(tx);
         if (broken.isPresent()) {
             return finish(tx, Outcome.FAILED,
-                    "dev server: " + brief(broken.get()), "hmr",
+                    "dev server: " + detail(broken.get()), "hmr",
                     DEV_SERVER_NEXT_ACTION, started);
         }
         return finish(tx, Outcome.STABLE, "", "hmr", "", started);
@@ -1086,8 +1097,14 @@ final class TransactionEngine {
             return;
         }
         String file = fields.getOrDefault("file", "a frontend file");
-        tx.devServerRefusal = file + ": " + fields.getOrDefault("message",
-                "the dev server would not compile it");
+        // Compacted by the same rule a report read out of the log gets: the
+        // whole message came back, and most of a Vite report is a source
+        // excerpt and a caret diagram the reader already has in the editor.
+        String report = AppLog.report(List.of(
+                fields.getOrDefault("message", "").split(AppLog.SEGMENT, -1)));
+        tx.devServerRefusal = report.isEmpty()
+                ? file + AppLog.SEGMENT + "the dev server would not compile it"
+                : file + AppLog.SEGMENT + report;
         // Said plainly rather than left to the verdict line: a restart is the
         // usual answer to "not live", and it is the wrong one here - nothing
         // but an edit to the file can make this compile.
@@ -1257,6 +1274,7 @@ final class TransactionEngine {
         }
         List<String> errors = watching.settle(ERROR_SETTLE_MILLIS);
         tx.logErrors = errors;
+        tx.checkerFailure = watching.checkerFailure().orElse(null);
         if (!errors.isEmpty()) {
             log.line("app log: " + errors.size()
                     + " error(s) since the redefine");
@@ -1279,13 +1297,25 @@ final class TransactionEngine {
      * hands an agent a green answer for a file the browser cannot load, which
      * is the one answer this daemon must never give.
      * <p>
-     * The dev server's own answer settles it whenever there is one, in both
-     * directions, because it was asked about this change and answers for the
-     * files as they are on disk now. A clean answer therefore overrules the
-     * log: an error in it describes the file as it was before this edit fixed
-     * it, and the daemon's own request is one of the things that put it there.
-     * The log is the fallback for what cannot be asked - an app too old for the
-     * command, or a dev server that has gone away.
+     * The dev server's own answer settles the question it was asked - can this
+     * module be served - in both directions, because it answers for the files
+     * as they are on disk now. A clean answer therefore overrules a
+     * <em>transform</em> error in the log: that describes the file as it was
+     * before this edit fixed it, and the daemon's own request is one of the
+     * things that put it there.
+     * <p>
+     * It does not overrule the checker. Types are stripped without being
+     * checked, so a module with a type error is served with a {@code 200} and
+     * the fetch has no opinion on it at all - the log is the only place that
+     * failure exists.
+     * <p>
+     * The checker is therefore read as a verdict rather than as errors seen in
+     * the window, because it announces a clean project as well as a broken one.
+     * Both halves are load-bearing: it type-checks within a moment of the
+     * <em>save</em>, so a report is in the log before anyone runs {@code apply}
+     * - which is what let a broken {@code .tsx} through as {@code Stable} - and
+     * equally, an error the developer has since fixed is still sitting there,
+     * which would otherwise fail the very apply that repaired it.
      * <p>
      * Both log windows are read. An error Vite logged when the file was saved
      * sits in {@code carriedLogErrors} - it happened before this apply started,
@@ -1306,24 +1336,44 @@ final class TransactionEngine {
         if (tx.devServerRefusal != null) {
             return Optional.of(tx.devServerRefusal);
         }
+        // The checker's own verdict, not a sighting of one of its errors in
+        // the window: it announces a clean project too, so an error the
+        // developer has since fixed is superseded rather than reported back at
+        // the apply that repaired it.
+        if (tx.checkerFailure != null) {
+            return Optional.of(tx.checkerFailure);
+        }
         if (tx.devServerAsked) {
             return Optional.empty();
         }
         return java.util.stream.Stream
                 .concat(tx.carriedLogErrors.stream(), tx.logErrors.stream())
-                .filter(AppLog::devServerError).findFirst();
+                .filter(AppLog::frontendError).findFirst();
     }
 
     /** Enough of a log line to recognise it by, where there is room for one. */
     private static String brief(String line) {
-        // The layout boilerplate goes first, not last: a Spring Boot prefix is
-        // about a hundred characters of timestamp, level, pid, thread and
-        // abbreviated logger, and truncating with it still attached spends the
-        // whole budget saying nothing and cuts off the half that would let the
-        // reader fix the problem without opening the log at all.
-        String trimmed = AppLog.message(line).replace(AppLog.SEGMENT, " | ");
+        String trimmed = detail(line);
         return trimmed.length() <= 160 ? trimmed
                 : trimmed.substring(0, 157) + "...";
+    }
+
+    /**
+     * A log line as a reason reads it: whole, with its parts told apart.
+     * <p>
+     * The layout boilerplate goes first, not last. A Spring Boot prefix is
+     * about a hundred characters of timestamp, level, pid, thread and
+     * abbreviated logger, and keeping it spends the budget of any line built
+     * from this on saying nothing.
+     * <p>
+     * Not truncated. A reason that has to fit one row uses {@link #brief};
+     * everything rendered on a verdict is wrapped instead, because a compiler's
+     * message is the one output whose tail matters as much as its head -
+     * stopping just before "Unterminated string constant" leaves the reader
+     * with nothing but an instruction to go and open the log.
+     */
+    private static String detail(String line) {
+        return AppLog.message(line).replace(AppLog.SEGMENT, " | ");
     }
 
     /**
@@ -1361,6 +1411,30 @@ final class TransactionEngine {
                         + rest.substring(0, cut).strip());
                 rest = rest.substring(cut).strip();
             }
+        }
+        return rows;
+    }
+
+    /**
+     * A verdict's reason, as the rows it needs.
+     * <p>
+     * The first row stays flush left, so the reason still reads as the line
+     * under the verdict and an assertion or an eye looking for it finds it
+     * where it always was; the continuations are indented like a quoted log
+     * line, so a wrapped reason cannot be mistaken for a second reason.
+     */
+    private static List<String> reasonRows(String reason) {
+        List<String> rows = new ArrayList<>();
+        String rest = reason.strip();
+        while (!rest.isEmpty()) {
+            if (rows.size() == QUOTE_ROWS) {
+                rows.add("    ...");
+                return rows;
+            }
+            int cut = breakAt(rest);
+            rows.add((rows.isEmpty() ? "" : "    ")
+                    + rest.substring(0, cut).strip());
+            rest = rest.substring(cut).strip();
         }
         return rows;
     }
@@ -1571,6 +1645,13 @@ final class TransactionEngine {
                 tx.logErrors = tx.logErrors.stream()
                         .filter(line -> !AppLog.devServerError(line)).toList();
             }
+            // The same reasoning on the checker's own verdict: quoting a report
+            // it has since withdrawn would put a type error under a Stable
+            // that is entirely correct.
+            if (tx.checkerFailure == null) {
+                tx.logErrors = tx.logErrors.stream()
+                        .filter(line -> !AppLog.checkerError(line)).toList();
+            }
             // A superseded transaction is not the answer to "what is the
             // state?".
             if (verdict != Outcome.SUPERSEDED) {
@@ -1660,7 +1741,7 @@ final class TransactionEngine {
                 message.hint().ifPresent(hint -> lines.add("  → " + hint));
             });
             if (tx.diagnostics.isEmpty() && !tx.reason.isEmpty()) {
-                lines.add(tx.reason);
+                lines.addAll(reasonRows(tx.reason));
             }
         }
         case COMPILED -> {
