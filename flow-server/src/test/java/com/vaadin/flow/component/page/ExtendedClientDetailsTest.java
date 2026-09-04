@@ -24,6 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtendedClientDetailsTest {
 
+    /**
+     * Slack for the time that passes between constructing the details and
+     * reading the time back.
+     */
+    private static final long TIME_TOLERANCE_MS = 1000L;
+
     @Test
     void initializeWithClientValues_gettersReturnExpectedValues() {
         final ExtendedClientDetails details = new ExtendBuilder()
@@ -90,6 +96,21 @@ class ExtendedClientDetailsTest {
 
         detailsBuilder.setNavigatorPlatform("iPad");
         assertTrue(detailsBuilder.buildDetails().isIOS(), "an iPad is iOS");
+    }
+
+    @Test
+    void clientClockAheadOfServer_getBrowserTimeReturnsClientTime() {
+        long clientTime = System.currentTimeMillis() + 60_000;
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .setClientServerTimeDelta(Long.toString(clientTime))
+                .buildDetails();
+
+        assertEquals(clientTime, details.getBrowserTime().toEpochMilli(),
+                TIME_TOLERANCE_MS,
+                "getBrowserTime() should follow the clock of the browser");
+        assertEquals(details.getBrowserTime().toEpochMilli(),
+                details.getCurrentDate().getTime(), TIME_TOLERANCE_MS,
+                "the deprecated getCurrentDate() should agree with getBrowserTime()");
     }
 
     @Test

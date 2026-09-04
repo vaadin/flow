@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -331,6 +332,29 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns the current time of the browser as an {@link Instant}. This will
+     * not be entirely accurate due to varying network latencies, but should
+     * provide a close-enough value for most cases.
+     * <p>
+     * The returned instant is a point on the time line and does not carry a
+     * time zone. To get the date and time as shown in the end user's computer,
+     * combine it with the browser's time zone:
+     *
+     * <pre>
+     * ExtendedClientDetails details = ...;
+     * ZonedDateTime browserDateTime = details.getBrowserTime()
+     *         .atZone(ZoneId.of(details.getTimeZoneId()));
+     * </pre>
+     *
+     * @return the current time of the browser, not {@code null}
+     * @see #getTimeZoneId()
+     * @since 25.3
+     */
+    public Instant getBrowserTime() {
+        return Instant.now().plusMillis(clientServerTimeDelta);
+    }
+
+    /**
      * Returns the current date and time of the browser. This will not be
      * entirely accurate due to varying network latencies, but should provide a
      * close-enough value for most cases. Also note that the returned Date
@@ -351,9 +375,12 @@ public class ExtendedClientDetails implements Serializable {
      * @see #isDSTInEffect()
      * @see #getDSTSavings()
      * @see #getTimezoneOffset()
+     * @deprecated use {@link #getBrowserTime()} instead, which returns a
+     *             time-zone independent {@link Instant}
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Date getCurrentDate() {
-        return new Date(new Date().getTime() + clientServerTimeDelta);
+        return Date.from(getBrowserTime());
     }
 
     /**
