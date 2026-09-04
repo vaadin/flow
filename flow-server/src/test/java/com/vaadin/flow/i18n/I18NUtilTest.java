@@ -17,6 +17,7 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -338,6 +339,40 @@ class I18NUtilTest {
         sharedJar.close();
     }
 
+    // A container may serve a jar resource through a connection that is not a
+    // jar connection, and then the location has to be resolved as a file.
+    @Test
+    void connectionIsNotAJarConnection_findsLanguages() throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        URLStreamHandler plainConnectionHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) {
+                return new URLConnection(url) {
+                    @Override
+                    public void connect() {
+                    }
+                };
+            }
+        };
+        URL resource = new URL(null,
+                "jar:" + path.toUri().toURL() + "!/"
+                        + DefaultI18NProvider.BUNDLE_FOLDER + "/",
+                plainConnectionHandler);
+        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+                .thenReturn(resource);
+
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        assertEquals(2, defaultTranslationLocales.size(),
+                "Translation files inside the jar should be resolved");
+
+        assertTrue(defaultTranslationLocales.contains(new Locale("fi", "FI")),
+                "Finnish locale translation should have been found");
+        assertTrue(defaultTranslationLocales.contains(new Locale("ja", "JP")),
+                "Japan locale translation should have been found");
+    }
+
     // Where the connection gives no jar to work with, the location is resolved
     // as a file, and it is percent-encoded just like any other URL, so a space
     // in a parent folder arrives as %20 and must be decoded.
@@ -453,8 +488,19 @@ class I18NUtilTest {
                     .map(e -> new MockVirtualFile(jarFile, e)).toList();
         }
 
-        public File getPhysicalFile() {
-            return new File(entry.getName());
+        public String getName() {
+            String name = entry.getName();
+            name = name.endsWith("/") ? name.substring(0, name.length() - 1)
+                    : name;
+            return name.substring(name.lastIndexOf('/') + 1);
+        }
+
+        public boolean isFile() {
+            return !entry.isDirectory();
+        }
+
+        public InputStream openStream() throws IOException {
+            return jarFile.getInputStream(entry);
         }
     }
 

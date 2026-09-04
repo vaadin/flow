@@ -20,6 +20,7 @@ package com.vaadin.flow.server;
  * when a Vaadin session lock is about to be requested.
  *
  * @see AbstractSessionLockEvent
+ * @since 25.3
  */
 public class SessionLockRequestedEvent extends AbstractSessionLockEvent {
 

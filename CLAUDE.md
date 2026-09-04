@@ -50,6 +50,7 @@ React support).
 - `flow-data`: Data binding and validation
 - `flow-router`: Navigation and routing
 - `flow-html-components`: Basic HTML component wrappers
+- `flow-devloop-daemon`: Daemon for the `vaadin-dev` dev loop
 - `flow-tests/`: Extensive integration test suite
 - `vaadin-spring`: Spring Framework integration
 
@@ -201,6 +202,6 @@ Components extend `Component` and use:
 - Use `test:` instead of `fix:` when fixing only tests
 
 See [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) for design-level guidance
-(API shape, signals, sealed types, DOM event naming, browser-wrapping
-conventions, supported browsers, bootstrap data flow, Javadoc for wrapped
-browser APIs).
+(API shape, signals, sealed types, naming of components that wrap HTML
+elements, DOM event naming, browser-wrapping conventions, supported
+browsers, bootstrap data flow, Javadoc for wrapped browser APIs).

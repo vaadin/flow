@@ -34,6 +34,7 @@ import java.util.Objects;
  *
  * @param <R>
  *            type of the subclass implementing this class, for method chaining
+ * @since 25.3
  */
 public abstract class AbstractUploadHandler<R extends AbstractUploadHandler>
         extends TransferProgressAwareHandler<UploadEvent, R>

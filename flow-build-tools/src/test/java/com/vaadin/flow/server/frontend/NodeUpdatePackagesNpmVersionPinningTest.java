@@ -50,12 +50,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("com.vaadin.flow.testcategory.SlowTests")
-class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
+class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
 
     private static final String TEST_DEPENDENCY = "@vaadin/vaadin-overlay";
     private static final String DEPENDENCIES = "dependencies";
     private static final String OVERRIDES = "overrides";
-    private static final String PLATFORM_PINNED_DEPENDENCY_VERSION = "3.2.17";
+    private static final String PINNED_DEPENDENCY_VERSION = "3.2.17";
     private static final String USER_PINNED_DEPENDENCY_VERSION = "1.0";
     private static final String RELATIVE_DEPENDENCY_VERSION = "$@vaadin/vaadin-overlay";
 
@@ -73,20 +73,22 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         classFinder = Mockito.spy(getClassFinder());
-        File versions = Files
-                .createTempFile(temporaryFolder.toPath(), "tmp", null).toFile();
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        File versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions,
                 String.format(
                         "{" + "\"vaadin-overlay\": {"
                                 + "\"npmName\": \"@vaadin/vaadin-overlay\","
                                 + "\"jsVersion\": \"%s\"" + "}" + "}",
-                        PLATFORM_PINNED_DEPENDENCY_VERSION),
+                        PINNED_DEPENDENCY_VERSION),
                 StandardCharsets.UTF_8);
         // @formatter:on
 
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
     }
 
     @Test
@@ -94,11 +96,11 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
         assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertEquals("$" + TEST_DEPENDENCY,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
@@ -109,8 +111,8 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
             throws IOException {
         // Test when there is no vaadin-version-core.json available
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
@@ -119,7 +121,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         assertNull(packageJson.get(DEPENDENCIES).get(TEST_DEPENDENCY));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertNull(packageJson.get(OVERRIDES).get(TEST_DEPENDENCY));
     }
@@ -139,7 +141,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertEquals(RELATIVE_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
@@ -151,12 +153,12 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
         // The package is declared as a devDependency, so the override should
-        // reference it instead of pinning the platform version.
+        // reference it instead of pinning the version from the versions file.
         ((ObjectNode) packageJson.get("devDependencies")).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertEquals(RELATIVE_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
@@ -173,7 +175,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         packageJson.set(OVERRIDES, overridesSection);
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertNull(packageJson.get(OVERRIDES).get("@some/unused"),
                 "Dangling dependency reference should be removed");
@@ -189,7 +191,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
 
         packageUpdater.generateVersionsJson(packageJson);
-        boolean updated = packageUpdater.lockVersionForNpm(packageJson);
+        boolean updated = packageUpdater.pinVersionsForNpm(packageJson);
 
         assertTrue(updated, "Removing vaadin.overrides should mark as updated");
         assertFalse(packageJson.get(VAADIN_DEP_KEY).has(OVERRIDES),
@@ -197,11 +199,11 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    void shouldUpdateOldPlatformOverride_whenDependencyVersionBumped()
+    void shouldUpdateOldPinnedOverride_whenDependencyVersionBumped()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
 
-        // Simulate existing platform override from a previous Flow version.
+        // Simulate an existing override from a previous Flow version.
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ObjectNode overridesSection = JacksonUtils.createObjectNode();
         packageJson.set(OVERRIDES, overridesSection);
@@ -210,19 +212,19 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         // vaadin.overrides are missing in package.json from before 25.1
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
-        // Override is updated to the new platform version
-        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+        // Override is updated to the new pinned version
+        assertEquals(PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
     @Test
-    void shouldUpdatePlatformOverride_whenDependencyVersionBumped()
+    void shouldUpdatePinnedOverride_whenDependencyVersionBumped()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
 
-        // Simulate existing platform override from a previous Flow version.
+        // Simulate an existing override from a previous Flow version.
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ObjectNode overridesSection = JacksonUtils.createObjectNode();
         packageJson.set(OVERRIDES, overridesSection);
@@ -234,26 +236,26 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 JacksonUtils.createObjectNode().put(TEST_DEPENDENCY, "0.0.1"));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
-        // Override is updated to the new platform version
-        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+        // Override is updated to the new pinned version
+        assertEquals(PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
     @Test
-    void platformDependencyNotDeclared_overridePinnedToPlatformVersion()
+    void pinnedDependencyNotDeclared_overrideAddedForThePinnedVersion()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         ObjectNode packageJson = packageUpdater.getPackageJson();
-        // The platform package is not declared as a dependency, so a fresh
-        // override pinned to the platform version is added.
+        // The pinned package is not declared as a dependency, so a fresh
+        // override pinned to that version is added.
         assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
-        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+        assertEquals(PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
@@ -262,7 +264,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater(false,
                 JacksonUtils.createObjectNode().put(TEST_DEPENDENCY,
-                        PLATFORM_PINNED_DEPENDENCY_VERSION));
+                        PINNED_DEPENDENCY_VERSION));
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ObjectNode overridesSection = JacksonUtils.createObjectNode();
         packageJson.set(OVERRIDES, overridesSection);
@@ -272,9 +274,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
-        assertEquals(PLATFORM_PINNED_DEPENDENCY_VERSION,
+        assertEquals(PINNED_DEPENDENCY_VERSION,
                 packageJson.get(OVERRIDES).get(TEST_DEPENDENCY).stringValue());
     }
 
@@ -282,13 +284,13 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
     void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
         assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
@@ -326,12 +328,12 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
 
         // Add dependency
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
 
         // Should not throw and should handle nested objects correctly
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         // Verify flat override stays flat
         JsonNode overrides = packageJson.get(OVERRIDES);
@@ -383,12 +385,12 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
 
         // Add dependency
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
 
-        // Run version locking
-        packageUpdater.lockVersionForNpm(packageJson);
+        // Run version pinning
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         // Verify pnpm flattens overrides into pnpm-workspace.yaml
         Map<String, String> overrides = new PnpmWorkspaceFile(baseDir)
@@ -426,7 +428,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         workspace.save();
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         Map<String, String> overrides = new PnpmWorkspaceFile(baseDir)
                 .getOverrides();
@@ -434,7 +436,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 "User's override should be preserved");
 
         // Run again to ensure it remains stable
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         overrides = new PnpmWorkspaceFile(baseDir).getOverrides();
         assertEquals("5.0.0", overrides.get("user-package>user-dep"),
@@ -447,9 +449,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
         ObjectNode packageJson = packageUpdater.getPackageJson();
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         File workspaceFile = new File(baseDir,
                 PnpmWorkspaceFile.WORKSPACE_FILE);
@@ -465,7 +467,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 + "allowBuilds:\n  esbuild: set this to true or false\n",
                 StandardCharsets.UTF_8);
 
-        assertFalse(packageUpdater.lockVersionForNpm(packageJson),
+        assertFalse(packageUpdater.pinVersionsForNpm(packageJson),
                 "Reformatting by pnpm must not be reported as a dependency change");
     }
 
@@ -483,7 +485,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
                 (nonObjectNode) -> JacksonUtils.createObjectNode());
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson);
+        packageUpdater.pinVersionsForNpm(packageJson);
 
         assertFalse(packageJson.has(PNPM),
                 "Legacy pnpm field must be removed from package.json");
@@ -500,9 +502,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages pnpmUpdater = createPackageUpdater(true);
         ObjectNode pnpmPackageJson = pnpmUpdater.getPackageJson();
         ((ObjectNode) pnpmPackageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
         pnpmUpdater.generateVersionsJson(pnpmPackageJson);
-        pnpmUpdater.lockVersionForNpm(pnpmPackageJson);
+        pnpmUpdater.pinVersionsForNpm(pnpmPackageJson);
         assertFalse(new PnpmWorkspaceFile(baseDir).getOverrides().isEmpty(),
                 "Precondition: pnpm run wrote overrides to the workspace file");
 
@@ -510,9 +512,9 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         TaskUpdatePackages npmUpdater = createPackageUpdater(false);
         ObjectNode npmPackageJson = npmUpdater.getPackageJson();
         ((ObjectNode) npmPackageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
-                PLATFORM_PINNED_DEPENDENCY_VERSION);
+                PINNED_DEPENDENCY_VERSION);
         npmUpdater.generateVersionsJson(npmPackageJson);
-        npmUpdater.lockVersionForNpm(npmPackageJson);
+        npmUpdater.pinVersionsForNpm(npmPackageJson);
 
         assertNotNull(npmPackageJson.get(OVERRIDES),
                 "npm overrides must be written to package.json");

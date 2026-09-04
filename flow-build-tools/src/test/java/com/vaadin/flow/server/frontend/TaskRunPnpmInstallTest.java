@@ -109,7 +109,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
+    void generateVersionsJson_userHasNoCustomVersions_pinnedVersionsAreMergedWithDevDeps()
             throws IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -117,8 +117,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // Write package json file
         Files.writeString(packageJson.toPath(), "{}");
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
-        // Platform defines a pinned version
+        File versions = createVersionsFile();
+        // The versions file defines a pinned version
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
                 "{"
@@ -132,7 +132,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonNode object = getGeneratedVersionsContent(versions, packageJson);
         assertTrue(object.has("@vaadin/vaadin-overlay"));
 
-        // Platform version takes precedence over dev deps
+        // The pinned version takes precedence over dev deps
         assertEquals(PINNED_VERSION,
                 object.get("@vaadin/vaadin-overlay").asString());
     }
@@ -170,14 +170,14 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "4.0.0", loginVersion, menuVersion, notificationVersion,
                 uploadVersion));
         // @formatter:on
-        // Platform defines a pinned version
+        // The versions file defines a pinned version
 
         String versionsLoginVersion = "1.1.0-alpha1";
         String versionsMenuBarVersion = "1.1.0-alpha1";
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
                 "{"
@@ -207,10 +207,10 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         assertEquals(loginVersion,
                 generatedVersions.get("@vaadin/vaadin-login").asString(),
-                "Login version is the same for user and platform.");
+                "Login version is the same for the user and the versions file.");
         assertEquals(versionsNotificationVersion,
                 generatedVersions.get("@vaadin/vaadin-notification").asString(),
-                "Notification version should use platform");
+                "Notification version should use the pinned version");
     }
 
     @Test
@@ -267,7 +267,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+    void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotThePinnedOne()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -288,7 +288,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 JacksonUtils.readTree(packageJsonContent),
                 NodeUpdater.DEPENDENCIES);
-        // Platform defines a pinned version
+        // The versions file defines a pinned version
         TaskRunNpmInstall task = createTask(versionsJsonFilter
                 .getFilteredVersions(
                         JacksonUtils.readTree("{ \"@vaadin/vaadin-overlay\":\""
@@ -481,12 +481,19 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(updater, options);
     }
 
+    private File createVersionsFile() throws IOException {
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        return new File(versionsFolder, "versions.json");
+    }
+
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
         ObjectNode packageJson = JacksonUtils
                 .readTree(Files.readString(packageJsonFile.toPath()));
@@ -521,7 +528,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
 
             @Override
-            ObjectNode getPlatformPinnedDependencies() {
+            ObjectNode getPinnedNpmDependencies() {
                 if (versionsContent != null) {
                     return JacksonUtils.readTree(versionsContent);
                 } else {

@@ -1,0 +1,139 @@
+---
+name: vaadin-devloop
+description: Requires Vaadin 25.3 or newer in the target application; on an older version the dev loop does not exist and none of this applies. Applies to any edit of Vaadin application source under src/main/java, src/main/resources or the frontend folder (src/main/frontend) — a view, component, layout, theme, stylesheet or TypeScript module — and makes that edit live in the already-running app, then verifies it in the browser. The edit itself is the trigger, not any particular wording: read this BEFORE touching such a file, and follow it again once the file is saved, because a source edit that has not been applied is not done, however small the edit looks. Also covers starting or restarting the app, checking whether a change is actually live, and any request to look at the app in a browser. Phrases like "make this live", "is the change running", "start the app", "reload", "hot reload", "apply my edits" and "why doesn't the page show my change" are explicit invocations, but none of them are required. A daemon owns the app process, so this replaces running the app through Maven.
+---
+
+# Vaadin dev loop
+
+`vaadin-dev` is a CLI over a **daemon** that owns the application's process: it compiles edits
+in the background, hot-swaps or restarts, and answers authoritatively "what is the state of my
+last change?" `apply` proves the bytes are live; only the browser proves the UI renders what
+you intended.
+
+The `vaadin-dev` script belongs to a **target application** — the module holding the Vaadin
+app's `pom.xml`, its Maven wrapper and its `.vaadin/` — and by default acts on that one. Run it
+from there as `.vaadin/vaadin-dev`, or from any directory with `--app <dir>` (or
+`VAADIN_DEV_APP=<dir>`), which is also how a single copy of the script drives another Vaadin
+application in the same reactor.
+
+## Requires Vaadin 25.3 or newer
+
+The dev loop ships with Vaadin 25.3. **Establish the target application's Vaadin version once,
+before the first command** — `vaadin.version` in its `pom.xml`, or
+`./mvnw -q help:evaluate -Dexpression=vaadin.version -DforceStdout` when the pom inherits it
+from a parent. On anything older nothing here applies: there is no `com.vaadin:vaadin-dev` to
+resolve a daemon from, so run the application the project's normal way and say that the loop is
+unavailable, rather than invoking `vaadin-dev` and reporting its failure. When a command names
+another application with `--app`, the version that counts is that application's.
+
+## The cycle
+
+0. `.vaadin/vaadin-dev status` first — it costs milliseconds (no JVM per command) and
+   everything after depends on the answer.
+1. If it says `stopped`, `.vaadin/vaadin-dev start` (~30 s cold; it blocks until the app
+   serves or fails).
+2. **Open the app in the browser now, before the first `apply`**, and keep that page open,
+   unless the change ahead has no visual surface at all — step 5 defines which those are. A
+   CSS or theme push has somewhere to land only if a page is already connected: with none,
+   `apply` says the resource was copied to the classpath and nothing about a push, which is
+   honest but is not the answer you came for. Opening the page afterwards serves the new file
+   from disk, so the change shows up — but that apply's verdict cannot be recovered.
+3. Edit Java, CSS and/or frontend files. Batch the edits — `apply` finds the change-set itself
+   by scanning the sources of every module in the loop. Run it once after a batch, not per file.
+4. `.vaadin/vaadin-dev apply` — **the exit code is the verdict**: `0` live, `1` failed,
+   `4` superseded.
+5. Verify what actually changed, and only then report it as working. A change with a visual
+   surface — a view, component, layout, theme, stylesheet — is verified in the page opened in
+   step 2; nothing else proves the UI renders what you intended. A change with none — a
+   service, a repository, a formatter, a config value — is answered in full by `apply`'s
+   verdict and the project's own tests, so opening a browser to look at nothing buys no
+   evidence and costs the run a browser launch.
+
+## Commands
+
+```
+.vaadin/vaadin-dev status [--json]   app up? registered? dev server? last transaction
+.vaadin/vaadin-dev start             launch the app in dev mode; blocks until serving or failed
+.vaadin/vaadin-dev apply [--json]    make the edits on disk live; blocks until Stable or Failed
+.vaadin/vaadin-dev restart           stop + start — required after configuration changes
+.vaadin/vaadin-dev stop | shutdown   stop the app / stop the daemon too
+```
+
+`vaadin-dev` is a Bash script, and the install goal marks it executable, so run it from a
+shell as written above. If your shell will not execute it — Windows checkouts carry no
+executable bit — run `bash .vaadin/vaadin-dev …` instead, or from `cmd`/PowerShell use
+`.\.vaadin\vaadin-dev.cmd`. Every command, option and exit code is identical whichever you
+use.
+
+**Never start the application through Maven** (`spring-boot:run`, `jetty:run`, an IDE run
+configuration): the daemon owns the app, and a second process fights it for the HTTP port. The
+daemon auto-spawns on first use and survives between commands, so every command — from any
+shell, agent or IDE — answers for the same running app.
+
+## What is in the loop
+
+The daemon serves **one application**. When that application is a module of a Maven reactor,
+every reactor module it depends on is in the loop too: `apply` scans `src/main/java` and
+`src/main/resources` of each, compiles them, and hot-reloads or restarts exactly as it does for
+the application's own code — so an edit in a sibling library module reaches the running page
+without a rebuild.
+
+The **frontend folder belongs to the application alone** — `src/main/frontend`, or `frontend/`
+in an older project, or whatever the build recorded. `apply` scans it too, and what happens to
+an edit there depends on the mode: in Vite mode Vite already applied it on save, and in
+dev-bundle mode only a theme stylesheet can be pushed while everything else needs the bundle
+rebuilt, which is why those edits restart the app. A sibling library contributes frontend
+assets through its `src/main/resources/META-INF/frontend`, which is already the resource leg.
+
+`status` names the modules in the loop. **A module it does not name is one the application does
+not depend on, and edits there are invisible to `apply`.**
+
+A reactor can hold more than one Vaadin application, and each gets its own daemon, its own
+`.vaadin/` handshake and its own `target/devloop/` — so `--app` picks which one a command acts
+on: `.vaadin/vaadin-dev --app ../admin apply`. Whenever the target is not the script's own
+application, every command prints the application it answered for on stderr. **Check that line
+before trusting the answer.**
+
+```
+.vaadin/vaadin-dev                          this CLI (committed); .vaadin/ also holds
+                                            daemon.properties, which is per-run state
+src/main/java/                              views + services (pure Java, no HTML/JS)
+src/main/resources/META-INF/resources/      the app's CSS and icons
+src/main/resources/application.properties   config — needs restart
+src/main/frontend/themes/<theme>/           theme CSS — pushed in place, no reload
+src/main/frontend/                          views, components, styles — a bundled edit
+                                            restarts the app in dev-bundle mode
+src/main/frontend/generated/                generated by the build — never edit
+target/devloop/app.log, daemon.log          logs, under the target application
+```
+
+## Reading the outcome, in one line each
+
+| Output | Meaning |
+|---|---|
+| `hmr: … pushed 1 stylesheet(s) in place` | CSS is live in the open page, no reload |
+| `hmr: … no browser connected` | the new CSS is on the classpath, but no page was open to push it into — open one and re-apply rather than reporting the change live |
+| `hmr: N theme file(s) pushed in place` | theme CSS is live in the open page, no reload |
+| `hmr: N frontend file(s), applied by Vite (dev server up:…)` | Vite mode: the edit went live when you saved it |
+| `frontend → Failed` with `dev server: [vite] …` | Vite mode: Vite refused to compile the edit — exit `1`. Fix the file it names and re-apply; a restart cannot compile it either |
+| `hot-reload: redefineClasses(1); onHotswap completed=true` | Java hot-swapped, UI refreshed |
+| `→ live, but no Vaadin component was redefined` | bytes are live; interact with the view or reload to see it. **Do not re-apply** |
+| `compiling → runtime → restarting → Stable` | the app restarted — reload the page |
+| `restart: classpath changed (...)` | a pom edit moved the app's classpath |
+| `restart: frontend changed (dev bundle rebuild)` | dev-bundle mode: only a Vite build folds a frontend file in, and the restart runs it — slow, and the page needs a reload |
+| `restart: frontend imports changed (MyView)` | a `@JsModule`/`@JavaScript`/`@CssImport`/`@NpmPackage`/`@Theme` was added, changed or removed; those are read at startup, so the class redefining is not enough |
+| `no changes (… pom.xml changed; nothing to recompile or restart)` | a *positive* answer, not a shrug |
+| `compiling → Failed` + diagnostics | fix and re-apply; the app keeps its last good bytes |
+| `app log: N error(s) since the change` | **not a green result** — the change is live and the app threw |
+
+`Stable` with an `app log:` line under it is a failure to investigate, not a success.
+
+The app serves on **http://localhost:8080** unless `server.port` says otherwise. Navigate once,
+in step 2, and keep the page open across applies — CSS pushes and Java hot-swaps land in an
+already-open page, and re-navigating hides what you are testing.
+
+## Full reference
+
+Read [reference.md](reference.md) when you need it: the complete `apply` output vocabulary,
+which kind of edit needs a page reload, pom/classpath semantics, the `--json` schema, the
+browser assertion patterns, environment variables, and what to do when the loop goes wrong.
