@@ -62,12 +62,14 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     options.getNpmFolder(), path,
                     options.getFrontendDirectory());
             if (source == null) {
-                if (Files.exists(targetFile)) {
-                    // The file lives in an npm package and the bundle it was
-                    // copied into is being reused, so npm install has not been
-                    // run and node_modules does not exist. Bundle validation
-                    // requires a reused bundle to contain the template, and
-                    // unpacking the bundle has put it in place.
+                if (!options.isBundleBuild() && Files.exists(targetFile)) {
+                    // The bundle is reused, so npm install has not been run
+                    // and a file that lives in an npm package is not on disk.
+                    // Bundle validation requires a reused bundle to contain
+                    // the template, and unpacking the bundle has put it in
+                    // place. On a bundle build the sources are all available,
+                    // so not finding one is an error even if an earlier build
+                    // left a copy behind.
                     continue;
                 }
                 throw new ExecutionFailedException("Unable to locate file "

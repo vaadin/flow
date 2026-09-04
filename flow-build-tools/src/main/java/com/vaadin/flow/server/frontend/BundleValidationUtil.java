@@ -329,20 +329,38 @@ public final class BundleValidationUtil {
         }
 
         for (Map.Entry<String, String> template : templates.entrySet()) {
-            String path = template.getKey();
-            if (path.startsWith("./")) {
-                // Available in the frontend folder or, for an add-on, in the
-                // jar resources folder unpacked from the jar
+            String path = template.getKey().replaceFirst("^\\./", "");
+            if (templateSourceAvailableInProject(options, path)) {
                 continue;
             }
             if (!bundleHasFile(options, Constants.TEMPLATE_DIRECTORY + path)) {
                 getLogger().info(
                         "The bundle is missing the template source '{}' used by '{}'.",
-                        path, template.getValue());
+                        template.getKey(), template.getValue());
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Checks if the template source is available whether or not the bundle is
+     * built, which is the case for a template in the frontend folder and for
+     * one packaged in an add-on jar.
+     *
+     * @param options
+     *            the task options
+     * @param path
+     *            the {@code @JsModule} value without a leading {@code ./}
+     * @return {@code true} if the source does not depend on npm install
+     */
+    private static boolean templateSourceAvailableInProject(Options options,
+            String path) {
+        if (new File(options.getFrontendDirectory(), path).exists()) {
+            return true;
+        }
+        return FrontendBuildUtils.getJarResourceString(path,
+                options.getClassFinder()) != null;
     }
 
     private static boolean bundleHasFile(Options options, String filename)

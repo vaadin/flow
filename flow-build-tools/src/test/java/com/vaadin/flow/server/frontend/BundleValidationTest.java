@@ -77,6 +77,7 @@ class BundleValidationTest {
 
     private static final String NPM_PACKAGE_TEMPLATE = "@vaadin-component-factory/vcf-breadcrumb/dist/src/vcf-breadcrumbs.js";
     private static final String PROJECT_TEMPLATE = "./my-lit-element-view.js";
+    private static final String JAR_PACKAGED_TEMPLATE = "my-addon/my-lit-view.js";
 
     private static final String THEME_UTIL_JS;
     static {
@@ -233,22 +234,7 @@ class BundleValidationTest {
     void hashesMatch_noNpmPackages_noCompilationRequired(Mode mode)
             throws IOException {
         setupMode(mode);
-
-        File packageJson = new File(temporaryFolder, "package.json");
-        packageJson.createNewFile();
-
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
-                StandardCharsets.UTF_8);
-
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-
-        ObjectNode stats = getBasicStats();
-        ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
-                .put("@vaadin/router", "1.7.5");
-
-        setupFrontendUtilsMock(stats);
+        setupMatchingBundle();
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -297,6 +283,11 @@ class BundleValidationTest {
         setupMode(mode);
         setupMatchingBundle();
 
+        File templateFile = new File(temporaryFolder,
+                DEFAULT_FRONTEND_DIR + "my-lit-element-view.js");
+        FileUtils.forceMkdir(templateFile.getParentFile());
+        templateFile.createNewFile();
+
         Mockito.doReturn(Collections.singleton(ProjectTemplate.class))
                 .when(finder).getSubTypesOf(Template.class);
 
@@ -305,6 +296,24 @@ class BundleValidationTest {
         assertFalse(needsBuild,
                 "A template source from the project is copied on every build "
                         + "and should not require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void templateFromAddonJarMissingInBundle_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        setupMatchingBundle();
+
+        jarResources.put(JAR_PACKAGED_TEMPLATE, "export {}");
+        Mockito.doReturn(Collections.singleton(JarPackagedTemplate.class))
+                .when(finder).getSubTypesOf(Template.class);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "A template source packaged in an add-on jar is copied on "
+                        + "every build and should not require bundling");
     }
 
     private void setupMatchingBundle() throws IOException {
@@ -2799,6 +2808,11 @@ class BundleValidationTest {
 
     @JsModule(PROJECT_TEMPLATE)
     static class ProjectTemplate implements Template {
+
+    }
+
+    @JsModule(JAR_PACKAGED_TEMPLATE)
+    static class JarPackagedTemplate implements Template {
 
     }
 

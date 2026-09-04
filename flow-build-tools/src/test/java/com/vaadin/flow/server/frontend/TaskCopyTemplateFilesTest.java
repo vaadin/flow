@@ -113,7 +113,8 @@ class TaskCopyTemplateFilesTest {
                 projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
-                .withFrontendDirectory(frontendDirectory);
+                .withFrontendDirectory(frontendDirectory)
+                .withBundleBuild(false);
 
         new TaskCopyTemplateFiles(finder, options).execute();
 
@@ -126,6 +127,34 @@ class TaskCopyTemplateFilesTest {
         assertEquals("from the bundle",
                 Files.readString(bundledTemplate.toPath()),
                 "Template source from the bundle should have been kept");
+    }
+
+    @Test
+    void bundleBuild_templateSourceNotFound_executionFails() throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class))
+                .thenReturn(Set.of(NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+
+        // Left over from an earlier build, while the npm package no longer
+        // has the file, e.g. because a version upgrade moved it
+        File staleTemplate = new File(resourceOutputDirectory,
+                Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE);
+        staleTemplate.getParentFile().mkdirs();
+        Files.writeString(staleTemplate.toPath(), "from an earlier build");
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
+        TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
+
+        assertThrows(ExecutionFailedException.class, task::execute,
+                "A stale copy should not stand in for a source that the bundle "
+                        + "build is expected to have");
     }
 
     @Test
