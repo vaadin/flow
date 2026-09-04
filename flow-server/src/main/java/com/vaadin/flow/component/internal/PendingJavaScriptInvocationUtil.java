@@ -62,7 +62,8 @@ final class PendingJavaScriptInvocationUtil {
      * @param invocation
      *            the invocation waiting to be sent, not <code>null</code>
      * @return the UI internals the invocation was counted in, or
-     *         <code>null</code> if its owner does not belong to a UI
+     *         <code>null</code> if its owner does not belong to a UI, or
+     *         belongs to one that has been closed
      */
     static UIInternals invocationScheduled(
             PendingJavaScriptInvocation invocation) {
@@ -72,6 +73,14 @@ final class PendingJavaScriptInvocationUtil {
             // so there is no count that the invocation could be part of. It is
             // only reachable through that owner, which would in turn start
             // referencing a UI of its own only because of the count
+            return null;
+        }
+        if (internals.getSession() == null) {
+            // The UI has been closed and its count is discarded with it, along
+            // with everything that was queued for it. A detached owner keeps
+            // referencing the state tree of that UI, so an owner reused in
+            // another UI resolves to the closed one until it is attached
+            // again, which is when the invocation starts being counted
             return null;
         }
 

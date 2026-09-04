@@ -164,6 +164,28 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void executeJsForOwnerOfClosedUI_countedWhenAttachedToAnotherUI() {
+        MockUI closedUI = new MockUI();
+        TestComponent component = new TestComponent();
+        closedUI.add(component);
+        closedUI.remove(component);
+        // Closing a UI clears its session, while its detached nodes keep
+        // referencing its state tree
+        closedUI.getInternals().setSession(null);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+
+        MockUI ui = new MockUI();
+        // Reusing a component in another UI requires releasing it from the
+        // state tree of the previous one, the way preserve on refresh does
+        component.getElement().removeFromTree(false);
+        ui.add(component);
+
+        assertEquals(1, count(ui),
+                "attaching the owner to another UI should count the invocation waiting for it");
+    }
+
+    @Test
     void warningMessage_containsCauseAndAdvice() {
         StateNode node = new StateNode(ElementData.class);
         String message = buildWarningMessage(createInvocation(node), 1000);
