@@ -250,8 +250,9 @@ public class AtmospherePushConnection
         if (lastResponse == null) {
             // The answer to the message the client re-sent was never created,
             // so creating one now is all this connection can offer. It answers
-            // that message, so push records it: if it is lost too, the next
-            // resend has something to send again instead of an empty response.
+            // that message, so push records it once it can create it: if that
+            // one is lost too, the next resend has something to send again
+            // instead of an empty response.
             push(false);
             return;
         }
@@ -267,10 +268,12 @@ public class AtmospherePushConnection
             if (!isConnected()) {
                 return;
             }
-            // The message wrapper gets the current sync id, not the one
-            // this response was created with. Only LongPollingCacheFilter
-            // reads it, and only for a long polling resource, which cannot
-            // reach this resend.
+            // The message wrapper gets the current sync id, not the one this
+            // response was created with. Only LongPollingCacheFilter reads
+            // that id, and only for a long polling resource. A long polling
+            // client sends its messages over XHR instead of the push channel,
+            // so its resend is answered by UidlRequestHandler and never
+            // arrives here.
             sendMessage(lastResponse);
         }
     }
