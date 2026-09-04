@@ -162,8 +162,18 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * attached.
      */
     public void countWhenAttached() {
-        if (countedIn != null || sentToBrowser || canceled) {
+        if (sentToBrowser || canceled) {
             return;
+        }
+        if (countedIn != null) {
+            if (countedIn.getSession() != null) {
+                return;
+            }
+            // The UI that counts this invocation has been closed, which
+            // discards its count along with everything queued for it. Release
+            // the invocation from it so that it is counted in the UI that its
+            // owner now belongs to, and stops referencing the closed one
+            stopCounting();
         }
         countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }

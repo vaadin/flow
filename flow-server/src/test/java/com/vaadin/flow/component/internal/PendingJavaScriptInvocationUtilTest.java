@@ -186,6 +186,24 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void executeJsBeforeUIClosed_countedInTheNewUIWhenTheOwnerIsReused() {
+        MockUI closedUI = new MockUI();
+        TestComponent component = new TestComponent();
+        closedUI.add(component);
+        closedUI.remove(component);
+        // Counted in the UI of the detached owner, which is closed after that
+        component.getElement().executeJs("this.foo = $0", "bar");
+        closedUI.getInternals().setSession(null);
+
+        MockUI ui = new MockUI();
+        component.getElement().removeFromTree(false);
+        ui.add(component);
+
+        assertEquals(1, count(ui),
+                "an invocation counted in a closed UI should be counted in the UI the owner is reused in");
+    }
+
+    @Test
     void warningMessage_containsCauseAndAdvice() {
         StateNode node = new StateNode(ElementData.class);
         String message = buildWarningMessage(createInvocation(node), 1000);
