@@ -162,6 +162,26 @@ public class CompressUtil {
     }
 
     /**
+     * Checks if the given zip file contains a file with the given name.
+     *
+     * @param zip
+     *            Target zip file
+     * @param filename
+     *            Target file name
+     * @return {@code true} if the file is found in the zip
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    public static boolean hasFileInZip(File zip, String filename)
+            throws IOException {
+        try (ZipFile zipFile = new ZipFile(zip)) {
+            return zipFile.getEntry(filename) != null;
+        } catch (ZipException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
      * Read a file content from the given zip file.
      *
      * @param zip

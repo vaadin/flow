@@ -59,6 +59,22 @@ public class CompressUtilTest {
     }
 
     @Test
+    public void hasFileInZip_onlyExistingEntryIsFound() throws IOException {
+        File zip = temporaryFolder.newFile("prod.bundle");
+        try (ZipOutputStream zipOut = new ZipOutputStream(
+                new FileOutputStream(zip))) {
+            zipOut.putNextEntry(new ZipEntry("config/templates/my-view.js"));
+            zipOut.write("export {}".getBytes(StandardCharsets.UTF_8));
+            zipOut.closeEntry();
+        }
+
+        Assert.assertTrue(
+                CompressUtil.hasFileInZip(zip, "config/templates/my-view.js"));
+        Assert.assertFalse(CompressUtil.hasFileInZip(zip,
+                "config/templates/another-view.js"));
+    }
+
+    @Test
     public void uncompressFile_zipSlipEntry_isRejected() throws IOException {
         File zip = temporaryFolder.newFile("evil.bundle");
         try (ZipOutputStream zipOut = new ZipOutputStream(
