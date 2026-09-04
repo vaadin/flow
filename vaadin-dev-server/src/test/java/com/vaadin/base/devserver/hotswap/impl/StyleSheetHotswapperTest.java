@@ -257,7 +257,9 @@ class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         assertAppShellStyleSheetRemoved("/styles/absolute.css");
-        assertTrue(hasStylesheet("./styles/relative.css"),
+        // The dependency is registered under the resolved URL, so the './'
+        // prefix of the annotation value is not part of it
+        assertTrue(hasStylesheet("styles/relative.css"),
                 "Should have relative.css stylesheet");
         assertFalse(event.anyUIRequiresPageReload(),
                 "Should not require page reload");
