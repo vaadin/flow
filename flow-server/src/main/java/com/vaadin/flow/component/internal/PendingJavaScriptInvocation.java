@@ -47,7 +47,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     /**
      * The UI internals whose undelivered invocation count includes this
      * invocation, or <code>null</code> if it is not counted, either because its
-     * owner does not belong to a UI or because it is no longer waiting to be
+     * owner is not attached to a UI or because it is no longer waiting to be
      * sent.
      * <p>
      * Only ever set to the internals of the UI that the owner belongs to, so
@@ -73,8 +73,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
         this.owner = owner;
         this.invocation = invocation;
-
-        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     /**
@@ -152,14 +150,15 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     /**
-     * Counts this invocation as undelivered in the UI that its owner now
-     * belongs to, unless it is already counted or no longer waiting to be sent.
+     * Counts this invocation as undelivered in the UI that its owner belongs
+     * to, unless it is already counted or no longer waiting to be sent.
      * <p>
-     * An invocation scheduled for an owner that was not attached to any UI is
-     * not counted when it is created, since there is no UI to count it in. It
-     * starts counting once the owner is attached, which is also when it starts
-     * being on its way to a client. Called by the framework when the owner is
-     * attached.
+     * An invocation is not counted when it is created, since its owner is not
+     * necessarily attached to a UI then, and an owner that is detached, or
+     * attached to a UI that has been closed since, has no count to be part of.
+     * It starts counting once the owner is attached, which is also when it
+     * starts being on its way to a client. Called by the framework when the
+     * owner is attached, and when the invocation is queued for a UI.
      */
     public void countWhenAttached() {
         if (countedIn != null || sentToBrowser || canceled) {
