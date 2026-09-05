@@ -61,6 +61,10 @@ public class TaskGenerateWebComponentBootstrap
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
+        // By path rather than through the `vaadin-flow-client` specifier that
+        // Flow.ts uses: this file is TypeScript, and that specifier only exists
+        // as a Vite alias, so type checking the application would not resolve
+        // it.
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");
         lines.add("init();");

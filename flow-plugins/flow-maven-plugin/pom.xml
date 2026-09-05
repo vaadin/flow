@@ -116,6 +116,10 @@
           <extraArtifacts>
             <artifact>com.vaadin:flow-client:${project.version}</artifact>
             <artifact>com.vaadin:flow-react:${project.version}</artifact>
+            <!-- install-dev-cli provisions HotswapAgent through the daemon the
+                 project resolves, and the plugin deliberately does not depend
+                 on it, so it would not otherwise be in the test repository. -->
+            <artifact>com.vaadin:flow-devloop-daemon:${project.version}</artifact>
           </extraArtifacts>
           <streamLogsOnFailures>true</streamLogsOnFailures>
           <settingsFile>src/it/settings.xml</settingsFile>
