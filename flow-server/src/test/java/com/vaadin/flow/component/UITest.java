@@ -1266,6 +1266,62 @@ public class UITest {
 
         assertFalse(fixture.ui.hasModalComponent(),
                 "Setting modal to VISUAL should have removed all server side modality");
+        assertTrue(fixture.ui.getInternals().hasModalityComponent(),
+                "VISUAL component should still be tracked as a component with modality");
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported as a component with modality");
+        verifyInert(fixture.routingComponent, false);
+
+        // re-applying the same modality should not track the component twice
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported only once");
+    }
+
+    @Test
+    public void modalityComponents_modalAndVisual_reportedMostRecentFirst() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.add(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Components with modality should be reported most recently set first");
+
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.STRICT);
+
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Switching from VISUAL to STRICT should not report the component twice");
+        assertEquals(visualComponent,
+                fixture.ui.getInternals().getActiveModalComponent(),
+                "Component should have become the active modal component");
+
+        fixture.ui.setChildComponentModal(visualComponent,
+                ModalityMode.MODELESS);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Setting MODELESS should have removed the component from the modality components");
+    }
+
+    @Test
+    public void modalVisualComponent_removedFromUI_notReportedAsModalityComponent() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        fixture.modalComponent.removeFromParent();
+
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Detached component should not be tracked as a component with modality");
+        assertTrue(fixture.ui.getInternals().getModalityComponents().isEmpty(),
+                "Detached component should not be reported as a component with modality");
     }
 
     @Test

@@ -45,6 +45,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -311,6 +312,10 @@ public class UIInternals implements Serializable {
     private boolean screenOrientationListenerInstalled;
 
     private ArrayDeque<Component> modalComponentStack;
+
+    private ArrayDeque<Component> modalityComponentStack;
+
+    private Map<Component, Registration> modalityRemovalRegistrations;
 
     private Element wrapperElement;
 
@@ -1404,8 +1409,8 @@ public class UIInternals implements Serializable {
      * component, and optionally all layouts in the route chain.
      * <p>
      *
-     * If modal components are currently defined for the UI, the whole route
-     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * If components with modality are currently defined for the UI, the whole
+     * route chain will be refreshed regardless the {@code refreshRouteChain}
      * parameter, because otherwise it would not be possible to preserve the
      * correct modality cardinality and order.
      *
@@ -1421,7 +1426,7 @@ public class UIInternals implements Serializable {
         } else {
             getRouter().navigate(ui, locationForRefresh,
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
-                    refreshRouteChain || hasModalComponent());
+                    refreshRouteChain || hasModalityComponent());
         }
     }
 
@@ -1873,6 +1878,38 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Check if we have a component with modality defined for the UI, that is a
+     * child component set either {@link ModalityMode#STRICT} or
+     * {@link ModalityMode#VISUAL}.
+     * <p>
+     * Differently from {@link #hasModalComponent()}, this also takes into
+     * account components that show a modality curtain on the client side
+     * without making the UI inert.
+     *
+     * @return {@code true} if a component with modality is defined
+     * @since 25.3
+     */
+    public boolean hasModalityComponent() {
+        return modalityComponentStack != null
+                && !modalityComponentStack.isEmpty();
+    }
+
+    /**
+     * Gets all child components with modality, that is components set either
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, most recently
+     * set first.
+     *
+     * @return the components with modality, never {@code null}
+     * @since 25.3
+     */
+    public List<Component> getModalityComponents() {
+        if (!hasModalityComponent()) {
+            return Collections.emptyList();
+        }
+        return List.copyOf(modalityComponentStack);
+    }
+
+    /**
      * Get the active modal component if modal components set.
      *
      * @return the current active modal component
@@ -1916,22 +1953,64 @@ public class UIInternals implements Serializable {
                     modalComponentStack.peek().getElement(), false);
         }
 
-        final boolean needsListener = !modalComponentStack.remove(child);
+        modalComponentStack.remove(child);
         modalComponentStack.push(child);
 
-        if (needsListener) {
-            /*
-             * Handle removal automatically on element level always due to
-             * possible component.getElement().removeFromParent() usage.
-             */
-            AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-            final Registration componentRemoval = () -> setChildModeless(child);
-            final Registration listenerRegistration = child.getElement()
-                    .addDetachListener(
-                            event -> registrationCombination.get().remove());
-            registrationCombination.set(Registration.combine(componentRemoval,
-                    listenerRegistration));
+        trackModality(child);
+    }
+
+    /**
+     * Makes an existing child component visually modal. Differently from
+     * {@link #setChildModal(Component)}, the UI and the other components inside
+     * it are not made inert, so they still react to client side requests. The
+     * component is however tracked as a component with modality, since it
+     * covers the UI with a modality curtain on the client side.
+     * <p>
+     * Tracking is removed automatically when the component is removed from the
+     * UI, no need to call anything.
+     *
+     * @param child
+     *            the child component to make visually modal
+     * @since 25.3
+     */
+    public void setChildVisuallyModal(Component child) {
+        // strict and visual modality are mutually exclusive
+        removeStrictModality(child);
+        trackModality(child);
+    }
+
+    private void trackModality(Component child) {
+        if (modalityComponentStack == null) {
+            modalityComponentStack = new ArrayDeque<>();
         }
+        modalityComponentStack.remove(child);
+        modalityComponentStack.push(child);
+        registerModalityRemoval(child);
+    }
+
+    /*
+     * Handle removal automatically on element level always due to possible
+     * component.getElement().removeFromParent() usage. Does nothing if the
+     * child is already registered, so that repeatedly changing the modality of
+     * a component does not pile up detach listeners.
+     */
+    private void registerModalityRemoval(Component child) {
+        if (modalityRemovalRegistrations == null) {
+            modalityRemovalRegistrations = new IdentityHashMap<>();
+        } else if (modalityRemovalRegistrations.containsKey(child)) {
+            return;
+        }
+        AtomicReference<Registration> registrationCombination = new AtomicReference<>();
+        final Registration componentRemoval = () -> {
+            modalityRemovalRegistrations.remove(child);
+            setChildModeless(child);
+        };
+        final Registration listenerRegistration = child.getElement()
+                .addDetachListener(
+                        event -> registrationCombination.get().remove());
+        registrationCombination.set(
+                Registration.combine(componentRemoval, listenerRegistration));
+        modalityRemovalRegistrations.put(child, registrationCombination.get());
     }
 
     /**
@@ -1944,6 +2023,13 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
+        if (modalityComponentStack != null) {
+            modalityComponentStack.remove(child);
+        }
+        removeStrictModality(child);
+    }
+
+    private void removeStrictModality(Component child) {
         if (modalComponentStack == null) {
             return;
         }

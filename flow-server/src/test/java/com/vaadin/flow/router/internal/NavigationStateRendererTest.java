@@ -34,6 +34,8 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
@@ -43,6 +45,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -934,8 +937,10 @@ class NavigationStateRendererTest {
         }
     }
 
-    @Test
-    void handle_refreshRoute_modalComponentsDetached() {
+    @ParameterizedTest
+    @EnumSource(ModalityMode.class)
+    void handle_refreshRoute_componentsWithModalityDetached(
+            ModalityMode modalityMode) {
         beforeEnterCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -973,14 +978,20 @@ class NavigationStateRendererTest {
 
         ModalComponent modalComponent = new ModalComponent();
         MockUI ui = new MockUI(session);
-        ui.addModal(modalComponent);
+        ui.add(modalComponent);
+        ui.setChildComponentModal(modalComponent, modalityMode);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
                 NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
                 true, true));
 
+        // Components with modality, such as dialogs, are attached to the UI
+        // instead of the route, so they have to be removed on refresh since it
+        // is not possible to preserve the correct modality cardinality and
+        // order. Modeless components are instead left untouched.
+        int expectedDetachCount = modalityMode == ModalityMode.MODELESS ? 0 : 1;
         assertEquals(1, modalComponent.attachCount);
-        assertEquals(1, modalComponent.detachCount);
+        assertEquals(expectedDetachCount, modalComponent.detachCount);
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
