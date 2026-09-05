@@ -270,6 +270,12 @@ public final class BundleValidationUtil {
             return true;
         }
 
+        if (templateSourceMissingFromBundle(options)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-template",
+                    null);
+            return true;
+        }
+
         if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
                 frontendDependencies)) {
             UsageStatistics.markAsUsed(
@@ -293,6 +299,78 @@ public final class BundleValidationUtil {
         }
 
         return false;
+    }
+
+    /**
+     * Checks that the bundle contains the template sources that cannot be
+     * copied into it without building it.
+     * <p>
+     * A template whose {@code @JsModule} points into an npm package is only
+     * available in {@code node_modules}, which npm install creates as part of a
+     * bundle build, so such a template can only come from the bundle when the
+     * bundle is reused. A template that lives in the project or in an add-on
+     * jar is always available and is copied on every build.
+     *
+     * @param options
+     *            the task options
+     * @return {@code true} if the bundle is missing a template source
+     */
+    private static boolean templateSourceMissingFromBundle(Options options)
+            throws IOException {
+        Map<String, String> templates;
+        try {
+            templates = TaskCopyTemplateFiles
+                    .getTemplateJsModules(options.getClassFinder());
+        } catch (ExecutionFailedException e) {
+            getLogger().debug(
+                    "Failed to scan the template classes, requiring a bundle build",
+                    e);
+            return true;
+        }
+
+        for (Map.Entry<String, String> template : templates.entrySet()) {
+            String path = template.getKey().replaceFirst("^\\./", "");
+            if (templateSourceAvailableInProject(options, path)) {
+                continue;
+            }
+            if (!bundleHasFile(options, Constants.TEMPLATE_DIRECTORY + path)) {
+                getLogger().info(
+                        "The bundle is missing the template source '{}' used by '{}'.",
+                        template.getKey(), template.getValue());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the template source is available whether or not the bundle is
+     * built, which is the case for a template in the frontend folder and for
+     * one packaged in an add-on jar.
+     *
+     * @param options
+     *            the task options
+     * @param path
+     *            the {@code @JsModule} value without a leading {@code ./}
+     * @return {@code true} if the source does not depend on npm install
+     */
+    private static boolean templateSourceAvailableInProject(Options options,
+            String path) {
+        if (new File(options.getFrontendDirectory(), path).exists()) {
+            return true;
+        }
+        return FrontendBuildUtils.getJarResourceString(path,
+                options.getClassFinder()) != null;
+    }
+
+    private static boolean bundleHasFile(Options options, String filename)
+            throws IOException {
+        if (options.isProductionMode()) {
+            return ProdBundleUtils.hasBundleFile(options.getNpmFolder(),
+                    options.getClassFinder(), filename);
+        }
+        return DevBundleUtils.findBundleFile(options.getNpmFolder(),
+                options.getBuildDirectoryName(), filename) != null;
     }
 
     /**
