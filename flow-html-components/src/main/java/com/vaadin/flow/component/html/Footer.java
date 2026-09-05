@@ -23,7 +23,13 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;footer&gt;</code> element.
+ * <p>
+ * Footer for the nearest sectioning ancestor: copyright, author, or related
+ * links.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/footer">MDN:
+ *      &lt;footer&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

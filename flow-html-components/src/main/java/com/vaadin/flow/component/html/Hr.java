@@ -20,7 +20,13 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;hr&gt;</code> element.
+ * <p>
+ * A thematic break between paragraphs, such as a change of topic. It is not
+ * only a visual line.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/hr">MDN:
+ *      &lt;hr&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

@@ -28,7 +28,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;button&gt;</code> element.
+ * <p>
+ * A clickable control that submits a form, resets it, or runs an action.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button">MDN:
+ *      &lt;button&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

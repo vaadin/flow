@@ -34,7 +34,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;details&gt;</code> element.
+ * <p>
+ * A disclosure widget the user can open to reveal extra information.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details">MDN:
+ *      &lt;details&gt;</a>
  * @author Vaadin Ltd
  * @since 6.0
  */

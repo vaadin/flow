@@ -37,7 +37,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
+ * <p>
+ * A hyperlink to another URL, a download, or a location in the page.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a">MDN:
+ *      &lt;a&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

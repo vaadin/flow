@@ -23,7 +23,13 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;aside&gt;</code> element.
+ * <p>
+ * Content that is only indirectly related to the surrounding page, typically a
+ * sidebar or call-out.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/aside">MDN:
+ *      &lt;aside&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
