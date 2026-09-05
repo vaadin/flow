@@ -88,6 +88,21 @@ public abstract class Trigger implements Serializable {
     }
 
     /**
+     * Creates a new trigger bound to the given element.
+     * <p>
+     * Used by triggers whose host has no component of its own — for example a
+     * renderer whose container element is all the server side has of the rows
+     * it renders.
+     *
+     * @param host
+     *            the element the trigger fires on, not {@code null}
+     */
+    protected Trigger(Element host) {
+        this.host = Objects.requireNonNull(host);
+        verifyArmedBeforeClientResponse();
+    }
+
+    /**
      * Schedules a check, run once the host is attached and just before the
      * client response is built, that fails if no action was committed to this
      * trigger via {@link #triggers(Action...)} or its deferred
@@ -122,6 +137,23 @@ public abstract class Trigger implements Serializable {
                                 + "own.");
                     }
                 }));
+    }
+
+    /**
+     * Whether this trigger supplies a context object to the actions it fires,
+     * describing what the trigger fired for.
+     * <p>
+     * {@code false} for the plain event triggers, whose handler has nothing to
+     * say beyond the event itself; {@code true} for triggers rendered into
+     * something that repeats, such as a row renderer. Inputs that read the
+     * context ({@link ContextInput}) reject a trigger that supplies none, so
+     * the mistake surfaces on the server instead of as an undefined value in
+     * the browser.
+     *
+     * @return whether a context is supplied, {@code false} by default
+     */
+    public boolean suppliesContext() {
+        return false;
     }
 
     /**

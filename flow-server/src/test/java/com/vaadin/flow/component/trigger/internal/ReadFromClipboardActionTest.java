@@ -54,7 +54,7 @@ class ReadFromClipboardActionTest {
         // Action wraps the inner promise function with OBSERVE_PROMISE +
         // return channel. The inner just invokes the Clipboard.ts helper.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
