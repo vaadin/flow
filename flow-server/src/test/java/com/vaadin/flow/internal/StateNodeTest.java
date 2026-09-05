@@ -1947,8 +1947,39 @@ public class StateNodeTest {
         assertEquals("node id=" + node.getId(), node.describe());
     }
 
+    @Test
+    void describe_applicationCodeThrows_failureDescribedWithDetailsSoFar() {
+        UI ui = new UI();
+        BrokenParentComponent component = new BrokenParentComponent();
+        ui.getElement().appendChild(component.getElement());
+        component.broken = true;
+
+        String description = component.getElement().getNode().describe();
+
+        assertTrue(description.contains(BrokenParentComponent.class.getName()),
+                description);
+        assertTrue(
+                description.contains(
+                        UnsupportedOperationException.class.getName()),
+                description);
+    }
+
     @Tag("div")
     private static class TestDescribedComponent
             extends com.vaadin.flow.component.Component {
+    }
+
+    @Tag("div")
+    private static class BrokenParentComponent
+            extends com.vaadin.flow.component.Component {
+        private boolean broken;
+
+        @Override
+        public Optional<com.vaadin.flow.component.Component> getParent() {
+            if (broken) {
+                throw new UnsupportedOperationException("broken getParent");
+            }
+            return super.getParent();
+        }
     }
 }
