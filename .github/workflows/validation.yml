@@ -377,14 +377,29 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # Caching the Gradle home by hand meant every pull request saved its own
+      # copy of it. Those copies alone held 7 of the 10 GB the repository is
+      # allowed, so entries evicted each other within hours and even a second
+      # run of the same pull request started cold. What fixes that is
+      # cache-read-only below, which leaves the writing to pushes.
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle.properties', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          # The default 'enhanced' provider is a proprietary component that the
+          # MIT licence of the action does not cover, and it is free only as a
+          # preview. 'basic' is the MIT implementation. It saves one entry over
+          # ~/.gradle/caches and ~/.gradle/wrapper, the same tree the hand
+          # written step cached, and deliberately passes no restore keys, so a
+          # change to any build script or wrapper file starts from an empty
+          # Gradle home rather than a near match. gradle-home-cache-includes
+          # and its siblings are read only by the enhanced provider and would
+          # do nothing here.
+          cache-provider: basic
+          # The action would otherwise write only on the default branch, which
+          # this workflow no longer builds. A push is the only event that should
+          # write, so that the maintenance branches keep filling their own
+          # scope, and everything else reads.
+          cache-read-only: ${{ github.event_name != 'push' }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
         with:

@@ -1,0 +1,105 @@
+name: Warm Caches
+
+# Flow Validation caches ~/.m2/repository and, through setup-gradle, the Gradle
+# home. A run can only read caches from its own ref and from the default branch,
+# and #24103 removed main from that workflow's push trigger because the merge
+# queue already validates every merge. Merge queue runs cannot fill the gap
+# either: their branch name embeds the pull request number and the base sha, so
+# each one is single use and no other run can read what it saved.
+#
+# Nothing therefore writes a cache that a pull request can read. Every one of
+# them starts with an empty local repository, downloads the whole dependency
+# tree, and then saves a copy only it can read.
+#
+# This builds main once per merge so that the default branch holds an entry they
+# can all read. It is a single job rather than the validation matrix, so it does
+# not bring back the duplicate validation that #24103 removed.
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only the most recent state of main is worth caching, and queueing runs
+  # instead would warm one superseded commit after another while the useful one
+  # waits behind them. Cancelling costs freshness, not availability: the
+  # previously saved entry stays in the store and the restore keys still match
+  # it, so a run that loses a race leaves every branch on a cache one merge
+  # behind rather than on none. Merges are far enough apart for the last run of
+  # a burst to finish anyway; over 18 days the median gap between pushes to main
+  # was 54 minutes.
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: 21
+
+jobs:
+  warm-caches:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.20.0'
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # See the note in validation.yml: the default provider is proprietary.
+          cache-provider: basic
+          # The action reads rather than writes off the default branch, which
+          # would make a manual run from another ref warm nothing.
+          cache-read-only: false
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The cache key is hashed from the poms after this rewrite, so it has to
+        # happen here too for the key to match the one validation.yml computes.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Populate the local repository
+        # The same command the build job runs, so that what is cached is what a
+        # validation run asks for. A real build, because it resolves what a real
+        # build resolves: dependency:go-offline fails on this reactor over
+        # org.eclipse.m2e:lifecycle-mapping, which several poms declare so that
+        # Eclipse stays quiet and which resolves nowhere, and dependency:resolve
+        # would leave every build plugin uncached.
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Populate the Gradle home
+        # Compiles every source set the validation job's `build` would, so that
+        # the test and functionalTest configurations are resolved too, but
+        # without running the tests, which is the slow part and warms nothing.
+        # Needs the step above, which installs the artifacts it resolves.
+        #
+        # Failing here must not take the local repository down with it: the
+        # step that saves a cache only runs on a successful job, and this
+        # workflow is the only writer of the caches every branch reads.
+        continue-on-error: true
+        working-directory: flow-plugins/flow-gradle-plugin
+        run: ./gradlew assemble testClasses functionalTestClasses
+      - name: Drop the Flow artifacts before the cache is saved
+        # The step that saves the cache runs after every regular step, so
+        # removing them here keeps them out of the entry every branch restores,
+        # where they could satisfy a resolution that ought to fail for a module
+        # a branch renamed or removed. Only what this build produced: the rest
+        # of the com/vaadin tree is ordinary downloads, license-checker, open,
+        # the external and TestBench artifacts, and is worth caching. Excluding
+        # them through the cache path does not work: actions/cache globs with
+        # implicitDescendants false, so ~/.m2/repository matches only the
+        # directory itself and tar recurses into it regardless of any negated
+        # pattern.
+        run: rm -rf ~/.m2/repository/com/vaadin/*/999.99-SNAPSHOT
