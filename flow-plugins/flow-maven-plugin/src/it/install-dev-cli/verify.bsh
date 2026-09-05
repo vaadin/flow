@@ -84,3 +84,37 @@ if (second.indexOf("Installed ") >= 0) {
     throw new RuntimeException(
             "run 2 should have been a no-op, but wrote files: " + second);
 }
+
+// --- HotswapAgent is in the machine-level cache, not in the project ---------
+// The reason the goal downloads it at all: a machine prepared here has to be
+// able to start the loop with no network access afterwards.
+File cache = new File(new File(new File(System.getProperty("user.home")),
+        ".vaadin"), "devloop");
+File[] agents = cache.listFiles();
+boolean agent = false;
+if (agents != null) {
+    for (int i = 0; i < agents.length; i++) {
+        String name = agents[i].getName();
+        if (name.startsWith("hotswap-agent-") && name.endsWith(".jar")) {
+            agent = true;
+        }
+        if (name.endsWith(".part")) {
+            throw new RuntimeException(
+                    "a half-written download was left behind: " + agents[i]);
+        }
+    }
+}
+if (!agent) {
+    throw new RuntimeException(
+            "install-dev-cli should have provisioned HotswapAgent into " + cache);
+}
+// Both runs say where it is, whether they downloaded it or found it cached:
+// the answer to "can this machine start the loop?" should not depend on which.
+if (first.indexOf("HotswapAgent") < 0) {
+    throw new RuntimeException(
+            "run 1 should have reported the provisioned agent: " + first);
+}
+if (second.indexOf("HotswapAgent") < 0) {
+    throw new RuntimeException(
+            "run 2 should have reported the cached agent: " + second);
+}

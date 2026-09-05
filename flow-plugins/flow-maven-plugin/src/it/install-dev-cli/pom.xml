@@ -24,6 +24,16 @@
             <artifactId>flow-server</artifactId>
             <version>${flow.version}</version>
         </dependency>
+        <!-- What com.vaadin:vaadin-dev brings a real application, declared
+             directly here so the IT does not drag in the whole dev server.
+             The goal provisions HotswapAgent through this jar, so a project
+             without it is a different case - see verify.bsh. -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-devloop-daemon</artifactId>
+            <version>${flow.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

@@ -59,6 +59,44 @@ const i18nFolder = path.resolve(dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
+// The Flow client engine, which Flow.ts loads through the bare
+// `vaadin-flow-client` specifier. The engine is shipped as ~90 individual ES
+// modules, so in dev mode the browser would fetch them one by one on every page
+// load. Aliasing a bare specifier to the entry and listing it in
+// optimizeDeps.include makes Vite pre-bundle it instead: Vite only redirects
+// bare specifiers to an optimized dependency, never relative ones.
+const flowClientId = 'vaadin-flow-client';
+const flowClientEntry = path.resolve(jarResourcesFolder, 'FlowClient.js');
+const hasFlowClient = existsSync(flowClientEntry);
+
+/**
+ * Hash of the client engine sources, appended to the alias target so that it
+ * takes part in the hash Vite derives from this config for its dependency
+ * optimizer cache. That cache is keyed on the lockfile and on the config only,
+ * not on the contents of the pre-bundled files, so without this a client that
+ * changed without a lockfile change (a Flow upgrade that keeps the same npm
+ * dependencies) would keep being served from the stale pre-bundle.
+ */
+function flowClientHash(): string {
+  const hash = createHash('sha256');
+  const hashFolder = (folder: string) => {
+    for (const entry of readdirSync(folder, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const entryPath = path.resolve(folder, entry.name);
+      if (entry.isDirectory()) {
+        hashFolder(entryPath);
+      } else if (entry.name.endsWith('.js')) {
+        hash.update(readFileSync(entryPath));
+      }
+    }
+  };
+  hash.update(readFileSync(flowClientEntry));
+  const engineFolder = path.resolve(jarResourcesFolder, 'internal', 'client');
+  if (existsSync(engineFolder)) {
+    hashFolder(engineFolder);
+  }
+  return hash.digest('hex').substring(0, 16);
+}
+
 // Resolved by the Java side: points at the user's frontend/index.html when
 // they have one, otherwise at the default copy generated into the frontend
 // generated/ folder.
@@ -465,7 +503,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
-        Frontend: frontendFolder
+        Frontend: frontendFolder,
+        // The hash is only needed for the dev-mode dependency optimizer. A
+        // build must resolve to the bare path, so that the engine is not
+        // bundled a second time for the exported web component entry point,
+        // which imports it directly.
+        ...(hasFlowClient
+          ? { [flowClientId]: devMode ? `${flowClientEntry}?v=${flowClientHash()}` : flowClientEntry }
+          : {})
       },
       preserveSymlinks: true
     },
@@ -516,6 +561,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
+      // Pre-bundle the client engine instead of serving its modules one by one.
+      // It is only reached through a dynamic import, so the dependency scanner
+      // does not find it on its own.
+      include: hasFlowClient ? [flowClientId] : [],
       exclude: [
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',

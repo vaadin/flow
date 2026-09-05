@@ -16,7 +16,6 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.File;
-import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
@@ -49,17 +48,6 @@ class LaunchTest {
     void membership_seesAnAddedEntry() {
         assertNotEquals(Launch.membership(classpath("a.jar")),
                 Launch.membership(classpath("a.jar", "b.jar")));
-    }
-
-    @Test
-    void cacheDir_isMachineLevelRatherThanPerProject() {
-        Path cache = Launch.cacheDir();
-
-        // One HotswapAgent download per machine, and nothing written into a
-        // project - which also means mvn clean does not throw it away.
-        assertEquals(
-                Path.of(System.getProperty("user.home"), ".vaadin", "devloop"),
-                cache);
     }
 
     @Test
