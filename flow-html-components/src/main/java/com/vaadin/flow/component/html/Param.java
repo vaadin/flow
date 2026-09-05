@@ -25,13 +25,16 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Component representing a <code>&lt;param&gt;</code> element for
- * <code>&lt;param&gt;</code> element.
+ * Component representing a <code>&lt;param&gt;</code> element.
+ * <p>
+ * A parameter for a parent HtmlObject. The name and value attributes are passed
+ * to the embedded resource.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/param">MDN:
+ *      &lt;param&gt;</a>
  * @see HtmlObject
- *
  * @author Vaadin Ltd
- *
  * @since 9.0
  */
 @Tag(Tag.PARAM)

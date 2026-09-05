@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;h1&gt;</code> element.
+ * <p>
+ * The highest-rank heading on the page. Use one as the document title; lower
+ * ranks follow in order.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/h1">MDN:
+ *      &lt;h1&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

@@ -27,7 +27,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;dl&gt;</code> element.
+ * <p>
+ * A list of terms and their descriptions, using Term (<dt>) and Description
+ * (<dd>) children.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl">MDN:
+ *      &lt;dl&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -37,7 +43,13 @@ public class DescriptionList extends HtmlContainer
 
     /**
      * Component representing a <code>&lt;dt&gt;</code> element.
+     * <p>
+     * A term in a description list. Follow it with one or more Description
+     * children.
      *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dt">MDN:
+     *      &lt;dt&gt;</a>
      * @author Vaadin Ltd
      */
     @Tag(Tag.DT)
@@ -75,7 +87,12 @@ public class DescriptionList extends HtmlContainer
 
     /**
      * Component representing a <code>&lt;dd&gt;</code> element.
+     * <p>
+     * The description of the preceding Term in a description list.
      *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dd">MDN:
+     *      &lt;dd&gt;</a>
      * @author Vaadin Ltd
      */
     @Tag(Tag.DD)

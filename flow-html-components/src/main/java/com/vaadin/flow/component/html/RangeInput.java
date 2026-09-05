@@ -36,7 +36,10 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
- * 
+ *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range">MDN:
+ *      &lt;input type=&quot;range&quot;&gt;</a>
  * @since 24.3
  */
 @Tag(Tag.INPUT)
