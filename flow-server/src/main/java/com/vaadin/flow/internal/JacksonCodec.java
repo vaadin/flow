@@ -92,6 +92,37 @@ public class JacksonCodec {
         }
     }
 
+    /**
+     * Converts a JavaScript parameter into a form that Java serialization can
+     * write to the HTTP session, without changing what the client eventually
+     * receives.
+     * <p>
+     * Values that are already {@link Serializable} are returned as-is, which
+     * keeps their encoding deferred to the moment the UIDL message is built.
+     * That matters for {@link com.vaadin.flow.dom.Element} and
+     * {@link ReturnChannelRegistration}, whose encoding depends on state that
+     * may still change: an element attached only after the session is restored
+     * must encode as a DOM reference, not as the {@code null} it would have
+     * produced earlier.
+     * <p>
+     * Anything else is encoded to JSON now and stored as the resulting
+     * {@link JsonNode}. Since {@link #encodeWithoutTypeInfo(Object)} passes a
+     * {@code JsonNode} through untouched, the client receives exactly the same
+     * message it would have received without the round trip. The value is
+     * therefore snapshotted: mutations made after the session is serialized are
+     * not visible to the browser.
+     *
+     * @param parameter
+     *            the parameter to convert, may be {@code null}
+     * @return an equivalent value that Java serialization can write
+     */
+    public static Object serializableParameter(Object parameter) {
+        if (parameter == null || parameter instanceof Serializable) {
+            return parameter;
+        }
+        return encodeWithTypeInfo(parameter);
+    }
+
     private static JsonNode encodeReturnChannel(
             ReturnChannelRegistration value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
