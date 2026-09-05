@@ -16,7 +16,13 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -32,6 +38,10 @@ import com.vaadin.flow.router.internal.RouteUtil;
  * @author Vaadin Ltd
  */
 class UsageStatisticsCollector implements Serializable {
+
+    private static final String STATISTIC_KOTLIN = "kotlin";
+
+    private static final String KOTLIN_METADATA_ANNOTATION = "kotlin.Metadata";
 
     private UsageStatisticsCollector() {
         // Only static methods here, no need to create an instance
@@ -57,6 +67,7 @@ class UsageStatisticsCollector implements Serializable {
             addRouterUsageStatistics();
         }
         addAutoLayoutUsageStatistics(service);
+        addKotlinUsageStatistics(routeDataList);
         addFrontendToolUsageStatistics(configuration);
     }
 
@@ -102,5 +113,71 @@ class UsageStatisticsCollector implements Serializable {
                         null);
             }
         }
+    }
+
+    /**
+     * Reports Kotlin usage if any of the application's views is written in
+     * Kotlin.
+     * <p>
+     * Kotlin on the classpath is not enough, as kotlin-stdlib is a common
+     * transitive dependency of Java-only projects. Instead, the routing targets
+     * and their layouts are checked for the annotation that the Kotlin compiler
+     * adds to every class it compiles.
+     *
+     * @param routeDataList
+     *            the routes registered for the application
+     */
+    private static void addKotlinUsageStatistics(
+            List<RouteData> routeDataList) {
+        routeDataList.stream()
+                .flatMap(routeData -> Stream.concat(
+                        Stream.of(routeData.getNavigationTarget()),
+                        routeData.getParentLayouts().stream()))
+                .map(UsageStatisticsCollector::getKotlinMetadata)
+                .filter(Objects::nonNull).findFirst()
+                .ifPresent(metadata -> UsageStatistics
+                        .markAsUsed(STATISTIC_KOTLIN, getKotlinVersion(
+                                metadata.annotationType().getClassLoader())));
+    }
+
+    /**
+     * Gets the {@code kotlin.Metadata} annotation of the given class, if the
+     * class was compiled by the Kotlin compiler.
+     * <p>
+     * The annotation is looked up by name, as Flow does not depend on
+     * kotlin-stdlib.
+     *
+     * @param clazz
+     *            the class to check
+     * @return the Kotlin metadata annotation, or {@code null} if the class was
+     *         not compiled from Kotlin
+     */
+    private static Annotation getKotlinMetadata(Class<?> clazz) {
+        return Stream.of(clazz.getAnnotations())
+                .filter(annotation -> KOTLIN_METADATA_ANNOTATION
+                        .equals(annotation.annotationType().getName()))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Resolves the version of kotlin-stdlib in use.
+     *
+     * @param kotlinClassLoader
+     *            the class loader that provides the Kotlin classes
+     * @return the Kotlin version, or {@code unknown} if it cannot be resolved
+     */
+    private static String getKotlinVersion(ClassLoader kotlinClassLoader) {
+        try {
+            Class<?> kotlinVersion = Class.forName("kotlin.KotlinVersion", true,
+                    kotlinClassLoader);
+            return kotlinVersion.getField("CURRENT").get(null).toString();
+        } catch (Exception e) { // NOSONAR
+            getLogger().debug("Cannot resolve the Kotlin version", e);
+            return "unknown";
+        }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(UsageStatisticsCollector.class);
     }
 }

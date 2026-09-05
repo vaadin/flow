@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -107,6 +108,16 @@ class VaadinServiceTest {
     @Route(value = "flow", autoLayout = false)
     @Tag("div")
     public static class OptOutAutoLayoutTestView extends Component {
+
+    }
+
+    /**
+     * Stands in for a view written in Kotlin: the Kotlin compiler adds
+     * {@code @kotlin.Metadata} to every class it produces.
+     */
+    @kotlin.Metadata
+    @Tag("div")
+    public static class KotlinTestView extends Component {
 
     }
 
@@ -293,6 +304,8 @@ class VaadinServiceTest {
                     .setLayout(AutoLayout.class);
             RouteConfiguration.forApplicationScope()
                     .setAnnotatedRoute(AnnotatedTestView.class);
+            RouteConfiguration.forApplicationScope().setRoute("kotlin",
+                    KotlinTestView.class);
         };
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration, false);
@@ -306,6 +319,44 @@ class VaadinServiceTest {
     private static List<String> getUsageStatisticsNames() {
         return UsageStatistics.getEntries()
                 .map(UsageStatistics.UsageEntry::getName).sorted().toList();
+    }
+
+    @Test
+    void javaOnlyProject_kotlinNotReported() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope()
+                .setRoute("test", AnnotatedTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        assertFalse(
+                UsageStatistics.getEntries()
+                        .anyMatch(e -> "kotlin".equals(e.getName())),
+                "Kotlin should not be reported for a project without Kotlin code");
+    }
+
+    @Test
+    void kotlinView_kotlinReportedWithVersion() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope().setRoute("kotlin", KotlinTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        UsageStatistics.UsageEntry kotlinEntry = UsageStatistics.getEntries()
+                .filter(e -> "kotlin".equals(e.getName())).findFirst()
+                .orElse(null);
+        assertNotNull(kotlinEntry,
+                "Kotlin should be reported for a project with a Kotlin view");
+        // An entry with no version of its own reports the Flow version, so
+        // this also verifies that the kotlin-stdlib version is resolved
+        assertEquals(KotlinVersion.CURRENT.toString(), kotlinEntry.getVersion(),
+                "Kotlin version should be reported along with the usage");
     }
 
     @Test
