@@ -474,7 +474,14 @@ export class MessageHandler {
     // End the request if the received message was a response, not sent
     // asynchronously.
     if (this.#isResponse(json)) {
-      this.#registry.getRequestResponseTracker().endRequest();
+      const requestResponseTracker = this.#registry.getRequestResponseTracker();
+      if (requestResponseTracker.hasActiveRequest()) {
+        requestResponseTracker.endRequest();
+      } else {
+        // No request to end, e.g. a duplicate of a response that already ended
+        // it. endRequest would throw for that.
+        Console.debug('Received a response while no request is active');
+      }
       this.#registry.getLoadingIndicatorStateHandler().stopLoading();
     }
   }

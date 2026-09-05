@@ -25,9 +25,16 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
     unrecoverableErrorHandled: false
   };
   let state: UIState = UIState.INITIALIZING;
+  // A response normally arrives while the request that triggered it is still
+  // active, so the tracker starts out with one; ending it clears the flag, as
+  // the real tracker does.
+  let activeRequest = true;
   return {
     log,
     getState: () => state,
+    startRequest: () => {
+      activeRequest = true;
+    },
     registry: testRegistry({
       UILifecycle: {
         getState: () => state,
@@ -48,8 +55,15 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
         fireResponseHandlingStarted: () => {},
-        endRequest: () => log.endRequests++,
-        hasActiveRequest: () => false
+        endRequest: () => {
+          // The real tracker throws when there is nothing to end.
+          if (!activeRequest) {
+            throw new Error('endRequest called when no request is active');
+          }
+          log.endRequests++;
+          activeRequest = false;
+        },
+        hasActiveRequest: () => activeRequest
       },
       LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
       ConstantPool: { importFromJson: (c: unknown) => log.constants.push(c) },
@@ -149,7 +163,7 @@ function makeWiredRegistry() {
       fireResponseHandlingStarted: () => {},
       // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
       endRequest: () => {},
-      hasActiveRequest: () => false
+      hasActiveRequest: () => true
     })
     .register('LoadingIndicatorStateHandler', { stopLoading: () => {} })
     .register('MessageSender', {
@@ -233,13 +247,31 @@ describe('MessageHandler', () => {
       const registry = makeRegistry();
       const handler = new MessageHandler(registry.registry);
       handler.handleMessage({ syncId: 0 });
+      registry.startRequest();
       handler.handleMessage({ syncId: 1 });
       const endRequestsBefore = registry.log.endRequests;
 
-      // syncId 0 again: already seen -> ignored, but the request is ended.
+      // syncId 0 again: already seen -> ignored, but the request it responds to
+      // is ended.
+      registry.startRequest();
       handler.handleMessage({ syncId: 0, constants: { stale: 1 } });
       expect(registry.log.constants).to.deep.equal([]); // never applied any constants
       expect(registry.log.endRequests).to.equal(endRequestsBefore + 1);
+    });
+
+    it('ignores a duplicate response arriving with no active request instead of throwing', () => {
+      // Beyond the Java suite: No Java case covers a re-sent response.
+      const registry = makeRegistry();
+      const handler = new MessageHandler(registry.registry);
+      handler.handleMessage({ syncId: 0 });
+      expect(registry.log.endRequests).to.equal(1);
+
+      // The same response once more, with the request already ended by the
+      // first copy: ignored without ending a request that is not active.
+      handler.handleMessage({ syncId: 0 });
+      expect(registry.log.endRequests).to.equal(1);
+      // The loading indicator is still stopped for the duplicate.
+      expect(registry.log.stopLoadings).to.equal(2);
     });
 
     it('runs a one-shot session-expired handler when set', () => {
