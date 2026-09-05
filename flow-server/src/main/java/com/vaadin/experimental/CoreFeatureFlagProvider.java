@@ -29,10 +29,6 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
 
-    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
-            "Accessible disabled buttons", "accessibleDisabledButtons",
-            "https://github.com/vaadin/web-components/issues/4585", true, null);
-
     public static final Feature COMPONENT_STYLE_INJECTION = new Feature(
             "Enable theme component style injection", "themeComponentStyles",
             "https://github.com/vaadin/flow/issues/21608", true, null);
@@ -43,8 +39,7 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
 
     @Override
     public List<Feature> getFeatures() {
-        return List.of(COLLABORATION_ENGINE_BACKEND,
-                ACCESSIBLE_DISABLED_BUTTONS, COMPONENT_STYLE_INJECTION,
+        return List.of(COLLABORATION_ENGINE_BACKEND, COMPONENT_STYLE_INJECTION,
                 TAILWIND_CSS);
     }
 }
