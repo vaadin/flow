@@ -952,6 +952,7 @@ public abstract class VaadinService implements Serializable {
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
                 try {
+                    ui.getInternals().terminateActiveTransfers();
                     ui.accessSynchronously(() -> {
                         /*
                          * close() called here for consistency so that it is
@@ -1638,6 +1639,18 @@ public abstract class VaadinService implements Serializable {
         List<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
+                if (ui.getInternals().hasActiveTransfers()) {
+                    /*
+                     * Keep the UI attached so that listeners and callbacks
+                     * bound to it are still effective for the ongoing upload or
+                     * download. The request that serves the last transfer
+                     * detaches the UI through its own cleanup.
+                     */
+                    getLogger().debug(
+                            "Not removing closed UI {} since it has ongoing transfers",
+                            ui.getUIId());
+                    continue;
+                }
                 ui.accessSynchronously(() -> {
                     getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);

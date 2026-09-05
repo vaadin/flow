@@ -76,6 +76,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -313,6 +314,15 @@ public class UIInternals implements Serializable {
     private ArrayDeque<Component> modalComponentStack;
 
     private Element wrapperElement;
+
+    /*
+     * Unlike the rest of the UI state, this is not protected by the session
+     * lock: an upload or download request is served without holding the lock,
+     * so the request thread registers and removes its own transfer while other
+     * threads may be checking or terminating the transfers of this UI.
+     */
+    private final Set<ActiveTransfer> activeTransfers = ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Creates a new instance for the given UI.
@@ -2017,11 +2027,61 @@ public class UIInternals implements Serializable {
 
     /**
      * Get outlet element reference wrapper if set.
-     * 
+     *
      * @return wrapperElement if set else {@code null}
      * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;
+    }
+
+    /**
+     * Registers an upload or download request that is currently being served
+     * for this UI.
+     * <p>
+     * A UI that has active transfers is not detached from its session even if
+     * it is closed, so that listeners and callbacks bound to this UI are still
+     * effective while a transfer is ongoing. The returned registration must
+     * therefore be removed when the request has been served, so that a closed
+     * UI is eventually detached.
+     *
+     * @param transfer
+     *            the transfer to register, not {@code null}
+     * @return a registration for removing the transfer
+     */
+    public Registration registerActiveTransfer(ActiveTransfer transfer) {
+        return Registration.addAndRemove(activeTransfers, transfer);
+    }
+
+    /**
+     * Checks whether there are upload or download requests currently being
+     * served for this UI.
+     *
+     * @return {@code true} if there is at least one active transfer,
+     *         {@code false} otherwise
+     */
+    public boolean hasActiveTransfers() {
+        return !activeTransfers.isEmpty();
+    }
+
+    /**
+     * Terminates the upload and download requests that are currently being
+     * served for this UI, since the session they belong to is no longer valid.
+     * <p>
+     * The reason for the invalidation is not known here, so a session that has
+     * merely timed out is treated in the same way as one that has been
+     * invalidated for a security critical reason such as a password reset.
+     */
+    public void terminateActiveTransfers() {
+        /*
+         * Terminating every transfer before logging about any of them, so that
+         * a failure while describing one cannot leave the rest running.
+         */
+        List<ActiveTransfer> terminated = List.copyOf(activeTransfers);
+        terminated.forEach(ActiveTransfer::terminate);
+
+        terminated.forEach(transfer -> getLogger().warn(
+                "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                ui.getUIId(), transfer.getDescription()));
     }
 }

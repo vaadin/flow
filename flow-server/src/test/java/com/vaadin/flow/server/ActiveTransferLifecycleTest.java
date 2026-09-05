@@ -1,0 +1,277 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.TransferUtil;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
+import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockUI;
+import com.vaadin.tests.util.TestServletStreams;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Tests for the lifecycle of a UI and its session while an upload or download
+ * request for that UI is being served.
+ */
+@Isolated
+class ActiveTransferLifecycleTest {
+
+    @Tag("div")
+    private static class TestComponent extends Component {
+    }
+
+    private final StreamRequestHandler streamRequestHandler = new StreamRequestHandler();
+
+    private MockVaadinServletService service;
+    private MockVaadinSession session;
+    private StreamResourceRegistry registry;
+    private UI ui;
+    private int uiId;
+    private TestComponent owner;
+
+    private HttpServletRequest httpRequest;
+    private VaadinServletRequest request;
+    private VaadinServletResponse response;
+    private ByteArrayOutputStream responseBody;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        service = new MockVaadinServletService();
+
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        Mockito.when(wrappedSession.getId()).thenReturn("session-id");
+
+        session = new AlwaysLockedVaadinSession(service) {
+            @Override
+            public StreamResourceRegistry getResourceRegistry() {
+                return registry;
+            }
+
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+        registry = new StreamResourceRegistry(session);
+        VaadinSession.setCurrent(session);
+
+        httpRequest = Mockito.mock(HttpServletRequest.class);
+        request = new VaadinServletRequest(httpRequest, service);
+
+        responseBody = new ByteArrayOutputStream();
+        HttpServletResponse httpResponse = Mockito
+                .mock(HttpServletResponse.class);
+        Mockito.when(httpResponse.getOutputStream())
+                .thenReturn(TestServletStreams.outputStream(responseBody));
+        response = new VaadinServletResponse(httpResponse, service);
+
+        ui = new MockUI(session);
+        uiId = session.getNextUIid();
+        ui.doInit(request, uiId, "app-id");
+        session.addUI(ui);
+        UI.setCurrent(ui);
+
+        owner = new TestComponent();
+        ui.add(owner);
+    }
+
+    @AfterEach
+    void cleanup() {
+        CurrentInstance.clearAll();
+    }
+
+    @Test
+    void ongoingDownload_uiClosed_uiStaysAttachedUntilDownloadHasCompleted()
+            throws IOException {
+        byte[] contents = "Downloaded file contents"
+                .getBytes(StandardCharsets.UTF_8);
+        List<Boolean> attachedWhileDownloading = new ArrayList<>();
+
+        DownloadHandler downloadHandler = event -> {
+            // The browser tab is closed while the download is ongoing: the UI
+            // is closed and the cleanup for the request that noticed it runs.
+            ui.close();
+            service.cleanupSession(session);
+
+            attachedWhileDownloading.add(session.getUIById(uiId) != null);
+
+            event.getOutputStream().write(contents);
+        };
+
+        handleRequest(downloadHandler);
+
+        assertEquals(List.of(Boolean.TRUE), attachedWhileDownloading,
+                "A closed UI should stay attached to the session while a download for it is ongoing");
+        assertArrayEquals(contents, responseBody.toByteArray(),
+                "The whole download should have been written to the response");
+
+        // The download request has ended, so nothing keeps the UI alive
+        service.cleanupSession(session);
+        assertNull(session.getUIById(uiId),
+                "A closed UI should be detached from the session once its download has completed");
+    }
+
+    @Test
+    void ongoingUpload_uiClosed_uploadCompletionCallbackIsInvoked()
+            throws IOException {
+        List<File> uploadedFiles = new ArrayList<>();
+        UploadHandler uploadHandler = UploadHandler
+                .toTempFile((metadata, file) -> uploadedFiles.add(file));
+
+        String contents = "Uploaded file contents";
+        mockUploadRequest(contents, () -> {
+            // The browser tab is closed while the upload is ongoing
+            ui.close();
+            service.cleanupSession(session);
+        });
+
+        try {
+            handleRequest(uploadHandler);
+            // The completion callback is run through UI.access, and the
+            // pending access queue is not purged automatically for a session
+            // that is permanently locked in this test
+            service.runPendingAccessTasks(session);
+
+            assertEquals(1, uploadedFiles.size(),
+                    "The upload completion callback should be invoked for a UI that was closed while the upload was ongoing");
+            assertEquals(contents,
+                    Files.readString(uploadedFiles.get(0).toPath()),
+                    "The whole upload should have been written to the file");
+        } finally {
+            uploadedFiles.forEach(File::delete);
+        }
+    }
+
+    @Test
+    void ongoingDownload_sessionInvalidated_downloadIsTerminated() {
+        // Three buffers worth of data, so that the transfer has to loop
+        byte[] contents = new byte[3 * TransferUtil.DEFAULT_BUFFER_SIZE];
+        InputStream contentStream = new ByteArrayInputStream(contents) {
+            @Override
+            public synchronized int read(byte[] b, int off, int len) {
+                // The session is invalidated, e.g. due to a password reset,
+                // while the download is ongoing
+                invalidateSession();
+                return super.read(b, off, len);
+            }
+        };
+
+        // The progress listener is notified through the UI that the download
+        // was started with, which is detached along with the session. That must
+        // not hide the reason the download failed.
+        DownloadHandler downloadHandler = DownloadHandler
+                .fromInputStream(
+                        event -> new DownloadResponse(contentStream, "file.bin",
+                                "application/octet-stream", contents.length))
+                .onProgress((transferred, total) -> {
+                });
+
+        assertThrows(IOException.class, () -> handleRequest(downloadHandler),
+                "A download should be terminated when the session is invalidated");
+        assertTrue(responseBody.size() < contents.length,
+                "A terminated download should not have written all of its contents");
+    }
+
+    @Test
+    void ongoingDownload_customHandlerWritingToResponse_sessionInvalidatedTerminatesIt() {
+        byte[] chunk = new byte[1024];
+        int chunkCount = 10;
+
+        // A handler that implements the interface directly and writes to the
+        // response instead of using TransferUtil
+        ElementRequestHandler rawHandler = (request, response, session,
+                owner) -> {
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.write(chunk);
+
+            invalidateSession();
+
+            for (int i = 1; i < chunkCount; i++) {
+                outputStream.write(chunk);
+            }
+        };
+
+        assertThrows(IOException.class, () -> handleRequest(rawHandler),
+                "A download writing to the response should be terminated when the session is invalidated");
+        assertTrue(responseBody.size() < chunkCount * chunk.length,
+                "A terminated download should not have written all of its contents");
+    }
+
+    private void invalidateSession() {
+        service.fireSessionDestroy(session);
+        // fireSessionDestroy uses VaadinSession.access, and the pending
+        // access queue is not purged automatically for a session that is
+        // permanently locked in this test
+        service.runPendingAccessTasks(session);
+    }
+
+    private void handleRequest(ElementRequestHandler handler)
+            throws IOException {
+        StreamRegistration registration = registry.registerResource(handler,
+                owner.getElement());
+        Mockito.when(httpRequest.getPathInfo())
+                .thenReturn("/" + registration.getResourceUri().toString());
+
+        streamRequestHandler.handleRequest(session, request, response);
+    }
+
+    private void mockUploadRequest(String contents, Runnable onFirstRead)
+            throws IOException {
+        Mockito.when(httpRequest.getMethod()).thenReturn("POST");
+        Mockito.when(httpRequest.getHeader("X-Filename"))
+                .thenReturn("file.txt");
+        Mockito.when(httpRequest.getContentLengthLong())
+                .thenReturn((long) contents.length());
+        Mockito.when(httpRequest.getInputStream())
+                .thenReturn(TestServletStreams.inputStream(
+                        contents.getBytes(StandardCharsets.UTF_8),
+                        onFirstRead));
+    }
+
+}
