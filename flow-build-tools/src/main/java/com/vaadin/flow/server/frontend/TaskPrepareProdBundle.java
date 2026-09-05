@@ -23,12 +23,15 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.List;
 
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -46,9 +49,12 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
 public class TaskPrepareProdBundle implements FallibleCommand {
 
     private final Options options;
+    private final PwaConfiguration pwaConfiguration;
 
-    public TaskPrepareProdBundle(Options options) {
+    public TaskPrepareProdBundle(Options options,
+            PwaConfiguration pwaConfiguration) {
         this.options = options;
+        this.pwaConfiguration = pwaConfiguration;
     }
 
     @Override
@@ -112,11 +118,28 @@ public class TaskPrepareProdBundle implements FallibleCommand {
             JarContentsManager jarContentsManager = new JarContentsManager();
             jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                     new File(jarUri), Constants.PROD_BUNDLE_NAME,
-                    options.getResourceOutputDirectory(), "**/*.*");
+                    options.getResourceOutputDirectory(),
+                    defaultPwaIconsExclusions(), "**/*.*");
         } catch (URISyntaxException e) {
             throw new ExecutionFailedException(
                     "Couldn't copy production bundle files", e);
         }
+    }
+
+    /**
+     * The default bundle ships PWA icons scaled from
+     * {@link PwaConfiguration#DEFAULT_ICON}. They are never served when the
+     * application points {@code @PWA(iconPath)} somewhere else, since
+     * {@link TaskGeneratePWAIcons} then writes the scaled icons under the
+     * configured path instead, so they are left out of the production artifact.
+     */
+    private Collection<String> defaultPwaIconsExclusions() {
+        if (PwaConfiguration.DEFAULT_ICON
+                .equals(pwaConfiguration.getIconPath())) {
+            return List.of();
+        }
+        return List.of(Constants.PROD_BUNDLE_JAR_PATH + Constants.VAADIN_WEBAPP
+                + Constants.VAADIN_PWA_ICONS + "*");
     }
 
     private boolean hasProdBundle() {

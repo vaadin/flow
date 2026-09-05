@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -91,7 +92,12 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
         }
 
-        LOGGER.debug("Generating PWA icons from '{}'",
+        // A custom icon path is worth reporting: it lets the developer see
+        // which image the shipped icons were actually scaled from.
+        boolean customIcon = !PwaConfiguration.DEFAULT_ICON
+                .equals(pwaConfiguration.getIconPath());
+        LOGGER.atLevel(customIcon ? Level.INFO : Level.DEBUG).log(
+                "Generating PWA icons from '{}'",
                 pwaConfiguration.getIconPath());
 
         try {
