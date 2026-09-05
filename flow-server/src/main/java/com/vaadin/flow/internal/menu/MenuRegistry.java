@@ -42,15 +42,18 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.DynamicPageTitle;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
@@ -124,7 +127,7 @@ public class MenuRegistry {
     public static List<AvailableViewInfo> collectMenuItemsList() {
         // en-US is used by default here to match with Hilla's
         // createMenuItems.ts sorting algorithm.
-        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
+        return collectMenuItemsList(Locale.US);
     }
 
     /**
@@ -149,6 +152,202 @@ public class MenuRegistry {
                 (locale != null ? Collator.getInstance(locale)
                         : Collator.getInstance())))
                 .toList();
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * Uses {@code en-US} locale for ordering to match
+     * {@link #collectMenuItemsList()}.
+     *
+     * @return ordered root view infos, each with its nested children populated
+     * @since 25.3
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsTree(Locale.US);
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * The same set of views as {@link #collectMenuItemsList(Locale)} is
+     * returned, but instead of a flat list the views are nested under their
+     * menu parent, which is
+     * <ol>
+     * <li>{@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when
+     * defined, for menu hierarchies that differ from the route hierarchy,
+     * <li>otherwise the logical route parent resolved by
+     * {@link RouteConfiguration#getRouteParent(Class, RouteParameters)}, i.e.
+     * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
+     * walking as fallback.
+     * </ol>
+     * <p>
+     * A view is attached to its nearest <em>included</em> menu ancestor, so a
+     * parent that is not itself part of the menu is skipped in favour of its
+     * own parent; if none of the ancestors is part of the menu, the view
+     * becomes a root entry. The children of each entry are ordered with the
+     * same comparator as the flat list. Should {@code @Menu(parent)}
+     * declarations form a cycle, it is broken by keeping the entry that would
+     * close it as a root, so that no entry is dropped from the menu.
+     * <p>
+     * Only server views take part in the nesting, i.e. views that carry a
+     * {@link com.vaadin.flow.router.Menu @Menu} annotated class. Client views
+     * have no server-side route hierarchy, so they are returned as root entries
+     * with no children &mdash; note that the nesting they carry in
+     * {@code file-routes.json} is <em>not</em> reproduced here; as in the flat
+     * list, every client view is a separate entry.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered root view infos, each with its nested children populated
+     * @since 25.3
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forApplicationScope();
+
+        // Reuse the flat collection: it already normalizes each route to its
+        // menu link and sorts globally by (menu order, route). Because that
+        // order is global, grouping the list in-order yields correctly ordered
+        // siblings, so no further sorting is needed here.
+        List<AvailableViewInfo> menuItems = collectMenuItemsList(locale);
+
+        // Index each server view by its @Menu class so route-hierarchy
+        // ancestors can be resolved directly to the including menu entry.
+        Map<Class<?>, AvailableViewInfo> includedByClass = new HashMap<>();
+        for (AvailableViewInfo view : menuItems) {
+            if (isServerMenuView(view)) {
+                includedByClass.put(view.menu().menuClass(), view);
+            }
+        }
+
+        // Resolve each view's menu parent and group children under it.
+        // Iterating the already-sorted list keeps each child list in sibling
+        // order. Client views have no route hierarchy and stay roots.
+        Map<Class<?>, List<AvailableViewInfo>> childrenByParent = new HashMap<>();
+        Map<Class<?>, Class<?>> parentByClass = new HashMap<>();
+        List<AvailableViewInfo> roots = new ArrayList<>();
+        for (AvailableViewInfo view : menuItems) {
+            Optional<Class<?>> parent = isServerMenuView(view)
+                    ? resolveParentClass(view.menu().menuClass(),
+                            includedByClass, routeConfiguration)
+                    : Optional.empty();
+            // Entries that would close a cycle become roots instead, so that
+            // contradictory @Menu(parent) declarations cannot drop a whole
+            // group of entries from the menu.
+            if (parent.isPresent() && !closesCycle(view.menu().menuClass(),
+                    parent.get(), parentByClass)) {
+                parentByClass.put(view.menu().menuClass(), parent.get());
+                childrenByParent
+                        .computeIfAbsent(parent.get(), key -> new ArrayList<>())
+                        .add(view);
+            } else {
+                roots.add(view);
+            }
+        }
+
+        return roots.stream()
+                .map(root -> attachChildren(root, childrenByParent)).toList();
+    }
+
+    /**
+     * Checks whether nesting {@code menuClass} under {@code parent} would make
+     * the entries form a cycle, i.e. whether {@code parent} is already nested
+     * under {@code menuClass}.
+     */
+    private static boolean closesCycle(Class<?> menuClass, Class<?> parent,
+            Map<Class<?>, Class<?>> parentByClass) {
+        Set<Class<?>> visited = new HashSet<>();
+        Class<?> ancestor = parent;
+        while (ancestor != null && visited.add(ancestor)) {
+            if (ancestor.equals(menuClass)) {
+                return true;
+            }
+            ancestor = parentByClass.get(ancestor);
+        }
+        return false;
+    }
+
+    private static boolean isServerMenuView(AvailableViewInfo view) {
+        return view.menu() != null && view.menu().menuClass() != null;
+    }
+
+    /**
+     * Resolves the nearest ancestor of {@code menuClass} that is part of the
+     * menu, walking up from menu parent to menu parent.
+     */
+    private static Optional<Class<?>> resolveParentClass(
+            Class<? extends Component> menuClass,
+            Map<Class<?>, AvailableViewInfo> includedByClass,
+            RouteConfiguration routeConfiguration) {
+        // Ancestors that are not part of the menu are skipped rather than
+        // ending the walk, so that an excluded view in the middle of the chain
+        // does not detach the whole subtree. The visited set stops a cycle
+        // formed by @Menu(parent) declarations.
+        Set<Class<?>> visited = new HashSet<>();
+        visited.add(menuClass);
+        Class<? extends Component> current = menuClass;
+        while (true) {
+            Optional<Class<? extends Component>> parent = menuParentOf(current,
+                    routeConfiguration);
+            if (parent.isEmpty() || !visited.add(parent.get())) {
+                return Optional.empty();
+            }
+            if (includedByClass.containsKey(parent.get())) {
+                return Optional.of(parent.get());
+            }
+            current = parent.get();
+        }
+    }
+
+    /**
+     * Resolves the menu parent of a single navigation target: an explicitly
+     * declared {@code @Menu(parent)} if any, the logical route parent
+     * otherwise.
+     */
+    private static Optional<Class<? extends Component>> menuParentOf(
+            Class<? extends Component> navigationTarget,
+            RouteConfiguration routeConfiguration) {
+        Optional<Class<? extends Component>> declaredParent = AnnotationReader
+                .getAnnotationFor(navigationTarget, Menu.class)
+                .map(Menu::parent)
+                // Component itself is the "not defined" marker
+                .filter(parent -> !Component.class.equals(parent));
+        if (declaredParent.isPresent()) {
+            return declaredParent;
+        }
+        return routeConfiguration
+                .getRouteParent(navigationTarget, RouteParameters.empty())
+                .map(RouteReference::navigationTarget);
+    }
+
+    private static AvailableViewInfo attachChildren(AvailableViewInfo view,
+            Map<Class<?>, List<AvailableViewInfo>> childrenByParent) {
+        List<AvailableViewInfo> children = isServerMenuView(view)
+                ? childrenByParent.get(view.menu().menuClass())
+                : null;
+        // Rebuild with the resolved children (null when none) so that any
+        // original child list is replaced uniformly by the resolved hierarchy.
+        // In particular a client view, whose children in file-routes.json were
+        // already flattened into separate entries by collectMenuItemsList, does
+        // not keep them here as that would list those views twice.
+        List<AvailableViewInfo> nested = (children == null) ? null
+                : children.stream()
+                        .map(child -> attachChildren(child, childrenByParent))
+                        .toList();
+        return withChildren(view, nested);
+    }
+
+    private static AvailableViewInfo withChildren(AvailableViewInfo source,
+            List<AvailableViewInfo> children) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), source.menu(), children,
+                source.routeParameters(), source.flowLayout(), source.detail());
     }
 
     /**
