@@ -67,4 +67,17 @@ public class SignalUtils {
             SignalCommand command) {
         return signal.isValid(command);
     }
+
+    /**
+     * Gets the raw type that values of the given signal are read as. A value of
+     * any other type cannot be stored in the signal since it would be
+     * serialized into JSON that cannot be deserialized back.
+     *
+     * @param signal
+     *            the signal to get the value type for, not <code>null</code>
+     * @return the raw value type of the signal, not <code>null</code>
+     */
+    public static Class<?> rawValueTypeOf(SharedValueSignal<?> signal) {
+        return signal.valueType().getRawClass();
+    }
 }

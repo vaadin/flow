@@ -68,7 +68,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         signal.set("a string");
         assertEquals("a string", signal.peek());
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
@@ -85,7 +85,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         signal.set("a string");
         assertEquals("a string", signal.peek());
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
@@ -217,6 +217,19 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertEquals("unexpected", signal.peek());
 
         assertFailure(operation);
+    }
+
+    @Test
+    void replace_valueOfWrongType_throws() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
+
+            raw.replace("expected", new Object());
+        });
+        assertEquals("expected", signal.peek());
     }
 
     @Test

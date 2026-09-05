@@ -32,6 +32,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -42,6 +43,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -1008,8 +1010,116 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         emulateClientUpdate(component.getElement(), "prop", "bar");
     }
 
+    @Test
+    void bindProperty_clientSendsObjectForStringSignal_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        emulateClientUpdate(component.getElement(), "prop", evilJson());
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForErasedStringSignal_signalNotPoisoned() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        // Binding through generic code erases the value type, so nothing casts
+        // the client value before it reaches SharedValueSignal.set
+        bindPropertyGenerically(component.getElement(), "prop", signal);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        emulateClientUpdate(component.getElement(), "prop", evilJson());
+
+        // A JSON object committed to the shared tree makes every read of the
+        // signal fail, in this and in every other session sharing the signal
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForLocalStringSignal_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        // A local signal has no declared value type, so the mismatch is only
+        // detected by the write callback itself
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        emulateClientUpdate(component.getElement(), "prop", evilJson());
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForSignalWritingToSharedSignal_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        SharedValueSignal<String> shared = new SharedValueSignal<>("foo");
+        // The bound signal doesn't declare a value type while the erased write
+        // callback doesn't cast, so only the shared signal detects the mismatch
+        ValueSignal<String> bound = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", bound,
+                erasedSetter(shared));
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        emulateClientUpdate(component.getElement(), "prop", evilJson());
+
+        assertEquals("foo", shared.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_writeCallbackThrowsUnrelatedClassCastException_exceptionPropagated() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, value -> {
+            Object somethingElse = Integer.valueOf(1);
+            signal.set((String) somethingElse);
+        });
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+
+        assertThrows(ClassCastException.class,
+                () -> emulateClientUpdate(component.getElement(), "prop",
+                        "bar"));
+    }
+
+    private <T> void bindPropertyGenerically(Element element, String property,
+            SharedValueSignal<T> signal) {
+        element.bindProperty(property, signal, signal::set);
+    }
+
+    private <T> SerializableConsumer<T> erasedSetter(
+            SharedValueSignal<T> signal) {
+        return signal::set;
+    }
+
+    private ObjectNode evilJson() {
+        ObjectNode json = JacksonUtils.createObjectNode();
+        json.put("evil", true);
+        return json;
+    }
+
     private void emulateClientUpdate(Element element, String property,
-            String value) {
+            Serializable value) {
         ElementPropertyMap childModel = ElementPropertyMap
                 .getModel(element.getNode());
         try {

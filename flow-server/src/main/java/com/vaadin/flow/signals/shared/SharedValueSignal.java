@@ -25,6 +25,7 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
@@ -187,9 +188,12 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param value
      *            the value to set
      * @return an operation containing the eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the value type of this
+     *             signal
      */
     public SignalOperation<T> set(T value) {
-        assert value == null || valueType.getRawClass().isInstance(value);
+        checkValueType(value);
 
         return submit(
                 new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
@@ -213,6 +217,34 @@ public class SharedValueSignal<T extends @Nullable Object>
     }
 
     /**
+     * Gets the value type of this signal.
+     *
+     * @return the value type, not <code>null</code>
+     */
+    JavaType valueType() {
+        return valueType;
+    }
+
+    /**
+     * Verifies that the given value can be represented by the value type of
+     * this signal. A value of any other type would be serialized into the
+     * signal tree as JSON that cannot be deserialized back, which would make
+     * every subsequent read of the signal fail for everyone using the same
+     * tree.
+     *
+     * @param value
+     *            the value to check
+     */
+    private void checkValueType(@Nullable Object value) {
+        if (value != null && !valueType.getRawClass().isInstance(value)) {
+            throw new InvalidSignalValueTypeException(
+                    "Cannot use a value of type " + value.getClass().getName()
+                            + " with a signal that has the value type "
+                            + valueType + ".");
+        }
+    }
+
+    /**
      * Sets the value of this signal if and only if the signal has the expected
      * value at the time when the operation is confirmed. This is the signal
      * counterpart to
@@ -226,8 +258,13 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param newValue
      *            the new value
      * @return an operation containing the eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the new value is not an instance of the value type of this
+     *             signal
      */
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
+        checkValueType(newValue);
+
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
