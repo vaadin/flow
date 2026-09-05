@@ -23,13 +23,18 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * Resolves the {@code value()} of
- * {@link com.vaadin.flow.component.dependency.StyleSheet} annotation values to
- * a canonical form that
+ * Resolves the {@code value()} of frontend dependency annotations to a
+ * canonical form that
  * {@link com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver} can
  * expand at render time. The same rules are used whether the annotation is on
  * an {@link com.vaadin.flow.component.page.AppShellConfigurator} or on an
  * ordinary {@link com.vaadin.flow.component.Component}.
+ * <p>
+ * Used for {@link com.vaadin.flow.component.dependency.StyleSheet} values, and
+ * for the {@link com.vaadin.flow.component.dependency.JavaScript} values that
+ * are loaded at runtime instead of being bundled. Callers should note that a
+ * rejected value (see the rules below) yields {@code null} rather than an
+ * exception, and that the dependency is then skipped.
  * <p>
  * For internal framework use only.
  * 

@@ -54,11 +54,19 @@ import com.vaadin.flow.component.Component;
  * {@code RouteA} annotated with {@code @Route("route-a")} and
  * {@code @JsModule("./src/jsmodule.js")}, the {@code jsmodule.js} will be run
  * on the root route as well.
+ * <p>
+ * Setting {@link #imports()} or {@link #importAll()} changes the meaning of the
+ * annotation: instead of loading the module for its side effects, the named
+ * values are imported from it and made available to JavaScript expressions sent
+ * from the server. See {@link com.vaadin.flow.dom.JsImports} for how to use
+ * them. Such an annotation does not have to be on a {@link Component} class; a
+ * class whose only purpose is to declare the imports is usually clearer.
  *
  * @author Vaadin Ltd
  * @since 2.0
  *
  * @see CssImport
+ * @see com.vaadin.flow.dom.JsImports
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -91,6 +99,69 @@ public @interface JsModule {
      * @since 24.2
      */
     boolean developmentOnly() default false;
+
+    /**
+     * The names of the values to import from the module and publish for the
+     * annotated class, or an empty array to load the module for its side
+     * effects only.
+     * <p>
+     * Each entry must name a single export of the module and be a valid
+     * JavaScript identifier; use {@code "default"} for the default export. The
+     * imported values are collected into a single object that a JavaScript
+     * expression sent from the server can receive as a parameter, see
+     * {@link com.vaadin.flow.dom.JsImports}:
+     *
+     * <pre>
+     * &#64;JsModule(value = "lit-html", imports = { "render", "html" })
+     * public final class LitImports {
+     * }
+     *
+     * element.executeJs("$0.render($0.html`&lt;div&gt;${$1}&lt;/div&gt;`, this)",
+     *         JsImports.of(LitImports.class), "Hello");
+     * </pre>
+     *
+     * A module declaring imports is not added to the page for its side effects,
+     * and it is not part of the eager bundle: it is loaded on demand the first
+     * time an expression using it is sent to the browser.
+     * <p>
+     * {@link #developmentOnly()} applies as usual: such a declaration is left
+     * out of a production build, so an expression using it must not run in
+     * production either.
+     * <p>
+     * A name may only be declared once per class, so two modules exporting the
+     * same name cannot be combined on one class. There is no way to rename an
+     * export; declare the modules on separate classes and pass both to
+     * {@code executeJs} as separate parameters, or write a JavaScript module
+     * that re-exports the value under the wanted name.
+     * <p>
+     * Only modules that are part of the bundle can be imported by name, since
+     * the import is resolved when the bundle is built. Declaring imports from
+     * an external URL fails the build; load such a URL at runtime with
+     * {@link JavaScript @JavaScript} and {@link JavaScript.Type#MODULE}
+     * instead.
+     * <p>
+     * Cannot be combined with {@link #importAll()} on the same annotation.
+     *
+     * @return the names to import from the module
+     */
+    String[] imports() default {};
+
+    /**
+     * Whether the whole module namespace should be imported and published for
+     * the annotated class instead of individual {@link #imports() names}.
+     * <p>
+     * The object a JavaScript expression receives is then the module's
+     * namespace object, so every export is reachable through it. Since a
+     * namespace object would shadow any individually imported value, a class
+     * using {@code importAll} must not declare any other imports; declare
+     * additional modules on separate classes instead and pass each as its own
+     * {@code executeJs} parameter. Setting {@link #imports()} on the same
+     * annotation is likewise rejected, as the namespace already contains those
+     * values.
+     *
+     * @return {@code true} to import the whole module namespace
+     */
+    boolean importAll() default false;
 
     /**
      * Internal annotation to enable use of multiple {@link JsModule}
