@@ -1018,9 +1018,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // the client value is rejected before it reaches the signal
         SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         component.getElement().bindProperty("prop", signal, signal::set);
-        component.getElement().addPropertyChangeListener("prop", "change",
-                event -> {
-                });
+        rejectPropertyChanges(component.getElement());
 
         emulateClientUpdate(component.getElement(), "prop", evilJson());
 
@@ -1035,10 +1033,9 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         // Binding through generic code erases the value type, so nothing casts
         // the client value before it reaches SharedValueSignal.set
-        bindPropertyGenerically(component.getElement(), "prop", signal);
-        component.getElement().addPropertyChangeListener("prop", "change",
-                event -> {
-                });
+        component.getElement().bindProperty("prop", signal,
+                erasedSetter(signal));
+        rejectPropertyChanges(component.getElement());
 
         emulateClientUpdate(component.getElement(), "prop", evilJson());
 
@@ -1058,9 +1055,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         ValueSignal<String> bound = new ValueSignal<>("foo");
         component.getElement().bindProperty("prop", bound,
                 erasedSetter(shared));
-        component.getElement().addPropertyChangeListener("prop", "change",
-                event -> {
-                });
+        rejectPropertyChanges(component.getElement());
 
         emulateClientUpdate(component.getElement(), "prop", evilJson());
 
@@ -1068,14 +1063,62 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("foo", component.getElement().getProperty("prop"));
     }
 
-    private <T> void bindPropertyGenerically(Element element, String property,
-            SharedValueSignal<T> signal) {
-        element.bindProperty(property, signal, signal::set);
+    @Test
+    void bindProperty_writeCallbackThrowsUnrelatedClassCastException_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        // A failed cast inside the callback looks exactly like the cast that
+        // the compiler generates for a typed callback, so it is reported and
+        // reverted instead of propagating like other callback failures
+        component.getElement().bindProperty("prop", signal, value -> {
+            Object notAString = Integer.valueOf(1);
+            signal.set((String) notAString);
+        });
+        rejectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", "bar");
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForErasedLocalSignal_valueAccepted() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        // A local signal declares no value type and an erased callback casts
+        // nothing, so nothing detects the mismatch. That is accepted since a
+        // local signal is confined to one session and cannot poison a signal
+        // tree that other sessions read.
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        ObjectNode fromClient = evilJson();
+        component.getElement().bindProperty("prop", signal,
+                erasedSetter(signal));
+        AtomicReference<Serializable> eventValue = new AtomicReference<>();
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> eventValue.set(event.getValue()));
+
+        emulateClientUpdate(component.getElement(), "prop", fromClient);
+
+        assertEquals(fromClient, ((ValueSignal<?>) signal).peek());
+        assertEquals(fromClient, eventValue.get());
     }
 
     private <T> SerializableConsumer<T> erasedSetter(
             SharedValueSignal<T> signal) {
         return signal::set;
+    }
+
+    private <T> SerializableConsumer<T> erasedSetter(ValueSignal<T> signal) {
+        return signal::set;
+    }
+
+    private void rejectPropertyChanges(Element element) {
+        element.addPropertyChangeListener("prop", "change",
+                event -> fail("Property change listener should not be "
+                        + "triggered for a value that the signal rejected, "
+                        + "but got " + event.getValue()));
     }
 
     private ObjectNode evilJson() {
