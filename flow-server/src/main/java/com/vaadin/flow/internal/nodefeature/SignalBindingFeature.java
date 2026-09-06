@@ -208,10 +208,8 @@ public class SignalBindingFeature extends ServerSideFeature {
             ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
         } catch (ClassCastException | InvalidSignalValueTypeException e) {
             getLogger().warn(
-                    "Ignoring the value for the signal binding '{}' since the bound signal cannot hold a value of type {}.",
-                    key,
-                    newValue != null ? newValue.getClass().getName() : "null",
-                    e);
+                    "Ignoring the value for the signal binding '{}' since the bound signal cannot hold it.",
+                    key, e);
             revertCallback.accept(signal.peek());
             // no need to fire event since the signal value didn't change
             return false;
