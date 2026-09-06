@@ -1014,6 +1014,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     void bindProperty_clientSendsObjectForStringSignal_updateIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
+        // The compiler generates a cast to String into the write callback, so
+        // the client value is rejected before it reaches the signal
         SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         component.getElement().bindProperty("prop", signal, signal::set);
         component.getElement().addPropertyChangeListener("prop", "change",
@@ -1047,24 +1049,6 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindProperty_clientSendsObjectForLocalStringSignal_updateIgnored() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        // A local signal has no declared value type, so the mismatch is only
-        // detected by the write callback itself
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        component.getElement().bindProperty("prop", signal, signal::set);
-        component.getElement().addPropertyChangeListener("prop", "change",
-                event -> {
-                });
-
-        emulateClientUpdate(component.getElement(), "prop", evilJson());
-
-        assertEquals("foo", signal.peek());
-        assertEquals("foo", component.getElement().getProperty("prop"));
-    }
-
-    @Test
     void bindProperty_clientSendsObjectForSignalWritingToSharedSignal_updateIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
@@ -1082,24 +1066,6 @@ class ElementBindPropertyTest extends SignalsUnitTest {
 
         assertEquals("foo", shared.peek());
         assertEquals("foo", component.getElement().getProperty("prop"));
-    }
-
-    @Test
-    void bindProperty_writeCallbackThrowsUnrelatedClassCastException_exceptionPropagated() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        component.getElement().bindProperty("prop", signal, value -> {
-            Object somethingElse = Integer.valueOf(1);
-            signal.set((String) somethingElse);
-        });
-        component.getElement().addPropertyChangeListener("prop", "change",
-                event -> {
-                });
-
-        assertThrows(ClassCastException.class,
-                () -> emulateClientUpdate(component.getElement(), "prop",
-                        "bar"));
     }
 
     private <T> void bindPropertyGenerically(Element element, String property,

@@ -217,15 +217,6 @@ public class SharedValueSignal<T extends @Nullable Object>
     }
 
     /**
-     * Gets the value type of this signal.
-     *
-     * @return the value type, not <code>null</code>
-     */
-    JavaType valueType() {
-        return valueType;
-    }
-
-    /**
      * Verifies that the given value can be represented by the value type of
      * this signal. A value of any other type would be serialized into the
      * signal tree as JSON that cannot be deserialized back, which would make
