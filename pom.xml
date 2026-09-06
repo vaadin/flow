@@ -114,7 +114,7 @@
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-    <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
     <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
     <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
@@ -158,8 +158,6 @@
     <!-- This property is needed to allow some Win-specific unit tests -->
     <!-- to be disabled via system property in CI until they got fixed -->
     <exclude.windows.failed.tests/>
-
-    <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
     <!-- Extra JVM arguments for surefire forks; modules override this
          when their tests need e.g. add-opens flags. The empty default
@@ -485,12 +483,6 @@
               <exclude>${exclude.windows.failed.tests}</exclude>
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
-            <properties>
-              <property>
-                <name>listener</name>
-                <value>${testListener}</value>
-              </property>
-            </properties>
             <enableAssertions>true</enableAssertions>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
@@ -693,7 +685,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
+        <version>3.16.0</version>
         <!-- Runs NullAway over every module. OnlyNullMarked means a module
              is checked exactly as far as its packages opt in with
              @NullMarked, so modules that have not opted in yet compile
@@ -854,6 +846,9 @@
     <profile>
       <id>install-git-hooks</id>
       <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
         <file>
           <missing>${maven.multiModuleProjectDirectory}/.husky/_</missing>
         </file>
@@ -864,6 +859,7 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>${maven.exec.plugin.version}</version>
+            <inherited>false</inherited>
             <executions>
               <execution>
                 <id>install-git-hooks</id>

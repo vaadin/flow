@@ -35,6 +35,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
@@ -46,13 +47,77 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class PushHandlerTest {
+
+    @Test
+    void onMessage_clientResentTheLastMessage_previousResponseIsSentAgain()
+            throws Exception {
+        AtomicReference<UI> currentUi = new AtomicReference<>();
+        AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                VaadinSession session = currentSession.get();
+                VaadinSession.setCurrent(session);
+                return session;
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                UI ui = currentUi.get();
+                UI.setCurrent(ui);
+                return ui;
+            }
+        };
+        MockVaadinSession session = new MockVaadinSession(service);
+        currentSession.set(session);
+
+        AtmosphereResource resource = mock(AtmosphereResource.class);
+        AtmosphereRequest request = mock(AtmosphereRequest.class);
+        when(resource.getRequest()).thenReturn(request);
+        when(resource.uuid()).thenReturn("1");
+        when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+
+        AtmospherePushConnection connection = session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            currentUi.set(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            AtmospherePushConnection pushConnection = spy(
+                    new AtmospherePushConnection(ui));
+            pushConnection.connect(resource);
+            ui.getInternals().setPushConnection(pushConnection);
+
+            // The message the client re-sends: the server has already handled
+            // it, so its id is one behind the expected one and its hash is the
+            // recorded one.
+            String message = "{\"csrfToken\":\"" + ui.getCsrfToken()
+                    + "\",\"rpc\":[],\"syncId\":0,\"clientId\":1}";
+            ui.getInternals().setLastProcessedClientToServerId(1,
+                    MessageDigestUtil.sha256(message));
+            when(request.getReader())
+                    .thenReturn(reader(message.length() + "|" + message));
+            return pushConnection;
+        });
+
+        new PushHandler(service).onMessage(resource);
+
+        // Without this the ClientResentPayloadException would escape to the
+        // error handler and the client would get an "Internal error" instead of
+        // the response it is waiting for.
+        verify(connection).resendLastResponse();
+    }
 
     @Test
     void onConnect_websocketTransport_requestStartIsCalledOnServiceInstance() {
@@ -392,6 +457,10 @@ class PushHandlerTest {
         assertTrue(sessionIsSet.get());
 
         return service;
+    }
+
+    private static BufferedReader reader(String content) {
+        return new BufferedReader(new StringReader(content));
     }
 
     private VaadinServletService runTest(VaadinServletService service,

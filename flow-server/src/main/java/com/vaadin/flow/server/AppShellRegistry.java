@@ -60,13 +60,19 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
  */
 public class AppShellRegistry implements Serializable {
 
-    public static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
-            + "%nPlease create a custom class implementing `AppShellConfigurator` and move the following annotations to it:%n  %s%n";
+    public static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non "
+            + "`AppShellConfigurator` classes.%n%s%n";
+
+    public static final String ERROR_HINT_NO_SHELL = "Please make %s implement `AppShellConfigurator`.";
+
+    public static final String ERROR_HINT_EXISTING_SHELL = "Please move the annotations to the class %s which already implements "
+            + "`AppShellConfigurator`.";
 
     public static final String ERROR_HEADER_OFFENDING_PWA = "%n%nWe changed the way you configure PWAs, please see this link for more info:%n"
             + "https://vaadin.com/docs/latest/flow/advanced/modifying-the-bootstrap-page%n";
 
-    private static final String ERROR_LINE = "  - %s from %s";
+    private static final String ERROR_LINE = "Annotation %s which was encountered on class %s is only valid "
+            + "on a class implementing `AppShellConfigurator`.";
     private static final String ERROR_MULTIPLE_SHELL = "%n%nMultiple classes implementing `AppShellConfigurator` were found. However, only a single class implementing `AppShellConfigurator` is allowed."
             + "%nRemove \"implements AppShellConfigurator\" from all but one of the following classes:%n  %s%n  %s%n";
 

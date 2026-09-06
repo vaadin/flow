@@ -78,6 +78,16 @@ public class ComponentEvent<T extends Component> extends EventObject {
         this.ui = ui;
     }
 
+    /**
+     * Returns the component on which the listener has been attached.
+     * <p>
+     * This is the component the listener was registered with, not a nested
+     * child where a browser event may first have occurred. For example, if a
+     * listener is added to a layout that contains a checkbox,
+     * {@code getSource()} returns the layout, not the checkbox.
+     *
+     * @return the component on which the listener has been attached
+     */
     @SuppressWarnings("unchecked")
     @Override
     public T getSource() {
