@@ -63,7 +63,7 @@ public final class ElementEffect implements Serializable {
     private Registration attachedScope;
     /**
      * Error handler used by the active effect action. {@code null} means
-     * exceptions are re-thrown (probe / unattached mode).
+     * exceptions are not caught (probe / unattached mode).
      */
     private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
 
@@ -100,11 +100,19 @@ public final class ElementEffect implements Serializable {
 
     /**
      * Executes the effect function, routing exceptions through the
-     * {@link #errorHandler} when attached (active mode) or re-throwing them
-     * when no error handler is set (probe/unattached mode). This is a named
-     * method rather than a lambda to ensure reliable serialization.
+     * {@link #errorHandler} when attached (active mode) or letting them
+     * propagate as-is when no error handler is set (probe/unattached mode).
+     * This is a named method rather than a lambda to ensure reliable
+     * serialization.
      */
     private void executeAction(EffectContext ctx) {
+        SerializableBiConsumer<Exception, Element> handler = errorHandler;
+        if (handler == null) {
+            // Probe run: nothing is caught so that the exception surfaces at
+            // the call site (e.g. inside bindText / Signal.effect).
+            effectFunction.execute(ctx);
+            return;
+        }
         try {
             effectFunction.execute(ctx);
         } catch (DeniedSignalUsageException e) {
@@ -112,15 +120,10 @@ public final class ElementEffect implements Serializable {
             // (e.g. inside bindChildren factory). Always propagate so
             // the caller gets an immediate exception.
             throw e;
-        } catch (RuntimeException e) {
-            SerializableBiConsumer<Exception, Element> handler = errorHandler;
-            if (handler != null) {
-                handler.accept(e, owner);
-            } else {
-                // Probe run: re-throw so the exception surfaces at the
-                // call site (e.g. inside bindText / Signal.effect).
-                throw e;
-            }
+        } catch (Exception e) {
+            // Exception rather than RuntimeException since the JVM allows
+            // throwing checked exceptions without declaring them
+            handler.accept(e, owner);
         }
     }
 
