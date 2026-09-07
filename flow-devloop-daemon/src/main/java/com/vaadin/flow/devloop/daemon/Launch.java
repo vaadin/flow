@@ -18,14 +18,8 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,7 +33,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
- * provisions HotswapAgent so the user never has to.
+ * puts HotswapAgent on it - provisioning one through {@link HotswapAgentJar} if
+ * the build has not already, so the user never has to.
  * <p>
  * Phase 0.5 established that getting the flag set right matters as much as
  * having the jar: without the JPMS opens, HotswapAgent's core helper fails on
@@ -53,20 +48,6 @@ final class Launch {
 
     static final boolean WINDOWS = System.getProperty("os.name", "")
             .toLowerCase(Locale.ROOT).startsWith("windows");
-
-    /**
-     * Pinned, never "latest": a changing agent would make applies
-     * irreproducible.
-     * <p>
-     * The checksum is of the {@code hotswap-agent-<version>.jar} release asset
-     * at {@link #HA_URL}, not of the same version on Maven Central - the two
-     * are built separately and there is no promise they are the same bytes.
-     * Bumping the version means downloading that asset and recomputing this.
-     */
-    static final String HA_VERSION = "2.0.3";
-    static final String HA_SHA256 = "4ef49724b7d8523536d2e2a7310f827f4db9f4fed3489224e05d7bf87f0594f9";
-    static final String HA_URL = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-"
-            + HA_VERSION + "/hotswap-agent-" + HA_VERSION + ".jar";
 
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
@@ -218,78 +199,11 @@ final class Launch {
     }
 
     /**
-     * Where machine-level dev-loop assets are cached: the HotswapAgent jar, and
-     * nothing else so far.
-     * <p>
-     * Under the {@code ~/.vaadin} directory Vaadin already owns, so one
-     * download serves every application on the machine and nothing is written
-     * into a project. It also survives a {@code mvn clean}, which a per-project
-     * cache did not.
-     */
-    static Path cacheDir() {
-        return Path.of(System.getProperty("user.home", "."), ".vaadin",
-                "devloop");
-    }
-
-    /**
-     * Ensures the HotswapAgent jar is present and matches the pinned checksum.
-     * Honours an already-present jar and an explicit override so air-gapped
-     * setups still work.
+     * Ensures the HotswapAgent jar is present, downloading it once per machine
+     * if it is not; see {@link HotswapAgentJar}.
      */
     Path ensureHotswapAgent() throws IOException {
-        String override = System.getProperty("vaadin.dev.hotswapAgentJar");
-        if (override != null && !override.isBlank()) {
-            Path path = Path.of(override);
-            if (!Files.isRegularFile(path)) {
-                throw new IOException(
-                        "vaadin.dev.hotswapAgentJar does not exist: " + path);
-            }
-            return path;
-        }
-
-        Path jar = cacheDir().resolve("hotswap-agent-" + HA_VERSION + ".jar");
-        if (Files.isRegularFile(jar)) {
-            String actual = sha256(jar);
-            if (!HA_SHA256.equalsIgnoreCase(actual)) {
-                throw new IOException("cached HotswapAgent checksum mismatch: "
-                        + jar + " (expected " + HA_SHA256 + ", got " + actual
-                        + "). Delete it to re-download.");
-            }
-            return jar;
-        }
-
-        Files.createDirectories(jar.getParent());
-        log.line("provisioning HotswapAgent " + HA_VERSION + " from " + HA_URL);
-        Path temp = jar.resolveSibling(jar.getFileName() + ".part");
-        try {
-            HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.NORMAL).build();
-            HttpRequest request = HttpRequest.newBuilder(URI.create(HA_URL))
-                    .GET().build();
-            HttpResponse<InputStream> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofInputStream());
-            if (response.statusCode() != 200) {
-                throw new IOException("download failed with HTTP "
-                        + response.statusCode() + " from " + HA_URL);
-            }
-            try (InputStream in = response.body()) {
-                Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("download interrupted", e);
-        }
-
-        String actual = sha256(temp);
-        if (!HA_SHA256.equalsIgnoreCase(actual)) {
-            Files.deleteIfExists(temp);
-            throw new IOException(
-                    "downloaded HotswapAgent checksum mismatch (expected "
-                            + HA_SHA256 + ", got " + actual + ")");
-        }
-        Files.move(temp, jar, StandardCopyOption.REPLACE_EXISTING);
-        log.line("provisioned " + jar + " (verified sha256)");
-        return jar;
+        return HotswapAgentJar.provision(log::line);
     }
 
     /**
@@ -1196,20 +1110,6 @@ final class Launch {
     private static final Set<String> LOOP_OWNED = Set.of(
             "spring.devtools.restart.enabled", "vaadin.launch-browser",
             "vaadin.devloop.classes");
-
-    private static String sha256(Path file) throws IOException {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(Files.readAllBytes(file));
-            StringBuilder sb = new StringBuilder(hash.length * 2);
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IOException("SHA-256 unavailable", e);
-        }
-    }
 
     /** Minimal sink so provisioning progress reaches the client that asked. */
     interface Log {

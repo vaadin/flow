@@ -69,6 +69,18 @@ handshake authorizes commands to the daemon, so the goal also installs
 `.vaadin/.gitignore` naming `daemon.properties` — the one file there that must
 not be shared.
 
+The CLI spawns the daemon into a **session of its own** — `setsid`, or perl's
+`POSIX::setsid` where no `setsid` binary ships — and not merely with SIGHUP
+ignored. A `nohup`'d child stays in the process group of the shell that spawned
+it, and the runners this CLI is driven from (agent sandboxes, CI steps, `timeout
+--kill-after`) end a command by killing that group: the daemon, and the app it
+owns as its child, would die with the very command that started them. The next
+command would then find a handshake naming a dead pid, spawn a second daemon and
+report the app as stopped — the loop failing to hold across two commands, which
+is the one thing the daemon exists to do. A handshake left behind by a dead pid
+is evidence of exactly that, because a daemon that shuts down deletes its own
+record, so the CLI reports it rather than quietly reaping it.
+
 A request is one line, `<token> <verb> <args...>`. The reply is zero or more
 `> text` progress lines followed by exactly one `EXIT <code>`, which becomes the
 CLI's exit status. Progress-then-code is the shape `apply` needs, so every verb
@@ -120,6 +132,23 @@ Windows' 32 kB command-line limit). Each in-loop module gets its own
 The HotswapAgent jar is *not* here: it is cached per machine under
 `~/.vaadin/devloop/`, pinned by version and verified against a SHA-256, so one
 download serves every application and a `mvn clean` does not throw it away.
+`HotswapAgentJar` owns all three facts and is the only code that downloads
+anything.
+
+It is provisioned by `mvn flow:install-dev-cli`, not by the first `start`, so a
+machine set up while it had network access can run the loop afterwards with
+none — which is what a container image or a sandboxed agent environment needs.
+The goal runs `HotswapAgentJar` out of the daemon jar the project resolves,
+reflectively, over a class loader of its own: the plugin must not carry the
+daemon into every build it runs in, and the version worth pre-downloading is the
+one the daemon that will actually run has pinned. So a project whose daemon
+predates this only gets a warning, and the goal and the `start` can never
+disagree about the version. The daemon still provisions on demand through the
+same code and into the same cache, so a project that never ran the goal is
+unaffected and one that did never downloads twice.
+`-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
+the release asset into `~/.vaadin/devloop/` by hand works too, since what is
+there is checksum-verified either way.
 
 ## Outcomes and exit codes
 

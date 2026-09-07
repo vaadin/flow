@@ -119,6 +119,7 @@ export class MessageSender {
     // to prevent resynchronization issues.
     if (this.#pushPendingMessage !== null) {
       const payload = this.#pushPendingMessage;
+      Console.log(`Sending pending push message ${JSON.stringify(payload)}`);
       this.#pushPendingMessage = null;
       this.#sendPayload(payload);
       return;
@@ -188,6 +189,11 @@ export class MessageSender {
       // message has already been sent and enqueued.
       if (!(SERVER_SYNC_ID in payload)) {
         this.#messageQueue.push(payload);
+        Console.debug(
+          `Message not sent because other messages are pending. Added to the queue: ${JSON.stringify(payload)}`
+        );
+      } else {
+        Console.debug(`Message not sent because already queued: ${JSON.stringify(payload)}`);
       }
       return;
     }
@@ -235,9 +241,11 @@ export class MessageSender {
       // With bidirectional transport the payload is not resent during
       // reconnection; keep a copy to resend after a reconnection until the
       // server confirms it.
+      Console.debug('send PUSH');
       this.#pushPendingMessage = payload;
       this.#push.push(payload);
     } else {
+      Console.debug('send XHR');
       this.#resetTimer();
       this.#registry.getXhrConnection().send(payload);
       this.#scheduleResend(payload);

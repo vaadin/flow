@@ -94,6 +94,29 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         Assert.assertNull("Expected null value, not string 'null'", value);
     }
 
+    @Test
+    public void contentTeleportedWhileConnecting_rendersComponentOnce() {
+        open();
+
+        waitForDevServer();
+
+        $(NativeButtonElement.class).id("openTeleportingContainerButton")
+                .click();
+
+        TestBenchElement container = $(TestBenchElement.class)
+                .id("teleportingContainer");
+        waitUntil(driver -> !container.$("input").all().isEmpty());
+
+        Assert.assertEquals(
+                "Adapter element teleported while connecting must render "
+                        + "exactly one React component",
+                1, container.$("input").all().size());
+        Assert.assertEquals(
+                "The rendered component must be bound to the server-side state",
+                ReactAdapterView.TELEPORTED_VALUE,
+                container.$("input").all().get(0).getPropertyString("value"));
+    }
+
     private TestBenchElement getAdapterElement() {
         return $("react-input").first();
     }
