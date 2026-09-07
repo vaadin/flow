@@ -29,7 +29,10 @@ import com.vaadin.flow.signals.Signal;
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
  * used to group several UI components within a form, enhancing form
  * accessibility and organization.
- * 
+ *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/fieldset">MDN:
+ *      &lt;fieldset&gt;</a>
  * @since 24.5
  */
 @Tag("fieldset")
@@ -37,6 +40,13 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
 
     /**
      * Represents an HTML <code>&lt;legend&gt;</code> element.
+     * <p>
+     * Caption for the enclosing field set. Assistive technologies use it as the
+     * name of the group.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/legend">MDN:
+     *      &lt;legend&gt;</a>
      */
     @Tag("legend")
     public static class Legend extends HtmlContainer {

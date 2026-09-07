@@ -515,7 +515,35 @@ try {
 
     # 99 means the recorded daemon is not answering: the record is stale, so reap
     # it and try once more with a fresh daemon.
+    #
+    # Said out loud, because the application went with it. A daemon that shuts
+    # down deletes its own handshake, so a handshake still naming a process that
+    # is gone is evidence of a kill and not of an exit - and the reader is
+    # otherwise about to be told the app is stopped without being told what
+    # stopped it.
     if ($status -eq 99) {
+        $recorded = Read-Handshake 'pid'
+        $alive = $false
+        if ($recorded) {
+            try { $alive = [bool] (Get-Process -Id ([int]$recorded) -ErrorAction Stop) }
+            catch { $alive = $false }
+        }
+        if ($alive) {
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $recorded) is running but not answering. Reaping " +
+                "the record and starting a fresh daemon.")
+        } else {
+            $named = if ($recorded) { $recorded } else { 'unknown' }
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $named) is gone and left its handshake behind, so " +
+                "it was killed rather than shut down - the application it " +
+                "owned stopped with it. Starting a fresh daemon; the app needs " +
+                "'vaadin-dev start' again.")
+            [Console]::Error.WriteLine("vaadin-dev: if that repeats on every " +
+                "command, whatever runs vaadin-dev is killing the processes " +
+                "each command created; see ""When it goes wrong"" in the " +
+                "vaadin-devloop skill reference.")
+        }
         Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'

@@ -329,6 +329,12 @@ public class SharedNodeSignal
      * Inserts a new node with the given value as a list node at the given list
      * position. The operation fails if the position is not valid at the time
      * when the operation is processed.
+     * <p>
+     * A node signal declares no value type, so the value is stored without the
+     * type check that the typed signals apply. The type is instead picked by
+     * the reader through {@link SharedNodeSignalState#value(Class)}, so an
+     * unexpected value only breaks the reads that ask for a type it doesn't
+     * match.
      *
      * @param value
      *            the value to insert
@@ -365,6 +371,12 @@ public class SharedNodeSignal
      * Note that this operation does not give direct access to the child signal
      * that was created or updated. Use
      * {@link #putChildWithValue(String, Object)} for that purpose.
+     * <p>
+     * A node signal declares no value type, so the value is stored without the
+     * type check that the typed signals apply. The type is instead picked by
+     * the reader through {@link SharedNodeSignalState#value(Class)}, so an
+     * unexpected value only breaks the reads that ask for a type it doesn't
+     * match.
      *
      * @param key
      *            the key to use, not <code>null</code>
