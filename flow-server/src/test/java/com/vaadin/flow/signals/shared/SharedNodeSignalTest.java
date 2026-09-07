@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.SignalCommand;
@@ -209,6 +210,13 @@ class SharedNodeSignalTest extends SignalTestBase {
         assertEquals(List.of("not a string"),
                 child.peek().value(new TypeReference<List<String>>() {
                 }));
+
+        // Only the reads that ask for a type the value doesn't match fail
+        SharedValueSignal<String> asString = asMap.peek().get("key");
+        assertNotNull(asString);
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                asString::peek);
+        assertInstanceOf(JacksonException.class, exception.getCause());
     }
 
     @Test
