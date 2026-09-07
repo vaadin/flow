@@ -33,9 +33,13 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.Component;
@@ -132,6 +136,54 @@ class SpringSecurityAutoConfigurationTest {
         this.contextRunner.withUserConfiguration(
                 CustomNavigationAccessCheckersConfigurerWithoutVaadinWebSecurity.class)
                 .run(SpringSecurityAutoConfigurationTest::assertThatCustomNavigationAccessCheckerIsUsed);
+    }
+
+    @Test
+    void multipleContexts_strategyBeansShareSecurityContext() {
+        SecurityContextHolderStrategy installedStrategy = SecurityContextHolder
+                .getContextHolderStrategy();
+        try {
+            this.contextRunner.run((firstContext) -> {
+                SecurityContextHolderStrategy firstStrategy = firstContext
+                        .getBean(SecurityContextHolderStrategy.class);
+                // A second refresh installs the strategy bean of the second
+                // context into the classloader wide SecurityContextHolder,
+                // like a second cached context in a test JVM does
+                this.contextRunner.withPropertyValues("some.property=other")
+                        .run((secondContext) -> {
+                            assertThat(secondContext)
+                                    .getBean(
+                                            SecurityContextHolderStrategy.class)
+                                    .isNotSameAs(firstStrategy);
+                            assertThat(SecurityContextHolder
+                                    .getContextHolderStrategy())
+                                    .isNotSameAs(firstStrategy);
+
+                            SecurityContext securityContext = SecurityContextHolder
+                                    .createEmptyContext();
+                            securityContext.setAuthentication(
+                                    new UsernamePasswordAuthenticationToken(
+                                            "user", "n/a"));
+                            SecurityContextHolder.setContext(securityContext);
+                            try {
+                                // Beans of the first context, e.g. the method
+                                // security interceptors, are wired to its own
+                                // strategy bean, which has to see the same
+                                // security context
+                                assertThat(firstStrategy.getContext())
+                                        .isSameAs(securityContext);
+                            } finally {
+                                SecurityContextHolder.clearContext();
+                            }
+                            // ... and the other way around, so that clearing
+                            // after a test does not leak into the next one
+                            assertThat(firstStrategy.getContext()
+                                    .getAuthentication()).isNull();
+                        });
+            });
+        } finally {
+            SecurityContextHolder.setContextHolderStrategy(installedStrategy);
+        }
     }
 
     @Test

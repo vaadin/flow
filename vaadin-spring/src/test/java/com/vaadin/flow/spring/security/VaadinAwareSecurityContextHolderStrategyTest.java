@@ -29,6 +29,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class VaadinAwareSecurityContextHolderStrategyTest {
 
@@ -37,11 +38,15 @@ class VaadinAwareSecurityContextHolderStrategyTest {
     @BeforeEach
     void setup() {
         vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
+        // The thread specific context is shared by all instances, so it has to
+        // be cleared between tests
+        vaadinAwareSecurityContextHolderStrategy.clearContext();
         CurrentInstance.clearAll();
     }
 
     @AfterEach
     void teardown() {
+        vaadinAwareSecurityContextHolderStrategy.clearContext();
         CurrentInstance.clearAll();
     }
 
@@ -81,6 +86,21 @@ class VaadinAwareSecurityContextHolderStrategyTest {
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
         assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
+    }
+
+    @Test
+    void separateInstances_shareThreadSecurityContext() {
+        VaadinAwareSecurityContextHolderStrategy other = new VaadinAwareSecurityContextHolderStrategy();
+
+        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
+        assertEquals(explicit, other.getContext(),
+                "Instance should see the context set on another instance");
+
+        other.clearContext();
+        assertNotEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext(),
+                "Clearing on one instance should clear for all instances");
     }
 
     @Test
