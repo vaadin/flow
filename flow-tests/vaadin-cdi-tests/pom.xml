@@ -33,10 +33,18 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- The BOM rather than just arquillian-junit-container: the Liberty
+           adapter pulls the Arquillian core in at 1.7.0.Final, which diverges
+           from what the junit container brings and trips the DependencyConvergence
+           rule the Flow parent enforces and the CDI parent did not. Nearest-wins
+           already resolved these to ${arquillian.version}; the BOM makes that
+           explicit for every profile instead of implicit. -->
       <dependency>
-        <groupId>org.jboss.arquillian.junit</groupId>
-        <artifactId>arquillian-junit-container</artifactId>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-bom</artifactId>
         <version>${arquillian.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.shrinkwrap.resolver</groupId>
