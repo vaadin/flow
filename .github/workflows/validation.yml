@@ -283,6 +283,132 @@ jobs:
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
+  cdi-tests:
+    name: CDI Tests (${{ matrix.profile }})
+    # The CDI integration tests deploy to a real application server, which the
+    # generic it-tests matrix cannot express, so computeMatrix.js excludes the
+    # module and it runs here instead. Every change runs the tomee profile as
+    # a smoke test; the other four containers only run when the CDI sources
+    # themselves change, since that is when a container specific regression
+    # gets introduced. Needs the TestBench licence, so not for forks.
+    needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [tomee, wildfly, payara, liberty, tomcat-weld]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required to diff against the merge base
+      - name: Decide whether to run
+        # Same gating as gradle-tests below: a push or a manual run has nothing
+        # to compare against, and a gate that cannot tell what changed has to
+        # run the job rather than report green.
+        id: decide
+        run: |
+          set -euo pipefail
+          run=true
+          if [ "${{ matrix.profile }}" != "tomee" ]; then
+            DIFF_BASE=
+            case "$GITHUB_EVENT_NAME" in
+              pull_request)
+                if git fetch --no-tags origin \
+                    "+refs/heads/$_BASE_REF:refs/remotes/origin/$_BASE_REF"; then
+                  DIFF_BASE=$(git merge-base HEAD "refs/remotes/origin/$_BASE_REF" || true)
+                fi
+                ;;
+              merge_group)
+                DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+                ;;
+            esac
+            if [ -z "$DIFF_BASE" ]; then
+              echo "No base to compare against, running every container."
+            elif ! CHANGED=$(git diff --name-only "$DIFF_BASE" HEAD); then
+              echo "Could not diff against $DIFF_BASE, running every container."
+            else
+              RELEVANT=$(printf '%s\n' "$CHANGED" | grep -E \
+                '^(vaadin-cdi/|flow-tests/vaadin-cdi-tests/|\.github/workflows/validation\.yml$)' || true)
+              if [ -z "$RELEVANT" ]; then
+                echo "No changes to the CDI modules, tomee alone covers this."
+                run=false
+              else
+                echo "Changes to the CDI modules:"
+                printf '%s\n' "$RELEVANT"
+              fi
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          node-version: '24.20.0'
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          version: '11.21.0'
+      - name: Set up JDK
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Set TB License
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Run CDI ITs
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        timeout-minutes: 35
+        run: |
+          mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} \
+            -Dcom.vaadin.testbench.Parameters.maxAttempts=2 verify \
+            2>&1 | tee mvn-cdi-tests-${{ matrix.profile }}.out
+      - name: Kill leftover Java processes
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
+      - name: Package test-report files
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-cdi-${{ matrix.profile }}.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        with:
+          name: tests-output-cdi-${{ matrix.profile }}
+          path: tests-report-*.tgz
   gradle-tests:
     name: Gradle Tests
     # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
