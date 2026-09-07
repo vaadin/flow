@@ -763,6 +763,10 @@ public class UIInternals implements Serializable {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
         pendingJsInvocationOwners.add(invocation.getOwner());
+        // Counts an invocation that is queued directly, such as one from
+        // Page.executeJs. An invocation queued through its owner being
+        // attached is already counted, and counting is idempotent
+        invocation.countWhenAttached();
     }
 
     /**
