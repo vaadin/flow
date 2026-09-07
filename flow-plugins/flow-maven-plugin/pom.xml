@@ -126,6 +126,16 @@
           <postBuildHookScript>verify</postBuildHookScript>
           <addTestClassPath>true</addTestClassPath>
         </configuration>
+        <!-- extraArtifacts come from the repositories, not the reactor, so
+             the daemon has to be built first. Nothing else orders it before
+             this module, so this dependency is what does. -->
+        <dependencies>
+          <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-devloop-daemon</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>integration-test</id>
