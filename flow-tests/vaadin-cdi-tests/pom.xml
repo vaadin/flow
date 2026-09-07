@@ -3,14 +3,15 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-cdi-parent</artifactId>
-    <version>16.1-SNAPSHOT</version>
+    <artifactId>flow-tests</artifactId>
+    <version>25.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>vaadin-cdi-itest</artifactId>
+  <artifactId>vaadin-cdi-tests</artifactId>
+  <name>Vaadin CDI tests</name>
+  <description>Test modules for CDI integration</description>
 
   <properties>
-    <maven.deploy.skip>true</maven.deploy.skip>
     <surefire.groups/>
     <surefire.excludedGroups>com.vaadin.cdi.itest.SlowTests</surefire.excludedGroups>
     <apache-tomcat.version>11.0.8</apache-tomcat.version>
@@ -20,11 +21,39 @@
     <openliberty.template>jakartaee10</openliberty.template>
     <openliberty.runtimeArtifactGroupId>io.openliberty</openliberty.runtimeArtifactGroupId>
     <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+    <!-- Every test in this module deploys to a real application server, so
+         there is nothing to run until one of the container profiles below is
+         activated. Skipping by default keeps a plain `mvn verify` over
+         flow-tests from failing on a missing container. -->
+    <cdi.container.tests.skip>true</cdi.container.tests.skip>
+    <arquillian.version>1.9.5.Final</arquillian.version>
+    <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+    <shrinkwrap.descriptors.version>2.0.0</shrinkwrap.descriptors.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.arquillian.junit</groupId>
+        <artifactId>arquillian-junit-container</artifactId>
+        <version>${arquillian.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+        <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+        <version>${shrinkwrap.resolver.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+        <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
+        <version>${shrinkwrap.descriptors.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>com.vaadin</groupId>
       <artifactId>vaadin-cdi</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -49,22 +78,17 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Vaadin flow -->
+    <!-- Vaadin flow; flow-client and flow-html-components come from the
+         flow-tests parent -->
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-html-components</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-polymer-template</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -82,39 +106,13 @@
       <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-test-util</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.lucee</groupId>
-      <artifactId>jcip-annotations</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>vaadin-prereleases</id>
-      <url>https://maven.vaadin.com/vaadin-prereleases</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <build>
     <plugins>
       <plugin>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-maven-plugin</artifactId>
-        <version>${vaadin.flow.version}</version>
         <executions>
           <execution>
             <goals>
@@ -124,6 +122,13 @@
             <phase>compile</phase>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>${cdi.container.tests.skip}</skipTests>
+        </configuration>
       </plugin>
       <plugin>
         <!--
@@ -151,6 +156,9 @@
   <profiles>
     <profile>
       <id>tomee</id>
+      <properties>
+        <cdi.container.tests.skip>false</cdi.container.tests.skip>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.apache.tomee</groupId>
@@ -185,6 +193,9 @@
     </profile>
     <profile>
       <id>wildfly</id>
+      <properties>
+        <cdi.container.tests.skip>false</cdi.container.tests.skip>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.wildfly.arquillian</groupId>
@@ -245,6 +256,9 @@
     </profile>
     <profile>
       <id>payara</id>
+      <properties>
+        <cdi.container.tests.skip>false</cdi.container.tests.skip>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>fish.payara.arquillian</groupId>
@@ -306,6 +320,9 @@
     </profile>
     <profile>
       <id>liberty</id>
+      <properties>
+        <cdi.container.tests.skip>false</cdi.container.tests.skip>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>io.openliberty.arquillian</groupId>
@@ -383,6 +400,9 @@
     </profile>
     <profile>
       <id>tomcat-weld</id>
+      <properties>
+        <cdi.container.tests.skip>false</cdi.container.tests.skip>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.jboss.arquillian.container</groupId>
