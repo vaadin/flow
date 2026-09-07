@@ -490,7 +490,7 @@
       </build>
     </profile>
     <profile>
-      <id>slowtests</id>
+      <id>slow-tests</id>
       <properties>
         <surefire.excludedGroups/>
         <surefire.groups>com.vaadin.cdi.itest.SlowTests</surefire.groups>

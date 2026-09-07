@@ -388,13 +388,43 @@ jobs:
         run: |
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Verify the no-container build skips its tests
+        # cdi.container.tests.skip only takes effect when no container profile
+        # is active, which no other job exercises: the module lives in the
+        # it-test-modules profile, so `mvn install -DskipTests` leaves it out,
+        # and every leg below passes -P<container>. Assert it here, once, so a
+        # regression surfaces in CI rather than in someone's `mvn verify` over
+        # flow-tests.
+        if: ${{ steps.decide.outputs.run == 'true' && matrix.profile == 'tomee' }}
+        run: |
+          set -e
+          LOG=mvn-cdi-no-profile.out
+          mvn -B -ntp -e -pl flow-tests/vaadin-cdi-tests verify >"$LOG" 2>&1 || {
+            cat "$LOG"; exit 1; }
+          cat "$LOG"
+          if grep -qE '^\[INFO\] Tests run:' "$LOG"; then
+            echo "::error::CDI container tests ran without a container profile"
+            exit 1
+          fi
+          grep -q 'Tests are skipped' "$LOG" || {
+            echo "::error::surefire did not report the tests as skipped"; exit 1; }
       - name: Run CDI ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
         run: |
-          mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} \
-            -Dcom.vaadin.testbench.Parameters.maxAttempts=2 verify \
-            2>&1 | tee mvn-cdi-tests-${{ matrix.profile }}.out
+          cmd="mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          set -x -e
+          LOG=mvn-cdi-tests-${{ matrix.profile }}.out
+          : > "$LOG"
+          # Detached the same way the it-tests job detaches its Maven, and for
+          # the same reason twice over: these tests fork application server
+          # JVMs that can outlive Maven and pin the step open by holding a pipe
+          # to tee, and piping would also make the step exit with tee's status
+          # instead of Maven's, so a failing container would report success.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -682,7 +712,7 @@ jobs:
     # was cancelled, and a skipped required check satisfies branch
     # protection — letting auto-merge proceed past a cancelled IT.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [unit-tests, it-tests]
+    needs: [unit-tests, it-tests, cdi-tests]
     runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
@@ -705,7 +735,7 @@ jobs:
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
       - name: Set Failure Status
-        if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
+        if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success' || needs.cdi-tests.result != 'success') }}
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
@@ -716,7 +746,7 @@ jobs:
     # restores it has run: deleting it in test-results could race with the
     # Sonar analysis, which starts as soon as the unit tests finish.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [test-results, sonar-analysis, gradle-tests]
+    needs: [test-results, sonar-analysis, gradle-tests, cdi-tests]
     runs-on: ubuntu-24.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0

@@ -14,8 +14,12 @@ The available profiles are `tomee`, `wildfly`, `payara`, `liberty` and
 CDI sources themselves change; see the `cdi-tests` job in
 `.github/workflows/validation.yml`.
 
-The tests carrying the `SlowTests` category are excluded by default and run
-with `-Pslowtests`.
+The tests carrying the `SlowTests` category are excluded by default. They
+still need a container, so enable them alongside one:
+
+```sh
+mvn verify -pl flow-tests/vaadin-cdi-tests -Ptomee,slow-tests
+```
 
 ### Dependencies for tests
 
