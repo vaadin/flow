@@ -24,8 +24,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Keyed on the ref as well as the workflow, so that a manual run cannot cancel
-  # the warm running for a merge to main.
+  # Keyed on the event as well as the ref: a manual run targeting main carries
+  # the same github.ref as the push it would otherwise cancel.
   #
   # Only the most recent state of a branch is worth caching, and queueing runs
   # instead would warm one superseded commit after another while the useful one
@@ -35,7 +35,7 @@ concurrency:
   # behind rather than on none. Merges are far enough apart for the last run of
   # a burst to finish anyway; over 18 days the median gap between pushes to main
   # was 54 minutes.
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -45,6 +45,9 @@ jobs:
   # Kept apart from the Gradle warm so that one failing cannot discard what the
   # other resolved: the step that saves a cache only runs on a successful job.
   warm-maven:
+    # A fork that syncs its main from here would otherwise spend its own minutes
+    # warming entries only that fork can read.
+    if: ${{ github.repository == 'vaadin/flow' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -98,10 +101,32 @@ jobs:
         run: rm -rf ~/.m2/repository/com/vaadin/*/999.99-SNAPSHOT
 
   warm-gradle:
+    if: ${{ github.repository == 'vaadin/flow' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      # For the cache deletion below.
+      actions: write
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Forget the Gradle home entry for this ref
+        # setup-gradle saves whatever the Gradle home holds even when the job
+        # fails, its cache provider never overwrites a key it restored, and its
+        # key has no restore keys to fall back on. One interrupted run would
+        # otherwise freeze a half resolved home in place: every later run,
+        # successful ones included, restores it exactly and skips its own save.
+        #
+        # Deleting first is what makes this job self healing. It has to happen
+        # before setup-gradle restores, not after a failure: post steps run
+        # last, so a cleanup at the end would be overwritten by the save it is
+        # meant to undo.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache list --ref "$GITHUB_REF" --key setup-java- --limit 100 \
+            --json id --jq '.[].id' \
+            | xargs -r -n1 gh cache delete
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24.20.0'
@@ -132,13 +157,12 @@ jobs:
         run: |
           mvn install -B -ntp -DskipTests -q -pl flow-plugins/flow-plugin-base -am
       - name: Populate the Gradle home
-        # Compiles every source set the validation job's `build` would, so that
-        # the test and functionalTest configurations are resolved too, but
-        # without running the tests, which is the slow part and warms nothing.
-        #
-        # A failure here fails the job on purpose. setup-gradle saves whatever
-        # the Gradle home holds even then, and the basic provider never
-        # overwrites a key it restored, so a half resolved home would otherwise
-        # be frozen in place, silently, until a build script changes.
+        # Compiles every source set, so the compile classpaths of main, test and
+        # functionalTest are resolved, without running the tests, which is the
+        # slow part. What validation's `./gradlew build` resolves on top of this
+        # is the runtime classpaths, which only executing the tests pulls in:
+        # the Maven runtime scoped transitives of flow-plugin-base and the
+        # TestKit runtime. Those stay cold, and running the tests here to warm
+        # them would cost more than they save.
         working-directory: flow-plugins/flow-gradle-plugin
         run: ./gradlew assemble testClasses functionalTestClasses

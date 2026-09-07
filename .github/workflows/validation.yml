@@ -380,8 +380,9 @@ jobs:
       # Caching the Gradle home by hand meant every pull request saved its own
       # copy of it. Those copies alone held 7 of the 10 GB the repository is
       # allowed, so entries evicted each other within hours and even a second
-      # run of the same pull request started cold. What fixes that is
-      # cache-read-only below, which leaves the writing to pushes.
+      # run of the same pull request started cold. What keeps them down now is
+      # that this job runs at all only when the Gradle plugin changed, and that
+      # a merge queue branch, which nothing can read from, no longer writes.
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
@@ -403,10 +404,17 @@ jobs:
           # now do: editing one of those invalidates the Gradle home.
           cache-provider: basic
           # The action would otherwise write only on the default branch, which
-          # this workflow no longer builds. A push is the only event that should
-          # write, so that the maintenance branches keep filling their own
-          # scope, and everything else reads.
-          cache-read-only: ${{ github.event_name != 'push' }}
+          # this workflow no longer builds.
+          #
+          # Everything but the merge queue writes. Read only would be cheaper,
+          # but the provider has no restore keys, so a pull request that edits a
+          # build script computes a key that exists in no scope and could not
+          # save one either: it would download the whole Kotlin, Dokka and
+          # plugin-publish set again on every push to that branch. Those are
+          # exactly the pull requests this job runs for, and the hand written
+          # step it replaced degraded to a prefix match instead. A merge queue
+          # branch is single use, so what it saves is read by nothing.
+          cache-read-only: ${{ github.event_name == 'merge_group' }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
         with:
