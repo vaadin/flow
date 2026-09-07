@@ -588,8 +588,6 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * declare the type their values are read as use this instead of
      * {@link #toJson(Object)}.
      *
-     * @see SignalEnvironment
-     *
      * @param valueType
      *            the type that the value is read back as, not <code>null</code>
      * @param value
