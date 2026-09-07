@@ -377,14 +377,47 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # Caching the Gradle home by hand meant every pull request saved its own
+      # copy of it. Those copies alone held 7 of the 10 GB the repository is
+      # allowed, so entries evicted each other within hours and even a second
+      # run of the same pull request started cold. What keeps them down now is
+      # the key: a pull request that edits none of the files it hashes restores
+      # the entry main warmed on the primary key, and the provider skips its
+      # save on an exact hit, so only the ones that change a build script write
+      # at all. The gating below is not what does it, it was already there
+      # while those copies accumulated.
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle.properties', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          # The default 'enhanced' provider is a proprietary component that the
+          # MIT licence of the action does not cover, and it is free only as a
+          # preview. 'basic' is the MIT implementation. It saves one entry over
+          # ~/.gradle/caches and ~/.gradle/wrapper, the same tree the hand
+          # written step cached, and deliberately passes no restore keys, so a
+          # change to anything the key covers starts from an empty Gradle home
+          # rather than a near match. gradle-home-cache-includes and its
+          # siblings are read only by the enhanced provider and do nothing here.
+          #
+          # Its key is not the one the replaced step computed either. It hashes
+          # **/*.gradle*, **/gradle-wrapper.properties, gradle/*.versions.toml,
+          # **/versions.properties and a couple of buildSrc paths, across the
+          # whole repository. So flow-gradle-plugin/gradle.properties no longer
+          # takes part, a basename needs a literal .gradle in it, and the two
+          # settings.gradle fixtures under vaadin-dev-server/src/test/resources
+          # now do: editing one of those invalidates the Gradle home.
+          cache-provider: basic
+          # The action would otherwise write only on the default branch, which
+          # this workflow no longer builds.
+          #
+          # Everything but the merge queue writes. Read only would be cheaper,
+          # but the provider has no restore keys, so a pull request that edits a
+          # build script computes a key that exists in no scope and could not
+          # save one either: it would download the whole Kotlin, Dokka and
+          # plugin-publish set again on every push to that branch. Those are
+          # exactly the pull requests this job runs for, and the hand written
+          # step it replaced degraded to a prefix match instead. A merge queue
+          # branch is single use, so what it saves is read by nothing.
+          cache-read-only: ${{ github.event_name == 'merge_group' }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
         with:
@@ -614,6 +647,14 @@ jobs:
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
+      # The base build and the apicmp build each run npm install in
+      # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
+      # ~/.npm those six installs dominate the job and exhaust its timeout.
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.20.0'
+          cache: npm
+          cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
