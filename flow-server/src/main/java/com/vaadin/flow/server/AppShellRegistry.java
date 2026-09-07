@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -426,19 +427,28 @@ public class AppShellRegistry implements Serializable {
             List<String> styleSheets, AppShellSettings settings) {
         final DeploymentConfiguration config = request.getService()
                 .getDeploymentConfiguration();
+        // Different annotation values can denote the same stylesheet, e.g.
+        // "a.css", "./a.css" and "context://a.css" all normalize to
+        // "context://a.css". Normalize first and keep the first spelling of
+        // each so that only one link is emitted per stylesheet, in declaration
+        // order.
+        Map<String, String> sourcePathsByUrl = new LinkedHashMap<>();
+        for (String sourcePath : styleSheets) {
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(sourcePath);
+            if (normalized != null) {
+                sourcePathsByUrl.putIfAbsent(normalized, sourcePath);
+            }
+        }
+
         // Collected while emitting so that the tracker sees exactly the sheets
         // that ended up on the page, in the canonical resolveToContextRoot
         // form that ActiveStyleSheetTracker expects.
         List<String> trackedUrls = new ArrayList<>();
-        for (String sourcePath : styleSheets) {
-            String normalized = FrontendDependencyUrlResolver
-                    .resolveToContextRoot(sourcePath);
-            if (normalized == null) {
-                continue;
-            }
+        sourcePathsByUrl.forEach((normalized, sourcePath) -> {
             String href = resolveStyleSheetHref(normalized, request);
             if (href == null) {
-                continue;
+                return;
             }
             // In development the raw annotation value is exposed so that
             // StyleSheetHotswapper and the dev tools can match a link by the
@@ -449,7 +459,7 @@ public class AppShellRegistry implements Serializable {
                             "data-id", "appShell-" + sourcePath);
             settings.addLink(Position.APPEND, href, attributes);
             trackedUrls.add(normalized);
-        }
+        });
         if (!config.isProductionMode()) {
             ActiveStyleSheetTracker.get(request.getService())
                     .trackForAppShell(trackedUrls);
