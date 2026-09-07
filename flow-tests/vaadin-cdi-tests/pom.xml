@@ -151,6 +151,60 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!--
+                ShrinkWrap parses the effective POM above with a strict POM
+                reader, and what help:effective-pom writes is not always
+                well-formed XML. Two ways it is not, either of which makes
+                every test in this module fail to build its archive:
+
+                - the output carries an XML declaration from the plugin's own
+                  banner and a second one from the rendered model, which the
+                  reader rejects as a "PITarget with reserved xml name". Which
+                  of the plugin's rendering paths is taken depends on the model,
+                  so this shows up under the Flow parent but did not under the
+                  CDI one.
+                - build-helper:parse-version, which the Flow parent runs and
+                  the CDI parent did not, sets a property whose name ends in a
+                  question mark. That is a legal Maven property name but not a
+                  legal XML element name, so Maven serialises a tag no parser
+                  will accept.
+
+                Neither the declaration nor the parsedVersion properties matter
+                here - ShrinkWrap reads this file for the dependency list - so
+                strip both rather than reshaping the Flow build around a test
+                module. A POM needs no declaration; UTF-8 is the default.
+
+                Declared after maven-help-plugin on purpose: executions bound
+                to the same phase run in plugin declaration order.
+                -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sanitize-effective-pom</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>generate-test-resources</phase>
+            <configuration>
+              <!-- The flow-tests parent turns this off for its own execution;
+                   a silent failure here would only resurface as every test
+                   failing to build its archive. -->
+              <failOnError>true</failOnError>
+              <target>
+                <!-- Any element whose name is not a legal XML name. -->
+                <replaceregexp byline="true" file="${project.build.directory}/effective-pom.xml" match="^\s*&lt;([^\s&gt;/]*\?)&gt;.*&lt;/\1&gt;\s*$" replace=""/>
+                <!-- Then everything preceding the root element. -->
+                <replaceregexp byline="false" file="${project.build.directory}/effective-pom.xml" flags="s" match="^.*?(&lt;project)" replace="\1"/>
+                <!-- Fail here rather than in every test's deployment method if
+                     the output ever changes shape again. -->
+                <xmlvalidate file="${project.build.directory}/effective-pom.xml" lenient="true"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
