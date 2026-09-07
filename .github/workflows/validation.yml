@@ -412,6 +412,10 @@ jobs:
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
         run: |
+          # enforcer:enforce has to be named explicitly: the Flow parent keeps
+          # the dependencyConvergence rule in the default-cli execution, so no
+          # lifecycle phase evaluates it. Each container profile brings its own
+          # Arquillian adapter, so this is where a divergence would appear.
           cmd="mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
           set -x -e
           LOG=mvn-cdi-tests-${{ matrix.profile }}.out
@@ -421,7 +425,7 @@ jobs:
           # JVMs that can outlive Maven and pin the step open by holding a pipe
           # to tee, and piping would also make the step exit with tee's status
           # instead of Maven's, so a failing container would report success.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
+          $cmd enforcer:enforce verify </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID

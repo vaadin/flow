@@ -189,6 +189,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
+          <!-- Declaring antrun here also picks up the execution the flow-tests
+               parent manages, which deletes an exploded WAR's WEB-INF/lib. This
+               module is packaged as a jar and ShrinkWrap assembles its archives
+               in process, so that directory never exists and the execution only
+               prints an Ant BuildException and a stack trace on every run. -->
+          <execution>
+            <id>delete-lib-folder</id>
+            <phase>none</phase>
+          </execution>
           <execution>
             <id>sanitize-effective-pom</id>
             <goals>
