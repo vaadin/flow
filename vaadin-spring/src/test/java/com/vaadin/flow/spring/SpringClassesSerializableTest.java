@@ -115,6 +115,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.WebIconsRequestMatcher(\\$.*)?",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.PwaResourcesRequestMatcher(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.SerializedJwtSplitCookieRepository",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer",
