@@ -390,10 +390,17 @@ jobs:
           # preview. 'basic' is the MIT implementation. It saves one entry over
           # ~/.gradle/caches and ~/.gradle/wrapper, the same tree the hand
           # written step cached, and deliberately passes no restore keys, so a
-          # change to any build script or wrapper file starts from an empty
-          # Gradle home rather than a near match. gradle-home-cache-includes
-          # and its siblings are read only by the enhanced provider and would
-          # do nothing here.
+          # change to anything the key covers starts from an empty Gradle home
+          # rather than a near match. gradle-home-cache-includes and its
+          # siblings are read only by the enhanced provider and do nothing here.
+          #
+          # Its key is not the one the replaced step computed either. It hashes
+          # **/*.gradle*, **/gradle-wrapper.properties, gradle/*.versions.toml,
+          # **/versions.properties and a couple of buildSrc paths, across the
+          # whole repository. So flow-gradle-plugin/gradle.properties no longer
+          # takes part, a basename needs a literal .gradle in it, and the two
+          # settings.gradle fixtures under vaadin-dev-server/src/test/resources
+          # now do: editing one of those invalidates the Gradle home.
           cache-provider: basic
           # The action would otherwise write only on the default branch, which
           # this workflow no longer builds. A push is the only event that should
