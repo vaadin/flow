@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
 
@@ -222,11 +223,58 @@ public class AtmospherePushConnection
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage(response.toString());
+                    String responseString = response.toString();
+                    if (!async) {
+                        // Only the response to a client message can be sent
+                        // again, and only until the next message is processed.
+                        getUI().getInternals()
+                                .setLastRequestResponse(responseString);
+                    }
+                    sendMessage(responseString);
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Sends the response of the previous client message again, instead of
+     * creating a new one, as a reaction to the client re-sending a message the
+     * server has already handled. Falls back to a regular response if no
+     * previous response has been recorded.
+     */
+    void resendLastResponse() {
+        UIInternals internals = getUI().getInternals();
+        String lastResponse = internals.getLastRequestResponse();
+        if (lastResponse == null) {
+            // The answer to the message the client re-sent was never created,
+            // so creating one now is all this connection can offer. It answers
+            // that message, so push records it once it can create it: if that
+            // one is lost too, the next resend has something to send again
+            // instead of an empty response.
+            push(false);
+            return;
+        }
+        // Nothing to send on, and nothing to remember either: the client keeps
+        // re-sending the message until the server answers it, so it will ask
+        // again once the connection is back. A disconnect that has already
+        // started counts as no connection, as in push(boolean).
+        if (disconnecting.get() || !isConnected()) {
+            return;
+        }
+        synchronized (lock) {
+            // The connection may have been closed while waiting for the lock.
+            if (!isConnected()) {
+                return;
+            }
+            // The message wrapper gets the current sync id, not the one this
+            // response was created with. Only LongPollingCacheFilter reads
+            // that id, and only for a long polling resource. A long polling
+            // client sends its messages over XHR instead of the push channel,
+            // so its resend is answered by UidlRequestHandler and never
+            // arrives here.
+            sendMessage(lastResponse);
         }
     }
 
