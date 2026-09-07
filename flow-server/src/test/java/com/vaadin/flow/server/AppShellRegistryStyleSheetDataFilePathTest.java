@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,6 +41,12 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     @StyleSheet("context://from-context.css")
     @StyleSheet("https://cdn.example.com/remote.css")
     public static class MyShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet("same.css")
+    @StyleSheet("./same.css")
+    @StyleSheet("context://same.css")
+    public static class EquivalentShell implements AppShellConfigurator {
     }
 
     private MockServletServiceSessionSetup mocks;
@@ -58,7 +65,23 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     @AfterEach
     void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
+        ResourceContentHash.clearCache();
         mocks.cleanup();
+    }
+
+    @Test
+    void modifyIndex_equivalentStyleSheetValues_emitsOneLink() {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(EquivalentShell.class);
+
+        registry.modifyIndexHtml(document, createRequest("/", "/ctx"));
+
+        // "same.css", "./same.css" and "context://same.css" all denote the
+        // same stylesheet, so only the first spelling is emitted
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("./same.css", links.get(0).attr("href"));
+        assertEquals("same.css", links.get(0).attr("data-file-path"));
     }
 
     @Test

@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -37,7 +39,9 @@ import org.mockito.invocation.InvocationOnMock;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -65,7 +69,32 @@ class PwaRegistryTest {
             implements AppShellConfigurator {
     }
 
+    /** The resources {@link PwaWithAppShellAndStyleSheet} refers to. */
+    private static final Set<String> STYLESHEET_RESOURCES = Set.of("/app.css",
+            "/relative.css", "/absolute.css", "/context.css", "/base.css");
+
+    @StyleSheet("same.css")
+    @StyleSheet("./same.css")
+    @StyleSheet("context://same.css")
+    @PWA(name = "Equivalent PWA", shortName = "EQP")
+    private static class PwaWithEquivalentStyleSheets
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("it's.css")
+    @PWA(name = "Quoted PWA", shortName = "QP")
+    private static class PwaWithQuotedStyleSheet
+            implements AppShellConfigurator {
+    }
+
     private static List<PwaIcon> splashIconsForAppleDevices;
+
+    @AfterEach
+    void clearContentHashCache() {
+        // Static and keyed by path only, so hashes computed here would
+        // otherwise leak into other test classes using the same paths
+        ResourceContentHash.clearCache();
+    }
 
     @BeforeAll
     static void initPwaWithCustomIconPath() throws IOException {
@@ -105,13 +134,23 @@ class PwaRegistryTest {
     private static PwaRegistry preparePwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
-        return preparePwaRegistry(pwa, appShell, resources, "", false);
+        return preparePwaRegistry(pwa, appShell, resources, "/*", false);
     }
 
+    /**
+     * @param resources
+     *            context-root-relative paths that exist in the simulated
+     *            deployment, e.g. {@code /app.css}. Only these are reported as
+     *            available and only these get a content hash, so anything else
+     *            is treated as a missing resource.
+     * @param servletMapping
+     *            the URL mapping of the Vaadin servlet, which determines the
+     *            relative base of the precache entries
+     */
     private static PwaRegistry preparePwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
-            Set<String> resources, String contextPath, boolean productionMode)
-            throws IOException {
+            Set<String> resources, String servletMapping,
+            boolean productionMode) throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
                 MockedStatic<ApplicationConfiguration> configuration = Mockito
@@ -119,8 +158,8 @@ class PwaRegistryTest {
                 MockedStatic<FeatureFlags> featureFlags = Mockito
                         .mockStatic(FeatureFlags.class)) {
 
-            VaadinService vaadinServiceMocked = Mockito
-                    .mock(VaadinService.class);
+            VaadinServletService vaadinServiceMocked = Mockito
+                    .mock(VaadinServletService.class);
             Mockito.when(vaadinServiceMocked
                     .isResourceAvailable(Mockito.anyString()))
                     .thenAnswer((InvocationOnMock invocation) -> {
@@ -131,20 +170,40 @@ class PwaRegistryTest {
                         }
                         return invocation.callRealMethod();
                     });
-            // Let ResourceContentHash read a real file so that stylesheet
-            // entries get a content hash rather than the fallback revision
+            // Mimic ServiceContextUriResolver, which expands context:// to the
+            // context root and base:// to the servlet root
             Mockito.when(
                     vaadinServiceMocked.resolveResource(Mockito.anyString()))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
+                    .thenAnswer(invocation -> {
+                        String url = invocation.getArgument(0);
+                        if (url.startsWith(
+                                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+                            return "/" + url.substring(
+                                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                                            .length());
+                        }
+                        if (url.startsWith(
+                                ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+                            return url.substring(
+                                    ApplicationConstants.BASE_PROTOCOL_PREFIX
+                                            .length());
+                        }
+                        return url;
+                    });
+            // Only declared resources are readable, so ResourceContentHash
+            // computes a hash for those and returns null for the rest
             Mockito.when(
                     vaadinServiceMocked.getStaticResource(Mockito.anyString()))
-                    .thenReturn(PwaRegistryTest.class
-                            .getResource("/META-INF/resources/icons/icon.png"));
+                    .thenAnswer(invocation -> resources
+                            .contains(invocation.getArgument(0))
+                                    ? PwaRegistryTest.class.getResource(
+                                            "/META-INF/resources/icons/icon.png")
+                                    : null);
 
             final Map<String, Object> attributeMap = new HashMap<>();
             ServletContext servletContext = Mockito.mock(ServletContext.class);
-            Mockito.when(servletContext.getContextPath())
-                    .thenReturn(contextPath);
+            mockServletMapping(vaadinServiceMocked, servletContext,
+                    servletMapping);
             Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                     .then(invocation -> attributeMap
                             .get(invocation.getArguments()[0].toString()));
@@ -174,6 +233,26 @@ class PwaRegistryTest {
             AppShellRegistry.getInstance(context).setShell(appShell);
             return new PwaRegistry(pwa, servletContext);
         }
+    }
+
+    /**
+     * Wires up the servlet registration lookup that PwaRegistry uses to derive
+     * the servlet-root-to-context-root base of the precache entries.
+     */
+    private static void mockServletMapping(VaadinServletService service,
+            ServletContext servletContext, String servletMapping) {
+        String servletName = "vaadinServlet";
+        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
+        Mockito.when(servlet.getServletName()).thenReturn(servletName);
+        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
+        Mockito.when(service.getServlet()).thenReturn(servlet);
+
+        ServletRegistration registration = Mockito
+                .mock(ServletRegistration.class);
+        Mockito.when(registration.getMappings())
+                .thenReturn(Set.of(servletMapping));
+        Mockito.doReturn(Map.of(servletName, registration)).when(servletContext)
+                .getServletRegistrations();
     }
 
     @Test
@@ -389,15 +468,15 @@ class PwaRegistryTest {
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, Set.of("/aura/aura.css"));
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES);
         String sw = registry.getRuntimeServiceWorkerJs();
         // AppShellRegistry skips adding Aura when app shell exists
         assertFalse(sw.contains("aura/aura.css"));
-        // context:// expands to an absolute path built from the context path,
-        // here the root context
-        assertTrue(sw.contains("{ url: '/app.css', revision:"));
-        assertTrue(sw.contains("{ url: '/relative.css', revision:"));
-        assertTrue(sw.contains("{ url: '/context.css', revision:"));
+        // With a root servlet mapping the servlet root is the context root,
+        // so context:// expands to "./"
+        assertTrue(sw.contains("{ url: './app.css', revision:"));
+        assertTrue(sw.contains("{ url: './relative.css', revision:"));
+        assertTrue(sw.contains("{ url: './context.css', revision:"));
         // A leading '/' is already server-root-relative, so it is kept as is
         assertTrue(sw.contains("{ url: '/absolute.css', revision:"));
         // base:// stays relative, resolving against the service worker scope
@@ -407,17 +486,21 @@ class PwaRegistryTest {
     }
 
     @Test
-    void pwaWithAppShellAndStyleSheet_nonRootContextPath_contextUrlsIncludeContextPath()
+    void pwaWithAppShellAndStyleSheet_nonRootServletMapping_contextUrlsStepUpToContextRoot()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, Set.of("/aura/aura.css"),
-                "/myapp", false);
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES,
+                "/myservlet/*", false);
         String sw = registry.getRuntimeServiceWorkerJs();
-        assertTrue(sw.contains("{ url: '/myapp/context.css', revision:"));
-        assertTrue(sw.contains("{ url: '/myapp/app.css', revision:"));
-        // base:// resolves against the service worker scope, which already
-        // includes the context path, so it must stay relative
+        // Entries stay relative and step up out of the servlet path, exactly
+        // like the hrefs AppShellRegistry emits for the same stylesheets
+        assertTrue(sw.contains("{ url: './../context.css', revision:"),
+                "expected context:// to step up to the context root, was: "
+                        + sw);
+        assertTrue(sw.contains("{ url: './../app.css', revision:"));
+        // base:// resolves against the service worker scope, which is the
+        // servlet root, so it must stay relative without stepping up
         assertTrue(sw.contains("{ url: 'base.css', revision:"));
     }
 
@@ -426,19 +509,71 @@ class PwaRegistryTest {
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, Set.of("/aura/aura.css"),
-                "", true);
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "/*",
+                true);
         // The <link href> carries ?v-c=<hash> in production, so the precache
         // entry has to carry it too to ever be matched
         Matcher matcher = Pattern
-                .compile("\\{ url: '/context\\.css\\?v-c=([0-9a-f]{8})', "
+                .compile("\\{ url: './context\\.css\\?v-c=([0-9a-f]{8})', "
                         + "revision: '([0-9a-f]{8})' \\}")
                 .matcher(registry.getRuntimeServiceWorkerJs());
         assertTrue(matcher.find(),
-                "expected '/context.css' entry with a ?v-c= parameter, was: "
+                "expected './context.css' entry with a ?v-c= parameter, was: "
                         + registry.getRuntimeServiceWorkerJs());
         assertEquals(matcher.group(1), matcher.group(2),
                 "revision should be the same content hash as the parameter");
+    }
+
+    @Test
+    void pwaWithAppShellAndStyleSheet_missingResource_isNotPrecached()
+            throws IOException {
+        // Only context.css exists; an entry for a resource that cannot be read
+        // would 404 and abort the whole service worker installation
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, Set.of("/context.css"));
+        String sw = registry.getRuntimeServiceWorkerJs();
+        assertTrue(sw.contains("{ url: './context.css', revision:"));
+        assertFalse(sw.contains("app.css"),
+                "missing resource should not be precached, was: " + sw);
+        assertFalse(sw.contains("absolute.css"));
+    }
+
+    @Test
+    void pwaWithAppShellAndEquivalentStyleSheets_isPrecachedOnce()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithEquivalentStyleSheets.class.getAnnotation(PWA.class),
+                PwaWithEquivalentStyleSheets.class, Set.of("/same.css"));
+        String sw = registry.getRuntimeServiceWorkerJs();
+        assertEquals(1, countOccurrences(sw, "same.css"),
+                "equivalent annotation values should yield one entry, was: "
+                        + sw);
+    }
+
+    @Test
+    void pwaWithAppShellAndQuotedStyleSheet_quoteIsEscaped()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithQuotedStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithQuotedStyleSheet.class, Set.of("/it's.css"));
+        // An unescaped quote would close the JS string literal and make
+        // sw-runtime.js unparseable, breaking the whole service worker
+        assertTrue(
+                registry.getRuntimeServiceWorkerJs()
+                        .contains("{ url: './it\\'s.css', revision:"),
+                "expected the quote to be escaped, was: "
+                        + registry.getRuntimeServiceWorkerJs());
+    }
+
+    private static int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        int index = haystack.indexOf(needle);
+        while (index >= 0) {
+            count++;
+            index = haystack.indexOf(needle, index + needle.length());
+        }
+        return count;
     }
 
     @Test
@@ -457,7 +592,7 @@ class PwaRegistryTest {
                 PwaRegistryTest.class.getAnnotation(PWA.class), null,
                 Set.of("/aura/aura.css"));
         assertTrue(registry.getRuntimeServiceWorkerJs()
-                .contains("{ url: '/aura/aura.css', revision:"));
+                .contains("{ url: './aura/aura.css', revision:"));
     }
 
 }
