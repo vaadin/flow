@@ -128,22 +128,6 @@ Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
 
-## Javadoc
-
-Javadoc explains the public contract, the why and the caveats — not the
-internal implementation, and not what changed from a previous version. Change
-history belongs in commit messages.
-
-Do not add `@since` tags.
-
-Java API that wraps a browser or JavaScript API must be written for Java
-developers who do not know the underlying JS API. Document what the method does
-in Java terms, when to call it, threading and lifecycle expectations, and
-browser-specific caveats.
-
-State reliability concerns prominently. If a value is best-effort, say so and
-enumerate the browsers where it degrades.
-
 ## Testing
 
 Write the tests that should pass first. If they expose problems in the

@@ -37,14 +37,7 @@ Always read `CONVENTIONS.md` in full when **authoring** or **reviewing** code, a
 
 Design and implementation guidelines live in `guidelines/`. Read the chapters mapped in `guidelines/overview.md` selectively for the topics your work touches.
 
-These four apply to every change, so they are repeated here:
-
-- Run `mvn spotless:apply` before every commit.
-- Prefix the commit message with the type (`feat:`, `fix:`, `test:`, `docs:`, …, optionally scoped as `fix(flow-client):`), and use `test:` when the change only touches tests.
-- Add `Fixes #issuenumber` when the commit resolves an issue in this repository.
-- Do not add `@since` tags to Javadoc.
-
-Open pull requests as drafts, and remind the author to self-review before marking them ready.
+The commit message format and the expectations for opening a pull request are in the Commit & PR Hygiene section of `CONVENTIONS.md`.
 
 ## Development Commands
 
