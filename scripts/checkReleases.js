@@ -8,7 +8,7 @@
  * (the `on.push.branches` list) so this stays in sync with CI and there is no
  * second list to keep up to date. `--include-main` adds `main`, whose version
  * line comes from its POM version rather than its branch name because
- * pre-releases (`25.3.0-alphaN`) are cut from it.
+ * pre-releases (`25.4.0-alphaN`) are cut from it.
  *
  * For each branch it finds the latest tag on that version line and classifies
  * every commit merged since then by its conventional-commit type, into the
@@ -74,7 +74,7 @@ function readMaintainedBranches() {
 
 /**
  * The version line `main` is currently building, taken from the `flow-project`
- * POM version (`25.3-SNAPSHOT` -> `25.3`). Unlike a maintained branch, `main`
+ * POM version (`25.4-SNAPSHOT` -> `25.4`). Unlike a maintained branch, `main`
  * is not named after its line, so its tags cannot be found from the branch
  * name alone.
  */
@@ -143,7 +143,7 @@ function latestTagFor(line) {
 /**
  * The version the pending changes would be released as: the next patch for a
  * final release, or the next iteration of the same pre-release series so `main`
- * gets a concrete `25.3.0-alpha8` rather than a placeholder.
+ * gets a concrete `25.4.0-alpha8` rather than a placeholder.
  */
 function suggestNextVersion(version) {
   if (!version) return null;
