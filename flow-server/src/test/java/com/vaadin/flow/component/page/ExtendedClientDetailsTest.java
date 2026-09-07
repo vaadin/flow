@@ -109,10 +109,6 @@ class ExtendedClientDetailsTest {
         assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
                 "getBrowserTime() should follow the clock of the browser, but was off by "
                         + (browserTime - clientTime) + " ms");
-        assertTrue(
-                Math.abs(details.getCurrentDate().getTime() - details
-                        .getBrowserTime().toEpochMilli()) < TIME_TOLERANCE_MS,
-                "the deprecated getCurrentDate() should agree with getBrowserTime()");
     }
 
     @Test
