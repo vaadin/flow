@@ -535,9 +535,8 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
     private void navigateTo(Class navigationTarget,
             Class<? extends RouterLayout> layout) {
         Mockito.when(event.getNavigationTarget()).thenReturn(navigationTarget);
-        Mockito.when(event.getLayouts()).thenReturn(
-                Collections.<Class<? extends RouterLayout>> singletonList(
-                        layout));
+        Mockito.when(event.getLayouts()).thenReturn(Collections
+                .<Class<? extends RouterLayout>> singletonList(layout));
         beforeNavigationTrigger.fire(event);
     }
 
