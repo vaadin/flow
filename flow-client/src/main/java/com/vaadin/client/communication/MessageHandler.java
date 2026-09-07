@@ -583,7 +583,8 @@ public class MessageHandler {
             } else {
                 // No request to end, e.g. a duplicate of a response that
                 // already ended it. endRequest would throw for that.
-                Console.debug("Received a response while no request is active");
+                Console.debug(
+                        "Received a response while no request is active, ignoring it");
             }
             registry.getLoadingIndicatorStateHandler().stopLoading();
         }
