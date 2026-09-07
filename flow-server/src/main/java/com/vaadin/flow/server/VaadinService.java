@@ -70,11 +70,8 @@ import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
-import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AbstractRpcInvocationEvent;
@@ -330,21 +327,11 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry()
-                    .getRegisteredRoutes();
-            if (!routeDataList.isEmpty()) {
-                addRouterUsageStatistics();
-            }
-            routeDataList.stream().map(Object::toString).forEach(logger::debug);
-            addAutoLayoutUsageStatistics();
+            getRouteRegistry().getRegisteredRoutes().stream()
+                    .map(Object::toString).forEach(logger::debug);
             DevToolsToken.init(this);
         }
-        if (getDeploymentConfiguration().isPnpmEnabled()) {
-            UsageStatistics.markAsUsed("flow/pnpm", null);
-        }
-        if (getDeploymentConfiguration().isBunEnabled()) {
-            UsageStatistics.markAsUsed("flow/bun", null);
-        }
+        UsageStatisticsCollector.collect(this);
 
         if (getDeploymentConfiguration().isProductionMode()) {
             // Postpone the check until dev-server is fully initialized and
@@ -420,40 +407,6 @@ public abstract class VaadinService implements Serializable {
             unregister.run();
             Transaction.setTransactionFallback(null);
         });
-    }
-
-    private void addRouterUsageStatistics() {
-        if (UsageStatistics.getEntries().anyMatch(
-                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
-            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
-                    Version.getFullVersion());
-        } else if (UsageStatistics.getEntries()
-                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
-                    Version.getFullVersion());
-        }
-        UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
-    }
-
-    private void addAutoLayoutUsageStatistics() {
-        if (getRouteRegistry() instanceof AbstractRouteRegistry registry
-                && RouteUtil.hasAutoLayout(registry)) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_AUTO_LAYOUT,
-                    null);
-            if (RouteUtil.hasClientRouteWithAutoLayout(
-                    getDeploymentConfiguration())) {
-                UsageStatistics.markAsUsed(
-                        Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT,
-                        null);
-            }
-            if (RouteUtil.hasServerRouteWithAutoLayout(registry)) {
-                UsageStatistics.markAsUsed(
-                        Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT,
-                        null);
-            }
-        }
     }
 
     /**

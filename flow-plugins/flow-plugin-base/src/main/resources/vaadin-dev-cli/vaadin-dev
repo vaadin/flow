@@ -303,15 +303,57 @@ daemon_jar() {
     daemon_jar_resolve
 }
 
+# Starts a command in a session of its own and returns immediately.
+#
+# Ignoring SIGHUP is not enough, which is all a bare `nohup ... &` buys. The
+# child stays in the process group of the shell that spawned it, and the runners
+# this script is driven from - agent sandboxes, CI steps, `timeout --kill-after`,
+# a terminal being closed - end a command by killing that whole group. The
+# daemon and the application it owns then die with the very command that started
+# them: the next command finds a handshake pointing at nothing, spawns a second
+# daemon and reports the app as stopped. The loop never holds across two
+# commands, and every edit looks like it needs a fresh `start`.
+#
+# A new session is not reached by a kill aimed at the old process group. setsid
+# does that in one step, and forks first when it is already a group leader.
+# macOS ships no setsid binary, so perl's POSIX::setsid stands in - forking
+# first for the same reason, since setsid() refuses for a group leader. With
+# neither available the old behaviour is what is left, which is still right
+# everywhere nothing kills the group.
+#
+# The perl fallback is POSIX-only: on Windows there is no process group to
+# escape, and the perl there is git-bash's, whose fork is an emulation nothing
+# should be asked to exec through.
+posix_host() {
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*|Windows*) return 1 ;;
+        *) return 0 ;;
+    esac
+}
+
+detach() { # $1... the command to run, with its output appended to the daemon log
+    if command -v setsid >/dev/null 2>&1; then
+        setsid "$@" </dev/null >>"$DAEMON_LOG" 2>&1 &
+    elif posix_host && command -v perl >/dev/null 2>&1; then
+        # The eval keeps a perl without POSIX::setsid from taking the daemon
+        # with it: a daemon in the old session still runs, and that is the
+        # behaviour of the last branch anyway.
+        nohup perl -e 'exit 0 if fork; eval { require POSIX; POSIX::setsid() };
+            exec @ARGV or die "vaadin-dev: cannot exec the daemon: $!"' \
+            -- "$@" </dev/null >>"$DAEMON_LOG" 2>&1 &
+    else
+        nohup "$@" </dev/null >>"$DAEMON_LOG" 2>&1 &
+    fi
+    disown 2>/dev/null || true
+}
+
 spawn_daemon() {
     local jar
     jar="$(daemon_jar)" || return 70
     mkdir -p "$WORK_DIR"
-    # Detached: the daemon outlives this shell so later commands reuse it.
-    nohup "$(java_bin)" ${VAADIN_DEV_DAEMON_OPTS:-} \
-        -jar "$jar" "$ROOT" \
-        >>"$DAEMON_LOG" 2>&1 &
-    disown 2>/dev/null || true
+    # Unquoted deliberately: VAADIN_DEV_DAEMON_OPTS is a list of JVM options and
+    # has to split into words here, before detach receives them as "$@".
+    detach "$(java_bin)" ${VAADIN_DEV_DAEMON_OPTS:-} -jar "$jar" "$ROOT"
 
     # Wait for the handshake file rather than sleeping a fixed amount.
     local waited=0
@@ -486,7 +528,29 @@ main() {
 
     # 99 means the recorded daemon is not answering: the record is stale, so reap
     # it and try once more with a fresh daemon.
+    #
+    # Said out loud, because the application went with it. A daemon that shuts
+    # down deletes its own handshake, so a handshake still naming a dead process
+    # is evidence of a kill and not of an exit - and the reader is otherwise
+    # about to be told the app is stopped without being told what stopped it.
     if (( status == 99 )); then
+        local recorded
+        recorded="$(read_prop pid || true)"
+        if [[ -n "$recorded" ]] && kill -0 "$recorded" 2>/dev/null; then
+            echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded) is" \
+                 "running but not answering. Reaping the record and starting a" \
+                 "fresh daemon." >&2
+        else
+            echo "vaadin-dev: the daemon recorded for $ROOT (pid" \
+                 "${recorded:-unknown}) is gone and left its handshake behind," \
+                 "so it was killed rather than shut down - the application it" \
+                 "owned stopped with it. Starting a fresh daemon; the app needs" \
+                 "'vaadin-dev start' again." >&2
+            echo "vaadin-dev: if that repeats on every command, whatever runs" \
+                 "vaadin-dev is killing the process group each command runs in;" \
+                 "see \"When it goes wrong\" in the vaadin-devloop skill" \
+                 "reference." >&2
+        fi
         rm -f "$HANDSHAKE"
         spawn_daemon || exit 70
         port="$(read_prop port)"; token="$(read_prop token)"
