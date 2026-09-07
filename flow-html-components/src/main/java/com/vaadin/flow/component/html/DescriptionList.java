@@ -28,8 +28,8 @@ import com.vaadin.flow.signals.Signal;
 /**
  * Component representing a <code>&lt;dl&gt;</code> element.
  * <p>
- * A list of terms and their descriptions, using Term (<dt>) and Description
- * (<dd>) children.
+ * A list of terms and their descriptions, using Term (<code>&lt;dt&gt;</code>)
+ * and Description (<code>&lt;dd&gt;</code>) children.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl">MDN:
