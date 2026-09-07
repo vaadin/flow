@@ -26,6 +26,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *
  * @see #executionDiscarded()
  * @see #executionRestored()
+ * @since 25.3
  */
 public interface DiscardAwareExecution
         extends SerializableConsumer<ExecutionContext> {

@@ -87,6 +87,7 @@ public class ThemeLiveUpdater implements Closeable {
      * @param context
      *            the current context
      * @return {@code true} if the new stylesheet reached the browser
+     * @since 25.3
      */
     public static boolean push(File themeFolder, VaadinContext context) {
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
@@ -130,6 +131,7 @@ public class ThemeLiveUpdater implements Closeable {
      *
      * @param context
      *            the current Vaadin context
+     * @since 25.3
      */
     public static void suspend(VaadinContext context) {
         Objects.requireNonNull(context, "context cannot be null");
