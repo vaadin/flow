@@ -61,6 +61,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -423,6 +424,34 @@ class UidlWriterTest {
                 response.get(ApplicationConstants.RESYNCHRONIZE_ID)
                         .booleanValue(),
                 "Response resynchronize field is set to true");
+    }
+
+    @Test
+    void viewTransitionRequested_metaContainsViewTransition_andFlagReset()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+
+        ui.enableViewTransition();
+        assertTrue(ui.getInternals().isViewTransitionRequested(),
+                "View transition should be requested after enabling it");
+
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+        assertTrue(response.has("meta"), "Response should contain meta");
+        assertTrue(
+                response.get("meta").get(JsonConstants.META_VIEW_TRANSITION)
+                        .booleanValue(),
+                "Meta should request a view transition");
+
+        assertFalse(ui.getInternals().isViewTransitionRequested(),
+                "View transition flag should be reset after writing response");
+
+        // The flag only applies to a single response
+        ObjectNode nextResponse = uidlWriter.createUidl(ui, false);
+        assertFalse(
+                nextResponse.has("meta") && nextResponse.get("meta")
+                        .has(JsonConstants.META_VIEW_TRANSITION),
+                "View transition should not be requested in a subsequent response");
     }
 
     @Test
