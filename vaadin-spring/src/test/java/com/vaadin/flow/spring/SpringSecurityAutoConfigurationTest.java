@@ -182,6 +182,10 @@ class SpringSecurityAutoConfigurationTest {
                         });
             });
         } finally {
+            // getContext() lazily stores an empty context in the thread local
+            // shared by all instances, which would otherwise be inherited by
+            // the tests running afterwards on this thread
+            SecurityContextHolder.clearContext();
             SecurityContextHolder.setContextHolderStrategy(installedStrategy);
         }
     }
