@@ -120,6 +120,14 @@ test can cover.
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
   whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
   then any command respawns it.
+- Every command reports a fresh daemon (`up=0s`) and the app as `stopped`, and `vaadin-dev`
+  says the recorded daemon "left its handshake behind" — something outside the loop is killing
+  the processes each command created, so the daemon and the application it owns die with the
+  command that started them and the loop never holds across two commands. On POSIX the daemon
+  is spawned into a session of its own for exactly this reason, and that is defeated only where
+  neither `setsid` nor `perl` exists; on Windows a runner whose job object closes over the
+  command takes the daemon with it whichever launcher ran. Where it happens, `start` the app
+  from a shell that stays open for as long as the loop is needed, and run `apply` from another.
 - `this project does not depend on the dev-loop daemon` — the application's `pom.xml` is
   missing `com.vaadin:vaadin-dev` (declare it `<optional>true</optional>`, as a generated
   starter does).

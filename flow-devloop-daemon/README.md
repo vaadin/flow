@@ -69,6 +69,18 @@ handshake authorizes commands to the daemon, so the goal also installs
 `.vaadin/.gitignore` naming `daemon.properties` — the one file there that must
 not be shared.
 
+The CLI spawns the daemon into a **session of its own** — `setsid`, or perl's
+`POSIX::setsid` where no `setsid` binary ships — and not merely with SIGHUP
+ignored. A `nohup`'d child stays in the process group of the shell that spawned
+it, and the runners this CLI is driven from (agent sandboxes, CI steps, `timeout
+--kill-after`) end a command by killing that group: the daemon, and the app it
+owns as its child, would die with the very command that started them. The next
+command would then find a handshake naming a dead pid, spawn a second daemon and
+report the app as stopped — the loop failing to hold across two commands, which
+is the one thing the daemon exists to do. A handshake left behind by a dead pid
+is evidence of exactly that, because a daemon that shuts down deletes its own
+record, so the CLI reports it rather than quietly reaping it.
+
 A request is one line, `<token> <verb> <args...>`. The reply is zero or more
 `> text` progress lines followed by exactly one `EXIT <code>`, which becomes the
 CLI's exit status. Progress-then-code is the shape `apply` needs, so every verb
