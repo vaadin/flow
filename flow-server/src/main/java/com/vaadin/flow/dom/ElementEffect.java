@@ -63,7 +63,7 @@ public final class ElementEffect implements Serializable {
     private Registration attachedScope;
     /**
      * Error handler used by the active effect action. {@code null} means
-     * exceptions are re-thrown (probe / unattached mode).
+     * exceptions are not caught (probe / unattached mode).
      */
     private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
 
@@ -100,11 +100,19 @@ public final class ElementEffect implements Serializable {
 
     /**
      * Executes the effect function, routing exceptions through the
-     * {@link #errorHandler} when attached (active mode) or re-throwing them
-     * when no error handler is set (probe/unattached mode). This is a named
-     * method rather than a lambda to ensure reliable serialization.
+     * {@link #errorHandler} when attached (active mode) or letting them
+     * propagate as-is when no error handler is set (probe/unattached mode).
+     * This is a named method rather than a lambda to ensure reliable
+     * serialization.
      */
     private void executeAction(EffectContext ctx) {
+        SerializableBiConsumer<Exception, Element> handler = errorHandler;
+        if (handler == null) {
+            // Probe run: nothing is caught so that the exception surfaces at
+            // the call site (e.g. inside bindText / Signal.effect).
+            effectFunction.execute(ctx);
+            return;
+        }
         try {
             effectFunction.execute(ctx);
         } catch (DeniedSignalUsageException e) {
@@ -115,25 +123,8 @@ public final class ElementEffect implements Serializable {
         } catch (Exception e) {
             // Exception rather than RuntimeException since the JVM allows
             // throwing checked exceptions without declaring them
-            SerializableBiConsumer<Exception, Element> handler = errorHandler;
-            if (handler != null) {
-                handler.accept(e, owner);
-            } else {
-                // Probe run: re-throw so the exception surfaces at the
-                // call site (e.g. inside bindText / Signal.effect).
-                throw sneakyThrow(e);
-            }
+            handler.accept(e, owner);
         }
-    }
-
-    /**
-     * Re-throws the given exception as-is, without wrapping it, even though the
-     * effect action signature doesn't allow checked exceptions.
-     */
-    @SuppressWarnings("unchecked")
-    private static <T extends Throwable> RuntimeException sneakyThrow(
-            Exception exception) throws T {
-        throw (T) exception;
     }
 
     /**
