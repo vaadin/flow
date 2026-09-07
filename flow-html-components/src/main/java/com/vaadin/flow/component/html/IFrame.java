@@ -33,6 +33,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Component representing a <code>&lt;iframe&gt;</code> element.
+ * <p>
+ * A nested browsing context that embeds another HTML page. Prefer this over
+ * HtmlObject for documents.
  *
  * @author Vaadin Ltd
  * @since 1.3
