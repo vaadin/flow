@@ -20,8 +20,6 @@ package com.vaadin.flow.signals;
  * type. This can happen when the value type has been erased from the generic
  * signature of the code that writes the value, which means that the value type
  * cannot be enforced by the compiler.
- *
- * @since 25.2.9
  */
 public class InvalidSignalValueTypeException extends IllegalArgumentException {
     /**
