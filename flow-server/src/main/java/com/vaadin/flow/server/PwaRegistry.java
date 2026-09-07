@@ -47,12 +47,12 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -327,8 +327,8 @@ public class PwaRegistry implements Serializable {
             ServletContext servletContext) {
         VaadinServletContext context = new VaadinServletContext(servletContext);
         VaadinService service = VaadinService.getCurrent();
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
         boolean productionMode = configuration != null
                 && configuration.isProductionMode();
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
@@ -773,9 +773,9 @@ public class PwaRegistry implements Serializable {
     }
 
     private boolean shouldCacheRoot() {
-        VaadinContext context = VaadinService.getCurrent().getContext();
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
+        VaadinService service = VaadinService.getCurrent();
+        DeploymentConfiguration configuration = service
+                .getDeploymentConfiguration();
         return configuration != null && !configuration.isProductionMode();
     }
 }

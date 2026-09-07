@@ -40,8 +40,8 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ResourceContentHash;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -137,6 +137,14 @@ class PwaRegistryTest {
         return preparePwaRegistry(pwa, appShell, resources, "/*", false);
     }
 
+    private static PwaRegistry preparePwaRegistry(PWA pwa,
+            Class<? extends AppShellConfigurator> appShell,
+            Set<String> resources, String servletMapping,
+            boolean productionMode) throws IOException {
+        return preparePwaRegistry(pwa, appShell, resources, servletMapping,
+                productionMode, productionMode);
+    }
+
     /**
      * @param resources
      *            context-root-relative paths that exist in the simulated
@@ -146,15 +154,20 @@ class PwaRegistryTest {
      * @param servletMapping
      *            the URL mapping of the Vaadin servlet, which determines the
      *            relative base of the precache entries
+     * @param deploymentProductionMode
+     *            the servlet-level production mode, which is what
+     *            {@code AppShellRegistry} uses to decide about {@code ?v-c=}
+     * @param applicationProductionMode
+     *            the context-level production mode, which can be overridden by
+     *            the servlet-level one and so may differ from it
      */
     private static PwaRegistry preparePwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources, String servletMapping,
-            boolean productionMode) throws IOException {
+            boolean deploymentProductionMode, boolean applicationProductionMode)
+            throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
-                MockedStatic<ApplicationConfiguration> configuration = Mockito
-                        .mockStatic(ApplicationConfiguration.class);
                 MockedStatic<FeatureFlags> featureFlags = Mockito
                         .mockStatic(FeatureFlags.class)) {
 
@@ -214,17 +227,18 @@ class PwaRegistryTest {
 
             final VaadinServletContext context = new VaadinServletContext(
                     servletContext);
-            ApplicationConfiguration applicationConfiguration = Mockito
-                    .mock(ApplicationConfiguration.class);
-            Mockito.when(applicationConfiguration.isProductionMode())
-                    .thenReturn(productionMode);
+
+            // Kept separate from the application configuration on purpose: a
+            // servlet-level productionMode init parameter overrides the
+            // context-level value, so the two can disagree
+            MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+            deploymentConfiguration.setProductionMode(deploymentProductionMode);
+            Mockito.when(vaadinServiceMocked.getDeploymentConfiguration())
+                    .thenReturn(deploymentConfiguration);
 
             vaadinService.when(VaadinService::getCurrent)
                     .thenReturn(vaadinServiceMocked);
             Mockito.when(vaadinServiceMocked.getContext()).thenReturn(context);
-            configuration
-                    .when(() -> ApplicationConfiguration.get(Mockito.any()))
-                    .thenReturn(applicationConfiguration);
 
             FeatureFlags flags = Mockito.mock(FeatureFlags.class);
             featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
@@ -522,6 +536,24 @@ class PwaRegistryTest {
                         + registry.getRuntimeServiceWorkerJs());
         assertEquals(matcher.group(1), matcher.group(2),
                 "revision should be the same content hash as the parameter");
+    }
+
+    @Test
+    void pwaWithAppShellAndStyleSheet_servletOverridesProductionMode_urlFollowsDeploymentConfiguration()
+            throws IOException {
+        // A servlet-level productionMode init parameter overrides the
+        // context-level value, and AppShellRegistry builds the <link href>
+        // from the servlet-level one. The entry has to follow the same source,
+        // or it carries ?v-c= when the href does not and never matches.
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "/*",
+                true, false);
+        assertTrue(Pattern.compile(
+                "\\{ url: './context\\.css\\?v-c=[0-9a-f]{8}', revision:")
+                .matcher(registry.getRuntimeServiceWorkerJs()).find(),
+                "entry should follow the servlet-level production mode, was: "
+                        + registry.getRuntimeServiceWorkerJs());
     }
 
     @Test
