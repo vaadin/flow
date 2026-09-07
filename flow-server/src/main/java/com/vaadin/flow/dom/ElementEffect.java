@@ -113,10 +113,8 @@ public final class ElementEffect implements Serializable {
             // the caller gets an immediate exception.
             throw e;
         } catch (Exception e) {
-            // Catches Exception instead of RuntimeException so that checked
-            // exceptions passed through "sneaky throws" are handled in the
-            // same way instead of escaping to the uncaught exception handler
-            // of the current thread.
+            // Exception rather than RuntimeException since the JVM allows
+            // throwing checked exceptions without declaring them
             SerializableBiConsumer<Exception, Element> handler = errorHandler;
             if (handler != null) {
                 handler.accept(e, owner);
