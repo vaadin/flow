@@ -595,6 +595,8 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * @param value
      *            the object to convert to JSON
      * @return the converted JSON node, not <code>null</code>
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the given type
      */
     protected static JsonNode toJson(JavaType valueType,
             @Nullable Object value) {

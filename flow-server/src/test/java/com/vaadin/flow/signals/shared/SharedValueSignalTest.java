@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.SetCommand;
@@ -217,6 +218,20 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertEquals("unexpected", signal.peek());
 
         assertFailure(operation);
+    }
+
+    @Test
+    void replace_valueOfWrongType_throwsAndValueUnchanged() {
+        // replace builds its condition with the plain toJson and only the new
+        // value with the type-aware one, so it is a separate call site from set
+        SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
+        Object wrongType = new Object();
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.replace("expected", wrongType));
+        assertEquals("expected", signal.peek());
     }
 
     @Test
