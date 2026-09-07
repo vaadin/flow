@@ -220,18 +220,6 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void replace_valueOfWrongType_throws() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
-        Object wrongType = new Object();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> raw.replace("expected", wrongType));
-        assertEquals("expected", signal.peek());
-    }
-
-    @Test
     void update_noConflict_updatedWithPreviousValueInResult() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 

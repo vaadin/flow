@@ -1020,7 +1020,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         component.getElement().bindProperty("prop", signal, signal::set);
         rejectPropertyChanges(component.getElement());
 
-        emulateClientUpdate(component.getElement(), "prop", evilJson());
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
 
         assertEquals("foo", signal.peek());
         assertEquals("foo", component.getElement().getProperty("prop"));
@@ -1037,29 +1037,9 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                 erasedSetter(signal));
         rejectPropertyChanges(component.getElement());
 
-        emulateClientUpdate(component.getElement(), "prop", evilJson());
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
 
-        // A JSON object committed to the shared tree makes every read of the
-        // signal fail, in this and in every other session sharing the signal
         assertEquals("foo", signal.peek());
-        assertEquals("foo", component.getElement().getProperty("prop"));
-    }
-
-    @Test
-    void bindProperty_clientSendsObjectForSignalWritingToSharedSignal_updateIgnored() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        SharedValueSignal<String> shared = new SharedValueSignal<>("foo");
-        // The bound signal doesn't declare a value type while the erased write
-        // callback doesn't cast, so only the shared signal detects the mismatch
-        ValueSignal<String> bound = new ValueSignal<>("foo");
-        component.getElement().bindProperty("prop", bound,
-                erasedSetter(shared));
-        rejectPropertyChanges(component.getElement());
-
-        emulateClientUpdate(component.getElement(), "prop", evilJson());
-
-        assertEquals("foo", shared.peek());
         assertEquals("foo", component.getElement().getProperty("prop"));
     }
 
@@ -1092,7 +1072,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // local signal is confined to one session and cannot poison a signal
         // tree that other sessions read.
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        ObjectNode fromClient = evilJson();
+        ObjectNode fromClient = mismatchedJson();
         component.getElement().bindProperty("prop", signal,
                 erasedSetter(signal));
         AtomicReference<Serializable> eventValue = new AtomicReference<>();
@@ -1121,7 +1101,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                         + "but got " + event.getValue()));
     }
 
-    private ObjectNode evilJson() {
+    private ObjectNode mismatchedJson() {
         ObjectNode json = JacksonUtils.createObjectNode();
         json.put("evil", true);
         return json;

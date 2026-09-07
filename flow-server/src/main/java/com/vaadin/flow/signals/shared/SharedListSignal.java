@@ -443,9 +443,6 @@ public class SharedListSignal<T extends @Nullable Object>
             Collection<? extends T> values, ListPosition at) {
         Objects.requireNonNull(values, "Values must not be null");
         Objects.requireNonNull(at, "Position must not be null");
-        // Check up front so that a rejected value cannot leave a partially
-        // populated transaction behind
-        values.forEach(value -> checkValueType(elementType, value));
         if (values.isEmpty()) {
             BulkInsertOperation<SharedValueSignal<T>> op = new BulkInsertOperation<>(
                     List.of());

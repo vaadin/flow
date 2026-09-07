@@ -566,8 +566,8 @@ class SharedListSignalTest extends SignalTestBase {
 
         assertThrows(InvalidSignalValueTypeException.class,
                 () -> raw.insertAllLast(values));
-        // The values are checked before the transaction opens, so not even the
-        // values preceding the rejected one are inserted
+        // The bulk insert runs in a transaction, so not even the values
+        // preceding the rejected one are inserted
         assertChildren(signal);
     }
 
