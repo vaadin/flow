@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -35,6 +34,9 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class PwaResourcesRequestMatcherTest {
 
     AppShellRegistry shellRegistry;
@@ -44,10 +46,10 @@ class PwaResourcesRequestMatcherTest {
     @BeforeEach
     void setup() {
         ServletContext servletContext = new MockServletContext();
-        vaadinService = Mockito.mock(VaadinService.class);
-        Mockito.when(vaadinService.getContext())
+        vaadinService = mock(VaadinService.class);
+        when(vaadinService.getContext())
                 .thenReturn(new VaadinServletContext(servletContext));
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         shellRegistry = AppShellRegistry
                 .getInstance(vaadinService.getContext());
