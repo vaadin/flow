@@ -107,11 +107,13 @@ export class ReconnectStateMachine {
     if (!this.isReconnecting()) {
       // First problem encounter
       this.#reconnectionCause = type;
+      Console.warn(`Reconnecting because of ${type} failure`);
     } else if (isHigherPriorityThan(type, this.#reconnectionCause!)) {
       // We are currently trying to reconnect
       // Priority is HEARTBEAT -> PUSH -> XHR
       // If a higher priority issues is resolved, we can assume the lower one
       // will be also
+      Console.warn(`Now reconnecting because of ${type} failure`);
       this.#reconnectionCause = type;
     }
 
