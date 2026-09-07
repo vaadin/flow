@@ -28,8 +28,8 @@ import javax.naming.NamingException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides access to the {@link BeanManager} by registering the
@@ -67,8 +67,8 @@ import java.util.logging.Logger;
  * </p>
  */
 public class BeanManagerProvider implements Extension {
-    private static final Logger LOG = Logger
-            .getLogger(BeanManagerProvider.class.getName());
+    private static final Logger LOG = LoggerFactory
+            .getLogger(BeanManagerProvider.class);
 
     // for CDI 1.1+ delegation
     private static final Method CDI_CURRENT_METHOD;
@@ -374,7 +374,7 @@ public class BeanManagerProvider implements Extension {
                 return (BeanManager) CDI_CURRENT_BEAN_MANAGER_METHOD
                         .invoke(cdiCurrentObject);
             } catch (Throwable t) {
-                LOG.log(Level.FINEST,
+                LOG.trace(
                         "failed to delegate bean-manager lookup -> fallback to default.",
                         t);
             }

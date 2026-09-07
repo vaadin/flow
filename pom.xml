@@ -50,6 +50,7 @@
     <module>vaadin-dev-server</module>
     <module>flow-jandex</module>
     <module>vaadin-spring</module>
+    <module>vaadin-cdi</module>
     <module>flow-polymer2lit</module>
   </modules>
   <scm>
@@ -111,6 +112,8 @@
     <guava.version>33.7.1-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
+    <weld.version>6.0.3.Final</weld.version>
+    <weld.junit.version>5.0.1.Final</weld.junit.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -294,6 +297,16 @@
         <groupId>org.lucee</groupId>
         <artifactId>jcip-annotations</artifactId>
         <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.weld.se</groupId>
+        <artifactId>weld-se-core</artifactId>
+        <version>${weld.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.weld</groupId>
+        <artifactId>weld-junit5</artifactId>
+        <version>${weld.junit.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
