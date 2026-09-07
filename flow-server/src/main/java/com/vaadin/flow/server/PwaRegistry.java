@@ -355,6 +355,13 @@ public class PwaRegistry implements Serializable {
                 // the installation and the application loses offline support
                 // altogether. Leaving the stylesheet out only costs its own
                 // offline availability.
+                //
+                // Nothing is lost for resources emitted by the frontend build
+                // either: the Vite service worker plugin globs the whole build
+                // output into self.__WB_MANIFEST, and sw.ts concatenates that
+                // with these runtime entries, so those are already precached.
+                // This list only needs the resources that bypass the build,
+                // which are exactly the ones getStaticResource finds.
                 continue;
             }
             String url = resolver.resolveVaadinUri(normalized);
