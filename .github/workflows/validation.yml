@@ -381,8 +381,11 @@ jobs:
       # copy of it. Those copies alone held 7 of the 10 GB the repository is
       # allowed, so entries evicted each other within hours and even a second
       # run of the same pull request started cold. What keeps them down now is
-      # that this job runs at all only when the Gradle plugin changed, and that
-      # a merge queue branch, which nothing can read from, no longer writes.
+      # the key: a pull request that edits none of the files it hashes restores
+      # the entry main warmed on the primary key, and the provider skips its
+      # save on an exact hit, so only the ones that change a build script write
+      # at all. The gating below is not what does it, it was already there
+      # while those copies accumulated.
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
