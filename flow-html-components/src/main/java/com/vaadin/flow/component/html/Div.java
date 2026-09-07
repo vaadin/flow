@@ -26,7 +26,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;div&gt;</code> element.
+ * <p>
+ * A generic block container with no meaning of its own. Prefer a more specific
+ * element when one fits.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div">MDN:
+ *      &lt;div&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

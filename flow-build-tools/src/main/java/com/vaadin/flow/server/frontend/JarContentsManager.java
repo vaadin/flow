@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -262,6 +263,45 @@ public class JarContentsManager {
     public Set<String> copyIncludedFilesFromJarTrimmingBasePath(File jar,
             String jarDirectoryToCopyFrom, File outputDirectory,
             String... wildcardPathInclusions) {
+        return copyIncludedFilesFromJarTrimmingBasePath(jar,
+                jarDirectoryToCopyFrom, outputDirectory, List.of(),
+                wildcardPathInclusions);
+    }
+
+    /**
+     * Copies files matching the inclusion filters, but not the exclusion
+     * filters, from the jar file to the output directory.
+     *
+     * @param jar
+     *            jar file to look for files in, not {@code null}
+     * @param jarDirectoryToCopyFrom
+     *            a path relative to jar root, only files from this path will be
+     *            copied, can be {@code null}, which is treated as a root of the
+     *            jar. Files will be copied relative to this path (i.e. only
+     *            path part after this path is preserved in output directory)
+     * @param outputDirectory
+     *            the directory to copy files to, not {@code null}
+     * @param wildcardPathExclusions
+     *            wildcard exclusions that are used to check each path against
+     *            before copying, taking precedence over the inclusions
+     * @param wildcardPathInclusions
+     *            wildcard inclusions that are used to check each path against
+     *            before copying
+     * @return names of the files that were either copied or already existed in
+     *         the output directory
+     * @throws IllegalArgumentException
+     *             if jar file specified is not a file or does not exist or if
+     *             output directory is not a directory or does not exist
+     * @throws NullPointerException
+     *             if jar file or output directory is {@code null}
+     * @throws UncheckedIOException
+     *             if {@link IOException} occurs during the operation, for
+     *             instance, when jar file specified is not a jar file
+     */
+    public Set<String> copyIncludedFilesFromJarTrimmingBasePath(File jar,
+            String jarDirectoryToCopyFrom, File outputDirectory,
+            Collection<String> wildcardPathExclusions,
+            String... wildcardPathInclusions) {
         requireFileExistence(jar);
 
         if (!Objects.requireNonNull(outputDirectory).isDirectory()) {
@@ -278,6 +318,8 @@ public class JarContentsManager {
                     .filter(file -> file.getName().toLowerCase(Locale.ENGLISH)
                             .startsWith(basePath.toLowerCase(Locale.ENGLISH)))
                     .filter(file -> includeFile(file, wildcardPathInclusions))
+                    .filter(file -> isFileIncluded(file,
+                            wildcardPathExclusions))
                     .map(jarEntry -> copyJarEntryTrimmingBasePath(jarFile,
                             jarEntry, basePath, outputDirectory))
                     .collect(Collectors.toSet());
@@ -298,8 +340,13 @@ public class JarContentsManager {
     }
 
     private boolean isFileIncluded(ZipEntry file, String... pathExclusions) {
+        return isFileIncluded(file, List.of(pathExclusions));
+    }
+
+    private boolean isFileIncluded(ZipEntry file,
+            Collection<String> pathExclusions) {
         String filePath = file.getName();
-        return Stream.of(pathExclusions).noneMatch(exclusionRule -> FileIOUtils
+        return pathExclusions.stream().noneMatch(exclusionRule -> FileIOUtils
                 .wildcardMatch(filePath, exclusionRule));
     }
 
