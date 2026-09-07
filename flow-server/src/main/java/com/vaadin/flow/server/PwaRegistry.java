@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 
 import javax.imageio.ImageIO;
 
@@ -46,6 +47,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
@@ -310,11 +312,11 @@ public class PwaRegistry implements Serializable {
      * the entry URL, so each entry has to come out exactly as the
      * {@code <link href>} that {@code AppShellRegistry} emits for the same
      * stylesheet. Both therefore expand the annotation value with a
-     * {@link BootstrapHandler.BootstrapUriResolver}. The base differs: there is
-     * no request here, and relative entries are resolved by the browser against
-     * the service worker script location, which is the {@code <base href>}, so
-     * {@code context://} has to expand to an absolute path built from the
-     * context path to stay correct under a non-root servlet mapping.
+     * {@link BootstrapHandler.BootstrapUriResolver} over the same
+     * servlet-root-to-context-root base, keeping the entries relative
+     * ({@code ./}, {@code ./../}). Relative entries also survive a reverse
+     * proxy that rewrites the public path, which an absolute path built from
+     * the deployment context path would not.
      *
      * @param servletContext
      *            the servlet context the registry belongs to
@@ -330,7 +332,7 @@ public class PwaRegistry implements Serializable {
         boolean productionMode = configuration != null
                 && configuration.isProductionMode();
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
-                servletContext.getContextPath() + "/", null);
+                servletRootToContextRoot(service), null);
 
         Collection<String> entries = new LinkedHashSet<>();
         for (String styleSheet : AppShellRegistry.getInstance(context)
@@ -344,9 +346,18 @@ public class PwaRegistry implements Serializable {
                 // fails the whole service worker installation.
                 continue;
             }
-            String url = resolver.resolveVaadinUri(normalized);
             String hash = ResourceContentHash.getContentHash(service,
                     normalized);
+            if (hash == null) {
+                // The resource cannot be read, so it would most likely answer
+                // the precache request with a 404. Workbox caches entries one
+                // at a time during install, so a single failing entry aborts
+                // the installation and the application loses offline support
+                // altogether. Leaving the stylesheet out only costs its own
+                // offline availability.
+                continue;
+            }
+            String url = resolver.resolveVaadinUri(normalized);
             if (productionMode) {
                 // The emitted <link href> carries the same parameter, and
                 // workbox only ignores utm_/fbclid by default, so the entry
@@ -356,15 +367,67 @@ public class PwaRegistry implements Serializable {
             }
             // Revision is the stylesheet's own content hash so that editing
             // only the CSS invalidates the entry, as PwaIcon does with its
-            // file hash. Falls back to the context identity when the resource
-            // cannot be read.
-            entries.add(String.format(WORKBOX_CACHE_FORMAT, url,
-                    hash != null ? hash : servletContext.hashCode()));
+            // file hash.
+            entries.add(workboxEntry(url, hash));
         }
         return entries;
     }
 
+    /**
+     * Gets the relative path from the service's servlet root to the context
+     * root, in the same form
+     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)} produces
+     * for a request.
+     * <p>
+     * The servlet mapping is read from the servlet registration rather than
+     * from a request: the runtime service worker is built once per servlet
+     * context, and which request happens to trigger that is not predictable.
+     *
+     * @param service
+     *            the service to determine the servlet mapping for, may be
+     *            {@code null}
+     * @return the canceling relative path, {@code "./"} if the mapping cannot
+     *         be determined
+     */
+    private static String servletRootToContextRoot(VaadinService service) {
+        // Fall back to a root mapping when the registration is unavailable
+        String base = "./";
+        if (service instanceof VaadinServletService servletService) {
+            Optional<ServletRegistration> registration = BootstrapHandlerHelper
+                    .getServletRegistration(servletService.getServlet());
+            if (registration.isPresent()) {
+                String mapping = BootstrapHandlerHelper
+                        .findFirstUrlMapping(registration.get());
+                base = HandlerHelper.getCancelingRelativePath(mapping) + "/";
+            }
+        }
+        return base;
+    }
+
+    /**
+     * Formats a single workbox precache entry.
+     * <p>
+     * The URL is interpolated into a single-quoted JavaScript string, so quotes
+     * are escaped to keep {@code sw-runtime.js} parseable: the service worker
+     * imports that file, and a syntax error in it would prevent the whole
+     * worker from loading. Escaping rather than stripping keeps the entry URL
+     * identical to the {@code <link href>} it has to match.
+     *
+     * @param url
+     *            the URL to precache
+     * @param revision
+     *            the revision identifying the current content
+     * @return the formatted entry
+     */
+    private static String workboxEntry(String url, Object revision) {
+        String escaped = url.replace("\\", "\\\\").replace("'", "\\'");
+        return String.format(WORKBOX_CACHE_FORMAT, escaped, revision);
+    }
+
     private static boolean isExternal(String url) {
+        // UrlUtil.isExternal cannot be used here: it treats any "://" as
+        // external, which would also match the context:// and base:// values
+        // resolveToContextRoot produces.
         String lower = url.toLowerCase(Locale.ROOT);
         return lower.startsWith("http://") || lower.startsWith("https://")
                 || lower.startsWith("//");
