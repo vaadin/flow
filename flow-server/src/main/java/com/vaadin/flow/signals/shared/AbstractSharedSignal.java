@@ -29,6 +29,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
@@ -577,6 +578,43 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      */
     protected static JsonNode toJson(@Nullable Object value) {
         return OBJECT_MAPPER.valueToTree(value);
+    }
+
+    /**
+     * Helper to convert the given object to JSON after verifying that the given
+     * type can hold it. Every value that is stored in a signal tree goes
+     * through here so that the check cannot be forgotten for one of the
+     * operations that accept a new value.
+     *
+     * @param valueType
+     *            the type that the value is read back as, not <code>null</code>
+     * @param value
+     *            the object to convert to JSON
+     * @return the converted JSON node, not <code>null</code>
+     */
+    static JsonNode toJson(JavaType valueType, @Nullable Object value) {
+        checkValueType(valueType, value);
+        return toJson(value);
+    }
+
+    /**
+     * Verifies that the given type can hold the given value. A value of any
+     * other type would be serialized into the signal tree as JSON that cannot
+     * be deserialized back, which would make every subsequent read of the
+     * signal fail for everyone using the same tree.
+     *
+     * @param valueType
+     *            the type that the value is read back as, not <code>null</code>
+     * @param value
+     *            the value to check
+     */
+    static void checkValueType(JavaType valueType, @Nullable Object value) {
+        if (value != null && !valueType.getRawClass().isInstance(value)) {
+            throw new InvalidSignalValueTypeException(
+                    "Cannot use a value of type " + value.getClass().getName()
+                            + " with a signal that has the value type "
+                            + valueType + ".");
+        }
     }
 
     /**

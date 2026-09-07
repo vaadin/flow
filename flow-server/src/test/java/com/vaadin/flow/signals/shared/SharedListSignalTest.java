@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
 
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -542,6 +543,32 @@ class SharedListSignalTest extends SignalTestBase {
 
         assertEquals(3, op.signals().size());
         assertChildren(signal, "a", "b", "c", "existing");
+    }
+
+    @Test
+    void insertLast_valueOfWrongType_throwsAndNothingInserted() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedListSignal<Object> raw = ((SharedListSignal) signal);
+        Object wrongType = new Object();
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.insertLast(wrongType));
+        assertChildren(signal);
+    }
+
+    @Test
+    void insertAllLast_oneValueOfWrongType_throwsAndNothingInserted() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedListSignal<Object> raw = ((SharedListSignal) signal);
+        List<Object> values = List.of("a", new Object(), "c");
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.insertAllLast(values));
+        // The values are checked before the transaction opens, so not even the
+        // values preceding the rejected one are inserted
+        assertChildren(signal);
     }
 
     static void assertChildren(SharedListSignal<String> signal,

@@ -30,6 +30,7 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -304,6 +305,9 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertFirst(T value) {
         return insertAt(value, ListPosition.first());
@@ -337,6 +341,9 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertLast(T value) {
         return insertAt(value, ListPosition.last());
@@ -356,12 +363,15 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertAt(T value,
             ListPosition at) {
         return submitInsert(
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
-                        toJson(value), Objects.requireNonNull(at)),
+                        toJson(elementType, value), Objects.requireNonNull(at)),
                 this::child);
     }
 
@@ -375,6 +385,9 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
      * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllLast(
@@ -393,6 +406,9 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
      * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllFirst(
@@ -418,12 +434,18 @@ public class SharedListSignal<T extends @Nullable Object>
      *            <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
      * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllAt(
             Collection<? extends T> values, ListPosition at) {
         Objects.requireNonNull(values, "Values must not be null");
         Objects.requireNonNull(at, "Position must not be null");
+        // Check up front so that a rejected value cannot leave a partially
+        // populated transaction behind
+        values.forEach(value -> checkValueType(elementType, value));
         if (values.isEmpty()) {
             BulkInsertOperation<SharedValueSignal<T>> op = new BulkInsertOperation<>(
                     List.of());

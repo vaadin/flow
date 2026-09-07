@@ -21,7 +21,7 @@ package com.vaadin.flow.signals;
  * signature of the code that writes the value, which means that the value type
  * cannot be enforced by the compiler.
  *
- * @since 25.3
+ * @since 25.2.9
  */
 public class InvalidSignalValueTypeException extends IllegalArgumentException {
     /**

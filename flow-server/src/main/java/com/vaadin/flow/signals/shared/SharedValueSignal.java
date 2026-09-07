@@ -193,10 +193,9 @@ public class SharedValueSignal<T extends @Nullable Object>
      *             signal
      */
     public SignalOperation<T> set(T value) {
-        checkValueType(value);
-
         return submit(
-                new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
+                new SignalCommand.SetCommand(Id.random(), id(),
+                        toJson(valueType, value)),
                 success -> nodeValue(
                         Objects.requireNonNull(success.onlyUpdate().oldNode()),
                         valueType));
@@ -214,25 +213,6 @@ public class SharedValueSignal<T extends @Nullable Object>
     @Override
     protected @Nullable Object usageChangeValue(Data data) {
         return data.value();
-    }
-
-    /**
-     * Verifies that the given value can be represented by the value type of
-     * this signal. A value of any other type would be serialized into the
-     * signal tree as JSON that cannot be deserialized back, which would make
-     * every subsequent read of the signal fail for everyone using the same
-     * tree.
-     *
-     * @param value
-     *            the value to check
-     */
-    private void checkValueType(@Nullable Object value) {
-        if (value != null && !valueType.getRawClass().isInstance(value)) {
-            throw new InvalidSignalValueTypeException(
-                    "Cannot use a value of type " + value.getClass().getName()
-                            + " with a signal that has the value type "
-                            + valueType + ".");
-        }
     }
 
     /**
@@ -254,12 +234,10 @@ public class SharedValueSignal<T extends @Nullable Object>
      *             signal
      */
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
-        checkValueType(newValue);
-
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
-                toJson(newValue));
+                toJson(valueType, newValue));
 
         return submit(new SignalCommand.TransactionCommand(Id.random(),
                 List.of(condition, set)));
