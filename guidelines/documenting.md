@@ -19,7 +19,8 @@ read the W3C spec or the `.ts` source.
   examples consistent with the real platform APIs (e.g. if you show
   `map.setCenter(...)`, use the real Vaadin Map `Coordinate(longitude,
   latitude)` shape).
-- **Do not add `@since` tags.**
 - Javadoc describes the code today, not what changed. Change history
   belongs in commit messages.
 
+The mechanical Javadoc rules — such as not adding `@since` tags — are listed
+in [`CONVENTIONS.md`](../CONVENTIONS.md).

@@ -128,6 +128,11 @@ Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
 
+## Javadoc
+
+Do not add `@since` tags. What to write in Javadoc, and how to document a
+wrapped browser API, is covered by `guidelines/documenting.md`.
+
 ## Testing
 
 Write the tests that should pass first. If they expose problems in the
