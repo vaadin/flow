@@ -562,6 +562,40 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sneakyThrowCheckedException_delegatedToErrorHandler() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+
+        var events = new ArrayList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        var expected = new Exception("Expected checked exception");
+
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal.effect(ui, () -> {
+            dependency.get();
+            throw sneakyThrow(expected);
+        });
+
+        assertEquals(1, events.size(), "Error handler should have been called");
+        assertSame(expected, events.get(0).getThrowable());
+    }
+
+    /**
+     * Throws the given exception without declaring it, mimicking what e.g.
+     * Kotlin or Lombok's {@code @SneakyThrows} does.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> RuntimeException sneakyThrow(
+            Exception exception) throws T {
+        throw (T) exception;
+    }
+
+    @Test
     void effect_notAttached_effectRunsImmediatelyAsProbe() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();

@@ -112,16 +112,30 @@ public final class ElementEffect implements Serializable {
             // (e.g. inside bindChildren factory). Always propagate so
             // the caller gets an immediate exception.
             throw e;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            // Catches Exception instead of RuntimeException so that checked
+            // exceptions passed through "sneaky throws" are handled in the
+            // same way instead of escaping to the uncaught exception handler
+            // of the current thread.
             SerializableBiConsumer<Exception, Element> handler = errorHandler;
             if (handler != null) {
                 handler.accept(e, owner);
             } else {
                 // Probe run: re-throw so the exception surfaces at the
                 // call site (e.g. inside bindText / Signal.effect).
-                throw e;
+                throw sneakyThrow(e);
             }
         }
+    }
+
+    /**
+     * Re-throws the given exception as-is, without wrapping it, even though the
+     * effect action signature doesn't allow checked exceptions.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> RuntimeException sneakyThrow(
+            Exception exception) throws T {
+        throw (T) exception;
     }
 
     /**
