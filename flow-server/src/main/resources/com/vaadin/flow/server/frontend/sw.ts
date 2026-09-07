@@ -48,6 +48,10 @@ const offlinePath = OFFLINE_PATH;
 // Example: http://localhost:8888/scope-path/sw.js => /scope-path/
 const scope = new URL(self.registration.scope);
 
+// The offline stub served by PwaHandler, rendered by the Flow client within an
+// <iframe> in the app shell when a server view cannot be reached.
+const offlineStubPath = `${scope.pathname}offline-stub.html`;
+
 /**
  * Replaces <base href> in pre-cached response HTML with the service worker’s
  * scope URL.
@@ -58,6 +62,58 @@ const scope = new URL(self.registration.scope);
 async function rewriteBaseHref(response: Response) {
   const html = await response.text();
   return new Response(html.replace(/<base\s+href=[^>]*>/, `<base href="${self.registration.scope}">`), response);
+}
+
+// Matches the frame-ancestors directive of a content security policy.
+const frameAncestorsDirective = /^\s*frame-ancestors(\s|$)/i;
+
+/**
+ * Restricts framing of a document to the same origin, instead of denying it
+ * altogether.
+ *
+ * The offline stub is rendered in a same-origin iframe, but the response served
+ * for it carries the headers of the origin server, which are stored in the
+ * pre-cache as well. A security filter, a reverse proxy or a CDN commonly adds
+ * `X-Frame-Options: DENY` to every response, in which case the browser displays
+ * its own error page instead of the offline stub. Downgrading the headers to
+ * same-origin framing keeps a third party page from framing the stub.
+ *
+ * @param response response to serve for the offline stub
+ * @returns response the app shell is allowed to render within an iframe
+ */
+async function allowSameOriginFraming(response: Response) {
+  const frameOptions = response.headers.get('X-Frame-Options');
+  const contentSecurityPolicy = response.headers.get('Content-Security-Policy');
+  if (frameOptions === null && !contentSecurityPolicy?.includes('frame-ancestors')) {
+    return response;
+  }
+
+  const headers = new Headers(response.headers);
+  if (frameOptions !== null) {
+    headers.set('X-Frame-Options', 'SAMEORIGIN');
+  }
+  if (contentSecurityPolicy !== null) {
+    // Of a content security policy, only frame-ancestors prevents framing,
+    // the other directives are served as they are.
+    headers.set(
+      'Content-Security-Policy',
+      contentSecurityPolicy
+        .split(',')
+        .map((policy) =>
+          policy
+            .split(';')
+            .map((directive) => (frameAncestorsDirective.test(directive) ? " frame-ancestors 'self'" : directive))
+            .join(';')
+        )
+        .join(',')
+    );
+  }
+
+  return new Response(await response.blob(), {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
 }
 
 /**
@@ -123,25 +179,32 @@ registerRoute(
       return serveOfflineFallback();
     }
 
-    // Try to serve the resource from the cache when offline is detected.
-    if (!self.navigator.onLine) {
-      const response = await serveResourceFromCache();
-      if (response) {
-        return response;
+    async function serveNavigationRequest() {
+      // Try to serve the resource from the cache when offline is detected.
+      if (!self.navigator.onLine) {
+        const response = await serveResourceFromCache();
+        if (response) {
+          return response;
+        }
+      }
+
+      // Sometimes navigator.onLine is not reliable,
+      // try to serve the resource from the cache also in the case of a network failure.
+      try {
+        return await networkOnly.handle(context);
+      } catch (error) {
+        const response = await serveResourceFromCache();
+        if (response) {
+          return response;
+        }
+        throw error;
       }
     }
 
-    // Sometimes navigator.onLine is not reliable,
-    // try to serve the resource from the cache also in the case of a network failure.
-    try {
-      return await networkOnly.handle(context);
-    } catch (error) {
-      const response = await serveResourceFromCache();
-      if (response) {
-        return response;
-      }
-      throw error;
-    }
+    const response = await serveNavigationRequest();
+    // Only the offline stub is served as frameable, so that a third party page
+    // cannot frame the application itself.
+    return context.url.pathname === offlineStubPath ? allowSameOriginFraming(response) : response;
   })
 );
 

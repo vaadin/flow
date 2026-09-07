@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.navigate;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -261,6 +265,34 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void offlineStub_framingDeniedByServer_offlineStubShown()
+            throws IOException {
+        openPageAndPreCacheWhenDevelopmentMode("/");
+
+        // The offline stub is pre-cached with the headers the server sent for
+        // it, so the service worker has to serve it as frameable itself
+        Assert.assertEquals(
+                "Expected the server to deny framing of the offline stub",
+                "DENY", getFrameOptionsHeader("/offline-stub.html"));
+
+        getDevTools().setOfflineEnabled(true);
+        try {
+            waitUntil(driver -> $("main-view").first().$("a").id("menu-hello"))
+                    .click();
+
+            waitForElementPresent(By.tagName("iframe"));
+            WebElement offlineStub = findElement(By.tagName("iframe"));
+            driver.switchTo().frame(offlineStub);
+            Assert.assertNotNull(
+                    "Offline stub should be rendered in the iframe even when the server denies framing",
+                    findElement(By.className("offline")));
+        } finally {
+            driver.switchTo().defaultContent();
+            getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    @Test
     public void offlineStub_backOnline_stubRemoved_serverViewShown() {
         openPageAndPreCacheWhenDevelopmentMode("/");
         getDevTools().setOfflineEnabled(true);
@@ -295,6 +327,17 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             Assert.assertTrue(json.has("short_name"));
         } finally {
             getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    private String getFrameOptionsHeader(String path) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(
+                getRootURL() + path).openConnection();
+        try {
+            connection.setRequestMethod("HEAD");
+            return connection.getHeaderField("X-Frame-Options");
+        } finally {
+            connection.disconnect();
         }
     }
 
