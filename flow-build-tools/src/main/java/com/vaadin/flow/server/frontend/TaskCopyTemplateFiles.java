@@ -66,10 +66,10 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     // The bundle is reused, so npm install has not been run
                     // and a file that lives in an npm package is not on disk.
                     // Bundle validation requires a reused bundle to contain
-                    // the template, and unpacking the bundle has put it in
-                    // place. On a bundle build the sources are all available,
-                    // so not finding one is an error even if an earlier build
-                    // left a copy behind.
+                    // the template, and in production unpacking the bundle
+                    // has put it in place. On a bundle build the sources are
+                    // all available, so not finding one is an error even if
+                    // an earlier build left a copy behind.
                     continue;
                 }
                 throw new ExecutionFailedException("Unable to locate file "
