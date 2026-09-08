@@ -21,7 +21,12 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;ul&gt;</code> element.
+ * <p>
+ * A bulleted list of items. Use OrderedList when the sequence matters.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ul">MDN:
+ *      &lt;ul&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

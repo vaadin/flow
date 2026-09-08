@@ -47,6 +47,7 @@ import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -74,6 +75,8 @@ class BundleValidationTest {
     public static final String FRONTEND_HASHES = "frontendHashes";
     public static final String THEME_JSON_CONTENTS = "themeJsonContents";
     public static final String PACKAGE_JSON_HASH = "packageJsonHash";
+    public static final String PWA_OFFLINE_PATH = "pwaOfflinePath";
+    public static final String PWA_OFFLINE_ENABLED = "pwaOfflineEnabled";
 
     private static final String NPM_PACKAGE_TEMPLATE = "@vaadin-component-factory/vcf-breadcrumb/dist/src/vcf-breadcrumbs.js";
     private static final String PROJECT_TEMPLATE = "./my-lit-element-view.js";
@@ -2740,6 +2743,130 @@ class BundleValidationTest {
                 depScanner, mode);
         assertTrue(needsBuild,
                 "In development mode, presence of 'commercial-banner.js' should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathAdded_statsWithoutOfflinePath_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A custom offline path not recorded in the bundle should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultOfflinePath_statsWithoutOfflinePath_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath(""));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "The default offline path matches bundles built before it was recorded");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathChanged_compilationRequired(Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'other-offline.html'");
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A changed offline path should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathUnchanged_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'offline.html'");
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "An unchanged offline path should not require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlineEnabled_statsBuiltWithoutOfflineSupport_compilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaConfiguration("", true));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'.'");
+        stats.put(PWA_OFFLINE_ENABLED, false);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A bundle built without a service worker should require bundling once offline is enabled");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlineDisabled_offlinePathDiffers_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaConfiguration("offline.html", false));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'.'");
+        stats.put(PWA_OFFLINE_ENABLED, true);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "Without offline support the bundle's service worker is unused, so it cannot be stale");
+    }
+
+    private static PwaConfiguration pwaWithOfflinePath(String offlinePath) {
+        return pwaConfiguration(offlinePath, true);
+    }
+
+    private static PwaConfiguration pwaConfiguration(String offlinePath,
+            boolean offlineEnabled) {
+        return new PwaConfiguration(true, "App", "App", "", "#fff", "#000",
+                "icons/icon.png", "manifest.webmanifest", offlinePath,
+                "standalone", ".", new String[] {}, offlineEnabled);
     }
 
     private void createPackageJsonStub(String content) throws IOException {

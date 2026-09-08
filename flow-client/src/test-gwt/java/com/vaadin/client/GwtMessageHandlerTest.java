@@ -65,12 +65,37 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
     private static class TestRequestResponseTracker
             extends RequestResponseTracker {
+
+        // A response normally arrives while the request that triggered it is
+        // still active, so the tracker starts out with one.
+        private boolean active = true;
+
+        private int endRequestCount;
+
         public TestRequestResponseTracker(Registry registry) {
             super(registry);
         }
 
         @Override
+        public void startRequest() {
+            active = true;
+        }
+
+        @Override
+        public boolean hasActiveRequest() {
+            return active;
+        }
+
+        @Override
         public void endRequest() {
+            // Keeps the real tracker's precondition, without sending the
+            // pending invocations that it would trigger.
+            if (!active) {
+                throw new IllegalStateException(
+                        "endRequest called when no request is active");
+            }
+            active = false;
+            endRequestCount++;
         }
     }
 
@@ -411,6 +436,34 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             assertEquals(UILifecycle.UIState.TERMINATED,
                     getUILifecycle().getState());
         });
+    }
+
+    public void testHandleJSON_responseIsReceivedTwice_requestIsEndedOnce() {
+        resetInternalEvents();
+
+        JavaScriptObject responseJs = JavaScriptObject.createObject();
+        JsonObject response = responseJs.cast();
+        response.put("syncId", 0);
+
+        handler.handleJSON(responseJs.cast());
+
+        assertEquals("The response should end the request it was sent for", 1,
+                getRequestResponseTracker().endRequestCount);
+        assertFalse("The ended request should no longer be active",
+                getRequestResponseTracker().hasActiveRequest());
+
+        // when: the server delivers the same response once more, with the
+        // request it was sent for already ended by the first copy
+        handler.handleJSON(responseJs.cast());
+
+        assertEquals(
+                "An already seen response should not end a request that is not active",
+                1, getRequestResponseTracker().endRequestCount);
+    }
+
+    private TestRequestResponseTracker getRequestResponseTracker() {
+        return (TestRequestResponseTracker) registry
+                .getRequestResponseTracker();
     }
 
     private TestResourceLoader getResourceLoader() {
