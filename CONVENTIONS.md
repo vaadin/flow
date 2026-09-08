@@ -154,9 +154,14 @@ adds nothing at the call site, and leaving it out means the next JUnit upgrade
 only rewrites the import block. Hamcrest is the same: static-import
 `assertThat` and the matchers.
 
-Use one assertion style per test file. Do not leave a file that already
-static-imports `assertEquals` calling `Assertions.assertTrue` a few lines
-later.
+This applies to new tests and to the assertions you are already changing, and
+matching the surrounding file wins over converting it: do not mass-convert a
+file that qualifies its assertions consistently, and leave the remaining
+JUnit 4 tests, which qualify `Assert` throughout, until they are migrated.
+
+Do not introduce a second assertion style into a file. A file that already
+static-imports `assertEquals` should not gain an `Assertions.assertTrue` call
+a few lines later, and vice versa.
 
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
