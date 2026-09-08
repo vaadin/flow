@@ -862,8 +862,8 @@ public class PwaRegistry implements Serializable {
 
     private boolean shouldCacheRoot() {
         VaadinService service = VaadinService.getCurrent();
-        DeploymentConfiguration configuration = service
-                .getDeploymentConfiguration();
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
         return configuration != null && !configuration.isProductionMode();
     }
 }
