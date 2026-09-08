@@ -461,6 +461,9 @@
                 return;
             }
             var ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return;
+            }
             var state = {
                 canvas: canvas,
                 ctx: ctx,
