@@ -1913,7 +1913,7 @@ public class StateNodeTest {
     }
 
     @Test
-    void describe_element_nodeIdAndTagIncluded() {
+    void describe_element_nodeIdTagAndMarkupIncluded() {
         UI ui = new UI();
         Element element = ElementFactory.createAnchor();
         ui.getElement().appendChild(element);
@@ -1923,10 +1923,34 @@ public class StateNodeTest {
         assertTrue(description.contains("node id=" + element.getNode().getId()),
                 description);
         assertTrue(description.contains("'a'"), description);
+        assertTrue(description.contains("<a></a>"), description);
     }
 
     @Test
-    void describe_component_componentClassIncluded() {
+    void describe_longMarkup_truncated() {
+        UI ui = new UI();
+        Element element = ElementFactory.createSpan("x".repeat(1000));
+        ui.getElement().appendChild(element);
+
+        String description = element.getNode().describe();
+
+        assertTrue(description.endsWith("..."), description);
+        assertTrue(description.length() < 500, description);
+    }
+
+    @Test
+    void describe_textNode_textIncluded() {
+        UI ui = new UI();
+        Element textNode = Element.createText("Hello");
+        ui.getElement().appendChild(textNode);
+
+        String description = textNode.getNode().describe();
+
+        assertTrue(description.contains("text node 'Hello'"), description);
+    }
+
+    @Test
+    void describe_componentWithoutTrackingInformation_classAndToStringIncluded() {
         UI ui = new UI();
         TestDescribedComponent component = new TestDescribedComponent();
         ui.getElement().appendChild(component.getElement());
@@ -1935,9 +1959,10 @@ public class StateNodeTest {
 
         assertTrue(description.contains(TestDescribedComponent.class.getName()),
                 description);
-        // The creation location is not asserted here since ComponentTracker
-        // ignores stack frames from framework packages, which is where a
-        // component created by this test comes from
+        // ComponentTracker ignores stack frames from framework packages, which
+        // is where a component created by this test comes from, so the
+        // description falls back to what the component says about itself
+        assertTrue(description.contains(component.toString()), description);
     }
 
     @Test
