@@ -225,25 +225,25 @@ public class AppShellRegistry implements Serializable {
         }
 
         // Auto-load Aura if no AppShellConfigurator is defined and Aura is
-        // available
-        if (appShellClass == null) {
-            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
-                styleSheets.add(AURA_STYLESHEET);
-                if (!auraAutoLoadWarningLogged) {
-                    auraAutoLoadWarningLogged = true;
-                    log.info(
-                            """
-                                    There is no AppShellConfigurator implementation \
-                                    available, auto loading the Aura theme. Add an \
-                                    AppShellConfigurator to define the theme to use, e.g.
+        // available. The app shell check comes first so that the resource is
+        // only probed when there is no app shell to take precedence.
+        if (appShellClass == null
+                && service.isResourceAvailable("/" + AURA_STYLESHEET)) {
+            styleSheets.add(AURA_STYLESHEET);
+            if (!auraAutoLoadWarningLogged) {
+                auraAutoLoadWarningLogged = true;
+                log.info(
+                        """
+                                There is no AppShellConfigurator implementation \
+                                available, auto loading the Aura theme. Add an \
+                                AppShellConfigurator to define the theme to use, e.g.
 
-                                    import com.vaadin.flow.theme.aura.Aura;
+                                import com.vaadin.flow.theme.aura.Aura;
 
-                                    @StyleSheet(Aura.STYLESHEET)
-                                    public class Application implements AppShellConfigurator {
-                                    }
-                                    """);
-                }
+                                @StyleSheet(Aura.STYLESHEET)
+                                public class Application implements AppShellConfigurator {
+                                }
+                                """);
             }
         }
 
