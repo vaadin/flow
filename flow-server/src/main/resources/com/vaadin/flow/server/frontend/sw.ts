@@ -13,6 +13,7 @@ declare var self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<PrecacheEntry>;
   __WB_DISABLE_DEV_LOGS: boolean;
   additionalManifestEntries?: Array<PrecacheEntry>;
+  additionalNetworkFirstUrls?: Array<string>;
 };
 
 self.skipWaiting();
@@ -144,6 +145,17 @@ registerRoute(
     }
   })
 );
+
+// URLs that Flow serves without a content hash, so their contents can change
+// under a stable URL. Precaching is cache-first, which would pin the first
+// version seen, so these go through network-first instead: fetch from the
+// network and refresh the cache on success, falling back to the cached copy
+// when offline. Registered before precacheAndRoute so it wins in the router's
+// registration order.
+if (self.additionalNetworkFirstUrls?.length) {
+  const networkFirstUrls = new Set(self.additionalNetworkFirstUrls.map((url) => new URL(url, self.location.href).href));
+  registerRoute(({ url }) => networkFirstUrls.has(url.href), networkFirst);
+}
 
 precacheAndRoute(manifestEntries);
 

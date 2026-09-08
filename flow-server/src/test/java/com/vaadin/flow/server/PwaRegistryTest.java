@@ -513,23 +513,31 @@ class PwaRegistryTest {
     }
 
     @Test
-    void pwaWithAppShellAndStyleSheet_getRuntimeServiceWorkerJs_includesAppCss()
+    void pwaWithAppShellAndStyleSheet_developmentMode_urlsAreServedNetworkFirst()
             throws IOException {
         String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES);
+        // The development href carries no content hash, so the same URL can
+        // serve different contents over time. Precaching would pin the first
+        // version fetched, so these go to the network-first list instead.
+        assertFalse(sw.contains(
+                "self.additionalManifestEntries = [\n{ url: './app.css'"),
+                "stylesheets should not be precached in development, was: "
+                        + sw);
+        String networkFirst = networkFirstSection(sw);
         // AppShellRegistry skips adding Aura when app shell exists
-        assertFalse(sw.contains("aura/aura.css"));
+        assertFalse(networkFirst.contains("aura/aura.css"));
         // With a root servlet mapping the servlet root is the context root,
         // so context:// expands to "./"
-        assertTrue(sw.contains("{ url: './app.css', revision:"));
-        assertTrue(sw.contains("{ url: './relative.css', revision:"));
-        assertTrue(sw.contains("{ url: './context.css', revision:"));
+        assertTrue(networkFirst.contains("'./app.css'"));
+        assertTrue(networkFirst.contains("'./relative.css'"));
+        assertTrue(networkFirst.contains("'./context.css'"));
         // A leading '/' is already server-root-relative, so it is kept as is
-        assertTrue(sw.contains("{ url: '/absolute.css', revision:"));
+        assertTrue(networkFirst.contains("'/absolute.css'"));
         // base:// stays relative, resolving against the service worker scope
-        assertTrue(sw.contains("{ url: 'base.css', revision:"));
-        // External stylesheets are not precached
+        assertTrue(networkFirst.contains("'base.css'"));
+        // External stylesheets are not handled at all
         assertFalse(sw.contains("cdn.example.com"));
     }
 
@@ -540,15 +548,39 @@ class PwaRegistryTest {
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES,
                 "./../", false);
-        // Entries stay relative and step up out of the servlet path, exactly
+        // URLs stay relative and step up out of the servlet path, exactly
         // like the hrefs AppShellRegistry emits for the same stylesheets
-        assertTrue(sw.contains("{ url: './../context.css', revision:"),
+        String networkFirst = networkFirstSection(sw);
+        assertTrue(networkFirst.contains("'./../context.css'"),
                 "expected context:// to step up to the context root, was: "
                         + sw);
-        assertTrue(sw.contains("{ url: './../app.css', revision:"));
+        assertTrue(networkFirst.contains("'./../app.css'"));
         // base:// resolves against the service worker scope, which is the
         // servlet root, so it must stay relative without stepping up
-        assertTrue(sw.contains("{ url: 'base.css', revision:"));
+        assertTrue(networkFirst.contains("'base.css'"));
+    }
+
+    @Test
+    void pwaWithAppShellAndStyleSheet_productionMode_hasNoNetworkFirstUrls()
+            throws IOException {
+        // In production the URL carries the content hash, so it identifies one
+        // version and cache-first precaching is correct
+        String sw = runtimeServiceWorkerJs(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
+                true);
+        assertFalse(sw.contains("additionalNetworkFirstUrls"),
+                "production should precache instead, was: " + sw);
+    }
+
+    /**
+     * Gets the {@code self.additionalNetworkFirstUrls} assignment, failing if
+     * the service worker JS does not contain one.
+     */
+    private static String networkFirstSection(String sw) {
+        int start = sw.indexOf("self.additionalNetworkFirstUrls = [");
+        assertTrue(start >= 0, "expected a network-first URL list, was: " + sw);
+        return sw.substring(start);
     }
 
     @Test
@@ -590,21 +622,37 @@ class PwaRegistryTest {
     }
 
     @Test
-    void pwaWithAppShellAndStyleSheet_missingResource_isNotPrecached()
+    void pwaWithAppShellAndStyleSheet_productionModeMissingResource_isNotPrecached()
             throws IOException {
         // Only context.css exists; an entry for a resource that cannot be read
         // would 404 and abort the whole service worker installation
         String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, Set.of("/context.css"));
-        assertTrue(sw.contains("{ url: './context.css', revision:"));
+                PwaWithAppShellAndStyleSheet.class, Set.of("/context.css"),
+                "./", true);
+        assertTrue(sw.contains("{ url: './context.css?v-c="));
         assertFalse(sw.contains("app.css"),
                 "missing resource should not be precached, was: " + sw);
         assertFalse(sw.contains("absolute.css"));
     }
 
     @Test
-    void pwaWithAppShellAndEquivalentStyleSheets_isPrecachedOnce()
+    void pwaWithAppShellAndStyleSheet_developmentModeMissingResource_isStillServedNetworkFirst()
+            throws IOException {
+        // Network-first has no install step, so a fetch that fails is simply
+        // not cached and nothing is aborted. There is therefore no reason to
+        // leave an unreadable stylesheet out, unlike in production.
+        String sw = runtimeServiceWorkerJs(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, Set.of("/context.css"));
+        String networkFirst = networkFirstSection(sw);
+        assertTrue(networkFirst.contains("'./context.css'"));
+        assertTrue(networkFirst.contains("'./app.css'"),
+                "an unreadable stylesheet should still be listed, was: " + sw);
+    }
+
+    @Test
+    void pwaWithAppShellAndEquivalentStyleSheets_isListedOnce()
             throws IOException {
         String sw = runtimeServiceWorkerJs(
                 PwaWithEquivalentStyleSheets.class.getAnnotation(PWA.class),
@@ -615,15 +663,21 @@ class PwaRegistryTest {
     }
 
     @Test
-    void pwaWithAppShellAndQuotedStyleSheet_quoteIsEscaped()
+    void pwaWithAppShellAndQuotedStyleSheet_quoteIsEscapedInBothLists()
             throws IOException {
-        String sw = runtimeServiceWorkerJs(
-                PwaWithQuotedStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithQuotedStyleSheet.class, Set.of("/it's.css"));
         // An unescaped quote would close the JS string literal and make
         // sw-runtime.js unparseable, breaking the whole service worker
-        assertTrue(sw.contains("{ url: './it\\'s.css', revision:"),
-                "expected the quote to be escaped, was: " + sw);
+        String devSw = runtimeServiceWorkerJs(
+                PwaWithQuotedStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithQuotedStyleSheet.class, Set.of("/it's.css"));
+        assertTrue(networkFirstSection(devSw).contains("'./it\\'s.css'"),
+                "expected the quote to be escaped, was: " + devSw);
+
+        String productionSw = runtimeServiceWorkerJs(
+                PwaWithQuotedStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithQuotedStyleSheet.class, Set.of("/it's.css"), "./", true);
+        assertTrue(productionSw.contains("{ url: './it\\'s.css?v-c="),
+                "expected the quote to be escaped, was: " + productionSw);
     }
 
     private static int countOccurrences(String haystack, String needle) {
@@ -650,7 +704,7 @@ class PwaRegistryTest {
         String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class), null,
                 Set.of("/aura/aura.css"));
-        assertTrue(sw.contains("{ url: './aura/aura.css', revision:"));
+        assertTrue(networkFirstSection(sw).contains("'./aura/aura.css'"));
     }
 
 }
