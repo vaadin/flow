@@ -16,6 +16,18 @@ application server (the Maven build starts and stops it).
   the tests to match a broken implementation.
 - Keep the unit test count minimal — only the essential cases. More tests
   are not better; focused tests are.
+- **Static-import the assertion methods.** Write
+  `assertEquals(expected, actual)` with
+  `import static org.junit.jupiter.api.Assertions.assertEquals;`, not
+  `Assertions.assertEquals(...)` — and likewise for JUnit 4's `Assert` in the
+  tests that still use it, and for Hamcrest `assertThat` and its matchers.
+  The class name at the call site carries no information, and the files that
+  spell it out are the ones that need a mass rewrite whenever the assertion
+  class moves, as the JUnit 5/6 migration showed. Keep one style per file:
+  the common slip is a test that static-imports some of the assertions and
+  still qualifies the rest. Mockito is a separate question — most of the
+  suite calls `Mockito.mock(...)` and `Mockito.when(...)` qualified, so
+  follow the file you are working in.
 - For browser-facing features, add an IT view under
   `flow-tests/test-root-context/` that mocks the relevant browser API
   and exercises both happy-path and error branches. Use an option

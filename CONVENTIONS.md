@@ -148,6 +148,16 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Static-import assertion methods and call them unqualified — `assertEquals(…)`,
+not `Assertions.assertEquals(…)` or `Assert.assertEquals(…)`. The qualifier
+adds nothing at the call site, and leaving it out means the next JUnit upgrade
+only rewrites the import block. Hamcrest is the same: static-import
+`assertThat` and the matchers.
+
+Use one assertion style per test file. Do not leave a file that already
+static-imports `assertEquals` calling `Assertions.assertTrue` a few lines
+later.
+
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
 
