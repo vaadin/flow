@@ -134,7 +134,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("offlineEnabled", pwaConfiguration.isOfflineEnabled());
 
-        settings.put("offlinePath", getOfflinePath());
+        settings.put("offlinePath",
+                getOfflinePath(pwaConfiguration, npmFolder));
 
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
@@ -177,15 +178,33 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         }
     }
 
-    private String getOfflinePath() {
+    /**
+     * Computes the value for the {@code OFFLINE_PATH} constant that Vite
+     * compiles into the service worker.
+     * <p>
+     * Vite substitutes the value verbatim, so the path is wrapped in single
+     * quotes to make it a JavaScript expression. Bundle validation compares
+     * this value against the one recorded in the bundle's {@code stats.json},
+     * so both sides must derive it from this method.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param pwaConfiguration
+     *            the PWA configuration of the application, not {@code null}
+     * @param npmFolder
+     *            the project root, used to relativize an absolute offline path
+     * @return the offline path wrapped in single quotes
+     */
+    public static String getOfflinePath(PwaConfiguration pwaConfiguration,
+            File npmFolder) {
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            return "'" + getEscapedRelativePath(
+            return "'" + getEscapedRelativePath(npmFolder,
                     Paths.get(pwaConfiguration.getOfflinePath())) + "'";
         }
         return "'.'";
     }
 
-    private String getEscapedRelativePath(Path path) {
+    private static String getEscapedRelativePath(File npmFolder, Path path) {
         if (path.isAbsolute()) {
             return FrontendUtils.getUnixRelativePath(npmFolder.toPath(), path);
         } else {

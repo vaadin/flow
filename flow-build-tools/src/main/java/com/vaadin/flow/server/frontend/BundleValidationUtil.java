@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
@@ -69,6 +70,19 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
+
+    private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
+
+    private static final String PWA_OFFLINE_ENABLED_STATS_KEY = "pwaOfflineEnabled";
+
+    /**
+     * The offline path assumed for a bundle whose stats.json predates
+     * {@code pwaOfflinePath}. It is the value the platform default bundle is
+     * built with, so applications that leave
+     * {@link com.vaadin.flow.server.PWA#offlinePath()} at its default keep
+     * reusing that bundle instead of building their own.
+     */
+    private static final String DEFAULT_PWA_OFFLINE_PATH = "'.'";
 
     /**
      * Checks if an application needs a new frontend bundle.
@@ -281,6 +295,12 @@ public final class BundleValidationUtil {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-changed-shadow-DOM-stylesheets",
                     null);
+            return true;
+        }
+
+        if (pwaConfigurationChanged(options, statsJson, frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-pwa-config", null);
             return true;
         }
 
@@ -797,6 +817,56 @@ public final class BundleValidationUtil {
                 getLogger().info("Detected deleted {} file", indexFile);
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the bundle's service worker still matches the PWA
+     * configuration of the application.
+     * <p>
+     * Two parts of {@code @PWA} are compiled into the bundle and can only be
+     * changed by building a new one:
+     * {@link com.vaadin.flow.server.PWA#offline()} decides whether a service
+     * worker is built at all, and
+     * {@link com.vaadin.flow.server.PWA#offlinePath()} is baked into it as the
+     * {@code OFFLINE_PATH} constant.
+     */
+    private static boolean pwaConfigurationChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies) {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support the application unregisters the service
+            // worker instead of loading it, so a bundle that carries one is
+            // merely unused, never stale.
+            return false;
+        }
+        // A bundle whose stats.json predates this key does not say whether it
+        // was built with offline support, so it is assumed to have been: the
+        // platform default bundle, which is what most applications validate
+        // against, ships a service worker, and rebuilding every PWA
+        // application against it would cost more than the rare stale local
+        // bundle the assumption lets through.
+        boolean bundleHasServiceWorker = statsJson
+                .path(PWA_OFFLINE_ENABLED_STATS_KEY).booleanValue(true);
+        if (!bundleHasServiceWorker) {
+            getLogger().info(
+                    "The bundle was built without offline support, so it has no service worker to serve.");
+            return true;
+        }
+        String offlinePath = TaskUpdateSettingsFile
+                .getOfflinePath(pwaConfiguration, options.getNpmFolder());
+        JsonNode statsOfflinePath = statsJson.get(PWA_OFFLINE_PATH_STATS_KEY);
+        String bundleOfflinePath = statsOfflinePath == null
+                ? DEFAULT_PWA_OFFLINE_PATH
+                : statsOfflinePath.asString();
+        if (!offlinePath.equals(bundleOfflinePath)) {
+            getLogger().info(
+                    "The bundle's service worker uses offline path {}, but the application asks for {}.",
+                    bundleOfflinePath, offlinePath);
+            return true;
         }
         return false;
     }

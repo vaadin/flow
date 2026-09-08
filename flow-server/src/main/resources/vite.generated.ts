@@ -295,6 +295,8 @@ function statsExtracterPlugin(): PluginOption {
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
         themeJsonContents: themeJsonContents,
+        pwaOfflinePath: settings.offlinePath,
+        pwaOfflineEnabled: settings.offlineEnabled,
         entryScripts,
         webComponents,
         cvdlModules: cvdls,
