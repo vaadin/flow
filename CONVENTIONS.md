@@ -154,9 +154,9 @@ Static-import the test helpers and call them unqualified —
 and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
 `spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
 tests and to the calls you are already changing: do not mass-convert an
-unrelated file, and leave the remaining JUnit 4 tests, which qualify `Assert`
-throughout, until they are migrated. When a file you are touching ends up
-mixed, converting the rest of it is fine.
+unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
+Within a file you are changing, convert the rest of its calls too rather than
+leaving two styles behind.
 
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
