@@ -38,7 +38,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -54,6 +53,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for the request and response streams that an active transfer hands out.
@@ -77,19 +79,18 @@ class ActiveTransferTest {
         transfer = new ActiveTransfer("VAADIN/dynamic/resource/0/key/file.bin",
                 new Element("a"));
 
-        httpRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(httpRequest.getInputStream())
+        httpRequest = mock(HttpServletRequest.class);
+        when(httpRequest.getInputStream())
                 .thenReturn(TestServletStreams.inputStream(CHUNK));
-        Mockito.when(httpRequest.getReader())
+        when(httpRequest.getReader())
                 .thenReturn(new BufferedReader(new StringReader("0123456789")));
 
-        httpResponse = Mockito.mock(HttpServletResponse.class);
+        httpResponse = mock(HttpServletResponse.class);
         writtenBytes = new ByteArrayOutputStream();
-        Mockito.when(httpResponse.getOutputStream())
+        when(httpResponse.getOutputStream())
                 .thenReturn(TestServletStreams.outputStream(writtenBytes));
         writtenText = new StringWriter();
-        Mockito.when(httpResponse.getWriter())
-                .thenReturn(new PrintWriter(writtenText));
+        when(httpResponse.getWriter()).thenReturn(new PrintWriter(writtenText));
     }
 
     @Test
@@ -161,11 +162,10 @@ class ActiveTransferTest {
     @Test
     void parts_terminated_partStreamRefusesToReadMore()
             throws IOException, ServletException {
-        Part part = Mockito.mock(Part.class);
-        Mockito.when(part.getSubmittedFileName()).thenReturn("file.bin");
-        Mockito.when(part.getInputStream())
-                .thenReturn(new ByteArrayInputStream(CHUNK));
-        Mockito.when(httpRequest.getParts()).thenReturn(List.of(part));
+        Part part = mock(Part.class);
+        when(part.getSubmittedFileName()).thenReturn("file.bin");
+        when(part.getInputStream()).thenReturn(new ByteArrayInputStream(CHUNK));
+        when(httpRequest.getParts()).thenReturn(List.of(part));
 
         Part wrappedPart = wrapRequest().getParts().iterator().next();
 
@@ -181,16 +181,15 @@ class ActiveTransferTest {
     @Test
     void part_everythingButTheContent_delegated()
             throws IOException, ServletException {
-        Part part = Mockito.mock(Part.class);
-        Mockito.when(part.getSubmittedFileName()).thenReturn("file.bin");
-        Mockito.when(part.getName()).thenReturn("file");
-        Mockito.when(part.getContentType()).thenReturn("text/plain");
-        Mockito.when(part.getSize()).thenReturn(10L);
-        Mockito.when(part.getHeader("Content-Type")).thenReturn("text/plain");
-        Mockito.when(part.getHeaders("Content-Type"))
-                .thenReturn(List.of("text/plain"));
-        Mockito.when(part.getHeaderNames()).thenReturn(List.of("Content-Type"));
-        Mockito.when(httpRequest.getPart("file")).thenReturn(part);
+        Part part = mock(Part.class);
+        when(part.getSubmittedFileName()).thenReturn("file.bin");
+        when(part.getName()).thenReturn("file");
+        when(part.getContentType()).thenReturn("text/plain");
+        when(part.getSize()).thenReturn(10L);
+        when(part.getHeader("Content-Type")).thenReturn("text/plain");
+        when(part.getHeaders("Content-Type")).thenReturn(List.of("text/plain"));
+        when(part.getHeaderNames()).thenReturn(List.of("Content-Type"));
+        when(httpRequest.getPart("file")).thenReturn(part);
 
         Part wrappedPart = wrapRequest().getPart("file");
 
@@ -204,9 +203,9 @@ class ActiveTransferTest {
         assertEquals(List.of("Content-Type"), wrappedPart.getHeaderNames());
 
         wrappedPart.write("target.bin");
-        Mockito.verify(part).write("target.bin");
+        verify(part).write("target.bin");
         wrappedPart.delete();
-        Mockito.verify(part).delete();
+        verify(part).delete();
 
         assertNull(wrapRequest().getPart("missing"),
                 "A part that does not exist should stay null");
@@ -214,42 +213,41 @@ class ActiveTransferTest {
 
     @Test
     void servletStreams_everythingButTheContent_delegated() throws IOException {
-        ServletInputStream inputStream = Mockito.mock(ServletInputStream.class);
-        Mockito.when(inputStream.isReady()).thenReturn(true);
-        Mockito.when(inputStream.isFinished()).thenReturn(true);
-        Mockito.when(inputStream.available()).thenReturn(42);
-        Mockito.when(httpRequest.getInputStream()).thenReturn(inputStream);
+        ServletInputStream inputStream = mock(ServletInputStream.class);
+        when(inputStream.isReady()).thenReturn(true);
+        when(inputStream.isFinished()).thenReturn(true);
+        when(inputStream.available()).thenReturn(42);
+        when(httpRequest.getInputStream()).thenReturn(inputStream);
 
         ServletInputStream wrappedInput = wrapRequest().getInputStream();
         assertTrue(wrappedInput.isReady());
         assertTrue(wrappedInput.isFinished());
         assertEquals(42, wrappedInput.available());
-        ReadListener readListener = Mockito.mock(ReadListener.class);
+        ReadListener readListener = mock(ReadListener.class);
         wrappedInput.setReadListener(readListener);
-        Mockito.verify(inputStream).setReadListener(readListener);
+        verify(inputStream).setReadListener(readListener);
         wrappedInput.close();
-        Mockito.verify(inputStream).close();
+        verify(inputStream).close();
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(outputStream.isReady()).thenReturn(true);
-        Mockito.when(httpResponse.getOutputStream()).thenReturn(outputStream);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(outputStream.isReady()).thenReturn(true);
+        when(httpResponse.getOutputStream()).thenReturn(outputStream);
 
         ServletOutputStream wrappedOutput = wrapResponse().getOutputStream();
         assertTrue(wrappedOutput.isReady());
-        WriteListener writeListener = Mockito.mock(WriteListener.class);
+        WriteListener writeListener = mock(WriteListener.class);
         wrappedOutput.setWriteListener(writeListener);
-        Mockito.verify(outputStream).setWriteListener(writeListener);
+        verify(outputStream).setWriteListener(writeListener);
         wrappedOutput.flush();
-        Mockito.verify(outputStream).flush();
+        verify(outputStream).flush();
         wrappedOutput.close();
-        Mockito.verify(outputStream).close();
+        verify(outputStream).close();
     }
 
     @Test
     void nonServletRequestAndResponse_leftUnwrapped() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinRequest request = mock(VaadinRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
 
         assertSame(request, transfer.wrapRequest(request),
                 "A request that cannot be wrapped should be returned as-is");
