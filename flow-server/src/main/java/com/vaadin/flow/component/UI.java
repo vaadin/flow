@@ -419,6 +419,7 @@ public class UI extends Component
      * before acquiring the lock.
      *
      * @return the time the pending updates were last purged
+     * @since 25.3
      */
     public Instant getLastUpdateSentTimestamp() {
         return getInternals().getLastUpdateSentTimestamp();

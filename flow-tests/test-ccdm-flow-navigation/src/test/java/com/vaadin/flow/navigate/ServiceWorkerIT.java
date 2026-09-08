@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.navigate;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import tools.jackson.databind.node.ObjectNode;
@@ -261,6 +266,39 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void offlineStub_framingDeniedByServer_offlineStubShown()
+            throws IOException {
+        openPageAndPreCacheWhenDevelopmentMode("/");
+
+        // The offline stub is pre-cached with the headers the server sent for
+        // it, so the service worker has to serve it as frameable itself
+        Assert.assertEquals(
+                "Expected the server to deny framing of the offline stub",
+                DenyFramingFilter.DENY, getHeader("/offline-stub.html",
+                        DenyFramingFilter.FRAME_OPTIONS, null));
+
+        assertOfflineStubShownWhenOffline();
+    }
+
+    @Test
+    public void offlineStub_framingDeniedByPolicy_offlineStubShown()
+            throws IOException {
+        // The stub is pre-cached on the first page load, so the server has to
+        // deny framing with a content security policy before that happens
+        denyFramingWithContentSecurityPolicy();
+        openPageAndPreCacheWhenDevelopmentMode("/");
+
+        Assert.assertEquals(
+                "Expected the server to deny framing of the offline stub with a content security policy",
+                DenyFramingFilter.DENY_FRAMING_POLICY,
+                getHeader("/offline-stub.html",
+                        DenyFramingFilter.CONTENT_SECURITY_POLICY,
+                        denyFramingHeaderCookie()));
+
+        assertOfflineStubShownWhenOffline();
+    }
+
+    @Test
     public void offlineStub_backOnline_stubRemoved_serverViewShown() {
         openPageAndPreCacheWhenDevelopmentMode("/");
         getDevTools().setOfflineEnabled(true);
@@ -295,6 +333,55 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             Assert.assertTrue(json.has("short_name"));
         } finally {
             getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    private void assertOfflineStubShownWhenOffline() {
+        getDevTools().setOfflineEnabled(true);
+        try {
+            waitUntil(driver -> $("main-view").first().$("a").id("menu-hello"))
+                    .click();
+
+            waitForElementPresent(By.tagName("iframe"));
+            WebElement offlineStub = findElement(By.tagName("iframe"));
+            driver.switchTo().frame(offlineStub);
+            Assert.assertNotNull(
+                    "Offline stub should be rendered in the iframe even when the server denies framing",
+                    findElement(By.className("offline")));
+        } finally {
+            driver.switchTo().defaultContent();
+            getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    private void denyFramingWithContentSecurityPolicy() {
+        // A cookie can only be added once the browser is on the domain, and
+        // the stub itself is a plain page that does not register the service
+        // worker yet
+        getDriver().get(getRootURL() + "/offline-stub.html");
+        getDriver().manage()
+                .addCookie(new Cookie(
+                        DenyFramingFilter.DENY_FRAMING_HEADER_COOKIE,
+                        DenyFramingFilter.CONTENT_SECURITY_POLICY, "/"));
+    }
+
+    private String denyFramingHeaderCookie() {
+        return DenyFramingFilter.DENY_FRAMING_HEADER_COOKIE + "="
+                + DenyFramingFilter.CONTENT_SECURITY_POLICY;
+    }
+
+    private String getHeader(String path, String name, String cookie)
+            throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(
+                getRootURL() + path).openConnection();
+        try {
+            connection.setRequestMethod("HEAD");
+            if (cookie != null) {
+                connection.setRequestProperty("Cookie", cookie);
+            }
+            return connection.getHeaderField(name);
+        } finally {
+            connection.disconnect();
         }
     }
 
