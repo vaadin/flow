@@ -150,10 +150,12 @@ introduces.
 
 Static-import assertion methods and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`. Hamcrest is the same:
-static-import `assertThat` and the matchers. Match the surrounding file rather
-than converting it: do not mass-convert a file that qualifies its assertions
-consistently, such as the remaining JUnit 4 tests, and do not introduce a
-second assertion style into a file.
+static-import `assertThat` and its matchers. Mockito is the exception — the
+suite qualifies `Mockito.mock(…)` and `Mockito.when(…)`, argument matchers
+included. Match the surrounding file rather than converting it: do not
+mass-convert a file that qualifies its assertions consistently, such as the
+remaining JUnit 4 tests, and do not introduce a second assertion style into a
+file.
 
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
