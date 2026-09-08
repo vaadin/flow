@@ -126,7 +126,7 @@
          repository metadata when modules install in parallel (-T). -->
     <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
     <testbench.version>25.3.0-beta1</testbench.version>
-    <jetty.version>12.1.12</jetty.version>
+    <jetty.version>12.1.13</jetty.version>
     <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.16</maven.version>
