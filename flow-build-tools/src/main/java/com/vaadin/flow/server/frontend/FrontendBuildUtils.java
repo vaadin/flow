@@ -242,16 +242,30 @@ public class FrontendBuildUtils {
      *            jar file to get (no resource folder should be added)
      * @param finder
      *            the class finder to use for locating the resource
-     * @return resource as String or {@code null} if not found
+     * @return the resource or {@code null} if not found
      */
-    public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
+    public static URL getJarResource(String jarImport, ClassFinder finder) {
         URL resource = finder
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
             resource = finder.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
+        return resource;
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport,
+            ClassFinder finder) {
+        URL resource = getJarResource(jarImport, finder);
 
         if (resource == null) {
             return null;

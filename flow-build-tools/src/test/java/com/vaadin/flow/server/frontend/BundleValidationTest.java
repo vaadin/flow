@@ -2794,6 +2794,13 @@ class BundleValidationTest {
                 .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.anyString(), Mockito.any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.getJarResource(
+                        Mockito.anyString(), Mockito.any(ClassFinder.class)))
+                .thenAnswer(q -> jarResources.containsKey(q.getArgument(0))
+                        ? new File(temporaryFolder, q.getArgument(0).toString())
+                                .toURI().toURL()
+                        : null);
     }
 
     @LoadDependenciesOnStartup

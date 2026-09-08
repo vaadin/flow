@@ -322,8 +322,8 @@ public final class BundleValidationUtil {
             templates = TaskCopyTemplateFiles
                     .getTemplateJsModules(options.getClassFinder());
         } catch (ExecutionFailedException e) {
-            getLogger().debug(
-                    "Failed to scan the template classes, requiring a bundle build",
+            getLogger().warn(
+                    "Failed to scan the template classes, so a bundle build is required.",
                     e);
             return true;
         }
@@ -359,7 +359,7 @@ public final class BundleValidationUtil {
         if (new File(options.getFrontendDirectory(), path).exists()) {
             return true;
         }
-        return FrontendBuildUtils.getJarResourceString(path,
+        return FrontendBuildUtils.getJarResource(path,
                 options.getClassFinder()) != null;
     }
 
