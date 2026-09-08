@@ -134,7 +134,7 @@ class PwaRegistryTest {
     private static PwaRegistry preparePwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
-        return withPwaRegistry(pwa, appShell, resources, "./", false, false,
+        return withPwaRegistry(pwa, appShell, resources, "./", false,
                 (registry, request) -> registry);
     }
 
@@ -143,33 +143,22 @@ class PwaRegistryTest {
      * {@code PwaHandler} serves it.
      */
     private static String runtimeServiceWorkerJs(PWA pwa) throws IOException {
-        return runtimeServiceWorkerJs(pwa, null, Set.of(), "./", false, false);
+        return runtimeServiceWorkerJs(pwa, null, Set.of(), "./", false);
     }
 
     private static String runtimeServiceWorkerJs(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
-        return runtimeServiceWorkerJs(pwa, appShell, resources, "./", false,
-                false);
+        return runtimeServiceWorkerJs(pwa, appShell, resources, "./", false);
     }
 
     private static String runtimeServiceWorkerJs(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources, String contextRootRelativePath,
             boolean productionMode) throws IOException {
-        return runtimeServiceWorkerJs(pwa, appShell, resources,
-                contextRootRelativePath, productionMode, productionMode);
-    }
-
-    private static String runtimeServiceWorkerJs(PWA pwa,
-            Class<? extends AppShellConfigurator> appShell,
-            Set<String> resources, String contextRootRelativePath,
-            boolean deploymentProductionMode, boolean applicationProductionMode)
-            throws IOException {
         return withPwaRegistry(pwa, appShell, resources,
-                contextRootRelativePath, deploymentProductionMode,
-                applicationProductionMode, (registry, request) -> registry
-                        .getRuntimeServiceWorkerJs(request));
+                contextRootRelativePath, productionMode,
+                PwaRegistry::getRuntimeServiceWorkerJs);
     }
 
     /**
@@ -188,17 +177,14 @@ class PwaRegistryTest {
      * @param contextRootRelativePath
      *            what the service reports for the request, i.e. the relative
      *            path from the servlet root to the context root
-     * @param deploymentProductionMode
-     *            the servlet-level production mode, which is what
-     *            {@code AppShellRegistry} uses to decide about {@code ?v-c=}
-     * @param applicationProductionMode
-     *            the context-level production mode, which can be overridden by
-     *            the servlet-level one and so may differ from it
+     * @param productionMode
+     *            the deployment production mode, the single source
+     *            {@code PwaRegistry} and {@code AppShellRegistry} both read
      */
     private static <T> T withPwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources, String contextRootRelativePath,
-            boolean deploymentProductionMode, boolean applicationProductionMode,
+            boolean productionMode,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
@@ -261,11 +247,8 @@ class PwaRegistryTest {
             final VaadinServletContext context = new VaadinServletContext(
                     servletContext);
 
-            // Kept separate from the application configuration on purpose: a
-            // servlet-level productionMode init parameter overrides the
-            // context-level value, so the two can disagree
             MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
-            deploymentConfiguration.setProductionMode(deploymentProductionMode);
+            deploymentConfiguration.setProductionMode(productionMode);
             Mockito.when(vaadinServiceMocked.getDeploymentConfiguration())
                     .thenReturn(deploymentConfiguration);
 
@@ -505,7 +488,9 @@ class PwaRegistryTest {
         String sw = withPwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
-                false, false,
+                false,
+                // NOSONAR deliberate: this test pins the contract of the
+                // deprecated no-arg getter, which would otherwise be untested
                 (registry, request) -> registry.getRuntimeServiceWorkerJs());
         assertTrue(sw.contains("self.additionalManifestEntries = ["));
         assertFalse(sw.contains("context.css"),
@@ -601,24 +586,6 @@ class PwaRegistryTest {
                         + sw);
         assertEquals(matcher.group(1), matcher.group(2),
                 "revision should be the same content hash as the parameter");
-    }
-
-    @Test
-    void pwaWithAppShellAndStyleSheet_servletOverridesProductionMode_urlFollowsDeploymentConfiguration()
-            throws IOException {
-        // A servlet-level productionMode init parameter overrides the
-        // context-level value, and AppShellRegistry builds the <link href>
-        // from the servlet-level one. The entry has to follow the same source,
-        // or it carries ?v-c= when the href does not and never matches.
-        String sw = runtimeServiceWorkerJs(
-                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
-                true, false);
-        assertTrue(Pattern.compile(
-                "\\{ url: './context\\.css\\?v-c=[0-9a-f]{8}', revision:")
-                .matcher(sw).find(),
-                "entry should follow the servlet-level production mode, was: "
-                        + sw);
     }
 
     @Test
