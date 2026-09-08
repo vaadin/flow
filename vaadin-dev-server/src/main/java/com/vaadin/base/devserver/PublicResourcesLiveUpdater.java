@@ -128,6 +128,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
      *
      * @param context
      *            the current Vaadin context
+     * @since 25.3
      */
     public static void suspend(VaadinContext context) {
         Objects.requireNonNull(context, "context cannot be null");
@@ -166,6 +167,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
      *            does not - a reactor sibling's, say. Empty for the watcher
      *            itself.
      * @return how many stylesheets reached the browser
+     * @since 25.3
      */
     public static int push(VaadinContext context, List<File> extraRoots) {
         Objects.requireNonNull(context, "context cannot be null");
