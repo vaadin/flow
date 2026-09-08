@@ -84,6 +84,8 @@ public class RequestUtil {
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
 
+    private PwaResourcesRequestMatcher pwaResourcesRequestMatcher;
+
     /**
      * Checks whether the request is an internal request.
      * <p>
@@ -264,6 +266,35 @@ public class RequestUtil {
             }
         }
         return webIconsRequestMatcher.matches(request);
+    }
+
+    /**
+     * Checks whether the request targets the PWA manifest, the offline page or
+     * one of the additional offline resources configured by the application.
+     * <p>
+     * The default manifest and offline paths are not considered, as they are
+     * already part of {@link HandlerHelper#getPublicResources()}.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a configured PWA
+     *         resource, {@code false} otherwise
+     */
+    public boolean isPwaResource(HttpServletRequest request) {
+        if (pwaResourcesRequestMatcher == null) {
+            VaadinServletService vaadinService = springServletRegistration
+                    .getServlet().getService();
+            if (vaadinService != null) {
+                pwaResourcesRequestMatcher = new PwaResourcesRequestMatcher(
+                        vaadinService, configurationProperties.getUrlMapping());
+            } else {
+                getLogger().debug(
+                        "PwaResourcesRequestMatcher cannot be created because VaadinService is not yet available. "
+                                + "This may happen after a hot-reload, and can cause requests for PWA resources to be blocked by Spring Security.");
+                return false;
+            }
+        }
+        return pwaResourcesRequestMatcher.matches(request);
     }
 
     /**
