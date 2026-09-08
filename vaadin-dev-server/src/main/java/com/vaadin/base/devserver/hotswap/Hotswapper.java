@@ -675,6 +675,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *            the {@link VaadinService} instance, not {@literal null}.
      * @return the registered hotswapper, or an empty Optional if none is
      *         registered for this service.
+     * @since 25.3
      */
     public static Optional<Hotswapper> getRegistered(
             VaadinService vaadinService) {

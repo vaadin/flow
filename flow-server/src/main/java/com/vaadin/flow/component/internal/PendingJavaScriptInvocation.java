@@ -159,6 +159,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * It starts counting once the owner is attached, which is also when it
      * starts being on its way to a client. Called by the framework when the
      * owner is attached, and when the invocation is queued for a UI.
+     * 
+     * @since 25.3
      */
     public void countWhenAttached() {
         if (countedIn != null || sentToBrowser || canceled) {
@@ -182,6 +184,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * has been sent or canceled, or because the framework discards it, for
      * instance when its owner is detached. It is counted again through
      * {@link #countWhenAttached()} if it ends up waiting to be sent again.
+     * 
+     * @since 25.3
      */
     public void stopCounting() {
         if (countedIn == null) {

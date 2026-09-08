@@ -1255,6 +1255,7 @@ public class StateNode implements Serializable {
      * says so instead and contains the details gathered so far.
      *
      * @return a description of this node, not <code>null</code>
+     * @since 25.3
      */
     public String describe() {
         StringBuilder targetInfo = new StringBuilder("node id=")

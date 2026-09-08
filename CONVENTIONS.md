@@ -148,6 +148,16 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Static-import the test helpers and call them unqualified —
+`assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
+`Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
+and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
+`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
+tests and to the calls you are already changing: do not mass-convert an
+unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
+Within a file you are changing, convert the rest of its calls too rather than
+leaving two styles behind.
+
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
 
