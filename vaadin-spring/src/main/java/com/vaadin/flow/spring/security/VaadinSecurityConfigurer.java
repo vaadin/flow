@@ -510,7 +510,8 @@ public final class VaadinSecurityConfigurer
      * <p>
      * This matcher combines multiple specific matchers, including those for
      * framework internal requests, anonymous endpoints, allowed Hilla views,
-     * anonymous routes, custom web icons, and default security configurations.
+     * anonymous routes, custom web icons, PWA resources, and default security
+     * configurations.
      *
      * @return a {@link RequestMatcher} that matches requests to be allowed
      *         without authentication
@@ -525,6 +526,9 @@ public final class VaadinSecurityConfigurer
                 getRequestUtil()::isAnonymousRoute,
                 // Custom web icons (and favicons) are permitted
                 getRequestUtil()::isCustomWebIcon,
+                // Configured PWA resources are permitted, so that the
+                // service worker can install and precache them
+                getRequestUtil()::isPwaResource,
                 // Matchers for Vaadin static resources
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
