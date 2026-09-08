@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
 
 import javax.imageio.ImageIO;
 
@@ -48,7 +47,6 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
@@ -84,7 +82,7 @@ public class PwaRegistry implements Serializable {
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private String runtimeServiceWorkerJs = "";
+    private Collection<String> staticFilesToCache = List.of();
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
@@ -166,8 +164,8 @@ public class PwaRegistry implements Serializable {
         // Initialize manifest.webmanifest
         manifestJson = initializeManifest().toString();
 
-        // Initialize sw-runtime.js
-        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+        // Initialize the request independent part of sw-runtime.js
+        staticFilesToCache = initializeStaticPrecacheEntries(servletContext);
         getLogger().debug(
                 getClass().getSimpleName() + " initialization took {}ms",
                 System.currentTimeMillis() - start);
@@ -259,10 +257,8 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(
+    private Collection<String> initializeStaticPrecacheEntries(
             ServletContext servletContext) {
-        StringBuilder stringBuilder = new StringBuilder();
-
         // List of files to precache
         Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
@@ -285,9 +281,6 @@ public class PwaRegistry implements Serializable {
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
-        // Add app shell stylesheets to precache
-        filesToCache.addAll(styleSheetsToCache(servletContext));
-
         // Add user defined resources. Do not serve these via dev-server, as the
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
@@ -296,12 +289,7 @@ public class PwaRegistry implements Serializable {
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
-        // Precaching
-        stringBuilder.append("self.additionalManifestEntries = [\n");
-        stringBuilder.append(String.join(",\n", filesToCache));
-        stringBuilder.append("\n];\n");
-
-        return stringBuilder.toString();
+        return filesToCache;
     }
 
     /**
@@ -313,30 +301,36 @@ public class PwaRegistry implements Serializable {
      * {@code <link href>} that {@code AppShellRegistry} emits for the same
      * stylesheet. Both therefore expand the annotation value with a
      * {@link BootstrapHandler.BootstrapUriResolver} over the same
-     * servlet-root-to-context-root base, keeping the entries relative
-     * ({@code ./}, {@code ./../}). Relative entries also survive a reverse
-     * proxy that rewrites the public path, which an absolute path built from
-     * the deployment context path would not.
+     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)} base,
+     * keeping the entries relative ({@code ./}, {@code ./../}). Relative
+     * entries also survive a reverse proxy that rewrites the public path, which
+     * an absolute path built from the deployment context path would not.
+     * <p>
+     * The base has to come from the request rather than from the servlet
+     * registration: the entries are resolved by the browser against the service
+     * worker script location, and only the request for sw-runtime.js tells
+     * which servlet, and therefore which scope, is asking.
      *
-     * @param servletContext
-     *            the servlet context the registry belongs to
-     * @return the precache entries, empty if the app shell declares no
-     *         stylesheets
+     * @param request
+     *            the request for sw-runtime.js, may be {@code null}
+     * @return the precache entries, empty if there is no request or the app
+     *         shell declares no stylesheets
      */
-    private Collection<String> styleSheetsToCache(
-            ServletContext servletContext) {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
-        VaadinService service = VaadinService.getCurrent();
-        DeploymentConfiguration configuration = service == null ? null
-                : service.getDeploymentConfiguration();
+    private Collection<String> styleSheetsToCache(VaadinRequest request) {
+        if (request == null) {
+            return List.of();
+        }
+        VaadinService service = request.getService();
+        DeploymentConfiguration configuration = service
+                .getDeploymentConfiguration();
         boolean productionMode = configuration != null
                 && configuration.isProductionMode();
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
-                servletRootToContextRoot(service), null);
+                service.getContextRootRelativePath(request), null);
 
         Collection<String> entries = new LinkedHashSet<>();
-        for (String styleSheet : AppShellRegistry.getInstance(context)
-                .getStyleSheets(service)) {
+        for (String styleSheet : AppShellRegistry
+                .getInstance(service.getContext()).getStyleSheets(service)) {
             String normalized = FrontendDependencyUrlResolver
                     .resolveToContextRoot(styleSheet);
             if (normalized == null || isExternal(normalized)) {
@@ -378,37 +372,6 @@ public class PwaRegistry implements Serializable {
             entries.add(workboxEntry(url, hash));
         }
         return entries;
-    }
-
-    /**
-     * Gets the relative path from the service's servlet root to the context
-     * root, in the same form
-     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)} produces
-     * for a request.
-     * <p>
-     * The servlet mapping is read from the servlet registration rather than
-     * from a request: the runtime service worker is built once per servlet
-     * context, and which request happens to trigger that is not predictable.
-     *
-     * @param service
-     *            the service to determine the servlet mapping for, may be
-     *            {@code null}
-     * @return the canceling relative path, {@code "./"} if the mapping cannot
-     *         be determined
-     */
-    private static String servletRootToContextRoot(VaadinService service) {
-        // Fall back to a root mapping when the registration is unavailable
-        String base = "./";
-        if (service instanceof VaadinServletService servletService) {
-            Optional<ServletRegistration> registration = BootstrapHandlerHelper
-                    .getServletRegistration(servletService.getServlet());
-            if (registration.isPresent()) {
-                String mapping = BootstrapHandlerHelper
-                        .findFirstUrlMapping(registration.get());
-                base = HandlerHelper.getCancelingRelativePath(mapping) + "/";
-            }
-        }
-        return base;
     }
 
     /**
@@ -577,9 +540,30 @@ public class PwaRegistry implements Serializable {
      *
      * @return contents of sw-runtime.js
      * @since 6.0
+     * @deprecated use {@link #getRuntimeServiceWorkerJs(VaadinRequest)}
+     *             instead. Without a request the app shell stylesheet URLs
+     *             cannot be resolved, so those entries are left out.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public String getRuntimeServiceWorkerJs() {
-        return runtimeServiceWorkerJs;
+        return getRuntimeServiceWorkerJs(null);
+    }
+
+    /**
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated
+     * resources) as a String, for the request that fetches it.
+     *
+     * @param request
+     *            the request for sw-runtime.js, or {@code null} to leave out
+     *            the entries that cannot be resolved without one
+     * @return contents of sw-runtime.js
+     */
+    public String getRuntimeServiceWorkerJs(VaadinRequest request) {
+        Collection<String> filesToCache = new LinkedHashSet<>(
+                staticFilesToCache);
+        filesToCache.addAll(styleSheetsToCache(request));
+        return "self.additionalManifestEntries = [\n"
+                + String.join(",\n", filesToCache) + "\n];\n";
     }
 
     private String offlinePageCache(String offlinePath) {

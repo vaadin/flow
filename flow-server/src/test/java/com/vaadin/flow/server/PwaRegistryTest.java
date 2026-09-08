@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -134,26 +134,60 @@ class PwaRegistryTest {
     private static PwaRegistry preparePwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
-        return preparePwaRegistry(pwa, appShell, resources, "/*", false);
-    }
-
-    private static PwaRegistry preparePwaRegistry(PWA pwa,
-            Class<? extends AppShellConfigurator> appShell,
-            Set<String> resources, String servletMapping,
-            boolean productionMode) throws IOException {
-        return preparePwaRegistry(pwa, appShell, resources, servletMapping,
-                productionMode, productionMode);
+        return withPwaRegistry(pwa, appShell, resources, "./", false, false,
+                (registry, request) -> registry);
     }
 
     /**
+     * Builds the runtime service worker JS for a request, the way
+     * {@code PwaHandler} serves it.
+     */
+    private static String runtimeServiceWorkerJs(PWA pwa) throws IOException {
+        return runtimeServiceWorkerJs(pwa, null, Set.of(), "./", false, false);
+    }
+
+    private static String runtimeServiceWorkerJs(PWA pwa,
+            Class<? extends AppShellConfigurator> appShell,
+            Set<String> resources) throws IOException {
+        return runtimeServiceWorkerJs(pwa, appShell, resources, "./", false,
+                false);
+    }
+
+    private static String runtimeServiceWorkerJs(PWA pwa,
+            Class<? extends AppShellConfigurator> appShell,
+            Set<String> resources, String contextRootRelativePath,
+            boolean productionMode) throws IOException {
+        return runtimeServiceWorkerJs(pwa, appShell, resources,
+                contextRootRelativePath, productionMode, productionMode);
+    }
+
+    private static String runtimeServiceWorkerJs(PWA pwa,
+            Class<? extends AppShellConfigurator> appShell,
+            Set<String> resources, String contextRootRelativePath,
+            boolean deploymentProductionMode, boolean applicationProductionMode)
+            throws IOException {
+        return withPwaRegistry(pwa, appShell, resources,
+                contextRootRelativePath, deploymentProductionMode,
+                applicationProductionMode, (registry, request) -> registry
+                        .getRuntimeServiceWorkerJs(request));
+    }
+
+    /**
+     * Runs {@code action} against a registry built with mocked surroundings.
+     * <p>
+     * The action runs inside the {@code MockedStatic} scopes on purpose: the
+     * stylesheet entries are built when the JS is requested rather than at
+     * initialization, so calling the getter after this method returned would
+     * see an unmocked {@code VaadinService.getCurrent()}.
+     *
      * @param resources
      *            context-root-relative paths that exist in the simulated
      *            deployment, e.g. {@code /app.css}. Only these are reported as
      *            available and only these get a content hash, so anything else
      *            is treated as a missing resource.
-     * @param servletMapping
-     *            the URL mapping of the Vaadin servlet, which determines the
-     *            relative base of the precache entries
+     * @param contextRootRelativePath
+     *            what the service reports for the request, i.e. the relative
+     *            path from the servlet root to the context root
      * @param deploymentProductionMode
      *            the servlet-level production mode, which is what
      *            {@code AppShellRegistry} uses to decide about {@code ?v-c=}
@@ -161,10 +195,11 @@ class PwaRegistryTest {
      *            the context-level production mode, which can be overridden by
      *            the servlet-level one and so may differ from it
      */
-    private static PwaRegistry preparePwaRegistry(PWA pwa,
+    private static <T> T withPwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
-            Set<String> resources, String servletMapping,
-            boolean deploymentProductionMode, boolean applicationProductionMode)
+            Set<String> resources, String contextRootRelativePath,
+            boolean deploymentProductionMode, boolean applicationProductionMode,
+            BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
@@ -215,8 +250,6 @@ class PwaRegistryTest {
 
             final Map<String, Object> attributeMap = new HashMap<>();
             ServletContext servletContext = Mockito.mock(ServletContext.class);
-            mockServletMapping(vaadinServiceMocked, servletContext,
-                    servletMapping);
             Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                     .then(invocation -> attributeMap
                             .get(invocation.getArguments()[0].toString()));
@@ -245,28 +278,17 @@ class PwaRegistryTest {
                     .thenReturn(flags);
 
             AppShellRegistry.getInstance(context).setShell(appShell);
-            return new PwaRegistry(pwa, servletContext);
+
+            // The request that fetches sw-runtime.js; its servlet root is what
+            // the stylesheet entries are relative to
+            VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            Mockito.when(request.getService()).thenReturn(vaadinServiceMocked);
+            Mockito.when(vaadinServiceMocked
+                    .getContextRootRelativePath(Mockito.any()))
+                    .thenReturn(contextRootRelativePath);
+
+            return action.apply(new PwaRegistry(pwa, servletContext), request);
         }
-    }
-
-    /**
-     * Wires up the servlet registration lookup that PwaRegistry uses to derive
-     * the servlet-root-to-context-root base of the precache entries.
-     */
-    private static void mockServletMapping(VaadinServletService service,
-            ServletContext servletContext, String servletMapping) {
-        String servletName = "vaadinServlet";
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(servlet.getServletName()).thenReturn(servletName);
-        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
-        Mockito.when(registration.getMappings())
-                .thenReturn(Set.of(servletMapping));
-        Mockito.doReturn(Map.of(servletName, registration)).when(servletContext)
-                .getServletRegistrations();
     }
 
     @Test
@@ -460,30 +482,42 @@ class PwaRegistryTest {
     @Test
     void pwaWithCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithCustomOfflinePath.class.getAnnotation(PWA.class));
-        assertTrue(registry.getRuntimeServiceWorkerJs()
-                .contains("some/path.html"));
-        assertFalse(registry.getRuntimeServiceWorkerJs()
-                .contains("{ url: '.', revision:"));
+        assertTrue(sw.contains("some/path.html"));
+        assertFalse(sw.contains("{ url: '.', revision:"));
     }
 
     @Test
     void pwaWithoutCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
-        assertTrue(registry.getRuntimeServiceWorkerJs()
-                .contains("{ url: '.', revision:"));
+        assertTrue(sw.contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void getRuntimeServiceWorkerJs_withoutRequest_omitsStyleSheets()
+            throws IOException {
+        // Without a request the stylesheet URLs cannot be resolved, so they
+        // are left out rather than guessed
+        String sw = withPwaRegistry(
+                PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
+                false, false,
+                (registry, request) -> registry.getRuntimeServiceWorkerJs());
+        assertTrue(sw.contains("self.additionalManifestEntries = ["));
+        assertFalse(sw.contains("context.css"),
+                "no stylesheet entry expected without a request, was: " + sw);
     }
 
     @Test
     void pwaWithAppShellAndStyleSheet_getRuntimeServiceWorkerJs_includesAppCss()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES);
-        String sw = registry.getRuntimeServiceWorkerJs();
         // AppShellRegistry skips adding Aura when app shell exists
         assertFalse(sw.contains("aura/aura.css"));
         // With a root servlet mapping the servlet root is the context root,
@@ -502,11 +536,10 @@ class PwaRegistryTest {
     @Test
     void pwaWithAppShellAndStyleSheet_nonRootServletMapping_contextUrlsStepUpToContextRoot()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES,
-                "/myservlet/*", false);
-        String sw = registry.getRuntimeServiceWorkerJs();
+                "./../", false);
         // Entries stay relative and step up out of the servlet path, exactly
         // like the hrefs AppShellRegistry emits for the same stylesheets
         assertTrue(sw.contains("{ url: './../context.css', revision:"),
@@ -521,19 +554,19 @@ class PwaRegistryTest {
     @Test
     void pwaWithAppShellAndStyleSheet_productionMode_urlsCarryContentHashParameter()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "/*",
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
                 true);
         // The <link href> carries ?v-c=<hash> in production, so the precache
         // entry has to carry it too to ever be matched
         Matcher matcher = Pattern
                 .compile("\\{ url: './context\\.css\\?v-c=([0-9a-f]{8})', "
                         + "revision: '([0-9a-f]{8})' \\}")
-                .matcher(registry.getRuntimeServiceWorkerJs());
+                .matcher(sw);
         assertTrue(matcher.find(),
                 "expected './context.css' entry with a ?v-c= parameter, was: "
-                        + registry.getRuntimeServiceWorkerJs());
+                        + sw);
         assertEquals(matcher.group(1), matcher.group(2),
                 "revision should be the same content hash as the parameter");
     }
@@ -545,15 +578,15 @@ class PwaRegistryTest {
         // context-level value, and AppShellRegistry builds the <link href>
         // from the servlet-level one. The entry has to follow the same source,
         // or it carries ?v-c= when the href does not and never matches.
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
-                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "/*",
+                PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
                 true, false);
         assertTrue(Pattern.compile(
                 "\\{ url: './context\\.css\\?v-c=[0-9a-f]{8}', revision:")
-                .matcher(registry.getRuntimeServiceWorkerJs()).find(),
+                .matcher(sw).find(),
                 "entry should follow the servlet-level production mode, was: "
-                        + registry.getRuntimeServiceWorkerJs());
+                        + sw);
     }
 
     @Test
@@ -561,10 +594,9 @@ class PwaRegistryTest {
             throws IOException {
         // Only context.css exists; an entry for a resource that cannot be read
         // would 404 and abort the whole service worker installation
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, Set.of("/context.css"));
-        String sw = registry.getRuntimeServiceWorkerJs();
         assertTrue(sw.contains("{ url: './context.css', revision:"));
         assertFalse(sw.contains("app.css"),
                 "missing resource should not be precached, was: " + sw);
@@ -574,10 +606,9 @@ class PwaRegistryTest {
     @Test
     void pwaWithAppShellAndEquivalentStyleSheets_isPrecachedOnce()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithEquivalentStyleSheets.class.getAnnotation(PWA.class),
                 PwaWithEquivalentStyleSheets.class, Set.of("/same.css"));
-        String sw = registry.getRuntimeServiceWorkerJs();
         assertEquals(1, countOccurrences(sw, "same.css"),
                 "equivalent annotation values should yield one entry, was: "
                         + sw);
@@ -586,16 +617,13 @@ class PwaRegistryTest {
     @Test
     void pwaWithAppShellAndQuotedStyleSheet_quoteIsEscaped()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaWithQuotedStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithQuotedStyleSheet.class, Set.of("/it's.css"));
         // An unescaped quote would close the JS string literal and make
         // sw-runtime.js unparseable, breaking the whole service worker
-        assertTrue(
-                registry.getRuntimeServiceWorkerJs()
-                        .contains("{ url: './it\\'s.css', revision:"),
-                "expected the quote to be escaped, was: "
-                        + registry.getRuntimeServiceWorkerJs());
+        assertTrue(sw.contains("{ url: './it\\'s.css', revision:"),
+                "expected the quote to be escaped, was: " + sw);
     }
 
     private static int countOccurrences(String haystack, String needle) {
@@ -611,20 +639,18 @@ class PwaRegistryTest {
     @Test
     void pwaWithoutAppShell_getRuntimeServiceWorkerJs_doesNotIncludeAuraCss()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class), null, Set.of());
-        assertFalse(
-                registry.getRuntimeServiceWorkerJs().contains("aura/aura.css"));
+        assertFalse(sw.contains("aura/aura.css"));
     }
 
     @Test
     void pwaWithoutAppShell_AuraIsOnClassPath_getRuntimeServiceWorkerJs_includesAuraCss()
             throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
+        String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class), null,
                 Set.of("/aura/aura.css"));
-        assertTrue(registry.getRuntimeServiceWorkerJs()
-                .contains("{ url: './aura/aura.css', revision:"));
+        assertTrue(sw.contains("{ url: './aura/aura.css', revision:"));
     }
 
 }
