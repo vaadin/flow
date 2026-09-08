@@ -148,14 +148,15 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
-Static-import assertion methods and call them unqualified —
-`assertEquals(…)`, not `Assertions.assertEquals(…)`. Hamcrest is the same:
-static-import `assertThat` and its matchers. Mockito is the exception — the
-suite qualifies `Mockito.mock(…)` and `Mockito.when(…)`, argument matchers
-included. Match the surrounding file rather than converting it: do not
-mass-convert a file that qualifies its assertions consistently, such as the
-remaining JUnit 4 tests, and do not introduce a second assertion style into a
-file.
+Static-import the test helpers and call them unqualified —
+`assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
+`Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
+and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
+`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
+tests and to the calls you are already changing: do not mass-convert an
+unrelated file, and leave the remaining JUnit 4 tests, which qualify `Assert`
+throughout, until they are migrated. When a file you are touching ends up
+mixed, converting the rest of it is fine.
 
 Add an integration test view under `flow-tests/test-root-context/` for
 browser-facing features, and exercise both the happy path and the error branch.
