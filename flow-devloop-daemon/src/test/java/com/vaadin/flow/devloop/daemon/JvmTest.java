@@ -152,6 +152,26 @@ class JvmTest {
                         + "JetBrains Runtime: " + homes);
     }
 
+    @Test
+    void withNeitherInstallDirectory_nothingIsInvented() {
+        // A machine with no ~/.jdks and no ~/.vaadin/jdk is the common case on
+        // CI, and a missing directory must read as "no candidates here" rather
+        // than fail the launch that is about to happen.
+        List<Path> homes = Jvm.homes(userHome.resolve("no-such-home"));
+
+        assertTrue(homes.stream().noneMatch(home -> home.startsWith(userHome)),
+                () -> "only the environment should have contributed: " + homes);
+    }
+
+    @Test
+    void theDefaultIsTheDevelopersOwnHomeDirectory() {
+        // The no-argument overload is the one the daemon calls, so what it
+        // passes has to be the real user home and not, say, the working
+        // directory.
+        assertEquals(Jvm.homes(Path.of(System.getProperty("user.home", "."))),
+                Jvm.homes());
+    }
+
     /**
      * The chosen JVM for a requirement, or for none when {@code required} is 0,
      * over the temporary JDKs alone.

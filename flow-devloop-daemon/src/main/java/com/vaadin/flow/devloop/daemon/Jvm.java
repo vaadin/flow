@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -271,17 +272,21 @@ final class Jvm {
         return homes;
     }
 
-    /** Every install directly under a directory JVMs are installed into. */
+    /**
+     * Every install directly under a directory JVMs are installed into.
+     * <p>
+     * {@code listFiles} rather than {@code Files.list}, because it answers
+     * {@code null} for a directory that is missing or unreadable where the
+     * stream throws, and neither is a reason to fail a launch: what is left is
+     * the other directory, the environment's JVMs, and ultimately this one.
+     */
     private static void installsUnder(Path parent, List<Path> homes) {
-        if (!Files.isDirectory(parent)) {
+        File[] installs = parent.toFile().listFiles(File::isDirectory);
+        if (installs == null) {
             return;
         }
-        try (Stream<Path> stream = Files.list(parent)) {
-            stream.filter(Files::isDirectory).forEach(homes::add);
-        } catch (IOException e) {
-            // An unreadable directory leaves the other candidates, the
-            // environment's JVMs, and ultimately this one: never a reason to
-            // fail a launch.
+        for (File install : installs) {
+            homes.add(install.toPath());
         }
     }
 
