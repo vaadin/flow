@@ -212,8 +212,12 @@ public abstract class VaadinService implements Serializable {
     /**
      * How long the actions registered for when initialization has finished wait
      * before the first of them runs. Short enough not to be noticed by a client
-     * that has already been waiting for the service to start, long enough for
-     * the deployment to finish the work it does after initializing the service.
+     * that has already been waiting for the service to start, long enough to
+     * give the work a deployment does after initializing the service a head
+     * start.
+     * <p>
+     * A head start only: the delay is not synchronized with that work, which
+     * can take longer than this on a loaded machine.
      */
     private static final long INIT_NOTIFICATION_DELAY_MS = 50;
 
@@ -434,6 +438,14 @@ public abstract class VaadinService implements Serializable {
      * slow action delays the requests the application is about to serve. If
      * there is a lot of work to do, start it from the action instead of doing
      * it there.
+     * <p>
+     * Actions run once {@link #init()} has completed, so everything it does,
+     * including running the {@link VaadinServiceInitListener}s, has been done
+     * by the time they do. A service that initializes further things of its own
+     * after that, as the Spring one does when it registers its listener beans,
+     * may still be finishing: actions get a short head start over that work
+     * rather than waiting for it, so an action should only depend on this
+     * service being ready.
      *
      * @param action
      *            the action to run, given whether the service was initialized
@@ -445,7 +457,8 @@ public abstract class VaadinService implements Serializable {
         // that the action still runs and can react to the service not being
         // usable. The delay gives the work a deployment does after initializing
         // the service, such as a Spring application registering its listener
-        // beans, a chance to finish first.
+        // beans, a head start, without waiting for it: init() completing is the
+        // last point this class knows about.
         initCompleted.handle((ignored, initFailure) -> null).thenRunAsync(
                 () -> runInitializedAction(action),
                 CompletableFuture.delayedExecutor(INIT_NOTIFICATION_DELAY_MS,

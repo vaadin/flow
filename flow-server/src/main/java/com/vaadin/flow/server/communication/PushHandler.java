@@ -20,11 +20,9 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,11 +86,15 @@ public class PushHandler {
     /**
      * The connections that are being held until the service has been
      * initialized. A connection is in here from the moment it is held until the
-     * request that establishes it has been run.
+     * request that establishes it has been run, it is lost, or the service it
+     * was held for goes away.
      * <p>
      * Keyed by the resource itself rather than by its uuid, which is the
      * client's tracking id and is therefore the same for every connection the
      * client makes, and by identity, as resources compare equal by that uuid.
+     * <p>
+     * A lock on a connection in here is always taken before the lock on this
+     * map, never the other way around.
      */
     private final Map<AtmosphereResource, HeldConnection> heldConnections = Collections
             .synchronizedMap(new IdentityHashMap<>());
@@ -463,6 +465,8 @@ public class PushHandler {
         if (resource == null) {
             return null;
         }
+
+        releaseHeldConnection(resource);
 
         // In development mode we may have a live-reload push channel
         // that should be closed.
@@ -858,6 +862,30 @@ public class PushHandler {
     }
 
     /**
+     * Lets go of a connection that was being held until the service had been
+     * initialized, as the connection has been lost.
+     * <p>
+     * A held connection is otherwise only let go of once initialization
+     * finishes. One that the client drops while the service is still starting,
+     * or that the websocket idle timeout reaps, would be kept until then, so an
+     * initialization that never finishes would accumulate every connection a
+     * client keeps retrying.
+     *
+     * @param resource
+     *            the atmosphere resource whose connection was lost
+     */
+    private void releaseHeldConnection(AtmosphereResource resource) {
+        HeldConnection held = heldConnections.remove(resource);
+        if (held == null) {
+            return;
+        }
+        getLogger().debug(
+                "Letting go of the push connection {}, which was lost while it was held",
+                resource.uuid());
+        giveUpOn(held);
+    }
+
+    /**
      * Runs a request that was held until the service had been initialized,
      * unless the connection it belongs to has been given up on meanwhile.
      *
@@ -939,17 +967,46 @@ public class PushHandler {
      * every connection that was held for it.
      */
     void destroy() {
-        List<AtmosphereResource> held;
+        Map<AtmosphereResource, HeldConnection> held;
         synchronized (heldConnections) {
-            held = new ArrayList<>(heldConnections.keySet());
+            held = new IdentityHashMap<>(heldConnections);
             heldConnections.clear();
         }
-        held.forEach(resource -> {
+        held.forEach((resource, connection) -> {
             getLogger().debug(
                     "Closing the push connection {} that was held for a service that is going away",
                     resource.uuid());
+            // Closing a connection does not by itself stop a request that is on
+            // its way for it, which a service that finished initializing just
+            // before it was destroyed can have. Given up on outside the lock on
+            // the map, which a request holds the lock on its connection while
+            // taking.
+            giveUpOn(connection);
             closeResource(resource);
         });
+    }
+
+    /**
+     * Marks a held connection as one that has been given up on, so that a
+     * request that is on its way for it closes it instead of establishing it.
+     * <p>
+     * Does nothing while a request is running for the connection, as the mark
+     * is read once, before that request runs, and would come too late to be
+     * seen. Waiting for the request is pointless for the same reason, and
+     * letting go of a connection must not wait for a session lock.
+     *
+     * @param held
+     *            the state of the held connection
+     */
+    private static void giveUpOn(HeldConnection held) {
+        if (!held.lock.tryLock()) {
+            return;
+        }
+        try {
+            held.cancelled = true;
+        } finally {
+            held.lock.unlock();
+        }
     }
 
     /**

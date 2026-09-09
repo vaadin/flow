@@ -305,6 +305,63 @@ class PushHandlerTest {
     }
 
     @Test
+    void destroy_serviceGoesAwayJustAfterInit_heldRequestIsNotRun()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false));
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResource resource = mockWebsocketResource("1");
+        handler.onConnect(resource);
+
+        // A held request runs shortly after initialization has finished, so a
+        // service that is destroyed right after it started, which a reload in
+        // development mode does, has one on the way when it goes away
+        service.init();
+        handler.destroy();
+
+        // Closing the connection does not by itself stop the request that is on
+        // its way, which would otherwise establish it on a service that is gone
+        Mockito.verify(resource, Mockito.atLeastOnce()).close();
+        Mockito.verify(service, Mockito.after(AWAIT_SETTLE_MILLIS).never())
+                .requestStart(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void connectionLost_connectionStillHeld_heldRequestIsNotRun()
+            throws ServiceException, IOException {
+        MockVaadinServletService service = Mockito
+                .spy(new MockVaadinServletService(false) {
+                    @Override
+                    public VaadinSession findVaadinSession(
+                            VaadinRequest request)
+                            throws SessionExpiredException {
+                        // The session a client had before the server restarted
+                        // is gone
+                        throw new SessionExpiredException();
+                    }
+                });
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResource resource = mockWebsocketResource("1");
+        handler.onConnect(resource);
+
+        // The client gives up on the held connection, or the websocket idle
+        // timeout reaps it, before initialization has finished
+        AtmosphereResourceEvent event = Mockito
+                .mock(AtmosphereResourceEvent.class);
+        Mockito.when(event.getResource()).thenReturn(resource);
+        handler.connectionLost(event);
+
+        service.init();
+
+        // The connection has been let go of, so there is nothing left to
+        // establish even though the resource still claims to be in scope
+        Mockito.verify(service, Mockito.after(AWAIT_SETTLE_MILLIS).never())
+                .requestStart(Mockito.any(), Mockito.any());
+    }
+
+    @Test
     void onConnect_serviceInitFails_connectionClosedAndRequestNotStarted()
             throws ServiceException, IOException, InterruptedException {
         MockVaadinServletService service = Mockito
