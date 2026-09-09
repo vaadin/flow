@@ -541,10 +541,17 @@ public class MessageHandler {
     }
 
     private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
-        // Remove both link and style elements with matching dependency ID
+        // Remove both link and style elements with matching dependency ID.
+        // Through the parent rather than with ChildNode.remove(): the two are
+        // equivalent for an element in the document, and removeChild is
+        // available everywhere this engine runs, including the HtmlUnit the
+        // client engine tests run in, which has no remove() on a link element.
         var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
         for (var i = 0; i < elements.length; i++) {
-            elements[i].remove();
+            var element = elements[i];
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
         }
     }-*/;
 

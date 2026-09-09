@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.LinkElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
@@ -547,18 +551,23 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         }.schedule(assertDelayInMillis);
     }
 
-    private static native void addStylesheetToDom(String dependencyId)
-    /*-{
-         var link = $doc.createElement('link');
-         link.rel = 'stylesheet';
-         link.setAttribute('data-id', dependencyId);
-         $doc.head.appendChild(link);
-    }-*/;
+    private static void addStylesheetToDom(String dependencyId) {
+        LinkElement link = Document.get().createLinkElement();
+        link.setRel("stylesheet");
+        link.setAttribute("data-id", dependencyId);
+        Document.get().getHead().appendChild(link);
+    }
 
-    private static native boolean isStylesheetInDom(String dependencyId)
-    /*-{
-         return $doc.querySelector('link[data-id="' + dependencyId + '"]') != null;
-    }-*/;
+    private static boolean isStylesheetInDom(String dependencyId) {
+        NodeList<Element> links = Document.get()
+                .getElementsByTagName("link");
+        for (int i = 0; i < links.getLength(); i++) {
+            if (dependencyId.equals(links.getItem(i).getAttribute("data-id"))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private static native void resetInternalEvents()
     /*-{
