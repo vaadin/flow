@@ -29,8 +29,9 @@ concurrency:
 
 env:
   # Where the snapshot is uploaded. A secret alongside the credentials, so that
-  # all three are configured in one place and a repository taking this workflow
-  # into use publishes wherever it publishes.
+  # all three are configured in one place. A repository taking this workflow
+  # into use publishes wherever it publishes - and then has to set the variable
+  # below too, or the comment will hand out an address its snapshot is not on.
   MAVEN_SNAPSHOT_DEPLOY_URL: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_URL }}
   # Where the snapshot is read from afterwards, which is not the same address:
   # uploads go to the repository itself, resolving goes through the public one
