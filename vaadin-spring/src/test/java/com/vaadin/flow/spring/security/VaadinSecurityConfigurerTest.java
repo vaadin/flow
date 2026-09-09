@@ -488,9 +488,10 @@ class VaadinSecurityConfigurerTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "style", "script", "image", "font" })
-    void deniedRequestForSubResource_respondsWithUnauthorized(String fetchDest)
+    void anonymousSubResourceRequest_respondsWithUnauthorized(String fetchDest)
             throws Exception {
-        var response = denyRequest("/styles/imported.css", fetchDest);
+        var response = sendAnonymousGetRequest("/styles/imported.css",
+                fetchDest);
 
         assertThat(response.getStatus())
                 .isEqualTo(HttpStatus.UNAUTHORIZED.value());
@@ -498,19 +499,19 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void deniedRequestForHtml_redirectsToLoginView() throws Exception {
-        var response = denyRequest("/private", "document");
+    void anonymousDocumentRequest_redirectsToLoginView() throws Exception {
+        var response = sendAnonymousGetRequest("/private", "document");
 
         assertThat(response.getRedirectedUrl()).endsWith("/login");
     }
 
     /**
-     * Sends an unauthenticated request through the filter chain, where the
-     * default {@code anyRequest} rule denies it, and returns the response
-     * written by the authentication entry point.
+     * Sends an anonymous {@code GET} request for the given path, carrying the
+     * given {@code Sec-Fetch-Dest} header value, through the filter chain of a
+     * configurer set up with a login view, and returns the response.
      */
-    private MockHttpServletResponse denyRequest(String path, String fetchDest)
-            throws Exception {
+    private MockHttpServletResponse sendAnonymousGetRequest(String path,
+            String fetchDest) throws Exception {
         SecurityContextHolder.getContext()
                 .setAuthentication(new AnonymousAuthenticationToken("key",
                         "anonymousUser",
