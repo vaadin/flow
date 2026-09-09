@@ -1381,32 +1381,30 @@ public class UI extends Component
      * @throws NullPointerException
      *             if the location or queryParameters are null.
      * @throws IllegalArgumentException
-     *             if the location carries a query string of its own while
-     *             {@code queryParameters} is not empty
+     *             if the location carries a query string or a fragment of its
+     *             own while {@code queryParameters} is not empty
      */
     public void navigate(String locationString,
             QueryParameters queryParameters) {
         Objects.requireNonNull(locationString, "Location must not be null");
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
-        if (queryParameters.getParameters().isEmpty()) {
-            // The location string is the only source of query parameters, so
-            // it is free to carry a query string and a fragment
-            navigate(new Location(locationString));
-            return;
-        }
-        if (locationString.contains("?")) {
+        boolean separateParameters = !queryParameters.getParameters().isEmpty();
+        if (separateParameters && (locationString.indexOf('?') >= 0
+                || locationString.indexOf('#') >= 0)) {
             throw new IllegalArgumentException("The location '" + locationString
-                    + "' already contains a query string, so the query "
-                    + "parameters given separately would be lost. Pass "
-                    + "the whole URL to navigate(String), or pass the "
-                    + "path without a query string to navigate(String, "
-                    + "QueryParameters).");
+                    + "' must be a plain path when query parameters are given "
+                    + "separately, since its own query string or fragment "
+                    + "would be lost. Pass the whole URL to navigate(String) "
+                    + "instead.");
         }
-        navigate(new Location(locationString, queryParameters));
-    }
+        // Without separate parameters the location string is the only source
+        // of query parameters, so it is free to carry a query string and a
+        // fragment
+        Location location = separateParameters
+                ? new Location(locationString, queryParameters)
+                : new Location(locationString);
 
-    private void navigate(Location location) {
         // There is an in-progress navigation or there are no changes,
         // prevent looping
         if (navigationInProgress

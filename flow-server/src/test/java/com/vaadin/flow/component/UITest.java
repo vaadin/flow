@@ -310,34 +310,54 @@ public class UITest {
     }
 
     @Test
-    public void navigateWithQueryStringInLocation_queryStringIsParsed()
+    public void navigateWithQueryStringAndFragmentInLocation_bothAreParsed()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        ui.navigate("foo/bar?t=abc&t=def");
+        ui.navigate("foo/bar?t=abc&t=def#total");
 
         Location location = ui.getInternals().getActiveViewLocation();
         assertEquals("foo/bar", location.getPath());
         assertEquals(List.of("abc", "def"),
                 location.getQueryParameters().getParameters().get("t"));
+        assertEquals("foo/bar?t=abc&t=def#total",
+                location.getPathWithQueryParameters());
         MatcherAssert.assertThat(ui.getCurrentView(),
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
-    public void navigateWithQueryStringAndQueryParameters_throws()
+    public void navigateWithSeparateQueryParameters_parametersAreApplied()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> ui.navigate("foo/bar?t=abc",
-                        QueryParameters.of("t", "def")));
-        assertTrue(exception.getMessage().contains("navigate(String)"),
-                "The message should name the overload to use instead: "
-                        + exception.getMessage());
+        ui.navigate("foo/bar", QueryParameters.of("t", "abc"));
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQueryStringOrFragmentAndQueryParameters_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        QueryParameters parameters = QueryParameters.of("t", "def");
+        for (String locationString : List.of("foo/bar?t=abc", "foo/bar#total",
+                "foo/bar#a?b")) {
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> ui.navigate(locationString, parameters));
+            assertTrue(exception.getMessage().contains("navigate(String)"),
+                    "The message should name the overload to use instead: "
+                            + exception.getMessage());
+        }
     }
 
     @Test
