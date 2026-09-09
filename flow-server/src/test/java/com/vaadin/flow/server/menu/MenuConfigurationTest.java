@@ -271,8 +271,11 @@ class MenuConfigurationTest {
 
     @Test
     void getPageHeader_dynamicPageTitle_generatorGetsActiveRouteAndQueryParameters() {
-        RouteConfiguration.forRegistry(registry)
-                .setAnnotatedRoute(ProductRoute.class);
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(ProductRoute.class,
+                MandatoryParameterRouteWithPageTitle.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
 
         UI mockUi = mock(UI.class);
         UIInternals uiInternals = mock(UIInternals.class);
@@ -290,10 +293,10 @@ class MenuConfigurationTest {
             assertEquals("Product sourdough (large)",
                     MenuConfiguration.getPageHeader(new ProductRoute()).get());
 
-            // the content is not the route of the active location: no
-            // parameters to hand over instead of foreign ones
-            when(uiInternals.getActiveViewLocation())
-                    .thenReturn(new Location("normal-route"));
+            // the content is not the route of the active location: neither
+            // its route nor its query parameters are handed over
+            when(uiInternals.getActiveViewLocation()).thenReturn(new Location(
+                    "mandatory-parameter-route/value?variant=large"));
             assertEquals("Product ? (?)",
                     MenuConfiguration.getPageHeader(new ProductRoute()).get());
         } finally {

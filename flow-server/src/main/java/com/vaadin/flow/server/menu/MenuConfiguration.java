@@ -29,7 +29,6 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -119,34 +118,39 @@ public final class MenuConfiguration {
      * {@link com.vaadin.flow.router.DynamicPageTitle}, so that the header
      * matches the browser page title the router resolves for the same
      * navigation.
+     * <p>
+     * The parameters are only handed over when the active location is the
+     * location of the given navigation target itself: the content of a layout
+     * may well be another route than the one the parameters belong to, and the
+     * parameters of a foreign route are more misleading than none.
      */
     private static String getActiveRouteTitle(UI ui,
             Class<? extends Component> navigationTarget) {
         Location location = ui.getInternals().getActiveViewLocation();
-        return MenuRegistry.getTitle(navigationTarget,
-                getActiveRouteParameters(location, navigationTarget),
-                location.getQueryParameters());
+        return getActiveRouteTarget(location)
+                .filter(activeTarget -> navigationTarget
+                        .equals(activeTarget.getRouteTarget().getTarget()))
+                .map(activeTarget -> MenuRegistry.getTitle(navigationTarget,
+                        activeTarget.getRouteParameters(),
+                        location.getQueryParameters()))
+                .orElseGet(() -> MenuRegistry.getTitle(navigationTarget));
     }
 
     /**
-     * Resolves the route parameters of the active location, but only when it is
-     * the location of the given navigation target itself: the content of a
-     * layout may well be another route than the one the parameters belong to,
-     * and foreign parameters are more misleading than none.
+     * Resolves the route the active location points to, or an empty optional
+     * when there is no service to resolve it with or no route serves the
+     * location.
      */
-    private static RouteParameters getActiveRouteParameters(Location location,
-            Class<? extends Component> navigationTarget) {
+    private static Optional<NavigationRouteTarget> getActiveRouteTarget(
+            Location location) {
         VaadinService service = VaadinService.getCurrent();
         if (service == null) {
-            return RouteParameters.empty();
+            return Optional.empty();
         }
         NavigationRouteTarget activeTarget = service.getRouter().getRegistry()
                 .getNavigationRouteTarget(location.getPath());
-        if (activeTarget.hasTarget() && navigationTarget
-                .equals(activeTarget.getRouteTarget().getTarget())) {
-            return activeTarget.getRouteParameters();
-        }
-        return RouteParameters.empty();
+        return activeTarget.hasTarget() ? Optional.of(activeTarget)
+                : Optional.empty();
     }
 
     /**
