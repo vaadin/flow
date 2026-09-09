@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,10 +37,11 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
 /**
- * Default implementation for the {@link ThemeList} that stores the theme names
- * of the corresponding element. Makes sure that each change to the collection
- * is reflected in the corresponding element attribute name,
- * {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}.
+ * Default implementation for the {@link ThemeList} that provides a live view
+ * into the theme names of the corresponding element. Both reads and writes go
+ * through the element attribute, {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}, so
+ * that all instances obtained for the same element always agree on the current
+ * theme names.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -51,7 +53,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
     private static final String THEME_NAMES_DELIMITER = " ";
 
     private final class ThemeListIterator implements Iterator<String> {
-        private final Iterator<String> wrappedIterator = themes.iterator();
+        private final Iterator<String> wrappedIterator = readThemesFromAttribute()
+                .iterator();
         private String current;
 
         @Override
@@ -68,12 +71,14 @@ public class ThemeListImpl implements ThemeList, Serializable {
         @Override
         public void remove() {
             wrappedIterator.remove();
-            updateThemeAttribute();
+            Set<String> themes = readThemesFromAttribute();
+            if (themes.remove(current)) {
+                updateThemeAttribute(themes);
+            }
         }
     }
 
     private final Element element;
-    private final Set<String> themes;
 
     /**
      * Creates new theme list for element specified.
@@ -83,7 +88,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
      */
     public ThemeListImpl(Element element) {
         this.element = element;
-        themes = readThemesFromAttribute();
     }
 
     private Set<String> readThemesFromAttribute() {
@@ -91,8 +95,9 @@ public class ThemeListImpl implements ThemeList, Serializable {
                 .map(value -> value.split(THEME_NAMES_DELIMITER))
                 .map(Stream::of)
                 .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
-                        .collect(Collectors.toSet()))
-                .orElseGet(HashSet::new);
+                        .collect(Collectors
+                                .toCollection(LinkedHashSet<String>::new)))
+                .orElseGet(LinkedHashSet::new);
     }
 
     @Override
@@ -174,10 +179,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     private void internalSetPresence(String name, boolean set) {
-        // Re-read themes from the attribute to stay in sync with other
-        // ThemeListImpl instances that may have modified the attribute.
-        themes.clear();
-        themes.addAll(readThemesFromAttribute());
+        Set<String> themes = readThemesFromAttribute();
 
         boolean changed;
         if (set) {
@@ -186,7 +188,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
             changed = themes.remove(name);
         }
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
     }
 
@@ -198,9 +200,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public boolean add(String themeName) {
         throwIfBound(themeName);
+        Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.add(themeName);
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
         return changed;
     }
@@ -208,9 +211,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public boolean addAll(Collection<? extends String> themeNames) {
         themeNames.forEach(this::throwIfBound);
+        Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.addAll(themeNames);
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
         return changed;
     }
@@ -220,20 +224,22 @@ public class ThemeListImpl implements ThemeList, Serializable {
         if (themeName instanceof String name) {
             throwIfBound(name);
         }
+        Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.remove(themeName);
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
         return changed;
     }
 
     @Override
     public boolean retainAll(Collection<?> themeNamesToRetain) {
+        Set<String> themes = readThemesFromAttribute();
         themes.stream().filter(name -> !themeNamesToRetain.contains(name))
                 .forEach(this::throwIfBound);
         boolean changed = themes.retainAll(themeNamesToRetain);
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
         return changed;
     }
@@ -242,9 +248,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
     public boolean removeAll(Collection<?> themeNamesToRemove) {
         themeNamesToRemove.stream().map(String.class::cast)
                 .forEach(this::throwIfBound);
+        Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.removeAll(themeNamesToRemove);
         if (changed) {
-            updateThemeAttribute();
+            updateThemeAttribute(themes);
         }
         return changed;
     }
@@ -256,11 +263,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
                 throw new BindingActiveException();
             }
         });
-        themes.clear();
-        updateThemeAttribute();
+        updateThemeAttribute(new LinkedHashSet<>());
     }
 
-    private void updateThemeAttribute() {
+    private void updateThemeAttribute(Set<String> themes) {
         if (themes.isEmpty()) {
             element.removeAttribute(THEME_ATTRIBUTE_NAME);
         } else {
@@ -271,37 +277,37 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public int size() {
-        return themes.size();
+        return readThemesFromAttribute().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return themes.isEmpty();
+        return readThemesFromAttribute().isEmpty();
     }
 
     @Override
     public Object[] toArray() {
-        return themes.toArray();
+        return readThemesFromAttribute().toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return themes.toArray(a);
+        return readThemesFromAttribute().toArray(a);
     }
 
     @Override
     public boolean contains(Object themeName) {
-        return themes.contains(themeName);
+        return readThemesFromAttribute().contains(themeName);
     }
 
     @Override
     public boolean containsAll(Collection<?> themeNames) {
-        return themes.containsAll(themeNames);
+        return readThemesFromAttribute().containsAll(themeNames);
     }
 
     @Override
     public String toString() {
-        return themes.toString();
+        return readThemesFromAttribute().toString();
     }
 
     private void throwIfBound(String className) {

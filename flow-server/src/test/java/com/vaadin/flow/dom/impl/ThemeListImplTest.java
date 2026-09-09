@@ -283,4 +283,68 @@ class ThemeListImplTest {
                 notRemovedTheme,
                 "Theme left in ThemeList after removal should be the only theme preset in the corresponding element");
     }
+
+    @Test
+    void themeListReflectsAttributeSetAfterCreation() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        element.setAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME, "dark");
+
+        assertFalse(themeList.isEmpty(),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertEquals(1, themeList.size(),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertTrue(themeList.contains("dark"),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertEquals("dark", themeList.iterator().next(),
+                "ThemeList iterator should reflect the theme attribute set after the list was obtained");
+    }
+
+    @Test
+    void themeListReflectsAttributeRemovedAfterCreation() {
+        MockElement element = new MockElement("dark");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        element.removeAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME);
+
+        assertTrue(themeList.isEmpty(),
+                "ThemeList should reflect the theme attribute removed after the list was obtained");
+        assertFalse(themeList.contains("dark"),
+                "ThemeList should reflect the theme attribute removed after the list was obtained");
+    }
+
+    @Test
+    void modificationKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement();
+        ThemeListImpl firstList = new ThemeListImpl(element);
+        ThemeListImpl secondList = new ThemeListImpl(element);
+
+        secondList.add("dark");
+        firstList.add("compact");
+
+        assertEquals(Set.of("dark", "compact"),
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Modifying one ThemeList instance should not discard themes added through another instance");
+        assertTrue(firstList.containsAll(Arrays.asList("dark", "compact")),
+                "Every ThemeList instance of the same element should see the same themes");
+        assertTrue(secondList.containsAll(Arrays.asList("dark", "compact")),
+                "Every ThemeList instance of the same element should see the same themes");
+    }
+
+    @Test
+    void removalKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl firstList = new ThemeListImpl(element);
+        ThemeListImpl secondList = new ThemeListImpl(element);
+
+        secondList.add("dark");
+        firstList.remove("theme1");
+
+        assertEquals(Set.of("dark", "theme2"),
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Removing through one ThemeList instance should only remove the requested theme");
+    }
 }

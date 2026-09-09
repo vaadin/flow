@@ -1552,6 +1552,10 @@ public class Element extends Node<Element> {
      * remove the theme names, changes to the set will be reflected in the
      * attribute value.
      * <p>
+     * The returned set is a live view of the {@code theme} attribute, so it
+     * also reflects theme names that are added or removed by other means after
+     * this method has been called.
+     * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
      * {@link Set} in Java.
