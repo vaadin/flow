@@ -1342,6 +1342,11 @@ public class UI extends Component
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
      * <p>
+     * The location may carry a query string and a fragment, as in
+     * {@code "order/123?tab=items#total"}. The query string is parsed into the
+     * {@link QueryParameters} of the resulting
+     * {@link Location#getQueryParameters() location}.
+     * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
      *
@@ -1375,14 +1380,33 @@ public class UI extends Component
      *            {@code null}
      * @throws NullPointerException
      *             if the location or queryParameters are null.
+     * @throws IllegalArgumentException
+     *             if the location carries a query string of its own while
+     *             {@code queryParameters} is not empty
      */
     public void navigate(String locationString,
             QueryParameters queryParameters) {
         Objects.requireNonNull(locationString, "Location must not be null");
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
-        Location location = new Location(locationString, queryParameters);
+        if (queryParameters.getParameters().isEmpty()) {
+            // The location string is the only source of query parameters, so
+            // it is free to carry a query string and a fragment
+            navigate(new Location(locationString));
+            return;
+        }
+        if (locationString.contains("?")) {
+            throw new IllegalArgumentException("The location '" + locationString
+                    + "' already contains a query string, so the query "
+                    + "parameters given separately would be lost. Pass "
+                    + "the whole URL to navigate(String), or pass the "
+                    + "path without a query string to navigate(String, "
+                    + "QueryParameters).");
+        }
+        navigate(new Location(locationString, queryParameters));
+    }
 
+    private void navigate(Location location) {
         // There is an in-progress navigation or there are no changes,
         // prevent looping
         if (navigationInProgress

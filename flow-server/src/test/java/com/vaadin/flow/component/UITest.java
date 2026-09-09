@@ -310,6 +310,37 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQueryStringInLocation_queryStringIsParsed()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar?t=abc&t=def");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(List.of("abc", "def"),
+                location.getQueryParameters().getParameters().get("t"));
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQueryStringAndQueryParameters_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ui.navigate("foo/bar?t=abc",
+                        QueryParameters.of("t", "def")));
+        assertTrue(exception.getMessage().contains("navigate(String)"),
+                "The message should name the overload to use instead: "
+                        + exception.getMessage());
+    }
+
+    @Test
     public void locationAfterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
