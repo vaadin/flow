@@ -431,21 +431,56 @@ class ThemeListImplTest {
     }
 
     @Test
-    void addThemeNameContainingSpaces_throws() {
+    void spaceSeparatedValueIsTreatedAsSeveralThemeNames() {
         MockElement element = new MockElement();
         ThemeListImpl themeList = new ThemeListImpl(element);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> themeList.add("primary small"),
-                "A theme name containing spaces cannot be stored as a single theme name");
-        assertThrows(IllegalArgumentException.class,
-                () -> themeList.addAll(Arrays.asList("primary small")),
-                "A theme name containing spaces cannot be stored as a single theme name");
-        assertThrows(IllegalArgumentException.class, () -> themeList.add(null),
+        assertTrue(themeList.add("primary small"),
+                "Adding a space separated value should modify the theme list");
+
+        assertEquals("primary small",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "A space separated value should be written to the theme attribute as is");
+        assertEquals(2, themeList.size(),
+                "A space separated value should count as several theme names");
+        assertTrue(themeList.contains("primary small"),
+                "A space separated value should be found after it was added");
+        assertTrue(themeList.contains("small"),
+                "Each theme name of a space separated value should be found on its own");
+        assertFalse(themeList.add("small"),
+                "Adding a theme name that is already present should not modify the theme list");
+
+        assertTrue(themeList.remove("primary small"),
+                "Removing a space separated value should modify the theme list");
+        assertTrue(themeList.isEmpty(),
+                "Removing a space separated value should remove each of its theme names");
+    }
+
+    @Test
+    void addNullThemeName_throwsNullPointerException() {
+        ThemeListImpl themeList = new ThemeListImpl(new MockElement());
+
+        assertThrows(NullPointerException.class, () -> themeList.add(null),
                 "A null theme name should be rejected");
-        assertThrows(IllegalArgumentException.class, () -> themeList.add(""),
-                "An empty theme name should be rejected");
-        assertNull(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                "A rejected theme name should not be written to the theme attribute");
+    }
+
+    @Test
+    void blankAndUnknownValuesAreNotContained() {
+        MockElement element = new MockElement("theme1");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        assertFalse(themeList.contains(""),
+                "An empty value is not a theme name and should not be found");
+        assertFalse(themeList.contains(null),
+                "A null value should not be found");
+        assertFalse(themeList.contains(Integer.valueOf(1)),
+                "A non-string value should not be found");
+        assertFalse(themeList.remove(Integer.valueOf(1)),
+                "Removing a non-string value should not modify the theme list");
+        assertTrue(themeList.containsAll(List.of()),
+                "Every theme list contains the empty collection");
+        assertEquals("theme1",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "None of the above should have modified the theme attribute");
     }
 }

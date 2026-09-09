@@ -39,9 +39,8 @@ public interface HasTheme extends HasElement {
      * Adds a theme name to this component.
      *
      * @param themeName
-     *            the theme name to add, not <code>null</code> and not
-     *            containing spaces. Use {@link #setThemeName(String)} to set
-     *            several theme names as a space-separated string.
+     *            the theme name to add, not <code>null</code>. A
+     *            space-separated value adds several theme names at once.
      */
     default void addThemeName(String themeName) {
         getThemeNames().add(themeName);

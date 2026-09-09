@@ -44,6 +44,10 @@ import com.vaadin.flow.signals.Signal;
  * that all instances obtained for the same element always agree on the current
  * theme names.
  * <p>
+ * Since the attribute value is space separated, a value containing spaces
+ * denotes several theme names, and is treated as such by every operation of
+ * this collection.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
@@ -123,17 +127,47 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     private Set<String> readThemesFromAttribute() {
         return Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
-                .map(value -> value.split(THEME_NAMES_DELIMITER))
-                .map(Stream::of)
-                .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
-                        .collect(Collectors
-                                .toCollection(LinkedHashSet<String>::new)))
+                .map(ThemeListImpl::splitThemeNames)
                 .orElseGet(LinkedHashSet::new);
+    }
+
+    /**
+     * Splits the given value into the individual theme names it consists of.
+     * <p>
+     * The {@code theme} attribute value is space separated, which means that a
+     * value containing spaces denotes several theme names rather than one.
+     * Applying the same splitting to the values passed to this collection keeps
+     * reads and writes in agreement for such values.
+     *
+     * @param themeNames
+     *            a single theme name or a space separated list of theme names,
+     *            not {@code null}
+     * @return the individual theme names, in the order they appear in the given
+     *         value
+     */
+    private static Set<String> splitThemeNames(String themeNames) {
+        return Stream.of(themeNames.split(THEME_NAMES_DELIMITER))
+                .filter(themeName -> !themeName.isEmpty())
+                .collect(Collectors.toCollection(LinkedHashSet<String>::new));
+    }
+
+    /**
+     * Splits each value of the given collection into individual theme names.
+     *
+     * @param themeNames
+     *            the values to split, not {@code null}
+     * @return the individual theme names of all the values that are strings
+     */
+    private static Set<String> splitThemeNames(Collection<?> themeNames) {
+        return themeNames.stream()
+                .filter(themeName -> themeName instanceof String)
+                .flatMap(themeName -> splitThemeNames((String) themeName)
+                        .stream())
+                .collect(Collectors.toCollection(LinkedHashSet<String>::new));
     }
 
     @Override
     public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
-        validate(name);
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -211,13 +245,14 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     private void internalSetPresence(String name, boolean set) {
+        Set<String> names = splitThemeNames(name);
         Set<String> themes = readThemesFromAttribute();
 
         boolean changed;
         if (set) {
-            changed = themes.add(name);
+            changed = themes.addAll(names);
         } else {
-            changed = themes.remove(name);
+            changed = themes.removeAll(names);
         }
         if (changed) {
             updateThemeAttribute(themes);
@@ -231,22 +266,17 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean add(String themeName) {
-        validate(themeName);
-        throwIfBound(themeName);
-        Set<String> themes = readThemesFromAttribute();
-        boolean changed = themes.add(themeName);
-        if (changed) {
-            updateThemeAttribute(themes);
-        }
-        return changed;
+        Objects.requireNonNull(themeName, "Theme name cannot be null");
+        return addAll(Set.of(themeName));
     }
 
     @Override
     public boolean addAll(Collection<? extends String> themeNames) {
-        themeNames.forEach(this::validate);
         themeNames.forEach(this::throwIfBound);
+        Set<String> names = splitThemeNames(themeNames);
+        names.forEach(this::throwIfBound);
         Set<String> themes = readThemesFromAttribute();
-        boolean changed = themes.addAll(themeNames);
+        boolean changed = themes.addAll(names);
         if (changed) {
             updateThemeAttribute(themes);
         }
@@ -255,23 +285,19 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean remove(Object themeName) {
-        if (themeName instanceof String name) {
-            throwIfBound(name);
+        if (!(themeName instanceof String)) {
+            return false;
         }
-        Set<String> themes = readThemesFromAttribute();
-        boolean changed = themes.remove(themeName);
-        if (changed) {
-            updateThemeAttribute(themes);
-        }
-        return changed;
+        return removeAll(Set.of(themeName));
     }
 
     @Override
     public boolean retainAll(Collection<?> themeNamesToRetain) {
+        Set<String> namesToRetain = splitThemeNames(themeNamesToRetain);
         Set<String> themes = readThemesFromAttribute();
-        themes.stream().filter(name -> !themeNamesToRetain.contains(name))
+        themes.stream().filter(name -> !namesToRetain.contains(name))
                 .forEach(this::throwIfBound);
-        boolean changed = themes.retainAll(themeNamesToRetain);
+        boolean changed = themes.retainAll(namesToRetain);
         if (changed) {
             updateThemeAttribute(themes);
         }
@@ -282,8 +308,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
     public boolean removeAll(Collection<?> themeNamesToRemove) {
         themeNamesToRemove.stream().map(String.class::cast)
                 .forEach(this::throwIfBound);
+        Set<String> namesToRemove = splitThemeNames(themeNamesToRemove);
+        namesToRemove.forEach(this::throwIfBound);
         Set<String> themes = readThemesFromAttribute();
-        boolean changed = themes.removeAll(themeNamesToRemove);
+        boolean changed = themes.removeAll(namesToRemove);
         if (changed) {
             updateThemeAttribute(themes);
         }
@@ -331,37 +359,28 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean contains(Object themeName) {
-        return readThemesFromAttribute().contains(themeName);
+        if (!(themeName instanceof String)) {
+            return false;
+        }
+        return containsAll(Set.of(themeName));
     }
 
     @Override
     public boolean containsAll(Collection<?> themeNames) {
-        return readThemesFromAttribute().containsAll(themeNames);
+        if (themeNames.isEmpty()) {
+            return true;
+        }
+        Set<String> names = splitThemeNames(themeNames);
+        if (names.isEmpty()) {
+            // Nothing that could be a theme name, e.g. only blank values
+            return false;
+        }
+        return readThemesFromAttribute().containsAll(names);
     }
 
     @Override
     public String toString() {
         return readThemesFromAttribute().toString();
-    }
-
-    /**
-     * Checks that the given theme name can be stored as a single entry of the
-     * space separated {@code theme} attribute.
-     *
-     * @param themeName
-     *            the theme name to validate
-     */
-    private void validate(String themeName) {
-        if (themeName == null) {
-            throw new IllegalArgumentException("Theme name cannot be null");
-        }
-        if (themeName.isEmpty()) {
-            throw new IllegalArgumentException("Theme name cannot be empty");
-        }
-        if (themeName.indexOf(' ') != -1) {
-            throw new IllegalArgumentException(
-                    "Theme name cannot contain spaces. Use separate theme names or Element.setAttribute(\"theme\", ...) to set a space separated value");
-        }
     }
 
     private void throwIfBound(String className) {
