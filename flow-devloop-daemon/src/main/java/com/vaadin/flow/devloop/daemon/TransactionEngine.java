@@ -389,6 +389,12 @@ final class TransactionEngine {
             Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
+            // Read here rather than at the runtime leg, which is after the
+            // compile: what the running application never had is a fact about
+            // the change-set as it was detected, and markSourcesApplied moves
+            // it as soon as a redefine holds.
+            List<String> unknownTypes = compile
+                    .typesUnknownToTheApp(changes.modified());
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
             changes.deleted().forEach(path -> tx.changeSet
@@ -658,7 +664,8 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
-                        Optional<String> blocker = blockedReason(fields);
+                        Optional<String> blocker = blockedReason(fields,
+                                unknownTypes);
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);
@@ -1308,11 +1315,19 @@ final class TransactionEngine {
     }
 
     /**
-     * Cases where the JVM accepts the redefine but the change still is not
-     * live. Both were measured in P0.5, and both would otherwise be reported as
+     * Cases where the JVM accepts the redefine - or has nothing to redefine -
+     * and the change still is not live. Each would otherwise be reported as
      * {@code Stable} on an app that is stale or, worse, broken.
+     *
+     * @param fields
+     *            the connector's reply, parsed
+     * @param unknownTypes
+     *            the simple names of the change-set's types the running
+     *            application never had; see
+     *            {@link Compile#typesUnknownToTheApp}
      */
-    static Optional<String> blockedReason(Map<String, String> fields) {
+    static Optional<String> blockedReason(Map<String, String> fields,
+            List<String> unknownTypes) {
         String entities = fields.getOrDefault("entities", "-");
         if (!"-".equals(entities)) {
             return Optional.of("entity mapping cannot hot reload (" + entities
@@ -1331,17 +1346,22 @@ final class TransactionEngine {
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
         }
-        // A bean the running context has never seen. Component scanning is a
-        // startup act, and HotswapAgent's Spring plugin - which would rescan -
-        // is disabled for stability (see Launch), so no mechanism short of a
-        // restart turns a new @Component into a bean definition. Nothing was
-        // redefined for it either, since the class was never loaded, so this
-        // is the one blocker that has no redefine behind it: without it the
-        // apply reports Stable and the view that injects the new bean fails
-        // with a NoSuchBeanDefinitionException that names Spring rather than
-        // the restart nobody was told to do.
-        String newBeans = fields.getOrDefault("newBeans", "-");
-        if (!"-".equals(newBeans)) {
+        // A bean the running application has never seen. Component scanning is
+        // a startup act, and HotswapAgent's Spring plugin - which would rescan
+        // - is disabled for stability (see Launch), so no mechanism short of a
+        // restart turns a new @Component into a bean definition. Without this
+        // the apply reports Stable and the view that injects the new bean
+        // fails with a NoSuchBeanDefinitionException that names Spring rather
+        // than the restart nobody was told to do.
+        //
+        // The app answers which of the change-set's classes carry a stereotype
+        // and the inventory answers which of them the app never had, because
+        // neither can answer both: a class the app has loaded may still be one
+        // it acquired seconds ago from HotswapAgent's watcher, and the daemon
+        // cannot read an annotation off a JVM it is not in.
+        String newBeans = unknownIn(fields.getOrDefault("stereotypes", "-"),
+                unknownTypes);
+        if (!newBeans.isEmpty()) {
             return Optional.of("new Spring bean (" + newBeans
                     + "): component scanning ran at startup, so the running"
                     + " context has no definition for it");
@@ -1378,6 +1398,36 @@ final class TransactionEngine {
                     + "): the live proxy was generated from the old shape");
         }
         return Optional.empty();
+    }
+
+    /**
+     * The names in one of the connector's {@code |}-separated lists that the
+     * running application never had.
+     * <p>
+     * A nested type is reported under its own name and declared by the source
+     * of the type it is nested in, which is the one the inventory knows, so the
+     * comparison is against the part before the first {@code $}.
+     *
+     * @param reported
+     *            the field value, or {@code -} for none
+     * @param unknownTypes
+     *            the simple names the inventory has never seen
+     * @return the matching names, in the same shape the field arrived in
+     */
+    private static String unknownIn(String reported,
+            List<String> unknownTypes) {
+        if ("-".equals(reported) || unknownTypes.isEmpty()) {
+            return "";
+        }
+        List<String> matches = new ArrayList<>();
+        for (String name : reported.split("\\|")) {
+            int nested = name.indexOf('$');
+            String topLevel = nested < 0 ? name : name.substring(0, nested);
+            if (unknownTypes.contains(topLevel)) {
+                matches.add(name);
+            }
+        }
+        return String.join("|", matches);
     }
 
     private static int parseInt(String value) {

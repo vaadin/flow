@@ -155,50 +155,54 @@ final class DevLoopRedefiner {
         int duplicates = 0;
         Set<String> entities = new LinkedHashSet<>();
         Set<String> beans = new LinkedHashSet<>();
-        Set<String> newBeans = new LinkedHashSet<>();
+        Set<String> stereotypes = new LinkedHashSet<>();
         Set<String> uiClasses = new LinkedHashSet<>();
 
         for (String name : requested) {
             List<Class<?>> targets = loaded.getOrDefault(name, List.of());
             if (targets.isEmpty()) {
                 notLoaded.add(name);
-                // A class the JVM never loaded is normally nothing to answer
-                // for: there is no old copy to be stale, and the new bytes are
-                // simply what loads the first time something asks for it. A
-                // stereotype is the exception. Component scanning ran once, at
-                // startup, over the classes that existed then, so a type the
-                // context has never seen has no bean definition and never gets
-                // one - injecting it fails with NoSuchBeanDefinitionException,
-                // which names Spring and not the loop that reported Stable.
-                byte[] fresh = readClassBytes(classesDirs, name);
-                if (fresh != null && declaresSpringBean(fresh)) {
-                    newBeans.add(simple(name));
+            } else {
+                if (targets.size() > 1) {
+                    duplicates += targets.size() - 1;
                 }
-                continue;
+                // The class as the application has been running it, which
+                // answers for an annotation the change is taking away: a type
+                // that stops being an entity was still mapped by the metamodel
+                // the application started with.
+                classify(targets.get(0), entities, beans, uiClasses);
             }
-            if (targets.size() > 1) {
-                duplicates += targets.size() - 1;
-            }
-            Class<?> first = targets.get(0);
-            // The class as the application has been running it, which answers
-            // for an annotation the change is taking away: a type that stops
-            // being an entity was still mapped by the metamodel the application
-            // started with.
-            classify(first, entities, beans, uiClasses);
             byte[] bytes = readClassBytes(classesDirs, name);
             if (bytes == null) {
+                if (targets.isEmpty()) {
+                    // Neither loaded here nor on this search path, so there is
+                    // nothing to redefine and nothing to answer for.
+                    continue;
+                }
                 return "ERR kind=missing-class-file searched="
                         + classesDirs.size() + " message=" + name;
             }
             // And the class the JVM is about to be given. A type that is only
-            // now being made an entity is not one yet in the loop above, and
-            // Hibernate mapped neither version: the metamodel and the schema
-            // were fixed at startup. Asked of the bytes rather than of the
-            // class after the redefine, because the loaded class is not a
+            // now being made an entity is not one yet in the classify above,
+            // and Hibernate mapped neither version: the metamodel and the
+            // schema were fixed at startup. Asked of the bytes rather than of
+            // the class after the redefine, because the loaded class is not a
             // reliable witness to what it has just been given - see
             // declaresEntity.
             if (declaresEntity(bytes)) {
                 entities.add(simple(name));
+            }
+            // Reported for every requested class rather than only for the ones
+            // this JVM has not loaded, and deliberately: whether the
+            // application ever *had* this class is the daemon's question, not
+            // this one's. HotswapAgent watches the output directory on its own
+            // schedule and defines a new class when it sees one, so "not
+            // loaded here" is a race, and losing it would report a brand-new
+            // bean as live. What the bytes say is not a race, and the daemon
+            // holds the inventory that says which of these the running
+            // application never had.
+            if (declaresSpringBean(bytes)) {
+                stereotypes.add(simple(name));
             }
             for (Class<?> target : targets) {
                 definitions.add(new ClassDefinition(target, bytes));
@@ -270,9 +274,9 @@ final class DevLoopRedefiner {
         return "OK redefined=" + definitions.size() + " notLoaded="
                 + notLoaded.size() + " dupes=" + duplicates + " completed="
                 + completed + " pageReload=" + pageReload + " entities="
-                + join(entities) + " beans=" + join(beans) + " newBeans="
-                + join(newBeans) + " proxied=" + join(proxied) + " structural="
-                + join(structural) + " ui=" + join(uiClasses)
+                + join(entities) + " beans=" + join(beans) + " stereotypes="
+                + join(stereotypes) + " proxied=" + join(proxied)
+                + " structural=" + join(structural) + " ui=" + join(uiClasses)
                 + " frontendImports=" + join(frontend) + " hotswapAgent="
                 + hotswapAgentLoaded() + " redefineMs=" + redefineMs
                 + " hotswapMs=" + hotswapMs;
@@ -765,19 +769,17 @@ final class DevLoopRedefiner {
      * needed, and the cost of a false negative is {@code Stable} over a mapping
      * the application never had.
      */
-    private static boolean declaresEntity(byte[] bytes) {
-        // ISO-8859-1 maps every byte to the char of the same value, so a
-        // substring search over it is an exact byte search - and a descriptor
-        // is ASCII, which the class file's modified UTF-8 encodes unchanged.
-        String constants = new String(bytes, StandardCharsets.ISO_8859_1);
-        return ENTITY_DESCRIPTORS.stream().anyMatch(constants::contains);
+    static boolean declaresEntity(byte[] bytes) {
+        return declares(bytes, ENTITY_DESCRIPTORS);
     }
 
     /**
-     * The stereotypes that make a class a bean, as they are spelled in a class
-     * file. {@code @RestController} is here because it is a {@code @Controller}
-     * through a meta-annotation the constant pool of the annotated class does
-     * not mention.
+     * The stereotypes that register a bean, as they are spelled in a class
+     * file. {@code @RestController} and the two advice annotations are listed
+     * in their own right because each is a {@code @Component} through a
+     * meta-annotation that the annotated class's own constant pool does not
+     * mention - see {@link #declaresSpringBean} for the ones that cannot be
+     * listed.
      */
     private static final List<String> BEAN_DESCRIPTORS = List.of(
             "Lorg/springframework/stereotype/Component;",
@@ -785,6 +787,8 @@ final class DevLoopRedefiner {
             "Lorg/springframework/stereotype/Repository;",
             "Lorg/springframework/stereotype/Controller;",
             "Lorg/springframework/web/bind/annotation/RestController;",
+            "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
+            "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
             "Lorg/springframework/context/annotation/Configuration;");
 
     /**
@@ -793,16 +797,36 @@ final class DevLoopRedefiner {
      * <p>
      * This is the question {@link #isSpringBean} cannot answer: it reports what
      * the application has been running with, and the class this is asked about
-     * is one the application has never run at all. The same reading of the
-     * constant pool as {@link #declaresEntity}, and the same trade: a
-     * descriptor in the pool is not proof that the annotation is on the class,
-     * so this over-reports rather than under-reports. A false positive costs a
-     * restart that was not needed; a false negative reports {@code Stable} over
-     * a bean the context does not have.
+     * is one the application has never run at all.
+     * <p>
+     * It errs in both directions, unlike {@link #declaresEntity}, and the
+     * asymmetry is worth knowing before trusting the answer. A descriptor in
+     * the constant pool is not proof that the annotation is on the class - it
+     * could sit on a member, or be a type the class merely mentions - which
+     * costs a restart that was not needed. In the other direction, a stereotype
+     * composed through a meta-annotation is invisible: a project's own
+     * {@code @MyService}, itself annotated {@code @Service}, puts only
+     * {@code @MyService} in this class's pool, and the annotation type whose
+     * pool would say the rest is a separate class file. The list above names
+     * the composed stereotypes Spring itself ships; a project's own are a
+     * restart its author still has to ask for, and the same limit as
+     * {@link #hasAnnotation}, which resolves one level of meta-annotation and
+     * no more.
      */
     static boolean declaresSpringBean(byte[] bytes) {
+        return declares(bytes, BEAN_DESCRIPTORS);
+    }
+
+    /**
+     * Whether any of these annotation descriptors appears in the class file's
+     * constant pool.
+     */
+    private static boolean declares(byte[] bytes, List<String> descriptors) {
+        // ISO-8859-1 maps every byte to the char of the same value, so a
+        // substring search over it is an exact byte search - and a descriptor
+        // is ASCII, which the class file's modified UTF-8 encodes unchanged.
         String constants = new String(bytes, StandardCharsets.ISO_8859_1);
-        return BEAN_DESCRIPTORS.stream().anyMatch(constants::contains);
+        return descriptors.stream().anyMatch(constants::contains);
     }
 
     /**

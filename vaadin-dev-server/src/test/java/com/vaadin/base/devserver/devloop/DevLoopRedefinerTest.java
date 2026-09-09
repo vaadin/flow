@@ -186,25 +186,31 @@ class DevLoopRedefinerTest {
     }
 
     @Test
-    void declaresSpringBean_readsTheStereotypeOfAClassNothingHasLoaded()
+    void declaresFromBytes_answersForAClassNothingHasLoaded()
             throws IOException {
-        // The only question that can be asked about a new bean, because there
-        // is no loaded class to ask: a stereotype gets no bean definition from
-        // a context that scanned before the class existed.
+        // The only questions that can be asked about a class the JVM has never
+        // loaded, and both have to be, because a context that scanned before
+        // the class existed has no bean definition for it and a metamodel
+        // built then maps no entity that appeared afterwards.
         byte[] plain = classBytes(NothingDeclared.class);
 
         assertFalse(DevLoopRedefiner.declaresSpringBean(plain), "plain class");
+        assertFalse(DevLoopRedefiner.declaresEntity(plain), "plain class");
         // Spelled out rather than compiled in: Spring is not on this module's
         // classpath, and what the check reads is the descriptor javac writes
         // into the constant pool for @Service.
         assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
                 "Lorg/springframework/stereotype/Service;")));
-        // @RestController is a @Controller through a meta-annotation, which the
-        // annotated class's own constant pool never mentions.
+        // @RestController is a @Component through a meta-annotation, which the
+        // annotated class's own constant pool never mentions, so it counts only
+        // because it is listed in its own right.
         assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
                 "Lorg/springframework/web/bind/annotation/RestController;")));
-        // Somebody else's escalation, and it must not be reported as this one.
+        // The two escalate on separate fields and carry separate reasons, so
+        // neither may answer for the other.
         assertFalse(DevLoopRedefiner.declaresSpringBean(
+                withConstant(plain, "Ljakarta/persistence/Entity;")));
+        assertTrue(DevLoopRedefiner.declaresEntity(
                 withConstant(plain, "Ljakarta/persistence/Entity;")));
     }
 

@@ -384,17 +384,29 @@ its answer rather than claiming success.
   old one. This includes Spring Data repositories, which are bare interfaces with
   no annotation to spot them by, so the connector keys on the loaded proxy
   instead.
-- **A Spring bean the context has never seen must restart too.** Component
-  scanning runs once, at startup, over the classes that existed then, and HA's
-  Spring plugins that would rescan are disabled (below) — so a class that is
-  only now being given `@Component`, `@Service`, `@Repository`, `@Controller`,
-  `@RestController` or `@Configuration` gets no bean definition, and the first
-  injection point fails with `NoSuchBeanDefinitionException` naming Spring
-  rather than the loop. It is the one escalation with no redefine behind it:
-  the class was never loaded, so there is nothing to swap and every signal read
-  off a loaded class is empty. The connector reads the stereotype out of the
-  compiled bytes of each requested class the JVM does not have, for the same
-  reason `@Entity` is read that way, and reports it as `newBeans=`.
+- **A bean or an entity the application has never seen must restart too.**
+  Component scanning runs once, at startup, over the classes that existed then,
+  and HA's Spring plugins that would rescan are disabled (below) — so a class
+  that is only now being given `@Component`, `@Service`, `@Repository`,
+  `@Controller`, `@RestController`, `@ControllerAdvice`,
+  `@RestControllerAdvice` or `@Configuration` gets no bean definition, and the
+  first injection point fails with `NoSuchBeanDefinitionException` naming
+  Spring rather than the loop. A brand-new `@Entity` is in exactly the same
+  position against a metamodel and a schema fixed at startup. It is the one
+  escalation with no redefine behind it: the class was never loaded, so there
+  is nothing to swap and every signal read off a loaded class is empty. It
+  takes both sides to say so, and deliberately: `REDEFINE` answers which of
+  the change-set's classes carry a stereotype (`stereotypes=`, read out of the
+  compiled bytes — the same reading `@Entity` already needed), and the
+  daemon's own inventory answers which of them the running application never
+  had. **Asking the app whether it has loaded the class does not work**:
+  HotswapAgent watches the output directory on its own schedule and defines a
+  new class when it sees one, so that answer flips between applies — and a
+  defined class is still not a bean definition. The inventory is re-seeded
+  from disk at every registration, so it does not flip. A stereotype composed
+  through a project's own meta-annotation is the known gap: only the custom
+  annotation is in the class's constant pool, so that one is still a restart
+  to ask for by hand.
 - **Hot-swap coverage differs sharply between stock HotSpot and a JBR.** Only a
   JBR gets `-XX:+AllowEnhancedClassRedefinition`; on stock HotSpot a structural
   change is simply rejected and escalates. A project needing a Java version no

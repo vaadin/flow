@@ -777,6 +777,33 @@ final class Compile {
         }).map(Reactor.Module::name).toList();
     }
 
+    /**
+     * The top-level type names among these sources that the running application
+     * has never had, by simple name.
+     * <p>
+     * The inventory answers this and nothing in the application can. Asking the
+     * app which classes it has loaded looks like the same question and is not:
+     * HotswapAgent watches the output directory on its own schedule and defines
+     * a new class when it sees one, so by the time a reply is composed the
+     * class may well be loaded - and a class being loaded is not a bean
+     * definition, an entity mapping or anything else the application built
+     * while it was starting. {@link #applied} is cleared and re-seeded from
+     * disk every time an app registers, so a source missing from it is one that
+     * was not there when this application started, whatever has happened to its
+     * class since.
+     *
+     * @param sources
+     *            the sources to ask about
+     * @return the simple names of the types those sources declare, sorted
+     */
+    List<String> typesUnknownToTheApp(List<Path> sources) {
+        return sources.stream().filter(source -> !applied.containsKey(source))
+                .map(source -> {
+                    String file = source.getFileName().toString();
+                    return file.substring(0, file.length() - ".java".length());
+                }).sorted(Comparator.naturalOrder()).toList();
+    }
+
     /** Records that these sources are now live in the running JVM. */
     void markSourcesApplied(List<Path> sources) {
         for (Path source : sources) {

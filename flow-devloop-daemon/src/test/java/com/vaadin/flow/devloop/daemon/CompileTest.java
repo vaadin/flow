@@ -238,6 +238,34 @@ class CompileTest {
     }
 
     @Test
+    void typesUnknownToTheApp_namesOnlyWhatTheInventoryWasNotSeededWith()
+            throws IOException {
+        // The signal a new bean or entity is escalated on. It has to come from
+        // the inventory: the application's own answer to "have you loaded
+        // this?" turns yes as soon as HotswapAgent's watcher notices the new
+        // class file, and a loaded class is still not a bean definition.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Compile compile = new Compile(project(app));
+        Path known = source(app, "Main");
+        compile.seedFromDisk();
+        Path added = known.resolveSibling("Added.java");
+        Files.writeString(added, """
+                package app;
+                public class Added { }
+                """);
+
+        assertEquals(List.of("Added"),
+                compile.typesUnknownToTheApp(List.of(known, added)));
+        // And after the restart that applied it, it is one of the app's own.
+        compile.seedFromDisk();
+        assertTrue(
+                compile.typesUnknownToTheApp(List.of(known, added)).isEmpty());
+    }
+
+    @Test
     void stale_reportsADeletedSourceAgainstTheInventory() throws IOException {
         // A walk only sees what is there, so the fingerprint map is what
         // answers: a deleted route or bean would otherwise be a silent "no

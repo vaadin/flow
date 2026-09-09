@@ -93,25 +93,32 @@ class TransactionEngineTest {
     }
 
     @Test
-    void blockedReason_escalatesForABeanTheRunningContextHasNeverSeen() {
-        // The one blocker with no redefine behind it: the class was never
-        // loaded, so nothing was swapped and every other field is empty. Read
-        // as "nothing to report", the apply answers Stable and the view that
+    void blockedReason_escalatesForABeanTheRunningApplicationHasNeverHad() {
+        // Two half-answers make this verdict: the app says which classes carry
+        // a stereotype, the inventory says which of them it never had. Read
+        // from the reply alone the apply answers Stable, and the view that
         // injects the new bean fails with Spring's own exception instead.
-        Optional<String> blocker = TransactionEngine.blockedReason(Connector
-                .fields("OK redefined=1 beans=- newBeans=Extra structural=-"));
+        String reply = "OK redefined=1 beans=- stereotypes=Extra|TaskService"
+                + " structural=-";
 
         assertEquals(
                 Optional.of("new Spring bean (Extra): component scanning ran"
                         + " at startup, so the running context has no"
                         + " definition for it"),
-                blocker);
-        // And a change-set with no new bean in it is still a hot swap.
+                TransactionEngine.blockedReason(Connector.fields(reply),
+                        List.of("Extra")));
+        // The bean the app started with is named in the same field and must
+        // not escalate: a method-body change inside it is exactly what the
+        // runtime leg exists to swap.
         assertTrue(TransactionEngine
-                .blockedReason(
-                        Connector.fields("OK redefined=1 newBeans=- entities=-"
-                                + " structural=- frontendImports=-"))
-                .isEmpty());
+                .blockedReason(Connector.fields(reply), List.of()).isEmpty());
+        // A nested type is reported under its own name and declared by the
+        // source of the type it is nested in, which is the name the inventory
+        // knows.
+        assertTrue(TransactionEngine
+                .blockedReason(Connector.fields("OK stereotypes=Extra$Inner"
+                        + " entities=- structural=-"), List.of("Extra"))
+                .isPresent());
     }
 
     @Test
