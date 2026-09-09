@@ -164,12 +164,21 @@ class JvmTest {
     }
 
     @Test
-    void theDefaultIsTheDevelopersOwnHomeDirectory() {
-        // The no-argument overload is the one the daemon calls, so what it
-        // passes has to be the real user home and not, say, the working
-        // directory.
-        assertEquals(Jvm.homes(Path.of(System.getProperty("user.home", "."))),
-                Jvm.homes());
+    void theDefaultIsTheHomeTheJvmReports() throws IOException {
+        // The no-argument overload is the one the daemon calls, so the
+        // directories have to be resolved against the user's home rather than
+        // against the working directory, which is wherever the CLI was run
+        // from.
+        Path planted = Files.createDirectories(
+                userHome.resolve(".vaadin").resolve("jdk").resolve("jbr-25"));
+        String original = System.getProperty("user.home");
+        System.setProperty("user.home", userHome.toString());
+        try {
+            assertTrue(Jvm.homes().contains(planted),
+                    () -> "expected " + planted + " among " + Jvm.homes());
+        } finally {
+            System.setProperty("user.home", original);
+        }
     }
 
     /**
