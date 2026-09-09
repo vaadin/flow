@@ -28,6 +28,20 @@ function makeRegistry(
   return { registry, sends: () => sends };
 }
 
+// Records the DOM events of the given type dispatched on the document while a
+// case runs.
+function observe(type: string) {
+  const dispatched: Event[] = [];
+  const listener = (event: Event): void => {
+    dispatched.push(event);
+  };
+  document.addEventListener(type, listener);
+  return {
+    dispatched,
+    stop: () => document.removeEventListener(type, listener)
+  };
+}
+
 describe('RequestResponseTracker', () => {
   it('tracks the active request and fires request-starting', () => {
     const { registry } = makeRegistry();
@@ -147,5 +161,34 @@ describe('RequestResponseTracker', () => {
     tracker.fireResponseHandlingStarted();
     expect(order).to.deep.equal(['first', 'third', 'late']);
     lateRemover!.remove();
+  });
+
+  // Issue #7369: the UIDL request lifecycle is exposed to plain JavaScript as
+  // DOM events on the document, so an application can block user input for the
+  // duration of a server round trip without recompiling the client engine. The
+  // events are dispatched from the tracker rather than from the XHR layer, so a
+  // round trip that goes over push is covered as well.
+  it('dispatches vaadin-request-start on the document when a request starts', () => {
+    const { registry } = makeRegistry();
+    const tracker = new RequestResponseTracker(registry);
+    const events = observe('vaadin-request-start');
+    try {
+      tracker.startRequest();
+    } finally {
+      events.stop();
+    }
+    expect(events.dispatched).to.have.length(1);
+  });
+
+  it('dispatches vaadin-request-received on the document when response handling starts', () => {
+    const { registry } = makeRegistry();
+    const tracker = new RequestResponseTracker(registry);
+    const events = observe('vaadin-request-received');
+    try {
+      tracker.fireResponseHandlingStarted();
+    } finally {
+      events.stop();
+    }
+    expect(events.dispatched).to.have.length(1);
   });
 });

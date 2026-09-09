@@ -10,6 +10,8 @@ import { getScheduler } from '../../../../main/frontend/internal/client/Tracking
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import type { ResponseHandlingEndedEventHandler } from '../../../../main/frontend/internal/client/communication/ResponseHandlingEndedEvent';
+import { ResponseHandlingEndedEvent } from '../../../../main/frontend/internal/client/communication/ResponseHandlingEndedEvent';
 import { inertRegistry } from './flow/stateTreeTestRegistry';
 
 // A registry whose services are fakes but whose state tree is real: the fakes
@@ -21,6 +23,7 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
     startedRequests: 0,
     handled: [] as unknown[],
     polled: 0,
+    responseHandlingEnded: [] as ResponseHandlingEndedEventHandler[],
     events: [] as Array<{ nodeId: number; eventType: string; data: unknown }>
   };
   const tree = opts.tree ?? new StateTree(inertRegistry());
@@ -34,7 +37,11 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
     },
     RequestResponseTracker: {
       startRequest: () => log.startedRequests++,
-      hasActiveRequest: () => opts.activeRequest ?? false
+      hasActiveRequest: () => opts.activeRequest ?? false,
+      addResponseHandlingEndedHandler: (handler: ResponseHandlingEndedEventHandler) => {
+        log.responseHandlingEnded.push(handler);
+        return { remove: () => {} };
+      }
     },
     MessageHandler: {
       handleMessage: (json: unknown) => log.handled.push(json),
@@ -308,6 +315,67 @@ describe('ApplicationConnection', () => {
         if (savedVaadin !== undefined) {
           (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
         }
+      }
+    });
+  });
+  // Issue #7369: the third of the lifecycle events exposed to plain JavaScript.
+  // Unlike request-start and request-received, it is not one server round trip
+  // but the point where the engine has nothing left to do: the response has been
+  // applied, no follow-up request is in flight, and the deferred command queue
+  // has drained. That is the signal a splash screen or an input block waits for.
+  describe('all-request-processing-done event', () => {
+    // Records the DOM events of the given type dispatched on the document while
+    // a case runs.
+    function observe(type: string) {
+      const dispatched: Event[] = [];
+      const listener = (event: Event): void => {
+        dispatched.push(event);
+      };
+      document.addEventListener(type, listener);
+      return {
+        dispatched,
+        stop: () => document.removeEventListener(type, listener)
+      };
+    }
+
+    it('is dispatched when the engine is idle after a response', () => {
+      const fixture = makeRegistry({ initialUidlHandled: true });
+      new ApplicationConnection(fixture.registry);
+      const events = observe('vaadin-all-request-processing-done');
+      try {
+        // The connection listens for the end of response handling.
+        expect(fixture.log.responseHandlingEnded).to.have.length(1);
+        fixture.log.responseHandlingEnded.forEach((handler) => handler(new ResponseHandlingEndedEvent()));
+      } finally {
+        events.stop();
+      }
+      expect(events.dispatched).to.have.length(1);
+    });
+
+    it('is not dispatched while another request is still active', () => {
+      const fixture = makeRegistry({ initialUidlHandled: true, activeRequest: true });
+      new ApplicationConnection(fixture.registry);
+      const events = observe('vaadin-all-request-processing-done');
+      try {
+        fixture.log.responseHandlingEnded.forEach((handler) => handler(new ResponseHandlingEndedEvent()));
+      } finally {
+        events.stop();
+      }
+      expect(events.dispatched).to.be.empty;
+    });
+
+    it('is dispatched once the deferred command queue drains, not while work is queued', async () => {
+      const fixture = makeRegistry({ initialUidlHandled: true });
+      new ApplicationConnection(fixture.registry);
+      const events = observe('vaadin-all-request-processing-done');
+      try {
+        getScheduler().scheduleDeferred(() => {});
+        fixture.log.responseHandlingEnded.forEach((handler) => handler(new ResponseHandlingEndedEvent()));
+        // Still active: the deferred command has not run yet.
+        expect(events.dispatched).to.be.empty;
+        await waitUntil(() => events.dispatched.length === 1, 'the engine never reported that it had gone idle');
+      } finally {
+        events.stop();
       }
     });
   });
