@@ -147,6 +147,7 @@ jobs:
           echo "Building $VERSION" | tee -a $GITHUB_STEP_SUMMARY
           ./scripts/computeMatrix.js set-version --version="$VERSION"
       - name: Build and deploy the snapshot
+        id: deploy
         env:
           SNAPSHOT_USERNAME: ${{ secrets.SNAPSHOT_USERNAME }}
           SNAPSHOT_PASSWORD: ${{ secrets.SNAPSHOT_PASSWORD }}
@@ -179,18 +180,41 @@ jobs:
             exit 1
           fi
       - name: Comment the snapshot version on the pull request
+        # Runs after a failed deploy too. Otherwise the comment of an earlier
+        # run keeps announcing a published version while the commit that was
+        # meant to replace it never made it into the repository, with nothing
+        # on the pull request saying so. Skipped on a cancel, where the run
+        # that superseded this one is about to write the comment itself, and
+        # when there is no version yet either, where the run failed before it
+        # had anything to say about a snapshot.
+        if: ${{ !cancelled() && steps.version.outputs.version != '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
         run: |
           marker='<!-- flow-pr-snapshot -->'
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "$DEPLOY_OUTCOME" = success ]; then
+            heading='### 📦 Snapshot published'
+            status="\`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run]($run_url)).
+
+          Built without running tests. Look at the checks on this pull request before relying on it."
+          else
+            heading='### 🚫 Snapshot build failed'
+            status="\`$VERSION\` was not published: the build from ${_HEAD_SHA:0:7} failed ([run]($run_url)). Anything the repository already holds under that version is from an earlier commit."
+          fi
+          # The heredocs are written at the indentation of this block rather
+          # than of the branch they sit in, because their content is the
+          # comment body verbatim, delimiter included.
           cat > comment.md <<EOF
           $marker
-          ### 📦 Snapshot published
+          $heading
 
-          \`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})).
-
-          Built without running tests. Look at the checks on this pull request before relying on it.
+          $status
+          EOF
+          if [ "$DEPLOY_OUTCOME" = success ]; then
+          cat >> comment.md <<EOF
 
           Every new commit on this branch republishes it while the \`snapshot build\` label is there. Add \`-U\` to pick the newest build up.
 
@@ -219,10 +243,13 @@ jobs:
           Import \`flow-bom\` before \`vaadin-bom\` for it to win over the platform's Flow version.
           </details>
           EOF
+          fi
           # One comment per pull request, edited in place, so a series of pushes
-          # does not bury the pull request in notifications.
+          # does not bury the pull request in notifications. --jq runs once per
+          # page under --paginate, so the pages are narrowed to one id each and
+          # then to one overall - two of them would make the PATCH below a 404.
           existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
-            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty" | head -1)
           if [ -n "$existing" ]; then
             gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@comment.md
           else
