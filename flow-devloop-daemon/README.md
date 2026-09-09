@@ -166,6 +166,15 @@ from it rather than parsed out of text:
 The CLI adds `64` (usage), `70` (internal / daemon unreachable) and `77`
 (unauthorized) of its own.
 
+A transaction has one classification — the leg that decided the outcome — but a
+change-set can have two halves, and both are reported. A stylesheet and a Java
+file in one `apply` is classified `hot-reload` by the redefine that decided it,
+and prints its `hmr:` line as well: the push happened, and an apply that says
+nothing about it cannot be told from one that skipped it. That is why the push's
+own reply lives in `Transaction.pushDetail` rather than sharing
+`hotswapDetail` with the redefine, and why `--json` carries both
+(`resourcePush` beside `actionsTaken`).
+
 Two rules make the question answerable at all: **at most one transaction in
 flight**, and **supersede rather than queue** — a new `apply` cancels the
 in-flight one and proceeds with the accumulated change-set, because only the

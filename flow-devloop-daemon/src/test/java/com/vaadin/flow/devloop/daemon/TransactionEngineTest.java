@@ -30,8 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The engine itself needs a running app, so what is unit-tested here are the
  * verdicts it reaches without one: whether the dev server refused the change,
- * and whether the answer is still this transaction's to give. Everything else
- * is covered by {@code flow-tests/test-devloop}.
+ * whether the answer is still this transaction's to give, and how a finished
+ * transaction is rendered. Everything else is covered by
+ * {@code flow-tests/test-devloop}.
  */
 class TransactionEngineTest {
 
@@ -124,6 +125,58 @@ class TransactionEngineTest {
         tx.logErrors = List.of(VITE_ERROR);
 
         assertTrue(TransactionEngine.devServerFailure(tx).isEmpty());
+    }
+
+    @Test
+    void render_reportsThePushAsWellAsTheRedefineForAMixedChangeSet() {
+        // A stylesheet and a Java file in one apply: the Java verdict is what
+        // classifies the transaction, but the push happened too, and saying
+        // nothing about it reads exactly like a push that was skipped.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = mixedChange();
+
+        List<String> lines = engine.render(tx);
+
+        assertTrue(
+                lines.contains("hmr: 1 resource(s) copied, pushed 1"
+                        + " stylesheet(s) in place"),
+                () -> "the frontend half should be reported: " + lines);
+        assertTrue(
+                lines.contains("hot-reload: redefineClasses(1);"
+                        + " onHotswap completed=true"),
+                () -> "the Java half should be reported: " + lines);
+        // And the reply from the push is not lost to --json readers either.
+        assertTrue(
+                tx.json().contains(
+                        "\"resourcePush\":\"pushed 1 stylesheet(s) in place\""),
+                () -> "the push should be in the JSON: " + tx.json());
+    }
+
+    @Test
+    void render_saysNothingAboutHmrForAChangeSetWithNoFrontendHalf() {
+        // The line has to stay absent when there was no frontend work, or it
+        // becomes noise a reader cannot tell from a real push.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = mixedChange();
+        tx.resources = 0;
+        tx.pushDetail = "";
+
+        assertTrue(
+                engine.render(tx).stream()
+                        .noneMatch(line -> line.startsWith("hmr:")),
+                () -> "a Java-only change has no hmr line: "
+                        + engine.render(tx));
+    }
+
+    /** A stylesheet pushed and a class redefined, in one apply. */
+    private static TransactionEngine.Transaction mixedChange() {
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.outcome = TransactionEngine.Outcome.STABLE;
+        tx.classification = "hot-reload";
+        tx.resources = 1;
+        tx.pushDetail = "pushed 1 stylesheet(s) in place";
+        tx.hotswapDetail = "redefineClasses(1); onHotswap completed=true";
+        return tx;
     }
 
     private static TransactionEngine.Transaction frontendChange() {

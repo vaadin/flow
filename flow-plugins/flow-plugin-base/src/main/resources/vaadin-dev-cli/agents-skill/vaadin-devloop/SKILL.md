@@ -117,6 +117,7 @@ target/devloop/app.log, daemon.log          logs, under the target application
 | `hmr: N frontend file(s), applied by Vite (dev server up:…)` | Vite mode: the edit went live when you saved it |
 | `frontend → Failed` with `dev server: [vite] …` | Vite mode: Vite refused to compile the edit — exit `1`. Fix the file it names and re-apply; a restart cannot compile it either |
 | `hot-reload: redefineClasses(1); onHotswap completed=true` | Java hot-swapped, UI refreshed |
+| an `hmr:` line *and* a `hot-reload:` line | the change-set had both halves: the CSS was pushed and the class redefined |
 | `→ live, but no Vaadin component was redefined` | bytes are live; interact with the view or reload to see it. **Do not re-apply** |
 | `compiling → runtime → restarting → Stable` | the app restarted — reload the page |
 | `restart: classpath changed (...)` | a pom edit moved the app's classpath |

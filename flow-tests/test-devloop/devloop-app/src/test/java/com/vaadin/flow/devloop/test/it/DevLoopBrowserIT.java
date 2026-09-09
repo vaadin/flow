@@ -147,6 +147,30 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
     }
 
     @BrowserTest
+    void cssAndJavaInOneApply_reportThePushThatLandedInTheOpenPage() {
+        // The mixed change-set with a page to push into, which is the only
+        // place the push's own words can be checked: the Java verdict is what
+        // classifies the apply, and saying nothing about the stylesheet left
+        // looking at the page as the only way to tell a push that happened
+        // from one that was skipped.
+        String reloadMarker = markPage();
+
+        patch.replace(STYLESHEET, "row-gap: 12px;", "row-gap: 39px;");
+        patch.replace(VIEW, "\"Task List\"", "\"Tasks, mixed\"");
+        cli.run("apply").assertExitCode(0)
+                .assertOutputContains("hmr: 1 resource(s) copied, pushed 1"
+                        + " stylesheet(s) in place")
+                .assertOutputContains("hot-reload:");
+
+        new WebDriverWait(getDriver(), Duration.ofSeconds(30))
+                .until(driver -> "39px"
+                        .equals(computedStyle(".task-list-view", "rowGap")));
+        Assertions.assertEquals("Tasks, mixed", text("#title"));
+        Assertions.assertEquals(reloadMarker, currentMarker(),
+                "neither half of a mixed change-set may reload the page");
+    }
+
+    @BrowserTest
     void siblingModuleEdit_isVisibleOnceTheViewRendersAgain() {
         patch.replace(AbstractDevLoopIT.SHARED.resolve(
                 "src/main/java/com/vaadin/flow/devloop/test/shared/DueDateFormatter.java"),

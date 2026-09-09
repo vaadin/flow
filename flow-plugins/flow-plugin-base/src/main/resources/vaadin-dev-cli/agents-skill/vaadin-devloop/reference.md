@@ -12,6 +12,8 @@ hmr: 3 frontend file(s), applied by Vite (dev server up:57231)
                                                               ← Vite mode: Vite applied them on save
 hot-reload: redefineClasses(1); onHotswap completed=true      ← Java, hot-swapped, UI refreshed
   → live, but no Vaadin component was redefined ...            ← bytes are live; the page still shows the old render
+hmr: 1 resource(s) copied, pushed 1 stylesheet(s) in place    ← a change-set with both halves reports both:
+hot-reload: redefineClasses(1); onHotswap completed=true        the stylesheet was pushed and the class redefined
 compiling → runtime → restarting → Stable                     ← app restarted; reload the page
 restarting → Stable                                           ← restarted with nothing compiled
 restart: classpath changed (removed h2-2.3.232.jar)           ← a pom edit; a JVM cannot be given a new classpath

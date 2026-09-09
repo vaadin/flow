@@ -86,6 +86,12 @@ class DevLoopCssIT extends AbstractDevLoopIT {
         VaadinDevCli.Outcome outcome = cli.run("apply").assertExitCode(0);
 
         outcome.assertOutputContains("hot-reload:");
+        // Both halves, not only the one that classified the transaction: an
+        // apply that says nothing about the push reads exactly like one that
+        // skipped it, and the only way left to tell is to go and look at the
+        // page.
+        outcome.assertOutputContains("hmr:");
+        outcome.assertOutputContains("resource(s) copied");
         outcome.assertOutputDoesNotContain("restarting");
         assertTrue(fetch("/task-list.css").contains("55px"),
                 "the served stylesheet should hold the edited value");

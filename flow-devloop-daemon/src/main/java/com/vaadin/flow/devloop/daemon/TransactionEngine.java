@@ -87,6 +87,16 @@ final class TransactionEngine {
         volatile boolean superseded;
         volatile int duplicates;
         volatile String hotswapDetail = "";
+        /**
+         * What the resource push did, in the app's own words: a stylesheet
+         * pushed in place, a browser reload requested, or no browser to tell.
+         * <p>
+         * Its own field rather than sharing {@link #hotswapDetail}, because a
+         * change-set with both a stylesheet and a Java file runs both legs and
+         * the redefine's answer would overwrite the push's - leaving the apply
+         * silent about a push that had in fact happened.
+         */
+        volatile String pushDetail = "";
         volatile String escalation = "";
         volatile int resources;
         /** Classpath copies removed because their source is gone. */
@@ -154,6 +164,9 @@ final class TransactionEngine {
                     + ",\"classes\":" + Json.strings(classes)
                     + ",\"diagnostics\":" + Json.array(diag)
                     + ",\"actionsTaken\":\"" + Json.escape(hotswapDetail)
+                    // Beside actionsTaken rather than folded into it: a mixed
+                    // change-set did both, and one string can only say one.
+                    + "\",\"resourcePush\":\"" + Json.escape(pushDetail)
                     + "\",\"escalation\":"
                     + (escalation.isEmpty() ? "null"
                             : "\"" + Json.escape(escalation) + "\"")
@@ -1059,7 +1072,7 @@ final class TransactionEngine {
             }
             Map<String, String> fields = Connector.fields(reply.get());
             int pushed = parseInt(fields.get("pushed"));
-            tx.hotswapDetail = pushed > 0
+            tx.pushDetail = pushed > 0
                     ? "pushed " + pushed + " stylesheet(s) in place"
                     : "true".equals(fields.get("browserReload"))
                             ? "browser reload requested"
@@ -1457,7 +1470,9 @@ final class TransactionEngine {
     }
 
     /**
-     * What an {@code hmr} outcome actually did, as the clauses that apply.
+     * What the frontend half of a change actually did, as the clauses that
+     * apply - the whole answer for an {@code hmr} outcome, and the other half
+     * of one that a Java redefine classified as {@code hot-reload}.
      * <p>
      * Composed rather than templated because one apply can carry a classpath
      * resource, a theme stylesheet and a file the server reads from disk, and
@@ -1474,8 +1489,8 @@ final class TransactionEngine {
                     + " resource(s) removed from the classpath");
         }
         if ((tx.resources > 0 || tx.resourcesRemoved > 0)
-                && !tx.hotswapDetail.isEmpty()) {
-            clauses.add(tx.hotswapDetail);
+                && !tx.pushDetail.isEmpty()) {
+            clauses.add(tx.pushDetail);
         }
         if (tx.themeFiles > 0) {
             clauses.add(tx.themeFiles + " theme file(s) pushed in place");
@@ -1492,9 +1507,21 @@ final class TransactionEngine {
                     + " frontend file(s) served live, browser reloaded");
         }
         if (clauses.isEmpty()) {
-            return tx.resources + " resource(s) copied, " + tx.hotswapDetail;
+            return tx.resources + " resource(s) copied, " + tx.pushDetail;
         }
         return String.join(", ", clauses);
+    }
+
+    /**
+     * Whether this change-set had a frontend half at all, which is what decides
+     * whether {@link #hmrDetail} has anything to say.
+     * <p>
+     * Asked of the counts the legs actually set rather than of the change-set,
+     * so the line never appears for work that was not done.
+     */
+    private static boolean hasFrontendHalf(Transaction tx) {
+        return tx.resources > 0 || tx.resourcesRemoved > 0 || tx.themeFiles > 0
+                || tx.servedLive > 0 || "vite".equals(tx.frontendMode);
     }
 
     /**
@@ -1558,6 +1585,13 @@ final class TransactionEngine {
                 lines.add("hmr: " + hmrDetail(tx));
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
+                // Both halves of a mixed change-set, in the order the legs ran:
+                // the Java verdict is what classified the transaction, but the
+                // stylesheet was pushed all the same, and silence about that
+                // push reads exactly like a push that never happened.
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
                 lines.add("hot-reload: " + tx.hotswapDetail
                         + (tx.duplicates > 0 ? "; " + tx.duplicates
                                 + " duplicate class copy/copies also redefined"
