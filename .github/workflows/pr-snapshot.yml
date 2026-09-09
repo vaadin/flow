@@ -141,9 +141,17 @@ jobs:
         # publishes, and if that run fails, whoever resolves the version gets a
         # mixed set of modules with nothing saying so.
         run: |
-          mvn deploy -B -ntp -e -DskipTests -Drelease -Dmaven.javadoc.skip=false \
+          if ! mvn deploy -B -ntp -e -DskipTests -Drelease -Dmaven.javadoc.skip=false \
             -DdeployAtEnd=true \
-            -DaltDeploymentRepository=vaadin-snapshots::${MAVEN_SNAPSHOT_DEPLOY_URL}
+            -DaltDeploymentRepository=vaadin-snapshots::${MAVEN_SNAPSHOT_DEPLOY_URL}; then
+            # A refused upload arrives as a stack trace ending in an HTTP status,
+            # a couple of hundred lines after the last thing that was built, and
+            # says nothing about which of the three settings is wrong. It is the
+            # failure to expect while a repository is being taken into use.
+            echo "🚫 The snapshot build failed. A **403** or **401** at the end of the log means the build itself was fine and the upload was refused: check that **MAVEN_SNAPSHOT_DEPLOY_URL** is the repository's deploy endpoint rather than the address it is read from, and that **MAVEN_SNAPSHOT_DEPLOY_USERNAME** is allowed to deploy there." \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
       - name: Comment the snapshot version on the pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
