@@ -1423,7 +1423,7 @@ final class TransactionEngine {
      * where it always was; the continuations are indented like a quoted log
      * line, so a wrapped reason cannot be mistaken for a second reason.
      */
-    private static List<String> reasonRows(String reason) {
+    static List<String> reasonRows(String reason) {
         List<String> rows = new ArrayList<>();
         String rest = reason.strip();
         while (!rest.isEmpty()) {

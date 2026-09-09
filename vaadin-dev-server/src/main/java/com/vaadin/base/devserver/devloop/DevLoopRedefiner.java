@@ -649,7 +649,7 @@ final class DevLoopRedefiner {
      * {@code null} for one that does not live there - the dev server's root is
      * that folder, so nothing else has a URL on it.
      */
-    private static String relativeName(Path root, String file) {
+    static String relativeName(Path root, String file) {
         try {
             Path path = Paths.get(file).toAbsolutePath().normalize();
             if (!path.startsWith(root) || path.equals(root)) {
@@ -699,7 +699,7 @@ final class DevLoopRedefiner {
      * and never load-bearing: the refusal is the verdict, and a page whose
      * shape has moved still fails the apply - it just says so less precisely.
      */
-    private static String viteErrorMessage(String body, String url) {
+    static String viteErrorMessage(String body, String url) {
         int at = body.indexOf(VITE_ERROR_MESSAGE_KEY);
         if (at < 0) {
             return "the dev server could not compile " + url;

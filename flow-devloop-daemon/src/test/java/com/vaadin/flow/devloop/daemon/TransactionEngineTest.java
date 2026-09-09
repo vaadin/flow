@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -181,6 +182,40 @@ class TransactionEngineTest {
         tx.logErrors = List.of(VITE_ERROR);
 
         assertTrue(TransactionEngine.devServerFailure(tx).isEmpty());
+    }
+
+    @Test
+    void reasonRows_keepsTheFirstRowFlushAndIndentsTheRest() {
+        // A reason short enough to fit one row is one row, flush left, so it
+        // still reads as the line under the verdict and an eye looking for it
+        // finds it where it always was.
+        assertEquals(List.of("Transform failed"),
+                TransactionEngine.reasonRows("Transform failed"));
+
+        // A longer one wraps on a space; the continuation is indented like a
+        // quoted log line so it cannot be mistaken for a second reason.
+        String reason = "Transform failed with 1 error: [PARSE_ERROR] Expected"
+                + " a closing brace but found the end of the file instead,"
+                + " which usually means a brace above it was never opened";
+        List<String> rows = TransactionEngine.reasonRows(reason);
+
+        assertTrue(rows.size() > 1, rows.toString());
+        assertFalse(rows.get(0).startsWith(" "), rows.get(0));
+        assertTrue(rows.get(1).startsWith("    "), rows.get(1));
+        // Wrapping loses nothing: the rows, re-joined, are the reason back.
+        assertEquals(reason,
+                String.join(" ", rows).replaceAll("\\s+", " ").strip());
+    }
+
+    @Test
+    void reasonRows_stopsAtTheRowBudgetWithAnEllipsis() {
+        // A compiler can print a wall of text; a verdict quotes only so much of
+        // it before it says "...", the same cap a quoted log line gets.
+        String wall = ("word ".repeat(400)).strip();
+
+        List<String> rows = TransactionEngine.reasonRows(wall);
+
+        assertEquals("    ...", rows.get(rows.size() - 1));
     }
 
     private static TransactionEngine.Transaction frontendChange() {
