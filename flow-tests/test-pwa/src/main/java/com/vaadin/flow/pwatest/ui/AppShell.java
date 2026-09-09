@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.pwatest.ui;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 
+@StyleSheet("context://styles.css")
 @PWA(name = AppShell.PWA_NAME, shortName = AppShell.PWA_SHORT_NAME, themeColor = AppShell.THEME_COLOR, backgroundColor = AppShell.BG_COLOR, offlinePath = "offline.html", offlineResources = {
         "yes.png" })
 public class AppShell implements AppShellConfigurator {
