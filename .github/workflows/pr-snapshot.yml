@@ -31,7 +31,7 @@ env:
   # The repository the snapshot is published to. Public, so a variable rather
   # than a secret, which lets the pull request comment name it. Only the
   # credentials below are secret.
-  SNAPSHOT_DEPLOY_URL: ${{ vars.SNAPSHOT_DEPLOY_URL || 'https://maven.vaadin.com/vaadin-prereleases/' }}
+  MAVEN_SNAPSHOT_DEPLOY_URL: ${{ vars.MAVEN_SNAPSHOT_DEPLOY_URL || 'https://maven.vaadin.com/vaadin-prereleases/' }}
   _HEAD_REF: ${{ github.head_ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -59,11 +59,11 @@ jobs:
     steps:
       - name: Check secrets
         env:
-          SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.SNAPSHOT_DEPLOY_USERNAME }}
-          SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.SNAPSHOT_DEPLOY_PASSWORD }}
+          MAVEN_SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_USERNAME }}
+          MAVEN_SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_PASSWORD }}
         run: |
-          [ -z "$SNAPSHOT_DEPLOY_USERNAME" ] || [ -z "$SNAPSHOT_DEPLOY_PASSWORD" ] \
-            && echo "🚫 **SNAPSHOT_DEPLOY_USERNAME** / **SNAPSHOT_DEPLOY_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
+          [ -z "$MAVEN_SNAPSHOT_DEPLOY_USERNAME" ] || [ -z "$MAVEN_SNAPSHOT_DEPLOY_PASSWORD" ] \
+            && echo "🚫 **MAVEN_SNAPSHOT_DEPLOY_USERNAME** / **MAVEN_SNAPSHOT_DEPLOY_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -79,8 +79,8 @@ jobs:
           # Writes the settings.xml server entry the deploy below authenticates
           # with; the values are read from the environment at that point.
           server-id: vaadin-snapshots
-          server-username: SNAPSHOT_DEPLOY_USERNAME
-          server-password: SNAPSHOT_DEPLOY_PASSWORD
+          server-username: MAVEN_SNAPSHOT_DEPLOY_USERNAME
+          server-password: MAVEN_SNAPSHOT_DEPLOY_PASSWORD
       - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         # Before the version rewrite below, so that the key is hashed from the
         # poms as committed and the prefix key reaches what validation.yml and
@@ -121,8 +121,8 @@ jobs:
           ./scripts/computeMatrix.js set-version --version="$VERSION"
       - name: Build and deploy the snapshot
         env:
-          SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.SNAPSHOT_DEPLOY_USERNAME }}
-          SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.SNAPSHOT_DEPLOY_PASSWORD }}
+          MAVEN_SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_USERNAME }}
+          MAVEN_SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_PASSWORD }}
         # -Drelease leaves the flow-tests modules out of the reactor: they are
         # never published (they set maven.deploy.skip) and building them would
         # roughly double this job. maven.javadoc.skip turns the javadoc jars
@@ -142,7 +142,7 @@ jobs:
         run: |
           mvn deploy -B -ntp -e -DskipTests -Drelease -Dmaven.javadoc.skip=false \
             -DdeployAtEnd=true \
-            -DaltDeploymentRepository=vaadin-snapshots::${SNAPSHOT_DEPLOY_URL}
+            -DaltDeploymentRepository=vaadin-snapshots::${MAVEN_SNAPSHOT_DEPLOY_URL}
       - name: Comment the snapshot version on the pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -162,7 +162,7 @@ jobs:
           \`\`\`xml
           <repository>
             <id>vaadin-snapshots</id>
-            <url>$SNAPSHOT_DEPLOY_URL</url>
+            <url>$MAVEN_SNAPSHOT_DEPLOY_URL</url>
             <snapshots><enabled>true</enabled></snapshots>
           </repository>
 

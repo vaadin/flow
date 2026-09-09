@@ -110,9 +110,9 @@ Configuration:
 
 | Name | Kind | Purpose |
 |---|---|---|
-| `SNAPSHOT_DEPLOY_USERNAME` | secret | User the snapshot is deployed as. |
-| `SNAPSHOT_DEPLOY_PASSWORD` | secret | Its password or token. |
-| `SNAPSHOT_DEPLOY_URL` | variable (optional) | Repository to deploy to. Defaults to `https://maven.vaadin.com/vaadin-prereleases/`. A variable rather than a secret so the pull request comment can name it. |
+| `MAVEN_SNAPSHOT_DEPLOY_USERNAME` | secret | User the snapshot is deployed as. |
+| `MAVEN_SNAPSHOT_DEPLOY_PASSWORD` | secret | Its password or token. |
+| `MAVEN_SNAPSHOT_DEPLOY_URL` | variable (optional) | Repository to deploy to. Defaults to `https://maven.vaadin.com/vaadin-prereleases/`. A variable rather than a secret so the pull request comment can name it. |
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
