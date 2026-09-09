@@ -108,6 +108,10 @@ jobs:
       - name: Compute the snapshot version
         id: version
         run: |
+          # The default shell has -e but not pipefail, and the version below is
+          # read through a pipe: without this a failed mvn would be a silent
+          # empty string rather than a failed step.
+          set -o pipefail
           # Everything up to the last slash is a prefix like feature/, fix/ or
           # issues/ and is dropped, leaving the branch name itself as the
           # qualifier: fix/my-thing -> 25.4.my-thing-SNAPSHOT.
@@ -119,6 +123,17 @@ jobs:
           fi
           base=$(mvn -q -N -B -ntp org.apache.maven.plugins:maven-help-plugin:3.5.2:evaluate \
             -Dexpression=project.version -DforceStdout | tail -1 | sed 's/-SNAPSHOT$//')
+          # Anything else than a version means the lookup printed something
+          # unexpected. Publishing what that composes into would be worse than
+          # failing here: it deploys under a name nobody asked for.
+          case "$base" in
+            [0-9]*.[0-9]*) ;;
+            *)
+              echo "🚫 Read \`$base\` from the root pom instead of a version" \
+                | tee -a $GITHUB_STEP_SUMMARY
+              exit 1
+              ;;
+          esac
           echo "version=$base.$qualifier-SNAPSHOT" >> $GITHUB_OUTPUT
       - name: Set the snapshot version
         env:

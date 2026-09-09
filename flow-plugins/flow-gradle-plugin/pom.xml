@@ -121,14 +121,28 @@
   </build>
 
   <profiles>
+    <!-- Gradle's build task runs the unit tests, so a Maven skip flag stopped
+         at Maven and this module went on testing for a minute in a build that
+         had asked for no tests. Excluding the task carries the flag across.
+         Two profiles because profile activation takes one property, and both
+         flags are in use: -DskipTests and -Dmaven.test.skip=true. -->
     <profile>
-      <!-- Gradle's build task runs the unit tests, so -DskipTests stopped at
-           Maven and this module went on testing for a minute in a build that
-           had asked for no tests. Excluding the task carries the flag across. -->
       <id>skip-tests</id>
       <activation>
         <property>
           <name>skipTests</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <gradle.skipped.task>test</gradle.skipped.task>
+      </properties>
+    </profile>
+    <profile>
+      <id>maven-test-skip</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
           <value>true</value>
         </property>
       </activation>
