@@ -81,7 +81,9 @@ import java.lang.annotation.Target;
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
  * a themable element is registered using the {@code registerStyles} function
  * from {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
- * added to the &lt;style&gt; element inside the module template.*
+ * added to the &lt;style&gt; element inside the module template. The target
+ * custom element must implement {@code ThemableMixin}; otherwise the CSS is
+ * registered but is not applied to that element.
  *
  * </ul>
  * <p>
@@ -137,6 +139,11 @@ public @interface CssImport {
     /**
      * The tag name of the themable element that the generated 'dom-module' will
      * target.
+     * <p>
+     * The target must implement {@code ThemableMixin}
+     * ({@code vaadin-themable-mixin}). {@code registerStyles} only applies to
+     * those elements. A custom element without the mixin does not pick up this
+     * CSS.
      *
      * @return the themable element.
      *

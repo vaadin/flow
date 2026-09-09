@@ -283,6 +283,11 @@ class JwtStatelessAuthenticationTest {
                 public boolean isCustomWebIcon(HttpServletRequest request) {
                     return false;
                 }
+
+                @Override
+                public boolean isPwaResource(HttpServletRequest request) {
+                    return false;
+                }
             };
         }
 
