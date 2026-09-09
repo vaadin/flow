@@ -124,6 +124,12 @@ public @interface CssImport {
      * The 'id' of a module to include in the generated 'custom-style'.
      *
      * @return the include value.
+     *
+     * @deprecated The generated 'custom-style' relies on the legacy Polymer
+     *             styling mechanism. Component styling can be done entirely
+     *             with normal "light DOM" CSS: drop this attribute and put the
+     *             rules that were pulled in from the included module into the
+     *             CSS file given as {@link #value()}.
      */
     @Deprecated(since = "25.0")
     String include() default "";
@@ -132,6 +138,11 @@ public @interface CssImport {
      * The 'id' of the new 'dom-module' created.
      *
      * @return the id.
+     *
+     * @deprecated The generated 'dom-module' relies on the legacy Polymer
+     *             styling mechanism. Component styling can be done entirely
+     *             with normal "light DOM" CSS: drop this attribute and import
+     *             the CSS file given as {@link #value()} as plain CSS.
      */
     @Deprecated(since = "25.0")
     String id() default "";

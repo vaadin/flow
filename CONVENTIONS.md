@@ -175,16 +175,7 @@ Use Java text blocks for multi-line strings instead of string concatenation.
 
 ## Commit & PR Hygiene
 
-Prefix commit messages with the type: `feat:`, `fix:`, `test:`, `refactor:`,
-`chore:`, `docs:`, `ci:`. Use `test:` when the change only touches tests, and
-add `!` after the prefix for a breaking change (`chore!:`).
-
-Add the affected module or area as a scope when it narrows the message
-usefully — `fix(flow-client):`, `feat(hilla):`, `chore(deps):`. The scope is
-optional; a bare `fix:` is fine for changes that span modules.
-
-Add `Fixes #issuenumber` to the commit message when the commit resolves an
-issue in this repository.
-
-Open pull requests as drafts, and remind the author to self-review before
-marking them ready.
+The commit message format, the shape of a pull request description and what to
+check before opening a PR live in
+[`.claude/skills/commit-and-pr/SKILL.md`](.claude/skills/commit-and-pr/SKILL.md).
+Read it before committing or opening a pull request.

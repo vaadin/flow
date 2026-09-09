@@ -84,7 +84,8 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * @param limit
      *            fetched item count
      * @param sortOrders
-     *            sorting order for fetching; used for sorting backends
+     *            sorting order for fetching; used for sorting backends; can be
+     *            <code>null</code>, which is treated as an empty list
      * @param inMemorySorting
      *            comparator for sorting in-memory data
      * @param filter
@@ -110,7 +111,8 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * @param limit
      *            fetched item count
      * @param sortOrders
-     *            sorting order for fetching; used for sorting backends
+     *            sorting order for fetching; used for sorting backends; can be
+     *            <code>null</code>, which is treated as an empty list
      * @param inMemorySorting
      *            comparator for sorting in-memory data
      * @param filter
