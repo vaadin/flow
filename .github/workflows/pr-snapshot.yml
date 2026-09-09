@@ -148,7 +148,7 @@ jobs:
             # a couple of hundred lines after the last thing that was built, and
             # says nothing about which of the three settings is wrong. It is the
             # failure to expect while a repository is being taken into use.
-            echo "🚫 The snapshot build failed. A **403** or **401** at the end of the log means the build itself was fine and the upload was refused: check that **MAVEN_SNAPSHOT_DEPLOY_URL** is the repository's deploy endpoint rather than the address it is read from, and that **MAVEN_SNAPSHOT_DEPLOY_USERNAME** is allowed to deploy there." \
+            echo "🚫 The snapshot build failed. A **401** or **403** at the end of the log means the build itself was fine and the upload was refused: a 401 is usually a wrong or expired **MAVEN_SNAPSHOT_DEPLOY_PASSWORD**, a 403 means **MAVEN_SNAPSHOT_DEPLOY_USERNAME** is not allowed to deploy there, and either can also be **MAVEN_SNAPSHOT_DEPLOY_URL** pointing at the address the repository is read from rather than its deploy endpoint." \
               | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
