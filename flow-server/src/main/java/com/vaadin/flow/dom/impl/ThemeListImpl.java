@@ -150,10 +150,20 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "A group theme name binding is already active");
         }
 
+        List<String> initialNames = names.peek();
+        if (initialNames != null) {
+            // Validate here as well so that an unusable name in the value the
+            // binding starts from is reported at the call site. A name that
+            // only a later value introduces is validated by the effect below,
+            // and is reported the way any other failure of an effect is.
+            initialNames.stream().filter(ThemeListImpl::isThemeName)
+                    .forEach(this::validate);
+        }
+
         SignalBinding<List<String>> binding = new SignalBinding<>();
         Set<String> previousNames = new HashSet<>();
         @SuppressWarnings("unchecked")
-        List<String>[] previousValue = new List[] { names.peek() };
+        List<String>[] previousValue = new List[] { initialNames };
         Element ownerElement = Element.get(element.getNode());
 
         ElementEffect.effect(ownerElement, ctx -> {
@@ -161,7 +171,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
             Set<String> newNames = new HashSet<>();
             if (signalNames != null) {
                 for (String name : signalNames) {
-                    if (name != null && !name.isEmpty()) {
+                    if (isThemeName(name)) {
+                        validate(name);
                         newNames.add(name);
                     }
                 }
@@ -330,6 +341,19 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public String toString() {
         return readThemesFromAttribute().toString();
+    }
+
+    /**
+     * Checks whether the given value of a bound list of theme names denotes a
+     * theme name at all. A group binding ignores {@code null} and empty values
+     * rather than rejecting them.
+     *
+     * @param themeName
+     *            the value to check
+     * @return {@code true} if the value denotes a theme name
+     */
+    private static boolean isThemeName(String themeName) {
+        return themeName != null && !themeName.isEmpty();
     }
 
     /**

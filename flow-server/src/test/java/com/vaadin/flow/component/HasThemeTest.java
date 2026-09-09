@@ -26,6 +26,7 @@ import com.vaadin.flow.dom.ThemeList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasThemeTest {
@@ -164,6 +165,16 @@ class HasThemeTest {
         assertThemes(component, "foo", "bar");
         component.addThemeNames("baz1", "baz2");
         assertThemes(component, "foo", "bar", "baz1", "baz2");
+        component.addThemeNames("space separated");
+        assertThemes(component, "foo", "bar", "baz1", "baz2", "space",
+                "separated");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addThemeNames("ok", null),
+                "A null theme name should be rejected");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addThemeNames(" "),
+                "A blank theme name should be rejected");
     }
 
     @Test
@@ -179,6 +190,16 @@ class HasThemeTest {
 
         component.removeThemeNames("bar", "foo2", "foo");
         assertThemes(component, "baz1", "bar1");
+
+        component.removeThemeNames("baz1 bar1");
+        assertThemes(component);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> component.removeThemeNames("ok", null),
+                "A null theme name should be rejected");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.removeThemeNames(" "),
+                "A blank theme name should be rejected");
     }
 
     private void assertThemes(HasThemeTest.HasThemeComponent c,
