@@ -872,6 +872,11 @@ public final class VaadinSecurityConfigurer
             // redirect loop that hides the resource that was actually blocked.
             // Respond with 401 Unauthorized instead, so that the browser
             // reports the failing resource.
+            //
+            // The status is 401 and not 404: this entry point is reached from
+            // the authorization decision, before any resource lookup, so a
+            // denied path answers the same whether the resource exists or not,
+            // and reporting it as missing would name the wrong cause.
             configurer.defaultAuthenticationEntryPointFor(
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     HandlerHelper::isNonHtmlInitiatedRequest);
