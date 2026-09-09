@@ -118,7 +118,7 @@ jobs:
             exit 1
           fi
           base=$(mvn -q -N -B -ntp org.apache.maven.plugins:maven-help-plugin:3.5.2:evaluate \
-            -Dexpression=project.version -DforceStdout | sed 's/-SNAPSHOT$//')
+            -Dexpression=project.version -DforceStdout | tail -1 | sed 's/-SNAPSHOT$//')
           echo "version=$base.$qualifier-SNAPSHOT" >> $GITHUB_OUTPUT
       - name: Set the snapshot version
         env:
