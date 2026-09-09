@@ -241,20 +241,27 @@ final class Jvm {
 
     /**
      * Where JVMs are looked for: the directory JetBrains IDEs download runtimes
-     * into, plus whatever the environment already points at.
+     * into, the one Vaadin's own tooling installs into, plus whatever the
+     * environment already points at.
      */
     static List<Path> homes() {
+        return homes(Path.of(System.getProperty("user.home", ".")));
+    }
+
+    /**
+     * As {@link #homes()}, over a given home directory, which is how this is
+     * tested: the answer must not depend on what the developer happens to have
+     * installed.
+     */
+    static List<Path> homes(Path userHome) {
         List<Path> homes = new ArrayList<>();
-        Path jdks = Path.of(System.getProperty("user.home"), ".jdks");
-        if (Files.isDirectory(jdks)) {
-            try (Stream<Path> stream = Files.list(jdks)) {
-                stream.filter(Files::isDirectory).forEach(homes::add);
-            } catch (IOException e) {
-                // An unreadable ~/.jdks leaves the environment's JVMs, and
-                // ultimately this one: never a reason to fail a launch.
-                homes.clear();
-            }
-        }
+        installsUnder(userHome.resolve(".jdks"), homes);
+        // Where the Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse put
+        // the JetBrains Runtime they offer to download - so a developer who
+        // took that offer has exactly the JVM this loop wants, and skipping
+        // the directory would cost them enhanced class redefinition for the
+        // whole session while a JBR sat on disk.
+        installsUnder(userHome.resolve(".vaadin").resolve("jdk"), homes);
         for (String variable : List.of("JAVA_HOME", "JDK_HOME")) {
             String value = System.getenv(variable);
             if (value != null && !value.isBlank()) {
@@ -262,6 +269,20 @@ final class Jvm {
             }
         }
         return homes;
+    }
+
+    /** Every install directly under a directory JVMs are installed into. */
+    private static void installsUnder(Path parent, List<Path> homes) {
+        if (!Files.isDirectory(parent)) {
+            return;
+        }
+        try (Stream<Path> stream = Files.list(parent)) {
+            stream.filter(Files::isDirectory).forEach(homes::add);
+        } catch (IOException e) {
+            // An unreadable directory leaves the other candidates, the
+            // environment's JVMs, and ultimately this one: never a reason to
+            // fail a launch.
+        }
     }
 
     /** The JVM the daemon itself runs on, which always clears the floor. */

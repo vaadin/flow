@@ -40,6 +40,9 @@ class JvmTest {
     @TempDir
     private Path jdks;
 
+    @TempDir
+    private Path userHome;
+
     private final List<String> logged = new ArrayList<>();
 
     @Test
@@ -127,6 +130,26 @@ class JvmTest {
         assertEquals(List.of(home),
                 candidates.stream().map(Jvm.Jdk::home).toList());
         assertTrue(candidates.get(0).jbr());
+    }
+
+    @Test
+    void aRuntimeTheVaadinIdePluginsInstalledIsLookedFor() throws IOException {
+        Path fromJetBrains = Files
+                .createDirectories(userHome.resolve(".jdks").resolve("jbr-25"));
+        Path fromVaadin = Files.createDirectories(userHome.resolve(".vaadin")
+                .resolve("jdk").resolve("jbr-25.0.2-osx-aarch64"));
+
+        List<Path> homes = Jvm.homes(userHome);
+
+        assertTrue(homes.contains(fromJetBrains),
+                () -> "~/.jdks is what a JetBrains IDE downloads into: "
+                        + homes);
+        // The Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse install
+        // the JBR they offer to download here, so a developer who took that
+        // offer has one and the loop must not run on a stock JDK anyway.
+        assertTrue(homes.contains(fromVaadin),
+                () -> "~/.vaadin/jdk is where Vaadin's own tooling installs a "
+                        + "JetBrains Runtime: " + homes);
     }
 
     /**
