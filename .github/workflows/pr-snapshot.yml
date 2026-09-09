@@ -82,11 +82,18 @@ jobs:
           server-username: SNAPSHOT_DEPLOY_USERNAME
           server-password: SNAPSHOT_DEPLOY_PASSWORD
       - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        # Read only, and before the version rewrite below: the rewritten poms
-        # hash to a key of this pull request's own, which nothing else would
-        # ever restore, and this build resolves nothing the validation and cache
-        # warming builds have not already put in their entry. The prefix key is
-        # what reaches it.
+        # Before the version rewrite below, so that the key is hashed from the
+        # poms as committed and the prefix key reaches what validation.yml and
+        # warm-caches.yml left behind.
+        #
+        # Read only on purpose, even though this build resolves a little more
+        # than they do - the javadoc and deploy plugins, and the dependencies of
+        # flow-gradle-plugin, which they leave out of their reactor - so that
+        # much is downloaded again on every run. Saving it would mean an entry
+        # of its own for every pull request, each a copy of a repository that
+        # runs to gigabytes, against a repository wide cache quota shared with
+        # the entries the test jobs actually need. A minute of downloads is the
+        # cheaper side of that trade.
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -118,15 +125,23 @@ jobs:
           SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.SNAPSHOT_DEPLOY_PASSWORD }}
         # -Drelease leaves the flow-tests modules out of the reactor: they are
         # never published (they set maven.deploy.skip) and building them would
-        # roughly double this job. -Pvalidation turns the javadoc jars back on,
-        # so the snapshot carries the same artifacts a release does.
+        # roughly double this job. maven.javadoc.skip turns the javadoc jars
+        # back on, so the snapshot carries the same artifacts a release does.
         #
         # flow-gradle-plugin stays in the reactor, unlike in validation.yml,
         # which leaves it out because its tests are a job of their own: on the
         # JDKs this workflow builds with, flow-plugins/pom.xml activates it, and
         # a snapshot should hold what a release holds.
+        #
+        # deployAtEnd holds every upload back until the whole reactor has built.
+        # A push cancels the run in progress, and a cancel between two modules
+        # would otherwise leave the version half published: the modules already
+        # uploaded stay in the repository under the same version the next run
+        # publishes, and if that run fails, whoever resolves the version gets a
+        # mixed set of modules with nothing saying so.
         run: |
-          mvn deploy -B -ntp -e -DskipTests -Drelease -Pvalidation \
+          mvn deploy -B -ntp -e -DskipTests -Drelease -Dmaven.javadoc.skip=false \
+            -DdeployAtEnd=true \
             -DaltDeploymentRepository=vaadin-snapshots::${SNAPSHOT_DEPLOY_URL}
       - name: Comment the snapshot version on the pull request
         env:

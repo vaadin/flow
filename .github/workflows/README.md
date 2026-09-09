@@ -95,6 +95,12 @@ equally named branches of two repositories resolve each other. The workflow
 comments the version and a copy-pasteable `flow-bom` import on the pull
 request, editing the same comment on every rebuild.
 
+Dropping the prefix means the version is only as unique as the part of the
+branch name after the last slash: `fix/npe` and `issues/npe` both publish
+`25.4.npe-SNAPSHOT`, and the later build replaces the earlier one without
+warning. Two snapshot builds running at once want two names that differ by
+more than their prefix.
+
 Publishing needs the credentials, and GitHub only hands secrets to pull
 requests from a branch of this repository. That is also what limits who can
 trigger a snapshot: pushing such a branch takes write access. Labeling a pull
