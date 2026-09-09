@@ -1554,11 +1554,13 @@ public class Element extends Node<Element> {
      * <p>
      * The returned set is a live view of the {@code theme} attribute, so it
      * also reflects theme names that are added or removed by other means after
-     * this method has been called.
+     * this method has been called. Its iterator is the one exception: it
+     * iterates the theme names present when {@link Set#iterator()} was called.
      * <p>
-     * Since the {@code theme} attribute value is space separated, a value
-     * containing spaces denotes several theme names, and is treated as such by
-     * every operation of the returned set.
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * added to the set cannot contain spaces. Use
+     * {@link #setAttribute(String, String)} to set a space separated value in
+     * one go.
      * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
