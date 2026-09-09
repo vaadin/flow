@@ -263,7 +263,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
                 throw new BindingActiveException();
             }
         });
-        updateThemeAttribute(new LinkedHashSet<>());
+        element.removeAttribute(THEME_ATTRIBUTE_NAME);
     }
 
     private void updateThemeAttribute(Set<String> themes) {

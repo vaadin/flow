@@ -347,4 +347,40 @@ class ThemeListImplTest {
                         .split(" ")),
                 "Removing through one ThemeList instance should only remove the requested theme");
     }
+
+    @Test
+    void iteratorRemovalKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+        ThemeListImpl otherList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        String removedTheme = iterator.next();
+        otherList.add("dark");
+        iterator.remove();
+
+        Set<String> expected = new HashSet<>(
+                Arrays.asList("theme1", "theme2", "dark"));
+        expected.remove(removedTheme);
+        assertEquals(expected,
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Iterator removal should only remove the theme it returned, keeping themes added through another instance");
+        assertFalse(themeList.contains(removedTheme),
+                "Iterator removal should remove the theme it returned");
+    }
+
+    @Test
+    void themesKeepInsertionOrderInAttribute() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        themeList.add("theme1");
+        themeList.add("theme2");
+        themeList.add("theme3");
+
+        assertEquals("theme1 theme2 theme3",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "Themes should be written to the theme attribute in the order they were added");
+    }
 }
