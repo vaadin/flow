@@ -112,7 +112,8 @@ Configuration:
 |---|---|---|
 | `MAVEN_SNAPSHOT_DEPLOY_USERNAME` | secret | User the snapshot is deployed as. |
 | `MAVEN_SNAPSHOT_DEPLOY_PASSWORD` | secret | Its password or token. |
-| `MAVEN_SNAPSHOT_DEPLOY_URL` | secret | Repository the snapshot is deployed to, for example `https://maven.vaadin.com/vaadin-prereleases/`. Named in the pull request comment; masked in the run log. |
+| `MAVEN_SNAPSHOT_DEPLOY_URL` | secret | Address the snapshot is uploaded to. Not the address it is read from: uploads go to the repository itself, resolving goes through the public one in front of it. |
+| `MAVEN_SNAPSHOT_READ_URL` | variable (optional) | Address the pull request comment tells people to resolve from. Defaults to `https://maven.vaadin.com/vaadin-prereleases`, so only a repository publishing elsewhere has to set it. Public by nature - it is handed out in a comment. |
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.

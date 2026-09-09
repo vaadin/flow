@@ -28,11 +28,16 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The repository the snapshot is published to, a secret alongside the
-  # credentials so that all three are configured in one place and a repository
-  # taking this workflow into use publishes wherever it publishes. The pull
-  # request comment names it - only the run log has it masked.
+  # Where the snapshot is uploaded. A secret alongside the credentials, so that
+  # all three are configured in one place and a repository taking this workflow
+  # into use publishes wherever it publishes.
   MAVEN_SNAPSHOT_DEPLOY_URL: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_URL }}
+  # Where the snapshot is read from afterwards, which is not the same address:
+  # uploads go to the repository itself, resolving goes through the public one
+  # in front of it. This is the one the pull request comment hands out, so it
+  # has to stay public - a secret would only be masked in the run log anyway,
+  # not in a comment. Overridable for a repository that publishes elsewhere.
+  MAVEN_SNAPSHOT_READ_URL: ${{ vars.MAVEN_SNAPSHOT_READ_URL || 'https://maven.vaadin.com/vaadin-prereleases' }}
   _HEAD_REF: ${{ github.head_ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -143,7 +148,7 @@ jobs:
         run: |
           if ! mvn deploy -B -ntp -e -DskipTests -Drelease -Dmaven.javadoc.skip=false \
             -DdeployAtEnd=true \
-            -DaltDeploymentRepository=vaadin-snapshots::${MAVEN_SNAPSHOT_DEPLOY_URL}; then
+            -DaltDeploymentRepository="vaadin-snapshots::${MAVEN_SNAPSHOT_DEPLOY_URL}"; then
             # A refused upload arrives as a stack trace ending in an HTTP status,
             # a couple of hundred lines after the last thing that was built, and
             # says nothing about which of the three settings is wrong. It is the
@@ -171,7 +176,7 @@ jobs:
           \`\`\`xml
           <repository>
             <id>vaadin-snapshots</id>
-            <url>$MAVEN_SNAPSHOT_DEPLOY_URL</url>
+            <url>$MAVEN_SNAPSHOT_READ_URL</url>
             <snapshots><enabled>true</enabled></snapshots>
           </repository>
 
