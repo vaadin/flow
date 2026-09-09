@@ -384,6 +384,17 @@ its answer rather than claiming success.
   old one. This includes Spring Data repositories, which are bare interfaces with
   no annotation to spot them by, so the connector keys on the loaded proxy
   instead.
+- **A Spring bean the context has never seen must restart too.** Component
+  scanning runs once, at startup, over the classes that existed then, and HA's
+  Spring plugins that would rescan are disabled (below) — so a class that is
+  only now being given `@Component`, `@Service`, `@Repository`, `@Controller`,
+  `@RestController` or `@Configuration` gets no bean definition, and the first
+  injection point fails with `NoSuchBeanDefinitionException` naming Spring
+  rather than the loop. It is the one escalation with no redefine behind it:
+  the class was never loaded, so there is nothing to swap and every signal read
+  off a loaded class is empty. The connector reads the stereotype out of the
+  compiled bytes of each requested class the JVM does not have, for the same
+  reason `@Entity` is read that way, and reports it as `newBeans=`.
 - **Hot-swap coverage differs sharply between stock HotSpot and a JBR.** Only a
   JBR gets `-XX:+AllowEnhancedClassRedefinition`; on stock HotSpot a structural
   change is simply rejected and escalates. A project needing a Java version no
