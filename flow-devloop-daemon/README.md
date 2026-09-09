@@ -293,7 +293,13 @@ asks. `FRONTEND_CHECK <paths>` has the connector fetch each changed file through
 `DevModeHandler.prepareConnection`, on the base Vite was actually launched with
 (`ViteHandler.getPathToVaadin()`, so an app on a context path works too). A `500` is a refusal and
 carries Vite's own message; a `200` means the module compiles. Only `500` counts - a `404` means
-the dev server does not serve that path at all.
+the dev server does not serve that path at all. The paths are joined with the unit separator
+(`U+001F`) rather than a comma, which is a legal character in a Unix path. The check is bounded:
+each probe makes Vite compile on demand, and a cold or restarting dev server is slow, so the
+connector answers well inside the daemon's 30s wait and reports a timeout, a reset, or a
+request that could not be answered as *inconclusive* rather than as "served" - an unanswered
+request is not proof the module compiles, so the verdict falls back to the log instead of
+letting a swallowed error read as a `200`.
 
 A `200` is not the whole story, though, because it answers only the question it was asked: can
 this module be *served*. Types are stripped without being checked, so a type error - and a

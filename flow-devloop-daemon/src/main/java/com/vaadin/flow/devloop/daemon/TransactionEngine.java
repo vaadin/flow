@@ -1084,8 +1084,14 @@ final class TransactionEngine {
             return;
         }
         Optional<String> reply = active
-                .command("FRONTEND_CHECK " + join(modules), 30);
+                .command("FRONTEND_CHECK " + joinFiles(modules), 30);
         if (reply.isEmpty() || !reply.get().startsWith("OK")) {
+            // Empty means the connector did not answer inside the backstop; an
+            // ERR means the app could not conclude - a timeout, a reset, a dev
+            // server that just went down. Either way devServerAsked stays
+            // false,
+            // so the verdict falls back to the log rather than reading an
+            // inconclusive check as "served every file".
             return;
         }
         Map<String, String> fields = Connector.fields(reply.get());
@@ -1124,6 +1130,19 @@ final class TransactionEngine {
     private static String join(List<Path> paths) {
         return paths.stream().map(Path::toString)
                 .collect(java.util.stream.Collectors.joining(","));
+    }
+
+    /**
+     * The file list for {@code FRONTEND_CHECK}, joined with the unit separator
+     * rather than a comma. A comma is a legal character in a Unix path, so one
+     * in a filename would reach the app as two files it cannot resolve -
+     * undercounting the check and missing a refusal on that file. The unit
+     * separator cannot occur in a path, and matches what
+     * {@code DevLoopRedefiner.frontendCheck} splits the argument on.
+     */
+    private static String joinFiles(List<Path> paths) {
+        return paths.stream().map(Path::toString)
+                .collect(java.util.stream.Collectors.joining(AppLog.SEGMENT));
     }
 
     /**

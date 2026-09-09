@@ -40,6 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +132,39 @@ final class DevLoopRedefiner {
      * this field.
      */
     private static final char REPORT_SEPARATOR = '\u001f';
+
+    /**
+     * What the {@code FRONTEND_CHECK} argument's file list is split on. A comma
+     * cannot serve: it is a legal character in a Unix path, so a filename
+     * carrying one would split into two fragments the probe then fails to
+     * resolve - undercounting the check and missing a refusal on that file. The
+     * unit separator ({@code U+001F}) cannot occur in a path, and matches what
+     * the daemon joins the list with.
+     */
+    private static final char FILE_SEPARATOR = 0x1f;
+
+    /**
+     * How long the whole check may run before it answers inconclusively.
+     * <p>
+     * The daemon abandons the {@code FRONTEND_CHECK} reply after 30s and reads
+     * the silence as "not asked", falling back to the log race this command
+     * exists to remove. Each probe makes Vite compile a module on demand, and a
+     * cold or restarting dev server over several files can outlast that
+     * backstop, so the check bounds itself well under it and reports what it
+     * could not finish rather than blocking past the point the answer is still
+     * wanted.
+     */
+    private static final long CHECK_BUDGET_MILLIS = Long
+            .getLong("vaadin.devloop.frontendCheckMillis", 20_000L);
+
+    /**
+     * Connect and read timeout for one probe, overriding the dev server
+     * handler's 120s default. A single unresponsive module has to fail fast so
+     * the whole check stays inside {@link #CHECK_BUDGET_MILLIS} rather than
+     * hitting a timeout only the daemon would notice.
+     */
+    private static final int PROBE_TIMEOUT_MILLIS = Integer
+            .getInteger("vaadin.devloop.frontendProbeMillis", 10_000);
 
     private DevLoopRedefiner() {
     }
@@ -591,13 +628,28 @@ final class DevLoopRedefiner {
      * Only a {@code 500} is a refusal. A {@code 404} means the dev server does
      * not serve that path at all - a file outside its root - which is not this
      * change being broken, and failing an apply over one would be a worse
-     * answer than the truth.
+     * answer than the truth. A request that cannot be answered at all - a
+     * reset, a dev server that just went down, or one so slow the whole check
+     * outruns its budget - is not a clean answer either: it is reported
+     * inconclusively so the daemon falls back to the log rather than reading a
+     * swallowed error as a {@code 200}.
+     * <p>
+     * Bounded on its own thread. Each probe makes Vite compile a module on
+     * demand, which a cold or restarting dev server can be slow at, and the
+     * daemon abandons this reply after 30s - so the check answers inside
+     * {@link #CHECK_BUDGET_MILLIS}, well under that backstop. Blocking past it
+     * would leave the daemon reading the silence as "not asked" and falling
+     * back to the very log race this command exists to remove, and would risk
+     * desyncing the reply the daemon reads next off the connection. The worker
+     * never writes to that connection, so abandoning it on timeout is safe.
      *
      * @param csv
-     *            the changed files, absolute, comma-separated: they ride in as
-     *            the argument rather than as a reply field because a Windows
-     *            path can contain a space
-     * @return the reply line, naming the first file the dev server refused
+     *            the changed files, absolute, joined with
+     *            {@link #FILE_SEPARATOR}: they ride in as the argument rather
+     *            than as a reply field because a Windows path can contain a
+     *            space
+     * @return the reply line, naming the first file the dev server refused, or
+     *         an {@code ERR} line when the check could not conclude
      */
     static String frontendCheck(String csv) {
         VaadinService service = DevLoopRegistration.service();
@@ -614,8 +666,40 @@ final class DevLoopRedefiner {
         if (root == null) {
             return "OK checked=0 refused=0";
         }
+        FutureTask<String> probe = new FutureTask<>(
+                () -> probeAll(vite, root, csv));
+        Thread worker = new Thread(probe, "devloop-frontend-check");
+        worker.setDaemon(true);
+        worker.start();
+        try {
+            return probe.get(CHECK_BUDGET_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            // Inconclusive, not served: a clean answer would overrule a log
+            // that may correctly hold the error, so a check that ran out of
+            // budget falls back to the log instead. The worker ends on its own
+            // once the request it is blocked on returns under its own timeout.
+            probe.cancel(true);
+            return "ERR kind=timeout message=dev-server-did-not-answer-in-time";
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            probe.cancel(true);
+            return "ERR kind=interrupted message=frontend-check-interrupted";
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() == null ? e : e.getCause();
+            return "ERR kind=internal message="
+                    + oneLine(String.valueOf(cause.getMessage()));
+        }
+    }
+
+    /**
+     * Fetches each changed frontend file in turn, stopping at the first the dev
+     * server refuses. Runs on the bounded worker {@link #frontendCheck} starts,
+     * so its only time limit is the per-request one in {@link #refusalFor}; the
+     * caller enforces the overall budget.
+     */
+    private static String probeAll(ViteHandler vite, Path root, String csv) {
         int checked = 0;
-        for (String value : csv.split(",")) {
+        for (String value : csv.split(String.valueOf(FILE_SEPARATOR), -1)) {
             String trimmed = value.trim();
             if (trimmed.isEmpty()) {
                 continue;
@@ -625,11 +709,22 @@ final class DevLoopRedefiner {
                 continue;
             }
             checked++;
-            String refusal = refusalFor(vite,
-                    vite.getPathToVaadin() + "/" + relative);
-            if (refusal != null) {
-                return "OK checked=" + checked + " refused=1 file="
-                        + oneLine(relative) + " message=" + oneLine(refusal);
+            try {
+                String refusal = refusalFor(vite,
+                        vite.getPathToVaadin() + "/" + relative);
+                if (refusal != null) {
+                    return "OK checked=" + checked + " refused=1 file="
+                            + oneLine(relative) + " message="
+                            + oneLine(refusal);
+                }
+            } catch (IOException | RuntimeException e) {
+                // The request failed rather than being answered - a connection
+                // reset mid-response, a dev server that just went down. That is
+                // not proof the module compiles, so it is not reported as
+                // served: inconclusive instead, so the verdict falls back to
+                // the log rather than a clean answer that would overrule it.
+                return "ERR kind=unreachable checked=" + checked + " file="
+                        + oneLine(relative);
             }
         }
         return "OK checked=" + checked + " refused=0";
@@ -663,22 +758,31 @@ final class DevLoopRedefiner {
     }
 
     /**
-     * What the dev server said about one module, or {@code null} if it served
-     * it. A connection that cannot be made is not a refusal either: a dev
-     * server that is unreachable is what {@link #frontendStatus()} answers, and
-     * failing an apply here would report the same thing twice.
+     * What the dev server said about one module: its message on a {@code 500},
+     * or {@code null} on any other code, which means it served the module.
+     * <p>
+     * Throws rather than guessing when the request cannot be answered at all. A
+     * reset mid-response or a connection that will not open is not proof the
+     * module compiles, so the caller reports it inconclusively and the daemon
+     * falls back to the log - a swallowed {@code IOException} read as a served
+     * {@code 200} is exactly how a broken module used to pass as
+     * {@code Stable}. A dev server that is genuinely unreachable is still
+     * {@link #frontendStatus()}'s to report; this only refuses to call an
+     * unanswered request a clean answer.
      */
-    private static String refusalFor(ViteHandler vite, String url) {
-        try {
-            HttpURLConnection connection = vite.prepareConnection(url, "GET");
-            int code = connection.getResponseCode();
-            if (code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
-                return null;
-            }
-            return viteErrorMessage(errorBody(connection), url);
-        } catch (IOException | RuntimeException e) {
+    private static String refusalFor(ViteHandler vite, String url)
+            throws IOException {
+        HttpURLConnection connection = vite.prepareConnection(url, "GET");
+        // Override the dev server handler's 120s default: this probe is on the
+        // apply's critical path, inside the daemon's 30s backstop, so a single
+        // unresponsive module has to fail fast rather than hold the check open.
+        connection.setConnectTimeout(PROBE_TIMEOUT_MILLIS);
+        connection.setReadTimeout(PROBE_TIMEOUT_MILLIS);
+        int code = connection.getResponseCode();
+        if (code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
             return null;
         }
+        return viteErrorMessage(errorBody(connection), url);
     }
 
     private static String errorBody(HttpURLConnection connection) {
