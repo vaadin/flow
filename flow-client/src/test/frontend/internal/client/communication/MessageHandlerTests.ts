@@ -7,6 +7,8 @@ import type {
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
+import { ResourceLoader } from '../../../../../main/frontend/internal/client/ResourceLoader';
+import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
@@ -442,6 +444,64 @@ describe('MessageHandler', () => {
         expect(document.querySelector('[data-id="dep-y"]')).to.not.equal(null);
         expect(registry.log.clearedResources).to.deep.equal(['dep-x']);
         keep.remove();
+      });
+
+      it('removes the stylesheets a message lists before loading the dependencies it carries', async () => {
+        // A theme swap removes a sheet and adds the same URL back in one round
+        // trip, so one message carries both. The resource loader dedupes by URL,
+        // so loading the dependency first drops the add as a duplicate of the
+        // sheet the same message is about to remove, leaving the page with
+        // neither. Both the real loader and the real DependencyLoader are wired
+        // in, as that dedup is the thing under test.
+        const url = '/stylesheet-swap.css';
+        const oldLink = document.createElement('link');
+        oldLink.rel = 'stylesheet';
+        oldLink.href = url;
+        oldLink.setAttribute('data-id', 'dep-old');
+        const stylesheetEnd = document.createComment('Stylesheet end');
+        document.head.append(oldLink, stylesheetEnd);
+
+        const registry = testRegistry({
+          UILifecycle: { getState: () => UIState.RUNNING },
+          MessageSender: {
+            getResynchronizationState: () => 'NOT_ACTIVE',
+            clearResynchronizationState: () => {},
+            setClientToServerMessageId: () => {}
+          },
+          RequestResponseTracker: {
+            fireResponseHandlingStarted: () => {},
+            endRequest: () => {},
+            hasActiveRequest: () => true
+          },
+          LoadingIndicatorStateHandler: { stopLoading: () => {} },
+          ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
+          URIResolver: { resolveVaadinUri: (uri: string) => uri },
+          // The swapped URL has no file behind it, so the load fails; the
+          // assertions below are made before it settles either way.
+          SystemErrorHandler: { handleError: () => {} }
+        });
+        // initFromDom: true, as in the browser, so the sheet already on the page
+        // counts as loaded.
+        registry.register('ResourceLoader', new ResourceLoader(registry, true));
+        registry.register('DependencyLoader', new DependencyLoader(registry));
+
+        new MessageHandler(registry).handleMessage({
+          syncId: 0,
+          EAGER: [{ type: 'STYLESHEET', url, id: 'dep-new' }],
+          stylesheetRemovals: ['dep-old']
+        });
+
+        const sheets = Array.from(document.head.querySelectorAll(`link[href$="${url}"]`));
+        expect(sheets.map((sheet) => sheet.getAttribute('data-id'))).to.deep.equal(['dep-new']);
+        // The eager load settles on a later task, and the gate it counts
+        // against is module-wide state that the cases after this one share, so
+        // let it unwind before leaving. Removing the link first would cancel the
+        // event the load settles on and leave the gate closed for good.
+        await new Promise<void>((resolve) => {
+          runWhenEagerDependenciesLoaded(() => resolve());
+        });
+        sheets.forEach((sheet) => sheet.remove());
+        stylesheetEnd.remove();
       });
 
       it('reports finite processing and bootstrap timings after a message', () => {
