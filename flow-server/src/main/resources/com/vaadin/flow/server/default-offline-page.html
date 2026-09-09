@@ -88,6 +88,27 @@
             margin-bottom: 0.75em;
         }
 
+        .offline .content .game {
+            margin-top: 1.5rem;
+        }
+
+        .offline .content .game .reindeer-runner__canvas {
+            display: block;
+            width: 100%;
+            height: 200px;
+            background: #f7f7f7;
+            border-radius: 8px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .offline .content .game .game-hint {
+            margin-top: 0.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
         @media (min-width: 800px) {
             .offline {
                 padding: 0 48px;
@@ -125,12 +146,378 @@
             <h2>You are offline</h2>
             <p>%%%PROJECT_NAME%%% requires an internet connection to work. You do not seem to have access to the server right now. Check your internet connection and try reloading the page to use the application.</p>
         </section>
+        <section class="game">
+            <canvas id="reindeer-runner" class="reindeer-runner__canvas"></canvas>
+            <p class="game-hint">Jump the reindeer while you wait &mdash; tap or press Space.</p>
+        </section>
     </div>
 </div>
 <script>
     window.addEventListener('online', function () {
         window.location.reload();
     });
+</script>
+<script>
+    /* Reindeer Runner: an offline dino-style game to play while the server is
+       unreachable. The page is served with newlines stripped, so use only block
+       comments and end every statement with a semicolon. */
+    (function () {
+        var FRAME_MS = 1000 / 60;
+        var START_SPEED = 6;
+        var MAX_SPEED = 13;
+        var ACCELERATION = 0.0007;
+        var GRAVITY = 0.6;
+        var JUMP_VELOCITY = -11.5;
+        var REINDEER_X = 60;
+        var REINDEER_W = 62;
+        var REINDEER_H = 52;
+        var GROUND_OFFSET = 26;
+        var INK = '#535353';
+
+        function groundTop(state) {
+            return state.height - GROUND_OFFSET;
+        }
+
+        function reindeerBaseY(state) {
+            return groundTop(state) - REINDEER_H;
+        }
+
+        function reset(state) {
+            state.phase = 'waiting';
+            state.clock = 0;
+            state.speed = START_SPEED;
+            state.score = 0;
+            state.reindeerY = reindeerBaseY(state);
+            state.reindeerVelY = 0;
+            state.onGround = true;
+            state.obstacles = [];
+            state.spawnGap = state.width * 0.6;
+            state.groundOffset = 0;
+            state.clouds = [
+                { x: state.width * 0.5, y: state.height * 0.22 },
+                { x: state.width * 0.85, y: state.height * 0.35 }
+            ];
+        }
+
+        function jump(state) {
+            if (state.phase === 'waiting') {
+                state.phase = 'running';
+                state.reindeerVelY = JUMP_VELOCITY;
+                state.onGround = false;
+                return;
+            }
+            if (state.phase === 'running') {
+                if (state.onGround) {
+                    state.reindeerVelY = JUMP_VELOCITY;
+                    state.onGround = false;
+                }
+                return;
+            }
+            if (state.phase === 'over') {
+                reset(state);
+                state.phase = 'running';
+                state.reindeerVelY = JUMP_VELOCITY;
+                state.onGround = false;
+            }
+        }
+
+        function spawnObstacle(state) {
+            /* A cluster of 1-3 trees of a shared height. */
+            var count = 1 + Math.floor(Math.random() * 3);
+            var height = 28 + Math.floor(Math.random() * 22);
+            var unit = 16 + Math.floor(Math.random() * 8);
+            state.obstacles.push({ x: state.width + 10, width: unit * count, height: height });
+            /* Gap scales with speed so it stays clearable. */
+            var min = 130 + state.speed * 14;
+            state.spawnGap = min + Math.random() * 260;
+        }
+
+        function step(state, dtFrames) {
+            state.clock += (dtFrames * FRAME_MS) / 1000;
+            if (state.phase === 'running') {
+                state.speed = Math.min(MAX_SPEED, state.speed + ACCELERATION * dtFrames);
+                state.score += state.speed * dtFrames * 0.06;
+
+                state.reindeerVelY += GRAVITY * dtFrames;
+                state.reindeerY += state.reindeerVelY * dtFrames;
+                var base = reindeerBaseY(state);
+                if (state.reindeerY >= base) {
+                    state.reindeerY = base;
+                    state.reindeerVelY = 0;
+                    state.onGround = true;
+                }
+
+                var dx = state.speed * dtFrames;
+                state.groundOffset += dx;
+                for (var i = 0; i < state.obstacles.length; i++) {
+                    state.obstacles[i].x -= dx;
+                }
+                state.obstacles = state.obstacles.filter(function (o) {
+                    return o.x + o.width > -10;
+                });
+
+                state.spawnGap -= dx;
+                if (state.spawnGap <= 0) {
+                    spawnObstacle(state);
+                }
+
+                for (var c = 0; c < state.clouds.length; c++) {
+                    var cloud = state.clouds[c];
+                    cloud.x -= dx * 0.35;
+                    if (cloud.x < -60) {
+                        cloud.x = state.width + 40 + Math.random() * state.width * 0.5;
+                        cloud.y = state.height * (0.15 + Math.random() * 0.25);
+                    }
+                }
+
+                /* Collision against the drawn firs, with forgiving insets: the
+                   hit box is just the torso and legs, not antlers/tail/snout. */
+                var rx = REINDEER_X + 10;
+                var rRight = REINDEER_X + REINDEER_W - 12;
+                var rBottom = state.reindeerY + REINDEER_H - 4;
+                var hit = false;
+                for (var oi = 0; oi < state.obstacles.length; oi++) {
+                    var firs = obstacleFirs(state, state.obstacles[oi]);
+                    for (var fi = 0; fi < firs.length; fi++) {
+                        var f = firs[fi];
+                        var half = f.halfW * 0.7;
+                        var top = f.tipY + 6;
+                        if (rx < f.cx + half && rRight > f.cx - half && rBottom > top) {
+                            hit = true;
+                            break;
+                        }
+                    }
+                    if (hit) {
+                        break;
+                    }
+                }
+                if (hit) {
+                    state.phase = 'over';
+                    state.hiScore = Math.max(state.hiScore, Math.floor(state.score));
+                }
+            }
+        }
+
+        function drawReindeer(state) {
+            var ctx = state.ctx;
+            var x = REINDEER_X;
+            var y = state.reindeerY;
+            ctx.fillStyle = INK;
+            ctx.fillRect(x + 6, y + 16, 40, 20);
+            ctx.fillRect(x + 36, y + 6, 16, 22);
+            ctx.fillRect(x + 44, y + 2, 16, 14);
+            ctx.fillRect(x + 58, y + 8, 6, 6);
+            ctx.clearRect(x + 52, y + 6, 3, 3);
+            ctx.fillRect(x + 44, y - 10, 3, 12);
+            ctx.fillRect(x + 40, y - 10, 8, 3);
+            ctx.fillRect(x + 54, y - 10, 3, 12);
+            ctx.fillRect(x + 54, y - 10, 8, 3);
+            ctx.fillRect(x + 2, y + 14, 6, 8);
+            if (state.onGround && state.phase === 'running') {
+                var frameIdx = Math.floor(state.clock * 12) % 2;
+                if (frameIdx === 0) {
+                    ctx.fillRect(x + 12, y + 36, 6, 14);
+                    ctx.fillRect(x + 34, y + 36, 6, 10);
+                } else {
+                    ctx.fillRect(x + 12, y + 36, 6, 10);
+                    ctx.fillRect(x + 34, y + 36, 6, 14);
+                }
+            } else {
+                ctx.fillRect(x + 12, y + 36, 6, 8);
+                ctx.fillRect(x + 34, y + 36, 6, 8);
+            }
+        }
+
+        /* Firs of one cluster; both drawing and collision derive from this, so
+           the hit box can't drift from what's drawn. */
+        function obstacleFirs(state, o) {
+            var base = groundTop(state);
+            var trees = Math.max(1, Math.round(o.width / 18));
+            var tw = o.width / trees;
+            var firs = [];
+            for (var i = 0; i < trees; i++) {
+                var th = o.height * (0.8 + (i % 2) * 0.2);
+                firs.push({ cx: o.x + i * tw + tw * 0.5, halfW: tw * 0.42, tipY: base - th, height: th });
+            }
+            return firs;
+        }
+
+        function drawObstacle(state, o) {
+            var ctx = state.ctx;
+            var base = groundTop(state);
+            ctx.fillStyle = INK;
+            var firs = obstacleFirs(state, o);
+            for (var i = 0; i < firs.length; i++) {
+                var f = firs[i];
+                ctx.fillRect(f.cx - 2, base - f.height * 0.3, 4, f.height * 0.3);
+                ctx.beginPath();
+                ctx.moveTo(f.cx, f.tipY);
+                ctx.lineTo(f.cx - f.halfW, base - f.height * 0.28);
+                ctx.lineTo(f.cx + f.halfW, base - f.height * 0.28);
+                ctx.closePath();
+                ctx.fill();
+                ctx.clearRect(f.cx - 1, f.tipY, 2, 4);
+            }
+        }
+
+        function drawCloud(state, c) {
+            var ctx = state.ctx;
+            ctx.fillStyle = 'rgba(83, 83, 83, 0.28)';
+            ctx.fillRect(c.x, c.y + 4, 34, 6);
+            ctx.fillRect(c.x + 8, c.y, 20, 6);
+            ctx.fillRect(c.x + 6, c.y + 8, 26, 4);
+        }
+
+        function drawGround(state) {
+            var ctx = state.ctx;
+            var y = groundTop(state);
+            ctx.strokeStyle = INK;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(state.width, y);
+            ctx.stroke();
+            var offset = state.groundOffset % 24;
+            ctx.fillStyle = INK;
+            for (var x = -offset; x < state.width; x += 24) {
+                ctx.fillRect(x, y + 6, 6, 2);
+                ctx.fillRect(x + 12, y + 11, 3, 2);
+            }
+        }
+
+        function drawHud(state) {
+            var ctx = state.ctx;
+            ctx.fillStyle = INK;
+            ctx.font = "16px 'Courier New', ui-monospace, monospace";
+            ctx.textBaseline = 'top';
+            ctx.textAlign = 'right';
+            var score = String(Math.floor(state.score)).padStart(5, '0');
+            var hi = String(state.hiScore).padStart(5, '0');
+            ctx.fillText('HI ' + hi + '   ' + score, state.width - 16, 14);
+            ctx.textAlign = 'left';
+        }
+
+        function drawCenteredText(state, big, small) {
+            var ctx = state.ctx;
+            ctx.fillStyle = INK;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = "bold 26px 'Courier New', ui-monospace, monospace";
+            ctx.fillText(big, state.width / 2, state.height * 0.42);
+            ctx.font = "15px 'Courier New', ui-monospace, monospace";
+            ctx.fillText(small, state.width / 2, state.height * 0.42 + 30);
+            ctx.textAlign = 'left';
+        }
+
+        function draw(state) {
+            var ctx = state.ctx;
+            ctx.clearRect(0, 0, state.width, state.height);
+            for (var c = 0; c < state.clouds.length; c++) {
+                drawCloud(state, state.clouds[c]);
+            }
+            drawGround(state);
+            for (var o = 0; o < state.obstacles.length; o++) {
+                drawObstacle(state, state.obstacles[o]);
+            }
+            drawReindeer(state);
+            drawHud(state);
+            if (state.phase === 'waiting') {
+                drawCenteredText(state, 'REINDEER RUNNER', 'Tap or press Space to start');
+            } else if (state.phase === 'over') {
+                drawCenteredText(state, 'GAME OVER', 'Tap or press Space to run again');
+            }
+        }
+
+        function frame(state, now) {
+            if (state.lastTime === 0) {
+                state.lastTime = now;
+            }
+            /* Elapsed time as 60fps frames, clamped so a tab stall can't teleport. */
+            var dtFrames = Math.min((now - state.lastTime) / FRAME_MS, 3);
+            state.lastTime = now;
+            step(state, dtFrames);
+            draw(state);
+            state.rafId = requestAnimationFrame(function (t) {
+                frame(state, t);
+            });
+        }
+
+        function fitCanvas(state) {
+            var rect = state.canvas.getBoundingClientRect();
+            var dpr = window.devicePixelRatio || 1;
+            state.width = Math.max(1, Math.round(rect.width));
+            state.height = Math.max(1, Math.round(rect.height));
+            state.canvas.width = Math.round(state.width * dpr);
+            state.canvas.height = Math.round(state.height * dpr);
+            state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (state.onGround) {
+                state.reindeerY = reindeerBaseY(state);
+            }
+        }
+
+        function start() {
+            var canvas = document.getElementById('reindeer-runner');
+            if (!canvas) {
+                return;
+            }
+            var ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return;
+            }
+            var state = {
+                canvas: canvas,
+                ctx: ctx,
+                rafId: 0,
+                width: 1,
+                height: 1,
+                phase: 'waiting',
+                lastTime: 0,
+                clock: 0,
+                speed: START_SPEED,
+                score: 0,
+                hiScore: 0,
+                reindeerY: 0,
+                reindeerVelY: 0,
+                onGround: true,
+                obstacles: [],
+                spawnGap: 0,
+                clouds: [],
+                groundOffset: 0
+            };
+            fitCanvas(state);
+            reset(state);
+            /* Focusable + focused so keys land here even inside the app-shell iframe. */
+            canvas.setAttribute('tabindex', '0');
+            canvas.style.outline = 'none';
+            canvas.focus();
+            canvas.addEventListener('pointerdown', function (e) {
+                e.preventDefault();
+                canvas.focus();
+                jump(state);
+            });
+            /* Capture phase + broad Space/Up detection so a key press works without a click first. */
+            document.addEventListener('keydown', function (e) {
+                var isSpace = e.code === 'Space' || e.key === ' ' || e.keyCode === 32;
+                var isUp = e.code === 'ArrowUp' || e.key === 'ArrowUp' || e.keyCode === 38;
+                if (isSpace || isUp) {
+                    e.preventDefault();
+                    jump(state);
+                }
+            }, true);
+            window.addEventListener('resize', function () {
+                fitCanvas(state);
+            });
+            state.rafId = requestAnimationFrame(function (t) {
+                frame(state, t);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', start);
+        } else {
+            start();
+        }
+    })();
 </script>
 </body>
 </html>
