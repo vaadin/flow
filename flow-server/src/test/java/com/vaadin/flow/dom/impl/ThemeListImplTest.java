@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Element;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -382,5 +383,69 @@ class ThemeListImplTest {
         assertEquals("theme1 theme2 theme3",
                 element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
                 "Themes should be written to the theme attribute in the order they were added");
+    }
+
+    @Test
+    void iteratorSeesThemesAddedDuringIteration() {
+        MockElement element = new MockElement("theme1");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        assertEquals("theme1", iterator.next());
+        new ThemeListImpl(element).add("dark");
+
+        assertTrue(iterator.hasNext(),
+                "Iterator should see a theme added through another instance while iterating");
+        assertEquals("dark", iterator.next(),
+                "Iterator should return the theme added while iterating");
+        assertFalse(iterator.hasNext(),
+                "Iterator should return every theme exactly once");
+    }
+
+    @Test
+    void iteratorSkipsThemesRemovedDuringIteration() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        assertEquals("theme1", iterator.next());
+        new ThemeListImpl(element).remove("theme2");
+
+        assertFalse(iterator.hasNext(),
+                "Iterator should skip a theme removed through another instance while iterating");
+    }
+
+    @Test
+    void iteratorRemoveWithoutNext_throwsIllegalStateException() {
+        MockElement element = new MockElement("theme1");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        assertThrows(IllegalStateException.class, iterator::remove,
+                "Iterator removal without a preceding next() should throw");
+
+        iterator.next();
+        iterator.remove();
+        assertThrows(IllegalStateException.class, iterator::remove,
+                "Repeated iterator removal for the same theme should throw");
+    }
+
+    @Test
+    void addThemeNameContainingSpaces_throws() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> themeList.add("primary small"),
+                "A theme name containing spaces cannot be stored as a single theme name");
+        assertThrows(IllegalArgumentException.class,
+                () -> themeList.addAll(Arrays.asList("primary small")),
+                "A theme name containing spaces cannot be stored as a single theme name");
+        assertThrows(IllegalArgumentException.class, () -> themeList.add(null),
+                "A null theme name should be rejected");
+        assertThrows(IllegalArgumentException.class, () -> themeList.add(""),
+                "An empty theme name should be rejected");
+        assertNull(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "A rejected theme name should not be written to the theme attribute");
     }
 }

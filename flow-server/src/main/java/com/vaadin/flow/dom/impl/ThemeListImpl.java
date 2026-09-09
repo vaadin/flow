@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -52,29 +53,59 @@ public class ThemeListImpl implements ThemeList, Serializable {
     public static final String THEME_ATTRIBUTE_NAME = "theme";
     private static final String THEME_NAMES_DELIMITER = " ";
 
+    /**
+     * Iterator that reads the theme attribute on demand instead of iterating a
+     * snapshot taken when the iterator was created. Each theme name currently
+     * present in the attribute is returned exactly once, so theme names added
+     * while the iteration is ongoing are also returned and theme names removed
+     * meanwhile are skipped.
+     */
     private final class ThemeListIterator implements Iterator<String> {
-        private final Iterator<String> wrappedIterator = readThemesFromAttribute()
-                .iterator();
+        private final Set<String> returned = new LinkedHashSet<>();
+        private String next;
         private String current;
 
         @Override
         public boolean hasNext() {
-            return wrappedIterator.hasNext();
+            return findNext() != null;
         }
 
         @Override
         public String next() {
-            current = wrappedIterator.next();
-            return current;
+            String nextTheme = findNext();
+            if (nextTheme == null) {
+                throw new NoSuchElementException();
+            }
+            returned.add(nextTheme);
+            current = nextTheme;
+            next = null;
+            return nextTheme;
         }
 
         @Override
         public void remove() {
-            wrappedIterator.remove();
+            if (current == null) {
+                throw new IllegalStateException(
+                        "next() has not been called, or remove() has already been called after the last call to next()");
+            }
+            throwIfBound(current);
             Set<String> themes = readThemesFromAttribute();
             if (themes.remove(current)) {
                 updateThemeAttribute(themes);
             }
+            current = null;
+        }
+
+        private String findNext() {
+            if (next == null) {
+                for (String theme : readThemesFromAttribute()) {
+                    if (!returned.contains(theme)) {
+                        next = theme;
+                        break;
+                    }
+                }
+            }
+            return next;
         }
     }
 
@@ -102,6 +133,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
+        validate(name);
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -199,6 +231,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean add(String themeName) {
+        validate(themeName);
         throwIfBound(themeName);
         Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.add(themeName);
@@ -210,6 +243,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean addAll(Collection<? extends String> themeNames) {
+        themeNames.forEach(this::validate);
         themeNames.forEach(this::throwIfBound);
         Set<String> themes = readThemesFromAttribute();
         boolean changed = themes.addAll(themeNames);
@@ -308,6 +342,26 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public String toString() {
         return readThemesFromAttribute().toString();
+    }
+
+    /**
+     * Checks that the given theme name can be stored as a single entry of the
+     * space separated {@code theme} attribute.
+     *
+     * @param themeName
+     *            the theme name to validate
+     */
+    private void validate(String themeName) {
+        if (themeName == null) {
+            throw new IllegalArgumentException("Theme name cannot be null");
+        }
+        if (themeName.isEmpty()) {
+            throw new IllegalArgumentException("Theme name cannot be empty");
+        }
+        if (themeName.indexOf(' ') != -1) {
+            throw new IllegalArgumentException(
+                    "Theme name cannot contain spaces. Use separate theme names or Element.setAttribute(\"theme\", ...) to set a space separated value");
+        }
     }
 
     private void throwIfBound(String className) {

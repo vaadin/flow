@@ -1556,6 +1556,11 @@ public class Element extends Node<Element> {
      * also reflects theme names that are added or removed by other means after
      * this method has been called.
      * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * added to the set cannot contain spaces. Use
+     * {@link #setAttribute(String, String)} to set a space separated value in
+     * one go.
+     * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
      * {@link Set} in Java.
