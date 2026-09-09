@@ -42,6 +42,9 @@ import elemental.json.JsonObject;
  */
 public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
+    // The data-id of the sheet that is on the page when a swap starts.
+    private static final String REMOVED_STYLESHEET_ID = "dep-old";
+
     private Registry registry;
     private TestMessageHandler handler;
 
@@ -114,6 +117,12 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         private Set<String> scriptUrls = new HashSet<>();
 
+        // Whether the sheet the message removes was still on the page when the
+        // add for the same URL reached the loader, or null if no stylesheet was
+        // loaded. The real loader dedupes by URL, so an add that arrives while
+        // the sheet is still there is dropped as a duplicate.
+        private Boolean removedSheetInDomOnLoad;
+
         private Registry registry;
 
         public TestResourceLoader(Registry registry) {
@@ -130,6 +139,15 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             registry.get(EventsOrder.class).sources
                     .add(ResourceLoader.class.getName());
             addInternalEvent(ResourceLoader.class.getName());
+        }
+
+        @Override
+        public void loadStylesheet(String stylesheetUrl,
+                ResourceLoadListener resourceLoadListener,
+                String dependencyId) {
+            removedSheetInDomOnLoad = isStylesheetInDom(REMOVED_STYLESHEET_ID);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
 
     }
@@ -259,6 +277,42 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                     eventsOrder.sources.get(0));
             // the second one is applying changes to StatTree
             assertEquals(StateTree.class.getName(), eventsOrder.sources.get(1));
+        });
+    }
+
+    public void testMessageProcessing_stylesheetRemovalIsHandledBeforeLoadingDependencies() {
+        resetInternalEvents();
+
+        // given: a stylesheet on the page, as an earlier add left it
+        addStylesheetToDom(REMOVED_STYLESHEET_ID);
+
+        // when: one round trip removes it and adds the same URL back, as a
+        // theme swap does
+        JavaScriptObject object = JavaScriptObject.createObject();
+        JsonObject obj = object.cast();
+
+        JsonArray dependencies = Json.createArray();
+        JsonObject dep = Json.createObject();
+        dep.put(Dependency.KEY_URL, "swapped.css");
+        dep.put(Dependency.KEY_TYPE, Dependency.Type.STYLESHEET.toString());
+        dep.put(Dependency.KEY_ID, "dep-new");
+        dependencies.set(0, dep);
+        obj.put(LoadMode.EAGER.toString(), dependencies);
+
+        JsonArray removals = Json.createArray();
+        removals.set(0, REMOVED_STYLESHEET_ID);
+        obj.put("stylesheetRemovals", removals);
+
+        handler.handleJSON(object.cast());
+
+        doAssert(() -> {
+            // then: the removal has already been applied when the add reaches
+            // the loader, so the add is not a duplicate of the sheet on its way
+            // out
+            assertEquals(Boolean.FALSE,
+                    getResourceLoader().removedSheetInDomOnLoad);
+            assertFalse("The removed stylesheet should be off the page",
+                    isStylesheetInDom(REMOVED_STYLESHEET_ID));
         });
     }
 
@@ -492,6 +546,19 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             }
         }.schedule(assertDelayInMillis);
     }
+
+    private static native void addStylesheetToDom(String dependencyId)
+    /*-{
+         var link = $doc.createElement('link');
+         link.rel = 'stylesheet';
+         link.setAttribute('data-id', dependencyId);
+         $doc.head.appendChild(link);
+    }-*/;
+
+    private static native boolean isStylesheetInDom(String dependencyId)
+    /*-{
+         return $doc.querySelector('link[data-id="' + dependencyId + '"]') != null;
+    }-*/;
 
     private static native void resetInternalEvents()
     /*-{

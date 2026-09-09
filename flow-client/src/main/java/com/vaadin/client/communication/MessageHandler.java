@@ -363,7 +363,20 @@ public class MessageHandler {
             pushId = valueMap.getString(ApplicationConstants.UIDL_PUSH_ID);
         }
 
-        handleDependencies(valueMap.cast());
+        JsonObject json = valueMap.cast();
+
+        /*
+         * Before the dependencies, and not with the rest of the message: a
+         * round trip that removes a stylesheet and adds the same URL back
+         * carries both, and the resource loader dedupes by URL, so the add
+         * would be dropped as a duplicate of the sheet this message removes and
+         * the page would end up with neither.
+         */
+        if (json.hasKey("stylesheetRemovals")) {
+            processStylesheetRemovals(json.getArray("stylesheetRemovals"));
+        }
+
+        handleDependencies(json);
 
         /*
          * Hook for e.g. TestBench to get details about server performance
@@ -418,10 +431,6 @@ public class MessageHandler {
 
             if (json.hasKey("changes")) {
                 processChanges(json);
-            }
-
-            if (json.hasKey("stylesheetRemovals")) {
-                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
             }
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
