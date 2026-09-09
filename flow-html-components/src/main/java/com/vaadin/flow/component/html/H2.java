@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;h2&gt;</code> element.
+ * <p>
+ * A rank-2 heading. Keep heading ranks sequential rather than skipping levels
+ * for style.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/h2">MDN:
+ *      &lt;h2&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

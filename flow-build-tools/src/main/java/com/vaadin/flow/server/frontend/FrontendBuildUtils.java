@@ -100,6 +100,7 @@ public class FrontendBuildUtils {
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
+     * @since 25.3
      */
     protected static boolean isPlatformMajorVersionUpdated(Options options,
             File npmFolder, File nodeModules, File buildDirectory)
@@ -159,6 +160,7 @@ public class FrontendBuildUtils {
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
+     * @since 25.3
      */
     protected static boolean isPlatformVersionUpdated(Options options,
             File npmFolder, File nodeModules) throws IOException {
@@ -190,6 +192,7 @@ public class FrontendBuildUtils {
      *            the task options to take the pinned npm versions from
      * @return the Vaadin version as a string, or empty if neither a versions
      *         file of the platform nor the classpath tells it
+     * @since 25.3
      */
     protected static Optional<String> getVaadinVersion(Options options) {
         try {
@@ -242,16 +245,30 @@ public class FrontendBuildUtils {
      *            jar file to get (no resource folder should be added)
      * @param finder
      *            the class finder to use for locating the resource
-     * @return resource as String or {@code null} if not found
+     * @return the resource or {@code null} if not found
      */
-    public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
+    public static URL getJarResource(String jarImport, ClassFinder finder) {
         URL resource = finder
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
             resource = finder.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
+        return resource;
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport,
+            ClassFinder finder) {
+        URL resource = getJarResource(jarImport, finder);
 
         if (resource == null) {
             return null;

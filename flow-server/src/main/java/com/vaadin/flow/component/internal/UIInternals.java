@@ -380,6 +380,11 @@ public class UIInternals implements Serializable {
      * Sets the last processed server message id.
      * <p>
      * Used internally for communication tracking.
+     * <p>
+     * Also forgets the response recorded for the previous message, as it stops
+     * being an answer this UI may send again once a new message is processed. A
+     * caller that sets the id for any other reason, such as restoring tracking
+     * state, would discard a response the client may still ask for.
      *
      * @param lastProcessedClientToServerId
      *            the id of the last processed server message
@@ -391,13 +396,18 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+        // A new message is being processed, so the recorded response answers
+        // the previous one. It can be sent again only once the answer to this
+        // message exists.
+        this.lastRequestResponse = null;
     }
 
     /**
-     * Sets the response created for the last UIDL request.
+     * Sets the response created for a client message, so that it can be sent
+     * again if the client re-sends that same message.
      *
      * @param lastRequestResponse
-     *            The request that was sent for the last UIDL request.
+     *            the response that was created for the client message
      * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
@@ -474,6 +484,7 @@ public class UIInternals implements Serializable {
      *
      * @return the time the pending updates were last purged
      * @see UI#getLastUpdateSentTimestamp()
+     * @since 25.3
      */
     public Instant getLastUpdateSentTimestamp() {
         return lastUpdateSentTimestamp;
@@ -753,6 +764,10 @@ public class UIInternals implements Serializable {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
         pendingJsInvocationOwners.add(invocation.getOwner());
+        // Counts an invocation that is queued directly, such as one from
+        // Page.executeJs. An invocation queued through its owner being
+        // attached is already counted, and counting is idempotent
+        invocation.countWhenAttached();
     }
 
     /**
@@ -812,6 +827,7 @@ public class UIInternals implements Serializable {
      *
      * @param owner
      *            the node whose invocations to discard, not <code>null</code>
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations(StateNode owner) {
         checkInvocationQueueLock();
@@ -833,6 +849,8 @@ public class UIInternals implements Serializable {
      * Called by {@link StateTree} when resynchronizing, which reinitializes the
      * whole client side, so the queue is emptied in one go rather than node by
      * node.
+     * 
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations() {
         checkInvocationQueueLock();
