@@ -1,0 +1,178 @@
+name: Flow PR Snapshot
+
+# Builds and publishes a Flow snapshot for a pull request, so that the change
+# can be tried out from a Maven repository before it is merged. The build is
+# opt-in per pull request: it runs once the "snapshot build" label is added and
+# then again for every commit pushed while the label is there.
+#
+# The version is derived from the branch name the same way the TeamCity feature
+# branch snapshot builds of the other Vaadin repositories derive theirs, so that
+# a Flow snapshot and, say, a Flow Components snapshot built from branches with
+# the same name resolve each other automatically.
+on:
+  pull_request:
+    types: [labeled, synchronize]
+    # Deliberately unfiltered by base branch: a snapshot is as useful for a pull
+    # request against a maintenance branch as for one against main. That branch
+    # has to carry its own copy of this file for its pull requests, like
+    # validation.yml.
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  # One snapshot per pull request, superseded by the next push: only the newest
+  # commit is worth publishing, and the version is the same for all of them.
+  group: ${{ github.workflow }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+env:
+  # The repository the snapshot is published to. Public, so a variable rather
+  # than a secret, which lets the pull request comment name it. Only the
+  # credentials below are secret.
+  SNAPSHOT_DEPLOY_URL: ${{ vars.SNAPSHOT_DEPLOY_URL || 'https://maven.vaadin.com/vaadin-prereleases/' }}
+  _HEAD_REF: ${{ github.head_ref }}
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  # Same mapping as validation.yml: a pull request builds with the JDK of the
+  # branch it targets.
+  JAVA_VERSION: ${{ (startsWith(github.base_ref, '23.') && '11') || (startsWith(github.base_ref, '24.') && '17') || '21' }}
+
+jobs:
+  snapshot:
+    # A deploy needs the credentials, and secrets are only handed to pull
+    # requests from a branch of this repository, never to a fork. Which is also
+    # the access check: pushing that branch takes write access to the repository
+    # and applying the label takes at least triage access, so a snapshot cannot
+    # be triggered from the outside. Fork pull requests are skipped entirely -
+    # labeling one does nothing.
+    #
+    # The label has to be present for both event types, and a `labeled` event
+    # for some other label must not start a build of its own.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && contains(github.event.pull_request.labels.*.name, 'snapshot build')
+      && (github.event.action != 'labeled' || github.event.label.name == 'snapshot build')
+    timeout-minutes: 90
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check secrets
+        env:
+          SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.SNAPSHOT_DEPLOY_USERNAME }}
+          SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.SNAPSHOT_DEPLOY_PASSWORD }}
+        run: |
+          [ -z "$SNAPSHOT_DEPLOY_USERNAME" ] || [ -z "$SNAPSHOT_DEPLOY_PASSWORD" ] \
+            && echo "🚫 **SNAPSHOT_DEPLOY_USERNAME** / **SNAPSHOT_DEPLOY_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.20.0'
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+          # Writes the settings.xml server entry the deploy below authenticates
+          # with; the values are read from the environment at that point.
+          server-id: vaadin-snapshots
+          server-username: SNAPSHOT_DEPLOY_USERNAME
+          server-password: SNAPSHOT_DEPLOY_PASSWORD
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        # Read only, and before the version rewrite below: the rewritten poms
+        # hash to a key of this pull request's own, which nothing else would
+        # ever restore, and this build resolves nothing the validation and cache
+        # warming builds have not already put in their entry. The prefix key is
+        # what reaches it.
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Compute the snapshot version
+        id: version
+        run: |
+          # Everything up to the last slash is a prefix like feature/, fix/ or
+          # issues/ and is dropped, leaving the branch name itself as the
+          # qualifier: fix/my-thing -> 25.4.my-thing-SNAPSHOT.
+          qualifier=$(printf '%s' "${_HEAD_REF##*/}" | sed -E 's/[^A-Za-z0-9.-]+/-/g; s/^[.-]+//; s/[.-]+$//')
+          if [ -z "$qualifier" ]; then
+            echo "🚫 Branch name \`$_HEAD_REF\` has no character a Maven version can carry" \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          base=$(mvn -q -N -B -ntp org.apache.maven.plugins:maven-help-plugin:3.5.2:evaluate \
+            -Dexpression=project.version -DforceStdout | sed 's/-SNAPSHOT$//')
+          echo "version=$base.$qualifier-SNAPSHOT" >> $GITHUB_OUTPUT
+      - name: Set the snapshot version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          echo "Building $VERSION" | tee -a $GITHUB_STEP_SUMMARY
+          ./scripts/computeMatrix.js set-version --version="$VERSION"
+      - name: Build and deploy the snapshot
+        env:
+          SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.SNAPSHOT_DEPLOY_USERNAME }}
+          SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.SNAPSHOT_DEPLOY_PASSWORD }}
+        # -Drelease leaves the flow-tests modules out of the reactor: they are
+        # never published (they set maven.deploy.skip) and building them would
+        # roughly double this job. -Pvalidation turns the javadoc jars back on,
+        # so the snapshot carries the same artifacts a release does.
+        #
+        # flow-gradle-plugin stays in the reactor, unlike in validation.yml,
+        # which leaves it out because its tests are a job of their own: on the
+        # JDKs this workflow builds with, flow-plugins/pom.xml activates it, and
+        # a snapshot should hold what a release holds.
+        run: |
+          mvn deploy -B -ntp -e -DskipTests -Drelease -Pvalidation \
+            -DaltDeploymentRepository=vaadin-snapshots::${SNAPSHOT_DEPLOY_URL}
+      - name: Comment the snapshot version on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          marker='<!-- flow-pr-snapshot -->'
+          cat > comment.md <<EOF
+          $marker
+          ### 📦 Snapshot published
+
+          \`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})).
+
+          Every new commit on this branch republishes it while the \`snapshot build\` label is there. Add \`-U\` to pick the newest build up.
+
+          <details><summary>How to use it</summary>
+
+          \`\`\`xml
+          <repository>
+            <id>vaadin-snapshots</id>
+            <url>$SNAPSHOT_DEPLOY_URL</url>
+            <snapshots><enabled>true</enabled></snapshots>
+          </repository>
+
+          <dependencyManagement>
+            <dependencies>
+              <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-bom</artifactId>
+                <version>$VERSION</version>
+                <type>pom</type>
+                <scope>import</scope>
+              </dependency>
+            </dependencies>
+          </dependencyManagement>
+          \`\`\`
+
+          Import \`flow-bom\` before \`vaadin-bom\` for it to win over the platform's Flow version.
+          </details>
+          EOF
+          # One comment per pull request, edited in place, so a series of pushes
+          # does not bury the pull request in notifications.
+          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@comment.md
+          else
+            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@comment.md
+          fi

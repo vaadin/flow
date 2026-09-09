@@ -78,3 +78,35 @@ Commit the regenerated files together with the source `.md` changes.
 
 - Agentic workflows documentation: https://github.github.com/gh-aw/
 - `gh-aw` CLI: https://github.com/github/gh-aw
+
+## Pull request snapshots
+
+`pr-snapshot.yml` builds and publishes a Flow snapshot for a single pull
+request, so a change can be tried out from a Maven repository before it is
+merged. It is opt-in per pull request: add the `snapshot build` label and the
+build starts, and every commit pushed while the label is there republishes the
+snapshot. Removing the label stops that.
+
+The version comes from the branch name — everything up to the last slash is
+dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
+`25.4.my-thing-SNAPSHOT`. That is the scheme the TeamCity feature branch
+snapshot builds of the other Vaadin repositories use, so snapshots built from
+equally named branches of two repositories resolve each other. The workflow
+comments the version and a copy-pasteable `flow-bom` import on the pull
+request, editing the same comment on every rebuild.
+
+Publishing needs the credentials, and GitHub only hands secrets to pull
+requests from a branch of this repository. That is also what limits who can
+trigger a snapshot: pushing such a branch takes write access. Labeling a pull
+request from a fork does nothing.
+
+Configuration:
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `SNAPSHOT_DEPLOY_USERNAME` | secret | User the snapshot is deployed as. |
+| `SNAPSHOT_DEPLOY_PASSWORD` | secret | Its password or token. |
+| `SNAPSHOT_DEPLOY_URL` | variable (optional) | Repository to deploy to. Defaults to `https://maven.vaadin.com/vaadin-prereleases/`. A variable rather than a secret so the pull request comment can name it. |
+
+The `snapshot build` label has to exist in the repository for it to be
+selectable.
