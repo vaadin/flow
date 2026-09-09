@@ -18,10 +18,17 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -39,9 +46,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The connector must always answer exactly one line, even on failure, or the
  * daemon blocks waiting for a reply that is not coming.
  * <p>
- * Only the no-agent and no-hotswapper paths are unit-testable: everything past
- * them needs a real {@code Instrumentation} handle and a running application.
- * The rest is covered end to end in {@code flow-tests/test-devloop}.
+ * Of the reply itself, what is unit-testable is what needs no running
+ * application: the no-agent and no-hotswapper paths, the decision
+ * {@code inspect} reaches about a change-set, and the questions asked of a
+ * class or of its compiled bytes. Defining a class and refreshing Flow need a
+ * real {@code Instrumentation} handle and a live service, and are covered end
+ * to end in {@code flow-tests/test-devloop}.
  */
 class DevLoopRedefinerTest {
 
@@ -230,6 +240,119 @@ class DevLoopRedefinerTest {
         byte[] joined = Arrays.copyOf(bytes, bytes.length + added.length);
         System.arraycopy(added, 0, joined, bytes.length, added.length);
         return joined;
+    }
+
+    @Test
+    void inspect_readsALoadedClassAndTheBytesItIsAboutToBeGiven() {
+        String name = NothingDeclared.class.getName();
+
+        // The same class twice is what a duplicate loaded copy looks like, and
+        // both have to go into the one redefine call: redefining one leaves
+        // the copy the application instantiates untouched, which is a green
+        // apply over a stale page.
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name),
+                Map.of(name,
+                        List.of(NothingDeclared.class, NothingDeclared.class)),
+                List.of(testClasses()));
+
+        assertNull(inspected.error());
+        assertEquals(2, inspected.definitions().size());
+        assertEquals(1, inspected.duplicates());
+        assertTrue(inspected.notLoaded().isEmpty());
+        // A plain class is nothing to escalate on: the redefine is the whole
+        // of the change.
+        assertTrue(inspected.entities().isEmpty(), "entities");
+        assertTrue(inspected.stereotypes().isEmpty(), "stereotypes");
+        assertTrue(inspected.uiClasses().isEmpty(), "ui classes");
+    }
+
+    @Test
+    void inspect_namesTheBeansAndEntitiesThisJvmHasNoClassFor(
+            @TempDir Path classes) throws IOException {
+        // A class that did not exist when the application started. There is
+        // nothing loaded to redefine, so every signal read off a loaded class
+        // is empty and only the new bytes say anything - and what they say is
+        // that component scanning and the metamodel, both of which ran at
+        // startup, know nothing about these.
+        writeClass(classes, "bean.NewBean",
+                "Lorg/springframework/stereotype/Service;");
+        writeClass(classes, "model.NewEntity", "Ljakarta/persistence/Entity;");
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of("bean.NewBean", "model.NewEntity", "gone.Nothing"),
+                Map.of(), List.of(classes));
+
+        // The third one is neither loaded nor on the search path - a class
+        // from outside the loop - and is no error and nothing to answer for.
+        assertNull(inspected.error());
+        assertTrue(inspected.definitions().isEmpty());
+        assertEquals(List.of("bean.NewBean", "model.NewEntity", "gone.Nothing"),
+                inspected.notLoaded());
+        assertEquals(Set.of("NewBean"), inspected.stereotypes());
+        assertEquals(Set.of("NewEntity"), inspected.entities());
+    }
+
+    @Test
+    void inspect_aLoadedClassWithNoNewBytesIsTheOneError() {
+        // The daemon compiled it before asking, so bytes that are not on the
+        // search path mean the path is wrong. Redefining the rest of the
+        // change-set would report success over a class that never got them.
+        String name = NothingDeclared.class.getName();
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name), Map.of(name, List.of(NothingDeclared.class)),
+                List.of(Path.of("no", "such", "directory")));
+
+        assertEquals("ERR kind=missing-class-file searched=1 message=" + name,
+                inspected.error());
+    }
+
+    @Test
+    void reply_carriesEveryFieldTheDaemonReadsAVerdictFrom() {
+        // The daemon splits this line on whitespace and reads by name, so a
+        // renamed or dropped field is a silently different answer rather than
+        // a parse failure - which is why the whole line is asserted.
+        DevLoopRedefiner.Inspection inspected = new DevLoopRedefiner.Inspection(
+                List.of(), List.of("gone.Nothing"), 1, Set.of("Order"),
+                Set.of("TaskService"), Set.of("NewBean"),
+                Set.of("TaskListView"), null);
+        DevLoopRedefiner.Applied applied = new DevLoopRedefiner.Applied(
+                Set.of("TaskService"), Set.of("TaskRepository"),
+                Set.of("TaskListView"), true, false, 4, 7);
+
+        // hotswapAgent is read off this JVM, which has no agent on its
+        // classpath.
+        assertEquals(
+                "OK redefined=0 notLoaded=1 dupes=1 completed=true"
+                        + " pageReload=false entities=Order beans=TaskService"
+                        + " proxied=TaskRepository structural=TaskService"
+                        + " ui=TaskListView frontendImports=TaskListView"
+                        + " hotswapAgent=false redefineMs=4 hotswapMs=7"
+                        + " stereotypes=NewBean",
+                DevLoopRedefiner.reply(inspected, applied));
+    }
+
+    /** The module's own test output, which is a real classpath directory. */
+    private static Path testClasses() {
+        try {
+            return Path.of(DevLoopRedefinerTest.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI());
+        } catch (URISyntaxException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
+     * A class file for a name nothing has loaded, carrying one annotation
+     * descriptor in its constant pool - which is all these checks read.
+     */
+    private static void writeClass(Path root, String binaryName,
+            String descriptor) throws IOException {
+        Path file = root.resolve(binaryName.replace('.', '/') + ".class");
+        Files.createDirectories(file.getParent());
+        Files.write(file,
+                withConstant(classBytes(NothingDeclared.class), descriptor));
     }
 
     @Test

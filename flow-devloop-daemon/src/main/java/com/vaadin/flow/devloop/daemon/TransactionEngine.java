@@ -389,12 +389,6 @@ final class TransactionEngine {
             Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
-            // Read here rather than at the runtime leg, which is after the
-            // compile: what the running application never had is a fact about
-            // the change-set as it was detected, and markSourcesApplied moves
-            // it as soon as a redefine holds.
-            List<String> unknownTypes = compile
-                    .typesUnknownToTheApp(changes.modified());
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
             changes.deleted().forEach(path -> tx.changeSet
@@ -664,8 +658,12 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
-                        Optional<String> blocker = blockedReason(fields,
-                                unknownTypes);
+                        // Asked here and not before the compile only because
+                        // nothing moves the inventory in between:
+                        // markSourcesApplied is below, in the branch this
+                        // answer decides.
+                        Optional<String> blocker = blockedReason(fields, compile
+                                .typesUnknownToTheApp(changes.modified()));
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);
