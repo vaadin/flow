@@ -381,4 +381,19 @@ class LocationTest {
         location = new Location(locationString);
         assertEquals(locationString, location.getPathWithQueryParameters());
     }
+
+    @Test
+    void questionMarkInFragment_notTreatedAsQueryString() {
+        Location location = new Location("foo/bar#a?b");
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("", location.getQueryParameters().getQueryString());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+    }
+
+    @Test
+    void fragmentOnlyLocation_pathIsEmptyAndFragmentRetained() {
+        Location location = new Location("#total");
+        assertEquals("", location.getPath());
+        assertEquals("#total", location.getPathWithQueryParameters());
+    }
 }

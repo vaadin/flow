@@ -1345,7 +1345,9 @@ public class UI extends Component
      * The location may carry a query string and a fragment, as in
      * {@code "order/123?tab=items#total"}. The query string is parsed into the
      * {@link QueryParameters} of the resulting
-     * {@link Location#getQueryParameters() location}.
+     * {@link Location#getQueryParameters() location}. A location that is only a
+     * fragment, such as {@code "#total"}, is an in-page anchor and is left for
+     * the browser to handle instead of being resolved to a route.
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
@@ -1405,6 +1407,12 @@ public class UI extends Component
                 ? new Location(locationString, queryParameters)
                 : new Location(locationString);
 
+        // A location that only carries a fragment is an in-page anchor rather
+        // than a route, so it must not be resolved against the routes and end
+        // up on the root route
+        boolean anchorOnly = location.getPath().isEmpty()
+                && locationString.indexOf('#') >= 0;
+
         // There is an in-progress navigation or there are no changes,
         // prevent looping
         if (navigationInProgress
@@ -1415,8 +1423,10 @@ public class UI extends Component
 
         navigationInProgress = true;
         try {
-            Optional<NavigationState> navigationState = getInternals()
-                    .getRouter().resolveNavigationTarget(location);
+            Optional<NavigationState> navigationState = anchorOnly
+                    ? Optional.empty()
+                    : getInternals().getRouter()
+                            .resolveNavigationTarget(location);
 
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra

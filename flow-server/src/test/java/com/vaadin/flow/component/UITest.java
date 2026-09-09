@@ -328,6 +328,40 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQuestionMarkInFragment_fragmentKeptIntact()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        // '?' is a legal fragment character and does not start a query string
+        ui.navigate("foo/bar#a?b");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(Collections.emptyMap(),
+                location.getQueryParameters().getParameters());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToFragmentOnly_currentViewIsKept()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+
+        // An in-page anchor must not be resolved to the "" route
+        ui.navigate("#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
+                .getPathWithQueryParameters());
+    }
+
+    @Test
     public void navigateWithSeparateQueryParameters_parametersAreApplied()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
