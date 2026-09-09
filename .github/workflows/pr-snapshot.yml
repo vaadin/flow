@@ -28,12 +28,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Where the snapshot is uploaded. A secret of this repository, unlike the
-  # credentials below, which are the organization ones so that the account is
-  # inventoried in one place. A repository taking this workflow into use
-  # publishes wherever it publishes - and then has to set the variable below
-  # too, or the comment will hand out an address its snapshot is not on.
-  MAVEN_SNAPSHOT_DEPLOY_URL: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_URL }}
+  # Where the snapshot is uploaded, which is not the address below that it is
+  # read from. A variable rather than a secret: masking it would buy nothing
+  # and would only make the upload lines in the run log unreadable. Set per
+  # repository, so a repository taking this workflow into use publishes
+  # wherever it publishes - and then has to set the one below too, or the
+  # comment will hand out an address its snapshot is not on.
+  MAVEN_SNAPSHOT_DEPLOY_URL: ${{ vars.MAVEN_SNAPSHOT_DEPLOY_URL }}
   # Where the snapshot is read from afterwards, which is not the same address:
   # uploads go to the repository itself, resolving goes through the public one
   # in front of it. This is the one the pull request comment hands out, so it
@@ -65,13 +66,16 @@ jobs:
     timeout-minutes: 90
     runs-on: ubuntu-24.04
     steps:
-      - name: Check secrets
+      - name: Check configuration
+        # The address is a variable and the credentials are secrets, but an
+        # unset one of either ends the same way: an upload that fails after the
+        # whole build, on something the step summary can say in a line here.
         env:
           SNAPSHOT_USERNAME: ${{ secrets.SNAPSHOT_USERNAME }}
           SNAPSHOT_PASSWORD: ${{ secrets.SNAPSHOT_PASSWORD }}
         run: |
           [ -z "$MAVEN_SNAPSHOT_DEPLOY_URL" ] || [ -z "$SNAPSHOT_USERNAME" ] || [ -z "$SNAPSHOT_PASSWORD" ] \
-            && echo "🚫 **MAVEN_SNAPSHOT_DEPLOY_URL** / **SNAPSHOT_USERNAME** / **SNAPSHOT_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
+            && echo "🚫 The **MAVEN_SNAPSHOT_DEPLOY_URL** variable or the **SNAPSHOT_USERNAME** / **SNAPSHOT_PASSWORD** secrets are not defined, check the configuration of **${{ github.repository }}**" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:

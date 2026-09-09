@@ -112,7 +112,7 @@ Configuration:
 |---|---|---|
 | `SNAPSHOT_USERNAME` | organization secret | User the snapshot is deployed as, shared with the other builds that publish, so the account stays inventoried in one place. |
 | `SNAPSHOT_PASSWORD` | organization secret | Its password or token. |
-| `MAVEN_SNAPSHOT_DEPLOY_URL` | secret | Address the snapshot is uploaded to, which is the deploy endpoint of the repository rather than `MAVEN_SNAPSHOT_READ_URL` below: uploads go to the repository itself, resolving goes through the public address in front of it. It is the value the TeamCity snapshot builds deploy to, `%snapshot.target%`. Pointing this at the read address is refused with a 403. |
+| `MAVEN_SNAPSHOT_DEPLOY_URL` | variable | Address the snapshot is uploaded to, which is the deploy endpoint of the repository rather than `MAVEN_SNAPSHOT_READ_URL` below: uploads go to the repository itself, resolving goes through the public address in front of it. It is the value the TeamCity snapshot builds deploy to, `%snapshot.target%`. Pointing this at the read address is refused with a 403. A variable rather than a secret, so the upload lines in the run log stay readable. |
 | `MAVEN_SNAPSHOT_READ_URL` | variable (optional) | Address the pull request comment tells people to resolve from. Defaults to `https://maven.vaadin.com/vaadin-prereleases`, so only a repository publishing elsewhere has to set it. Public by nature - it is handed out in a comment. |
 
 The `snapshot build` label has to exist in the repository for it to be
