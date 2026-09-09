@@ -218,6 +218,143 @@ class TransactionEngineTest {
         assertEquals("    ...", rows.get(rows.size() - 1));
     }
 
+    @Test
+    void finish_dropsAServedDevServerErrorFromTheQuotedLog() {
+        // The dev server was asked about these very files and served them all,
+        // so a transform error still in the log describes the version this edit
+        // replaced - the daemon's own request for the broken one put it there.
+        // Quoting it under a Stable verdict reads as a green answer over a
+        // broken page, which is the confusion this whole leg exists to prevent.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = true;
+        String appOwn = "2026-08-31 ERROR 1 --- [http-nio-8080-exec-1] c.e.Foo"
+                + "  : could not reach the pricing API";
+        tx.logErrors = List.of(VITE_ERROR, appOwn);
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hmr", "",
+                System.nanoTime());
+
+        // The stale dev-server report is gone; the app's own error, which is
+        // still about the run, stays and is the one the render quotes.
+        assertEquals(List.of(appOwn), tx.logErrors);
+        assertTrue(engine.render(tx).stream()
+                .noneMatch(line -> line.contains("Transform failed")));
+    }
+
+    @Test
+    void finish_keepsADevServerErrorTheServerWasNeverAskedAbout() {
+        // Only a clean answer overrules the log. When the app could not be
+        // asked - too old to know the command, connector unreachable - the log
+        // is all there is, so its errors must survive to be quoted.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.devServerAsked = false;
+        tx.logErrors = List.of(VITE_ERROR);
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hmr", "",
+                System.nanoTime());
+
+        assertEquals(List.of(VITE_ERROR), tx.logErrors);
+        assertTrue(engine.render(tx).stream()
+                .anyMatch(line -> line.startsWith("app log:")));
+    }
+
+    @Test
+    void finish_dropsACheckerReportTheCheckerHasWithdrawn() {
+        // The checker has since said the project type-checks, so a report of
+        // its still in the log is superseded and must not be quoted under a
+        // verdict that is entirely correct.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.checkerFailure = null;
+        String checker = " ERROR(TypeScript)  TS2322: Type 'number' is not"
+                + " assignable to type 'string'.";
+        tx.logErrors = List.of(checker);
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hmr", "",
+                System.nanoTime());
+
+        assertTrue(tx.logErrors.isEmpty(), tx.logErrors.toString());
+    }
+
+    @Test
+    void finish_keepsACheckerReportWhoseVerdictStillStands() {
+        // The verdict has not been withdrawn, so its report stays: this is the
+        // failure the apply is reporting, not one to filter away.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.checkerFailure = "the project does not type-check";
+        String checker = " ERROR(TypeScript)  TS2322: Type 'number' is not"
+                + " assignable to type 'string'.";
+        tx.logErrors = List.of(checker);
+
+        engine.finish(tx, TransactionEngine.Outcome.FAILED,
+                "dev server: type error", "hmr", "fix it", System.nanoTime());
+
+        assertEquals(List.of(checker), tx.logErrors);
+    }
+
+    @Test
+    void finish_mergesCarriedErrorsAheadOfTheWindow() {
+        // A dev server compiles on save, so its complaint about a file in this
+        // change-set is already in the log before the window opens. It is
+        // carried across and folded back in ahead of what the window collected,
+        // so no leg reports Stable while an inherited error goes unmentioned.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.carriedLogErrors = List.of(VITE_ERROR);
+        String appOwn = "2026-08-31 ERROR 1 --- [http-nio-8080-exec-1] c.e.Foo"
+                + "  : could not reach the pricing API";
+        tx.logErrors = List.of(appOwn);
+
+        engine.finish(tx, TransactionEngine.Outcome.FAILED, "boom", "hmr",
+                "fix it", System.nanoTime());
+
+        assertEquals(List.of(VITE_ERROR, appOwn), tx.logErrors);
+    }
+
+    @Test
+    void render_namesTheViteClauseForAFrontendStable() {
+        // A Vite-applied frontend change reports Stable through the hmr leg,
+        // and
+        // the detail line names what happened to the files and where.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        tx.frontendMode = "vite";
+        tx.frontend = "up:49401";
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hmr", "",
+                System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        assertTrue(lines.get(0).startsWith("frontend → Stable"), lines.get(0));
+        assertTrue(
+                lines.stream()
+                        .anyMatch(line -> line.contains("hmr: ")
+                                && line.contains("applied by Vite")
+                                && line.contains("up:49401")),
+                lines.toString());
+    }
+
+    @Test
+    void render_wrapsTheReasonUnderAFrontendFailed() {
+        // A frontend failure names the frontend phase, not "compiling", and its
+        // reason gets its own wrapped row rather than being cut off.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = frontendChange();
+        String reason = "dev server: greeting.ts | Transform failed with 1"
+                + " error: [PARSE_ERROR] Expected `}` but found `EOF`";
+
+        engine.finish(tx, TransactionEngine.Outcome.FAILED, reason, "hmr",
+                "fix the file", System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        assertEquals("frontend → Failed", lines.get(0));
+        assertEquals(reason, String.join(" ", lines.subList(1, lines.size()))
+                .replaceAll("\\s+", " ").strip());
+    }
+
     private static TransactionEngine.Transaction frontendChange() {
         TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
         tx.frontendFiles = 1;
