@@ -170,6 +170,8 @@ jobs:
 
           \`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})).
 
+          Built without running tests. Look at the checks on this pull request before relying on it.
+
           Every new commit on this branch republishes it while the \`snapshot build\` label is there. Add \`-U\` to pick the newest build up.
 
           <details><summary>How to use it</summary>
