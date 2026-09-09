@@ -47,6 +47,7 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitleGenerator;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
@@ -283,9 +284,33 @@ public class MenuRegistry {
      */
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {
+        return getTitle(target, parameters, QueryParameters.empty());
+    }
+
+    /**
+     * Get page title for route or simple name if no PageTitle is set.
+     * <p>
+     * When the route declares a {@link DynamicPageTitle}, its generator is
+     * resolved with the given route and query parameters without instantiating
+     * the route class. These are the same parameters the router hands to the
+     * generator when it resolves the title of the route it navigates to.
+     *
+     * @param target
+     *            route class to get title for
+     * @param parameters
+     *            the route parameters handed to a {@link PageTitleGenerator},
+     *            not {@code null}
+     * @param queryParameters
+     *            the query parameters handed to a {@link PageTitleGenerator},
+     *            not {@code null}
+     * @return title to use for route
+     */
+    public static String getTitle(Class<? extends Component> target,
+            RouteParameters parameters, QueryParameters queryParameters) {
         VaadinService service = VaadinService.getCurrent();
         return service == null ? target.getSimpleName()
-                : service.getRouter().resolvePageTitle(target, parameters)
+                : service.getRouter()
+                        .resolvePageTitle(target, parameters, queryParameters)
                         .orElseGet(target::getSimpleName);
     }
 

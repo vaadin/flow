@@ -27,9 +27,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Menu configuration helper class to retrieve available menu entries for
@@ -100,11 +104,49 @@ public final class MenuConfiguration {
                 if (maybeTitle.isPresent()) {
                     return maybeTitle;
                 }
+                return Optional.of(getActiveRouteTitle(ui, content.getClass()));
             }
 
             return Optional.of(MenuRegistry.getTitle(content.getClass()));
         }
         return getPageHeaderFromMenuItems();
+    }
+
+    /**
+     * Resolves the title of the shown server-side route, handing the route and
+     * query parameters of the active location to a
+     * {@link com.vaadin.flow.router.PageTitleGenerator} declared with
+     * {@link com.vaadin.flow.router.DynamicPageTitle}, so that the header
+     * matches the browser page title the router resolves for the same
+     * navigation.
+     */
+    private static String getActiveRouteTitle(UI ui,
+            Class<? extends Component> navigationTarget) {
+        Location location = ui.getInternals().getActiveViewLocation();
+        return MenuRegistry.getTitle(navigationTarget,
+                getActiveRouteParameters(location, navigationTarget),
+                location.getQueryParameters());
+    }
+
+    /**
+     * Resolves the route parameters of the active location, but only when it is
+     * the location of the given navigation target itself: the content of a
+     * layout may well be another route than the one the parameters belong to,
+     * and foreign parameters are more misleading than none.
+     */
+    private static RouteParameters getActiveRouteParameters(Location location,
+            Class<? extends Component> navigationTarget) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return RouteParameters.empty();
+        }
+        NavigationRouteTarget activeTarget = service.getRouter().getRegistry()
+                .getNavigationRouteTarget(location.getPath());
+        if (activeTarget.hasTarget() && navigationTarget
+                .equals(activeTarget.getRouteTarget().getTarget())) {
+            return activeTarget.getRouteParameters();
+        }
+        return RouteParameters.empty();
     }
 
     /**
