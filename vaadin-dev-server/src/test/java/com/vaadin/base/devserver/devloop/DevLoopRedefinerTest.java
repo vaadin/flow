@@ -244,27 +244,36 @@ class DevLoopRedefinerTest {
 
     @Test
     void inspect_readsALoadedClassAndTheBytesItIsAboutToBeGiven() {
-        String name = NothingDeclared.class.getName();
+        String plain = NothingDeclared.class.getName();
+        String view = SomeView.class.getName();
 
         // The same class twice is what a duplicate loaded copy looks like, and
         // both have to go into the one redefine call: redefining one leaves
         // the copy the application instantiates untouched, which is a green
         // apply over a stale page.
         DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
-                List.of(name),
-                Map.of(name,
-                        List.of(NothingDeclared.class, NothingDeclared.class)),
+                List.of(plain, view),
+                Map.of(plain,
+                        List.of(NothingDeclared.class, NothingDeclared.class),
+                        view, List.of(SomeView.class)),
                 List.of(testClasses()));
 
         assertNull(inspected.error());
-        assertEquals(2, inspected.definitions().size());
+        assertEquals(3, inspected.definitions().size());
         assertEquals(1, inspected.duplicates());
         assertTrue(inspected.notLoaded().isEmpty());
-        // A plain class is nothing to escalate on: the redefine is the whole
-        // of the change.
+        // What the loaded class says, which is the other source and reaches
+        // the daemon on its own field: onHotswap visibly refreshes a
+        // Component, and a change-set with none is reported as live but not
+        // yet visible rather than simply stable. Under the binary tail of the
+        // name, which is what a nested type is reported as.
+        assertEquals(Set.of("DevLoopRedefinerTest$SomeView"),
+                inspected.uiClasses());
+        // Neither of them is a bean or an entity, by either source: the
+        // redefine is the whole of this change.
         assertTrue(inspected.entities().isEmpty(), "entities");
         assertTrue(inspected.stereotypes().isEmpty(), "stereotypes");
-        assertTrue(inspected.uiClasses().isEmpty(), "ui classes");
+        assertTrue(inspected.beans().isEmpty(), "beans");
     }
 
     @Test
