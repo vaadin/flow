@@ -346,19 +346,32 @@ public class UITest {
     }
 
     @Test
-    public void navigateToFragmentOnly_currentViewIsKept()
+    public void navigateToFragmentOnly_leftToClientRouter()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
         ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
 
-        // An in-page anchor must not be resolved to the "" route
+        // A fragment must not be resolved to the "" route
         ui.navigate("#total");
 
         MatcherAssert.assertThat(ui.getCurrentView(),
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
         assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
                 .getPathWithQueryParameters());
+        assertEquals(List.of("#total"), dumpClientNavigations(ui),
+                "The fragment should have been handed to the client router");
+    }
+
+    private static List<String> dumpClientNavigations(UI ui) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .filter(invocation -> UI.CLIENT_NAVIGATE_TO
+                        .equals(invocation.getExpression()))
+                .map(invocation -> (String) invocation.getParameters().get(0))
+                .toList();
     }
 
     @Test
