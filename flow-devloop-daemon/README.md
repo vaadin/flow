@@ -437,6 +437,26 @@ its answer rather than claiming success.
   produced. Such a project needs `mvn compile` rather than `apply`; honouring
   the module's `proc` and `annotationProcessorPaths` configuration is not
   implemented.
+- **The compiler plugin's configuration is not read**, except for the release
+  level (see above). The compile is a fixed option list — `--release`,
+  `-encoding UTF-8`, `-nowarn`, `-proc:none`, `-parameters` and `-g` — so
+  `<compilerArgs>`, `--enable-preview` and `-Werror` are not honoured, and a
+  class the daemon writes can differ from the one Maven would write. The two
+  bytecode-shaping flags a normal build always has on are passed unconditionally
+  rather than looked up, because both are set in a parent outside the checkout
+  in every `spring-boot-starter-parent` project — the plugin defaults `<debug>`
+  to true, and the Spring Boot parent configures `<parameters>true</parameters>`.
+  Without `-parameters` a recompiled Spring Data repository throws "for queries
+  with named parameters you need to provide names for method parameters" at
+  runtime, from code the developer never touched, and Spring MVC's
+  `@RequestParam` without an explicit name fails the same way.
+- **`target/classes` is shared with Maven, and the daemon writes into it last.**
+  A class the daemon compiled is newer than its source, so after a session
+  `mvn compile` finds the module up to date and compiles nothing: whatever the
+  in-loop compile did differently — no annotation processing, no project
+  compiler arguments — is then what `mvn verify` tests against. `mvn clean` is
+  the recovery, and compiling into an output directory of the daemon's own is
+  not implemented.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
   fires a competing full page reload; the Spring ones were measured to lose the

@@ -67,6 +67,49 @@ class CompileTest {
     }
 
     @Test
+    void compile_keepsParameterNamesAndDebugInfoLikeAMavenBuild()
+            throws Exception {
+        // A Spring Data repository is the loud case: a query with a named
+        // parameter needs the name in the bytecode, and every
+        // spring-boot-starter-parent project has -parameters on without ever
+        // mentioning it, so a class the daemon rewrites without the flag breaks
+        // a view the developer never edited.
+        Reactor.Module app = module("app", "Finder", """
+                package app;
+                public class Finder {
+                    public String byName(String name) {
+                        String found = name;
+                        return found;
+                    }
+                }
+                """);
+        Launch.Project project = project(app);
+
+        Compile.Result result = new Compile(project)
+                .compile(List.of(source(app, "Finder")), project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        Path classFile = app.classesDir().resolve("app")
+                .resolve("Finder.class");
+        try (var loader = new java.net.URLClassLoader(
+                new java.net.URL[] { app.classesDir().toUri().toURL() },
+                null)) {
+            var parameter = loader.loadClass("app.Finder")
+                    .getMethod("byName", String.class).getParameters()[0];
+            assertTrue(parameter.isNamePresent(),
+                    "-parameters: the class carries no MethodParameters");
+            assertEquals("name", parameter.getName());
+        }
+        // -g, which the compiler plugin has on by default: the local variable
+        // names a debugger and a stack trace read.
+        assertTrue(
+                new String(Files.readAllBytes(classFile),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                        .contains("LocalVariableTable"),
+                "-g: the class carries no LocalVariableTable");
+    }
+
+    @Test
     void compile_writesEachModulesClassesIntoItsOwnOutput() throws IOException {
         Reactor.Module app = module("app", "Main", """
                 package app;
