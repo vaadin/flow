@@ -21,6 +21,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.ThemeList;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -138,8 +140,19 @@ class HasThemeTest {
     void getThemeList_elementThemeList() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
 
-        assertEquals(component.getElement().getThemeList().isEmpty(),
-                component.getThemeNames().isEmpty());
+        ThemeList themeNames = component.getThemeNames();
+        ThemeList elementThemeList = component.getElement().getThemeList();
+        assertEquals(elementThemeList.isEmpty(), themeNames.isEmpty());
+
+        // setThemeName writes the theme attribute directly, so views obtained
+        // earlier have to read the attribute rather than anything cached
+        component.setThemeName("foo bar");
+        assertEquals(Set.of("foo", "bar"), new HashSet<>(themeNames));
+        assertEquals(Set.of("foo", "bar"), new HashSet<>(elementThemeList));
+
+        elementThemeList.remove("foo");
+        assertEquals(Set.of("bar"), new HashSet<>(themeNames),
+                "Every view of the same element should agree on the theme names");
     }
 
     @Test
