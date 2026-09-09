@@ -33,6 +33,9 @@ exact, no fluff.
 - Skip when the subject is self-explanatory
 - Add a body only for: non-obvious *why*, breaking changes, migration notes
 - Add `Fixes #issuenumber` when the commit resolves an issue in this repository
+- Don't sign the commit for the agent that wrote it: no `Co-Authored-By`
+  trailer for Claude or any other tool, and no generated-with footer. A squash
+  merge carries those trailers over, so they end up on `main`
 
 ## Pull request title
 
