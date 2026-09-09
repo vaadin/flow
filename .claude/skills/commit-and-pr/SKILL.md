@@ -38,27 +38,54 @@ exact, no fluff.
 
 Use the same rules as for commit subject lines.
 
+## What lands in git history
+
+This repository squash-merges, and the squash commit message is the PR title
+followed by the PR description, verbatim. Whatever is written in the description
+is in `git log` for good — raw `<details>` tags included, which is why they
+already appear in over a hundred of the last two hundred commit messages on
+`main`.
+
+So the description carries only what belongs in the history of the code, and
+everything that exists for the review goes into the first comment on the pull
+request.
+
+| In the description — becomes the commit body | In the first comment — review only |
+| --- | --- |
+| issue links | `## Type of change` |
+| header line | `## How to test` |
+| Background | the full use case |
+| summary | API changes |
+| Risks | test coverage |
+| Context | behavior tables, screenshots, recordings |
+| what changed, as bullets | anything inside `<details>` |
+
+A reviewer reads the two in order, top to bottom, so nothing is hidden — the
+split is about what deserves to be in the history, not about what the reviewer
+gets to see.
+
 ## Pull request description
 
-The goal is a description a reviewer can read in under a minute: issue links, a
-lede they can understand without opening the diff, the risks spelled out, a
-bullet list of what changed, a type label, and concrete steps to verify by hand.
+The goal is a description a reviewer can read in under a minute, and that still
+reads well as a commit message a year from now: issue links, a lede they can
+understand without opening the diff, the risks spelled out, and a bullet list of
+what changed.
 
-Two rules shape it.
+Three rules shape it.
 
-- **The first screen is a budget, not a summary of the body.** About 25 visible
-  lines. Long tables, API diffs and per-test rationale go inside `<details>` —
-  nothing here asks for less detail, only for it to be out of the way.
+- **Plain markdown only.** No HTML, no `<details>`, no checkboxes, no images —
+  they are unreadable in `git log`. Wrap lines at about 75 characters for the
+  same reason.
+- **The whole thing is a budget, not a summary of everything.** About 25 lines.
+  Long tables, API diffs and per-test rationale belong in the first comment.
 - **Anything that can surprise a reviewer is promoted to the top**, even when it
   is one line buried in a 60-line implementation section.
 
 ### The template
 
-Fixed section order. Omit a section instead of leaving it empty.
+Fixed order. Omit a block instead of leaving it empty.
 
-````markdown
-## Description
-
+```markdown
 Fixes https://github.com/vaadin/flow/issues/951
 
 **<Problem type>** · <module> · <who is affected>
@@ -76,26 +103,13 @@ Fixes https://github.com/vaadin/flow/issues/951
 - <What changed, one behavior per bullet>
 - <…>
   - <Sub-bullet: a detail or the reason, only when the parent bullet needs it>
+```
 
-## Type of change
-
-- <Feature | Bugfix | Refactor | Documentation | Tests | Internal change>
-
-## How to test
-
-1. <Open an integration test view: `flow-tests/test-root-context/…/ExecJavaScriptView.java`>
-2. <Do the thing>
-3. <What you should see>
-
-<details><summary><b>API changes</b></summary>
-
-…
-</details>
-````
-
-Nothing above `## Description`, nothing below the last section — no `## Checklist`
-block, no footer, no AI attribution. GitHub inserts the organisation template
-into a new PR; delete the parts this template does not use.
+No headings, no `## Description` — the description is the body of a commit
+message, and a heading on it reads as noise there. Nothing below the bullets: no
+`## Checklist` block, no footer, no AI attribution. GitHub inserts the
+organisation template into a new pull request; delete the parts this template
+does not use.
 
 ### Issue links
 
@@ -213,6 +227,32 @@ uncommon vocabulary.
 - Banned as padding: comprehensive, robust, properly, carefully, seamlessly, enhanced, leverage.
 - Technical terms (API names, identifiers, library names) stay exact. Only the surrounding prose needs to be plain.
 
+## The first comment
+
+Post it right after opening the pull request, so a reviewer arriving at the page
+reads the description and then this, in order. It never reaches the commit
+message, which is where everything below is meant to stay.
+
+````markdown
+## Type of change
+
+- <Feature | Bugfix | Refactor | Documentation | Tests | Internal change>
+
+## How to test
+
+1. <Open an integration test view: `flow-tests/test-root-context/…/ExecJavaScriptView.java`>
+2. <Do the thing>
+3. <What you should see>
+
+<details><summary><b>API changes</b></summary>
+
+…
+</details>
+````
+
+Screenshots and recordings go here too. Edit this comment when the review moves
+on, rather than posting a second one.
+
 ### Type of change
 
 One plain bullet, not a checkbox. Map from the PR title prefix: `feat` → Feature,
@@ -234,9 +274,10 @@ about most — a `fix` with supporting test cleanup is still a Bugfix.
 
 ### Collapsed details
 
-Use plain `<details>`, never `<details open>`: the point is that a long body does
-not scare the reader away. Put a blank line after the `<summary>` line, or GitHub
-will not render the markdown inside.
+Everything long goes inside `<details>` in the comment. Use it plain, never
+`<details open>`: the point is that the length does not scare the reader away.
+Put a blank line after the `<summary>` line, or GitHub will not render the
+markdown inside.
 
 ```markdown
 <details><summary><b>API changes</b></summary>
@@ -260,10 +301,13 @@ Only when the change genuinely needs them, always after `How to test`:
 
 ## Before posting
 
+- Read the description as if it were the commit message, because it will be one:
+  plain markdown, no HTML, no headings, wrapped at about 75 characters.
+- Type of change, how to test and every `<details>` block are in the first
+  comment, not in the description.
 - Summary at most 3 sentences, no class or method names in it.
 - Every risk flag walked; non-empty ones at the top, the rest in one ✅ line.
 - Every behaviour change is in **Risks**, not only in the bullets.
-- All `<details>` collapsed, blank line after each `<summary>`.
 - Issue link present when there is an issue, with the right relation.
 - No `## Checklist`, no footer, no AI attribution.
 - Open the pull request as a draft, and self-review before marking it ready.
