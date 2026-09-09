@@ -364,6 +364,25 @@ public class UITest {
                 "The fragment should have been handed to the client router");
     }
 
+    @Test
+    public void navigateToQueryStringWithFragment_resolvedToRootRoute()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A query string identifies the "" route just like it does without a
+        // fragment, so only the fragment is left for the client
+        ui.navigate("?tab=items#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertEquals("?tab=items#total", ui.getInternals()
+                .getActiveViewLocation().getPathWithQueryParameters());
+        assertEquals(List.of(), dumpClientNavigations(ui));
+    }
+
     private static List<String> dumpClientNavigations(UI ui) {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         return ui.getInternals().dumpPendingJavaScriptInvocations().stream()

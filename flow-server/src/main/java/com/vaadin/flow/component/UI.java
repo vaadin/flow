@@ -1412,6 +1412,7 @@ public class UI extends Component
         // view without the client ever being asked, so leave it to the client
         // router the same way an unresolved location is left to it
         boolean fragmentOnly = location.getPath().isEmpty()
+                && location.getQueryParameters().getParameters().isEmpty()
                 && locationString.indexOf('#') >= 0;
 
         // There is an in-progress navigation or there are no changes,
