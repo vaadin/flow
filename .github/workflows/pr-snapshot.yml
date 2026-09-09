@@ -28,10 +28,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The repository the snapshot is published to. Public, so a variable rather
-  # than a secret, which lets the pull request comment name it. Only the
-  # credentials below are secret.
-  MAVEN_SNAPSHOT_DEPLOY_URL: ${{ vars.MAVEN_SNAPSHOT_DEPLOY_URL || 'https://maven.vaadin.com/vaadin-prereleases/' }}
+  # The repository the snapshot is published to, a secret alongside the
+  # credentials so that all three are configured in one place and a repository
+  # taking this workflow into use publishes wherever it publishes. The pull
+  # request comment names it - only the run log has it masked.
+  MAVEN_SNAPSHOT_DEPLOY_URL: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_URL }}
   _HEAD_REF: ${{ github.head_ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -62,8 +63,8 @@ jobs:
           MAVEN_SNAPSHOT_DEPLOY_USERNAME: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_USERNAME }}
           MAVEN_SNAPSHOT_DEPLOY_PASSWORD: ${{ secrets.MAVEN_SNAPSHOT_DEPLOY_PASSWORD }}
         run: |
-          [ -z "$MAVEN_SNAPSHOT_DEPLOY_USERNAME" ] || [ -z "$MAVEN_SNAPSHOT_DEPLOY_PASSWORD" ] \
-            && echo "🚫 **MAVEN_SNAPSHOT_DEPLOY_USERNAME** / **MAVEN_SNAPSHOT_DEPLOY_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
+          [ -z "$MAVEN_SNAPSHOT_DEPLOY_URL" ] || [ -z "$MAVEN_SNAPSHOT_DEPLOY_USERNAME" ] || [ -z "$MAVEN_SNAPSHOT_DEPLOY_PASSWORD" ] \
+            && echo "🚫 **MAVEN_SNAPSHOT_DEPLOY_URL** / **MAVEN_SNAPSHOT_DEPLOY_USERNAME** / **MAVEN_SNAPSHOT_DEPLOY_PASSWORD** are not defined, check that **${{ github.repository }}** repo has valid secrets" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
