@@ -79,21 +79,43 @@ public class DevCliInstallerTest {
     }
 
     @Test
-    public void install_theClaudeAdapterLinkResolvesToTheSharedInstructions()
+    public void install_theClaudeAdapterCarriesTheSharedInstructions()
             throws IOException {
         Path root = temporaryFolder.getRoot().toPath();
         DevCliInstaller.install(root);
         Path adapter = root.resolve(".claude/skills/vaadin-devloop/SKILL.md");
+        String shared = Files.readString(
+                root.resolve(".agents/skills/vaadin-devloop/SKILL.md"));
 
         String content = Files.readString(adapter);
 
+        // Inlined, not linked: reaching the cycle used to cost a tool call.
+        Assert.assertFalse("no placeholder should survive composition",
+                content.contains("{{"));
+        Assert.assertTrue("the adapter should carry the cycle itself",
+                content.contains("## The cycle"));
+        Assert.assertTrue("the adapter should carry the command set",
+                content.contains(".vaadin/vaadin-dev apply"));
+        // The description drives skill selection, so the two copies of it must
+        // not drift: the adapter's is the shared one, verbatim.
+        String description = shared.lines()
+                .filter(line -> line.startsWith("description: ")).findFirst()
+                .orElseThrow();
+        Assert.assertTrue("the adapter should reuse the shared description",
+                content.contains(description));
+        // A skill that restricts tools cannot be loaded before editing, which
+        // is exactly when this one has to be.
+        Assert.assertFalse("the adapter must not restrict the tool set",
+                content.contains("allowed-tools"));
         // The whole reason both trees install under one directory: the adapter
         // carries no reference.md of its own and links to the .agents copy.
-        String link = "../../../.agents/skills/vaadin-devloop/SKILL.md";
-        Assert.assertTrue("the adapter should link to the shared instructions",
+        String link = "../../../.agents/skills/vaadin-devloop/reference.md";
+        Assert.assertTrue("the adapter should link to the shared reference",
                 content.contains(link));
         Assert.assertTrue("the relative link should resolve", Files
                 .isRegularFile(adapter.getParent().resolve(link).normalize()));
+        Assert.assertFalse("no link should point at a missing reference.md",
+                content.contains("](reference.md)"));
     }
 
     @Test
