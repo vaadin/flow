@@ -168,6 +168,37 @@ class TransactionEngineTest {
                         + engine.render(tx));
     }
 
+    @Test
+    void json_reportsAResourceOnlyPushUnderResourcePushAlone() {
+        // The other side of the split, and the deliberate part of it:
+        // actionsTaken is the redefine's own words, so a CSS-only apply - which
+        // redefined nothing - leaves it empty and says what it did under
+        // resourcePush. A reader after the push then looks in the same place
+        // whether or not a .java file happened to be in the change-set, which
+        // is the whole point of it not sharing a field.
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.outcome = TransactionEngine.Outcome.STABLE;
+        tx.classification = "hmr";
+        tx.resources = 1;
+        tx.pushDetail = "pushed 1 stylesheet(s) in place";
+
+        String json = tx.json();
+
+        assertTrue(json.contains("\"actionsTaken\":\"\""),
+                () -> "nothing was redefined: " + json);
+        assertTrue(
+                json.contains(
+                        "\"resourcePush\":\"pushed 1 stylesheet(s) in place\""),
+                () -> "the push should be in the JSON: " + json);
+        // And the text line is unchanged by the move, word for word.
+        assertTrue(
+                new TransactionEngine(null, null).render(tx)
+                        .contains("hmr: 1 resource(s) copied, pushed 1"
+                                + " stylesheet(s) in place"),
+                () -> "the hmr line should be unchanged: "
+                        + new TransactionEngine(null, null).render(tx));
+    }
+
     /** A stylesheet pushed and a class redefined, in one apply. */
     private static TransactionEngine.Transaction mixedChange() {
         TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);

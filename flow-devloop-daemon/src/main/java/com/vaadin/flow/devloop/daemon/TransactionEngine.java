@@ -1480,6 +1480,26 @@ final class TransactionEngine {
      * The resource clause stays first and stays word-for-word what it was.
      */
     private static String hmrDetail(Transaction tx) {
+        List<String> clauses = hmrClauses(tx);
+        if (clauses.isEmpty()) {
+            // Only an hmr classification reaches this - it has to say
+            // something, and this is what it has always said.
+            return tx.resources + " resource(s) copied, " + tx.pushDetail;
+        }
+        return String.join(", ", clauses);
+    }
+
+    /**
+     * One clause per thing a leg actually did, and empty when the change-set
+     * had no frontend half at all.
+     * <p>
+     * Split out of {@link #hmrDetail} so that "is there an {@code hmr} line to
+     * print?" is answered by the clauses themselves rather than by a second
+     * copy of their conditions: a clause added here would otherwise have to be
+     * remembered in the {@code hot-reload} branch of {@link #render} too, and
+     * forgetting it would drop the whole line again.
+     */
+    private static List<String> hmrClauses(Transaction tx) {
         List<String> clauses = new ArrayList<>();
         if (tx.resources > 0) {
             clauses.add(tx.resources + " resource(s) copied");
@@ -1506,22 +1526,7 @@ final class TransactionEngine {
             clauses.add(tx.servedLive
                     + " frontend file(s) served live, browser reloaded");
         }
-        if (clauses.isEmpty()) {
-            return tx.resources + " resource(s) copied, " + tx.pushDetail;
-        }
-        return String.join(", ", clauses);
-    }
-
-    /**
-     * Whether this change-set had a frontend half at all, which is what decides
-     * whether {@link #hmrDetail} has anything to say.
-     * <p>
-     * Asked of the counts the legs actually set rather than of the change-set,
-     * so the line never appears for work that was not done.
-     */
-    private static boolean hasFrontendHalf(Transaction tx) {
-        return tx.resources > 0 || tx.resourcesRemoved > 0 || tx.themeFiles > 0
-                || tx.servedLive > 0 || "vite".equals(tx.frontendMode);
+        return clauses;
     }
 
     /**
@@ -1588,9 +1593,12 @@ final class TransactionEngine {
                 // Both halves of a mixed change-set, in the order the legs ran:
                 // the Java verdict is what classified the transaction, but the
                 // stylesheet was pushed all the same, and silence about that
-                // push reads exactly like a push that never happened.
-                if (hasFrontendHalf(tx)) {
-                    lines.add("hmr: " + hmrDetail(tx));
+                // push reads exactly like a push that never happened. Gated on
+                // the clauses rather than on a hasFrontendHalf() of its own, so
+                // a clause added to hmrClauses cannot go missing from here.
+                List<String> frontendHalf = hmrClauses(tx);
+                if (!frontendHalf.isEmpty()) {
+                    lines.add("hmr: " + String.join(", ", frontendHalf));
                 }
                 lines.add("hot-reload: " + tx.hotswapDetail
                         + (tx.duplicates > 0 ? "; " + tx.duplicates

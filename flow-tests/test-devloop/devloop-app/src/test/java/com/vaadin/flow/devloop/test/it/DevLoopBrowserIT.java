@@ -148,24 +148,27 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
 
     @BrowserTest
     void cssAndJavaInOneApply_reportThePushThatLandedInTheOpenPage() {
-        // The mixed change-set with a page to push into, which is the only
-        // place the push's own words can be checked: the Java verdict is what
-        // classifies the apply, and saying nothing about the stylesheet left
-        // looking at the page as the only way to tell a push that happened
-        // from one that was skipped.
+        // The mixed change-set with a page to push into. That is what makes it
+        // a browser test rather than a second copy of DevLoopCssIT's: with no
+        // page open the app answers the push with a reload request, so
+        // "pushed 1 stylesheet(s) in place" - the wording an apply that mixes
+        // Java has to keep - can only be provoked from here.
         String reloadMarker = markPage();
 
         patch.replace(STYLESHEET, "row-gap: 12px;", "row-gap: 39px;");
         patch.replace(VIEW, "\"Task List\"", "\"Tasks, mixed\"");
         cli.run("apply").assertExitCode(0)
                 .assertOutputContains("hmr: 1 resource(s) copied, pushed 1"
-                        + " stylesheet(s) in place")
-                .assertOutputContains("hot-reload:");
+                        + " stylesheet(s) in place");
 
         new WebDriverWait(getDriver(), Duration.ofSeconds(30))
                 .until(driver -> "39px"
                         .equals(computedStyle(".task-list-view", "rowGap")));
-        Assertions.assertEquals("Tasks, mixed", text("#title"));
+        // Its own wait: onHotswap re-creates the component asynchronously, and
+        // the CSS push landing says nothing about whether that has happened
+        // yet - the resource leg ran before the redefine did.
+        new WebDriverWait(getDriver(), Duration.ofSeconds(30))
+                .until(driver -> "Tasks, mixed".equals(text("#title")));
         Assertions.assertEquals(reloadMarker, currentMarker(),
                 "neither half of a mixed change-set may reload the page");
     }

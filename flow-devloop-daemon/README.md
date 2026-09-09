@@ -173,7 +173,13 @@ and prints its `hmr:` line as well: the push happened, and an apply that says
 nothing about it cannot be told from one that skipped it. That is why the push's
 own reply lives in `Transaction.pushDetail` rather than sharing
 `hotswapDetail` with the redefine, and why `--json` carries both
-(`resourcePush` beside `actionsTaken`).
+(`resourcePush` beside `actionsTaken`). One field each also means each says only
+its own leg's words: `actionsTaken` is the redefine's and is *empty* on a
+resource-only apply, which used to borrow it — a `--json` reader after the push
+reads `resourcePush` whether or not a `.java` file was in the change-set. And
+the `hmr:` line is gated on `hmrClauses` being non-empty rather than on a
+second copy of its conditions, so a clause added there cannot go missing from
+the `hot-reload` branch.
 
 Two rules make the question answerable at all: **at most one transaction in
 flight**, and **supersede rather than queue** — a new `apply` cancels the
