@@ -195,30 +195,35 @@ jobs:
         run: |
           marker='<!-- flow-pr-snapshot -->'
           run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          if [ "$DEPLOY_OUTCOME" = success ]; then
-            heading='### 📦 Snapshot published'
-            status="\`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run]($run_url)).
-
-          Built without running tests. Look at the checks on this pull request before relying on it."
-          else
-            heading='### 🚫 Snapshot build failed'
-            status="\`$VERSION\` was not published: the build from ${_HEAD_SHA:0:7} failed ([run]($run_url)). Anything the repository already holds under that version is from an earlier commit."
-          fi
           # The heredocs are written at the indentation of this block rather
           # than of the branch they sit in, because their content is the
           # comment body verbatim, delimiter included.
+          if [ "$DEPLOY_OUTCOME" = success ]; then
           cat > comment.md <<EOF
           $marker
-          $heading
+          ### 📦 Snapshot published
 
-          $status
-          EOF
-          if [ "$DEPLOY_OUTCOME" = success ]; then
-          cat >> comment.md <<EOF
+          \`$VERSION\` — built from ${_HEAD_SHA:0:7} ([run]($run_url)).
+
+          Built without running tests. Look at the checks on this pull request before relying on it.
 
           Every new commit on this branch republishes it while the \`snapshot build\` label is there. Add \`-U\` to pick the newest build up.
 
           <details><summary>How to use it</summary>
+          EOF
+          else
+          cat > comment.md <<EOF
+          $marker
+          ### 🚫 Snapshot build failed
+
+          \`$VERSION\` was not published: the build from ${_HEAD_SHA:0:7} failed ([run]($run_url)). Anything the repository already holds under that version is from an earlier commit of this branch.
+
+          <details><summary>How to use that earlier build, if there is one</summary>
+          EOF
+          fi
+          # The same coordinates either way, and worth keeping on a failure:
+          # they are what reaches the build this one did not replace.
+          cat >> comment.md <<EOF
 
           \`\`\`xml
           <repository>
@@ -243,13 +248,16 @@ jobs:
           Import \`flow-bom\` before \`vaadin-bom\` for it to win over the platform's Flow version.
           </details>
           EOF
-          fi
           # One comment per pull request, edited in place, so a series of pushes
           # does not bury the pull request in notifications. --jq runs once per
-          # page under --paginate, so the pages are narrowed to one id each and
-          # then to one overall - two of them would make the PATCH below a 404.
+          # page under --paginate, so each page yields at most one id and the
+          # first of those is the comment; two would make the PATCH a 404. The
+          # trimming is a parameter expansion rather than a pipe, so a failed
+          # listing still ends the step instead of reading as "none yet" and
+          # posting a second comment.
           existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
-            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty" | head -1)
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          existing=${existing%%$'\n'*}
           if [ -n "$existing" ]; then
             gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@comment.md
           else
