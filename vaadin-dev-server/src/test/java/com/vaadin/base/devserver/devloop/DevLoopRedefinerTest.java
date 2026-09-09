@@ -16,6 +16,10 @@
 package com.vaadin.base.devserver.devloop;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +31,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -178,6 +183,47 @@ class DevLoopRedefinerTest {
         // And a class that declares none is not a change to any.
         assertEquals("",
                 DevLoopRedefiner.frontendDependencies(NothingDeclared.class));
+    }
+
+    @Test
+    void declaresSpringBean_readsTheStereotypeOfAClassNothingHasLoaded()
+            throws IOException {
+        // The only question that can be asked about a new bean, because there
+        // is no loaded class to ask: a stereotype gets no bean definition from
+        // a context that scanned before the class existed.
+        byte[] plain = classBytes(NothingDeclared.class);
+
+        assertFalse(DevLoopRedefiner.declaresSpringBean(plain), "plain class");
+        // Spelled out rather than compiled in: Spring is not on this module's
+        // classpath, and what the check reads is the descriptor javac writes
+        // into the constant pool for @Service.
+        assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
+                "Lorg/springframework/stereotype/Service;")));
+        // @RestController is a @Controller through a meta-annotation, which the
+        // annotated class's own constant pool never mentions.
+        assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
+                "Lorg/springframework/web/bind/annotation/RestController;")));
+        // Somebody else's escalation, and it must not be reported as this one.
+        assertFalse(DevLoopRedefiner.declaresSpringBean(
+                withConstant(plain, "Ljakarta/persistence/Entity;")));
+    }
+
+    private static byte[] classBytes(Class<?> type) throws IOException {
+        try (InputStream in = DevLoopRedefinerTest.class.getResourceAsStream(
+                "/" + type.getName().replace('.', '/') + ".class")) {
+            return in.readAllBytes();
+        }
+    }
+
+    /**
+     * A real class file with one more entry in its constant pool, which is what
+     * the check reads and all it reads.
+     */
+    private static byte[] withConstant(byte[] bytes, String descriptor) {
+        byte[] added = descriptor.getBytes(StandardCharsets.ISO_8859_1);
+        byte[] joined = Arrays.copyOf(bytes, bytes.length + added.length);
+        System.arraycopy(added, 0, joined, bytes.length, added.length);
+        return joined;
     }
 
     @Test

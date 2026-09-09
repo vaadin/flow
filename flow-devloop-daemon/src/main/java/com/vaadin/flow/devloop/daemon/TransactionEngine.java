@@ -1312,7 +1312,7 @@ final class TransactionEngine {
      * live. Both were measured in P0.5, and both would otherwise be reported as
      * {@code Stable} on an app that is stale or, worse, broken.
      */
-    private Optional<String> blockedReason(Map<String, String> fields) {
+    static Optional<String> blockedReason(Map<String, String> fields) {
         String entities = fields.getOrDefault("entities", "-");
         if (!"-".equals(entities)) {
             return Optional.of("entity mapping cannot hot reload (" + entities
@@ -1330,6 +1330,21 @@ final class TransactionEngine {
             return Optional.of("frontend imports changed (" + frontend
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
+        }
+        // A bean the running context has never seen. Component scanning is a
+        // startup act, and HotswapAgent's Spring plugin - which would rescan -
+        // is disabled for stability (see Launch), so no mechanism short of a
+        // restart turns a new @Component into a bean definition. Nothing was
+        // redefined for it either, since the class was never loaded, so this
+        // is the one blocker that has no redefine behind it: without it the
+        // apply reports Stable and the view that injects the new bean fails
+        // with a NoSuchBeanDefinitionException that names Spring rather than
+        // the restart nobody was told to do.
+        String newBeans = fields.getOrDefault("newBeans", "-");
+        if (!"-".equals(newBeans)) {
+            return Optional.of("new Spring bean (" + newBeans
+                    + "): component scanning ran at startup, so the running"
+                    + " context has no definition for it");
         }
         // A method body inside a bean is fine: the proxy delegates to the
         // target

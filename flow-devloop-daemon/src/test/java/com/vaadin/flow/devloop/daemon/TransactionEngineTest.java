@@ -93,6 +93,28 @@ class TransactionEngineTest {
     }
 
     @Test
+    void blockedReason_escalatesForABeanTheRunningContextHasNeverSeen() {
+        // The one blocker with no redefine behind it: the class was never
+        // loaded, so nothing was swapped and every other field is empty. Read
+        // as "nothing to report", the apply answers Stable and the view that
+        // injects the new bean fails with Spring's own exception instead.
+        Optional<String> blocker = TransactionEngine.blockedReason(Connector
+                .fields("OK redefined=1 beans=- newBeans=Extra structural=-"));
+
+        assertEquals(
+                Optional.of("new Spring bean (Extra): component scanning ran"
+                        + " at startup, so the running context has no"
+                        + " definition for it"),
+                blocker);
+        // And a change-set with no new bean in it is still a hot swap.
+        assertTrue(TransactionEngine
+                .blockedReason(
+                        Connector.fields("OK redefined=1 newBeans=- entities=-"
+                                + " structural=- frontendImports=-"))
+                .isEmpty());
+    }
+
+    @Test
     void devServerFailure_isTheVerdictForAnErrorLoggedWhenTheFileWasSaved() {
         // Vite compiles on save, so its error is in the log before apply even
         // starts - which is why it is carried across the window boundary - and

@@ -22,9 +22,10 @@ import org.junit.jupiter.api.Test;
 /**
  * The changes a redefine cannot make live, and the reason each one gives.
  * <p>
- * Both cases here are ones that used to be reported as live: the JVM accepts
- * the redefine, and what the application built from the old class at startup -
- * a bean's proxy, an ORM's metamodel - silently no longer matches.
+ * Every case here is one that used to be reported as live: what the application
+ * built at startup - a bean's proxy, an ORM's metamodel, the set of bean
+ * definitions - silently no longer matches the sources, and the redefine that
+ * says so is either accepted or not needed at all.
  */
 class DevLoopRestartIT extends AbstractDevLoopIT {
 
@@ -64,6 +65,33 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
 
         outcome.assertOutputContains(
                 "entity mapping cannot hot reload (TaskListView)");
+    }
+
+    @Test
+    void aNewSpringBean_escalatesEvenThoughNothingWasRedefined() {
+        // The case with no redefine behind it: a class the running JVM has
+        // never loaded has nothing to swap, so every signal the two cases above
+        // turn on is empty and the apply reported Stable. Component scanning is
+        // a startup act, though, so the context has no definition for the new
+        // bean and the first view to inject it fails with Spring's own
+        // NoSuchBeanDefinitionException - which names Spring rather than the
+        // restart nobody was told to do.
+        patch.create(MUTABLE.resolve("ExtraService.java"), """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                import org.springframework.stereotype.Service;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                @Service
+                public class ExtraService {
+                }
+                """);
+
+        // --no-restart stops at the verdict, as in the case above.
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraService)");
     }
 
     @Test

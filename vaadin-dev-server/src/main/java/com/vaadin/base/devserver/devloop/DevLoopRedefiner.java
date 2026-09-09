@@ -155,12 +155,25 @@ final class DevLoopRedefiner {
         int duplicates = 0;
         Set<String> entities = new LinkedHashSet<>();
         Set<String> beans = new LinkedHashSet<>();
+        Set<String> newBeans = new LinkedHashSet<>();
         Set<String> uiClasses = new LinkedHashSet<>();
 
         for (String name : requested) {
             List<Class<?>> targets = loaded.getOrDefault(name, List.of());
             if (targets.isEmpty()) {
                 notLoaded.add(name);
+                // A class the JVM never loaded is normally nothing to answer
+                // for: there is no old copy to be stale, and the new bytes are
+                // simply what loads the first time something asks for it. A
+                // stereotype is the exception. Component scanning ran once, at
+                // startup, over the classes that existed then, so a type the
+                // context has never seen has no bean definition and never gets
+                // one - injecting it fails with NoSuchBeanDefinitionException,
+                // which names Spring and not the loop that reported Stable.
+                byte[] fresh = readClassBytes(classesDirs, name);
+                if (fresh != null && declaresSpringBean(fresh)) {
+                    newBeans.add(simple(name));
+                }
                 continue;
             }
             if (targets.size() > 1) {
@@ -257,11 +270,12 @@ final class DevLoopRedefiner {
         return "OK redefined=" + definitions.size() + " notLoaded="
                 + notLoaded.size() + " dupes=" + duplicates + " completed="
                 + completed + " pageReload=" + pageReload + " entities="
-                + join(entities) + " beans=" + join(beans) + " proxied="
-                + join(proxied) + " structural=" + join(structural) + " ui="
-                + join(uiClasses) + " frontendImports=" + join(frontend)
-                + " hotswapAgent=" + hotswapAgentLoaded() + " redefineMs="
-                + redefineMs + " hotswapMs=" + hotswapMs;
+                + join(entities) + " beans=" + join(beans) + " newBeans="
+                + join(newBeans) + " proxied=" + join(proxied) + " structural="
+                + join(structural) + " ui=" + join(uiClasses)
+                + " frontendImports=" + join(frontend) + " hotswapAgent="
+                + hotswapAgentLoaded() + " redefineMs=" + redefineMs
+                + " hotswapMs=" + hotswapMs;
     }
 
     /**
@@ -757,6 +771,38 @@ final class DevLoopRedefiner {
         // is ASCII, which the class file's modified UTF-8 encodes unchanged.
         String constants = new String(bytes, StandardCharsets.ISO_8859_1);
         return ENTITY_DESCRIPTORS.stream().anyMatch(constants::contains);
+    }
+
+    /**
+     * The stereotypes that make a class a bean, as they are spelled in a class
+     * file. {@code @RestController} is here because it is a {@code @Controller}
+     * through a meta-annotation the constant pool of the annotated class does
+     * not mention.
+     */
+    private static final List<String> BEAN_DESCRIPTORS = List.of(
+            "Lorg/springframework/stereotype/Component;",
+            "Lorg/springframework/stereotype/Service;",
+            "Lorg/springframework/stereotype/Repository;",
+            "Lorg/springframework/stereotype/Controller;",
+            "Lorg/springframework/web/bind/annotation/RestController;",
+            "Lorg/springframework/context/annotation/Configuration;");
+
+    /**
+     * Whether the compiled bytes carry a Spring stereotype, read from the class
+     * file because there is no loaded class to ask.
+     * <p>
+     * This is the question {@link #isSpringBean} cannot answer: it reports what
+     * the application has been running with, and the class this is asked about
+     * is one the application has never run at all. The same reading of the
+     * constant pool as {@link #declaresEntity}, and the same trade: a
+     * descriptor in the pool is not proof that the annotation is on the class,
+     * so this over-reports rather than under-reports. A false positive costs a
+     * restart that was not needed; a false negative reports {@code Stable} over
+     * a bean the context does not have.
+     */
+    static boolean declaresSpringBean(byte[] bytes) {
+        String constants = new String(bytes, StandardCharsets.ISO_8859_1);
+        return BEAN_DESCRIPTORS.stream().anyMatch(constants::contains);
     }
 
     /**
