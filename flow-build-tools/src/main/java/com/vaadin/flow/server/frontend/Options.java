@@ -1218,6 +1218,12 @@ public class Options implements Serializable {
      * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} is
      * used. The configuration of bun cannot be read, so the default always
      * applies for it.
+     * <p>
+     * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
+     * the check, so that a project can be built right after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0 or pnpm &ge; 10.17.0; bun cannot
+     * exclude packages on the command line, so with bun an installation may
+     * fail during the first day after a Vaadin release.
      *
      * @param minimumFrontendPackageAgeDays
      *            minimum allowed age in days, {@code 0} to disable the check,

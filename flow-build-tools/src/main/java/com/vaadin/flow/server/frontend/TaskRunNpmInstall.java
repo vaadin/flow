@@ -333,6 +333,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         resolveMinimumFrontendPackageAgeArgument(options, tools, npmExecutable,
                 logger).ifPresent(npmInstallCommand::add);
+        // Also passed when the age itself comes from the package manager
+        // configuration, so that a just released Vaadin version installs
+        resolveMinimumFrontendPackageAgeExcludeArgument(options, tools,
+                npmExecutable, logger).ifPresent(npmInstallCommand::add);
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
@@ -523,7 +527,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * itself from the minimum frontend package age, so that a project can be
      * built with a Vaadin version that was released a moment ago.
      * <p>
-     * The intended behavior is specified by the tests of this method:
      * <ul>
      * <li>npm 11.17 or newer is passed
      * {@code --min-release-age-exclude=@vaadin/*}, which exempts the matching
@@ -536,6 +539,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * <li>nothing is passed and nothing is warned about when the age check is
      * disabled, as then no version is blocked to begin with</li>
      * </ul>
+     * Only the excluded packages themselves are exempt; their own dependencies
+     * still have to be old enough.
      *
      * @param options
      *            current build options
@@ -551,10 +556,48 @@ public class TaskRunNpmInstall implements FallibleCommand {
     static Optional<String> resolveMinimumFrontendPackageAgeExcludeArgument(
             Options options, FrontendTools tools, List<String> toolCommand,
             Logger logger) {
-        // Not implemented yet: how the exclusion should be configured, and
-        // what to do for a package manager that cannot exclude packages, is
-        // still being decided
+        Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
+        if (configuredDays != null && configuredDays == 0) {
+            // no version is blocked, so nothing has to be excluded
+            return Optional.empty();
+        }
+        if (options.isEnableBun()) {
+            warnAboutPackagesThatCannotBeExcluded(logger,
+                    "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml");
+            return Optional.empty();
+        }
+        if (options.isEnablePnpm()) {
+            if (tools.pnpmSupportsMinimumReleaseAgeExclude(toolCommand)) {
+                return Optional.of("--config.minimum-release-age-exclude="
+                        + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE);
+            }
+            warnAboutPackagesThatCannotBeExcluded(logger, "pnpm older than "
+                    + FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                            .getFullVersion()
+                    + " ignores the 'minimumReleaseAgeExclude' setting");
+            return Optional.empty();
+        }
+        if (tools.npmSupportsMinReleaseAgeExclude(toolCommand)) {
+            return Optional.of("--min-release-age-exclude="
+                    + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE);
+        }
+        warnAboutPackagesThatCannotBeExcluded(logger, "npm older than "
+                + FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                        .getFullVersion()
+                + " does not know the '--min-release-age-exclude' argument");
         return Optional.empty();
+    }
+
+    private static void warnAboutPackagesThatCannotBeExcluded(Logger logger,
+            String reason) {
+        logger.warn(
+                "The packages Vaadin publishes cannot be excluded from the "
+                        + "minimum frontend package age, as {}. Installing a "
+                        + "Vaadin version during the first day after its "
+                        + "release may therefore fail. Upgrade the package "
+                        + "manager, or set the '{}' parameter to 0 to turn "
+                        + "the age check off.",
+                reason, InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
     }
 
     /**
