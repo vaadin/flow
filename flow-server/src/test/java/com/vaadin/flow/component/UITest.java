@@ -94,6 +94,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -442,6 +443,29 @@ public class UITest {
         Component currentRoute = ui.getCurrentView();
         MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToShownView_notReinstantiated_shownInstanceReturned()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        FooBarNavigationTarget shownView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        // Navigating to the location that is already shown does nothing, so
+        // the returned Optional holds the view that is already shown
+        FooBarNavigationTarget sameView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        assertSame(shownView, sameView,
+                "Navigating to the shown view should not re-instantiate it");
+
+        ui.refreshCurrentRoute(false);
+
+        assertNotSame(shownView, ui.getCurrentView(),
+                "refreshCurrentRoute should re-instantiate the shown view");
     }
 
     @Test
