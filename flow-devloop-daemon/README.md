@@ -240,8 +240,12 @@ dropped during discovery and never ranked, and a project declaring 17 is still r
 release, because compiling a 17-target project at 21 would let code through the dev
 loop that Maven then rejects.
 
-Candidates are every directory under `~/.jdks` plus `JAVA_HOME` and `JDK_HOME`, and
-each one's version and vendor are read from its own `release` file
+Candidates are every directory under `~/.jdks` and under `~/.vaadin/jdk`, plus
+`JAVA_HOME` and `JDK_HOME`. The second of those is where the Vaadin plugins for
+IntelliJ IDEA, VS Code and Eclipse install the JetBrains Runtime they offer to
+download, so a developer who took that offer already has the JVM this loop wants —
+without it the whole session would run on a stock JDK with a JBR sitting on disk. Each
+candidate's version and vendor are read from its own `release` file
 (`IMPLEMENTOR="JetBrains s.r.o."` is what makes it a JBR) rather than guessed from its
 directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
 the requirement wins; failing that, the closest JDK, and the log says what that cost.
