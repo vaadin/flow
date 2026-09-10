@@ -177,14 +177,16 @@ class VersionsJsonConverter {
             return;
         }
         if (!isIncludedByMode(mode)) {
+            // The package declares the mode it is installed in, and it is not
+            // the mode of this build, so it is not a dependency here: whatever
+            // installs it in that mode brings it there instead, the way the
+            // React components bring the web components of a Lit package.
+            // Only a package declaring a mode gets here, as one without a mode
+            // is included in every mode.
+            exclusions.add(npmName);
             if (excludeWebComponents) {
-                // collecting exclusions also from non-included dependencies
-                // with a mode (react), when web components are not wanted.
                 // The package is not installed from this file, so what it
                 // excludes is not something this file says about the package
-                if (MODE_REACT.equalsIgnoreCase(mode)) {
-                    exclusions.add(npmName);
-                }
                 collectExclusions(obj, false);
             }
             return;
