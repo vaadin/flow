@@ -240,8 +240,12 @@ dropped during discovery and never ranked, and a project declaring 17 is still r
 release, because compiling a 17-target project at 21 would let code through the dev
 loop that Maven then rejects.
 
-Candidates are every directory under `~/.jdks` plus `JAVA_HOME` and `JDK_HOME`, and
-each one's version and vendor are read from its own `release` file
+Candidates are every directory under `~/.jdks` and under `~/.vaadin/jdk`, plus
+`JAVA_HOME` and `JDK_HOME`. The second of those is where the Vaadin plugins for
+IntelliJ IDEA, VS Code and Eclipse install the JetBrains Runtime they offer to
+download, so a developer who took that offer already has the JVM this loop wants —
+without it the whole session would run on a stock JDK with a JBR sitting on disk. Each
+candidate's version and vendor are read from its own `release` file
 (`IMPLEMENTOR="JetBrains s.r.o."` is what makes it a JBR) rather than guessed from its
 directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
 the requirement wins; failing that, the closest JDK, and the log says what that cost.
@@ -470,6 +474,22 @@ its answer rather than claiming success.
   restart then works from bytecode a normal Maven build would never have
   produced. Such a project needs `mvn compile` rather than `apply`; honouring
   the module's `proc` and `annotationProcessorPaths` configuration is not
+  implemented.
+- **The compiler plugin's configuration is not read**, except for the release
+  level (see above). The option list is fixed — `--release`, `-encoding UTF-8`,
+  `-nowarn`, `-proc:none`, `-parameters`, `-g` — so `<compilerArgs>`,
+  `--enable-preview` and `-Werror` are not honoured. `-parameters` and `-g` are
+  passed unconditionally rather than looked up: a normal build has both on (the
+  plugin defaults `<debug>` to true, `spring-boot-starter-parent` sets
+  `<parameters>true</parameters>`), and both live in a parent outside the
+  checkout that the pom reader cannot see. Without `-parameters` a recompiled
+  Spring Data repository throws "for queries with named parameters you need to
+  provide names for method parameters", from code nobody edited.
+- **`target/classes` is shared with Maven, and the daemon writes into it last.**
+  A class newer than its source makes `mvn compile` a no-op, so after a session
+  `mvn verify` tests whatever the in-loop compile did differently — no
+  annotation processing, no project compiler arguments. `mvn clean` is the
+  recovery; compiling into an output directory of the daemon's own is not
   implemented.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and

@@ -1032,10 +1032,12 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            List<String> options = new ArrayList<>(
-                    List.of("-classpath", project.compileClasspath(module),
-                            "-d", module.classesDir().toString(), "-proc:none",
-                            "-encoding", "UTF-8", "-nowarn"));
+            // -parameters and -g: on in a normal build, off in javac. See
+            // README, "Known limits".
+            List<String> options = new ArrayList<>(List.of("-classpath",
+                    project.compileClasspath(module), "-d",
+                    module.classesDir().toString(), "-proc:none", "-encoding",
+                    "UTF-8", "-nowarn", "-parameters", "-g"));
             // Without it javac emits at the daemon's own level, which the
             // application's JVM may be too old to load - every redefine would
             // then fail with UnsupportedClassVersionError rather than a
