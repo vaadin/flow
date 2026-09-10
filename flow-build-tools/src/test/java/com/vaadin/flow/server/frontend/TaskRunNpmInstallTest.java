@@ -984,6 +984,9 @@ class TaskRunNpmInstallTest {
                         new MockOptions(npmFolder).withEnablePnpm(true), tools,
                         logger));
         assertWarnsAboutTheFirstDay(logger);
+        assertTrue(logger.getLogs().contains("10.17.0"),
+                "the warning should name the pnpm version to upgrade to, was: "
+                        + logger.getLogs());
     }
 
     @Test
@@ -998,6 +1001,11 @@ class TaskRunNpmInstallTest {
                         new MockOptions(npmFolder).withEnableBun(true), tools,
                         logger));
         assertWarnsAboutTheFirstDay(logger);
+        assertTrue(
+                logger.getLogs().contains("minimumReleaseAgeExcludes")
+                        && logger.getLogs().contains("@vaadin/*"),
+                "the warning should name the bunfig.toml setting to list the "
+                        + "packages in, was: " + logger.getLogs());
     }
 
     @Test
