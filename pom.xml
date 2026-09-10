@@ -93,7 +93,7 @@
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
-        <guava.version>33.4.8-jre</guava.version>
+        <guava.version>33.7.1-jre</guava.version>
         <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
         <javassist.version>3.30.2-GA</javassist.version>
 
@@ -108,7 +108,7 @@
         <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
              repository metadata when modules install in parallel (-T). -->
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
-        <testbench.version>9.5.7</testbench.version>
+        <testbench.version>9.5.8</testbench.version>
         <jetty.version>12.0.27</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
