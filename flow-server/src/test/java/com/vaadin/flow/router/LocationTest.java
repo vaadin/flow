@@ -353,6 +353,14 @@ class LocationTest {
         Location location = new Location("abc:foo/bar?baz");
         assertEquals("abc:foo/bar", location.getPath());
         assertEquals("baz", location.getQueryParameters().getQueryString());
+
+        // An opaque URI has no raw query, so the query string is taken from
+        // the location itself and must not swallow the fragment
+        location = new Location("abc:foo/bar?baz#frag");
+        assertEquals("abc:foo/bar", location.getPath());
+        assertEquals("baz", location.getQueryParameters().getQueryString());
+        assertEquals("abc:foo/bar?baz#frag",
+                location.getPathWithQueryParameters());
     }
 
     @Test
@@ -380,5 +388,20 @@ class LocationTest {
         locationString = "foo/?bar=baz#";
         location = new Location(locationString);
         assertEquals(locationString, location.getPathWithQueryParameters());
+    }
+
+    @Test
+    void questionMarkInFragment_notTreatedAsQueryString() {
+        Location location = new Location("foo/bar#a?b");
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("", location.getQueryParameters().getQueryString());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+    }
+
+    @Test
+    void fragmentOnlyLocation_pathIsEmptyAndFragmentRetained() {
+        Location location = new Location("#total");
+        assertEquals("", location.getPath());
+        assertEquals("#total", location.getPathWithQueryParameters());
     }
 }
