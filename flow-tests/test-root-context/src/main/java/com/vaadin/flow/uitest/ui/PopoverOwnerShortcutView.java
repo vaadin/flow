@@ -17,7 +17,9 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
@@ -33,6 +35,13 @@ import com.vaadin.flow.router.Route;
  * with {@code addClickShortcut(ENTER)}. The origin guard must recognise that
  * the event and the shortcut owner share the same popover scope and let it
  * fire, rather than treating the popover as a boundary to suppress.
+ * <p>
+ * The view also carries the opposite case on the same page: an Alt+S shortcut
+ * owned by the {@code UI}. The UI element is {@code <body>}, which can never be
+ * inside an open popover, so that shortcut must stay silent for a keydown
+ * originating in the popover and fire on the top layer. Since #25624 that case
+ * is guarded without a per-registration owner token, so it also exercises the
+ * token-free client helper.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.PopoverOwnerShortcutView")
 public class PopoverOwnerShortcutView extends Div {
@@ -41,7 +50,16 @@ public class PopoverOwnerShortcutView extends Div {
     public static final String OPEN_BUTTON = "open-popover";
     public static final String POPOVER_ID = "popover";
     public static final String FIELD_ID = "field";
+    public static final String OUTSIDE_FIELD_ID = "outside-field";
+    public static final String SYNC_BUTTON = "sync";
     public static final String SAVED = "saved";
+    public static final String UI_SHORTCUT = "ui-shortcut";
+    // Logged by the sync button; used by tests as an ordered round-trip
+    // barrier.
+    public static final String SYNC = "sync-done";
+
+    public static final Key UI_SHORTCUT_KEY = Key.KEY_S;
+    public static final KeyModifier UI_SHORTCUT_MODIFIER = KeyModifier.ALT;
 
     private final Div eventLog;
     private final AtomicInteger counter = new AtomicInteger();
@@ -65,8 +83,25 @@ public class PopoverOwnerShortcutView extends Div {
                 e -> popover.getElement().executeJs("this.showPopover();"));
         open.setId(OPEN_BUTTON);
 
-        add(open, popover, eventLog);
+        final Input outsideField = new Input();
+        outsideField.setId(OUTSIDE_FIELD_ID);
+
+        // Plain server round-trip used by tests as an ordered barrier: Flow
+        // serializes requests, so once this logs, any earlier shortcut RPC has
+        // already been applied.
+        final NativeButton sync = new NativeButton("Sync", e -> log(SYNC));
+        sync.setId(SYNC_BUTTON);
+
+        add(open, sync, outsideField, popover, eventLog);
         setId("main-div");
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        // Owner = the UI, listenOn = the UI: the plain application-wide
+        // keyboard shortcut case.
+        attachEvent.getUI().addShortcutListener(() -> log(UI_SHORTCUT),
+                UI_SHORTCUT_KEY, UI_SHORTCUT_MODIFIER);
     }
 
     private void log(String source) {
