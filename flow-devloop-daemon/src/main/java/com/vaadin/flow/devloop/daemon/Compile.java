@@ -1032,11 +1032,8 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            // -parameters and -g default off in javac and on in a normal
-            // build, and a class written without them breaks reflection on
-            // parameter names - Spring Data's named query parameters first.
-            // See README, "Known limits", for why they are not read off the
-            // poms.
+            // -parameters and -g: on in a normal build, off in javac. See
+            // README, "Known limits".
             List<String> options = new ArrayList<>(List.of("-classpath",
                     project.compileClasspath(module), "-d",
                     module.classesDir().toString(), "-proc:none", "-encoding",
