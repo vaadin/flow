@@ -517,7 +517,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         getToolName(options), packageManagerValue.get(),
                         InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
                 return new MinimumFrontendPackageAge(
-                        !blocksNothing(packageManagerValue.get()),
+                        blocksSomeVersion(packageManagerValue.get()),
                         Optional.empty());
             }
             days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
@@ -546,14 +546,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * Checks whether a minimum release age the package manager resolved for
-     * itself blocks nothing, which a value of zero does. The {@code before}
-     * date npm falls back to is not a number and always blocks something.
+     * itself blocks some version, which every value but zero does. The
+     * {@code before} date npm falls back to is not a number and always blocks
+     * something.
      */
-    private static boolean blocksNothing(String packageManagerValue) {
+    private static boolean blocksSomeVersion(String packageManagerValue) {
         try {
-            return Double.parseDouble(packageManagerValue.trim()) == 0;
+            return Double.parseDouble(packageManagerValue.trim()) != 0;
         } catch (NumberFormatException e) { // NOSONAR
-            return false;
+            return true;
         }
     }
 
@@ -570,7 +571,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * {@code --config.minimum-release-age-exclude=@vaadin/*}</li>
      * <li>bun and older npm and pnpm versions cannot exclude packages on the
      * command line, so nothing is passed and the build is warned that an
-     * installation may fail during the first day after a Vaadin release</li>
+     * installation may fail during the first day after a Vaadin release, unless
+     * a {@code bunfig.toml} of the project lists the packages already</li>
      * <li>nothing is passed and nothing is warned about when no age applies, as
      * then no version is blocked to begin with</li>
      * </ul>
@@ -600,10 +602,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return List.of();
         }
         if (options.isEnableBun()) {
-            warnAboutPackagesThatCannotBeExcluded(logger,
-                    "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml",
-                    "List the '" + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE
-                            + "' packages the project depends on in that setting, spelled out one by one, to get the same result as with npm and pnpm.");
+            if (!bunfigExcludesVaadinPackages(options.getNpmFolder(), logger)) {
+                warnAboutPackagesThatCannotBeExcluded(logger,
+                        "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml",
+                        "List the '" + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE
+                                + "' packages the project depends on in that setting, spelled out one by one, to get the same result as with npm and pnpm.");
+            }
             return List.of();
         }
         if (options.isEnablePnpm()) {
@@ -663,6 +667,32 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
         return patterns.stream().map(pattern -> argumentPrefix + pattern)
                 .toList();
+    }
+
+    /**
+     * Checks whether a {@code bunfig.toml} next to the {@code package.json}
+     * already lists packages Vaadin publishes in its
+     * {@code minimumReleaseAgeExcludes} setting, so that a build that has taken
+     * care of the exclusion is not warned about it on every run.
+     * <p>
+     * The file is read as it is, as bun has no command for printing its
+     * resolved configuration. A {@code bunfig.toml} the project does not
+     * contain itself, such as the one in the home directory, is not seen.
+     */
+    private static boolean bunfigExcludesVaadinPackages(File npmFolder,
+            Logger logger) {
+        File bunfig = new File(npmFolder, "bunfig.toml");
+        if (!bunfig.isFile()) {
+            return false;
+        }
+        try {
+            String content = Files.readString(bunfig.toPath());
+            return content.contains("minimumReleaseAgeExcludes")
+                    && content.contains("@vaadin/");
+        } catch (IOException | UncheckedIOException e) {
+            logger.debug("Could not read '{}'", bunfig, e);
+            return false;
+        }
     }
 
     private static void warnAboutPackagesThatCannotBeExcluded(Logger logger,

@@ -1009,6 +1009,24 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
+    void minimumFrontendPackageAgeExclude_bunfigListsThePackages_noWarning()
+            throws IOException {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+        Files.writeString(new File(npmFolder, "bunfig.toml").toPath(), """
+                [install]
+                minimumReleaseAgeExcludes = ["@vaadin/react-components"]
+                """);
+
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnableBun(true), tools,
+                        logger));
+        assertEquals("", logger.getLogs(),
+                "a project that lists the packages itself needs no warning");
+    }
+
+    @Test
     void minimumFrontendPackageAgeExclude_noAgeApplies_noArgumentOrWarning() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         MockLogger logger = new MockLogger();
