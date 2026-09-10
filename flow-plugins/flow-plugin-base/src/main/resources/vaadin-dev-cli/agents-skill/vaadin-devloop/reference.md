@@ -44,13 +44,14 @@ that refreshes the data provider) or reload the page to see it. Do not re-apply;
 nothing left to compile.
 
 In **Vite mode** a TypeScript or JavaScript compile error reaches you as a `frontend → Failed`
-with `dev server:` under it, and `apply` exits `1`. Vite compiles on save rather than on apply,
-so its errors are in the log before `apply` runs and before the browser shows its red overlay;
-`apply` carries them into its own window and fails on them rather than answering a clean
-`Stable` over a file the browser is refusing to load. This is the one failure the daemon
-reports without escalating — a restart cannot compile a broken module. Fix the file and
-re-apply — the next apply is clean. A Java edit that arrived in the same change-set is already
-live; the dev server's error is about the frontend half.
+with `dev server:` under it, and `apply` exits `1`. Vite compiles a module when something
+requests it, so `apply` asks it — fetching each changed file the way the browser would — rather
+than waiting to overhear a complaint in the log. That answer does not depend on whether a page
+is open or happened to re-fetch, so a broken module is reported every time and never as a clean
+`Stable`. This is the one failure the daemon reports without escalating — a restart cannot
+compile a broken module. Fix the file and re-apply — the next apply is clean, because the dev
+server is asked again and serves the fixed file. A Java edit that arrived in the same
+change-set is already live; the dev server's error is about the frontend half.
 
 An `app log:` line means the app logged an error while the change went live — the bytes are
 live, the code did something wrong. `Stable` with this line under it is not a green result:
@@ -86,9 +87,13 @@ the app turns up.
 ## Verifying in the browser
 
 First, whether to look at all: only a change with a visual surface earns a browser, as the
-shared file's step 5 says. Then use whatever browser automation this agent has — a
-Playwright/browser MCP server, a built-in browser tool, or a headless Playwright/Selenium
-script. The rules are the same whichever it is:
+shared file's step 5 says. Then use whatever browser automation this agent already has — a
+Playwright or browser MCP server, a built-in browser tool, a headless Playwright/Selenium
+script, or the browser tests the project itself already runs. Any of them is preferred over the
+others only by convenience; none of them is required, and **building a new browser harness for
+one change costs more than the change** — extend an existing `*BrowserTest`/`*IT` class instead,
+or take the no-browser answer below and say that is what you did. The rules are the same
+whichever tool it is:
 
 - **Navigate before the first `apply`, then keep the page open across applies.** CSS pushes and
   Java hot-swaps land in an already-open page; re-navigating hides what you are testing. Reload
@@ -185,12 +190,17 @@ of this.
 - The target application's `./mvnw test` for unit + UI tests. Update a test the change
   actually broke — its assertion is the behaviour you replaced — and say that you did. Leave
   the rest alone: a test suite rewritten around a one-line edit is scope nobody asked for.
-- If a **Vaadin MCP server** is available (`search_vaadin_docs`, `get_component_java_api`,
-  `get_component_styling`, `get_theme_css_properties`), use it instead of recalling API from
-  memory; otherwise check the Vaadin version in the application's `pom.xml` and read
-  vaadin.com/docs for that version. Prefer theme CSS properties (`--vaadin-*`, `--aura-*`)
-  over hard-coded values. This covers a test framework's API too: unpacking jars out of
-  `~/.m2` to find a method name spends minutes on what a docs query answers in seconds.
-- Browser verification needs a browser automation tool. Nothing installs or configures one for
-  you: register a Playwright MCP server (or the equivalent for your agent) yourself, and the
-  Vaadin docs MCP server alongside it.
+- Every MCP server named here is **preferred, never required**. The loop runs on the `vaadin-dev`
+  CLI and nothing else; a missing server changes which fallback you take, never whether the work
+  can be done. Take the fallback, and say which one you used.
+- For Vaadin API and docs, in order of preference: a **Vaadin MCP server**
+  (`search_vaadin_docs`, `get_component_java_api`, `get_component_styling`,
+  `get_theme_css_properties`); else vaadin.com/docs for the version in the application's
+  `pom.xml`; else the sources, pulled once with `./mvnw -q dependency:sources` and read like any
+  other source. Prefer theme CSS properties (`--vaadin-*`, `--aura-*`) over hard-coded values.
+  This covers a test framework's API too. Unpacking jars out of `~/.m2` and reading `javap`
+  output is the **last** resort, not the first: one method name at a time, it spends minutes on
+  what a docs query or a sources jar answers at once.
+- Browser verification wants a browser automation tool, and nothing installs one for you: a
+  Playwright MCP server (or your agent's equivalent) alongside the Vaadin docs server is the
+  smoothest setup, and *Verifying in the browser* above says what to do with neither.

@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -374,5 +375,72 @@ class DevLoopRedefinerTest {
         assertTrue(reply.contains(" mode="), reply);
         assertTrue(reply.contains(" themes="), reply);
         assertTrue(reply.contains(" agree=?"), reply);
+    }
+
+    @Test
+    void frontendCheck_withoutAService_reportsItInTheProtocolVocabulary() {
+        // Nothing is registered in a unit test, so the connector has to say so
+        // in one line - the daemon reads "kind" and falls back to the log
+        // rather than blocking on a reply that never comes.
+        String reply = DevLoopRedefiner.frontendCheck("/tmp/a.ts");
+
+        assertTrue(reply.startsWith("ERR kind=no-service"), reply);
+    }
+
+    @Test
+    void relativeName_isTheForwardSlashedPathUnderTheFrontendRoot() {
+        Path root = Paths.get("/p/src/main/frontend").toAbsolutePath();
+
+        // A file below the root has a URL on the dev server; the name is that
+        // path, always with forward slashes so it reads as a URL on Windows
+        // too.
+        assertEquals("views/hello.tsx", DevLoopRedefiner.relativeName(root,
+                root.resolve("views/hello.tsx").toString()));
+    }
+
+    @Test
+    void relativeName_isNullForAFileOutsideTheRootOrTheRootItself() {
+        Path root = Paths.get("/p/src/main/frontend").toAbsolutePath();
+
+        // The dev server's root is the frontend folder, so nothing above or
+        // beside it has a URL - and failing an apply over a file the server was
+        // never going to serve would be a worse answer than the truth.
+        assertNull(DevLoopRedefiner.relativeName(root,
+                Paths.get("/p/src/main/java/View.java").toAbsolutePath()
+                        .toString()));
+        // The root itself is not a module either.
+        assertNull(DevLoopRedefiner.relativeName(root, root.toString()));
+    }
+
+    @Test
+    void viteErrorMessage_readsTheReportOutOfVitesErrorPage() {
+        // Vite answers a module it could not transform with an HTML page that
+        // carries the failure as a JSON message its overlay renders. A line
+        // break rides back as the separator the daemon splits on; a tab, only
+        // ever indentation, flattens to a space.
+        String body = "<html><script>{\"message\":\"Transform failed with 1"
+                + " error:\\n[PARSE_ERROR] Expected `}`\\t^\"}</script></html>";
+
+        String message = DevLoopRedefiner.viteErrorMessage(body, "any/url");
+
+        // The unit separator ('\u001f') is what AppLog.SEGMENT is on the
+        // daemon side, the only reader of this field.
+        assertEquals(
+                List.of("Transform failed with 1 error:",
+                        "[PARSE_ERROR] Expected `}` ^"),
+                List.of(message.split("\u001f")));
+    }
+
+    @Test
+    void viteErrorMessage_fallsBackWhenThePageHasNoMessage() {
+        // Best-effort and never load-bearing: the refusal is the verdict, so a
+        // page whose shape has moved - or one with an empty message - still
+        // fails the apply, just less precisely.
+        assertEquals("the dev server could not compile my/module.ts",
+                DevLoopRedefiner.viteErrorMessage("not an error page at all",
+                        "my/module.ts"));
+        assertEquals("the dev server could not compile my/module.ts",
+                DevLoopRedefiner.viteErrorMessage("{\"message\":\"\"}",
+                        "my/module.ts"));
     }
 }
