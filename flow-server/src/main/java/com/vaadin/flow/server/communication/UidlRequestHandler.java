@@ -147,7 +147,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             getRpcHandler().handleRpc(uI, requestBody, request);
             writeUidl(uI, stringWriter, false);
         } catch (ClientResentPayloadException e) {
-            stringWriter.write(uI.getInternals().getLastRequestResponse());
+            String lastResponse = uI.getInternals().getLastRequestResponse();
+            if (lastResponse != null) {
+                stringWriter.write(lastResponse);
+            } else {
+                // Nothing recorded to send again, so describe the current
+                // state instead.
+                writeUidl(uI, stringWriter, false);
+            }
         } catch (JsonDecodingException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side

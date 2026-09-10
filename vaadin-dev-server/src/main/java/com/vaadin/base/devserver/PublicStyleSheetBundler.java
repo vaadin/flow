@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 25.0
  */
 public final class PublicStyleSheetBundler {
+
+    /** Collapsed so a joined path never reads as a protocol-relative URL. */
+    private static final Pattern DUPLICATE_SLASHES = Pattern.compile("/{2,}");
 
     private final List<File> sourceRoots;
 
@@ -132,12 +136,31 @@ public final class PublicStyleSheetBundler {
         if (url.startsWith("/")) {
             url = url.substring(1);
         }
-        // Normalize separators
-        url = FrontendUtils.getUnixPath(new File(url).toPath());
+        url = toUnixSeparators(url);
         if (url.startsWith("./")) {
             url = url.substring(2);
         }
         return url;
+    }
+
+    /**
+     * Normalizes the separators of a stylesheet URL.
+     * <p>
+     * Done as string surgery rather than through {@code File}/{@code Path}: a
+     * stylesheet URL can still carry its scheme at this point
+     * ({@code base://css/app.css}), and a colon is illegal in a Windows path -
+     * so {@code new File(url).toPath()} threw {@code InvalidPathException} for
+     * every such URL there, which degraded an in-place CSS update to a full
+     * page reload. The result is what the path round-trip produced on a
+     * platform where it did not throw.
+     *
+     * @param url
+     *            the URL to normalize
+     * @return the URL with forward separators and no repeated slashes
+     */
+    static String toUnixSeparators(String url) {
+        return DUPLICATE_SLASHES.matcher(url.replace('\\', '/'))
+                .replaceAll("/");
     }
 
     private static Logger getLogger() {

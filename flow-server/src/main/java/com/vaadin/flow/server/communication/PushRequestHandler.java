@@ -307,6 +307,7 @@ public class PushRequestHandler
      * Frees any resources currently in use.
      */
     public void destroy() {
+        pushHandler.destroy();
         atmosphere.destroy();
     }
 

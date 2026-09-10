@@ -55,6 +55,15 @@ public class RouteAndQueryParametersView extends Div
         });
         add(withQueryParametersOnly);
 
+        NativeButton withQueryStringInLocation = new NativeButton(
+                "Navigate with a query string in the location");
+        withQueryStringInLocation.setId("querystring");
+        withQueryStringInLocation.addClickListener(e -> {
+            UI.getCurrent().navigate(
+                    RouteAndQueryParametersView.class.getName() + "/7?foo=baz");
+        });
+        add(withQueryStringInLocation);
+
     }
 
     @Override

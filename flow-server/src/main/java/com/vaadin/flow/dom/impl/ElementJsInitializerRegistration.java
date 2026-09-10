@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -96,7 +97,16 @@ public final class ElementJsInitializerRegistration implements Registration {
         // types fail fast here rather than at execution time.
         this.userFunction = JsFunction.of(expression, parameters);
 
-        attachListenerRegistration = node.addAttachListener(this::onAttach);
+        // Do not convert to lambda: the returned registration captures this
+        // listener and is stored in a field here, and lambda deserialization
+        // cannot resolve that cycle (ClassCastException on the captured value).
+        // Same workaround as ElementAttributeMap#deferRegistration.
+        attachListenerRegistration = node.addAttachListener(new Command() {
+            @Override
+            public void execute() {
+                onAttach();
+            }
+        });
         if (node.isAttached()) {
             onAttach();
         }

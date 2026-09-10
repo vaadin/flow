@@ -29,6 +29,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
@@ -577,6 +578,33 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      */
     protected static JsonNode toJson(@Nullable Object value) {
         return OBJECT_MAPPER.valueToTree(value);
+    }
+
+    /**
+     * Helper to convert the given object to JSON after verifying that the given
+     * type can hold it. A value of any other type would be serialized as JSON
+     * that cannot be deserialized back, which would make every subsequent read
+     * through that type fail for everyone using the same tree. Signals that
+     * declare the type their values are read as use this instead of
+     * {@link #toJson(Object)}.
+     *
+     * @param valueType
+     *            the type that the value is read back as, not <code>null</code>
+     * @param value
+     *            the object to convert to JSON
+     * @return the converted JSON node, not <code>null</code>
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the given type
+     */
+    protected static JsonNode toJson(JavaType valueType,
+            @Nullable Object value) {
+        if (value != null && !valueType.getRawClass().isInstance(value)) {
+            throw new InvalidSignalValueTypeException(
+                    "Cannot use a value of type " + value.getClass().getName()
+                            + " with a signal that has the value type "
+                            + valueType + ".");
+        }
+        return toJson(value);
     }
 
     /**

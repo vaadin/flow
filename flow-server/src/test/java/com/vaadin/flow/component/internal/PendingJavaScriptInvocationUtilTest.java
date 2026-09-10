@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -41,6 +42,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.WARNING_THRESHOLD;
 import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil.buildWarningMessage;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -59,7 +61,7 @@ class PendingJavaScriptInvocationUtilTest {
 
         internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 2);
 
-        createInvocation(node);
+        scheduleInvocation(node);
 
         assertEquals(WARNING_THRESHOLD - 1,
                 internals.addUndeliveredJsInvocations(0));
@@ -75,7 +77,7 @@ class PendingJavaScriptInvocationUtilTest {
 
         internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 1);
 
-        createInvocation(node);
+        scheduleInvocation(node);
 
         assertEquals(WARNING_THRESHOLD,
                 internals.addUndeliveredJsInvocations(0));
@@ -89,7 +91,7 @@ class PendingJavaScriptInvocationUtilTest {
         UIInternals internals = ui.getInternals();
         StateNode node = attachedNode(ui);
 
-        PendingJavaScriptInvocation invocation = createInvocation(node);
+        PendingJavaScriptInvocation invocation = scheduleInvocation(node);
         assertEquals(1, internals.addUndeliveredJsInvocations(0),
                 "a scheduled invocation should be counted");
 
@@ -107,7 +109,7 @@ class PendingJavaScriptInvocationUtilTest {
     void cancelInvocation_notCountedAndNotCountedTwice() {
         MockUI ui = new MockUI();
         UIInternals internals = ui.getInternals();
-        PendingJavaScriptInvocation invocation = createInvocation(
+        PendingJavaScriptInvocation invocation = scheduleInvocation(
                 attachedNode(ui));
 
         assertTrue(invocation.cancelExecution());
@@ -120,21 +122,38 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void scheduleInvocationForOwnerOutsideAnyUI_notCounted() {
+    void countInvocationForOwnerOutsideAnyUI_notCounted() {
         MockUI ui = new MockUI();
         StateNode neverAttachedNode = new StateNode(ElementData.class);
 
-        PendingJavaScriptInvocation invocation = createInvocation(
+        PendingJavaScriptInvocation invocation = scheduleInvocation(
                 neverAttachedNode);
 
-        assertEquals(0, ui.getInternals().addUndeliveredJsInvocations(0),
+        assertEquals(0, count(ui),
                 "an invocation for an owner that does not belong to a UI should not be counted");
         assertTrue(invocation.cancelExecution(),
                 "an uncounted invocation should still be cancelable");
     }
 
     @Test
-    void scheduleInvocationForDetachedOwner_countedInTheUIOfTheOwner() {
+    void cancelInvocationForOwnerOutsideAnyUI_notCountedWhenAttached() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+
+        PendingJavaScriptResult invocation = component.getElement()
+                .executeJs("this.foo = $0", "bar");
+
+        assertTrue(invocation.cancelExecution(),
+                "an uncounted invocation should still be cancelable");
+
+        ui.add(component);
+
+        assertEquals(0, count(ui),
+                "a canceled invocation should not be counted when its owner is attached");
+    }
+
+    @Test
+    void executeJsForDetachedOwner_countedWhenTheOwnerIsAttachedAgain() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
         ui.add(component);
@@ -142,10 +161,15 @@ class PendingJavaScriptInvocationUtilTest {
         // A detached node keeps the state tree it was attached to
         CurrentInstance.clearAll();
 
-        createInvocation(component.getElement().getNode());
+        component.getElement().executeJs("this.foo = $0", "bar");
 
-        assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
-                "an invocation for an owner that has been attached should be counted in the UI of that owner");
+        assertEquals(0, count(ui),
+                "an invocation for a detached owner should not be counted before it is on its way to a client");
+
+        ui.add(component);
+
+        assertEquals(1, count(ui),
+                "attaching the owner should count the invocation waiting for it");
     }
 
     @Test
@@ -161,6 +185,62 @@ class PendingJavaScriptInvocationUtilTest {
 
         assertEquals(1, ui.getInternals().addUndeliveredJsInvocations(0),
                 "attaching the owner should count the invocation waiting for it");
+    }
+
+    @Test
+    void pageExecuteJs_countedUntilSentToBrowser() {
+        MockUI ui = new MockUI();
+
+        ui.getPage().executeJs("this.foo = $0", "bar");
+
+        assertEquals(1, count(ui),
+                "an invocation queued for the UI should be counted");
+
+        ui.dumpPendingJsInvocations();
+
+        assertEquals(0, count(ui),
+                "an invocation sent to the browser should not be counted");
+    }
+
+    @Test
+    void executeJsAfterFailedDetachOnClose_ownerAttachedWithoutSession_notCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        // Closing a UI logs a failure to detach its nodes and carries on,
+        // which leaves them attached to a UI that no longer has a session
+        component.getElement().getNode().addDetachListener(() -> {
+            throw new IllegalStateException("detach failure");
+        });
+        ui.getInternals().setSession(null);
+        assertTrue(component.getElement().getNode().isAttached(),
+                "the owner should have been left attached by the failed detach");
+
+        assertDoesNotThrow(
+                () -> component.getElement().executeJs("this.foo = $0", "bar"),
+                "counting an invocation should not fail when the UI of its owner has no session");
+    }
+
+    @Test
+    void executeJsForOwnerOfClosedUI_countedWhenAttachedToAnotherUI() {
+        MockUI closedUI = new MockUI();
+        TestComponent component = new TestComponent();
+        closedUI.add(component);
+        closedUI.remove(component);
+        // Closing a UI clears its session, while its detached nodes keep
+        // referencing its state tree
+        closedUI.getInternals().setSession(null);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+
+        MockUI ui = new MockUI();
+        // Reusing a component in another UI requires releasing it from the
+        // state tree of the previous one, the way preserve on refresh does
+        component.getElement().removeFromTree(false);
+        ui.add(component);
+
+        assertEquals(1, count(ui),
+                "attaching the owner to another UI should count the invocation waiting for it");
     }
 
     @Test
@@ -287,6 +367,87 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void executeJsThenOwnerDetached_stopsBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        assertEquals(1, count(ui));
+
+        ui.remove(component);
+
+        assertEquals(0, count(ui),
+                "an invocation waiting for a response for a detached owner should not be counted");
+
+        ui.dumpPendingJsInvocations();
+
+        assertEquals(0, count(ui),
+                "writing a response should not bring the invocation back");
+    }
+
+    @Test
+    void retainedInvocationOwnerDetached_stopsBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setVisible(false);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        // An invisible owner keeps the invocation in the queue of the UI
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty());
+        assertEquals(1, count(ui));
+
+        ui.remove(component);
+
+        assertEquals(0, count(ui),
+                "an invocation discarded from the queue should not be counted");
+    }
+
+    @Test
+    void resynchronize_queuedInvocationsStopBeingCounted() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setVisible(false);
+
+        component.getElement().executeJs("this.foo = $0", "bar");
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty());
+        assertEquals(1, count(ui));
+
+        ui.getInternals().getStateTree().prepareForResync();
+
+        assertEquals(0, count(ui),
+                "invocations discarded by a resynchronization should not be counted");
+    }
+
+    @Test
+    void detachedOwnerAttachedAgain_countedAgainAndStillDelivered() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.getElement().executeJs("this.foo = $0", "bar");
+        ui.remove(component);
+        assertEquals(0, count(ui));
+
+        component.setVisible(false);
+        ui.add(component);
+
+        assertEquals(1, count(ui),
+                "an invocation waiting for a response again should be counted again");
+
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
+                "an invisible owner should still retain the invocation");
+        assertEquals(1, count(ui));
+
+        component.setVisible(true);
+
+        assertEquals(1, ui.dumpPendingJsInvocations().size(),
+                "the invocation should still be delivered once the owner is visible");
+        assertEquals(0, count(ui));
+    }
+
+    @Test
     void serializeOwnerOfScheduledInvocation_uiNotPartOfTheGraph()
             throws Exception {
         // There is a current UI, but the owner does not belong to it: it
@@ -354,6 +515,10 @@ class PendingJavaScriptInvocationUtilTest {
                 "an invocation restored with its UI should stop being counted once it is sent");
     }
 
+    private static int count(MockUI ui) {
+        return ui.getInternals().addUndeliveredJsInvocations(0);
+    }
+
     private static StateNode attachedNode(MockUI ui) {
         TestComponent component = new TestComponent();
         ui.add(component);
@@ -364,5 +529,16 @@ class PendingJavaScriptInvocationUtilTest {
             StateNode node) {
         return new PendingJavaScriptInvocation(node,
                 new JavaScriptInvocation("return $0;", "foo"));
+    }
+
+    /**
+     * Creates an invocation for the given node and counts it the way the
+     * framework does once the owner of an invocation is attached.
+     */
+    private static PendingJavaScriptInvocation scheduleInvocation(
+            StateNode node) {
+        PendingJavaScriptInvocation invocation = createInvocation(node);
+        invocation.countWhenAttached();
+        return invocation;
     }
 }

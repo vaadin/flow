@@ -49,6 +49,17 @@ public class StyleRemovalView extends Div {
         });
         removeStyle.setId("remove-style");
 
+        // Removing a style sheet and adding the same URL back in one round
+        // trip, as swapping between two themes that share a sheet does
+        NativeButton swapStyle = new NativeButton("Swap Style", e -> {
+            if (styleRegistration != null) {
+                styleRegistration.remove();
+                styleRegistration = UI.getCurrent().getPage()
+                        .addStyleSheet("/style-removal-red.css");
+            }
+        });
+        swapStyle.setId("swap-style");
+
         // Multiple styles test
         NativeButton addStyle2 = new NativeButton("Add Style 2", e -> {
             if (styleRegistration2 == null) {
@@ -67,7 +78,7 @@ public class StyleRemovalView extends Div {
         removeStyle2.setId("remove-style-2");
 
         add(testDiv);
-        add(new Div(addStyle, removeStyle));
+        add(new Div(addStyle, removeStyle, swapStyle));
         add(new Div(addStyle2, removeStyle2));
     }
 }

@@ -30,7 +30,13 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
+ * <p>
+ * An empty form field. The type attribute selects the control (text, checkbox,
+ * and so on).
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input">MDN:
+ *      &lt;input&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

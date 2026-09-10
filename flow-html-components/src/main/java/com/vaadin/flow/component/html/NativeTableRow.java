@@ -29,7 +29,11 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;tr&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use
+ *             {@code TableRow} instead, which cannot be given children the HTML
+ *             specification does not allow inside this element.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TR)
 public class NativeTableRow extends HtmlContainer
         implements HasOrderedComponents, ClickNotifier<NativeTableRow> {

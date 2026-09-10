@@ -77,6 +77,22 @@ import com.vaadin.flow.server.VaadinSession;
  *     }
  * };
  * </pre>
+ * <p>
+ * A download is served independently of the owning component's lifecycle. The
+ * owner's attached, visible, enabled and inert state is checked when the
+ * download request is received, but not while the download is being served.
+ * Once handling has started, detaching the owner component, navigating to
+ * another view or closing the browser tab does not abort the transfer on the
+ * server: it runs to completion as long as the client keeps reading the
+ * response, and browsers typically keep an ongoing download running after the
+ * tab that started it has been closed. This is intentional and supported
+ * behavior, so that a download the user has already started is not lost when
+ * the view that started it goes away.
+ * <p>
+ * The exception is a handler with transfer progress listeners: notifying them
+ * uses the UI that started the download, so the transfer is interrupted if that
+ * UI has been detached from the session by the time the next notification is
+ * sent, see {@link TransferProgressListener}.
  *
  * @since 24.8
  */
@@ -86,6 +102,11 @@ public interface DownloadHandler extends ElementRequestHandler {
     /**
      * Method that is called when the client wants to download from the url
      * stored for this specific handler registration.
+     * <p>
+     * Once this method has been called, the download is no longer bound to the
+     * owner component's lifecycle and is not interrupted by detaching the owner
+     * or by closing the browser tab, see the {@link DownloadHandler class-level
+     * documentation}.
      *
      * @param event
      *            download event containing the necessary data for writing the
