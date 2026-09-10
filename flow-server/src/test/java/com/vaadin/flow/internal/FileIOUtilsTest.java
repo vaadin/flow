@@ -28,6 +28,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -86,12 +88,13 @@ class FileIOUtilsTest {
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
-    @Test
-    void projectFolderForGradleModuleWithoutBuildScript(
+    @ParameterizedTest
+    @ValueSource(strings = { "settings.gradle", "settings.gradle.kts" })
+    void projectFolderForGradleModuleWithoutBuildScript(String settingsScript,
             @TempDir File rootFolder) throws Exception {
         // A subproject that the root project configures has no build script of
         // its own, only the root has a settings script
-        Files.createFile(new File(rootFolder, "settings.gradle").toPath());
+        Files.createFile(new File(rootFolder, settingsScript).toPath());
         File moduleFolder = new File(rootFolder, "web");
         URL url = gradleOutputFolder(moduleFolder, "build/classes/java/main/");
 

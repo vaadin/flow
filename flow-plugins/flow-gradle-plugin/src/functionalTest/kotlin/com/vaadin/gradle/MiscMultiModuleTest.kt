@@ -464,7 +464,9 @@ class MiscMultiModuleTest : AbstractGradleTest() {
      */
     @Test
     fun `dev mode project folder is the module folder, not the working directory`() {
-        testProject.settingsFile.writeText("include 'lib', 'web'")
+        // The :web module is configured from the root project, so it has
+        // no build script of its own
+        testProject.settingsFile.writeText("include 'web'")
         testProject.buildFile.writeText("""
             plugins {
                 id 'java'
@@ -477,15 +479,11 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                     maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
                 }
             }
-            project(':lib') {
-                apply plugin: 'java'
-            }
             project(':web') {
                 apply plugin: 'java'
                 apply plugin: 'com.vaadin.flow'
 
                 dependencies {
-                    implementation project(':lib')
                     implementation("com.vaadin:flow:$flowVersion")
                 }
 
@@ -497,7 +495,6 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
             }
         """.trimIndent())
-        testProject.newFolder("lib")
         testProject.newFile("web/src/main/java/example/PrintProjectFolder.java", """
             package example;
 
