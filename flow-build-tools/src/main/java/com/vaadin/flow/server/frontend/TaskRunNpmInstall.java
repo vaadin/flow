@@ -80,6 +80,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
      */
     static final String MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE = "@vaadin/*";
 
+    /**
+     * A {@code minimumReleaseAgeExcludes} setting of a {@code bunfig.toml} that
+     * has a package Vaadin publishes among its values.
+     */
+    private static final Pattern BUNFIG_VAADIN_EXCLUDE = Pattern
+            .compile("minimumReleaseAgeExcludes\\s*=\\s*\\[[^]]*[\"']@vaadin/");
+
     private static final String MODULES_YAML = ".modules.yaml";
 
     private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
@@ -687,8 +694,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
         try {
             String content = Files.readString(bunfig.toPath());
-            return content.contains("minimumReleaseAgeExcludes")
-                    && content.contains("@vaadin/");
+            return BUNFIG_VAADIN_EXCLUDE.matcher(content).find();
         } catch (IOException | UncheckedIOException e) {
             logger.debug("Could not read '{}'", bunfig, e);
             return false;
