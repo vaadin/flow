@@ -1062,8 +1062,11 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        final String token = getOrCreateOwnerToken();
-        if (allowEventsFromNestedModals || token == null) {
+        // No token when the guard is off, so none is created for a
+        // registration that will never use one.
+        final String token = allowEventsFromNestedModals ? null
+                : getOrCreateOwnerToken();
+        if (token == null) {
             removeOwnerToken(element);
         } else {
             addOwnerToken(element, token);
