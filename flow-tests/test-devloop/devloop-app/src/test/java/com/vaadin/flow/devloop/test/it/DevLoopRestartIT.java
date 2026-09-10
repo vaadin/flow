@@ -76,6 +76,14 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         // bean and the first view to inject it fails with Spring's own
         // NoSuchBeanDefinitionException - which names Spring rather than the
         // restart nobody was told to do.
+        //
+        // The change-set is deliberately one new file and no edit to a loaded
+        // class. Taking the new bean as a constructor parameter of a view that
+        // is already running would restart on a stock JVM whatever this
+        // reports, because adding a parameter is a structural change and
+        // redefineClasses rejects it - so the fixture would pass without the
+        // rule it is here to pin, and only a JVM with enhanced class
+        // redefinition would show the difference.
         patch.create(MUTABLE.resolve("ExtraService.java"), """
                 package com.vaadin.flow.devloop.test.app.mutable;
 
