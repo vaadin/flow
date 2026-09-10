@@ -148,6 +148,12 @@ public class FrontendTools {
     static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
             11, 17, 0);
 
+    // Node.js 24.19.0 is the first release of the supported Node.js line that
+    // ships npm 11.17.0, which is what a global installation has to be
+    // upgraded to. The Node.js version Vaadin installs itself is newer.
+    static final FrontendVersion MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            24, 19, 0);
+
     // pnpm 10.17.0 is the first version that supports the
     // minimumReleaseAgeExclude setting; pnpm 10.16 ignores it.
     static final FrontendVersion MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(

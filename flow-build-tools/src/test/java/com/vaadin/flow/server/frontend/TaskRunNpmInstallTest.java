@@ -962,6 +962,12 @@ class TaskRunNpmInstallTest {
                 resolveMinimumFrontendPackageAgeExcludeArguments(
                         new MockOptions(npmFolder), tools, logger));
         assertWarnsAboutTheFirstDay(logger);
+        assertTrue(
+                logger.getLogs().contains("11.17.0")
+                        && logger.getLogs().contains("24.19.0"),
+                "the warning should name the npm version to upgrade to and "
+                        + "the Node.js version that ships it, was: "
+                        + logger.getLogs());
     }
 
     @Test

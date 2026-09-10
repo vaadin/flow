@@ -601,7 +601,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
         if (options.isEnableBun()) {
             warnAboutPackagesThatCannotBeExcluded(logger,
-                    "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml");
+                    "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml",
+                    "List the '" + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE
+                            + "' packages the project depends on in that setting, spelled out one by one, to get the same result as with npm and pnpm.");
             return List.of();
         }
         if (options.isEnablePnpm()) {
@@ -609,7 +611,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 warnAboutPackagesThatCannotBeExcluded(logger, "pnpm older than "
                         + FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
                                 .getFullVersion()
-                        + " ignores the 'minimumReleaseAgeExclude' setting");
+                        + " ignores the 'minimumReleaseAgeExclude' setting",
+                        "Upgrade pnpm to "
+                                + FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                        .getFullVersion()
+                                + " or newer.");
                 return List.of();
             }
             List<String> arguments = excludeArguments(
@@ -629,7 +635,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
             warnAboutPackagesThatCannotBeExcluded(logger, "npm older than "
                     + FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
                             .getFullVersion()
-                    + " does not know the '--min-release-age-exclude' argument");
+                    + " does not know the '--min-release-age-exclude' argument",
+                    "Upgrade npm to "
+                            + FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                    .getFullVersion()
+                            + " or newer, which Node.js "
+                            + FrontendTools.MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                    .getFullVersion()
+                            + " and newer ship with.");
             return List.of();
         }
         return excludeArguments("--min-release-age-exclude=",
@@ -653,15 +666,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private static void warnAboutPackagesThatCannotBeExcluded(Logger logger,
-            String reason) {
-        logger.warn(
-                "The packages Vaadin publishes cannot be excluded from the "
-                        + "minimum frontend package age, as {}. Installing a "
-                        + "Vaadin version during the first day after its "
-                        + "release may therefore fail. Upgrade the package "
-                        + "manager, or set the '{}' parameter to 0 to turn "
-                        + "the age check off.",
-                reason, InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
+            String reason, String remedy) {
+        logger.warn("The packages Vaadin publishes cannot be excluded from the "
+                + "minimum frontend package age, as {}. Installing a "
+                + "Vaadin version during the first day after its "
+                + "release may therefore fail. {}", reason, remedy);
     }
 
     /**

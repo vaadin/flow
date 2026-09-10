@@ -173,9 +173,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * <p>
      * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
      * the check, so that a project can be built right after a Vaadin release.
-     * Excluding them requires npm &ge; 11.17.0 or pnpm &ge; 10.17.0; bun cannot
-     * exclude packages on the command line, so with bun an installation may
-     * fail during the first day after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 24.19.0
+     * ships with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the
+     * command line, so with bun an installation may fail during the first day
+     * after a Vaadin release.
      */
     @Parameter(property = "vaadin."
             + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
