@@ -200,6 +200,12 @@ final class Compile {
     private static final List<String> PUBLIC_RESOURCE_ROOTS = List
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
+    /**
+     * What makes a file a Java source, and what a type's name is its file name
+     * minus.
+     */
+    private static final String JAVA_SUFFIX = ".java";
+
     /** A file and the module it belongs to, which is all a walk ever needs. */
     private interface Visitor {
         void accept(Reactor.Module module, Path file, Stamp stamp);
@@ -759,7 +765,7 @@ final class Compile {
                 continue;
             }
             walk(module, module.sourceDir(),
-                    path -> path.toString().endsWith(".java"),
+                    path -> path.toString().endsWith(JAVA_SUFFIX),
                     (owner, file, stamp) -> forced.add(file));
         }
         forced.sort(Comparator.naturalOrder());
@@ -800,7 +806,8 @@ final class Compile {
         return sources.stream().filter(source -> !applied.containsKey(source))
                 .map(source -> {
                     String file = source.getFileName().toString();
-                    return file.substring(0, file.length() - ".java".length());
+                    return file.substring(0,
+                            file.length() - JAVA_SUFFIX.length());
                 }).sorted(Comparator.naturalOrder()).toList();
     }
 
@@ -840,7 +847,7 @@ final class Compile {
     private void forEachSource(Visitor action) {
         for (Reactor.Module module : modules) {
             walk(module, module.sourceDir(),
-                    path -> path.toString().endsWith(".java"), action);
+                    path -> path.toString().endsWith(JAVA_SUFFIX), action);
         }
     }
 

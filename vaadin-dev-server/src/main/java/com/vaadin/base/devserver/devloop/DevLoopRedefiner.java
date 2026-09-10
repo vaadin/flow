@@ -116,6 +116,33 @@ final class DevLoopRedefiner {
             "/webapp/" };
 
     /**
+     * The annotations {@link #isEntity} asks a loaded class for, as they are
+     * spelled in a class file.
+     */
+    private static final List<String> ENTITY_DESCRIPTORS = List.of(
+            "Ljakarta/persistence/Entity;",
+            "Ljakarta/persistence/MappedSuperclass;",
+            "Ljakarta/persistence/Embeddable;");
+
+    /**
+     * The stereotypes that register a bean, as they are spelled in a class
+     * file. {@code @RestController} and the two advice annotations are listed
+     * in their own right because each is a {@code @Component} through a
+     * meta-annotation that the annotated class's own constant pool does not
+     * mention - see {@link #declaresSpringBean} for the ones that cannot be
+     * listed.
+     */
+    private static final List<String> BEAN_DESCRIPTORS = List.of(
+            "Lorg/springframework/stereotype/Component;",
+            "Lorg/springframework/stereotype/Service;",
+            "Lorg/springframework/stereotype/Repository;",
+            "Lorg/springframework/stereotype/Controller;",
+            "Lorg/springframework/web/bind/annotation/RestController;",
+            "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
+            "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
+            "Lorg/springframework/context/annotation/Configuration;");
+
+    /**
      * Where Vite puts the failure in the error page it serves for a module it
      * could not transform - the JSON its own overlay renders.
      */
@@ -1131,12 +1158,6 @@ final class DevLoopRedefiner {
                 "jakarta.persistence.Embeddable");
     }
 
-    /** The same annotations, as they are spelled in a class file. */
-    private static final List<String> ENTITY_DESCRIPTORS = List.of(
-            "Ljakarta/persistence/Entity;",
-            "Ljakarta/persistence/MappedSuperclass;",
-            "Ljakarta/persistence/Embeddable;");
-
     /**
      * Whether the compiled bytes carry a JPA annotation, read from the class
      * file rather than from the class once it is loaded.
@@ -1163,24 +1184,6 @@ final class DevLoopRedefiner {
     static boolean declaresEntity(byte[] bytes) {
         return declares(bytes, ENTITY_DESCRIPTORS);
     }
-
-    /**
-     * The stereotypes that register a bean, as they are spelled in a class
-     * file. {@code @RestController} and the two advice annotations are listed
-     * in their own right because each is a {@code @Component} through a
-     * meta-annotation that the annotated class's own constant pool does not
-     * mention - see {@link #declaresSpringBean} for the ones that cannot be
-     * listed.
-     */
-    private static final List<String> BEAN_DESCRIPTORS = List.of(
-            "Lorg/springframework/stereotype/Component;",
-            "Lorg/springframework/stereotype/Service;",
-            "Lorg/springframework/stereotype/Repository;",
-            "Lorg/springframework/stereotype/Controller;",
-            "Lorg/springframework/web/bind/annotation/RestController;",
-            "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
-            "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
-            "Lorg/springframework/context/annotation/Configuration;");
 
     /**
      * Whether the compiled bytes carry a Spring stereotype, read from the class
