@@ -54,6 +54,7 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -179,6 +180,29 @@ class VaadinSecurityConfigurerTest {
 
         assertThat(filters).hasAtLeastOneElementOfType(
                 OAuth2LoginAuthenticationFilter.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withOAuth2LoginPage_oidcUserServiceMapsRoles()
+            throws Exception {
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+
+        var oidcUserService = http.getSharedObject(OidcUserService.class);
+
+        assertThat(oidcUserService).isNotNull();
+        assertThat(getOidcUserConverter(oidcUserService))
+                .isInstanceOf(KeycloakOidcUserMapper.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withoutOAuth2LoginPage_notConfigured() {
+        http.with(configurer, VaadinSecurityConfigurer::keycloakRoleMapping)
+                .build();
+
+        assertNull(http.getSharedObject(OidcUserService.class));
     }
 
     @Test
@@ -482,6 +506,13 @@ class VaadinSecurityConfigurerTest {
     }
 
     // Helper methods to access protected fields using reflection
+    private Object getOidcUserConverter(OidcUserService oidcUserService)
+            throws Exception {
+        var field = OidcUserService.class.getDeclaredField("oidcUserConverter");
+        field.setAccessible(true);
+        return field.get(oidcUserService);
+    }
+
     private String getDefaultTargetUrl(
             VaadinSavedRequestAwareAuthenticationSuccessHandler handler)
             throws Exception {
