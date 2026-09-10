@@ -1,12 +1,17 @@
 ---
 name: Documentation Bot
 description: >
-  Runs on every pull request and on every push to one, and keeps a draft
-  documentation pull request in vaadin/docs in step with the change.
+  Runs once when a pull request is merged, and opens a draft documentation
+  pull request in vaadin/docs for the change.
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review, assigned]
+    # Run once, when a pull request is merged: `closed` is the only action
+    # that fires, and `merged == true` in the `if:` below tells a merge from an
+    # abandoned pull request. By then the change has been reviewed and
+    # approved, so the documentation is written against its final shape instead
+    # of an in-progress feature.
+    types: [closed]
     # Free first filter: a pull request that touches none of these paths never
     # starts a runner, so the cheapest check happens before any tokens are
     # spent. GitHub skips path filtering above 300 changed files, which is why
@@ -26,26 +31,22 @@ on:
       - '**/Dockerfile'
       - '**/*.md'
 
-# Two ways in. Normally the bot decides for itself on every push to a
-# non-draft pull request, skipping the conventional-commit types that never
-# reach a reader of the documentation. Assigning `vaadin-bot` is the manual
-# override: it runs the bot on a pull request the type filter passed over.
+# One way in: a merged pull request, minus the conventional-commit types that
+# never reach a reader of the documentation. A pull request that was closed
+# without merging is dropped by `merged`, and a merged one is never a draft, so
+# no separate draft check is needed.
 if: >
-  github.event.pull_request.draft == false && (
-    (github.event.action == 'assigned' &&
-     github.event.assignee.login == 'vaadin-bot') ||
-    (github.event.action != 'assigned' &&
-     !startsWith(github.event.pull_request.title, 'test:') &&
-     !startsWith(github.event.pull_request.title, 'test(') &&
-     !startsWith(github.event.pull_request.title, 'ci:') &&
-     !startsWith(github.event.pull_request.title, 'ci(') &&
-     !startsWith(github.event.pull_request.title, 'refactor:') &&
-     !startsWith(github.event.pull_request.title, 'refactor(') &&
-     !startsWith(github.event.pull_request.title, 'chore:') &&
-     !startsWith(github.event.pull_request.title, 'chore(') &&
-     !startsWith(github.event.pull_request.title, 'build:') &&
-     !startsWith(github.event.pull_request.title, 'build('))
-  )
+  github.event.pull_request.merged == true &&
+  !startsWith(github.event.pull_request.title, 'test:') &&
+  !startsWith(github.event.pull_request.title, 'test(') &&
+  !startsWith(github.event.pull_request.title, 'ci:') &&
+  !startsWith(github.event.pull_request.title, 'ci(') &&
+  !startsWith(github.event.pull_request.title, 'refactor:') &&
+  !startsWith(github.event.pull_request.title, 'refactor(') &&
+  !startsWith(github.event.pull_request.title, 'chore:') &&
+  !startsWith(github.event.pull_request.title, 'chore(') &&
+  !startsWith(github.event.pull_request.title, 'build:') &&
+  !startsWith(github.event.pull_request.title, 'build(')
 
 permissions:
   contents: read
@@ -74,9 +75,9 @@ network:
 
 timeout-minutes: 30
 
-# A burst of pushes to the same pull request collapses into one run of the
-# latest state. Each run analyses the whole pull request, never just the
-# increment, so a cancelled run loses nothing.
+# A pull request merges once, so this mostly guards against a re-run started
+# from the Actions UI while an earlier one is still going: the later run wins.
+# Each run analyses the whole pull request, so a cancelled one loses nothing.
 concurrency:
   group: doc-bot-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -127,7 +128,7 @@ safe-outputs:
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   add-comment:
     # One standing comment per pull request: a re-run supersedes its
-    # predecessor instead of stacking a note onto every push.
+    # predecessor instead of stacking a second note onto the conversation.
     hide-older-comments: true
   # Lets the agent record "nothing to document, because …" in the run log
   # without putting anything on the pull request.
@@ -137,9 +138,9 @@ safe-outputs:
 
 # Documentation Bot
 
-You analyze a pull request in `${{ env.SOURCE_REPO }}` and, when it changes something a reader would need to know about, you keep a matching documentation pull request in `vaadin/docs` up to date with it.
+You analyze a pull request in `${{ env.SOURCE_REPO }}` and, when it changes something a reader would need to know about, you open a matching documentation pull request in `vaadin/docs`.
 
-You run on **every push** to every non-draft pull request that survives the trigger filters. Most of your runs therefore end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
+You run **once, when a pull request is merged**. The change you are looking at is therefore already reviewed and final. Many of your runs still end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
 
 ## Environment
 
@@ -173,7 +174,7 @@ If it does, find the pull request in `vaadin/docs` whose head branch is that nam
 
 ## Phase 1: Analyze the Pull Request
 
-Always analyze the **whole** pull request, never just the commits of the latest push. A run can be cancelled by a newer push, so the increment since the previous run is not a reliable unit of work — the full diff is.
+Always analyze the **whole** pull request, never just the commits of its last push. A run can be cancelled by a manual re-trigger, so any increment is an unreliable unit of work — the full diff is the reliable one.
 
 1. **List the changed files first.** Fetch diffs only for the user-facing ones, at most 20, and skip any file with more than 500 lines changed — note those in the pull request body instead.
 2. **Read the pull request metadata** — title, description, and top-level comments only.
@@ -195,7 +196,7 @@ Classify each meaningful change into one or more of these categories:
 
 If **all** changes are `INTERNAL_ONLY`, `TEST_ONLY`, or `BUILD_ONLY`:
 
-- If no documentation pull request exists yet, record a `noop` naming the reason and stop. Do not comment on the source pull request — you run on every push, and a note saying nothing happened on each of them is noise.
+- If no documentation pull request exists yet, record a `noop` naming the reason and stop. Do not comment on the source pull request — a note on a merged pull request saying nothing happened is noise.
 - If one exists, the change that justified it may have been reverted. Continue to Phase 3; Phase 4 decides whether the documentation still matches the pull request.
 
 ## Phase 3: Plan the Documentation Changes
@@ -232,7 +233,7 @@ Documentation is **AsciiDoc** (`.adoc`) with YAML front matter. Do not read file
    - Never remove existing documentation without clear justification from the source pull request.
    - When updating, revise in place rather than appending a second description of the same API, and drop documentation an earlier run wrote for something the pull request no longer does. A dropped commit has to drop its documentation with it.
 
-3. **Decide whether anything actually changed.** Run `git -C docs-repo status --porcelain`. If it is empty, the documentation already describes the current state of the pull request — the push you are reacting to changed nothing a reader would see. Record a `noop` saying so and stop. This is the common outcome on later pushes, and it is what keeps the bot quiet.
+3. **Decide whether anything actually changed.** Run `git -C docs-repo status --porcelain`. If it is empty, the documentation already describes the current state of the pull request — this change turned out to be one no reader would see. Record a `noop` saying so and stop. This is what keeps the bot quiet.
 
 4. **Commit** on that branch:
 
@@ -256,9 +257,8 @@ Use the `create-pull-request` safe-output with `repo` set to `vaadin/docs`.
 Documentation for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }} by @${{ env.PR_AUTHOR }}.
 
 > [!NOTE]
-> The source pull request is still open. This one tracks it and is updated
-> automatically whenever the source changes what a reader sees. Merge it once
-> the source pull request is merged.
+> The source pull request is merged, so this documentation describes the final
+> shape of the change. Please review it and mark it ready for review.
 
 **Change categories:** <the categories from Phase 1>
 
@@ -288,6 +288,6 @@ Add one comment with the `add-comment` safe-output. A later run replaces it, so 
 > - `<file1>`
 > - `<file2>`
 >
-> It is kept up to date automatically on each push here. Please review it and mark it ready for review once this pull request is ready to merge.
+> It was written from the state of this pull request as you see it now. Please review it and mark it ready for review.
 
 Do not comment when you recorded a `noop`.
