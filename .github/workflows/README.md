@@ -17,6 +17,7 @@ files directly — edit the source `.md` file and regenerate.
 |---|---|---|
 | `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes PRs and proposes documentation updates in `vaadin/docs`. |
 | `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
+| `guidelines-bot.md` | `guidelines-bot.lock.yml` | Guidelines bot that distils recurring code review feedback into `CONVENTIONS.md` and `guidelines/`. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
 Pinned action versions and SHAs used by the generated workflows are
@@ -44,6 +45,39 @@ the change supports.
 Like every agentic workflow, it runs only for pull requests from branches
 in this repository, opened by users with write access — `gh-aw` gates
 both. Pull requests from forks never trigger it.
+
+### Guidelines Bot
+
+`guidelines-bot.md` runs once a week and reads the review comments on every
+pull request merged into `main` since the previous run — around seventy of
+them, of which roughly half carry any inline comment. The window matches the
+cadence, so recurrence means the same point raised twice inside one week of
+reviews. Release branches are left alone: a backport is the same review a
+second time.
+
+It keeps only the comments that state a rule rather than report a defect,
+that it can show were acted on — the merged code obeys the point, or the
+hunk the comment was anchored to was rewritten after it, never an author's
+"done" on its own — and that `CONVENTIONS.md` and `guidelines/` do not
+already cover. A rule also has to survive a counter-example check: `grep`
+has to show that `main` mostly follows it already. From what is left it
+proposes at most three rules in a single draft pull request, and in most
+weeks it proposes nothing at all.
+
+A rule reaches the pull request only when it recurs — two pull requests or
+two reviewers — or when repeating the mistake once more would be expensive:
+a correctness or thread-safety trap, a break in public API compatibility, a
+security consequence, a broken build or release. Everything the bot weighed
+and dropped is listed in the pull request body, which is where you tune what
+it does next.
+
+The bot's own pull requests are its memory. Closing one without merging tells
+it never to propose those rules again; while one is open it proposes nothing
+new. It only ever edits `CONVENTIONS.md` and the chapters under `guidelines/`
+— never `CLAUDE.md`, never `guidelines/overview.md`, and never code.
+
+Run it by hand from the Actions tab with `workflow_dispatch`, optionally
+setting `lookback-days` to widen or narrow the window.
 
 ### When regeneration happens
 
