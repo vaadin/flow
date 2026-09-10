@@ -37,14 +37,17 @@ import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -72,6 +75,12 @@ class BundleValidationTest {
     public static final String FRONTEND_HASHES = "frontendHashes";
     public static final String THEME_JSON_CONTENTS = "themeJsonContents";
     public static final String PACKAGE_JSON_HASH = "packageJsonHash";
+    public static final String PWA_OFFLINE_PATH = "pwaOfflinePath";
+    public static final String PWA_OFFLINE_ENABLED = "pwaOfflineEnabled";
+
+    private static final String NPM_PACKAGE_TEMPLATE = "@vaadin-component-factory/vcf-breadcrumb/dist/src/vcf-breadcrumbs.js";
+    private static final String PROJECT_TEMPLATE = "./my-lit-element-view.js";
+    private static final String JAR_PACKAGED_TEMPLATE = "my-addon/my-lit-view.js";
 
     private static final String THEME_UTIL_JS;
     static {
@@ -228,7 +237,89 @@ class BundleValidationTest {
     void hashesMatch_noNpmPackages_noCompilationRequired(Mode mode)
             throws IOException {
         setupMode(mode);
+        setupMatchingBundle();
 
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "Matching hashes should not require compilation");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void templateFromNpmPackageMissingInBundle_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        setupMatchingBundle();
+
+        Mockito.doReturn(Collections.singleton(NpmPackageTemplate.class))
+                .when(finder).getSubTypesOf(Template.class);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A template source that is only available in node_modules "
+                        + "requires bundling when the bundle does not have it");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void templateFromNpmPackageInBundle_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        setupMatchingBundle();
+
+        Mockito.doReturn(Collections.singleton(NpmPackageTemplate.class))
+                .when(finder).getSubTypesOf(Template.class);
+        givenTemplateInBundle(NPM_PACKAGE_TEMPLATE);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "A template source that the bundle has should not require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void templateFromProjectMissingInBundle_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        setupMatchingBundle();
+
+        File templateFile = new File(temporaryFolder,
+                DEFAULT_FRONTEND_DIR + "my-lit-element-view.js");
+        FileUtils.forceMkdir(templateFile.getParentFile());
+        templateFile.createNewFile();
+
+        Mockito.doReturn(Collections.singleton(ProjectTemplate.class))
+                .when(finder).getSubTypesOf(Template.class);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "A template source from the project is copied on every build "
+                        + "and should not require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void templateFromAddonJarMissingInBundle_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        setupMatchingBundle();
+
+        jarResources.put(JAR_PACKAGED_TEMPLATE, "export {}");
+        Mockito.doReturn(Collections.singleton(JarPackagedTemplate.class))
+                .when(finder).getSubTypesOf(Template.class);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "A template source packaged in an add-on jar is copied on "
+                        + "every build and should not require bundling");
+    }
+
+    private void setupMatchingBundle() throws IOException {
         File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
@@ -244,11 +335,20 @@ class BundleValidationTest {
                 .put("@vaadin/router", "1.7.5");
 
         setupFrontendUtilsMock(stats);
+    }
 
-        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, mode);
-        assertFalse(needsBuild,
-                "Matching hashes should not require compilation");
+    private void givenTemplateInBundle(String jsModule) throws IOException {
+        String bundleFile = Constants.TEMPLATE_DIRECTORY + jsModule;
+        if (mode.isProduction()) {
+            prodBundleUtils.when(() -> ProdBundleUtils.hasBundleFile(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class),
+                    Mockito.eq(bundleFile))).thenReturn(true);
+        } else {
+            // The dev bundle folder is mocked to the temporary folder
+            File templateFile = new File(temporaryFolder, bundleFile);
+            FileUtils.forceMkdir(templateFile.getParentFile());
+            templateFile.createNewFile();
+        }
     }
 
     @ParameterizedTest
@@ -2645,6 +2745,130 @@ class BundleValidationTest {
                 "In development mode, presence of 'commercial-banner.js' should require bundling");
     }
 
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathAdded_statsWithoutOfflinePath_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A custom offline path not recorded in the bundle should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultOfflinePath_statsWithoutOfflinePath_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath(""));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "The default offline path matches bundles built before it was recorded");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathChanged_compilationRequired(Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'other-offline.html'");
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A changed offline path should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlinePathUnchanged_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath("offline.html"));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'offline.html'");
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "An unchanged offline path should not require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlineEnabled_statsBuiltWithoutOfflineSupport_compilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaConfiguration("", true));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'.'");
+        stats.put(PWA_OFFLINE_ENABLED, false);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertTrue(needsBuild,
+                "A bundle built without a service worker should require bundling once offline is enabled");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlineDisabled_offlinePathDiffers_noCompilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        Mockito.when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaConfiguration("offline.html", false));
+
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        stats.put(PWA_OFFLINE_PATH, "'.'");
+        stats.put(PWA_OFFLINE_ENABLED, true);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        assertFalse(needsBuild,
+                "Without offline support the bundle's service worker is unused, so it cannot be stale");
+    }
+
+    private static PwaConfiguration pwaWithOfflinePath(String offlinePath) {
+        return pwaConfiguration(offlinePath, true);
+    }
+
+    private static PwaConfiguration pwaConfiguration(String offlinePath,
+            boolean offlineEnabled) {
+        return new PwaConfiguration(true, "App", "App", "", "#fff", "#000",
+                "icons/icon.png", "manifest.webmanifest", offlinePath,
+                "standalone", ".", new String[] {}, offlineEnabled);
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder, Constants.PACKAGE_JSON);
         boolean created = packageJson.createNewFile();
@@ -2697,10 +2921,32 @@ class BundleValidationTest {
                 .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.anyString(), Mockito.any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.getJarResource(
+                        Mockito.anyString(), Mockito.any(ClassFinder.class)))
+                .thenAnswer(q -> jarResources.containsKey(q.getArgument(0))
+                        ? new File(temporaryFolder, q.getArgument(0).toString())
+                                .toURI().toURL()
+                        : null);
     }
 
     @LoadDependenciesOnStartup
     static class AllEagerAppConf implements AppShellConfigurator {
+
+    }
+
+    @JsModule(NPM_PACKAGE_TEMPLATE)
+    static class NpmPackageTemplate implements Template {
+
+    }
+
+    @JsModule(PROJECT_TEMPLATE)
+    static class ProjectTemplate implements Template {
+
+    }
+
+    @JsModule(JAR_PACKAGED_TEMPLATE)
+    static class JarPackagedTemplate implements Template {
 
     }
 

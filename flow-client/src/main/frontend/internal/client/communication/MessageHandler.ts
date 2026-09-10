@@ -286,6 +286,15 @@ export class MessageHandler {
       this.#pushId = valueMap[UIDL_PUSH_ID] as string;
     }
 
+    // Before the dependencies, and not with the rest of the message: a round
+    // trip that removes a stylesheet and adds the same URL back carries both,
+    // and the resource loader dedupes by URL, so the add would be dropped as a
+    // duplicate of the sheet this message removes and the page would end up
+    // with neither.
+    if ('stylesheetRemovals' in valueMap) {
+      this.#processStylesheetRemovals(valueMap.stylesheetRemovals as string[] | null);
+    }
+
     this.#handleDependencies(valueMap);
 
     runWhenEagerDependenciesLoaded(() => this.#processMessage(valueMap, lock));
@@ -334,9 +343,6 @@ export class MessageHandler {
       }
       if ('changes' in valueMap) {
         this.#processChanges(valueMap);
-      }
-      if ('stylesheetRemovals' in valueMap) {
-        this.#processStylesheetRemovals(valueMap.stylesheetRemovals as string[] | null);
       }
       if (UIDL_KEY_EXECUTE in valueMap) {
         // Invoke JS only after all tree changes and post-flush listeners added
@@ -474,7 +480,14 @@ export class MessageHandler {
     // End the request if the received message was a response, not sent
     // asynchronously.
     if (this.#isResponse(json)) {
-      this.#registry.getRequestResponseTracker().endRequest();
+      const requestResponseTracker = this.#registry.getRequestResponseTracker();
+      if (requestResponseTracker.hasActiveRequest()) {
+        requestResponseTracker.endRequest();
+      } else {
+        // No request to end, e.g. a duplicate of a response that already ended
+        // it. endRequest would throw for that.
+        Console.debug('Received a response while no request is active, ignoring it');
+      }
       this.#registry.getLoadingIndicatorStateHandler().stopLoading();
     }
   }

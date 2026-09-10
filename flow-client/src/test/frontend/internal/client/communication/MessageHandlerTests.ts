@@ -7,6 +7,8 @@ import type {
 import { expect } from '@open-wc/testing';
 import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
+import { ResourceLoader } from '../../../../../main/frontend/internal/client/ResourceLoader';
+import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
@@ -25,9 +27,16 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
     unrecoverableErrorHandled: false
   };
   let state: UIState = UIState.INITIALIZING;
+  // A response normally arrives while the request that triggered it is still
+  // active, so the tracker starts out with one; ending it clears the flag, as
+  // the real tracker does.
+  let activeRequest = true;
   return {
     log,
     getState: () => state,
+    startRequest: () => {
+      activeRequest = true;
+    },
     registry: testRegistry({
       UILifecycle: {
         getState: () => state,
@@ -48,8 +57,15 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
         fireResponseHandlingStarted: () => {},
-        endRequest: () => log.endRequests++,
-        hasActiveRequest: () => false
+        endRequest: () => {
+          // The real tracker throws when there is nothing to end.
+          if (!activeRequest) {
+            throw new Error('endRequest called when no request is active');
+          }
+          log.endRequests++;
+          activeRequest = false;
+        },
+        hasActiveRequest: () => activeRequest
       },
       LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
       ConstantPool: { importFromJson: (c: unknown) => log.constants.push(c) },
@@ -149,7 +165,7 @@ function makeWiredRegistry() {
       fireResponseHandlingStarted: () => {},
       // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
       endRequest: () => {},
-      hasActiveRequest: () => false
+      hasActiveRequest: () => true
     })
     .register('LoadingIndicatorStateHandler', { stopLoading: () => {} })
     .register('MessageSender', {
@@ -233,13 +249,31 @@ describe('MessageHandler', () => {
       const registry = makeRegistry();
       const handler = new MessageHandler(registry.registry);
       handler.handleMessage({ syncId: 0 });
+      registry.startRequest();
       handler.handleMessage({ syncId: 1 });
       const endRequestsBefore = registry.log.endRequests;
 
-      // syncId 0 again: already seen -> ignored, but the request is ended.
+      // syncId 0 again: already seen -> ignored, but the request it responds to
+      // is ended.
+      registry.startRequest();
       handler.handleMessage({ syncId: 0, constants: { stale: 1 } });
       expect(registry.log.constants).to.deep.equal([]); // never applied any constants
       expect(registry.log.endRequests).to.equal(endRequestsBefore + 1);
+    });
+
+    it('ignores a duplicate response arriving with no active request instead of throwing', () => {
+      // Beyond the Java suite: No Java case covers a re-sent response.
+      const registry = makeRegistry();
+      const handler = new MessageHandler(registry.registry);
+      handler.handleMessage({ syncId: 0 });
+      expect(registry.log.endRequests).to.equal(1);
+
+      // The same response once more, with the request already ended by the
+      // first copy: ignored without ending a request that is not active.
+      handler.handleMessage({ syncId: 0 });
+      expect(registry.log.endRequests).to.equal(1);
+      // The loading indicator is still stopped for the duplicate.
+      expect(registry.log.stopLoadings).to.equal(2);
     });
 
     it('runs a one-shot session-expired handler when set', () => {
@@ -410,6 +444,64 @@ describe('MessageHandler', () => {
         expect(document.querySelector('[data-id="dep-y"]')).to.not.equal(null);
         expect(registry.log.clearedResources).to.deep.equal(['dep-x']);
         keep.remove();
+      });
+
+      it('removes the stylesheets a message lists before loading the dependencies it carries', async () => {
+        // A theme swap removes a sheet and adds the same URL back in one round
+        // trip, so one message carries both. The resource loader dedupes by URL,
+        // so loading the dependency first drops the add as a duplicate of the
+        // sheet the same message is about to remove, leaving the page with
+        // neither. Both the real loader and the real DependencyLoader are wired
+        // in, as that dedup is the thing under test.
+        const url = '/stylesheet-swap.css';
+        const oldLink = document.createElement('link');
+        oldLink.rel = 'stylesheet';
+        oldLink.href = url;
+        oldLink.setAttribute('data-id', 'dep-old');
+        const stylesheetEnd = document.createComment('Stylesheet end');
+        document.head.append(oldLink, stylesheetEnd);
+
+        const registry = testRegistry({
+          UILifecycle: { getState: () => UIState.RUNNING },
+          MessageSender: {
+            getResynchronizationState: () => 'NOT_ACTIVE',
+            clearResynchronizationState: () => {},
+            setClientToServerMessageId: () => {}
+          },
+          RequestResponseTracker: {
+            fireResponseHandlingStarted: () => {},
+            endRequest: () => {},
+            hasActiveRequest: () => true
+          },
+          LoadingIndicatorStateHandler: { stopLoading: () => {} },
+          ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
+          URIResolver: { resolveVaadinUri: (uri: string) => uri },
+          // The swapped URL has no file behind it, so the load fails; the
+          // assertions below are made before it settles either way.
+          SystemErrorHandler: { handleError: () => {} }
+        });
+        // initFromDom: true, as in the browser, so the sheet already on the page
+        // counts as loaded.
+        registry.register('ResourceLoader', new ResourceLoader(registry, true));
+        registry.register('DependencyLoader', new DependencyLoader(registry));
+
+        new MessageHandler(registry).handleMessage({
+          syncId: 0,
+          EAGER: [{ type: 'STYLESHEET', url, id: 'dep-new' }],
+          stylesheetRemovals: ['dep-old']
+        });
+
+        const sheets = Array.from(document.head.querySelectorAll(`link[href$="${url}"]`));
+        expect(sheets.map((sheet) => sheet.getAttribute('data-id'))).to.deep.equal(['dep-new']);
+        // The eager load settles on a later task, and the gate it counts
+        // against is module-wide state that the cases after this one share, so
+        // let it unwind before leaving. Removing the link first would cancel the
+        // event the load settles on and leave the gate closed for good.
+        await new Promise<void>((resolve) => {
+          runWhenEagerDependenciesLoaded(() => resolve());
+        });
+        sheets.forEach((sheet) => sheet.remove());
+        stylesheetEnd.remove();
       });
 
       it('reports finite processing and bootstrap timings after a message', () => {

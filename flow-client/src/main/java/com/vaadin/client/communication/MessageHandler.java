@@ -363,7 +363,20 @@ public class MessageHandler {
             pushId = valueMap.getString(ApplicationConstants.UIDL_PUSH_ID);
         }
 
-        handleDependencies(valueMap.cast());
+        JsonObject json = valueMap.cast();
+
+        /*
+         * Before the dependencies, and not with the rest of the message: a
+         * round trip that removes a stylesheet and adds the same URL back
+         * carries both, and the resource loader dedupes by URL, so the add
+         * would be dropped as a duplicate of the sheet this message removes and
+         * the page would end up with neither.
+         */
+        if (json.hasKey("stylesheetRemovals")) {
+            processStylesheetRemovals(json.getArray("stylesheetRemovals"));
+        }
+
+        handleDependencies(json);
 
         /*
          * Hook for e.g. TestBench to get details about server performance
@@ -418,10 +431,6 @@ public class MessageHandler {
 
             if (json.hasKey("changes")) {
                 processChanges(json);
-            }
-
-            if (json.hasKey("stylesheetRemovals")) {
-                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
             }
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
@@ -532,10 +541,17 @@ public class MessageHandler {
     }
 
     private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
-        // Remove both link and style elements with matching dependency ID
+        // Remove both link and style elements with matching dependency ID.
+        // Through the parent rather than with ChildNode.remove(): the two are
+        // equivalent for an element in the document, and removeChild is
+        // available everywhere this engine runs, including the HtmlUnit the
+        // client engine tests run in, which has no remove() on a link element.
         var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
         for (var i = 0; i < elements.length; i++) {
-            elements[i].remove();
+            var element = elements[i];
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
         }
     }-*/;
 
@@ -576,7 +592,16 @@ public class MessageHandler {
         if (isResponse(json)) {
             // End the request if the received message was a
             // response, not sent asynchronously
-            registry.getRequestResponseTracker().endRequest();
+            RequestResponseTracker requestResponseTracker = registry
+                    .getRequestResponseTracker();
+            if (requestResponseTracker.hasActiveRequest()) {
+                requestResponseTracker.endRequest();
+            } else {
+                // No request to end, e.g. a duplicate of a response that
+                // already ended it. endRequest would throw for that.
+                Console.debug(
+                        "Received a response while no request is active, ignoring it");
+            }
             registry.getLoadingIndicatorStateHandler().stopLoading();
         }
     }

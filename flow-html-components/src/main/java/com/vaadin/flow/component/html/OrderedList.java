@@ -25,7 +25,12 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;ol&gt;</code> element.
+ * <p>
+ * A numbered list of items. Use UnorderedList when order does not matter.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ol">MDN:
+ *      &lt;ol&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

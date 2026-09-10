@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-plugins</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>flow-gradle-plugin</artifactId>
@@ -19,6 +19,9 @@
 
   <properties>
     <gradle.executable>./gradlew</gradle.executable>
+    <!-- Excluded from the Gradle build below a second time, which is a no-op
+         until the skip-tests profile turns it into the unit test task. -->
+    <gradle.skipped.task>functionalTest</gradle.skipped.task>
   </properties>
 
   <dependencies>
@@ -51,6 +54,8 @@
                 <argument>javadocJar</argument>
                 <argument>-x</argument>
                 <argument>functionalTest</argument>
+                <argument>-x</argument>
+                <argument>${gradle.skipped.task}</argument>
                 <argument>-S</argument>
               </arguments>
             </configuration>
@@ -116,6 +121,35 @@
   </build>
 
   <profiles>
+    <!-- Gradle's build task runs the unit tests, so a Maven skip flag stopped
+         at Maven and this module went on testing for a minute in a build that
+         had asked for no tests. Excluding the task carries the flag across.
+         Two profiles because profile activation takes one property, and both
+         flags are in use: -DskipTests and -Dmaven.test.skip=true. -->
+    <profile>
+      <id>skip-tests</id>
+      <activation>
+        <property>
+          <name>skipTests</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <gradle.skipped.task>test</gradle.skipped.task>
+      </properties>
+    </profile>
+    <profile>
+      <id>maven-test-skip</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <gradle.skipped.task>test</gradle.skipped.task>
+      </properties>
+    </profile>
     <profile>
       <id>windows_profile</id>
       <activation>
