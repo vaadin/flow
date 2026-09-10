@@ -15,7 +15,7 @@ files directly — edit the source `.md` file and regenerate.
 
 | Source (edit this) | Generated (do not edit) | Purpose |
 |---|---|---|
-| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes a merged pull request and opens a draft documentation pull request for it in `vaadin/docs`. |
+| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes a pull request merged into `main` and opens a draft documentation pull request for it in `vaadin/docs`. |
 | `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
@@ -24,26 +24,30 @@ tracked in [`../aw/actions-lock.json`](../aw/actions-lock.json).
 
 ### Documentation Bot
 
-`doc-bot.md` runs once per pull request, when it is merged. Running after
-the merge rather than on every push means the change has already been
-reviewed and approved, so the documentation is written against its final
-shape instead of an in-progress feature — and one run replaces the burst
-of runs a long-lived pull request used to trigger.
+`doc-bot.md` runs once per pull request, when it is merged into `main`.
+Running after the merge rather than on every push means the change has
+already been reviewed and approved, so the documentation is written
+against its final shape instead of an in-progress feature — and one run
+replaces the burst of runs a long-lived pull request used to trigger.
 
 It reads the whole pull request and decides whether the change is
 something a reader of [vaadin/docs](https://github.com/vaadin/docs) would
 need to know about. When it is, the bot opens a draft documentation pull
 request there.
 
-Three filters keep the bot off pull requests that cannot need
+Four filters keep the bot off pull requests that cannot need
 documentation, cheapest first:
 
-1. **Paths.** A pull request that touches only tests, build files,
+1. **Base branch.** Only merges into `main` count. Development lands
+   there and is cherry-picked into the maintenance branches, so `main`
+   sees every change once, and a backport does not open a second
+   documentation pull request for a change already documented.
+2. **Paths.** A pull request that touches only tests, build files,
    `.github/`, or Markdown never starts a runner.
-2. **Conventional-commit type.** Titles starting with `test:`, `ci:`,
+3. **Conventional-commit type.** Titles starting with `test:`, `ci:`,
    `refactor:`, `chore:`, or `build:` (with or without a scope) are
    skipped. `fix:`, `feat:`, `docs:`, and `perf:` are not.
-3. **The agent itself.** It classifies the diff and stops when everything
+4. **The agent itself.** It classifies the diff and stops when everything
    in it is internal, test-only, or build-only, recording the reason in
    the run log without commenting on the pull request.
 

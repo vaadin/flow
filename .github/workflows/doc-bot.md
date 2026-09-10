@@ -1,8 +1,8 @@
 ---
 name: Documentation Bot
 description: >
-  Runs once when a pull request is merged, and opens a draft documentation
-  pull request in vaadin/docs for the change.
+  Runs once when a pull request is merged into main, and opens a draft
+  documentation pull request in vaadin/docs for the change.
 
 on:
   pull_request:
@@ -12,6 +12,13 @@ on:
     # approved, so the documentation is written against its final shape instead
     # of an in-progress feature.
     types: [closed]
+    # Only merges into `main`. Development lands there and is cherry-picked
+    # into the maintenance branches, so `main` sees every change once, at the
+    # earliest point. Without this filter every backport would merge as a pull
+    # request of its own and open a second documentation pull request for a
+    # change already documented, because the `doc-bot/vaadin-flow/<PR>` branch
+    # is keyed on the pull request number.
+    branches: [main]
     # Free first filter: a pull request that touches none of these paths never
     # starts a runner, so the cheapest check happens before any tokens are
     # spent. GitHub skips path filtering above 300 changed files, which is why
@@ -31,10 +38,10 @@ on:
       - '**/Dockerfile'
       - '**/*.md'
 
-# One way in: a merged pull request, minus the conventional-commit types that
-# never reach a reader of the documentation. A pull request that was closed
-# without merging is dropped by `merged`, and a merged one is never a draft, so
-# no separate draft check is needed.
+# One way in: a pull request merged into `main`, minus the conventional-commit
+# types that never reach a reader of the documentation. A pull request that was
+# closed without merging is dropped by `merged`, and a merged one is never a
+# draft, so no separate draft check is needed.
 if: >
   github.event.pull_request.merged == true &&
   !startsWith(github.event.pull_request.title, 'test:') &&
@@ -140,7 +147,7 @@ safe-outputs:
 
 You analyze a pull request in `${{ env.SOURCE_REPO }}` and, when it changes something a reader would need to know about, you open a matching documentation pull request in `vaadin/docs`.
 
-You run **once, when a pull request is merged**. The change you are looking at is therefore already reviewed and final. Many of your runs still end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
+You run **once, when a pull request is merged into `main`**. The change you are looking at is therefore already reviewed and final. Many of your runs still end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
 
 ## Environment
 
