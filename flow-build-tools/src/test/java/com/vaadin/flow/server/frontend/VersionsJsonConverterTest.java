@@ -416,28 +416,31 @@ class VersionsJsonConverterTest {
         // components bring the web component instead
         VersionsJsonConverter react = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), true, false);
-        assertTrue(react.getExclusions().contains("@vaadin/text-field"),
-                "A Lit package should be excluded when React is used");
-        assertFalse(react.getExclusions().contains("@vaadin/react-components"));
-        assertFalse(react.getExclusions().contains("date-fns"),
+        assertTrue(react.getModeExclusions().contains("@vaadin/text-field"),
+                "A Lit package should not be installed when React is used");
+        assertFalse(
+                react.getModeExclusions().contains("@vaadin/react-components"));
+        assertFalse(react.getModeExclusions().contains("date-fns"),
                 "A package without a mode is installed in every mode");
         assertTrue(react.getConvertedJson().has("@vaadin/react-components"));
         assertTrue(react.getConvertedJson().has("date-fns"));
 
         // Leaving a package out because of the mode is not something the file
         // says about the package, so it does not exclude it from the others
+        assertFalse(react.getExclusions().contains("@vaadin/text-field"));
         assertFalse(
                 react.getDeclaredExclusions().contains("@vaadin/text-field"));
 
         // Without React, it is the React package that is not installed
         VersionsJsonConverter lit = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), false, false);
-        assertTrue(lit.getExclusions().contains("@vaadin/react-components"),
-                "A React package should be excluded when Lit is used");
-        assertFalse(lit.getExclusions().contains("@vaadin/text-field"));
-        assertFalse(lit.getExclusions().contains("date-fns"));
+        assertTrue(lit.getModeExclusions().contains("@vaadin/react-components"),
+                "A React package should not be installed when Lit is used");
+        assertFalse(lit.getModeExclusions().contains("@vaadin/text-field"));
+        assertFalse(lit.getModeExclusions().contains("date-fns"));
         assertTrue(lit.getConvertedJson().has("@vaadin/text-field"));
         assertTrue(lit.getConvertedJson().has("date-fns"));
+        assertFalse(lit.getExclusions().contains("@vaadin/react-components"));
         assertFalse(lit.getDeclaredExclusions()
                 .contains("@vaadin/react-components"));
     }
@@ -473,8 +476,11 @@ class VersionsJsonConverterTest {
 
         // The React package is left out because web components are excluded,
         // and the router because React is used, neither of which is something
-        // the file says about those packages
-        assertTrue(
+        // the file says about those packages. The React package is left out by
+        // its mode, so it is only excluded where no file installs it
+        assertTrue(convert.getModeExclusions()
+                .contains("@vaadin/react-components"));
+        assertFalse(
                 convert.getExclusions().contains("@vaadin/react-components"));
         assertTrue(convert.getExclusions().contains("@vaadin/router"));
         assertFalse(convert.getDeclaredExclusions()
