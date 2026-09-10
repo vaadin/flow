@@ -44,13 +44,14 @@ that refreshes the data provider) or reload the page to see it. Do not re-apply;
 nothing left to compile.
 
 In **Vite mode** a TypeScript or JavaScript compile error reaches you as a `frontend → Failed`
-with `dev server:` under it, and `apply` exits `1`. Vite compiles on save rather than on apply,
-so its errors are in the log before `apply` runs and before the browser shows its red overlay;
-`apply` carries them into its own window and fails on them rather than answering a clean
-`Stable` over a file the browser is refusing to load. This is the one failure the daemon
-reports without escalating — a restart cannot compile a broken module. Fix the file and
-re-apply — the next apply is clean. A Java edit that arrived in the same change-set is already
-live; the dev server's error is about the frontend half.
+with `dev server:` under it, and `apply` exits `1`. Vite compiles a module when something
+requests it, so `apply` asks it — fetching each changed file the way the browser would — rather
+than waiting to overhear a complaint in the log. That answer does not depend on whether a page
+is open or happened to re-fetch, so a broken module is reported every time and never as a clean
+`Stable`. This is the one failure the daemon reports without escalating — a restart cannot
+compile a broken module. Fix the file and re-apply — the next apply is clean, because the dev
+server is asked again and serves the fixed file. A Java edit that arrived in the same
+change-set is already live; the dev server's error is about the frontend half.
 
 An `app log:` line means the app logged an error while the change went live — the bytes are
 live, the code did something wrong. `Stable` with this line under it is not a green result:
