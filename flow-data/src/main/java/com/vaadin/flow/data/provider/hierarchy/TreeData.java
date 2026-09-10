@@ -32,9 +32,9 @@ import com.vaadin.flow.function.ValueProvider;
 /**
  * Represents hierarchical data.
  * <p>
- * Typically used as a backing data source for {@link TreeDataProvider}.
- * After making changes to the tree data,
- * {@link TreeDataProvider#refreshAll()} should be called.
+ * Typically used as a backing data source for {@link TreeDataProvider}. After
+ * making changes to the tree data, {@link TreeDataProvider#refreshAll()} should
+ * be called.
  *
  * @author Vaadin Ltd
  * @since 1.1
