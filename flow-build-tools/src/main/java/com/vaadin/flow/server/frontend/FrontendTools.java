@@ -140,6 +140,19 @@ public class FrontendTools {
     static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE = new FrontendVersion(
             11, 10, 0);
 
+    // npm 11.17.0 is the first version that supports
+    // --min-release-age-exclude, which exempts the packages matching a
+    // minimatch pattern from both --min-release-age and --before. Older
+    // versions only warn about an unknown configuration and keep blocking
+    // the packages.
+    static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            11, 17, 0);
+
+    // pnpm 10.17.0 is the first version that supports the
+    // minimumReleaseAgeExclude setting; pnpm 10.16 ignores it.
+    static final FrontendVersion MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            10, 17, 0);
+
     // pnpm 10.16.0 is the first version that supports the
     // minimumReleaseAge setting used to delay installation of newly
     // published packages as a supply-chain mitigation.
@@ -750,16 +763,50 @@ public class FrontendTools {
      * @since 25.2
      */
     public boolean npmSupportsMinReleaseAge(List<String> npmCommand) {
-        List<String> versionCmd = new ArrayList<>(npmCommand);
+        return isAtLeast("npm", npmCommand, MIN_NPM_VERSION_FOR_RELEASE_AGE);
+    }
+
+    /**
+     * Checks whether the given npm is new enough to know
+     * {@code --min-release-age-exclude}, which exempts the packages Vaadin
+     * publishes itself from the minimum frontend package age.
+     *
+     * @param npmCommand
+     *            the npm command to invoke for {@code --version}
+     * @return {@code true} if the installed npm is new enough; {@code false} if
+     *         it is older or its version cannot be determined
+     */
+    boolean npmSupportsMinReleaseAgeExclude(List<String> npmCommand) {
+        return isAtLeast("npm", npmCommand,
+                MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE);
+    }
+
+    /**
+     * Checks whether the given pnpm is new enough to know the
+     * {@code minimumReleaseAgeExclude} setting, which exempts the packages
+     * Vaadin publishes itself from the minimum frontend package age.
+     *
+     * @param pnpmCommand
+     *            the pnpm command to invoke for {@code --version}
+     * @return {@code true} if the installed pnpm is new enough; {@code false}
+     *         if it is older or its version cannot be determined
+     */
+    boolean pnpmSupportsMinimumReleaseAgeExclude(List<String> pnpmCommand) {
+        return isAtLeast("pnpm", pnpmCommand,
+                MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE);
+    }
+
+    private boolean isAtLeast(String tool, List<String> toolCommand,
+            FrontendVersion required) {
+        List<String> versionCmd = new ArrayList<>(toolCommand);
         versionCmd.add("--version"); // NOSONAR
         try {
-            FrontendVersion actual = FrontendUtils.getVersion("npm",
-                    versionCmd);
-            return actual.isEqualOrNewer(MIN_NPM_VERSION_FOR_RELEASE_AGE);
+            return FrontendUtils.getVersion(tool, versionCmd)
+                    .isEqualOrNewer(required);
         } catch (UnknownVersionException e) {
             getLogger().debug(
-                    "Could not determine npm version; falling back to --before for the minimum frontend package age check",
-                    e);
+                    "Could not determine the {} version; assuming it is older than {}",
+                    tool, required.getFullVersion(), e);
             return false;
         }
     }
