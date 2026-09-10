@@ -1201,11 +1201,11 @@ final class DevLoopRedefiner {
      * composed through a meta-annotation is invisible: a project's own
      * {@code @MyService}, itself annotated {@code @Service}, puts only
      * {@code @MyService} in this class's pool, and the annotation type whose
-     * pool would say the rest is a separate class file. The list above names
-     * the composed stereotypes Spring itself ships; a project's own are a
-     * restart its author still has to ask for, and the same limit as
-     * {@link #hasAnnotation}, which resolves one level of meta-annotation and
-     * no more.
+     * pool would say the rest is a separate class file.
+     * {@link #BEAN_DESCRIPTORS} names the composed stereotypes Spring itself
+     * ships; a project's own are a restart its author still has to ask for, and
+     * the same limit as {@link #hasAnnotation}, which resolves one level of
+     * meta-annotation and no more.
      */
     static boolean declaresSpringBean(byte[] bytes) {
         return declares(bytes, BEAN_DESCRIPTORS);
