@@ -1010,7 +1010,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private String generateOwnerScopeFilter() {
-        final String token = getOrCreateOwnerToken();
+        final String token = getOwnerToken();
         if (token == null) {
             // Only reached while the guard is on, so the owner is the UI, i.e.
             // <body>, which can never be inside an open popover/modal. Sharing
@@ -1027,7 +1027,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * The marker token of this registration, created here on first use.
+     * The marker token of this registration, generated on first use.
      * <p>
      * A token is needed only when the owner element has to be marked for the
      * client-side origin guard to locate it, which is the case unless the guard
@@ -1039,7 +1039,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return the marker token, or {@code null} if none is needed
      */
-    private String getOrCreateOwnerToken() {
+    private String getOwnerToken() {
         if (allowEventsFromNestedModals || lifecycleOwner instanceof UI) {
             return null;
         }
@@ -1062,7 +1062,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        final String token = getOrCreateOwnerToken();
+        final String token = getOwnerToken();
         if (token == null) {
             removeOwnerToken(element);
         } else {
