@@ -67,6 +67,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -203,6 +204,44 @@ class VaadinSecurityConfigurerTest {
                 .build();
 
         assertNull(http.getSharedObject(OidcUserService.class));
+    }
+
+    @Test
+    void keycloakRoleMapping_sharedOidcUserService_isReused() throws Exception {
+        var sharedService = new OidcUserService();
+        http.setSharedObject(OidcUserService.class, sharedService);
+
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+
+        assertThat(http.getSharedObject(OidcUserService.class))
+                .isSameAs(sharedService);
+        assertThat(getOidcUserConverter(sharedService))
+                .isInstanceOf(KeycloakOidcUserMapper.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_rolePrefixOfChain_isUsedForRoles()
+            throws Exception {
+        var rolePrefixHolder = new VaadinRolePrefixHolder(null);
+        http.setSharedObject(VaadinRolePrefixHolder.class, rolePrefixHolder);
+
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+        // The prefix of the filter chain is only known to the holder after the
+        // chain has been configured, so the mapper must pick it up afterwards
+        var securityContextFilter = new SecurityContextHolderAwareRequestFilter();
+        securityContextFilter.setRolePrefix("AUTHORITY_");
+        rolePrefixHolder.resetRolePrefix(securityContextFilter);
+
+        var mapper = (KeycloakOidcUserMapper) getOidcUserConverter(
+                http.getSharedObject(OidcUserService.class));
+
+        assertThat(mapper.rolePrefix()).isEqualTo("AUTHORITY_");
     }
 
     @Test

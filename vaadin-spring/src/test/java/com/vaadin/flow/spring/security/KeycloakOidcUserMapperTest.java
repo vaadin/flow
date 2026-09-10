@@ -137,7 +137,7 @@ class KeycloakOidcUserMapperTest {
 
     @Test
     void convert_customRolePrefixAppliedToRolesOnly() {
-        mapper = new KeycloakOidcUserMapper("AUTHORITY_",
+        mapper = new KeycloakOidcUserMapper(() -> "AUTHORITY_",
                 registration -> this::decode);
         accessTokenClaims.put("realm_access",
                 Map.of("roles", List.of("admin")));
@@ -159,13 +159,19 @@ class KeycloakOidcUserMapperTest {
     }
 
     @Test
-    void convert_userNameAttributeUsedAsName() {
+    void convert_userNameAttributeUsedAsName_userInfoRetained() {
         when(userInfoEndpoint.getUserNameAttributeName())
                 .thenReturn("preferred_username");
-        when(idToken.getClaims()).thenReturn(Map.of("sub", "user-123", "iss",
-                ISSUER_URI, "preferred_username", "john"));
+        when(userInfo.getClaims()).thenReturn(Map.of("preferred_username",
+                "john", "email", "john@example.com"));
 
-        assertThat(mapper.convert(userSource).getName()).isEqualTo("john");
+        var user = mapper.convert(userSource);
+
+        // The name attribute is only in the userinfo response, so dropping it
+        // would both lose claims and fail the login
+        assertThat(user.getName()).isEqualTo("john");
+        assertThat(user.getUserInfo()).isSameAs(userInfo);
+        assertThat(user.getClaims()).containsEntry("email", "john@example.com");
     }
 
     @Test

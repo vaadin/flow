@@ -788,18 +788,17 @@ public final class VaadinSecurityConfigurer
     private OidcUserService getKeycloakOidcUserService() {
         var oidcUserService = getSharedObject(OidcUserService.class)
                 .orElseGet(OidcUserService::new);
-        oidcUserService.setOidcUserConverter(
-                new KeycloakOidcUserMapper(getRolePrefix()));
+        // The role prefix holder is only populated with the prefix of the
+        // filter chain in configure(), which runs after this, so the mapper
+        // reads it when it maps a user rather than now.
+        var rolePrefixHolder = getVaadinRolePrefixHolder();
+        oidcUserService.setOidcUserConverter(KeycloakOidcUserMapper
+                .withRolePrefixSupplier(() -> rolePrefixHolder != null
+                        && rolePrefixHolder.isSet()
+                                ? rolePrefixHolder.getRolePrefix()
+                                : null));
         setSharedObject(OidcUserService.class, oidcUserService);
         return oidcUserService;
-    }
-
-    private String getRolePrefix() {
-        var rolePrefixHolder = getVaadinRolePrefixHolder();
-        if (rolePrefixHolder != null && rolePrefixHolder.isSet()) {
-            return rolePrefixHolder.getRolePrefix();
-        }
-        return null;
     }
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getAuthenticationSuccessHandler() {

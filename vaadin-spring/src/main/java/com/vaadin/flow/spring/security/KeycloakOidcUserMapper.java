@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,17 +89,17 @@ public class KeycloakOidcUserMapper
     private static final Logger LOGGER = LoggerFactory
             .getLogger(KeycloakOidcUserMapper.class);
 
-    static final String REALM_ACCESS_CLAIM = "realm_access";
+    private static final String REALM_ACCESS_CLAIM = "realm_access";
 
-    static final String RESOURCE_ACCESS_CLAIM = "resource_access";
+    private static final String RESOURCE_ACCESS_CLAIM = "resource_access";
 
-    static final String ROLES_CLAIM = "roles";
+    private static final String ROLES_CLAIM = "roles";
 
-    static final String DEFAULT_ROLE_PREFIX = "ROLE_";
+    private static final String DEFAULT_ROLE_PREFIX = "ROLE_";
 
-    static final String SCOPE_PREFIX = "SCOPE_";
+    private static final String SCOPE_PREFIX = "SCOPE_";
 
-    private final String rolePrefix;
+    private final Supplier<String> rolePrefix;
 
     private final JwtDecoderFactory<ClientRegistration> decoderFactory;
 
@@ -107,7 +109,7 @@ public class KeycloakOidcUserMapper
      * Creates a mapper that prefixes roles with {@code ROLE_}.
      */
     public KeycloakOidcUserMapper() {
-        this(null);
+        this((String) null);
     }
 
     /**
@@ -118,12 +120,23 @@ public class KeycloakOidcUserMapper
      *            use {@code ROLE_}
      */
     public KeycloakOidcUserMapper(String rolePrefix) {
-        this(rolePrefix, KeycloakOidcUserMapper::createDecoder);
+        this(() -> rolePrefix, KeycloakOidcUserMapper::createDecoder);
     }
 
-    KeycloakOidcUserMapper(String rolePrefix,
+    /**
+     * Creates a mapper that looks up the role prefix when it maps a user, for a
+     * caller that only knows the prefix after the security filter chain has
+     * been configured.
+     */
+    static KeycloakOidcUserMapper withRolePrefixSupplier(
+            Supplier<String> rolePrefix) {
+        return new KeycloakOidcUserMapper(rolePrefix,
+                KeycloakOidcUserMapper::createDecoder);
+    }
+
+    KeycloakOidcUserMapper(Supplier<String> rolePrefix,
             JwtDecoderFactory<ClientRegistration> decoderFactory) {
-        this.rolePrefix = rolePrefix != null ? rolePrefix : DEFAULT_ROLE_PREFIX;
+        this.rolePrefix = rolePrefix != null ? rolePrefix : () -> null;
         this.decoderFactory = decoderFactory;
     }
 
@@ -146,7 +159,7 @@ public class KeycloakOidcUserMapper
         if (StringUtils.hasText(userNameAttributeName)) {
             authorities.add(new OidcUserAuthority(idToken, userInfo,
                     userNameAttributeName));
-            return new DefaultOidcUser(authorities, idToken,
+            return new DefaultOidcUser(authorities, idToken, userInfo,
                     userNameAttributeName);
         }
         authorities.add(new OidcUserAuthority(idToken, userInfo));
@@ -155,17 +168,12 @@ public class KeycloakOidcUserMapper
 
     private void collectRoles(Jwt accessToken, String clientId,
             Set<GrantedAuthority> authorities) {
-        if (accessToken.hasClaim(REALM_ACCESS_CLAIM)) {
-            extractRoles(accessToken.getClaimAsMap(REALM_ACCESS_CLAIM))
-                    .forEach(role -> authorities.add(toRoleAuthority(role)));
-        }
-        if (accessToken.hasClaim(RESOURCE_ACCESS_CLAIM)) {
-            var resourceAccess = accessToken
-                    .getClaimAsMap(RESOURCE_ACCESS_CLAIM);
-            var clientAccess = asMap(resourceAccess.get(clientId));
-            extractRoles(clientAccess)
-                    .forEach(role -> authorities.add(toRoleAuthority(role)));
-        }
+        var claims = accessToken.getClaims();
+        var resourceAccess = asMap(claims.get(RESOURCE_ACCESS_CLAIM));
+        Stream.of(asMap(claims.get(REALM_ACCESS_CLAIM)),
+                asMap(resourceAccess.get(clientId)))
+                .flatMap(access -> extractRoles(access).stream())
+                .map(this::toRoleAuthority).forEach(authorities::add);
     }
 
     /**
@@ -190,7 +198,17 @@ public class KeycloakOidcUserMapper
     }
 
     private GrantedAuthority toRoleAuthority(String role) {
-        return new SimpleGrantedAuthority(rolePrefix + role);
+        return new SimpleGrantedAuthority(rolePrefix() + role);
+    }
+
+    /**
+     * Returns the role prefix in use, resolved on every call so that a prefix
+     * that is only known once the security filter chain is fully configured is
+     * picked up.
+     */
+    String rolePrefix() {
+        var prefix = rolePrefix.get();
+        return prefix != null ? prefix : DEFAULT_ROLE_PREFIX;
     }
 
     @SuppressWarnings("unchecked")
