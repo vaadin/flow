@@ -24,6 +24,8 @@ import java.nio.file.StandardCopyOption;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -31,6 +33,7 @@ import com.vaadin.open.OSUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -58,6 +61,67 @@ class FileIOUtilsTest {
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
         assertEquals(new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleClassesFolder(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        URL url = gradleOutputFolder(projectFolder, "build/classes/java/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleResourcesFolderInCustomBuildFolder(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle.kts").toPath());
+        URL url = gradleOutputFolder(projectFolder, "out/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleResourcesFolderInBuildFolderNamedClasses(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        // Both layouts match this one, and the classes layout would climb one
+        // level too far
+        URL url = gradleOutputFolder(projectFolder, "classes/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "settings.gradle", "settings.gradle.kts" })
+    void projectFolderForGradleModuleWithoutBuildScript(String settingsScript,
+            @TempDir File rootFolder) throws Exception {
+        // A subproject that the root project configures has no build script of
+        // its own, only the root has a settings script
+        Files.createFile(new File(rootFolder, settingsScript).toPath());
+        File moduleFolder = new File(rootFolder, "web");
+        URL url = gradleOutputFolder(moduleFolder, "build/classes/java/main/");
+
+        assertEquals(moduleFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void noProjectFolderForClassesFolderOutsideGradleBuild(@TempDir File folder)
+            throws Exception {
+        URL url = gradleOutputFolder(folder, "build/classes/java/main/");
+
+        assertNull(FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    private static URL gradleOutputFolder(File projectFolder,
+            String relativePath) throws Exception {
+        File outputFolder = new File(projectFolder, relativePath);
+        Files.createDirectories(outputFolder.toPath());
+        return outputFolder.toURI().toURL();
     }
 
     @Test
