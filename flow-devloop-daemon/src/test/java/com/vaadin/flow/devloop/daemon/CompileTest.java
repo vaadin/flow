@@ -69,11 +69,9 @@ class CompileTest {
     @Test
     void compile_keepsParameterNamesAndDebugInfoLikeAMavenBuild()
             throws Exception {
-        // A Spring Data repository is the loud case: a query with a named
-        // parameter needs the name in the bytecode, and every
-        // spring-boot-starter-parent project has -parameters on without ever
-        // mentioning it, so a class the daemon rewrites without the flag breaks
-        // a view the developer never edited.
+        // Spring Data is the loud case: a query with a named parameter needs
+        // the name in the bytecode, and every Spring Boot project has
+        // -parameters on without ever mentioning it.
         Reactor.Module app = module("app", "Finder", """
                 package app;
                 public class Finder {

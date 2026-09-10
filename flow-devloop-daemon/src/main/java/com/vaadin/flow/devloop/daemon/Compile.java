@@ -1032,21 +1032,11 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            // -parameters and -g carry information a class file only has if it
-            // was compiled with them, and both are on in a normal build:
-            // spring-boot-starter-parent configures the compiler plugin with
-            // <parameters>true</parameters>, and the plugin defaults <debug> to
-            // true. javac defaults both off, so leaving them off writes classes
-            // into target/classes that no Maven build would have produced -
-            // reflection finds no parameter names, and a Spring Data repository
-            // method with a named parameter then throws "for queries with named
-            // parameters you need to provide names for method parameters" at
-            // runtime, from code the developer never touched. They are passed
-            // unconditionally rather than read off the poms: the setting lives
-            // in a parent outside the checkout in every Spring Boot project,
-            // which is exactly the case that has to work, and the cost of the
-            // flags where a build would have left them off is two attributes in
-            // a class file the next build overwrites.
+            // -parameters and -g default off in javac and on in a normal
+            // build, and a class written without them breaks reflection on
+            // parameter names - Spring Data's named query parameters first.
+            // See README, "Known limits", for why they are not read off the
+            // poms.
             List<String> options = new ArrayList<>(List.of("-classpath",
                     project.compileClasspath(module), "-d",
                     module.classesDir().toString(), "-proc:none", "-encoding",
