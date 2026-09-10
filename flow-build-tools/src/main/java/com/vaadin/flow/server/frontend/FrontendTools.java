@@ -675,6 +675,49 @@ public class FrontendTools {
     }
 
     /**
+     * Reads the values the given npm or pnpm command resolves for a
+     * configuration key that holds a list, such as
+     * {@code min-release-age-exclude}.
+     * <p>
+     * Several keys can be given for a setting that the tool spells differently
+     * depending on its version; the first one that has a value is used. Both
+     * tools list such a setting as an array, but a single value written into a
+     * {@code .npmrc} may also arrive as a comma separated string.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @param keys
+     *            the configuration keys to look for, in order of preference
+     * @return the configured values, empty if none of the keys has a value or
+     *         the configuration cannot be read
+     */
+    List<String> getConfiguredSettingValues(List<String> toolCommand,
+            File workingDirectory, String... keys) {
+        JsonNode config = getResolvedConfiguration(toolCommand,
+                workingDirectory);
+        for (String key : keys) {
+            JsonNode value = config.get(key);
+            if (value == null || value.isNull()) {
+                continue;
+            }
+            List<JsonNode> items = value.isArray()
+                    ? value.valueStream().toList()
+                    : List.of(value);
+            List<String> values = items.stream()
+                    .flatMap(item -> Stream.of(item.asString().split(",")))
+                    .map(String::trim).filter(entry -> !entry.isEmpty())
+                    .toList();
+            if (!values.isEmpty()) {
+                return values;
+            }
+        }
+        return List.of();
+    }
+
+    /**
      * Reads the configuration the given npm or pnpm command resolves for a
      * directory by running {@code config list --json}.
      * <p>
