@@ -70,8 +70,13 @@ public class ShortcutRegistration implements Registration, Serializable {
     // unique across session serialization/deserialization onto another JVM,
     // where a counter would restart and new shortcuts could reuse a restored
     // token.
+    //
+    // A token is unique per registration and ends up in the listener filter
+    // text, which both the client and the server keep forever (compiled
+    // expression cache, constant pool), so it is only created for owners that
+    // actually need a marker: see needsOwnerMarker (#25624).
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
-    private final String ownerToken = "sc-" + UUID.randomUUID();
+    private String ownerToken;
 
     private boolean resetFocusOnActiveElement = false;
 
@@ -1010,11 +1015,40 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private String generateOwnerScopeFilter() {
+        if (!needsOwnerMarker()) {
+            // The owner is the UI, i.e. <body>, which can never be inside an
+            // open popover/modal. Sharing its scope therefore just means the
+            // event did not originate inside one, which needs no owner token
+            // and so keeps the filter text identical for every UI-owned
+            // shortcut (#25624).
+            return "window.Vaadin.Flow.shortcut.eventInTopLevelScope(event)";
+        }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
         // defined in FlowShortcut.js.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
-                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken + "\"]')";
+                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken() + "\"]')";
+    }
+
+    /**
+     * Whether the lifecycle owner element has to carry a marker attribute for
+     * the client-side origin guard to locate it. A UI owner is located without
+     * one, see {@link #generateOwnerScopeFilter()}.
+     */
+    private boolean needsOwnerMarker() {
+        return !(lifecycleOwner instanceof UI);
+    }
+
+    /**
+     * The marker token for this registration, created on first use so that
+     * registrations which never need a marker do not contribute a unique filter
+     * expression.
+     */
+    private String ownerToken() {
+        if (ownerToken == null) {
+            ownerToken = "sc-" + UUID.randomUUID();
+        }
+        return ownerToken;
     }
 
     /**
@@ -1030,7 +1064,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        if (allowEventsFromNestedModals) {
+        if (allowEventsFromNestedModals || !needsOwnerMarker()) {
             removeOwnerToken(element);
         } else {
             addOwnerToken(element);
@@ -1040,18 +1074,22 @@ public class ShortcutRegistration implements Registration, Serializable {
     private void addOwnerToken(Element element) {
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
-            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken());
             return;
         }
         final Set<String> tokens = new LinkedHashSet<>(
                 Arrays.asList(current.trim().split("\\s+")));
-        if (tokens.add(ownerToken)) {
+        if (tokens.add(ownerToken())) {
             element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
                     String.join(" ", tokens));
         }
     }
 
     private void removeOwnerToken(Element element) {
+        if (ownerToken == null) {
+            // Never marked anything, nothing to clean up.
+            return;
+        }
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
             return;
