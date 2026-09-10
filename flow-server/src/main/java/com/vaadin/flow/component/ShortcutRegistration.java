@@ -69,12 +69,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     // (#24974). The token is a UUID rather than a JVM-local counter so it stays
     // unique across session serialization/deserialization onto another JVM,
     // where a counter would restart and new shortcuts could reuse a restored
-    // token.
-    //
-    // A token is unique per registration and ends up in the listener filter
-    // text, which both the client and the server keep forever (compiled
-    // expression cache, constant pool), so it is only created for owners that
-    // actually need a marker: see needsOwnerMarker (#25624).
+    // token. Created by getOrCreateOwnerToken, the only place that assigns it.
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
     private String ownerToken;
 
@@ -1015,7 +1010,8 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private String generateOwnerScopeFilter() {
-        if (!needsOwnerMarker()) {
+        final String token = getOrCreateOwnerToken();
+        if (token == null) {
             // The owner is the UI, i.e. <body>, which can never be inside an
             // open popover/modal. Sharing its scope therefore just means the
             // event did not originate inside one, which needs no owner token
@@ -1027,24 +1023,26 @@ public class ShortcutRegistration implements Registration, Serializable {
         // fire only when it shares the event's popover/modal scope. Helper
         // defined in FlowShortcut.js.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
-                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken() + "\"]')";
+                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
     }
 
     /**
-     * Whether the lifecycle owner element has to carry a marker attribute for
-     * the client-side origin guard to locate it. A UI owner is located without
-     * one, see {@link #generateOwnerScopeFilter()}.
+     * The marker token of this registration, or {@code null} when the current
+     * lifecycle owner needs no marker because the client-side origin guard
+     * locates it without one.
+     * <p>
+     * This is the only place a token is created, on the first client update
+     * that needs one. A UI owner never needs a token, and skipping it matters:
+     * the token makes the listener filter text unique per registration, and
+     * that text is kept for the lifetime of the UI by the client's compiled
+     * expression cache and by both constant pools (#25624).
+     *
+     * @return the marker token, or {@code null} if none is needed
      */
-    private boolean needsOwnerMarker() {
-        return !(lifecycleOwner instanceof UI);
-    }
-
-    /**
-     * The marker token for this registration, created on first use so that
-     * registrations which never need a marker do not contribute a unique filter
-     * expression.
-     */
-    private String ownerToken() {
+    private String getOrCreateOwnerToken() {
+        if (lifecycleOwner instanceof UI) {
+            return null;
+        }
         if (ownerToken == null) {
             ownerToken = "sc-" + UUID.randomUUID();
         }
@@ -1064,22 +1062,23 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        if (allowEventsFromNestedModals || !needsOwnerMarker()) {
+        final String token = getOrCreateOwnerToken();
+        if (allowEventsFromNestedModals || token == null) {
             removeOwnerToken(element);
         } else {
-            addOwnerToken(element);
+            addOwnerToken(element, token);
         }
     }
 
-    private void addOwnerToken(Element element) {
+    private void addOwnerToken(Element element, String token) {
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
-            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken());
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, token);
             return;
         }
         final Set<String> tokens = new LinkedHashSet<>(
                 Arrays.asList(current.trim().split("\\s+")));
-        if (tokens.add(ownerToken())) {
+        if (tokens.add(token)) {
             element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
                     String.join(" ", tokens));
         }
@@ -1087,7 +1086,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private void removeOwnerToken(Element element) {
         if (ownerToken == null) {
-            // Never marked anything, nothing to clean up.
+            // No token was ever created, so nothing was ever marked.
             return;
         }
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
