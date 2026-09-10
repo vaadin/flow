@@ -12,7 +12,7 @@ import * as net from 'net';
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import { addFunctionComponentSourceLocationBabel } from '#buildFolder#/plugins/react-function-location-plugin/react-function-location-plugin.js';
-import settings from '#settingsImport#';
+import settings from '#settingsImport#' with { type: 'json' };
 import {
   AssetInfo,
   ChunkInfo,
@@ -28,7 +28,7 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 //#serviceWorkerPluginImport#
-export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
+export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components/index.ts';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
@@ -37,27 +37,70 @@ import babel from '@rolldown/plugin-babel';
 
 //#vitePluginFileSystemRouterImport#
 
-const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
+// The folder holding this config, which is also the project root. Vite loads
+// the config as an ES module, so the CommonJS __dirname global is not
+// available.
+const dirname = import.meta.dirname;
+
+const frontendFolder = path.resolve(dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
-const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
-const devBundleFolder = path.resolve(__dirname, settings.devBundleOutput);
+const frontendBundleFolder = path.resolve(dirname, settings.frontendBundleOutput);
+const devBundleFolder = path.resolve(dirname, settings.devBundleOutput);
 const devBundle = !!process.env.devBundle;
-const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
-const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
-const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
+const jarResourcesFolder = path.resolve(dirname, settings.jarResourcesFolder);
+const themeResourceFolder = path.resolve(dirname, settings.themeResourceFolder);
+const projectPackageJsonFile = path.resolve(dirname, 'package.json');
 
 const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
-const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
+const statsFolder = path.resolve(dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
-const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
-const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
+const i18nFolder = path.resolve(dirname, settings.i18nOutput);
+const nodeModulesFolder = path.resolve(dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
+
+// The Flow client engine, which Flow.ts loads through the bare
+// `vaadin-flow-client` specifier. The engine is shipped as ~90 individual ES
+// modules, so in dev mode the browser would fetch them one by one on every page
+// load. Aliasing a bare specifier to the entry and listing it in
+// optimizeDeps.include makes Vite pre-bundle it instead: Vite only redirects
+// bare specifiers to an optimized dependency, never relative ones.
+const flowClientId = 'vaadin-flow-client';
+const flowClientEntry = path.resolve(jarResourcesFolder, 'FlowClient.js');
+const hasFlowClient = existsSync(flowClientEntry);
+
+/**
+ * Hash of the client engine sources, appended to the alias target so that it
+ * takes part in the hash Vite derives from this config for its dependency
+ * optimizer cache. That cache is keyed on the lockfile and on the config only,
+ * not on the contents of the pre-bundled files, so without this a client that
+ * changed without a lockfile change (a Flow upgrade that keeps the same npm
+ * dependencies) would keep being served from the stale pre-bundle.
+ */
+function flowClientHash(): string {
+  const hash = createHash('sha256');
+  const hashFolder = (folder: string) => {
+    for (const entry of readdirSync(folder, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const entryPath = path.resolve(folder, entry.name);
+      if (entry.isDirectory()) {
+        hashFolder(entryPath);
+      } else if (entry.name.endsWith('.js')) {
+        hash.update(readFileSync(entryPath));
+      }
+    }
+  };
+  hash.update(readFileSync(flowClientEntry));
+  const engineFolder = path.resolve(jarResourcesFolder, 'internal', 'client');
+  if (existsSync(engineFolder)) {
+    hashFolder(engineFolder);
+  }
+  return hash.digest('hex').substring(0, 16);
+}
 
 // Resolved by the Java side: points at the user's frontend/index.html when
 // they have one, otherwise at the default copy generated into the frontend
 // generated/ folder.
-const projectIndexHtml = path.resolve(__dirname, settings.clientIndexHtmlSource);
+const projectIndexHtml = path.resolve(dirname, settings.clientIndexHtmlSource);
 // Path of the index.html relative to the vite root (frontendFolder). Used
 // to identify the HTML in `transformIndexHtml` and to normalize the
 // emitted asset back to `index.html` when the source lives in a subfolder.
@@ -67,8 +110,8 @@ const indexHtmlRelativePath = path
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
 const projectStaticAssetsFolders = [
-  path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
-  path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
+  path.resolve(dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
+  path.resolve(dirname, 'src', 'main', 'resources', 'static'),
   frontendFolder
 ];
 
@@ -84,10 +127,10 @@ const themeOptions = {
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: devBundle
     ? path.resolve(devBundleFolder, '../assets')
-    : path.resolve(__dirname, settings.staticOutput),
+    : path.resolve(dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder),
-  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput),
-  javaResourceFolder: settings.javaResourceFolder ? path.resolve(__dirname, settings.javaResourceFolder) : ''
+  projectStaticOutput:  path.resolve(dirname, settings.staticOutput),
+  javaResourceFolder: settings.javaResourceFolder ? path.resolve(dirname, settings.javaResourceFolder) : ''
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
@@ -306,6 +349,8 @@ function statsExtracterPlugin(): PluginOption {
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
         themeJsonContents: themeJsonContents,
+        pwaOfflinePath: settings.offlinePath,
+        pwaOfflineEnabled: settings.offlineEnabled,
         entryScripts,
         webComponents,
         cvdlModules: cvdls,
@@ -460,7 +505,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
-        Frontend: frontendFolder
+        Frontend: frontendFolder,
+        // The hash is only needed for the dev-mode dependency optimizer. A
+        // build must resolve to the bare path, so that the engine is not
+        // bundled a second time for the exported web component entry point,
+        // which imports it directly.
+        ...(hasFlowClient
+          ? { [flowClientId]: devMode ? `${flowClientEntry}?v=${flowClientHash()}` : flowClientEntry }
+          : {})
       },
       preserveSymlinks: true
     },
@@ -511,6 +563,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
+      // Pre-bundle the client engine instead of serving its modules one by one.
+      // It is only reached through a dynamic import, so the dependency scanner
+      // does not find it on its own.
+      include: hasFlowClient ? [flowClientId] : [],
       exclude: [
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
@@ -571,7 +627,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
-        cwd: __dirname,
+        cwd: dirname,
         meta: {
           output: {
             dir: i18nFolder,
@@ -686,12 +742,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // exposes the compiler API to Node, so the checker falls back to
           // running tsc as a separate process and resolves the config
           // strictly against this root without searching parent folders.
-          // The root is relative because the checker passes it to tsc as
-          // "-p <root>" in a command line that is split on spaces, which
-          // would break for a project directory containing a space. Vite is
-          // always spawned with the project root as its working directory,
-          // which is this directory, so "." resolves to the same tsconfig.
-          root: '.'
+          // The two commands need a different root because the checker
+          // starts tsc differently in each. A build assembles one command
+          // string and hands it to a shell, which splits it on spaces, so an
+          // absolute root breaks for a project directory containing a space.
+          // Vite is always spawned with the project root as its working
+          // directory, which is this directory, so "." resolves to the same
+          // tsconfig. The dev server instead locates the tsc binary with
+          // Node's require relative to this root, which only accepts an
+          // absolute path and otherwise silently falls back to running a bare
+          // "tsc" through a shell, which logs "tsc: command not found" and
+          // leaves the dev server without type checking.
+          root: env.command === 'build' ? '.' : dirname
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })

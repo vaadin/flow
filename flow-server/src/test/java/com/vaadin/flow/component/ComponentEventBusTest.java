@@ -731,14 +731,40 @@ class ComponentEventBusTest {
     }
 
     @Test
-    void eventUnregisterListener_insideListenerTwiceThrows() {
+    void eventUnregisterListener_insideListenerTwice_removedOnce() {
         TestComponent c = new TestComponent();
         c.addListener(ServerEvent.class, e -> {
             e.unregisterListener();
             e.unregisterListener();
         });
-        assertThrows(IllegalArgumentException.class,
-                () -> c.fireEvent(new ServerEvent(c, new BigDecimal(0))));
+
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+
+        assertFalse(c.hasListener(ServerEvent.class));
+    }
+
+    @Test
+    void eventUnregisterListener_registrationRemovedAfterwards_removedOnce() {
+        TestComponent c = new TestComponent();
+        Registration registration = c.addListener(ServerEvent.class,
+                ComponentEvent::unregisterListener);
+
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+        registration.remove();
+
+        assertFalse(c.hasListener(ServerEvent.class));
+    }
+
+    @Test
+    void removeRegistrationTwice_removedOnce() {
+        TestComponent c = new TestComponent();
+        Registration registration = c.addListener(ServerEvent.class, e -> {
+        });
+
+        registration.remove();
+        registration.remove();
+
+        assertFalse(c.hasListener(ServerEvent.class));
     }
 
     @Test

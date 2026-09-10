@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -389,6 +390,39 @@ public class UI extends Component
             pushConnection.push();
         }
 
+    }
+
+    /**
+     * Gets the timestamp of when the updates pending for this UI were last
+     * purged into a response for the client, or the timestamp of when this UI
+     * was created if that has not happened yet.
+     * <p>
+     * Changes and JavaScript invocations that are scheduled for a UI are kept
+     * in memory until a response is written for the client, which requires
+     * either a request from the client or an open push connection. A background
+     * task that updates a UI at a regular interval can compare this timestamp
+     * against the current time to detect that its updates are only piling up,
+     * and stop scheduling new ones until the client catches up:
+     *
+     * <pre>
+     * if (Duration.between(ui.getLastUpdateSentTimestamp(), Instant.now())
+     *         .compareTo(STALE_THRESHOLD) &lt; 0) {
+     *     ui.access(() -&gt; binder.readBean(updatedBean));
+     * }
+     * </pre>
+     * <p>
+     * Note that this timestamp only tells when the updates were written towards
+     * the client, not that the client received them.
+     * <p>
+     * This method can be called from a background thread without holding the
+     * session lock, so that the thread can decide whether to update the UI
+     * before acquiring the lock.
+     *
+     * @return the time the pending updates were last purged
+     * @since 25.3
+     */
+    public Instant getLastUpdateSentTimestamp() {
+        return getInternals().getLastUpdateSentTimestamp();
     }
 
     /**
@@ -1308,6 +1342,13 @@ public class UI extends Component
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
      * <p>
+     * The location may carry a query string and a fragment, as in
+     * {@code "order/123?tab=items#total"}. The query string is parsed into the
+     * {@link QueryParameters} of the resulting
+     * {@link Location#getQueryParameters() location}. A location that consists
+     * only of a fragment, such as {@code "#total"}, does not identify a route
+     * and is passed on to the client router as it is.
+     * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
      *
@@ -1341,13 +1382,38 @@ public class UI extends Component
      *            {@code null}
      * @throws NullPointerException
      *             if the location or queryParameters are null.
+     * @throws IllegalArgumentException
+     *             if the location carries a query string or a fragment of its
+     *             own while {@code queryParameters} is not empty
      */
     public void navigate(String locationString,
             QueryParameters queryParameters) {
         Objects.requireNonNull(locationString, "Location must not be null");
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
-        Location location = new Location(locationString, queryParameters);
+        boolean separateParameters = !queryParameters.getParameters().isEmpty();
+        if (separateParameters && (locationString.indexOf('?') >= 0
+                || locationString.indexOf('#') >= 0)) {
+            throw new IllegalArgumentException("The location '" + locationString
+                    + "' must be a plain path when query parameters are given "
+                    + "separately, since its own query string or fragment "
+                    + "would be lost. Pass the whole URL to navigate(String) "
+                    + "instead.");
+        }
+        // Without separate parameters the location string is the only source
+        // of query parameters, so it is free to carry a query string and a
+        // fragment
+        Location location = separateParameters
+                ? new Location(locationString, queryParameters)
+                : new Location(locationString);
+
+        // A location that consists only of a fragment does not identify a
+        // route: resolving it would match the "" route and replace the current
+        // view without the client ever being asked, so leave it to the client
+        // router the same way an unresolved location is left to it
+        boolean fragmentOnly = location.getPath().isEmpty()
+                && location.getQueryParameters().getParameters().isEmpty()
+                && locationString.indexOf('#') >= 0;
 
         // There is an in-progress navigation or there are no changes,
         // prevent looping
@@ -1359,8 +1425,10 @@ public class UI extends Component
 
         navigationInProgress = true;
         try {
-            Optional<NavigationState> navigationState = getInternals()
-                    .getRouter().resolveNavigationTarget(location);
+            Optional<NavigationState> navigationState = fragmentOnly
+                    ? Optional.empty()
+                    : getInternals().getRouter()
+                            .resolveNavigationTarget(location);
 
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra

@@ -31,7 +31,7 @@ public class ForwardTargetIT extends AbstractDefaultIT {
     // Test for https://github.com/vaadin/flow/issues/19794
     @BrowserTest
     public void testUrlIsCorrectAfterForward() {
-        getDriver().get(getRootURL() + FORWARD_TARGET_VIEW);
+        open(FORWARD_TARGET_VIEW);
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
@@ -41,7 +41,7 @@ public class ForwardTargetIT extends AbstractDefaultIT {
                     + FORWARD_TARGET_VIEW);
         }
 
-        getDriver().get(getRootURL() + "/com.vaadin.flow.ForwardingView");
+        open("/com.vaadin.flow.ForwardingView");
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
@@ -59,8 +59,7 @@ public class ForwardTargetIT extends AbstractDefaultIT {
     // Test for https://github.com/vaadin/flow/issues/19822
     @BrowserTest
     public void testSetParameterCalledOnlyOnceAfterForward() {
-        getDriver().get(
-                getRootURL() + "/com.vaadin.flow.ForwardingToParametersView");
+        open("/com.vaadin.flow.ForwardingToParametersView");
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl().endsWith(
@@ -78,8 +77,7 @@ public class ForwardTargetIT extends AbstractDefaultIT {
     // Test for https://github.com/vaadin/flow/issues/19822
     @BrowserTest
     public void testRouterLinkSetParameterCalledOnlyOnceAfterForward() {
-        getDriver().get(getRootURL()
-                + "/com.vaadin.flow.RouterLinkForwardingToParametersView");
+        open("/com.vaadin.flow.RouterLinkForwardingToParametersView");
         $("a").id("forwardViewLink").click();
 
         try {

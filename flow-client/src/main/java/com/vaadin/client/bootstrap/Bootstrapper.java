@@ -25,8 +25,6 @@ import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -43,9 +41,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public class Bootstrapper implements EntryPoint {
 
     private static boolean moduleLoaded = false;
-
-    private static JsArray<ApplicationConnection> runningApplications = JsCollections
-            .array();
 
     @Override
     public void onModuleLoad() {
@@ -83,15 +78,6 @@ public class Bootstrapper implements EntryPoint {
                 deferStartApplication(applicationId);
             }
         });
-    }
-
-    /**
-     * Gets a list of references to all running application instances.
-     *
-     * @return a list of ApplicationConnections currently active
-     */
-    public static JsArray<ApplicationConnection> getRunningApplications() {
-        return runningApplications;
     }
 
     /**
@@ -179,7 +165,6 @@ public class Bootstrapper implements EntryPoint {
         ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
         ApplicationConnection applicationConnection = new ApplicationConnection(
                 appConf);
-        runningApplications.push(applicationConnection);
         Profiler.leave("Bootstrapper.startApplication");
 
         ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();

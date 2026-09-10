@@ -100,6 +100,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
                 "com\\.vaadin\\.base\\.devserver\\.hotswap\\..*",
+                "com\\.vaadin\\.base\\.devserver\\.devloop\\..*",
+                // The dev-loop daemon is a separate program, not part of any
+                // application's session state
+                "com\\.vaadin\\.flow\\.devloop\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
@@ -239,6 +243,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.PinnedNpmVersions(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
 
@@ -246,6 +251,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractFileGeneratorFallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.GeneratedFilesSupport",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeInstallation",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeInstallations",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.PnpmWorkspaceFile",

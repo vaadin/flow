@@ -32,7 +32,6 @@ import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
@@ -90,8 +89,8 @@ public class FrontendBuildUtils {
      * platform version recorder and node_modules exists, then platform is
      * considered as staying on the same version.
      *
-     * @param finder
-     *            project execution class finder
+     * @param options
+     *            the task options
      * @param npmFolder
      *            npm root folder
      * @param nodeModules
@@ -101,13 +100,14 @@ public class FrontendBuildUtils {
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
+     * @since 25.3
      */
-    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
+    protected static boolean isPlatformMajorVersionUpdated(Options options,
             File npmFolder, File nodeModules, File buildDirectory)
             throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
+        Optional<String> platformVersion = getVaadinVersion(options);
         if (platformVersion.isPresent()) {
             JsonNode vaadinJsonContents = getBundleVaadinContent(
                     buildDirectory);
@@ -151,8 +151,8 @@ public class FrontendBuildUtils {
      * platform version recorder and node_modules exists, then platform is
      * considered updated.
      *
-     * @param finder
-     *            project execution class finder
+     * @param options
+     *            the task options
      * @param npmFolder
      *            npm root folder
      * @param nodeModules
@@ -160,12 +160,13 @@ public class FrontendBuildUtils {
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
+     * @since 25.3
      */
-    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
+    protected static boolean isPlatformVersionUpdated(Options options,
             File npmFolder, File nodeModules) throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
+        Optional<String> platformVersion = getVaadinVersion(options);
         if (platformVersion.isPresent() && nodeModules.exists()) {
             JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
             // If no record of previous version, version is considered updated
@@ -180,33 +181,27 @@ public class FrontendBuildUtils {
     }
 
     /**
-     * Gets the current Vaadin platform version from the core versions JSON
-     * resource.
+     * Gets the current Vaadin version, as declared by the versions files the
+     * platform ships.
+     * <p>
+     * Only a versions file of the platform itself says what the version is, and
+     * where there is none, the version of the Vaadin on the classpath is used
+     * instead.
      *
-     * @param finder
-     *            the class finder to use for locating the versions resource
-     * @return the platform version as a string, or empty if not found
+     * @param options
+     *            the task options to take the pinned npm versions from
+     * @return the Vaadin version as a string, or empty if neither a versions
+     *         file of the platform nor the classpath tells it
+     * @since 25.3
      */
-    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        if (coreVersionsResource == null) {
-            return Optional.empty();
-        }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonNode versionsJson = JacksonUtils
-                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
-            if (versionsJson.has("platform")) {
-                return Optional.of(versionsJson.get("platform").asString());
-            }
+    protected static Optional<String> getVaadinVersion(Options options) {
+        try {
+            return options.getPinnedNpmVersions().getVaadinVersion();
         } catch (Exception e) {
             LoggerFactory.getLogger(Platform.class)
                     .error("Unable to determine version information", e);
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     /**
@@ -250,16 +245,30 @@ public class FrontendBuildUtils {
      *            jar file to get (no resource folder should be added)
      * @param finder
      *            the class finder to use for locating the resource
-     * @return resource as String or {@code null} if not found
+     * @return the resource or {@code null} if not found
      */
-    public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
+    public static URL getJarResource(String jarImport, ClassFinder finder) {
         URL resource = finder
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
             resource = finder.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
+        return resource;
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport,
+            ClassFinder finder) {
+        URL resource = getJarResource(jarImport, finder);
 
         if (resource == null) {
             return null;

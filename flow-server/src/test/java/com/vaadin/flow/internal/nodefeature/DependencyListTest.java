@@ -21,10 +21,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
@@ -38,7 +38,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class DependencyListTest {
     private static final String URL = "https://example.net/";
 

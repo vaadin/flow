@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.EventObject;
-import java.util.Objects;
 
 import com.vaadin.flow.server.Command;
 
@@ -54,7 +53,8 @@ public class DataChangeEvent<T> extends EventObject {
          * @param source
          *            the data provider, not null
          * @param item
-         *            the updated item, not null
+         *            the updated item, or {@code null} for the virtual root of
+         *            a hierarchical data provider (parent of root-level items)
          */
         public DataRefreshEvent(DataProvider<T, ?> source, T item) {
             this(source, item, false);
@@ -67,7 +67,9 @@ public class DataChangeEvent<T> extends EventObject {
          * @param source
          *            the data provider, not null
          * @param item
-         *            the updated item, not null
+         *            the updated item, or {@code null} for the virtual root of
+         *            a hierarchical data provider (parent of root-level items).
+         *            Non-hierarchical communicators reject {@code null}.
          * @param refreshChildren
          *            whether, in hierarchical providers, subelements should be
          *            refreshed as well
@@ -76,7 +78,6 @@ public class DataChangeEvent<T> extends EventObject {
         public DataRefreshEvent(DataProvider<T, ?> source, T item,
                 boolean refreshChildren) {
             super(source);
-            Objects.requireNonNull(item, "Refreshed item can't be null");
             this.item = item;
             this.refreshChildren = refreshChildren;
         }
@@ -84,7 +85,8 @@ public class DataChangeEvent<T> extends EventObject {
         /**
          * Gets the refreshed item.
          *
-         * @return the refreshed item
+         * @return the refreshed item, or {@code null} when the virtual root of
+         *         a hierarchical data provider is refreshed
          */
         public T getItem() {
             return item;

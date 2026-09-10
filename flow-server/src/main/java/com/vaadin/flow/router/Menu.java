@@ -23,12 +23,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines menu information for a route for automatically populated menu.
+ * Defines menu information for a route that should appear in an automatically
+ * populated menu.
  * <p>
- * {@link Menu} is used together with {@link Route} to include it automatically
- * in Hilla application's main menu, but only if server route is accessible and
- * {@code frontend/views/@layout.tsx} is used with {@code createMenuItems()}
- * function to build the menu.
+ * Use {@link Menu} together with {@link Route} so the route is included when
+ * the application builds its main menu, for example with
+ * {@link com.vaadin.flow.server.menu.MenuConfiguration#getMenuEntries()}. The
+ * route is listed only when it is accessible.
+ * <p>
+ * If you also use Hilla, the same annotation is picked up for the Hilla main
+ * menu when {@code frontend/views/@layout.tsx} calls {@code createMenuItems()}.
  *
  * @see Route
  * @since 24.4

@@ -15,8 +15,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@NotThreadSafe
+@Isolated
 class TemplateModelWithEncodersTest extends HasCurrentService {
 
     public static class TemplateWithEncoders extends

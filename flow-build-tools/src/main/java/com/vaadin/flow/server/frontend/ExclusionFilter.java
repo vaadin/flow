@@ -16,27 +16,40 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Excludes dependencies listed in an "exclusions" array of
- * vaadin-*versions.json file from a package.json.
+ * Excludes dependencies listed in an "exclusions" array of a pinned npm
+ * versions file from a package.json.
  * 
  * @since 24.4
  */
 public class ExclusionFilter implements Serializable {
+
+    /**
+     * Packages that are part of a package Flow manages the version of, mapped
+     * to the package that owns them.
+     * <p>
+     * The owning package is released together with the packages it is built
+     * from and only works with the versions it was released with, so a version
+     * declared for one of them elsewhere cannot be honoured. Pinning them
+     * separately resolves the owning package against packages it was never
+     * combined with, which leaves the application with two implementations of
+     * the same API.
+     */
+    private static final Map<String, String> OWNED_PACKAGES = Map.of(
+            "lit-element", "lit", "lit-html", "lit", "@lit/reactive-element",
+            "lit");
+
+    private final Options options;
 
     private final ClassFinder finder;
 
@@ -69,14 +82,35 @@ public class ExclusionFilter implements Serializable {
      */
     public ExclusionFilter(ClassFinder finder, boolean reactEnabled,
             boolean excludeWebComponentNpmPackages) {
+        this.options = null;
         this.finder = finder;
         this.reactEnabled = reactEnabled;
         this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
     }
 
     /**
-     * Exclude dependencies from the given map based on the
-     * vaadin-*versions.json files.
+     * Create a new exclusion filter that shares the pinned npm versions the
+     * build has already read.
+     *
+     * @param options
+     *            the task options to take the pinned npm versions from
+     * @param reactEnabled
+     *            whether React is enabled
+     * @param excludeWebComponentNpmPackages
+     *            whether to exclude web component npm packages
+     */
+    ExclusionFilter(Options options, boolean reactEnabled,
+            boolean excludeWebComponentNpmPackages) {
+        this.options = options;
+        this.finder = options.getClassFinder();
+        this.reactEnabled = reactEnabled;
+        this.excludeWebComponentNpmPackages = excludeWebComponentNpmPackages;
+    }
+
+    /**
+     * Exclude dependencies from the given map based on the pinned npm versions
+     * files, and dependencies that are part of a package Flow manages the
+     * version of.
      *
      * @param dependencies
      *            the dependencies to filter
@@ -89,31 +123,42 @@ public class ExclusionFilter implements Serializable {
         var exclusions = getExclusions();
         return dependencies.entrySet().stream()
                 .filter(entry -> !exclusions.contains(entry.getKey()))
+                .filter(entry -> !comesWithOwningPackage(entry))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         Map.Entry::getValue));
     }
 
-    private List<String> getExclusions() throws IOException {
-        List<String> exclusions = new ArrayList<>();
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-        if (coreVersionsResource != null) {
-            exclusions.addAll(getExclusions(coreVersionsResource));
+    private boolean comesWithOwningPackage(
+            Map.Entry<String, String> dependency) {
+        String owner = OWNED_PACKAGES.get(dependency.getKey());
+        if (owner == null) {
+            return false;
         }
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (vaadinVersionsResource != null) {
-            exclusions.addAll(getExclusions(vaadinVersionsResource));
-        }
-        return exclusions;
+        getLogger().warn(
+                """
+                        Ignoring the version '{}' declared for '{}', which is part of '{}' and comes with it.
+                        Declaring a version for it resolves '{}' against packages it was not released with.
+                        Remove the @NpmPackage annotation for '{}' from the add-on or application declaring it.""",
+                dependency.getValue(), dependency.getKey(), owner, owner,
+                dependency.getKey());
+        return true;
     }
 
-    private Set<String> getExclusions(URL versionsResource) throws IOException {
-        try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    reactEnabled, excludeWebComponentNpmPackages);
-            return convert.getExclusions();
-        }
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ExclusionFilter.class);
+    }
+
+    private Set<String> getExclusions() throws IOException {
+        return getPinnedNpmVersions().getExclusions(reactEnabled,
+                excludeWebComponentNpmPackages);
+    }
+
+    /**
+     * Gets the pinned npm versions of the build, or reads them for this filter
+     * alone if it was given only a class finder to find them with.
+     */
+    private PinnedNpmVersions getPinnedNpmVersions() throws IOException {
+        return options != null ? options.getPinnedNpmVersions()
+                : new PinnedNpmVersions(finder);
     }
 }

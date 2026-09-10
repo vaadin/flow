@@ -233,6 +233,11 @@ public class NodeInstaller {
                     userName, password);
 
             extractFile(data.getArchive(), data.getTmpDirectory());
+
+            // The extracted distribution is all that is needed from here on,
+            // so the archive is always removed to keep it from filling up the
+            // install directory
+            FileIOUtils.deleteQuietly(data.getArchive());
         } catch (DownloadException e) {
             throw new InstallationException(
                     "Node.js download failed. This may be due to loss of internet connection.\n"

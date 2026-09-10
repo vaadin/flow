@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.vaadin.test.maven</groupId>
+    <artifactId>install-dev-cli</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <description>Tests that flow:install-dev-cli installs the vaadin-dev CLI.</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.test.skip>true</maven.test.skip>
+
+        <flow.version>@project.version@</flow.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${flow.version}</version>
+        </dependency>
+        <!-- What com.vaadin:vaadin-dev brings a real application, declared
+             directly here so the IT does not drag in the whole dev server.
+             The goal provisions HotswapAgent through this jar, so a project
+             without it is a different case - see verify.bsh. -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-devloop-daemon</artifactId>
+            <version>${flow.version}</version>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${flow.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

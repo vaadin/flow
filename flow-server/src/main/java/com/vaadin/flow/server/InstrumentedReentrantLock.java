@@ -59,12 +59,12 @@ class InstrumentedReentrantLock extends ReentrantLock {
     @Override
     public void lock() {
         boolean outermost = getHoldCount() == 0;
-        if (outermost && service != null) {
-            service.fireSessionLockRequested();
+        if (outermost) {
+            fireLockRequested();
         }
         super.lock();
-        if (outermost && service != null) {
-            service.fireSessionLockAcquired();
+        if (outermost) {
+            fireLockAcquired();
         }
     }
 
@@ -74,9 +74,9 @@ class InstrumentedReentrantLock extends ReentrantLock {
         // Report after a confirmed acquisition: lockInterruptibly may abort
         // with InterruptedException without taking the lock.
         super.lockInterruptibly();
-        if (outermost && service != null) {
-            service.fireSessionLockRequested();
-            service.fireSessionLockAcquired();
+        if (outermost) {
+            fireLockRequested();
+            fireLockAcquired();
         }
     }
 
@@ -84,9 +84,9 @@ class InstrumentedReentrantLock extends ReentrantLock {
     public boolean tryLock() {
         boolean outermost = getHoldCount() == 0;
         boolean acquired = super.tryLock();
-        if (outermost && acquired && service != null) {
-            service.fireSessionLockRequested();
-            service.fireSessionLockAcquired();
+        if (outermost && acquired) {
+            fireLockRequested();
+            fireLockAcquired();
         }
         return acquired;
     }
@@ -96,9 +96,9 @@ class InstrumentedReentrantLock extends ReentrantLock {
             throws InterruptedException {
         boolean outermost = getHoldCount() == 0;
         boolean acquired = super.tryLock(timeout, unit);
-        if (outermost && acquired && service != null) {
-            service.fireSessionLockRequested();
-            service.fireSessionLockAcquired();
+        if (outermost && acquired) {
+            fireLockRequested();
+            fireLockAcquired();
         }
         return acquired;
     }
@@ -107,8 +107,46 @@ class InstrumentedReentrantLock extends ReentrantLock {
     public void unlock() {
         boolean ultimateRelease = getHoldCount() == 1;
         super.unlock();
-        if (ultimateRelease && service != null) {
-            service.fireSessionLockReleased();
+        if (ultimateRelease) {
+            fireLockReleased();
         }
+    }
+
+    /*
+     * Locking is hot enough that the events are only built when somebody is
+     * there to receive them: an application that observes nothing pays for
+     * nothing.
+     */
+
+    private void fireLockRequested() {
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockRequestedEvent.class)) {
+            eventBus.fireEvent(new SessionLockRequestedEvent(service));
+        }
+    }
+
+    private void fireLockAcquired() {
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockAcquiredEvent.class)) {
+            eventBus.fireEvent(new SessionLockAcquiredEvent(service));
+        }
+    }
+
+    private void fireLockReleased() {
+        VaadinServiceEventBus eventBus = eventBus();
+        if (eventBus != null
+                && eventBus.hasListener(SessionLockReleasedEvent.class)) {
+            // Released is fired in reverse registration order so that the
+            // listeners nest: a listener notified first of the acquisition is
+            // notified last of the release
+            eventBus.fireEventInReverseOrder(
+                    new SessionLockReleasedEvent(service));
+        }
+    }
+
+    private VaadinServiceEventBus eventBus() {
+        return service == null ? null : service.getEventBus();
     }
 }

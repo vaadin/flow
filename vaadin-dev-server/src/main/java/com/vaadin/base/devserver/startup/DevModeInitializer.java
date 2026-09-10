@@ -19,18 +19,13 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,8 +40,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +56,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JBossVfsUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -95,7 +89,7 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 24.3.22
+ * @since 8.0
  */
 public class DevModeInitializer implements Serializable {
 
@@ -293,8 +287,13 @@ public class DevModeInitializer implements Serializable {
         boolean npmExcludeWebComponents = config
                 .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
 
-        int minimumFrontendPackageAgeDays = Integer.parseInt(config
-                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"));
+        // Left as null when not configured, so that the value configured for
+        // the package manager itself is used instead of being overridden
+        String minimumFrontendPackageAge = config
+                .getStringProperty(MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, null);
+        Integer minimumFrontendPackageAgeDays = minimumFrontendPackageAge == null
+                ? null
+                : Integer.valueOf(minimumFrontendPackageAge);
 
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
@@ -444,7 +443,7 @@ public class DevModeInitializer implements Serializable {
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
                     if (vfsJars.add(vfsJar)) { // NOSONAR
-                        frontendFiles.add(getPhysicalFileOfJBossVfsJar(
+                        frontendFiles.add(materializeJBossVfsJar(
                                 URI.create(vfsJar).toURL()));
                     }
                 } else if (dirVfsMatcher.find()) {
@@ -452,8 +451,7 @@ public class DevModeInitializer implements Serializable {
                             .create(urlString.substring(0,
                                     urlString.lastIndexOf(resourcesFolder)))
                             .toURL();
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                    frontendFiles.add(materializeJBossVfsFolder(vfsDirUrl));
                 } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if ("zip".equalsIgnoreCase(url.getProtocol())
@@ -479,99 +477,31 @@ public class DevModeInitializer implements Serializable {
         return frontendFiles;
     }
 
-    private static File getPhysicalFileOfJBossVfsDirectory(URL url)
-            throws IOException, VaadinInitializerException {
+    /**
+     * Gets a folder that WildFly serves through its virtual file system as a
+     * folder on disk, so that its frontend resources can be collected.
+     */
+    private static File materializeJBossVfsFolder(URL url)
+            throws VaadinInitializerException {
         try {
-            Object virtualFile = url.openConnection().getContent();
-            Class<?> virtualFileClass = virtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to
-            // WildFly or JBoss
-            Method getChildrenRecursivelyMethod = virtualFileClass
-                    .getMethod("getChildrenRecursively");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
-
-            // By calling getPhysicalFile, we make sure that the
-            // corresponding
-            // physical files/directories of the root directory and
-            // its children
-            // are created. Later, these physical files are scanned
-            // to collect
-            // their resources.
-            List<?> virtualFiles = (List<?>) getChildrenRecursivelyMethod
-                    .invoke(virtualFile);
-            File rootDirectory = (File) getPhysicalFileMethod
-                    .invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                getPhysicalFileMethod.invoke(child);
-            }
-            return rootDirectory;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
+            return JBossVfsUtil.materializeFolder(url);
+        } catch (IOException e) {
             throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
+                    "Failed to invoke JBoss VFS API.", e);
         }
     }
 
-    private static File getPhysicalFileOfJBossVfsJar(URL url)
-            throws IOException, VaadinInitializerException {
+    /**
+     * Gets a jar that WildFly serves through its virtual file system as a jar
+     * file on disk, so that its frontend resources can be collected.
+     */
+    private static File materializeJBossVfsJar(URL url)
+            throws VaadinInitializerException {
         try {
-            Object jarVirtualFile = url.openConnection().getContent();
-
-            // Creating a temporary jar file out of the vfs files
-            String vfsJarPath = url.toString();
-            String fileNamePrefix = vfsJarPath.substring(
-                    vfsJarPath.lastIndexOf(
-                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
-                    vfsJarPath.lastIndexOf(".jar"));
-            Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
-
-            generateJarFromJBossVfsFolder(jarVirtualFile, tempJar);
-
-            File tempJarFile = tempJar.toFile();
-            tempJarFile.deleteOnExit();
-            return tempJarFile;
-        } catch (NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException exc) {
+            return JBossVfsUtil.materializeJar(url);
+        } catch (IOException e) {
             throw new VaadinInitializerException(
-                    "Failed to invoke JBoss VFS API.", exc);
-        }
-    }
-
-    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
-            Path tempJar) throws IOException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
-        // We should use reflection to use JBoss VFS API as we cannot
-        // afford a
-        // dependency to WildFly or JBoss
-        Class<?> virtualFileClass = jarVirtualFile.getClass();
-        Method getChildrenRecursivelyMethod = virtualFileClass
-                .getMethod("getChildrenRecursively");
-        Method openStreamMethod = virtualFileClass.getMethod("openStream");
-        Method isFileMethod = virtualFileClass.getMethod("isFile");
-        Method getPathNameRelativeToMethod = virtualFileClass
-                .getMethod("getPathNameRelativeTo", virtualFileClass);
-
-        List<?> jarVirtualChildren = (List<?>) getChildrenRecursivelyMethod
-                .invoke(jarVirtualFile);
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempJar))) {
-            for (Object child : jarVirtualChildren) {
-                if (!(Boolean) isFileMethod.invoke(child))
-                    continue;
-
-                String relativePath = (String) getPathNameRelativeToMethod
-                        .invoke(child, jarVirtualFile);
-                try (InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child)) {
-                    ZipEntry zipEntry = new ZipEntry(relativePath);
-                    zipOutputStream.putNextEntry(zipEntry);
-                    inputStream.transferTo(zipOutputStream);
-                    zipOutputStream.closeEntry();
-                }
-            }
+                    "Failed to invoke JBoss VFS API.", e);
         }
     }
 }

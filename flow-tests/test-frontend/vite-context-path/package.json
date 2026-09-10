@@ -8,7 +8,7 @@
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/text-field": "25.3.0-alpha7",
+    "@vaadin/vaadin-themable-mixin": "25.2.9",
     "lit": "3.3.3",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -39,7 +39,7 @@
   "vaadin": {
     "dependencies": {
       "@vaadin/common-frontend": "0.0.23",
-      "@vaadin/text-field": "25.3.0-alpha7",
+      "@vaadin/vaadin-themable-mixin": "25.2.9",
       "lit": "3.3.3",
       "react": "19.2.7",
       "react-dom": "19.2.7",

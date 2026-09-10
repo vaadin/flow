@@ -75,6 +75,17 @@ public class ResourceContentHash {
                 url -> computeHash(service, url));
     }
 
+    /**
+     * Discards all cached hashes.
+     * <p>
+     * The cache is static and keyed by resource path only, so it outlives the
+     * service that filled it. Tests that assert on hashed URLs need to reset it
+     * to avoid observing a hash computed for the same path by another test.
+     */
+    public static void clearCache() {
+        cache.clear();
+    }
+
     private static String computeHash(VaadinService service,
             String resourceUrl) {
         try (InputStream stream = openResource(service, resourceUrl)) {

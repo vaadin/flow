@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -45,10 +46,13 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ResourceContentHash;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Registry for PWA data.
@@ -78,7 +82,7 @@ public class PwaRegistry implements Serializable {
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private String runtimeServiceWorkerJs = "";
+    private Collection<String> staticFilesToCache = List.of();
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
@@ -160,8 +164,8 @@ public class PwaRegistry implements Serializable {
         // Initialize manifest.webmanifest
         manifestJson = initializeManifest().toString();
 
-        // Initialize sw-runtime.js
-        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+        // Initialize the request independent part of sw-runtime.js
+        staticFilesToCache = initializeStaticPrecacheEntries(servletContext);
         getLogger().debug(
                 getClass().getSimpleName() + " initialization took {}ms",
                 System.currentTimeMillis() - start);
@@ -253,10 +257,8 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(
+    private Collection<String> initializeStaticPrecacheEntries(
             ServletContext servletContext) {
-        StringBuilder stringBuilder = new StringBuilder();
-
         // List of files to precache
         Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
@@ -287,12 +289,204 @@ public class PwaRegistry implements Serializable {
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
-        // Precaching
-        stringBuilder.append("self.additionalManifestEntries = [\n");
-        stringBuilder.append(String.join(",\n", filesToCache));
-        stringBuilder.append("\n];\n");
+        return filesToCache;
+    }
 
-        return stringBuilder.toString();
+    /**
+     * Builds the workbox precache entries for the stylesheets declared with
+     * {@code @StyleSheet} on the app shell.
+     * <p>
+     * A precache entry only ever matches a request whose URL is identical to
+     * the entry URL, so each entry has to come out exactly as the
+     * {@code <link href>} that {@code AppShellRegistry} emits for the same
+     * stylesheet. Both therefore expand the annotation value with a
+     * {@link BootstrapHandler.BootstrapUriResolver} over the same
+     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)} base,
+     * keeping the entries relative ({@code ./}, {@code ./../}). Relative
+     * entries also survive a reverse proxy that rewrites the public path, which
+     * an absolute path built from the deployment context path would not.
+     * <p>
+     * The base has to come from the request rather than from the servlet
+     * registration: the entries are resolved by the browser against the service
+     * worker script location, and only the request for sw-runtime.js tells
+     * which servlet, and therefore which scope, is asking.
+     * <p>
+     * Only production mode precaches: there the URL carries the content hash,
+     * so it identifies one specific version of the stylesheet, which is what
+     * makes cache-first correct. See
+     * {@link #styleSheetsToRefetch(VaadinRequest)} for how the unhashed
+     * development URLs are handled.
+     *
+     * @param request
+     *            the request for sw-runtime.js, may be {@code null}
+     * @return the precache entries, empty if there is no request, the
+     *         application runs in development mode, or the app shell declares
+     *         no stylesheets
+     */
+    private Collection<String> styleSheetsToPrecache(VaadinRequest request) {
+        if (!isProductionMode(request)) {
+            // Without the content hash the URL is not tied to the contents, so
+            // the stylesheets are served network-first instead, see
+            // styleSheetsToRefetch
+            return List.of();
+        }
+        VaadinService service = request.getService();
+
+        Collection<String> entries = new LinkedHashSet<>();
+        for (String url : styleSheetUrls(request)) {
+            String hash = ResourceContentHash.getContentHash(service, url);
+            if (hash == null) {
+                // The resource cannot be read, so it would most likely answer
+                // the precache request with a 404. Workbox caches entries one
+                // at a time during install, so a single failing entry aborts
+                // the installation and the application loses offline support
+                // altogether. Leaving the stylesheet out only costs its own
+                // offline availability.
+                //
+                // Nothing is lost for resources emitted by the frontend build
+                // either: the Vite service worker plugin globs the whole build
+                // output into self.__WB_MANIFEST, and sw.ts concatenates that
+                // with these runtime entries, so those are already precached.
+                // This list only needs the resources that bypass the build,
+                // which are exactly the ones getStaticResource finds.
+                continue;
+            }
+            // The emitted <link href> carries the same parameter, and workbox
+            // only ignores utm_/fbclid by default, so the entry has to carry
+            // it too to be matched at all.
+            String hashedUrl = UrlUtil.appendQueryParameter(
+                    resolve(request, url),
+                    ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+            // Revision is the stylesheet's own content hash so that editing
+            // only the CSS invalidates the entry, as PwaIcon does with its
+            // file hash.
+            entries.add(workboxEntry(hashedUrl, hash));
+        }
+        return entries;
+    }
+
+    /**
+     * Builds the list of app shell stylesheet URLs that the service worker
+     * should serve network-first, used in development mode.
+     * <p>
+     * In development the {@code <link href>} carries no content hash, so the
+     * same URL can serve different contents over time. Precaching is
+     * cache-first and would pin the first version fetched, leaving a stale
+     * stylesheet in use offline even after the file was edited. Serving these
+     * network-first instead refreshes the cache whenever the stylesheet is
+     * fetched successfully, and falls back to the last fetched copy when
+     * offline.
+     *
+     * @param request
+     *            the request for sw-runtime.js, may be {@code null}
+     * @return the URLs to serve network-first, empty if there is no request,
+     *         the application runs in production mode, or the app shell
+     *         declares no stylesheets
+     */
+    private Collection<String> styleSheetsToRefetch(VaadinRequest request) {
+        if (request == null || isProductionMode(request)) {
+            return List.of();
+        }
+        Collection<String> urls = new LinkedHashSet<>();
+        for (String url : styleSheetUrls(request)) {
+            // No content hash is needed: the URL is what identifies the
+            // stylesheet, and a fetch that fails is simply not cached, so
+            // unreadable resources cost nothing here.
+            urls.add(resolve(request, url));
+        }
+        return urls;
+    }
+
+    /**
+     * Gets the app shell stylesheet values that can be handled by the service
+     * worker, normalized and de-duplicated but not yet expanded into URLs.
+     *
+     * @param request
+     *            the request for sw-runtime.js
+     * @return the normalized stylesheet values
+     */
+    private static Collection<String> styleSheetUrls(VaadinRequest request) {
+        VaadinService service = request.getService();
+        Collection<String> normalizedUrls = new LinkedHashSet<>();
+        for (String styleSheet : AppShellRegistry
+                .getInstance(service.getContext()).getStyleSheets(service)) {
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(styleSheet);
+            // Blank values and path traversals are already rejected by the
+            // resolver. External stylesheets are skipped because caching them
+            // needs CORS, and a single failed request fails the whole service
+            // worker installation.
+            if (normalized != null && !isExternal(normalized)) {
+                normalizedUrls.add(normalized);
+            }
+        }
+        return normalizedUrls;
+    }
+
+    /**
+     * Expands a normalized stylesheet value into the URL the browser requests,
+     * relative to the servlet root of the request.
+     *
+     * @param request
+     *            the request for sw-runtime.js
+     * @param normalized
+     *            the normalized stylesheet value
+     * @return the URL to hand to the service worker
+     */
+    private static String resolve(VaadinRequest request, String normalized) {
+        VaadinService service = request.getService();
+        return new BootstrapHandler.BootstrapUriResolver(
+                service.getContextRootRelativePath(request), null)
+                .resolveVaadinUri(normalized);
+    }
+
+    private static boolean isProductionMode(VaadinRequest request) {
+        if (request == null) {
+            return false;
+        }
+        DeploymentConfiguration configuration = request.getService()
+                .getDeploymentConfiguration();
+        return configuration != null && configuration.isProductionMode();
+    }
+
+    /**
+     * Formats a single workbox precache entry.
+     *
+     * @param url
+     *            the URL to precache
+     * @param revision
+     *            the revision identifying the current content
+     * @return the formatted entry
+     */
+    private static String workboxEntry(String url, String revision) {
+        return String.format(WORKBOX_CACHE_FORMAT, jsStringContent(url),
+                revision);
+    }
+
+    /**
+     * Escapes a value for use inside a single-quoted JavaScript string literal.
+     * <p>
+     * Both the precache entries and the network-first URLs end up in such
+     * literals in {@code sw-runtime.js}, and the service worker imports that
+     * file, so an unescaped quote would prevent the whole worker from loading.
+     * Escaping rather than stripping keeps the URL identical to the
+     * {@code <link href>} it has to match.
+     *
+     * @param value
+     *            the value to escape
+     * @return the escaped value
+     */
+    private static String jsStringContent(String value) {
+        return value.replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private static boolean isExternal(String url) {
+        // UrlUtil.isExternal cannot be used here: it treats any "://" as
+        // external, which would also match the context:// and base:// values
+        // resolveToContextRoot produces.
+        String lower = url.toLowerCase(Locale.ROOT);
+        return lower.startsWith("http://") || lower.startsWith("https://")
+                || lower.startsWith("//");
     }
 
     /**
@@ -432,9 +626,41 @@ public class PwaRegistry implements Serializable {
      *
      * @return contents of sw-runtime.js
      * @since 6.0
+     * @deprecated use {@link #getRuntimeServiceWorkerJs(VaadinRequest)}
+     *             instead. Without a request the app shell stylesheet URLs
+     *             cannot be resolved, so those entries are left out.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public String getRuntimeServiceWorkerJs() {
-        return runtimeServiceWorkerJs;
+        return getRuntimeServiceWorkerJs(null);
+    }
+
+    /**
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated
+     * resources) as a String, for the request that fetches it.
+     *
+     * @param request
+     *            the request for sw-runtime.js, or {@code null} to leave out
+     *            the entries that cannot be resolved without one
+     * @return contents of sw-runtime.js
+     */
+    public String getRuntimeServiceWorkerJs(VaadinRequest request) {
+        Collection<String> filesToCache = new LinkedHashSet<>(
+                staticFilesToCache);
+        filesToCache.addAll(styleSheetsToPrecache(request));
+        StringBuilder js = new StringBuilder(
+                "self.additionalManifestEntries = [\n")
+                .append(String.join(",\n", filesToCache)).append("\n];\n");
+
+        Collection<String> urlsToRefetch = styleSheetsToRefetch(request);
+        if (!urlsToRefetch.isEmpty()) {
+            js.append("self.additionalNetworkFirstUrls = [\n")
+                    .append(urlsToRefetch.stream()
+                            .map(url -> "'" + jsStringContent(url) + "'")
+                            .collect(Collectors.joining(",\n")))
+                    .append("\n];\n");
+        }
+        return js.toString();
     }
 
     private String offlinePageCache(String offlinePath) {
@@ -635,9 +861,9 @@ public class PwaRegistry implements Serializable {
     }
 
     private boolean shouldCacheRoot() {
-        VaadinContext context = VaadinService.getCurrent().getContext();
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
+        VaadinService service = VaadinService.getCurrent();
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
         return configuration != null && !configuration.isProductionMode();
     }
 }

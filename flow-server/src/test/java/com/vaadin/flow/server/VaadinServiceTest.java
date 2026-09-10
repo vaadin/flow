@@ -32,15 +32,17 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
+import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -90,7 +92,7 @@ import static org.mockito.ArgumentMatchers.anyString;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@NotThreadSafe
+@Isolated
 class VaadinServiceTest {
 
     @Tag("div")
@@ -107,6 +109,16 @@ class VaadinServiceTest {
     @Route(value = "flow", autoLayout = false)
     @Tag("div")
     public static class OptOutAutoLayoutTestView extends Component {
+
+    }
+
+    /**
+     * Stands in for a view written in Kotlin: the Kotlin compiler adds
+     * {@code @kotlin.Metadata} to every class it produces.
+     */
+    @kotlin.Metadata
+    @Tag("div")
+    public static class KotlinTestView extends Component {
 
     }
 
@@ -274,6 +286,78 @@ class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
         assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_AUTO_LAYOUT.equals(e.getName())));
+    }
+
+    @Test
+    void productionMode_noUsageStatisticsCollected() {
+        UsageStatistics.resetEntries();
+        List<String> defaultEntries = getUsageStatisticsNames();
+        @Layout
+        class AutoLayout extends Component implements RouterLayout {
+        }
+
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
+        VaadinServiceInitListener initListener = event -> {
+            ApplicationRouteRegistry.getInstance(event.getSource().getContext())
+                    .setLayout(AutoLayout.class);
+            RouteConfiguration.forApplicationScope()
+                    .setAnnotatedRoute(AnnotatedTestView.class);
+            RouteConfiguration.forApplicationScope().setRoute("kotlin",
+                    KotlinTestView.class);
+        };
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration, false);
+
+        service.init(new MockInstantiator(initListener));
+
+        assertEquals(defaultEntries, getUsageStatisticsNames(),
+                "Usage statistics should only be collected in development mode");
+    }
+
+    private static List<String> getUsageStatisticsNames() {
+        return UsageStatistics.getEntries()
+                .map(UsageStatistics.UsageEntry::getName).sorted().toList();
+    }
+
+    @Test
+    void javaOnlyProject_kotlinNotReported() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope()
+                .setRoute("test", AnnotatedTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        assertFalse(
+                UsageStatistics.getEntries()
+                        .anyMatch(e -> "kotlin".equals(e.getName())),
+                "Kotlin should not be reported for a project without Kotlin code");
+    }
+
+    @Test
+    void kotlinView_kotlinReportedWithVersion() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> RouteConfiguration
+                .forApplicationScope().setRoute("kotlin", KotlinTestView.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        UsageStatistics.UsageEntry kotlinEntry = UsageStatistics.getEntries()
+                .filter(e -> "kotlin".equals(e.getName())).findFirst()
+                .orElse(null);
+        assertNotNull(kotlinEntry,
+                "Kotlin should be reported for a project with a Kotlin view");
+        // An entry with no version of its own reports the Flow version, so
+        // this also verifies that the kotlin-stdlib version is resolved
+        assertEquals(KotlinVersion.CURRENT.toString(), kotlinEntry.getVersion(),
+                "Kotlin version should be reported along with the usage");
     }
 
     @Test
@@ -931,6 +1015,95 @@ class VaadinServiceTest {
 
         Mockito.when(vaadinSession.getService()).thenReturn(service);
         return session;
+    }
+
+    @Test
+    void whenInitialized_registeredBeforeInit_runsWhenInitCompletes()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false);
+
+        AtomicReference<Boolean> ready = new AtomicReference<>();
+        AtomicReference<VaadinService> currentService = new AtomicReference<>();
+        AtomicInteger runs = new AtomicInteger();
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            ready.set(serviceReady);
+            currentService.set(VaadinService.getCurrent());
+            runs.incrementAndGet();
+            done.countDown();
+        });
+        assertEquals(0, runs.get(),
+                "Action should not run before init() has been called");
+
+        service.init();
+        awaitAction(done);
+
+        assertEquals(1, runs.get(), "Action should run once init() completes");
+        assertTrue(ready.get(),
+                "Action should be told the service is ready after a successful init()");
+        assertSame(service, currentService.get(),
+                "Action should run with the service as the current one");
+    }
+
+    @Test
+    void whenInitialized_actionThrows_initSucceedsAndOtherActionsRun()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false);
+
+        AtomicInteger runs = new AtomicInteger();
+        service.whenInitialized(serviceReady -> {
+            throw new RuntimeException("intentional failure");
+        });
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            runs.incrementAndGet();
+            done.countDown();
+        });
+
+        service.init();
+        awaitAction(done);
+
+        assertTrue(service.isInitialized(),
+                "A failing action should not prevent the service from being initialized");
+        assertEquals(1, runs.get(),
+                "A failing action should not prevent other actions from running");
+    }
+
+    @Test
+    void whenInitialized_initFailed_runsWithTheFailure()
+            throws InterruptedException {
+        MockVaadinServletService service = new MockVaadinServletService(false) {
+            @Override
+            protected Instantiator createInstantiator()
+                    throws ServiceException {
+                throw new ServiceException("intentional failure");
+            }
+        };
+
+        AtomicReference<Boolean> ready = new AtomicReference<>();
+        CountDownLatch done = new CountDownLatch(1);
+        service.whenInitialized(serviceReady -> {
+            ready.set(serviceReady);
+            done.countDown();
+        });
+        assertThrows(RuntimeException.class, service::init);
+        awaitAction(done);
+
+        assertFalse(ready.get(),
+                "Action should be told the service is not ready when init() fails");
+        assertFalse(service.isInitialized(),
+                "A service whose init() failed should not report itself as initialized");
+    }
+
+    /**
+     * Waits for the latch an action registered through
+     * {@link VaadinService#whenInitialized(java.util.function.Consumer)} counts
+     * down. Actions run on the service executor, independently of each other,
+     * so each one has to be waited for on its own.
+     */
+    private void awaitAction(CountDownLatch done) throws InterruptedException {
+        assertTrue(done.await(10, TimeUnit.SECONDS),
+                "An action registered to run once the service is initialized should have run");
     }
 
     private InstantiatorFactory createInstantiatorFactory() {

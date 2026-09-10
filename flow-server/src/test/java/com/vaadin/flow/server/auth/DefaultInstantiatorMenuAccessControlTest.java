@@ -18,10 +18,10 @@ package com.vaadin.flow.server.auth;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class DefaultInstantiatorMenuAccessControlTest {
     private ClassLoader contextClassLoader;
     private ClassLoader classLoader;

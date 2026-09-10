@@ -58,6 +58,13 @@ public class Effect implements Serializable {
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
+    /*
+     * Guards the mutable state below. A leaf lock so that the invariant "never
+     * hold it while calling into a signal tree" is enforced (see LeafLock and
+     * #25166): observers are always (un)registered without this lock held.
+     */
+    private final LeafLock lock = new LeafLock("Effect");
+
     // Non-final to allow clearing when the effect is closed
     private @Nullable SerializableRunnable action;
 
@@ -179,7 +186,7 @@ public class Effect implements Serializable {
         SerializableRunnable currentAction;
         List<Registration> staleRegistrations;
         long myGeneration;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             if (action == null || passivated) {
                 // closed or passivated
                 return;
@@ -221,7 +228,7 @@ public class Effect implements Serializable {
         }
 
         boolean superseded;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             // Discard if disposed or passivated concurrently, or if a newer
             // attempt superseded this one. Removing the observers we just
             // registered avoids leaking listeners on the signal trees.
@@ -292,10 +299,9 @@ public class Effect implements Serializable {
     private void invalidate() {
         invalidateScheduled.set(false);
 
-        // Remove registrations outside the synchronized block to avoid ABBA
-        // deadlock.
+        // Remove registrations outside the leaf lock to avoid ABBA deadlock.
         List<Registration> toRemove;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             // Supersede any revalidation already in flight so it discards its
             // observers; the revalidate() call below installs the fresh set.
             ++generation;
@@ -307,7 +313,7 @@ public class Effect implements Serializable {
     }
 
     private List<Registration> drainRegistrations() {
-        assert Thread.holdsLock(this);
+        assert lock.isHeldByCurrentThread();
         if (registrations.isEmpty()) {
             return List.of();
         }
@@ -340,9 +346,11 @@ public class Effect implements Serializable {
      * @param dispatcher
      *            the new dispatcher to use, not <code>null</code>
      */
-    public synchronized void setDispatcher(SerializableExecutor dispatcher) {
+    public void setDispatcher(SerializableExecutor dispatcher) {
         assert dispatcher != null;
-        this.dispatcher = dispatcher;
+        try (var ignored = lock.lock()) {
+            this.dispatcher = dispatcher;
+        }
     }
 
     /**
@@ -357,7 +365,7 @@ public class Effect implements Serializable {
         // signal writer holding that lock can drive Effect.invalidate, which
         // needs the Effect monitor (ABBA deadlock otherwise).
         List<Registration> toRemove;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             passivated = true;
             toRemove = drainRegistrations();
         }
@@ -374,7 +382,7 @@ public class Effect implements Serializable {
     public void activate() {
         List<UsageTracker.Usage> snapshot;
         long myGeneration;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             if (action == null || !passivated) {
                 return;
             }
@@ -413,7 +421,7 @@ public class Effect implements Serializable {
         }
 
         boolean discardNewRegistrations = false;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             if (action == null || passivated || generation != myGeneration) {
                 // Either disposed/passivated concurrently, or a newer attempt
                 // (an invalidate or revalidate on another thread) superseded
@@ -470,7 +478,7 @@ public class Effect implements Serializable {
         // remove outside it. Concurrent invalidate runs that observe
         // action == null will short-circuit in revalidate.
         List<Registration> toRemove;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             action = null;
             usages.clear();
             toRemove = drainRegistrations();

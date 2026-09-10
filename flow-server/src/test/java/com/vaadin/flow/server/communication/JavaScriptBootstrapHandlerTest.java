@@ -18,10 +18,10 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class JavaScriptBootstrapHandlerTest {
 
     private MockServletServiceSessionSetup mocks;

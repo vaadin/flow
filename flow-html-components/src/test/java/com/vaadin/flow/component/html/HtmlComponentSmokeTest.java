@@ -78,6 +78,7 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
+        testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -220,6 +221,23 @@ class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == HasAriaLabel.class
                 && method.getName().equals("setAriaLabelledBy")
                 && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
+        // the headers attribute is a list rather than a scalar property, so
+        // none of its setters pairs with a same-type getter. TableCellTest
+        // drives every entry point through both kinds of cell.
+        if (method.getDeclaringClass() == TableCell.class
+                && (method.getName().equals("setHeaders")
+                        || method.getName().equals("setHeaderIds"))) {
+            return true;
+        }
+
+        // Table.setCaption/setHead/setFoot attach a child rather than write a
+        // property; TableTest covers them, and feeding a shared component
+        // instance through this walk would leave it parented
+        if (method.getDeclaringClass() == Table.class && Component.class
+                .isAssignableFrom(method.getParameterTypes()[0])) {
             return true;
         }
 
@@ -425,7 +443,10 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        return HtmlComponent.class.isAssignableFrom(cls);
+        // Abstract bases such as TableCell cannot be instantiated; they are
+        // covered through their concrete subclasses
+        return HtmlComponent.class.isAssignableFrom(cls)
+                && !Modifier.isAbstract(cls.getModifiers());
     }
 
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(

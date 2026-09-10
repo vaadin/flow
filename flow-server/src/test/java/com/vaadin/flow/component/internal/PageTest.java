@@ -17,9 +17,9 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class PageTest {
     private MockUI ui = new MockUI();
     private Page page = ui.getPage();

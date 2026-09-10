@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +40,9 @@ public interface HasTheme extends HasElement {
      * Adds a theme name to this component.
      *
      * @param themeName
-     *            the theme name to add, not <code>null</code>
+     *            the theme name to add, not <code>null</code> and not
+     *            containing spaces. Use {@link #addThemeNames(String...)} to
+     *            add several theme names as a space-separated string.
      */
     default void addThemeName(String themeName) {
         getThemeNames().add(themeName);
@@ -122,24 +125,55 @@ public interface HasTheme extends HasElement {
 
     /**
      * Adds one or more theme names to this component. Multiple theme names can
-     * be specified by using multiple parameters.
+     * be specified by using spaces or by giving multiple parameters.
      *
      * @param themeNames
-     *            the theme name or theme names to be added to the component
+     *            the theme name or theme names to be added to the component, no
+     *            element being <code>null</code> or blank
      */
     default void addThemeNames(String... themeNames) {
-        getThemeNames().addAll(Arrays.asList(themeNames));
+        for (String themeName : splitThemeNames(themeNames)) {
+            getThemeNames().add(themeName);
+        }
     }
 
     /**
      * Removes one or more theme names from component. Multiple theme names can
-     * be specified by using multiple parameters.
+     * be specified by using spaces or by giving multiple parameters.
      *
      * @param themeNames
-     *            the theme name or theme names to be removed from the component
+     *            the theme name or theme names to be removed from the
+     *            component, no element being <code>null</code> or blank
      */
     default void removeThemeNames(String... themeNames) {
-        getThemeNames().removeAll(Arrays.asList(themeNames));
+        for (String themeName : splitThemeNames(themeNames)) {
+            getThemeNames().remove(themeName);
+        }
+    }
+
+    /**
+     * Splits the given values into the individual theme names they consist of.
+     *
+     * @param themeNames
+     *            the theme names to split, no element being <code>null</code>
+     *            or blank
+     * @return the individual theme names, in the order they were given
+     */
+    private static List<String> splitThemeNames(String... themeNames) {
+        List<String> names = new ArrayList<>();
+        for (String rawThemeName : themeNames) {
+            if (rawThemeName == null) {
+                throw new IllegalArgumentException(
+                        "Theme names cannot include a null element");
+            }
+            String themeName = rawThemeName.trim();
+            if (themeName.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Theme names cannot include an empty theme name");
+            }
+            names.addAll(Arrays.asList(themeName.split(" +")));
+        }
+        return names;
     }
 
     /**

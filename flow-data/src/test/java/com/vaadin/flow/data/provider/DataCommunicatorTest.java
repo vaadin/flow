@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -2142,6 +2143,11 @@ public class DataCommunicatorTest {
                 MockService service = Mockito.mock(MockService.class);
                 Mockito.when(service.getRouteRegistry())
                         .thenReturn(Mockito.mock(RouteRegistry.class));
+                // A real service always has an event bus, so the mock has to
+                // supply one too rather than have production code work around
+                // a null
+                Mockito.when(service.getEventBus())
+                        .thenReturn(new VaadinServiceEventBus(service));
                 session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }

@@ -1,6 +1,6 @@
 import { getOptions } from 'loader-utils';
 import { dirname, basename, resolve } from 'path';
-import { rewriteCssUrls } from './theme-loader-utils';
+import { rewriteCssUrls } from './theme-loader-utils.js';
 
 /**
  * This custom loader handles rewriting urls for the application theme css files.

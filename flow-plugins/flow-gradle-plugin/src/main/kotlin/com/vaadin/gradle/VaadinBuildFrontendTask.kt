@@ -211,8 +211,8 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 it.name.endsWith(".jar", true)
             }
         )
-        dependencyJarFingerprint.set(project.provider {
-            dependencyJarFiles.files
+        dependencyJarFingerprint.set(dependencyJarFiles.elements.map { jars ->
+            jars.map { it.asFile }
                 .sortedBy { it.name }
                 .joinToString("\n") { "${it.name}:${it.length()}" }
         })

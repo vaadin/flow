@@ -16,6 +16,9 @@
 package com.vaadin.flow.gradle
 
 import org.gradle.api.artifacts.ModuleIdentifier
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.specs.Spec
 import java.io.Serializable
 import java.util.function.Predicate
 
@@ -31,17 +34,71 @@ public data class ClasspathFilter(
         this.exclude.add(exclude)
     }
 
-    public fun toPredicate(): Predicate<ModuleIdentifier> {
-        val includeMatchers = include.map { ModuleIdentifierPredicate.fromGroupNameGlob(it) }
-        val excludeMatchers = exclude.map { ModuleIdentifierPredicate.fromGroupNameGlob(it) }
-        val excludeMatcher: Predicate<ModuleIdentifier> = excludeMatchers.or()
-        val includeMatcher: Predicate<ModuleIdentifier> = if (includeMatchers.isEmpty()) {
-            ModuleIdentifierPredicate.ANY
-        } else {
-            includeMatchers.or()
-        }
-        return includeMatcher.and(excludeMatcher.negate()).or(ModuleIdentifierPredicate.FLOW_SERVER)
+    public fun toPredicate(): Predicate<ModuleIdentifier> =
+        toModuleIdentifierFilter()
+
+    internal fun toModuleIdentifierFilter(): ModuleIdentifierFilter =
+        ModuleIdentifierFilter(include.toList(), exclude.toList())
+}
+
+/**
+ * Accepts the modules selected by a [ClasspathFilter]: a module is accepted
+ * when it matches one of the [include] globs (or when no include is
+ * configured) and matches none of the [exclude] globs. `com.vaadin:flow-server`
+ * is always accepted, as the frontend scanner cannot work without it.
+ *
+ * Deliberately a plain serializable object holding nothing but the configured
+ * globs, instead of a chain built with the `Predicate.and()`/`or()`/`negate()`
+ * combinators. Those combinators return lambdas whose implementation class is
+ * hosted in `java.base/java.util.function`, and Gradle cannot store such a
+ * lambda in a configuration cache entry: a project with a file-based
+ * dependency (`implementation files(...)`) keeps the artifact view's component
+ * filter - and with it this predicate - alive in the serialized task graph
+ * instead of flattening it away, and the build then fails with
+ * `module java.base does not "opens java.util.function"`. The globs are
+ * compiled on demand for the same reason, so that no derived state reaches the
+ * cache entry either.
+ */
+internal data class ModuleIdentifierFilter(
+    private val include: List<String>,
+    private val exclude: List<String>
+) : Predicate<ModuleIdentifier>, Serializable {
+
+    override fun test(t: ModuleIdentifier): Boolean = when {
+        ModuleIdentifierPredicate.FLOW_SERVER.test(t) -> true
+        exclude.any { matches(it, t) } -> false
+        else -> include.isEmpty() || include.any { matches(it, t) }
     }
+
+    private fun matches(glob: String, moduleIdentifier: ModuleIdentifier): Boolean =
+        ModuleIdentifierPredicate.fromGroupNameGlob(glob).test(moduleIdentifier)
+}
+
+/**
+ * Selects the components of a dependency configuration whose module is
+ * accepted by [classpathFilter]. Components that are not
+ * [ModuleComponentIdentifier]s - a local library, or another module of the
+ * same build - are always accepted, as no module coordinates exist to match
+ * them against.
+ *
+ * A named class rather than a lambda so that Gradle serializes it as an
+ * ordinary bean: see [ModuleIdentifierFilter] for why a component filter can
+ * end up in a configuration cache entry.
+ */
+internal class ClasspathComponentFilter(classpathFilter: ClasspathFilter) :
+    Spec<ComponentIdentifier>, Serializable {
+
+    // Snapshots the configured globs at construction time, as the predicate
+    // chain it replaces used to. Typed as the filter implementation rather
+    // than as Predicate, so that nothing unstorable - a lambda, or a chain
+    // built from the Predicate combinators - can reach the configuration
+    // cache entry through this field.
+    private val artifactFilter: ModuleIdentifierFilter =
+        classpathFilter.toModuleIdentifierFilter()
+
+    override fun isSatisfiedBy(element: ComponentIdentifier): Boolean =
+        element !is ModuleComponentIdentifier ||
+                artifactFilter.test(element.moduleIdentifier)
 }
 
 /**
@@ -76,10 +133,6 @@ public data class ModuleIdentifierPredicate(
 
         public val FLOW_SERVER: ModuleIdentifierPredicate = fromGroupNameGlob("com.vaadin:flow-server")
 
-        public val ANY: ModuleIdentifierPredicate = ModuleIdentifierPredicate({ true }, { true })
+        public val ANY: ModuleIdentifierPredicate = fromGroupNameGlob("*:*")
     }
-}
-
-private fun <T> List<Predicate<T>>.or(): Predicate<T> = Predicate { probe ->
-    any { predicate -> predicate.test(probe) }
 }

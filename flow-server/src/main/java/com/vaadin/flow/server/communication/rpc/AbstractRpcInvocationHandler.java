@@ -23,15 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -82,30 +77,10 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private void logHandlingIgnoredMessage(StateNode node, String reason) {
-        StringBuilder targetInfo = new StringBuilder();
-        if (node != null && node.hasFeature(ElementData.class)) {
-            Element element = Element.get(node);
-            Optional<Component> component = element.getComponent();
-            targetInfo.append(" element with tag").append("'")
-                    .append(element.getTag()).append("'");
-            if (component.isPresent()) {
-                targetInfo.append(" Component: ").append("'")
-                        .append(component.get().getClass().getName())
-                        .append("'");
-                Optional<Component> routeComponent = ComponentUtil
-                        .getRouteComponent(component.get());
-                if (routeComponent.isPresent()) {
-                    targetInfo.append(" Route: ").append("'")
-                            .append(routeComponent.get().getClass()
-                                    .getAnnotation(Route.class).value())
-                            .append("'");
-                }
-            }
-        }
         getLogger().info(
                 "Ignored RPC for invocation handler '{}' from "
-                        + "the client side for an {} node id='{}'{}",
-                getClass().getName(), reason, node.getId(), targetInfo);
+                        + "the client side for an {} {}",
+                getClass().getName(), reason, node.describe());
     }
 
     /**

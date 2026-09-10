@@ -416,6 +416,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     private void fireFilteringOrSortingChangeEvent(
             SerializablePredicate<T> filter,
             SerializableComparator<T> sortComparator) {
+        if (getDataProvider() instanceof DataCommunicator.EmptyDataProvider) {
+            return;
+        }
+
         filterOrSortingChangedCallback.accept(filter, sortComparator);
     }
 }

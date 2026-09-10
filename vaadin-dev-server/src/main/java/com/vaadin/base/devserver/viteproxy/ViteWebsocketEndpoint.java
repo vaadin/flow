@@ -42,7 +42,7 @@ import com.vaadin.flow.shared.Registration;
 /**
  * The websocket endpoint for Vite.
  * 
- * @since 24.3.22
+ * @since 24.0
  */
 public class ViteWebsocketEndpoint extends Endpoint {
 

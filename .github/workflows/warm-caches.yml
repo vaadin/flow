@@ -1,0 +1,192 @@
+name: Warm Caches
+
+# Flow Validation caches ~/.m2/repository and, through setup-gradle, the Gradle
+# home. A run can only read caches from its own ref and from the default branch,
+# and #24103 removed main from that workflow's push trigger because the merge
+# queue already validates every merge. Merge queue runs cannot fill the gap
+# either: their branch name embeds the pull request number and the base sha, so
+# each one is single use and no other run can read what it saved.
+#
+# Nothing therefore writes a cache that a pull request can read. Every one of
+# them starts with an empty local repository, downloads the whole dependency
+# tree, and then saves a copy only it can read.
+#
+# This builds main once per merge so that the default branch holds entries they
+# can all read. It is two single jobs rather than the validation matrix, so it
+# does not bring back the duplicate validation that #24103 removed.
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keyed on the event as well as the ref: a manual run targeting main carries
+  # the same github.ref as the push it would otherwise cancel.
+  #
+  # Only the most recent state of a branch is worth caching, and queueing runs
+  # instead would warm one superseded commit after another while the useful one
+  # waits behind them. For warm-maven cancelling costs freshness, not
+  # availability: the previous entry stays in the store and the restore keys
+  # still match it, so a branch is left one merge behind rather than on nothing.
+  # For warm-gradle it can cost availability, since that job deletes before it
+  # rebuilds and there are no restore keys, so a run cancelled after that point
+  # leaves the ref with no Gradle home until the next merge. The delete sits as
+  # late in the job as it can to keep that window short.
+  #
+  # Merges are far enough apart for the last run of a burst to finish anyway;
+  # over 18 days the median gap between pushes to main was 54 minutes.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: 21
+
+jobs:
+  # Kept apart from the Gradle warm so that one failing cannot discard what the
+  # other resolved: the step that saves a cache only runs on a successful job.
+  warm-maven:
+    # A fork that syncs its main from here would otherwise spend its own minutes
+    # warming entries only that fork can read.
+    if: ${{ github.repository == 'vaadin/flow' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.21.0'
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The cache key is hashed from the poms after this rewrite, so it has to
+        # happen here too for the key to match the one validation.yml computes.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        id: probe
+        # What the entry holds is decided by the poms alone, so an entry already
+        # under this key has nothing to gain from being rebuilt: the save would
+        # be skipped as an exact hit and the build below would be an hour of a
+        # runner spent on nothing. Most merges do not touch a pom, so this is
+        # the common case.
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          lookup-only: true
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.m2/repository
+          # Deliberately not the key validation.yml computes, even though this
+          # entry is meant for it. actions/cache skips its save when the primary
+          # key was an exact hit, so claiming that key here would stop the test
+          # jobs saving theirs, and theirs is the richer one: this build leaves
+          # flow-tests out, and with it the roughly ninety artifacts only the
+          # integration tests pull. Their restore keys still reach this entry by
+          # prefix, so they start warm and keep saving what they add to it.
+          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-warm-
+      - name: Populate the local repository
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        # The same command the build job runs, so that what is cached is what a
+        # validation run asks for. A real build, because it resolves what a real
+        # build resolves: dependency:go-offline fails on this reactor over
+        # org.eclipse.m2e:lifecycle-mapping, which several poms declare so that
+        # Eclipse stays quiet and which resolves nowhere, and dependency:resolve
+        # would leave every build plugin uncached.
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Drop the Flow artifacts before the cache is saved
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        # The step that saves the cache runs after every regular step, so
+        # removing them here keeps them out of the entry every branch restores,
+        # where they could satisfy a resolution that ought to fail for a module
+        # a branch renamed or removed. Only what this build produced: the rest
+        # of the com/vaadin tree is ordinary downloads, license-checker, open,
+        # the external and TestBench artifacts, and is worth caching. Excluding
+        # them through the cache path does not work: actions/cache globs with
+        # implicitDescendants false, so ~/.m2/repository matches only the
+        # directory itself and tar recurses into it regardless of any negated
+        # pattern.
+        run: rm -rf ~/.m2/repository/com/vaadin/*/999.99-SNAPSHOT
+
+  warm-gradle:
+    if: ${{ github.repository == 'vaadin/flow' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # For the cache deletion below.
+      actions: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.21.0'
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The Gradle build takes its version from the root pom, so the poms have
+        # to match what is installed below for it to resolve flow-plugin-base.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        # Read only: this job resolves a fraction of what warm-maven does, so it
+        # has nothing to add to that entry and should not race it for the key.
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-warm-
+      - name: Install what the plugin build resolves
+        # The plugin depends on com.vaadin:flow-plugin-base, so that module and
+        # what it is built from is all this job needs from the local repository.
+        run: |
+          mvn install -B -ntp -DskipTests -q -pl flow-plugins/flow-plugin-base -am
+      - name: Forget the Gradle home entry for this ref
+        # setup-gradle saves whatever the Gradle home holds even when the job
+        # fails, its cache provider never overwrites a key it restored, and its
+        # key has no restore keys to fall back on. One interrupted run would
+        # otherwise freeze a half resolved home in place: every later run,
+        # successful ones included, restores it exactly and skips its own save.
+        #
+        # Deleting first is what makes this job self healing. It has to happen
+        # before setup-gradle restores, not after a failure: post steps run
+        # last, so a cleanup at the end would be overwritten by the save it is
+        # meant to undo. It is as late as it can be for the same reason the
+        # setup below is: from here until the save this ref has no Gradle home
+        # entry, and a gradle-tests run starting inside that window resolves
+        # cold and saves a copy of its own.
+        #
+        # The prefix is shared with the Maven caches actions/setup-java writes,
+        # so the segment is what identifies these.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache list --ref "$GITHUB_REF" --key setup-java- --limit 100 \
+            --json id,key --jq '.[] | select(.key | contains("-gradle-")) | .id' \
+            | xargs -r -n1 gh cache delete
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # See the note in validation.yml: the default provider is proprietary.
+          cache-provider: basic
+      - name: Populate the Gradle home
+        # Compiles every source set, so the compile classpaths of main, test and
+        # functionalTest are resolved, without running the tests, which is the
+        # slow part. What validation's `./gradlew build` resolves on top of this
+        # is the runtime classpaths, which only executing the tests pulls in:
+        # the Maven runtime scoped transitives of flow-plugin-base and the
+        # TestKit runtime. Those stay cold, and running the tests here to warm
+        # them would cost more than they save.
+        working-directory: flow-plugins/flow-gradle-plugin
+        run: ./gradlew assemble testClasses functionalTestClasses
