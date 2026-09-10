@@ -589,6 +589,11 @@ public class FileIOUtils {
      * accepted only when it belongs to a Gradle build instead of matching the
      * directory by name. Without that check a path such as
      * {@code /srv/classes/foo/bar} would be taken for a project folder.
+     * <p>
+     * The resources layout is matched first because a build directory named
+     * {@code classes} makes the two overlap: in
+     * {@code <project>/classes/resources/main} the classes layout would match
+     * too, and it would climb one level too far.
      *
      * @param outputFolder
      *            a folder on the classpath
@@ -598,12 +603,12 @@ public class FileIOUtils {
     private static File getGradleProjectFolder(Path outputFolder) {
         int names = outputFolder.getNameCount();
         Path candidate = null;
-        if (names > 3 && "classes"
-                .equals(outputFolder.getName(names - 3).toString())) {
-            candidate = ancestor(outputFolder, 4);
-        } else if (names > 2 && "resources"
+        if (names > 2 && "resources"
                 .equals(outputFolder.getName(names - 2).toString())) {
             candidate = ancestor(outputFolder, 3);
+        } else if (names > 3 && "classes"
+                .equals(outputFolder.getName(names - 3).toString())) {
+            candidate = ancestor(outputFolder, 4);
         }
         if (candidate != null && belongsToGradleBuild(candidate)) {
             return candidate.toFile();

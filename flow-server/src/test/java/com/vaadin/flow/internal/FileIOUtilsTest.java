@@ -88,6 +88,18 @@ class FileIOUtilsTest {
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
+    @Test
+    void projectFolderForGradleResourcesFolderInBuildFolderNamedClasses(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        // Both layouts match this one, and the classes layout would climb one
+        // level too far
+        URL url = gradleOutputFolder(projectFolder, "classes/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = { "settings.gradle", "settings.gradle.kts" })
     void projectFolderForGradleModuleWithoutBuildScript(String settingsScript,
