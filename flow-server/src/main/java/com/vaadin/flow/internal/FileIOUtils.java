@@ -576,7 +576,49 @@ public class FileIOUtils {
             return path.getParent().getParent().toFile();
         }
 
+        return getGradleProjectFolder(path);
+    }
+
+    /**
+     * Determines the project folder from a Gradle source set output folder,
+     * which is either
+     * {@code <project>/<buildDir>/classes/<language>/<sourceSet>} or
+     * {@code <project>/<buildDir>/resources/<sourceSet>}.
+     * <p>
+     * The name of the build directory is configurable, so the candidate is
+     * accepted only when it holds a Gradle build script instead of matching the
+     * directory by name. Without that check a path such as
+     * {@code /srv/classes/foo/bar} would be taken for a project folder.
+     *
+     * @param outputFolder
+     *            a folder on the classpath
+     * @return the project folder, or {@code null} if the folder is not the
+     *         output folder of a Gradle source set
+     */
+    private static File getGradleProjectFolder(Path outputFolder) {
+        int names = outputFolder.getNameCount();
+        Path candidate = null;
+        if (names > 3 && "classes"
+                .equals(outputFolder.getName(names - 3).toString())) {
+            candidate = ancestor(outputFolder, 4);
+        } else if (names > 2 && "resources"
+                .equals(outputFolder.getName(names - 2).toString())) {
+            candidate = ancestor(outputFolder, 3);
+        }
+        if (candidate != null && (new File(candidate.toFile(), "build.gradle")
+                .exists()
+                || new File(candidate.toFile(), "build.gradle.kts").exists())) {
+            return candidate.toFile();
+        }
         return null;
+    }
+
+    private static Path ancestor(Path path, int levels) {
+        Path ancestor = path;
+        for (int i = 0; i < levels && ancestor != null; i++) {
+            ancestor = ancestor.getParent();
+        }
+        return ancestor;
     }
 
     /**

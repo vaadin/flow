@@ -35,6 +35,7 @@ import com.vaadin.open.OSUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -63,6 +64,41 @@ class FileIOUtilsTest {
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
         assertEquals(new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleClassesFolder(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        URL url = gradleOutputFolder(projectFolder, "build/classes/java/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleResourcesFolderInCustomBuildFolder(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle.kts").toPath());
+        URL url = gradleOutputFolder(projectFolder, "out/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void noProjectFolderForClassesFolderWithoutGradleScript(
+            @TempDir File folder) throws Exception {
+        URL url = gradleOutputFolder(folder, "build/classes/java/main/");
+
+        assertNull(FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    private static URL gradleOutputFolder(File projectFolder,
+            String relativePath) throws Exception {
+        File outputFolder = new File(projectFolder, relativePath);
+        Files.createDirectories(outputFolder.toPath());
+        return outputFolder.toURI().toURL();
     }
 
     @Test
