@@ -71,24 +71,39 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
     }
   },
 
-  // Normal path: fire only when the event and the shortcut owner (located via
-  // the given attribute selector) share the same popover/modal scope. Returns
-  // true when the shortcut is allowed to fire. Fails open on error.
+  // Popover/modal scope the event actually originated from.
   //
   // A relayed clone (see registerKeydownDelegate) carries the real origin scope
   // in _vaadinShortcutOriginScope, because its own composedPath points at the
   // listenOn element and no longer reflects where the keydown happened.
+  _originScope: function (event) {
+    return '_vaadinShortcutOriginScope' in event
+      ? event._vaadinShortcutOriginScope
+      : window.Vaadin.Flow.shortcut._eventScope(event);
+  },
+
+  // Normal path: fire only when the event and the shortcut owner (located via
+  // the given attribute selector) share the same popover/modal scope. Returns
+  // true when the shortcut is allowed to fire. Fails open on error.
   eventInOwnerScope: function (event, ownerSelector) {
     try {
       const owner = document.querySelector(ownerSelector);
       if (!owner) {
         return true;
       }
-      const eventScope =
-        '_vaadinShortcutOriginScope' in event
-          ? event._vaadinShortcutOriginScope
-          : window.Vaadin.Flow.shortcut._eventScope(event);
-      return eventScope === window.Vaadin.Flow.shortcut._scopeOf(owner);
+      return window.Vaadin.Flow.shortcut._originScope(event) === window.Vaadin.Flow.shortcut._scopeOf(owner);
+    } catch (e) {
+      return true;
+    }
+  },
+
+  // Normal path for a shortcut owned by the UI: the owner is <body>, which can
+  // never sit inside an open popover/modal, so sharing its scope simply means
+  // the event did not originate inside one. Expressed without an owner selector
+  // so that every UI-owned shortcut yields the same filter expression.
+  eventInTopLevelScope: function (event) {
+    try {
+      return window.Vaadin.Flow.shortcut._originScope(event) === null;
     } catch (e) {
       return true;
     }
