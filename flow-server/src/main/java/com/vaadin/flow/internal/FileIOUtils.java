@@ -586,7 +586,7 @@ public class FileIOUtils {
      * {@code <project>/<buildDir>/resources/<sourceSet>}.
      * <p>
      * The name of the build directory is configurable, so the candidate is
-     * accepted only when it holds a Gradle build script instead of matching the
+     * accepted only when it belongs to a Gradle build instead of matching the
      * directory by name. Without that check a path such as
      * {@code /srv/classes/foo/bar} would be taken for a project folder.
      *
@@ -605,12 +605,38 @@ public class FileIOUtils {
                 .equals(outputFolder.getName(names - 2).toString())) {
             candidate = ancestor(outputFolder, 3);
         }
-        if (candidate != null && (new File(candidate.toFile(), "build.gradle")
-                .exists()
-                || new File(candidate.toFile(), "build.gradle.kts").exists())) {
+        if (candidate != null && belongsToGradleBuild(candidate)) {
             return candidate.toFile();
         }
         return null;
+    }
+
+    /**
+     * Whether the given folder is a project of a Gradle build, that is it has a
+     * build script of its own or it lies inside a build whose root has a
+     * settings script. A subproject that the root project configures entirely
+     * has no build script of its own.
+     *
+     * @param projectFolder
+     *            the candidate project folder
+     * @return {@code true} if the folder belongs to a Gradle build
+     */
+    private static boolean belongsToGradleBuild(Path projectFolder) {
+        if (hasAnyFile(projectFolder, "build.gradle", "build.gradle.kts")) {
+            return true;
+        }
+        for (Path folder = projectFolder; folder != null; folder = folder
+                .getParent()) {
+            if (hasAnyFile(folder, "settings.gradle", "settings.gradle.kts")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasAnyFile(Path folder, String... fileNames) {
+        return Arrays.stream(fileNames)
+                .anyMatch(name -> Files.isRegularFile(folder.resolve(name)));
     }
 
     private static Path ancestor(Path path, int levels) {

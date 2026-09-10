@@ -87,8 +87,21 @@ class FileIOUtilsTest {
     }
 
     @Test
-    void noProjectFolderForClassesFolderWithoutGradleScript(
-            @TempDir File folder) throws Exception {
+    void projectFolderForGradleModuleWithoutBuildScript(
+            @TempDir File rootFolder) throws Exception {
+        // A subproject that the root project configures has no build script of
+        // its own, only the root has a settings script
+        Files.createFile(new File(rootFolder, "settings.gradle").toPath());
+        File moduleFolder = new File(rootFolder, "web");
+        URL url = gradleOutputFolder(moduleFolder, "build/classes/java/main/");
+
+        assertEquals(moduleFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void noProjectFolderForClassesFolderOutsideGradleBuild(@TempDir File folder)
+            throws Exception {
         URL url = gradleOutputFolder(folder, "build/classes/java/main/");
 
         assertNull(FileIOUtils.getProjectFolderFromClasspath(url));
