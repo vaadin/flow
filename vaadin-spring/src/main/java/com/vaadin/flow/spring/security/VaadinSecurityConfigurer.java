@@ -42,7 +42,6 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -134,7 +133,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link VaadinDefaultRequestCache}</li>
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
- * <li>{@link OidcUserService}, when Keycloak role mapping is enabled with
+ * <li>{@code OidcUserService}, when Keycloak role mapping is enabled with
  * {@link #keycloakRoleMapping()}</li>
  * </ul>
  * 
@@ -333,7 +332,7 @@ public final class VaadinSecurityConfigurer
      * what exactly is mapped.
      * <p>
      * Works only together with {@link #oauth2LoginPage(String)} and its
-     * overloads, and replaces the {@link OidcUserService} that this security
+     * overloads, and replaces the {@code OidcUserService} that this security
      * filter chain uses to load the authenticated user. An application that
      * needs to customize that service can share its own instance with
      * {@code HttpSecurity.setSharedObject(OidcUserService.class, service)},
@@ -586,10 +585,15 @@ public final class VaadinSecurityConfigurer
                 configurer.loginPage(oauth2LoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
                 if (keycloakRoleMapping) {
-                    var oidcUserService = getKeycloakOidcUserService();
-                    configurer.userInfoEndpoint(userInfoEndpoint -> {
-                        userInfoEndpoint.oidcUserService(oidcUserService);
-                    });
+                    // The role prefix holder is only populated with the prefix
+                    // of the filter chain in configure(), which runs after
+                    // this, so the prefix is resolved when a user is mapped
+                    var rolePrefixHolder = getVaadinRolePrefixHolder();
+                    KeycloakRoleMapping.apply(configurer, getBuilder(),
+                            () -> rolePrefixHolder != null
+                                    && rolePrefixHolder.isSet()
+                                            ? rolePrefixHolder.getRolePrefix()
+                                            : null);
                 }
             });
         } else if (keycloakRoleMapping) {
@@ -783,22 +787,6 @@ public final class VaadinSecurityConfigurer
 
     private VaadinDefaultRequestCache getVaadinDefaultRequestCache() {
         return getSharedObjectOrBean(VaadinDefaultRequestCache.class);
-    }
-
-    private OidcUserService getKeycloakOidcUserService() {
-        var oidcUserService = getSharedObject(OidcUserService.class)
-                .orElseGet(OidcUserService::new);
-        // The role prefix holder is only populated with the prefix of the
-        // filter chain in configure(), which runs after this, so the mapper
-        // reads it when it maps a user rather than now.
-        var rolePrefixHolder = getVaadinRolePrefixHolder();
-        oidcUserService.setOidcUserConverter(KeycloakOidcUserMapper
-                .withRolePrefixSupplier(() -> rolePrefixHolder != null
-                        && rolePrefixHolder.isSet()
-                                ? rolePrefixHolder.getRolePrefix()
-                                : null));
-        setSharedObject(OidcUserService.class, oidcUserService);
-        return oidcUserService;
     }
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getAuthenticationSuccessHandler() {

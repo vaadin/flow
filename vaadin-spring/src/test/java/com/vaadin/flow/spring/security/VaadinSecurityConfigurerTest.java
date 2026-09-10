@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -542,6 +543,69 @@ class VaadinSecurityConfigurerTest {
         assertThat(handler).isNotNull();
         assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void withoutOAuth2ClientOnClasspath_configurerStillLinks() {
+        // spring-security-oauth2-client is an optional dependency, and a class
+        // is verified as a whole when it is loaded, so a reference to one of
+        // its types here would break every application that does not have it
+        assertThatCode(
+                () -> Class.forName(VaadinSecurityConfigurer.class.getName(),
+                        true, new OAuth2ClientHidingClassLoader()))
+                .doesNotThrowAnyException();
+    }
+
+    /**
+     * Loads the Vaadin security classes itself, so that they are verified
+     * against a classpath without {@code spring-security-oauth2-client}.
+     */
+    private static class OAuth2ClientHidingClassLoader extends ClassLoader {
+
+        private static final String HIDDEN_PACKAGE = "org.springframework.security.oauth2.client.";
+
+        private static final String RELOADED_PACKAGE = "com.vaadin.flow.spring.security.";
+
+        OAuth2ClientHidingClassLoader() {
+            super(VaadinSecurityConfigurer.class.getClassLoader());
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve)
+                throws ClassNotFoundException {
+            if (name.startsWith(HIDDEN_PACKAGE)) {
+                throw new ClassNotFoundException(name);
+            }
+            if (name.startsWith(RELOADED_PACKAGE)) {
+                synchronized (getClassLoadingLock(name)) {
+                    var loaded = findLoadedClass(name);
+                    if (loaded == null) {
+                        loaded = defineClass(name, readBytes(name));
+                    }
+                    if (resolve) {
+                        resolveClass(loaded);
+                    }
+                    return loaded;
+                }
+            }
+            return super.loadClass(name, resolve);
+        }
+
+        private Class<?> defineClass(String name, byte[] bytes) {
+            return defineClass(name, bytes, 0, bytes.length);
+        }
+
+        private byte[] readBytes(String name) throws ClassNotFoundException {
+            var resource = name.replace('.', '/') + ".class";
+            try (var stream = getParent().getResourceAsStream(resource)) {
+                if (stream == null) {
+                    throw new ClassNotFoundException(name);
+                }
+                return stream.readAllBytes();
+            } catch (IOException e) {
+                throw new ClassNotFoundException(name, e);
+            }
+        }
     }
 
     // Helper methods to access protected fields using reflection
