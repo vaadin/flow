@@ -69,7 +69,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     // (#24974). The token is a UUID rather than a JVM-local counter so it stays
     // unique across session serialization/deserialization onto another JVM,
     // where a counter would restart and new shortcuts could reuse a restored
-    // token. Created by getOrCreateOwnerToken, the only place that assigns it.
+    // token.
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
     private String ownerToken;
 
@@ -1012,11 +1012,11 @@ public class ShortcutRegistration implements Registration, Serializable {
     private String generateOwnerScopeFilter() {
         final String token = getOrCreateOwnerToken();
         if (token == null) {
-            // The owner is the UI, i.e. <body>, which can never be inside an
-            // open popover/modal. Sharing its scope therefore just means the
-            // event did not originate inside one, which needs no owner token
-            // and so keeps the filter text identical for every UI-owned
-            // shortcut (#25624).
+            // Only reached while the guard is on, so the owner is the UI, i.e.
+            // <body>, which can never be inside an open popover/modal. Sharing
+            // its scope therefore just means the event did not originate inside
+            // one, which needs no owner token and so keeps the filter text
+            // identical for every UI-owned shortcut (#25624).
             return "window.Vaadin.Flow.shortcut.eventInTopLevelScope(event)";
         }
         // Normal path: locate the owner element via its marker attribute and
@@ -1027,20 +1027,20 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * The marker token of this registration, or {@code null} when the current
-     * lifecycle owner needs no marker because the client-side origin guard
-     * locates it without one.
+     * The marker token of this registration, created here on first use.
      * <p>
-     * This is the only place a token is created, on the first client update
-     * that needs one. A UI owner never needs a token, and skipping it matters:
-     * the token makes the listener filter text unique per registration, and
+     * A token is needed only when the owner element has to be marked for the
+     * client-side origin guard to locate it, which is the case unless the guard
+     * is off ({@link #allowEventsFromNestedModals}) or the lifecycle owner is
+     * the UI, which the guard locates without a marker. Skipping the token
+     * matters: it makes the listener filter text unique per registration, and
      * that text is kept for the lifetime of the UI by the client's compiled
      * expression cache and by both constant pools (#25624).
      *
      * @return the marker token, or {@code null} if none is needed
      */
     private String getOrCreateOwnerToken() {
-        if (lifecycleOwner instanceof UI) {
+        if (allowEventsFromNestedModals || lifecycleOwner instanceof UI) {
             return null;
         }
         if (ownerToken == null) {
@@ -1062,10 +1062,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        // No token when the guard is off, so none is created for a
-        // registration that will never use one.
-        final String token = allowEventsFromNestedModals ? null
-                : getOrCreateOwnerToken();
+        final String token = getOrCreateOwnerToken();
         if (token == null) {
             removeOwnerToken(element);
         } else {
