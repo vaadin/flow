@@ -388,6 +388,36 @@ class VersionsJsonConverterTest {
     }
 
     @Test
+    void modeThatIsNotAMode_thePackageIsInstalledInEveryMode() {
+        String json = """
+                {
+                  "core": {
+                    "text-field": {
+                      "npmName": "@vaadin/text-field",
+                      "jsVersion": "25.3.0",
+                      "mode": "Lit "
+                    }
+                  }
+                }
+                """;
+
+        // A value that is not a mode says nothing about when the package is
+        // used, so it is installed in every mode rather than in neither of
+        // them, which a typo would otherwise cause
+        for (boolean reactEnabled : new boolean[] { true, false }) {
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    JacksonUtils.readTree(json), reactEnabled, false);
+            assertTrue(convert.getConvertedJson().has("@vaadin/text-field"),
+                    "The package should be pinned with react " + reactEnabled);
+            assertFalse(
+                    convert.getModeExclusions().contains("@vaadin/text-field"),
+                    "The package should be installed with react "
+                            + reactEnabled);
+            assertFalse(convert.getExclusions().contains("@vaadin/text-field"));
+        }
+    }
+
+    @Test
     void modeExcludesThePackagesInstalledInTheOtherModeOnly() {
         String json = """
                 {

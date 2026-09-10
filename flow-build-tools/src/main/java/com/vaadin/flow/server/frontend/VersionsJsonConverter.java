@@ -168,7 +168,9 @@ class VersionsJsonConverter {
     }
 
     private boolean isIncludedByMode(String mode) {
-        if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
+        if (!isOneModeOnly(mode)) {
+            // A package that is not declared for one mode alone is installed
+            // in every mode, whether it says so or says nothing at all
             return true;
         } else if (excludeWebComponents) {
             return false;
@@ -177,6 +179,36 @@ class VersionsJsonConverter {
         } else {
             return MODE_LIT.equalsIgnoreCase(mode);
         }
+    }
+
+    /**
+     * Checks whether the mode is one that leaves the package out of the other
+     * mode, which only {@value #MODE_LIT} and {@value #MODE_REACT} are.
+     * <p>
+     * Anything else, a mode that is missing, empty, {@value #MODE_ALL} or a
+     * value that is not a mode at all, says nothing about when the package is
+     * used, so the package is installed in every mode. Reading an unknown value
+     * as a mode of its own would take the package out of both modes over a
+     * typo.
+     */
+    private static boolean isOneModeOnly(String mode) {
+        return MODE_LIT.equalsIgnoreCase(mode)
+                || MODE_REACT.equalsIgnoreCase(mode);
+    }
+
+    /**
+     * Warns about a mode that is not one of the modes there are, which is
+     * ignored so that the package is installed in every mode.
+     */
+    private static void warnAboutUnknownMode(String npmName, String mode) {
+        if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)
+                || isOneModeOnly(mode)) {
+            return;
+        }
+        getLogger().warn(
+                "The npm package '{}' is declared for the mode '{}', which is not '{}', '{}' or '{}',"
+                        + " so it is installed in every mode. Report it to whoever ships the versions file.",
+                npmName, mode, MODE_LIT, MODE_REACT, MODE_ALL);
     }
 
     private void addDependency(JsonNode obj) {
@@ -192,6 +224,7 @@ class VersionsJsonConverter {
             exclusions.add(npmName);
             return;
         }
+        warnAboutUnknownMode(npmName, mode);
         if (!isIncludedByMode(mode)) {
             // The package declares the mode it is installed in, and it is not
             // the mode of this build, so this file does not install it here:
