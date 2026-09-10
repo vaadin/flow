@@ -71,7 +71,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     // where a counter would restart and new shortcuts could reuse a restored
     // token.
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
-    private final String ownerToken = "sc-" + UUID.randomUUID();
+    private String ownerToken;
 
     private boolean resetFocusOnActiveElement = false;
 
@@ -1010,11 +1010,43 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private String generateOwnerScopeFilter() {
+        final String token = getOwnerToken();
+        if (token == null) {
+            // Only reached while the guard is on, so the owner is the UI, i.e.
+            // <body>, which can never be inside an open popover/modal. Sharing
+            // its scope therefore just means the event did not originate inside
+            // one, which needs no owner token and so keeps the filter text
+            // identical for every UI-owned shortcut (#25624).
+            return "window.Vaadin.Flow.shortcut.eventInTopLevelScope(event)";
+        }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
         // defined in FlowShortcut.js.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
-                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken + "\"]')";
+                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
+    }
+
+    /**
+     * The marker token of this registration, generated on first use.
+     * <p>
+     * A token is needed only when the owner element has to be marked for the
+     * client-side origin guard to locate it, which is the case unless the guard
+     * is off ({@link #allowEventsFromNestedModals}) or the lifecycle owner is
+     * the UI, which the guard locates without a marker. Skipping the token
+     * matters: it makes the listener filter text unique per registration, and
+     * that text is kept for the lifetime of the UI by the client's compiled
+     * expression cache and by both constant pools (#25624).
+     *
+     * @return the marker token, or {@code null} if none is needed
+     */
+    private String getOwnerToken() {
+        if (allowEventsFromNestedModals || lifecycleOwner instanceof UI) {
+            return null;
+        }
+        if (ownerToken == null) {
+            ownerToken = "sc-" + UUID.randomUUID();
+        }
+        return ownerToken;
     }
 
     /**
@@ -1030,28 +1062,33 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        if (allowEventsFromNestedModals) {
+        final String token = getOwnerToken();
+        if (token == null) {
             removeOwnerToken(element);
         } else {
-            addOwnerToken(element);
+            addOwnerToken(element, token);
         }
     }
 
-    private void addOwnerToken(Element element) {
+    private void addOwnerToken(Element element, String token) {
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
-            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, token);
             return;
         }
         final Set<String> tokens = new LinkedHashSet<>(
                 Arrays.asList(current.trim().split("\\s+")));
-        if (tokens.add(ownerToken)) {
+        if (tokens.add(token)) {
             element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
                     String.join(" ", tokens));
         }
     }
 
     private void removeOwnerToken(Element element) {
+        if (ownerToken == null) {
+            // No token was ever created, so nothing was ever marked.
+            return;
+        }
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
             return;
