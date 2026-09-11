@@ -742,18 +742,15 @@ public class ElementListenerMap extends NodeMap {
             return cached;
         }
 
-        if (getWrappers(eventType).isEmpty()) {
-            /*
-             * The event type of an incoming event is defined by the client, so
-             * caching for a type that has no listeners would let the client
-             * grow this map without limit.
-             */
-            return EMPTY_SETTINGS;
-        }
+        /*
+         * Settings are cached whenever they are updated, so a miss means that
+         * there are no listeners for the event type that the client sent.
+         * Nothing is cached here since the event type comes from the client,
+         * which would otherwise be able to grow this map without limit.
+         */
+        assert getWrappers(eventType).isEmpty();
 
-        EventSettings settings = collectEventSettings(eventType);
-        cacheSettings(eventType, settings);
-        return settings;
+        return EMPTY_SETTINGS;
     }
 
     private static List<JsonNode> encodeCaptures(Object... captures) {

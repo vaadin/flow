@@ -351,6 +351,9 @@ public class ElementListenersTest
         registration.setFilter(null);
         assertNull(registration.getFilter());
         assertNull(ElementListenerMap.getFilterKey(registration));
+
+        // No event data has been added, so there is no key for any name
+        assertNull(ElementListenerMap.getEventDataKey(registration, "label"));
     }
 
     @Test
