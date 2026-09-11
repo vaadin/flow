@@ -429,28 +429,21 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT).setValue('foo');
     children.add(0, textNode);
 
-    const insertedData: Array<string | null> = [];
-    const record = (child: Node) => {
-      insertedData.push(child.nodeType === Node.TEXT_NODE ? (child as Text).data : null);
-    };
-    const originalAppendChild = Node.prototype.appendChild;
-    const originalInsertBefore = Node.prototype.insertBefore;
-    Node.prototype.appendChild = function appendChild<T extends Node>(this: Node, child: T): T {
-      record(child);
+    // Collects the text of every child inserted into the element, as it is at
+    // the moment of the insertion.
+    const dataOnInsert: Array<string | undefined> = [];
+    const originalAppendChild = element.appendChild;
+    element.appendChild = function appendChild<T extends Node>(this: Node, child: T): T {
+      dataOnInsert.push((child as unknown as Text).data);
       return originalAppendChild.call(this, child) as T;
-    };
-    Node.prototype.insertBefore = function insertBefore<T extends Node>(this: Node, child: T, ref: Node | null): T {
-      record(child);
-      return originalInsertBefore.call(this, child, ref) as T;
     };
     try {
       bind(node, element);
     } finally {
-      Node.prototype.appendChild = originalAppendChild;
-      Node.prototype.insertBefore = originalInsertBefore;
+      element.appendChild = originalAppendChild;
     }
 
-    expect(insertedData).to.eql(['foo']);
+    expect(dataOnInsert).to.eql(['foo']);
     // Also in place without the flush that the binding leaves pending.
     expect(element.textContent).to.equal('foo');
   });
