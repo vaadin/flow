@@ -1747,9 +1747,6 @@ public class Element extends Node<Element> {
             return existing;
         }
 
-        // The check above and the caching below are deliberately not atomic:
-        // like all other element state, this is only safe to touch while
-        // holding the session lock, so there is no second thread to race with.
         ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
         Signal<Size> readonly = signal.asReadonly();
         // Cached on the node so that repeated calls share one signal and one
