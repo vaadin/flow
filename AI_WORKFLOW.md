@@ -53,7 +53,8 @@ it, and it keeps going until it needs a decision — then it stops and says so.
 linked from it; files it in the right area; points at likely duplicates; writes
 the Analysis Brief with a proposed verdict; opens a draft PR with a reproducing
 test and the sketched API; keeps CI green; revises on comment; drafts docs, demo
-and DX tests; keeps the board truthful; and writes the daily digest (§5).
+and DX tests; keeps the board truthful; and writes the daily digest (§5), with
+what needs our judgement at the top.
 
 **What starts it is a state, not a person remembering.** A filed issue starts the
 brief and the probe; an accepted problem starts the design note; an agreed design
@@ -198,23 +199,29 @@ arrives as a diff against revision 3. They stay after the merge: a searchable
 answer to "why does this API read like this", and the raw material for
 harvesting (§6 stage 7).
 
-**The daily — 60 minutes, the whole team, in two halves.** The first half is a
-round table: everyone takes a turn on one thing — a PR they opened, a PR they are
-reviewing, or what they are working on right now. One item each, not a tour of
-everything. The second half walks the day's new issues and PRs, confirming the
-verdicts AI proposed and stopping only where somebody objects, is blocked, or
-raises a question that concerns everyone. Some days nothing arrives and it takes
-five minutes; some days thirty do, and then the digest's *decide today* block is
-what we talk through while the rest is confirmed in bulk. The hour is fixed; what
-fills it is not.
+**Status is written, not spoken.** Everyone posts their update in the team
+channel before the daily, prompted by a bot. Updates are nearly always trivial,
+and trivia is what used to eat our meetings.
 
-**The digest is what makes the second half possible.** AI writes it before the
+**The daily — 60 minutes, the whole team.** It opens with a round table that is
+dynamic: anyone with something that needs a reaction takes a turn — a PR that
+needs eyes, a research question they are stuck on, a new issue worth explaining
+before it comes back. Some days that is everybody, some days nobody. Then we walk
+the digest from the top. Some days nothing has arrived and it takes five minutes;
+some days thirty issues have, and then we talk through the top of the list while
+the rest is confirmed in bulk. The hour is fixed; what fills it is not.
+
+**The digest is what makes that possible.** AI writes it shortly before the
 daily, and it is a list of decisions rather than a news feed:
 
-- **decide today** — a handful of items, each with the proposed verdict and one
-  line of why;
-- **stuck** — what has waited longer than it should, and who owns it;
-- **for information** — everything else, read on your own, never read aloud.
+- **blockers** first, even when the fix is five minutes — somebody is stopped;
+- **the review queue** in one line: how long it is, how old the oldest is. When
+  it is long, the daily spends itself on reviews rather than on new issues;
+- **needs judgement** — what AI could not settle on its own, ordered by how much
+  judgement it takes: disagreement in the thread, public API, no precedent in the
+  code, wide blast radius, or AI's own confidence being low;
+- **routine** — verdicts to confirm in bulk, and everything else to read on your
+  own, never aloud.
 
 It also routes: a PR that touches the area of an earlier one says so, with the
 name of whoever reviewed that one. That is how work someone has already touched
@@ -222,11 +229,19 @@ finds the person who touched it, without anyone reporting it.
 
 **The design session — once a week, two blocks of 45 minutes with a break.**
 Anything with design content goes to a *needs a design* column and waits for the
-session; three or four topics, pre-read published a day ahead. Design is the
-decision we least want taken in a hurry, and the one place where the whole team
-in one room is worth what it costs. Between sessions the lead may settle a small
-design question alone, marked as unilateral — that is what keeps a two-minute
-question from waiting a week.
+session; three or four topics. Design is the decision we least want taken in a
+hurry, and the one place where the whole team in one room is worth what it costs.
+Preparation is what keeps it to 90 minutes:
+
+- **AI publishes the material a day ahead** — background, the options, what each
+  costs — and refreshes it an hour before if anything moved.
+- **Someone other than the author opens each topic**, picked at random the day
+  before: they read the material and put it in their own words — the problem, the
+  options, what speaks for and against each. Somebody besides the author having
+  understood it before the meeting is the point.
+- **The lead brings the question and a recommendation.** Between sessions the
+  lead may settle a small design question alone, marked as unilateral — that is
+  what keeps a two-minute question from waiting a week.
 
 During a project the daily and the design session are the project's, and members
 skip their home team's ceremonies — two rhythms is what makes 100% impossible.
@@ -239,13 +254,11 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 - **No unprepared meeting.** Everyone arrives having read the digest or the
   pre-read; the lead arrives with an agenda — one question per item, each with a
   recommendation. A meeting without one is moved, not endured.
-- **One item per person, and only what someone can act on.** A PR: explain in a
-  few sentences what it does, so whoever reviews it starts warm. A new issue:
-  explain the problem, so the team recognises it when it comes back. A piece of
-  research: ask the question you are stuck on. What the turn is not is a long
-  account of your week — when nothing is required of the room, the room stops
-  listening, and everything that changes nothing for anybody is in the digest
-  already.
+- **Only what someone can act on gets said out loud.** A PR: explain in a few
+  sentences what it does, so whoever reviews it starts warm. A new issue: explain
+  the problem, so the team recognises it when it comes back. Research: ask the
+  question you are stuck on. Everything else is written down already — when
+  nothing is required of the room, the room stops listening.
 - **Design and implementation in one pass.** The same session settles the design
   *and* the approach, so AI goes straight from it to a finished PR. Splitting
   across two sessions is the exception, for genuinely new ground.
