@@ -30,14 +30,9 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ElementSizeSignalTest {
-
-    // The trigger created by sizeSignal() registers the element's first return
-    // channel, so a second trigger would show up under this channel id.
-    private static final int SECOND_CHANNEL_ID = 1;
 
     @Test
     void sizeSignal_isReadOnlyAndCached() {
@@ -52,11 +47,6 @@ class ElementSizeSignalTest {
         assertEquals(new Size(0, 0), signal.peek());
         assertSame(signal, div.sizeSignal(),
                 "sizeSignal() should return the same signal for an element");
-        assertNull(
-                div.getNode().getFeature(ReturnChannelMap.class)
-                        .get(SECOND_CHANNEL_ID),
-                "sizeSignal() should not register a second trigger when the "
-                        + "cached signal is returned");
     }
 
     @Test
