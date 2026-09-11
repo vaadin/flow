@@ -95,6 +95,13 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         // about the change-set rather than about a particular annotation.
         // That each remaining entry of the list matches its own descriptor is
         // pinned in DevLoopRedefinerTest, where it costs no application.
+        //
+        // What this one cannot see, and did not: setUp applies before the
+        // fixture exists, so the daemon's baseline is already built and
+        // already seeded by the time the file appears. A miss that needs the
+        // file to appear *before* the first apply - which is what a developer
+        // does, and what was reported - is invisible from here however many
+        // stereotypes it runs. That ordering has its own case below.
         String type = "Extra" + stereotype;
         patch.create(MUTABLE.resolve(type + ".java"), """
                 package com.vaadin.flow.devloop.test.app.mutable;

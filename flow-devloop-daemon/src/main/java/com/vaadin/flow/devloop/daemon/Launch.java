@@ -318,6 +318,22 @@ final class Launch {
     }
 
     /**
+     * The resolved project if one is already in hand, and never a resolution.
+     * <p>
+     * For callers on a path that must not block: {@link #project()} runs Maven
+     * when the stamp has moved, which is seconds, and the registration
+     * connection is being answered on the thread that would wait for it.
+     *
+     * @return the current project, or empty if resolving is what it would take
+     *         to have one
+     */
+    Optional<Project> projectIfResolved() {
+        Project current = project;
+        return current != null && stampIsCurrent() ? Optional.of(current)
+                : Optional.empty();
+    }
+
+    /**
      * Set when {@link #project()} last had to fall back; empty when it is
      * sound.
      */

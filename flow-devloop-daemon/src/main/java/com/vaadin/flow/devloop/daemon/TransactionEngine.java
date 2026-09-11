@@ -1252,14 +1252,31 @@ final class TransactionEngine {
 
     void onConnector(Connector connector) {
         this.connector = connector;
+        if (connector == null) {
+            return;
+        }
         Compile current = compile;
-        if (connector != null && current != null) {
+        if (current == null && launch != null) {
+            // Built here rather than left to the first apply, which is what
+            // this baseline used to wait for. "What the application started
+            // with" is only true of the disk at this moment: a compile leg
+            // built at the first apply instead seeds itself from a disk that
+            // has moved on, and a source added in between is then recorded as
+            // one the application has always had. Reported as a new
+            // @Component that hot-reloaded, and - when something else had
+            // already compiled it - as no change at all.
+            //
+            // Only from a classpath that is already resolved: this is the
+            // registration connection being answered, and it must not wait on
+            // Maven. A project that is mid-resolve leaves the baseline to the
+            // first apply, exactly as before.
+            current = launch.projectIfResolved()
+                    .map(project -> compileFor(project, text -> {
+                    })).orElse(null);
+        }
+        if (current != null) {
             // An app that has just registered is running exactly what is on
-            // disk,
-            // so that becomes the new "already live" baseline. Before the first
-            // apply there is no compile leg yet, and none is needed: the first
-            // one
-            // built seeds itself.
+            // disk, so that becomes the new "already live" baseline.
             current.seedFromDisk();
         }
     }
