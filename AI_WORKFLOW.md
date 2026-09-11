@@ -57,10 +57,12 @@ and DX tests; keeps the board truthful; and writes the daily digest (§5), with
 what needs our judgement at the top.
 
 **What starts it is a state, not a person remembering.** A filed issue starts the
-brief and the probe; an accepted problem starts the design note; an agreed design
-starts the finished implementation; a question in the thread starts a revision.
-The state of an issue is a switch rather than a sticker on a board — which is
-also why the board cannot drift away from what is happening.
+brief; an accepted problem starts the design note; an agreed design starts the
+implementation; a question in the thread starts a revision. The state of an issue
+is a switch rather than a sticker on a board — which is also why the board cannot
+drift away from what is happening. The one thing automation does not start on its
+own is a PR: a branch nobody asked for is a place in the review queue nobody
+planned, and that queue is the scarcest thing we have.
 
 **A human decides three times per issue:**
 
@@ -199,6 +201,13 @@ arrives as a diff against revision 3. They stay after the merge: a searchable
 answer to "why does this API read like this", and the raw material for
 harvesting (§6 stage 7).
 
+**The board, and nobody's name on it.** An issue moves *needs triage → needs
+design → ready to go → in progress → on review → done*, and skips *needs design*
+when there is nothing to design. Until someone picks it up it belongs to the
+board, not to a person: we do not assign work, we make it possible to take. The
+person who takes it becomes its lead (§3); before that, an issue has no owner and
+needs none.
+
 **Status is written, not spoken.** Everyone posts their update in the team
 channel before the daily, prompted by a bot. Updates are nearly always trivial,
 and trivia is what used to eat our meetings.
@@ -286,11 +295,11 @@ harder to ignore than "it has been a couple of weeks".
 ```mermaid
 flowchart TD
     S0["Stage 0 · AN ISSUE IS FILED<br/>by a human — that is the entry ticket"]
-    S1["Stage 1 · BRIEF + DRAFT PR<br/>AI, ~30 min<br/>context · verdict · sketch · a probe that compiles"]
+    S1["Stage 1 · BRIEF<br/>AI, ~30 min · context · verdict · sketch<br/>a probe PR when someone asks for one"]
     S2{"Stage 2 · TRIAGE<br/>daily: what is the problem, is it ours?"}
-    RJ["close — issue and probe; the brief is the answer"]
+    RJ["close — the brief is the answer"]
     NI["question back to the reporter"]
-    PK["parked — the brief stays, the probe is closed"]
+    PK["parked — the brief stays as the record"]
     S3{"Stage 3 · DESIGN + APPROACH<br/>design session: this shape, or another?<br/>AI drafts · team agrees · design agreed"}
     S4["Stage 4 · IMPLEMENTATION<br/>AI · the same PR grows up<br/>tests first · green CI · ready for review"]
     S5{"Stage 5 · REVIEW<br/>do we merge?"}
@@ -317,26 +326,26 @@ happens between meetings, without us.
 is **the problem, not a solution**; a proposed API is welcome as a hint, but the
 first line has to say what somebody could not do.
 
-**1 · Brief and draft PR** (AI, ~30 min). A bug gets both at once: the
-reproducing test *is* the triage, and it settles "is this real?" more reliably
-than a discussion. A feature or an API change gets the brief only, and its probe
-waits until the problem is accepted — otherwise a thirty-issue day leaves thirty
-draft PRs behind, and the shape that exists wins by default. Two artefacts, then:
+**1 · Brief** (AI, ~30 min), **and a probe PR when a human asks for one.** Every
+issue gets a brief automatically; none gets a branch automatically, because a
+thirty-issue day would leave thirty PRs in a queue we cannot read. Asking for a
+probe costs one line, and is worth it for a bug — the reproducing test *is* the
+triage, and settles "is this real?" better than a discussion — and for anything
+whose cost the brief cannot guess. For a feature or an API change it waits until
+the problem is accepted.
 
-- the **Analysis Brief** — context, verdict, sketch, and what it could not
-  verify. It is a document in the probe PR where there is one, and a document in
-  its own PR where there is not; either way it is the pre-read that makes a
-  decision possible;
-- a **draft PR** — a probe: a test that reproduces the problem (failing), the
-  sketched API compiling, and CI showing what else moves.
+The **brief** carries context, verdict, sketch, and what it could not verify: the
+pre-read that makes a decision possible. The **probe** is a failing test that
+reproduces the problem, the sketched API compiling, and CI showing what else
+moves.
 
 **Why the PR exists before any decision.** A brief can claim "two lines in one
 class" and be wrong; a branch that compiles says what the change actually costs,
 and CI turns blast radius from an estimate into a list of names. It also gives
 the team something concrete to react to, and reacting is far easier than
 originating (§10). If the shape survives the design session we are already at
-review; if it does not, we close a branch — the cheapest artefact we produce. The probe
-says in its own description what it does *not* settle, and the brief still
+review; if it does not, we close a branch — the cheapest artefact we produce. The
+probe says in its own description what it does *not* settle, and the brief still
 carries the alternatives AI did not build. A probe on an issue that has gone a
 week without a decision is closed by automation, with a line in the issue: the
 branch costs nothing to reopen, and an open PR nobody decided about costs
@@ -566,18 +575,17 @@ thing to catch.
 
 Still to decide:
 
-1. Who owns an issue in its first hour, before the first daily sees it?
-2. Who owns the eval suite, and how big can it get before it is too slow to run
+1. Who owns the eval suite, and how big can it get before it is too slow to run
    on every change?
-3. Two days of understanding before the scope meeting fits a short project. What
+2. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research has historically taken weeks?
-4. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+3. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-5. Maintenance arriving mid-project: does the project team absorb it, or do we
+4. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-6. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+5. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-7. Do routine bulk changes need a **fast lane**: no design note, AI states the
+6. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-8. Where do external contributor PRs enter — at review, or back at the problem?
-9. Design notes for bugfixes too, or is a probe with a failing test enough?
+7. Where do external contributor PRs enter — at review, or back at the problem?
+8. Design notes for bugfixes too, or is a probe with a failing test enough?
