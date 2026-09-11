@@ -100,6 +100,7 @@ what to expect from each other.
 | Role | Owes | Others may demand |
 | --- | --- | --- |
 | **PM** — stakeholder, owns the PRD, never 100% on one project | Who the user is, what problem, why now, what success looks like; written answers within a day | Clarity about the *problem*, and a straight answer on whether something still serves it |
+| **Engineering manager** — owns the process, never 100% on a project | That decisions happen: nothing waits with no owner, a stuck one gets escalated or taken. The schedule and what we promised outward. Who is on which project, leads rotating, the 100% rule staying true. That this document is followed — and changed when reality says it is wrong. People: workload, growth, somebody drowning quietly | A decision when one is stuck and nobody owns it; a straight answer on dates and on what matters most; being unblocked on what the team cannot unblock itself — people, access, another team; being shielded from work nobody agreed to |
 | **The team** — everyone else, 100% allocated | The shipped increment: design, code, tests, docs, demo, DX, quality, usability. Deciding *how*, and *how little* | That it decides and ships without being chased, and asks when the PRD is ambiguous |
 | **Lead** — one per piece of work, on the team; *not* its implementer. The **project lead** on a project, the **issue lead** on a single issue — same role, different scope | That the work reaches decisions and goes in the right direction at the right pace: a prepared meeting, a truthful board, nothing left unowned, blocked people unblocked | Discussion opened early, an agenda before the meeting rather than at it, specific questions, a straight answer on what matters most right now, gaps named early rather than discovered late |
 | **Consulted expert** — not on the team | Answers when asked | Nothing else — no deliverables, no attendance |
@@ -120,6 +121,14 @@ Where expectations quietly diverge today:
 - **Nobody is "partly" on the team.** Partial membership is worse than absence:
   it blurs who owes what and leaves work half-done. If you cannot be 100%, you
   are a consulted expert — a real role with clear expectations.
+- **The engineering manager is the one exception**, and only as lead: leading is
+  not implementing, so it fragments nobody's delivery. The obligations come
+  whole, though — a prepared meeting, a truthful board, decisions reached — and
+  an engineering manager who cannot meet them hands the lead role to someone who
+  can, rather than holding it at half strength.
+- **The engineering manager does not decide design or scope.** Design is the
+  session's, scope is the PM's and the team's. What the engineering manager
+  decides is that a decision gets made at all, and by whom.
 
 **The lead** carries one piece of work to the end. The lead does not build it —
 AI does — and is accountable for the outcome rather than for having typed it, and
