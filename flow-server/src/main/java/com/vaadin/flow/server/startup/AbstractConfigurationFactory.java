@@ -219,12 +219,13 @@ public class AbstractConfigurationFactory implements Serializable {
      * frontend tooling can run on.
      * <p>
      * The version in the token file is written by the build, so a file left
-     * behind by an older Vaadin version carries a Node.js version that nobody
-     * has chosen for this project. Honoring it would install an unsupported
-     * Node.js and fail the frontend build with a version that is found nowhere
-     * in the project, so it is ignored and the current default is used instead.
-     * A version configured through the {@code vaadin.node.version} property is
-     * not affected, as it does not come from the token file.
+     * behind by an older Vaadin version, or packaged into a dependency by
+     * mistake, carries a Node.js version that nobody has chosen for this
+     * project. Honoring it would install an unsupported Node.js and fail the
+     * frontend build with a version that is found nowhere in the project, so it
+     * is ignored and the current default is used instead. A version configured
+     * through the {@code vaadin.node.version} property is not affected, as it
+     * does not come from the token file.
      *
      * @param version
      *            the Node.js version read from the token file
@@ -236,7 +237,9 @@ public class AbstractConfigurationFactory implements Serializable {
                     FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION)) {
                 getLogger().warn(
                         "Ignoring Node.js version {} from '{}', as it is older than the minimum supported version {}. "
-                                + "The file is out of date, so clear the build output folder to have it written again, or set the '{}' property to use that version anyway.",
+                                + "The file is out of date, so clear the build output folder to have it written again. "
+                                + "If the version comes back, the file is packaged into a dependency by mistake. "
+                                + "Set the '{}' property to use the version anyway.",
                         version, FrontendUtils.TOKEN_FILE,
                         FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION
                                 .getFullVersion(),
