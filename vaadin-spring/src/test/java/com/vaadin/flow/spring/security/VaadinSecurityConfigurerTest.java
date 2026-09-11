@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.lang.reflect.Method;
@@ -36,7 +38,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
 import org.springframework.security.authentication.TestingAuthenticationToken;
@@ -479,6 +484,48 @@ class VaadinSecurityConfigurerTest {
         assertThat(handler).isNotNull();
         assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "style", "script", "image", "font" })
+    void anonymousSubResourceRequest_respondsWithUnauthorized(String fetchDest)
+            throws Exception {
+        var response = sendAnonymousGetRequest("/styles/imported.css",
+                fetchDest);
+
+        assertThat(response.getStatus())
+                .isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.getRedirectedUrl()).isNull();
+    }
+
+    @Test
+    void anonymousDocumentRequest_redirectsToLoginView() throws Exception {
+        var response = sendAnonymousGetRequest("/private", "document");
+
+        assertThat(response.getRedirectedUrl()).endsWith("/login");
+    }
+
+    /**
+     * Sends an anonymous {@code GET} request for the given path, carrying the
+     * given {@code Sec-Fetch-Dest} header value, through the filter chain of a
+     * configurer set up with a login view, and returns the response.
+     */
+    private MockHttpServletResponse sendAnonymousGetRequest(String path,
+            String fetchDest) throws Exception {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new AnonymousAuthenticationToken("key",
+                        "anonymousUser",
+                        List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
+        var filters = http.with(configurer, c -> c.loginView("/login")).build()
+                .getFilters();
+
+        var request = new MockHttpServletRequest("GET", path);
+        request.setPathInfo(path);
+        request.addHeader("Sec-Fetch-Dest", fetchDest);
+        var mockResponse = new MockHttpServletResponse();
+        new MockFilterChain(new HttpServlet() {
+        }, filters.toArray(Filter[]::new)).doFilter(request, mockResponse);
+        return mockResponse;
     }
 
     // Helper methods to access protected fields using reflection

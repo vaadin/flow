@@ -67,6 +67,47 @@ class CompileTest {
     }
 
     @Test
+    void compile_keepsParameterNamesAndDebugInfoLikeAMavenBuild()
+            throws Exception {
+        // Spring Data is the loud case: a query with a named parameter needs
+        // the name in the bytecode, and every Spring Boot project has
+        // -parameters on without ever mentioning it.
+        Reactor.Module app = module("app", "Finder", """
+                package app;
+                public class Finder {
+                    public String byName(String name) {
+                        String found = name;
+                        return found;
+                    }
+                }
+                """);
+        Launch.Project project = project(app);
+
+        Compile.Result result = new Compile(project)
+                .compile(List.of(source(app, "Finder")), project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        Path classFile = app.classesDir().resolve("app")
+                .resolve("Finder.class");
+        try (var loader = new java.net.URLClassLoader(
+                new java.net.URL[] { app.classesDir().toUri().toURL() },
+                null)) {
+            var parameter = loader.loadClass("app.Finder")
+                    .getMethod("byName", String.class).getParameters()[0];
+            assertTrue(parameter.isNamePresent(),
+                    "-parameters: the class carries no MethodParameters");
+            assertEquals("name", parameter.getName());
+        }
+        // -g, which the compiler plugin has on by default: the local variable
+        // names a debugger and a stack trace read.
+        assertTrue(
+                new String(Files.readAllBytes(classFile),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                        .contains("LocalVariableTable"),
+                "-g: the class carries no LocalVariableTable");
+    }
+
+    @Test
     void compile_writesEachModulesClassesIntoItsOwnOutput() throws IOException {
         Reactor.Module app = module("app", "Main", """
                 package app;
@@ -331,6 +372,50 @@ class CompileTest {
         assertEquals(List.of(source(app, "Main")),
                 compile.classpathForced(after));
         assertEquals(List.of("app"), compile.classpathChangedModules(after));
+    }
+
+    @Test
+    void classpathForced_recompilesWhenAReactorSiblingLeavesTheLoop()
+            throws IOException {
+        // Dropping a sibling dependency also drops the sibling from the loop,
+        // because the module set is read off the application's resolved
+        // classpath. The baseline is rebuilt for that new module set, and a
+        // baseline seeded from the project as it now stands would call the
+        // move already compiled - the apply would then restart the app into a
+        // ClassNotFoundException instead of failing with a diagnostic.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                    public static String label() {
+                        return shared.Formatter.label();
+                    }
+                }
+                """);
+        Reactor.Module shared = module("shared", "Formatter", """
+                package shared;
+                public class Formatter {
+                    public static String label() { return "shared"; }
+                }
+                """);
+        Launch.Project before = reactor(List.of(app, shared),
+                Map.of("app", List.of(shared)));
+        Compile previous = new Compile(before);
+        previous.compile(
+                List.of(source(app, "Main"), source(shared, "Formatter")),
+                before);
+        Launch.Project after = reactor(List.of(app), Map.of());
+
+        Compile compile = new Compile(after, previous);
+
+        assertEquals(List.of("app"), compile.classpathChangedModules(after));
+        List<Path> forced = compile.classpathForced(after);
+        assertEquals(List.of(source(app, "Main")), forced);
+        Compile.Result result = compile.compile(forced, after);
+        assertFalse(result.success());
+        assertTrue(
+                result.errors().stream()
+                        .anyMatch(error -> error.text().contains("shared")),
+                () -> "errors: " + result.errors());
     }
 
     @Test

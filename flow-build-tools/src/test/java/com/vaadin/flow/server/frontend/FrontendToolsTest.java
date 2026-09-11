@@ -672,6 +672,29 @@ class FrontendToolsTest {
     }
 
     @Test
+    void getSuitablePnpm_notUsingGlobalPnpm_pinsDefaultPnpmVersion()
+            throws IOException {
+        assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
+        createStubNode(
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NODE)
+                        .build(),
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NPM)
+                        .withVersion(SUPPORTED_PNPM_VERSION).build(),
+                vaadinHomeDir);
+
+        List<String> pnpmCommand = tools.getSuitablePnpm();
+
+        // npx must be given an explicit version, otherwise it resolves
+        // whatever it considers latest, which is not necessarily a pnpm
+        // version Flow supports
+        assertTrue(
+                pnpmCommand
+                        .contains("pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION),
+                "expected pnpm to be pinned to DEFAULT_PNPM_VERSION, but the command was "
+                        + pnpmCommand);
+    }
+
+    @Test
     void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
         assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
