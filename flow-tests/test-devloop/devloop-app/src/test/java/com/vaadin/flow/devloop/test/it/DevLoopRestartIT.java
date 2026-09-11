@@ -130,6 +130,58 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         outcome.assertOutputContains("new Spring bean (" + type + ")");
     }
 
+    @Test
+    void aSecondClassInAFileTheAppAlreadyHas_stillEscalates() {
+        // A class of its own, in a source the application has always had. Read
+        // per source rather than per class, the file is one the application
+        // read at startup and the answer comes back "known" - while the class
+        // beside it is one the application has never seen and has no bean
+        // definition for.
+        //
+        // A second top-level class rather than a nested one: nesting rewrites
+        // the enclosing class's NestMembers attribute, which redefineClasses
+        // rejects outright, so that fixture would escalate on the JVM's word
+        // and prove nothing about this rule. Appending leaves the enclosing
+        // class byte-identical.
+        patch.append(MUTABLE.resolve("TaskService.java"), """
+
+                @org.springframework.stereotype.Component
+                class ExtraInTheSameFile {
+                }
+                """);
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraInTheSameFile)");
+    }
+
+    @Test
+    void aClassAnnotatedAfterAnEarlierApply_stillEscalates() {
+        // The class was compiled by an apply, not by the build the application
+        // started from, so component scanning has never seen it however many
+        // applies have. An answer that treats "this apply put it on the
+        // classpath" as "the application has it" reports the second apply as a
+        // hot swap over a bean that does not exist.
+        Path source = MUTABLE.resolve("ExtraLater.java");
+        patch.create(source, """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                public class ExtraLater {
+                }
+                """);
+        cli.run("apply").assertExitCode(0);
+
+        patch.replace(source, "public class ExtraLater {",
+                "@org.springframework.stereotype.Component\npublic class ExtraLater {");
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraLater)");
+    }
+
     @ParameterizedTest(name = "compiled by the daemon: {0}")
     @ValueSource(booleans = { true, false })
     void aNewSpringBean_escalatesOnTheFirstApplyOfADaemonsLife(

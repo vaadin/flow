@@ -313,7 +313,9 @@ class DevLoopRedefinerTest {
         assertTrue(inspected.definitions().isEmpty());
         assertEquals(List.of("bean.NewBean", "model.NewEntity", "gone.Nothing"),
                 inspected.notLoaded());
-        assertEquals(Set.of("NewBean"), inspected.stereotypes());
+        // Binary names, because the daemon matches this field against the
+        // change-set and a simple name is not an identity.
+        assertEquals(Set.of("bean.NewBean"), inspected.stereotypes());
         assertEquals(Set.of("NewEntity"), inspected.entities());
     }
 
@@ -339,7 +341,7 @@ class DevLoopRedefinerTest {
         // a parse failure - which is why the whole line is asserted.
         DevLoopRedefiner.Inspection inspected = new DevLoopRedefiner.Inspection(
                 List.of(), List.of("gone.Nothing"), 1, Set.of("Order"),
-                Set.of("TaskService"), Set.of("NewBean"),
+                Set.of("TaskService"), Set.of("com.example.NewBean"),
                 Set.of("TaskListView"), null);
         DevLoopRedefiner.Applied applied = new DevLoopRedefiner.Applied(
                 Set.of("TaskService"), Set.of("TaskRepository"),
@@ -353,7 +355,7 @@ class DevLoopRedefinerTest {
                         + " proxied=TaskRepository structural=TaskService"
                         + " ui=TaskListView frontendImports=TaskListView"
                         + " hotswapAgent=false redefineMs=4 hotswapMs=7"
-                        + " stereotypes=NewBean",
+                        + " stereotypes=com.example.NewBean",
                 DevLoopRedefiner.reply(inspected, applied));
     }
 

@@ -413,13 +413,19 @@ final class TransactionEngine {
             }
             Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
-            // Read here and nowhere later: half of this answer is which class
-            // files were on the classpath before the compile leg ran, and
-            // after it every one of them exists. The runtime leg decides on it
-            // several hundred lines below, which is exactly why it cannot ask
-            // for it there.
-            List<String> unknownTypes = compile
-                    .typesUnknownToTheApp(changes.modified());
+            // Read here and nowhere later: this is what the classpath held
+            // before the compile leg wrote to it, and afterwards every class
+            // in the change-set exists. The runtime leg decides on it several
+            // hundred lines below, which is exactly why it cannot ask for it
+            // there.
+            Compile.ClassesOnDisk classesBefore;
+            try {
+                classesBefore = compile.classesBefore(changes.modified());
+            } catch (java.io.IOException e) {
+                return finish(tx, Outcome.FAILED,
+                        "reading target/classes: " + e.getMessage(), "none",
+                        "check file permissions under target/classes", started);
+            }
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
@@ -695,8 +701,11 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
+                        // Per class rather than per source: a nested
+                        // @Component added to a file the application has
+                        // always had is a class it has never had.
                         Optional<String> blocker = blockedReason(fields,
-                                unknownTypes);
+                                classesBefore.unknownToTheApp(tx.classes));
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);
@@ -1557,13 +1566,13 @@ final class TransactionEngine {
      *
      * @param fields
      *            the connector's reply, parsed
-     * @param unknownTypes
-     *            the simple names of the change-set's types the running
+     * @param unknownClasses
+     *            the binary names of the change-set's classes the running
      *            application never had; see
-     *            {@link Compile#typesUnknownToTheApp}
+     *            {@link Compile.ClassesOnDisk#unknownToTheApp}
      */
     static Optional<String> blockedReason(Map<String, String> fields,
-            List<String> unknownTypes) {
+            List<String> unknownClasses) {
         String entities = fields.getOrDefault("entities", "-");
         if (!"-".equals(entities)) {
             return Optional.of("entity mapping cannot hot reload (" + entities
@@ -1596,7 +1605,7 @@ final class TransactionEngine {
         // it acquired seconds ago from HotswapAgent's watcher, and the daemon
         // cannot read an annotation off a JVM it is not in.
         String newBeans = unknownIn(fields.getOrDefault("stereotypes", "-"),
-                unknownTypes);
+                unknownClasses);
         if (!newBeans.isEmpty()) {
             return Optional.of("new Spring bean (" + newBeans
                     + "): component scanning ran at startup, so the running"
@@ -1637,30 +1646,29 @@ final class TransactionEngine {
     }
 
     /**
-     * The names in one of the connector's {@code |}-separated lists that the
-     * running application never had.
+     * The classes in one of the connector's {@code |}-separated lists that the
+     * running application never had, named as a reader would name them.
      * <p>
-     * A nested type is reported under its own name and declared by the source
-     * of the type it is nested in, which is the one the inventory knows, so the
-     * comparison is against the part before the first {@code $}.
+     * Matched on binary names, which is why the connector reports that field
+     * under them: two classes in different packages can share a simple name,
+     * and one of them answering for the other is either a restart nobody needed
+     * or a bean nobody was told about. Only the message shortens them again.
      *
      * @param reported
      *            the field value, or {@code -} for none
-     * @param unknownTypes
-     *            the simple names the inventory has never seen
-     * @return the matching names, in the same shape the field arrived in
+     * @param unknownClasses
+     *            the binary names the application never had
+     * @return the matching classes by simple name, or empty for none
      */
     private static String unknownIn(String reported,
-            List<String> unknownTypes) {
-        if ("-".equals(reported) || unknownTypes.isEmpty()) {
+            List<String> unknownClasses) {
+        if ("-".equals(reported) || unknownClasses.isEmpty()) {
             return "";
         }
         List<String> matches = new ArrayList<>();
         for (String name : reported.split("\\|")) {
-            int nested = name.indexOf('$');
-            String topLevel = nested < 0 ? name : name.substring(0, nested);
-            if (unknownTypes.contains(topLevel)) {
-                matches.add(name);
+            if (unknownClasses.contains(name)) {
+                matches.add(name.substring(name.lastIndexOf('.') + 1));
             }
         }
         return String.join("|", matches);

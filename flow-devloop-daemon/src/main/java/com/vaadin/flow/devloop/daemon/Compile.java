@@ -206,6 +206,11 @@ final class Compile {
      */
     private static final String JAVA_SUFFIX = ".java";
 
+    /**
+     * What makes a file a class file, and what a binary name is its path minus.
+     */
+    private static final String CLASS_SUFFIX = ".class";
+
     /** A file and the module it belongs to, which is all a walk ever needs. */
     private interface Visitor {
         void accept(Reactor.Module module, Path file, Stamp stamp);
@@ -711,7 +716,7 @@ final class Compile {
                 removed.add(artifact);
             }
             String nestedPrefix = fileName.toString().substring(0,
-                    fileName.toString().length() - ".class".length()) + "$";
+                    fileName.toString().length() - CLASS_SUFFIX.length()) + "$";
             for (Path nested : nestedClasses(directory, nestedPrefix)) {
                 if (Files.deleteIfExists(nested)) {
                     removed.add(nested);
@@ -734,7 +739,7 @@ final class Compile {
             return entries.filter(path -> {
                 Path name = path.getFileName();
                 return name != null && name.toString().startsWith(prefix)
-                        && name.toString().endsWith(".class");
+                        && name.toString().endsWith(CLASS_SUFFIX);
             }).toList();
         } catch (IOException e) {
             return List.of();
@@ -793,8 +798,13 @@ final class Compile {
     }
 
     /**
-     * The top-level type names among these sources that the running application
-     * has never had, by simple name.
+     * The class files the packages a change-set compiles into hold before it is
+     * compiled, by binary name.
+     * <p>
+     * <b>Must be read before the compile leg writes anything.</b> What it is
+     * for is {@link ClassesOnDisk#unknownToTheApp}, and afterwards every class
+     * file in the change-set exists and is newer than the launch, which would
+     * make every edit look new.
      * <p>
      * Asking the application which classes it has loaded looks like the same
      * question and is not: HotswapAgent watches the output directory on its own
@@ -802,68 +812,88 @@ final class Compile {
      * is composed the class may well be loaded - and a class being loaded is
      * not a bean definition, an entity mapping or anything else the application
      * built while it was starting.
-     * <p>
-     * <b>Must be called before the compile leg writes anything</b>, because
-     * half the answer is which artifacts were on the classpath before it did.
-     * See {@link #unknownToTheApp}.
      *
      * @param sources
-     *            the sources to ask about
-     * @return the simple names of the types those sources declare, sorted
+     *            the change-set, whose output packages are the ones read
+     * @return the class files those packages held, by binary name
+     * @throws IOException
+     *             if an output directory cannot be read, which is not a state
+     *             to decide a verdict from
      */
-    List<String> typesUnknownToTheApp(List<Path> sources) {
-        return sources.stream().filter(this::unknownToTheApp).map(source -> {
-            String file = source.getFileName().toString();
-            return file.substring(0, file.length() - JAVA_SUFFIX.length());
-        }).sorted(Comparator.naturalOrder()).toList();
+    ClassesOnDisk classesBefore(List<Path> sources) throws IOException {
+        Map<String, Long> modified = new LinkedHashMap<>();
+        Set<Path> read = new HashSet<>();
+        for (Path source : sources) {
+            Optional<Reactor.Module> owner = sourceOwner(source);
+            if (owner.isEmpty()) {
+                continue;
+            }
+            Reactor.Module module = owner.get();
+            // The whole output package, not just the artifact this source is
+            // named after: a nested type, a second top-level class in the same
+            // file and an anonymous class all land beside it, and each of them
+            // is a class of its own that the application may never have had.
+            Path directory = module.artifactFor(source).getParent();
+            if (directory == null || !read.add(directory)
+                    || !Files.isDirectory(directory)) {
+                continue;
+            }
+            try (Stream<Path> files = Files.list(directory)) {
+                for (Path file : files.filter(candidate -> candidate.toString()
+                        .endsWith(CLASS_SUFFIX)).toList()) {
+                    modified.put(binaryNameOf(module, file),
+                            Files.getLastModifiedTime(file).toMillis());
+                }
+            }
+        }
+        return new ClassesOnDisk(modified, startedAtMillis);
     }
 
     /**
-     * Whether the running application never had the type this source declares.
-     * <p>
-     * It takes two facts, because neither is sufficient. {@link #applied} says
-     * what was on disk before the application was launched, and a source in it
-     * is one the application read - but a source missing from it proves
-     * nothing, since an edit made since the launch is missing from it too. What
-     * separates the two is the class file: a type the application had nothing
-     * to load when it started is one it never scanned, never mapped and holds
-     * no bean definition for, while an edited type's class was there all along.
-     * <p>
-     * Both are read against the launch timestamp rather than against the moment
-     * the baseline happened to be taken, and that is the point: measured, a
-     * baseline taken later claimed a source created seconds after {@code start}
-     * as the application's own, and the first apply then reported
-     * {@code hot-reload} over a bean the context had no definition for - or,
-     * when something else had compiled the class first, no change at all.
-     * <p>
-     * The artifact side has to be asked before javac runs: afterwards every
-     * class file exists and is newer than the launch, which would make every
-     * edit look new.
+     * What was on the classpath before an apply compiled anything, and the
+     * launch it is judged against.
+     *
+     * @param modifiedMillis
+     *            when each class file was last written, by binary name
+     * @param startedAtMillis
+     *            when the running application was launched
      */
-    private boolean unknownToTheApp(Path source) {
-        if (applied.containsKey(source)) {
-            // In the baseline, so it was on disk before the application was
-            // launched: whatever it declares, the application read it.
-            return false;
+    record ClassesOnDisk(Map<String, Long> modifiedMillis,
+            long startedAtMillis) {
+
+        /**
+         * Which of these classes the running application never had.
+         * <p>
+         * Asked per class rather than per source, which is the only way to get
+         * it right: a nested {@code @Component} or a second top-level class
+         * added to a file the application has always had is a class it has
+         * never had, and a source it compiled on an earlier apply is not a
+         * class it ever scanned.
+         * <p>
+         * A class file that was not there is the plain case. One that was there
+         * but is newer than the launch is the other: something compiled it
+         * after the application started - an earlier apply, an IDE building on
+         * save, a bare {@code mvn} run - so the application still started
+         * without it. An edited type's class predates the launch and is
+         * therefore the application's own, which is what keeps a method-body
+         * change a hot swap.
+         *
+         * @param binaryNames
+         *            the classes this apply compiled
+         * @return those of them the application never had, sorted
+         */
+        List<String> unknownToTheApp(List<String> binaryNames) {
+            return binaryNames.stream().filter(name -> {
+                Long before = modifiedMillis.get(name);
+                return before == null || before > startedAtMillis;
+            }).sorted(Comparator.naturalOrder()).toList();
         }
-        // Written since, so the source is no proof either way - an edit looks
-        // exactly like a new file here. The class is what settles it: one the
-        // application had nothing to load when it started is one it never
-        // scanned, never mapped and has no bean definition for.
-        return sourceOwner(source).map(module -> {
-            Path artifact = module.artifactFor(source);
-            return !Files.isRegularFile(artifact)
-                    || modifiedMillis(artifact) > startedAtMillis;
-        }).orElse(false);
     }
 
-    private static long modifiedMillis(Path file) {
-        try {
-            return Files.getLastModifiedTime(file).toMillis();
-        } catch (IOException e) {
-            // Unreadable is not evidence that the application had it.
-            return Long.MAX_VALUE;
-        }
+    private static String binaryNameOf(Reactor.Module module, Path classFile) {
+        String relative = module.classesDir().relativize(classFile).toString();
+        return relative.substring(0, relative.length() - CLASS_SUFFIX.length())
+                .replace(File.separatorChar, '.');
     }
 
     /** Records that these sources are now live in the running JVM. */

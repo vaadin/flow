@@ -96,30 +96,41 @@ class TransactionEngineTest {
     @Test
     void blockedReason_escalatesForABeanTheRunningApplicationHasNeverHad() {
         // Two half-answers make this verdict: the app says which classes carry
-        // a stereotype, the inventory says which of them it never had. Read
-        // from the reply alone the apply answers Stable, and the view that
-        // injects the new bean fails with Spring's own exception instead.
-        String reply = "OK redefined=1 beans=- stereotypes=Extra|TaskService"
-                + " structural=-";
+        // a stereotype, the change-set says which of them the application
+        // never had. Read from the reply alone the apply answers Stable, and
+        // the view that injects the new bean fails with Spring's own exception
+        // instead.
+        String reply = "OK redefined=1 beans=- structural=-"
+                + " stereotypes=com.example.Extra|com.example.TaskService";
 
         assertEquals(
                 Optional.of("new Spring bean (Extra): component scanning ran"
                         + " at startup, so the running context has no"
                         + " definition for it"),
                 TransactionEngine.blockedReason(Connector.fields(reply),
-                        List.of("Extra")));
+                        List.of("com.example.Extra")));
         // The bean the app started with is named in the same field and must
         // not escalate: a method-body change inside it is exactly what the
         // runtime leg exists to swap.
         assertTrue(TransactionEngine
                 .blockedReason(Connector.fields(reply), List.of()).isEmpty());
-        // A nested type is reported under its own name and declared by the
-        // source of the type it is nested in, which is the name the inventory
-        // knows.
-        assertTrue(TransactionEngine
-                .blockedReason(Connector.fields("OK stereotypes=Extra$Inner"
-                        + " entities=- structural=-"), List.of("Extra"))
-                .isPresent());
+        // Matched on the binary name, so a class that merely shares a simple
+        // name with a new one answers for nothing: reporting it would be a
+        // restart nobody needed.
+        assertTrue(TransactionEngine.blockedReason(
+                Connector.fields("OK stereotypes=com.example.Extra"
+                        + " entities=- structural=-"),
+                List.of("com.example.other.Extra")).isEmpty());
+        // And a nested type is its own class, reported under its own name.
+        assertEquals(
+                Optional.of("new Spring bean (Outer$Inner): component scanning"
+                        + " ran at startup, so the running context has no"
+                        + " definition for it"),
+                TransactionEngine.blockedReason(
+                        Connector
+                                .fields("OK stereotypes=com.example.Outer$Inner"
+                                        + " entities=- structural=-"),
+                        List.of("com.example.Outer$Inner")));
     }
 
     @Test

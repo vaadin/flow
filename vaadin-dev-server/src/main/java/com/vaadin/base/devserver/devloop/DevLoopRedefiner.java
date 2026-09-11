@@ -106,6 +106,12 @@ final class DevLoopRedefiner {
     private static final String CLASSES_PROPERTY = "vaadin.devloop.classes";
 
     /**
+     * The free-text tail of a reply. Always last, and the only field that may
+     * contain a space, so the daemon reads it as the rest of the line.
+     */
+    private static final String MESSAGE = " message=";
+
+    /**
      * The directory names that make a public resource root, as whole path
      * segments so a match cannot land in the middle of one.
      * {@code META-INF/resources} is listed first only for readability - the
@@ -206,7 +212,8 @@ final class DevLoopRedefiner {
     static String redefine(String csv) {
         Instrumentation inst = instrumentation();
         if (inst == null) {
-            return "ERR kind=no-agent message=Instrumentation-unavailable";
+            return "ERR kind=no-agent" + MESSAGE
+                    + "Instrumentation-unavailable";
         }
         Hotswapper hotswapper = DevLoopRegistration.hotswapper().orElse(null);
         if (hotswapper == null) {
@@ -216,7 +223,7 @@ final class DevLoopRedefiner {
         List<String> requested = Arrays.stream(csv.split(",")).map(String::trim)
                 .filter(name -> !name.isEmpty()).toList();
         if (requested.isEmpty()) {
-            return "ERR kind=protocol message=no-classes";
+            return "ERR kind=protocol" + MESSAGE + "no-classes";
         }
 
         List<Path> classesDirs = searchPath();
@@ -267,7 +274,7 @@ final class DevLoopRedefiner {
                         definitions.toArray(new ClassDefinition[0]));
             } catch (Throwable t) {
                 return "ERR kind=redefine-rejected class="
-                        + t.getClass().getSimpleName() + " message="
+                        + t.getClass().getSimpleName() + MESSAGE
                         + oneLine(String.valueOf(t.getMessage()));
             }
         }
@@ -440,7 +447,7 @@ final class DevLoopRedefiner {
                 return new Inspection(definitions, notLoaded, duplicates,
                         entities, beans, stereotypes, uiClasses,
                         "ERR kind=missing-class-file searched="
-                                + classesDirs.size() + " message=" + name);
+                                + classesDirs.size() + MESSAGE + name);
             }
             // And the class the JVM is about to be given. A type that is only
             // now being made an entity is not one yet in the classify above,
@@ -459,10 +466,14 @@ final class DevLoopRedefiner {
             // schedule and defines a new class when it sees one, so "not
             // loaded here" is a race, and losing it would report a brand-new
             // bean as live. What the bytes say is not a race, and the daemon
-            // holds the inventory that says which of these the running
-            // application never had.
+            // knows which of these classes it has just brought into being.
+            //
+            // Under its binary name, unlike every other field here: this one
+            // is read by machine and matched against the change-set, and two
+            // classes in different packages can share a simple name - which
+            // would make one of them answer for the other.
             if (declaresSpringBean(bytes)) {
-                stereotypes.add(simple(name));
+                stereotypes.add(name);
             }
             for (Class<?> target : targets) {
                 definitions.add(new ClassDefinition(target, bytes));
