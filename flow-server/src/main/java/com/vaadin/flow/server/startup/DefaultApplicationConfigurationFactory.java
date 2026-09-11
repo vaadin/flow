@@ -236,7 +236,11 @@ public class DefaultApplicationConfigurationFactory
                         candidate.getPath());
                 continue;
             }
-            if (!runningFromJar && candidates.size() > 1) {
+            // The file is only known to be the right one when it was
+            // picked by the rule for a packaged application
+            boolean confidentPick = runningFromJar
+                    && countArchiveLevels(candidate.getPath()) == 1;
+            if (candidates.size() > 1 && !confidentPick) {
                 String warningMessage = String.format(
                         "Unable to fully determine correct flow-build-info.%n"
                                 + "Accepting file '%s' first match of '%s' possible (%s).%n"

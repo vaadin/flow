@@ -230,6 +230,61 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
+    void create_developmentModeTokenFileInsideJarIsFoundFirst_productionModeOneIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        mockClassPathTokenFiles(resourceProvider, mockTokenFileUrl(
+                "addon.jar!/",
+                "{ \"productionMode\": false, \"externalStatsUrl\": \"http://addon/stats.json\" }"),
+                mockTokenFileUrl("application.jar!/",
+                        "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }"));
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertEquals("http://application/stats.json",
+                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
+                        null),
+                "A development mode token file should be skipped for a production mode one");
+        assertTrue(configuration.isProductionMode());
+    }
+
+    @Test
+    void create_packagedApplicationWithNestedJars_tokenFileOfTheApplicationIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // The jar of flow-server is inside the jar of the application, so
+        // the application is packaged
+        Mockito.when(resourceProvider
+                .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG))
+                .thenReturn(new URL("file", "", -1,
+                        "/opt/app.jar!/BOOT-INF/lib/flow-server.jar!/"
+                                + FrontendUtils.VITE_GENERATED_CONFIG));
+
+        mockClassPathTokenFiles(resourceProvider, mockTokenFileUrl(
+                "/opt/app.jar!/BOOT-INF/lib/addon.jar!/",
+                "{ \"productionMode\": true, \"externalStatsUrl\": \"http://addon/stats.json\" }"),
+                mockTokenFileUrl("/opt/app.jar!/",
+                        "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }"));
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertEquals("http://application/stats.json",
+                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
+                        null),
+                "The token file of the application should be used instead of the one of a dependency");
+    }
+
+    @Test
     void create_nestedJarsOfSpringBoot_tokenFileOfTheApplicationIsUsed()
             throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
@@ -245,14 +300,11 @@ class DefaultApplicationConfigurationFactoryTest {
                         "nested:/opt/app.jar/!BOOT-INF/lib/flow-server.jar!/"
                                 + FrontendUtils.VITE_GENERATED_CONFIG));
 
-        URL dependencyToken = mockTokenFileUrl(
+        mockClassPathTokenFiles(resourceProvider, mockTokenFileUrl(
                 "nested:/opt/app.jar/!BOOT-INF/lib/addon.jar!/",
-                "{ \"productionMode\": true, \"externalStatsUrl\": \"http://addon/stats.json\" }");
-        URL applicationToken = mockTokenFileUrl("file:/opt/app.jar!/",
-                "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }");
-        Mockito.when(resourceProvider
-                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                .thenReturn(List.of(dependencyToken, applicationToken));
+                "{ \"productionMode\": true, \"externalStatsUrl\": \"http://addon/stats.json\" }"),
+                mockTokenFileUrl("file:/opt/app.jar!/",
+                        "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }"));
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
         ApplicationConfiguration configuration = factory.create(context);
@@ -261,6 +313,24 @@ class DefaultApplicationConfigurationFactoryTest {
                 configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
                         null),
                 "The token file of the application should be used instead of the one of a dependency");
+    }
+
+    @Test
+    void create_unparseableTokenFileInsideJar_tokenFileIsIgnored()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        mockJarTokenFile(resourceProvider, "addon.jar", "not json at all");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertFalse(configuration.isProductionMode());
+        assertFalse(Collections.list(configuration.getPropertyNames())
+                .contains(Constants.EXTERNAL_STATS_URL));
     }
 
     @Test
@@ -336,6 +406,13 @@ class DefaultApplicationConfigurationFactoryTest {
                 .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                 .thenReturn(Collections
                         .singletonList(mockTokenFileUrl(pathPrefix, content)));
+    }
+
+    private void mockClassPathTokenFiles(ResourceProvider resourceProvider,
+            URL... urls) throws IOException {
+        Mockito.when(resourceProvider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(List.of(urls));
     }
 
     private URL mockTokenFileUrl(String pathPrefix, String content)
