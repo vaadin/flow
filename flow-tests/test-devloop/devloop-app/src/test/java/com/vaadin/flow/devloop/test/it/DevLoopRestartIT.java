@@ -18,6 +18,8 @@ package com.vaadin.flow.devloop.test.it;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * The changes a redefine cannot make live, and the reason each one gives.
@@ -67,8 +69,10 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
                 "entity mapping cannot hot reload (TaskListView)");
     }
 
-    @Test
-    void aNewSpringBean_escalatesEvenThoughNothingWasRedefined() {
+    @ParameterizedTest(name = "@{0}")
+    @ValueSource(strings = { "Component", "Service" })
+    void aNewSpringBean_escalatesEvenThoughNothingWasRedefined(
+            String stereotype) {
         // The case with no redefine behind it: a class the running JVM has
         // never loaded has nothing to swap, so every signal the two cases above
         // turn on is empty and the apply reported Stable. Component scanning is
@@ -84,22 +88,29 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         // redefineClasses rejects it - so the fixture would pass without the
         // rule it is here to pin, and only a JVM with enhanced class
         // redefinition would show the difference.
-        patch.create(MUTABLE.resolve("ExtraService.java"), """
+        //
+        // Run per stereotype rather than once: the connector reads these out
+        // of the constant pool by descriptor, one literal per annotation, so
+        // each is its own entry that can be wrong on its own - and
+        // @Component, the one every other stereotype is composed from, is the
+        // one a reader expects to see covered.
+        String type = "Extra" + stereotype;
+        patch.create(MUTABLE.resolve(type + ".java"), """
                 package com.vaadin.flow.devloop.test.app.mutable;
 
-                import org.springframework.stereotype.Service;
+                import org.springframework.stereotype.%1$s;
 
                 /** Created by DevLoopRestartIT and deleted again by it. */
-                @Service
-                public class ExtraService {
+                @%1$s
+                public class %2$s {
                 }
-                """);
+                """.formatted(stereotype, type));
 
         // --no-restart stops at the verdict, as in the case above.
         VaadinDevCli.Outcome outcome = cli
                 .run("apply", "--no-restart", "--json").assertExitCode(0);
 
-        outcome.assertOutputContains("new Spring bean (ExtraService)");
+        outcome.assertOutputContains("new Spring bean (" + type + ")");
     }
 
     @Test
