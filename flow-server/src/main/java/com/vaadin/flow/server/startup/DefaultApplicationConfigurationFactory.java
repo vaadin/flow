@@ -209,18 +209,21 @@ public class DefaultApplicationConfigurationFactory
         URL viteGenerated = resourceProvider
                 .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);
 
-        // If jar!/ exists 2 times for vite.generated.ts then we are
-        // running from a jar
+        // If vite.generated.ts is inside 2 archives then we are running from
+        // a jar, as the jar of flow-server is inside the jar of the
+        // application
         boolean runningFromJar = viteGenerated != null
-                && countInstances(viteGenerated.getPath(), "jar!/") >= 2;
+                && countArchiveLevels(viteGenerated.getPath()) >= 2;
 
-        // As we now know that we are running from a jar we can accept a
-        // build info with a single jar in the path, so look at those first
-        List<URL> candidates = runningFromJar ? resources.stream()
-                .sorted(Comparator.comparingInt(
-                        url -> countInstances(url.getPath(), "jar!/") == 1 ? 0
-                                : 1))
-                .toList() : resources;
+        // As we now know that we are running from a jar, the file of the
+        // application is the one in the outermost archive, so look at the
+        // least nested ones first
+        List<URL> candidates = runningFromJar
+                ? resources.stream()
+                        .sorted(Comparator.comparingInt(
+                                url -> countArchiveLevels(url.getPath())))
+                        .toList()
+                : resources;
 
         for (URL candidate : candidates) {
             String content = FrontendUtils
@@ -273,12 +276,26 @@ public class DefaultApplicationConfigurationFactory
     }
 
     /**
+     * Counts inside how many archives the resource at the given path is.
+     * <p>
+     * Both the {@code app.jar!/} separator used for a jar opened from the file
+     * system and the {@code app.jar/!} separator that Spring Boot 3.2 and newer
+     * use for an archive nested in the jar of the application are counted, as a
+     * path may contain one of each:
+     * {@code nested:/app.jar/!BOOT-INF/lib/flow-server.jar!/vite.generated.ts}.
+     *
+     * @param path
+     *            the path of the resource, not {@code null}
+     * @return the number of archives the resource is inside of, {@code 0} if it
+     *         is not inside one
+     */
+    private int countArchiveLevels(String path) {
+        return countInstances(path, "jar!/") + countInstances(path, "jar/!");
+    }
+
+    /**
      * Counts how many times {@code value} occurs as a non-overlapping substring
      * within {@code input}.
-     * <p>
-     * Used to determine how many nested {@code jar!/} segments appear in a
-     * resource path, which indicates whether the resource is packaged inside
-     * one or several jars.
      *
      * @param input
      *            the string to search within, not {@code null}
