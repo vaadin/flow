@@ -245,4 +245,34 @@ public class WriteToClipboardAction extends PromiseAction<String> {
                 "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))",
                 text, html, image).withArguments("event");
     }
+
+    /**
+     * The input producing the {@code text/plain} payload, or {@code null} if
+     * this action writes no plain text. For browserless simulation.
+     *
+     * @return the text input, or {@code null}
+     */
+    public Action.@Nullable Input<String> getTextInput() {
+        return textInput;
+    }
+
+    /**
+     * The input producing the {@code text/html} payload, or {@code null} if
+     * this action writes no HTML. For browserless simulation.
+     *
+     * @return the HTML input, or {@code null}
+     */
+    public Action.@Nullable Input<String> getHtmlInput() {
+        return htmlInput;
+    }
+
+    /**
+     * The input producing the {@code image/png} payload, or {@code null} if
+     * this action writes no image. For browserless simulation.
+     *
+     * @return the image input, or {@code null}
+     */
+    public Action.@Nullable Input<?> getImageInput() {
+        return imageInput;
+    }
 }

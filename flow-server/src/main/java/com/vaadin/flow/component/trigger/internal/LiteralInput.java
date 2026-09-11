@@ -17,7 +17,11 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Input backed by a server-side literal that is captured into the rendered
@@ -66,5 +70,11 @@ public final class LiteralInput<T> extends Action.Input<T> {
         // The value is captured (not stringified into the body), so Jackson
         // handles all encoding — quoting, escaping, nested objects, etc.
         return JsFunction.of("return $0", value);
+    }
+
+    @Override
+    public JsonNode evaluate(@Nullable JsonNode eventData) {
+        // Same Jackson mapping the client would receive for the captured value.
+        return JacksonUtils.writeValue(value);
     }
 }

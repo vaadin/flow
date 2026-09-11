@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
+
+import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Reads a JavaScript property from a target component's root element at the
@@ -69,5 +74,14 @@ public class PropertyInput<T> extends Action.Input<T> {
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.
         return JsFunction.of("return $0[$1]", target, propertyName);
+    }
+
+    @Override
+    public JsonNode evaluate(@Nullable JsonNode eventData) {
+        // Reads the value synced to the server-side property map, which stands
+        // in for the client-side DOM property the JS would read.
+        Serializable raw = target.getPropertyRaw(propertyName);
+        return raw == null ? JacksonUtils.nullNode()
+                : JacksonUtils.writeValue(raw);
     }
 }
