@@ -304,11 +304,16 @@ happens between meetings, without us.
 is **the problem, not a solution**; a proposed API is welcome as a hint, but the
 first line has to say what somebody could not do.
 
-**1 · Brief and draft PR** (AI, ~30 min). One reaction, two artefacts:
+**1 · Brief and draft PR** (AI, ~30 min). A bug gets both at once: the
+reproducing test *is* the triage, and it settles "is this real?" more reliably
+than a discussion. A feature or an API change gets the brief only, and its probe
+waits until the problem is accepted — otherwise a thirty-issue day leaves thirty
+draft PRs behind, and the shape that exists wins by default. Two artefacts, then:
 
-- the **Analysis Brief**, committed as a document in the probe PR and linked from
-  the issue — context, verdict, sketch, and what it could not verify. It is the
-  pre-read that makes a decision possible;
+- the **Analysis Brief** — context, verdict, sketch, and what it could not
+  verify. It is a document in the probe PR where there is one, and a document in
+  its own PR where there is not; either way it is the pre-read that makes a
+  decision possible;
 - a **draft PR** — a probe: a test that reproduces the problem (failing), the
   sketched API compiling, and CI showing what else moves.
 
@@ -317,11 +322,12 @@ class" and be wrong; a branch that compiles says what the change actually costs,
 and CI turns blast radius from an estimate into a list of names. It also gives
 the team something concrete to react to, and reacting is far easier than
 originating (§10). If the shape survives the design session we are already at
-review;
-if it does not, we close a branch — the cheapest artefact we produce. The probe
+review; if it does not, we close a branch — the cheapest artefact we produce. The probe
 says in its own description what it does *not* settle, and the brief still
-carries the alternatives AI did not build — otherwise the one shape that exists
-wins by default.
+carries the alternatives AI did not build. A probe on an issue that has gone a
+week without a decision is closed by automation, with a line in the issue: the
+branch costs nothing to reopen, and an open PR nobody decided about costs
+attention every day.
 
 **2 · Triage** — AI proposes a verdict in the brief and the daily confirms it in
 bulk, stopping only where someone objects. The question is shallow on purpose:
@@ -547,20 +553,18 @@ thing to catch.
 
 Still to decide:
 
-1. Does *every* new issue get a probe, or only ones that pass triage — and when
-   is a stale probe closed, by whom?
-2. Who owns an issue in its first hour, before the first daily sees it?
-3. Who owns the eval suite, and how big can it get before it is too slow to run
+1. Who owns an issue in its first hour, before the first daily sees it?
+2. Who owns the eval suite, and how big can it get before it is too slow to run
    on every change?
-4. Two days of understanding before the scope meeting fits a short project. What
+3. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research has historically taken weeks?
-5. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+4. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-6. Maintenance arriving mid-project: does the project team absorb it, or do we
+5. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-7. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+6. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-8. Do routine bulk changes need a **fast lane**: no design note, AI states the
+7. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-9. Where do external contributor PRs enter — at review, or back at the problem?
-10. Design notes for bugfixes too, or is a probe with a failing test enough?
+8. Where do external contributor PRs enter — at review, or back at the problem?
+9. Design notes for bugfixes too, or is a probe with a failing test enough?
