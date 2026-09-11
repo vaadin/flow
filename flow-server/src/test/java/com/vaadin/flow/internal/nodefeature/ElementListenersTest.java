@@ -678,6 +678,77 @@ public class ElementListenersTest
     }
 
     @Test
+    void preventDefaultWithCapturedFilter_keepsFilterCaptures() {
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === $0", "Enter");
+        registration.preventDefault();
+
+        assertTrue(
+                getExpressions("keydown").contains(
+                        "(event.key === $0) && event.preventDefault()"),
+                "preventDefault should be conditional on the filter");
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode value = encodeSettings(ns, "keydown", constantPool);
+
+        // Both the filter and the combined expression are evaluated with the
+        // capture of the filter
+        ObjectNode captures = (ObjectNode) value.get(1);
+        assertEquals(2, JacksonUtils.getKeys(captures).size());
+        JacksonUtils.getKeys(captures).forEach(key -> assertEquals("Enter",
+                ((ArrayNode) captures.get(key)).get(1).asString()));
+
+        ObjectNode shared = (ObjectNode) constantPool.dumpConstants()
+                .get(value.get(0).stringValue());
+        JacksonUtils.getKeys(shared)
+                .forEach(key -> assertEquals(1,
+                        shared.get(key).get("c").asInt(),
+                        "Both entries should be evaluated with one capture"));
+    }
+
+    @Test
+    void duplicateEventDataName_valueIsSharedByBothListeners() {
+        AtomicReference<JsonNode> firstData = new AtomicReference<>();
+        AtomicReference<JsonNode> secondData = new AtomicReference<>();
+
+        DomListenerRegistration first = ns.add("foo",
+                e -> firstData.set(e.getEventData()));
+        first.addEventData("label", "element.getAttribute($0)", "data-a");
+        DomListenerRegistration second = ns.add("foo",
+                e -> secondData.set(e.getEventData()));
+        second.addEventData("label", "element.getAttribute($0)", "data-b");
+
+        // The name is the key towards the server, so the two entries cannot
+        // both be available; this is why the name has to be unique
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(first, "label"), "a");
+        fromClient.put(ElementListenerMap.getEventDataKey(second, "label"),
+                "b");
+
+        JsonNode translated = ns.translateEventData("foo", fromClient);
+        assertEquals(1, JacksonUtils.getKeys(translated).size());
+
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", translated));
+        assertEquals(firstData.get(), secondData.get());
+    }
+
+    @Test
+    void translateEventDataForUnknownEventType_nothingIsCached() {
+        ns.add("foo", noOp).addEventData("data", "$0", "capture");
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put("whatever", true);
+
+        assertEquals(1, ns.getCachedSettingsCount());
+
+        // The event type comes from the client, so an unknown type must not
+        // leave anything behind
+        assertSame(fromClient, ns.translateEventData("bar", fromClient));
+        assertEquals(1, ns.getCachedSettingsCount(),
+                "Settings should not be cached for an event type without listeners");
+    }
+
+    @Test
     void testPreventDefaultWithoutFilter() {
         // Test preventDefault without filter - should apply to all events
         DomListenerRegistration registration = ns.add("keydown", noOp);

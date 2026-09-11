@@ -86,6 +86,14 @@ public interface DomListenerRegistration extends Registration {
      * <p>
      * An expression might be e.g. <code>element.closest($0).textContent</code>
      * with a CSS selector as the capture.
+     * <p>
+     * The name must be unique among the listeners that are registered for the
+     * same event on the same element. If two registrations use the same name
+     * for different expressions or captures, then only one of the values is
+     * available, and both listeners see the same value.
+     * <p>
+     * The captures are encoded when this method is called, so a value that
+     * cannot be sent to the client fails immediately.
      *
      * @param name
      *            the name to use for the value in
@@ -97,8 +105,6 @@ public interface DomListenerRegistration extends Registration {
      *            the values to capture; each must be a type supported as a
      *            parameter to {@link Element#executeJs(String, Object...)}
      * @return this registration, for chaining
-     * @throws IllegalArgumentException
-     *             if any capture has a type that cannot be sent to the client
      * @see #addEventData(String)
      * @since 25.3
      */
@@ -145,6 +151,9 @@ public interface DomListenerRegistration extends Registration {
      * events for one specific key.
      * <p>
      * Any previous filter for this registration is discarded.
+     * <p>
+     * The captures are encoded when this method is called, so a value that
+     * cannot be sent to the client fails immediately.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
@@ -153,8 +162,6 @@ public interface DomListenerRegistration extends Registration {
      *            the values to capture; each must be a type supported as a
      *            parameter to {@link Element#executeJs(String, Object...)}
      * @return this registration, for chaining
-     * @throws IllegalArgumentException
-     *             if any capture has a type that cannot be sent to the client
      * @see #setFilter(String)
      * @since 25.3
      */

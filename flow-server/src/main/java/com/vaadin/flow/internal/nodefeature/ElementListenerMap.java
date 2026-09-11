@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,25 +71,6 @@ public class ElementListenerMap extends NodeMap {
 
     private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
             .of(DebouncePhase.LEADING);
-
-    /**
-     * JSON key for the JavaScript expression of an entry in the shared event
-     * settings.
-     */
-    private static final String KEY_EXPRESSION = "e";
-
-    /**
-     * JSON key for the debounce settings of an entry in the shared event
-     * settings.
-     */
-    private static final String KEY_DEBOUNCE = "d";
-
-    /**
-     * JSON key for the number of captures of an entry in the shared event
-     * settings. Entries with captures are only evaluated for the capture values
-     * sent separately for each element.
-     */
-    private static final String KEY_CAPTURE_COUNT = "c";
 
     /**
      * Separator between the shared part and the capture specific part of the
@@ -243,10 +225,11 @@ public class ElementListenerMap extends NodeMap {
 
         public JsonNode toJson() {
             ObjectNode json = JacksonUtils.createObjectNode();
-            json.put(KEY_EXPRESSION, expression);
-            json.set(KEY_DEBOUNCE, debounceToJson());
+            json.put(JsonConstants.EVENT_SETTINGS_EXPRESSION, expression);
+            json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE, debounceToJson());
             if (captureCount > 0) {
-                json.put(KEY_CAPTURE_COUNT, captureCount);
+                json.put(JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT,
+                        captureCount);
             }
             return json;
         }
@@ -297,6 +280,18 @@ public class ElementListenerMap extends NodeMap {
          */
         private final Map<String, String> names = new HashMap<>();
 
+        /**
+         * The entry key that each name is used by, for detecting names that are
+         * used by more than one entry.
+         */
+        private final Map<String, String> keysByName = new HashMap<>();
+
+        /**
+         * Names that are used by more than one entry, which means that only one
+         * of the values is available to the listeners.
+         */
+        private final Set<String> conflictingNames = new LinkedHashSet<>();
+
         private ExpressionSettings add(ExpressionEntry entry) {
             ExpressionSettings settings = shared.computeIfAbsent(
                     entry.getSharedKey(),
@@ -307,8 +302,14 @@ public class ElementListenerMap extends NodeMap {
             if (!entry.captures.isEmpty()) {
                 captured.putIfAbsent(key, entry);
             }
-            if (!entry.isFilter() && !key.equals(entry.name)) {
-                names.put(key, entry.name);
+            if (!entry.isFilter()) {
+                String previousKey = keysByName.putIfAbsent(entry.name, key);
+                if (previousKey != null && !previousKey.equals(key)) {
+                    conflictingNames.add(entry.name);
+                }
+                if (!key.equals(entry.name)) {
+                    names.put(key, entry.name);
+                }
             }
 
             return settings;
@@ -321,6 +322,11 @@ public class ElementListenerMap extends NodeMap {
      */
     private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
             .forFilter(ALWAYS_TRUE_FILTER, Collections.emptyList());
+
+    /**
+     * Settings used for event types that have no listeners.
+     */
+    private static final EventSettings EMPTY_SETTINGS = new EventSettings();
 
     /**
      * Creates a short key for the given content, using the same approach as
@@ -646,6 +652,17 @@ public class ElementListenerMap extends NodeMap {
                     NO_TIMEOUT_PHASES);
         }
 
+        if (!settings.conflictingNames.isEmpty()) {
+            LoggerFactory.getLogger(ElementListenerMap.class).warn(
+                    "The event data name(s) {} are used by multiple listeners "
+                            + "for the {} event on the same element, but with "
+                            + "different expressions or captures. Only one of "
+                            + "the values will be available to the listeners. "
+                            + "Use a unique name for each event data "
+                            + "expression.",
+                    settings.conflictingNames, eventType);
+        }
+
         return settings;
     }
 
@@ -701,6 +718,16 @@ public class ElementListenerMap extends NodeMap {
         }
     }
 
+    /**
+     * Gets the number of event types that settings are cached for. Package
+     * private to facilitate unit testing.
+     *
+     * @return the number of cached event types
+     */
+    int getCachedSettingsCount() {
+        return settingsCache == null ? 0 : settingsCache.size();
+    }
+
     private void cacheSettings(String eventType, EventSettings settings) {
         if (settingsCache == null) {
             settingsCache = new HashMap<>();
@@ -711,11 +738,22 @@ public class ElementListenerMap extends NodeMap {
     private EventSettings getEventSettings(String eventType) {
         EventSettings cached = settingsCache == null ? null
                 : settingsCache.get(eventType);
-        if (cached == null) {
-            cached = collectEventSettings(eventType);
-            cacheSettings(eventType, cached);
+        if (cached != null) {
+            return cached;
         }
-        return cached;
+
+        if (getWrappers(eventType).isEmpty()) {
+            /*
+             * The event type of an incoming event is defined by the client, so
+             * caching for a type that has no listeners would let the client
+             * grow this map without limit.
+             */
+            return EMPTY_SETTINGS;
+        }
+
+        EventSettings settings = collectEventSettings(eventType);
+        cacheSettings(eventType, settings);
+        return settings;
     }
 
     private static List<JsonNode> encodeCaptures(Object... captures) {

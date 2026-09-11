@@ -112,12 +112,12 @@ type EventExpression = (event: Event, element: Element, ...captures: unknown[]) 
  * separately for each element.
  */
 type ExpressionSettings = {
-  /** The JavaScript expression to evaluate. */
-  e: string;
-  /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`. */
-  d: unknown;
-  /** The number of captures, when the expression is parameterized. */
-  c?: number;
+  /** The JavaScript expression to evaluate; EVENT_SETTINGS_EXPRESSION. */
+  [JsonConstants.EVENT_SETTINGS_EXPRESSION]: string;
+  /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`; EVENT_SETTINGS_DEBOUNCE. */
+  [JsonConstants.EVENT_SETTINGS_DEBOUNCE]: unknown;
+  /** The number of captures, when the expression is parameterized; EVENT_SETTINGS_CAPTURE_COUNT. */
+  [JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]?: number;
 };
 
 /**
@@ -1248,11 +1248,11 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   for (const key of sharedKeys) {
     const settings = sharedSettings[key];
-    if (settings.c) {
+    if (settings[JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]) {
       // Only evaluated through the capture values sent for this element
       continue;
     }
-    entrySettings[key] = settings.d;
+    entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
 
     if (key.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
       synchronizeProperties.add(key.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
@@ -1265,7 +1265,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
       const expressionValue = getOrCreateExpression(jsEvaluation, 0)(event, element);
       eventData![key] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
     } else {
-      eventData![key] = getOrCreateExpression(settings.e, 0)(event, element);
+      eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], 0)(event, element);
     }
   }
 
@@ -1273,10 +1273,14 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     const [sharedKey, ...captures] = capturedExpressions[key];
     const settings = sharedSettings[sharedKey as string];
     assert(settings !== undefined, 'There must be shared settings for a captured expression');
-    entrySettings[key] = settings.d;
+    entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
 
     const decodedCaptures = captures.map((capture) => decodeWithTypeInfo(node.getTree(), capture));
-    eventData![key] = getOrCreateExpression(settings.e, decodedCaptures.length)(event, element, ...decodedCaptures);
+    eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], decodedCaptures.length)(
+      event,
+      element,
+      ...decodedCaptures
+    );
   }
 
   synchronizeProperties.forEach((name) => {

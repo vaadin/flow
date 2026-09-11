@@ -87,25 +87,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         void use(MapProperty property);
     }
 
-    /**
-     * The key of the JavaScript expression in the shared settings of an entry
-     * that the client evaluates when an event occurs.
-     */
-    private static final String KEY_EXPRESSION = "e";
-
-    /**
-     * The key of the debounce settings in the shared settings of an entry that
-     * the client evaluates when an event occurs.
-     */
-    private static final String KEY_DEBOUNCE = "d";
-
-    /**
-     * The key of the capture count in the shared settings of an entry that the
-     * client evaluates when an event occurs. Entries with captures are only
-     * evaluated for the capture values sent separately for each element.
-     */
-    private static final String KEY_CAPTURE_COUNT = "c";
-
     private static JsMap<String, NativeFunction> expressionCache;
 
     /**
@@ -1422,11 +1403,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
         for (String key : sharedKeys) {
             JsonObject settings = sharedSettings.getObject(key);
-            if (settings.hasKey(KEY_CAPTURE_COUNT)) {
+            if (settings.hasKey(JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT)) {
                 // Only evaluated through the capture values of this element
                 continue;
             }
-            entrySettings.put(key, (JsonValue) settings.get(KEY_DEBOUNCE));
+            entrySettings.put(key, (JsonValue) settings
+                    .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE));
 
             if (key.startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
                 String property = key.substring(
@@ -1451,9 +1433,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 eventData.put(key, targetNodeId);
             } else {
                 eventData.put(key,
-                        evaluateExpression(settings.getString(KEY_EXPRESSION),
-                                event, (Element) element,
-                                JsCollections.array()));
+                        evaluateExpression(settings.getString(
+                                JsonConstants.EVENT_SETTINGS_EXPRESSION), event,
+                                (Element) element, JsCollections.array()));
             }
         }
         for (String key : capturedKeys) {
@@ -1461,7 +1443,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JsonObject settings = sharedSettings
                     .getObject(captureValues.getString(0));
             assert settings != null;
-            entrySettings.put(key, (JsonValue) settings.get(KEY_DEBOUNCE));
+            entrySettings.put(key, (JsonValue) settings
+                    .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE));
 
             JsArray<Object> captures = JsCollections.array();
             for (int i = 1; i < captureValues.length(); i++) {
@@ -1470,7 +1453,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             eventData.put(key,
-                    evaluateExpression(settings.getString(KEY_EXPRESSION),
+                    evaluateExpression(
+                            settings.getString(
+                                    JsonConstants.EVENT_SETTINGS_EXPRESSION),
                             event, (Element) element, captures));
         }
         synchronizeProperties.forEach(name -> {
