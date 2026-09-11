@@ -412,6 +412,13 @@ final class TransactionEngine {
             }
             Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
+            // Read here and nowhere later: half of this answer is which class
+            // files were on the classpath before the compile leg ran, and
+            // after it every one of them exists. The runtime leg decides on it
+            // several hundred lines below, which is exactly why it cannot ask
+            // for it there.
+            List<String> unknownTypes = compile
+                    .typesUnknownToTheApp(changes.modified());
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
@@ -687,12 +694,8 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
-                        // Asked here and not before the compile only because
-                        // nothing moves the inventory in between:
-                        // markSourcesApplied is below, in the branch this
-                        // answer decides.
-                        Optional<String> blocker = blockedReason(fields, compile
-                                .typesUnknownToTheApp(changes.modified()));
+                        Optional<String> blocker = blockedReason(fields,
+                                unknownTypes);
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);

@@ -279,18 +279,22 @@ class CompileTest {
     }
 
     @Test
-    void typesUnknownToTheApp_namesOnlyWhatTheInventoryWasNotSeededWith()
+    void typesUnknownToTheApp_namesWhatTheApplicationHadNothingToLoad()
             throws IOException {
-        // The signal a new bean or entity is escalated on. It has to come from
-        // the inventory: the application's own answer to "have you loaded
-        // this?" turns yes as soon as HotswapAgent's watcher notices the new
-        // class file, and a loaded class is still not a bean definition.
+        // The signal a new bean or entity is escalated on. The application's
+        // own answer to "have you loaded this?" cannot serve: HotswapAgent's
+        // watcher defines a new class as soon as it notices the file, and a
+        // defined class is still not a bean definition.
         Reactor.Module app = module("app", "Main", """
                 package app;
                 public class Main { }
                 """);
-        Compile compile = new Compile(project(app));
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
         Path known = source(app, "Main");
+        // What a running application amounts to here: its class is on the
+        // classpath, and the inventory was seeded with its source.
+        compile.compile(List.of(known), project);
         compile.seedFromDisk();
         Path added = known.resolveSibling("Added.java");
         Files.writeString(added, """
@@ -300,7 +304,19 @@ class CompileTest {
 
         assertEquals(List.of("Added"),
                 compile.typesUnknownToTheApp(List.of(known, added)));
-        // And after the restart that applied it, it is one of the app's own.
+
+        // The half the inventory cannot answer, and the one that was reported:
+        // the compile leg is built on the first apply and seeds itself from
+        // disk, so a file created since the application started is in the
+        // inventory as though the application had always had it. Its class is
+        // not on the classpath, which is what still says so.
+        compile.seedFromDisk();
+        assertEquals(List.of("Added"),
+                compile.typesUnknownToTheApp(List.of(known, added)));
+
+        // And once it is compiled and a restart has re-seeded, it is one of
+        // the application's own.
+        compile.compile(List.of(added), project);
         compile.seedFromDisk();
         assertTrue(
                 compile.typesUnknownToTheApp(List.of(known, added)).isEmpty());

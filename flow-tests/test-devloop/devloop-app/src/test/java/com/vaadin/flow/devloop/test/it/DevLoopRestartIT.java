@@ -115,6 +115,39 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
     }
 
     @Test
+    void aNewSpringBean_escalatesOnTheFirstApplyOfADaemonsLife() {
+        // Same rule as above, in the ordering that got past it. The compile
+        // leg is built lazily, on the first apply, and seeds its inventory
+        // from disk as it is built - so a source created between the
+        // application starting and that first apply lands in the inventory as
+        // though the application had always had it, and asking the inventory
+        // alone answered hot-reload over a bean the context has no definition
+        // for. Every other test in this class applies once in setUp, which is
+        // exactly what hides it.
+        //
+        // The file has to be created after the start: a start builds the
+        // module, so a source already on disk would be compiled and scanned
+        // into the application it is meant to be missing from.
+        cli.run("shutdown").assertExitCode(0);
+        cli.run("start").assertExitCode(0);
+        patch.create(MUTABLE.resolve("ExtraBean.java"), """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                import org.springframework.stereotype.Component;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                @Component
+                public class ExtraBean {
+                }
+                """);
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraBean)");
+    }
+
+    @Test
     void restart_bringsTheAppBackOnTheSamePort() {
         cli.run("restart").assertExitCode(0);
 

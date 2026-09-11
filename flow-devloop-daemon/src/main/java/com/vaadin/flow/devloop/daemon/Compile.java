@@ -787,28 +787,56 @@ final class Compile {
      * The top-level type names among these sources that the running application
      * has never had, by simple name.
      * <p>
-     * The inventory answers this and nothing in the application can. Asking the
-     * app which classes it has loaded looks like the same question and is not:
-     * HotswapAgent watches the output directory on its own schedule and defines
-     * a new class when it sees one, so by the time a reply is composed the
-     * class may well be loaded - and a class being loaded is not a bean
-     * definition, an entity mapping or anything else the application built
-     * while it was starting. {@link #applied} is cleared and re-seeded from
-     * disk every time an app registers, so a source missing from it is one that
-     * was not there when this application started, whatever has happened to its
-     * class since.
+     * Asking the application which classes it has loaded looks like the same
+     * question and is not: HotswapAgent watches the output directory on its own
+     * schedule and defines a new class when it sees one, so by the time a reply
+     * is composed the class may well be loaded - and a class being loaded is
+     * not a bean definition, an entity mapping or anything else the application
+     * built while it was starting.
+     * <p>
+     * <b>Must be called before the compile leg writes anything</b>, because
+     * half the answer is which artifacts were on the classpath before it did.
+     * See {@link #unknownToTheApp}.
      *
      * @param sources
      *            the sources to ask about
      * @return the simple names of the types those sources declare, sorted
      */
     List<String> typesUnknownToTheApp(List<Path> sources) {
-        return sources.stream().filter(source -> !applied.containsKey(source))
-                .map(source -> {
-                    String file = source.getFileName().toString();
-                    return file.substring(0,
-                            file.length() - JAVA_SUFFIX.length());
-                }).sorted(Comparator.naturalOrder()).toList();
+        return sources.stream().filter(this::unknownToTheApp).map(source -> {
+            String file = source.getFileName().toString();
+            return file.substring(0, file.length() - JAVA_SUFFIX.length());
+        }).sorted(Comparator.naturalOrder()).toList();
+    }
+
+    /**
+     * Whether the running application never had the type this source declares.
+     * <p>
+     * Two independent ways to be that, and it takes both to get the answer
+     * right.
+     * <p>
+     * {@link #applied} is the first: a source missing from it was not there
+     * when the application registered. On its own it under-reports, because
+     * that map is also seeded when the compile leg is <em>built</em> - which is
+     * on the first apply, by which time a file created since the application
+     * started is already on disk and gets seeded as though the application had
+     * always had it. Measured: start, add an {@code @Component}, apply, and the
+     * first apply of a daemon's life reported {@code hot-reload} over a bean
+     * the context had no definition for.
+     * <p>
+     * The artifact is the second, and it settles that case whatever the
+     * inventory believes: a type whose {@code .class} was not on the classpath
+     * before this apply compiled it is one the application had nothing to load,
+     * nothing to scan and nothing to register. Which is why this has to be
+     * asked before javac runs - afterwards every artifact exists.
+     */
+    private boolean unknownToTheApp(Path source) {
+        if (!applied.containsKey(source)) {
+            return true;
+        }
+        return sourceOwner(source)
+                .map(module -> !Files.isRegularFile(module.artifactFor(source)))
+                .orElse(false);
     }
 
     /** Records that these sources are now live in the running JVM. */
