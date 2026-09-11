@@ -51,9 +51,9 @@ it, and it keeps going until it needs a decision — then it stops and says so.
 
 **Automation does this without being asked:** reads the issue and everything
 linked from it; files it in the right area; points at likely duplicates; writes
-the Analysis Brief; opens a draft PR with a reproducing test and the sketched
-API; keeps CI green; revises on comment; drafts docs, demo and DX tests; keeps
-the board truthful; flags issues that have gone stale.
+the Analysis Brief with a proposed verdict; opens a draft PR with a reproducing
+test and the sketched API; keeps CI green; revises on comment; drafts docs, demo
+and DX tests; keeps the board truthful; and writes the daily digest (§5).
 
 **What starts it is a state, not a person remembering.** A filed issue starts the
 brief and the probe; an accepted problem starts the design note; an agreed design
@@ -61,18 +61,18 @@ starts the finished implementation; a question in the thread starts a revision.
 The state of an issue is a switch rather than a sticker on a board — which is
 also why the board cannot drift away from what is happening.
 
-**A human decides three times per issue, and all three happen in a round:**
+**A human decides three times per issue:**
 
-| # | What is decided | State after |
-| --- | --- | --- |
-| 1 | Is this a real problem, and is it ours? (not: what do we build) | accepted · closed · parked · waiting on the reporter |
-| 2 | What is the design — the probe's shape, or another? And how do we build it? | design agreed |
-| 3 | Do we merge, and who owns it afterwards? | merged |
+| # | What is decided | Where | State after |
+| --- | --- | --- | --- |
+| 1 | Is this a real problem, and is it ours? (not: what do we build) | the daily (§5) confirms what AI proposed | accepted · closed · parked · waiting on the reporter |
+| 2 | What is the design — the probe's shape, or another? And how do we build it? | the design session (§5) | design agreed |
+| 3 | Do we merge, and who owns it afterwards? | async by default; the daily when it is disputed | merged |
 
-Between the second and the third nothing is asked of the round: AI is finishing
-the work, and we speak only if it is blocked. Everything around those three
-decisions is automation's. If an issue needs a fourth, that is a signal — either
-the brief was thin or the design was never settled; say which, in the issue.
+Between the second and the third nothing is asked of anyone: AI is finishing the
+work, and we speak only if it is blocked. Everything around those three decisions
+is automation's. If an issue needs a fourth, that is a signal — either the brief
+was thin or the design was never settled; say which, in the issue.
 
 **Automation never** merges, never closes an issue as won't-fix, never declares
 two issues duplicates on its own, never changes an agreed API contract, and
@@ -96,7 +96,7 @@ what to expect from each other.
 | --- | --- | --- |
 | **PM** — stakeholder, owns the PRD, never 100% on one project | Who the user is, what problem, why now, what success looks like; written answers within a day | Clarity about the *problem*, and a straight answer on whether something still serves it |
 | **The team** — everyone else, 100% allocated | The shipped increment: design, code, tests, docs, demo, DX, quality, usability. Deciding *how*, and *how little* | That it decides and ships without being chased, and asks when the PRD is ambiguous |
-| **Lead** — one per piece of work, on the team; *not* its implementer. The **project lead** on a project, the **issue lead** on a single issue — same role, different scope | That the work reaches decisions and goes in the right direction at the right pace: a prepared round, a truthful board, nothing left unowned, blocked people unblocked | Discussion opened early, an agenda before the round rather than at it, specific questions, a straight answer on what matters most right now, gaps named early rather than discovered late |
+| **Lead** — one per piece of work, on the team; *not* its implementer. The **project lead** on a project, the **issue lead** on a single issue — same role, different scope | That the work reaches decisions and goes in the right direction at the right pace: a prepared meeting, a truthful board, nothing left unowned, blocked people unblocked | Discussion opened early, an agenda before the meeting rather than at it, specific questions, a straight answer on what matters most right now, gaps named early rather than discovered late |
 | **Consulted expert** — not on the team | Answers when asked | Nothing else — no deliverables, no attendance |
 
 Where expectations quietly diverge today:
@@ -110,7 +110,7 @@ Where expectations quietly diverge today:
 - **The lead is not the PM, and not a manager of people.** The PM watches that
   the business requirement is being fulfilled; the lead watches that the work is
   going in the right direction and on time. Neither of them decides the design —
-  the round does.
+  the design session does.
 - **The team connects the PRD to the work.** Nobody else spans that gap.
 - **Nobody is "partly" on the team.** Partial membership is worse than absence:
   it blurs who owes what and leaves work half-done. If you cannot be 100%, you
@@ -118,13 +118,13 @@ Where expectations quietly diverge today:
 
 **The lead** carries one piece of work to the end. The lead does not build it —
 AI does — and is accountable for the outcome rather than for having typed it, and
-does not decide the design alone: that happens in the round. A lead often is not
-the person with the most scar tissue in that area, and that is the point — it
-forces context out of one head. Concretely:
+does not decide the design alone: that happens in the session. A lead often is
+not the person with the most scar tissue in that area, and that is the point —
+it forces context out of one head. Concretely:
 
-- **Prepares every round.** Reads each brief and draft PR beforehand and turns it
-  into one question with a recommendation. The pre-read is AI's job, the agenda
-  is the lead's — **no agenda, no round.**
+- **Prepares every meeting.** Reads the digest, each brief and each draft PR
+  beforehand and turns it into one question with a recommendation. The pre-read
+  is AI's job, the agenda is the lead's — **no agenda, no meeting.**
 - **Opens the discussion at revision 1** — a polished revision 4 reads as a fait
   accompli and gets worse input — and asks sharp questions instead of open ones:
   "should detach cancel the pending update or queue it?" gets a decision where
@@ -132,7 +132,7 @@ forces context out of one head. Concretely:
 - **Watches direction and pace**, not progress: right thing, right order, nothing
   unowned, nobody quietly stuck for two days — said early, not at the end.
 - **Keeps the board honest**, pulls people in by name, records every conclusion
-  in the issue, and decides alone only between rounds, marked as unilateral.
+  in the issue, and decides alone only between meetings, marked as unilateral.
 
 Leads rotate. On a project the lead is fixed for its duration.
 
@@ -165,10 +165,9 @@ one line, who raised it, why it looked good — and **nobody starts on a parked
 idea**; at the end it is filed as an issue like anything else. Good ideas are not
 the problem; good ideas started quietly are.
 
-**Rituals.** The project has its own round (§5); members **skip their home
-team's ceremonies** while on it — two rhythms is what makes 100% impossible. The
-PM sees a working walkthrough weekly, to confirm we are solving the right
-problem, not to accept or reject the work.
+**Rituals.** The project runs its own daily and design session (§5), and the PM
+sees a working walkthrough weekly — to confirm we are solving the right problem,
+not to accept or reject the work.
 
 **The board is public and truthful.** At any moment anyone can see what is in
 progress, what is done, and what nobody has picked up; knowing what to do next
@@ -183,7 +182,7 @@ marked complete without it, and the lead's job is the part structure cannot do
 
 ---
 
-## 5. The issue and the round
+## 5. The issue, the daily and the design session
 
 **The issue is the unit.** One issue is one problem, and the brief, the design
 note, every decision and the PR all hang off it; duplicates are closed onto it
@@ -199,43 +198,67 @@ arrives as a diff against revision 3. They stay after the merge: a searchable
 answer to "why does this API read like this", and the raw material for
 harvesting (§6 stage 7).
 
-**The round.** The whole team walks the live issues together, daily, 30 minutes,
-run by the lead; an issue that needs no decision takes ten seconds, and each one
-that does arrives with a brief and a draft PR attached. **The round is where the
-three decisions happen; between rounds automation does the work.** During a
-project the round is the daily and the issues are the use cases — one ritual, not
-two.
+**The daily — 60 minutes, the whole team, in two halves.** The first half is a
+round table: everyone takes a turn on one thing — a PR they opened, a PR they are
+reviewing, or what they are working on right now. One item each, not a tour of
+everything. The second half walks the day's new issues and PRs, confirming the
+verdicts AI proposed and stopping only where somebody objects, is blocked, or
+raises a question that concerns everyone.
+
+**The digest is what makes the second half possible.** AI writes it before the
+daily, and it is a list of decisions rather than a news feed:
+
+- **decide today** — a handful of items, each with the proposed verdict and one
+  line of why;
+- **stuck** — what has waited longer than it should, and who owns it;
+- **for information** — everything else, read on your own, never read aloud.
+
+It also routes: a PR that touches the area of an earlier one says so, with the
+name of whoever reviewed that one. That is how work someone has already touched
+finds the person who touched it, without anyone reporting it.
+
+**The design session — once a week, two blocks of 45 minutes with a break.**
+Anything with design content goes to a *needs a design* column and waits for the
+session; three or four topics, pre-read published a day ahead. Design is the
+decision we least want taken in a hurry, and the one place where the whole team
+in one room is worth what it costs. Between sessions the lead may settle a small
+design question alone, marked as unilateral — that is what keeps a two-minute
+question from waiting a week.
+
+During a project the daily and the design session are the project's, and members
+skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 
 - **Problem before solution, always** — *even though a PR is already open.* The
   draft PR is evidence about the problem, not a proposal awaiting approval. An
   issue may not be discussed as an implementation until the team has said out
   loud what the problem is. Most disagreements about *how* are unnoticed
   disagreements about *what*.
-- **No unprepared round.** Everyone arrives having read the brief; the lead
-  arrives with an agenda — one question per issue, each with a recommendation.
-  A round without one is moved, not endured.
-- **Design and implementation in one pass.** The same conversation settles the
-  design *and* the approach, so AI goes straight from the round to a finished
-  PR. Splitting across two rounds is the exception, for genuinely new ground.
-- **Progress is never reported aloud** — it lives in the issue. That is what
-  keeps this from becoming a status meeting.
+- **No unprepared meeting.** Everyone arrives having read the digest or the
+  pre-read; the lead arrives with an agenda — one question per item, each with a
+  recommendation. A meeting without one is moved, not endured.
+- **One item per person, and only what someone can act on.** The round table is
+  for what is worth another person's attention: a PR that needs eyes, a decision
+  drifting, something you are stuck on. Status that changes nothing for anybody
+  belongs in the digest.
+- **Design and implementation in one pass.** The same session settles the design
+  *and* the approach, so AI goes straight from it to a finished PR. Splitting
+  across two sessions is the exception, for genuinely new ground.
 - **Two or three issues per person, then stop adding.** Running more sessions is
   nearly free; reading what they produce is not. The limit is the person
   steering, not the machine.
 
-Target: **agreed in the first round that sees it, merged in the next.**
-
 | Step | Target | Limit |
 | --- | --- | --- |
 | Issue filed → brief + draft PR | 30 min | 2 h |
-| Brief → first round | next round | 1 day |
-| Problem agreed → design agreed | same round | 2 rounds |
+| Brief → first daily | next daily | 1 day |
+| Problem agreed → design agreed | next design session | 2 sessions |
 | Design agreed → PR ready for review | 1–4 h | 1 day |
-| Ready → merge decision | next round | 2 rounds |
-| **Issue filed → merged** | **2 rounds** | **4 rounds** |
+| Ready → merge decision | 1 day | next daily |
+| **Filed → merged, no design needed** | **2 dailies** | **1 week** |
+| **Filed → merged, design needed** | **1 week** | **2 weeks** |
 
-Counting in rounds is deliberate: "this issue has taken four rounds" is harder
-to ignore than "it has been a few days".
+Counting in meetings is deliberate: "this has waited two design sessions" is
+harder to ignore than "it has been a couple of weeks".
 
 ---
 
@@ -245,13 +268,13 @@ to ignore than "it has been a few days".
 flowchart TD
     S0["Stage 0 · AN ISSUE IS FILED<br/>by a human — that is the entry ticket"]
     S1["Stage 1 · BRIEF + DRAFT PR<br/>AI, ~30 min<br/>context · verdict · sketch · a probe that compiles"]
-    S2{"Stage 2 · TRIAGE<br/>round: what is the problem, is it ours?"}
+    S2{"Stage 2 · TRIAGE<br/>daily: what is the problem, is it ours?"}
     RJ["close — issue and probe; the brief is the answer"]
     NI["question back to the reporter"]
     PK["parked — the brief stays, the probe is closed"]
-    S3{"Stage 3 · DESIGN + APPROACH<br/>round: this shape, or another?<br/>AI drafts · team agrees · design agreed"}
+    S3{"Stage 3 · DESIGN + APPROACH<br/>design session: this shape, or another?<br/>AI drafts · team agrees · design agreed"}
     S4["Stage 4 · IMPLEMENTATION<br/>AI · the same PR grows up<br/>tests first · green CI · ready for review"]
-    S5{"Stage 5 · REVIEW<br/>round: do we merge?"}
+    S5{"Stage 5 · REVIEW<br/>do we merge?"}
     S6["Stage 6 · MERGE<br/>a human owns it"]
     S7["Stage 7 · HARVEST<br/>what would have made this cheaper<br/>→ a rule, a block, or a check"]
 
@@ -264,12 +287,12 @@ flowchart TD
     S5 -- design wrong --> S3
     S5 -- approved --> S6 --> S7
 
-    classDef round stroke-width:3px;
-    class S2,S3,S5 round;
+    classDef decision stroke-width:3px;
+    class S2,S3,S5 decision;
 ```
 
-The three thick-bordered stages are the three decisions (§2) — one conversation,
-continued. Everything else happens between rounds.
+The three thick-bordered stages are the three decisions (§2). Everything else
+happens between meetings, without us.
 
 **0 · The issue.** Anyone files it — team, support, PM, a user. What a filer owes
 is **the problem, not a solution**; a proposed API is welcome as a hint, but the
@@ -279,24 +302,25 @@ first line has to say what somebody could not do.
 
 - the **Analysis Brief**, committed as a document in the probe PR and linked from
   the issue — context, verdict, sketch, and what it could not verify. It is the
-  pre-read that makes a round possible;
+  pre-read that makes a decision possible;
 - a **draft PR** — a probe: a test that reproduces the problem (failing), the
   sketched API compiling, and CI showing what else moves.
 
 **Why the PR exists before any decision.** A brief can claim "two lines in one
 class" and be wrong; a branch that compiles says what the change actually costs,
 and CI turns blast radius from an estimate into a list of names. It also gives
-the round something concrete to react to, and reacting is far easier than
-originating (§10). If the round agrees with the shape we are already at review;
+the team something concrete to react to, and reacting is far easier than
+originating (§10). If the shape survives the design session we are already at
+review;
 if it does not, we close a branch — the cheapest artefact we produce. The probe
 says in its own description what it does *not* settle, and the brief still
 carries the alternatives AI did not build — otherwise the one shape that exists
 wins by default.
 
-**2 · Triage** — clear rejections the lead makes alone, everything else goes to a
-round, and the question is shallow on purpose: "worth our design time?", not "is
-this right?". Rejecting closes the probe with the issue — an ordinary Tuesday,
-not waste.
+**2 · Triage** — AI proposes a verdict in the brief and the daily confirms it in
+bulk, stopping only where someone objects. The question is shallow on purpose:
+"worth our design time?", not "is this right?". Rejecting closes the probe with
+the issue — an ordinary Tuesday, not waste.
 
 **3 · Design and approach** — the brief grows into the **design note** in the
 same file, so every revision is a diff with a one-line "what changed and why",
@@ -333,8 +357,8 @@ Comment in the PR and AI revises; reviewers do not push fixes themselves, becaus
 asking keeps the rule harvestable. AI then carries the PR to the gate on its own,
 sweeping unresolved comments and red checks until everything is green, and waits
 there — the approval is not its to give. Anything with design content is decided
-in the round by the people who agreed the design; small and routine changes
-async. Bouncing back to Stage 3 is a success, not a failure.
+in the design session by the people who agreed the design; small and routine
+changes async. Bouncing back to Stage 3 is a success, not a failure.
 
 **6 · Merge** — approving means *"I understand this and I am comfortable owning
 it."* Never approve to unblock someone: "the AI wrote it and CI was green"
@@ -480,11 +504,11 @@ rest works.
   be wrong. If probes are almost never discarded, we are not designing; we are
   approving the first thing that compiled.
 - **Everyone speaks before anyone concludes.** Passing is allowed; staying
-  invisible is not. An issue that passes through a round in silence was decided
+  invisible is not. An issue that passes through a meeting in silence was decided
   by whoever spoke last, not by the team.
 - **Nobody arrives cold.** Silence usually means nobody has context, and
   reacting is far easier than originating — which is what the brief and the probe
-  are for. No brief, no design discussion; no agenda, no round.
+  are for. No brief, no design discussion; no agenda, no meeting.
 - **Written threads are first-class**, not a fallback: the quietest person in a
   call often writes the sharpest thing in the thread.
 - **A silent meeting is not diligence.** Ten minutes of only the lead talking
@@ -508,8 +532,8 @@ thing to catch.
 
 | What | Fast — visible this week | Slow — visible over months |
 | --- | --- | --- |
-| Filing → decision | hours from filing to brief and probe · brief to first round | issues that needed a fourth decision |
-| Design | share agreed in the first round that saw them · **probes discarded at design** (near zero means we rubber-stamp the first shape) | bounces back to design after review |
+| Filing → decision | hours from filing to brief and probe · brief to first daily | issues that needed a fourth decision |
+| Design | share agreed in the first session that saw them · **probes discarded at design** (near zero means we rubber-stamp the first shape) | bounces back to design after review |
 | Implementation | first-pass CI success · issues one person steers at once while review holds | rework per merged change |
 | Review | time to the first AI review · comments resolved without a human touching the branch | defects found before merge vs. after release |
 | Steering files | eval pass rate when a rule changes · time from a process incident to an eval | **spot-check mismatch rate** (the honesty metric) · rules added per month |
@@ -517,13 +541,14 @@ thing to catch.
 
 Still to decide:
 
-1. Round cadence — daily 30 minutes or three longer rounds a week, does everyone
-   attend, and is it our only scheduled meeting?
-2. **How many live issues can one round carry before it stops being a
+1. Does the round table stay useful as the team grows, or does it turn into a
+   tour of everything? The digest is meant to carry status; if people start
+   reading it aloud, the first half is the thing to cut.
+2. **How many live issues can one daily carry before it stops being a
    discussion?** That number, not the filing rate, is our real capacity.
 3. Does *every* new issue get a probe, or only ones that pass triage — and when
    is a stale probe closed, by whom?
-4. Who owns an issue in its first hour, before the first round sees it?
+4. Who owns an issue in its first hour, before the first daily sees it?
 5. Who owns the eval suite, and how big can it get before it is too slow to run
    on every change?
 6. Two days of understanding before the scope meeting fits a short project. What
