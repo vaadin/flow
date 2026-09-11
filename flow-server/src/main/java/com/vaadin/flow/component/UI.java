@@ -1053,6 +1053,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param <T>
      *            the navigation target type
@@ -1064,9 +1069,14 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget.
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @see #navigate(Class, Object)
      * @see #navigate(Class, RouteParameters)
+     * @see #refreshCurrentRoute(boolean)
      */
     public <T extends Component> Optional<T> navigate(
             Class<T> navigationTarget) {
@@ -1100,6 +1110,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -1109,7 +1124,11 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws IllegalArgumentException
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
@@ -1117,6 +1136,7 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
+     * @see #refreshCurrentRoute(boolean)
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
@@ -1140,6 +1160,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param <T>
      *            the navigation target type
@@ -1147,7 +1172,11 @@ public class UI extends Component
      *            navigation target to navigate to.
      * @param parameters
      *            parameters to pass to view.
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
      *             mandatory parameter, but parameters argument doesn't provide
@@ -1156,6 +1185,7 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @since 4.0
+     * @see #refreshCurrentRoute(boolean)
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
@@ -1179,6 +1209,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param <T>
      *            the navigation target type
@@ -1186,7 +1221,11 @@ public class UI extends Component
      *            navigation target to navigate to.
      * @param parameters
      *            parameters to pass to view.
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
      *             mandatory parameter, but parameters argument doesn't provide
@@ -1195,6 +1234,7 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @since 24.1.1
+     * @see #refreshCurrentRoute(boolean)
      */
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParam... parameters) {
@@ -1216,6 +1256,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -1227,7 +1272,11 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws IllegalArgumentException
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
@@ -1236,6 +1285,7 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @since 23.2
+     * @see #refreshCurrentRoute(boolean)
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
@@ -1268,6 +1318,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -1277,7 +1332,11 @@ public class UI extends Component
      *            additional query parameters to pass to view
      * @param <C>
      *            navigation target type
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws IllegalArgumentException
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
@@ -1286,6 +1345,7 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @since 24.1
+     * @see #refreshCurrentRoute(boolean)
      */
     @SuppressWarnings("unchecked")
     public <C extends Component> Optional<C> navigate(
@@ -1310,6 +1370,11 @@ public class UI extends Component
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -1317,11 +1382,16 @@ public class UI extends Component
      *            additional query parameters to pass to view
      * @param <T>
      *            navigation target type
-     * @return the view instance, if navigation actually happened
+     * @return the requested view instance, if it is part of the active route
+     *         chain after this call. When the navigation was skipped because
+     *         that view was already shown, this is the existing instance; when
+     *         the navigation was rerouted or forwarded elsewhere, the result is
+     *         empty.
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @since 23.2
+     * @see #refreshCurrentRoute(boolean)
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> Optional<T> navigate(
@@ -1351,9 +1421,15 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @see #navigate(String, QueryParameters)
      * @see Router#navigate(UI, Location, NavigationTrigger)
+     * @see #refreshCurrentRoute(boolean)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -1371,9 +1447,15 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
+     * <p>
+     * Navigating to the location that is already shown does nothing: the view
+     * is not re-instantiated and no navigation lifecycle events are fired. Use
+     * {@link #refreshCurrentRoute(boolean)} to rebuild the view that is
+     * currently shown.
      *
      * @see #navigate(String)
      * @see Router#navigate(UI, Location, NavigationTrigger)
+     * @see #refreshCurrentRoute(boolean)
      *
      * @param locationString
      *            the location to navigate to, not {@code null}
@@ -1454,6 +1536,10 @@ public class UI extends Component
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
      * <p>
+     * This is the way to rebuild the view that is currently shown, since
+     * {@link #navigate(Class) navigating} to the location that is already shown
+     * does nothing.
+     * <p>
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
      * state across refreshes.
@@ -1462,6 +1548,7 @@ public class UI extends Component
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
      * @since 24.4
+     * @see #navigate(Class)
      */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         getInternals().refreshCurrentRoute(refreshRouteChain);
