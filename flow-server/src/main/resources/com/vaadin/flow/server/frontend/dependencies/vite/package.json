@@ -12,6 +12,7 @@
     "vite": "8.0.16",
     "@vitejs/plugin-react": "6.1.1",
     "@preact/signals-react-transform": "0.8.2",
+    "@preact/signals-react": "3.12.0",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
     "@babel/core": "7.29.7",
