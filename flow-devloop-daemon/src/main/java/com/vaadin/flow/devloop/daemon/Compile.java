@@ -215,6 +215,15 @@ final class Compile {
     private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
+     * When the running application was launched, as of the last seed. What it
+     * bounds is which classes it can possibly have loaded: see
+     * {@link #unknownToTheApp}. {@code MAX_VALUE} means "assume it has
+     * everything on disk", which is what a baseline with no application behind
+     * it has to assume.
+     */
+    private volatile long startedAtMillis = Long.MAX_VALUE;
+
+    /**
      * Fingerprints as of the last browser notification, keyed by source path.
      */
     private final Map<Path, Stamp> notified = new java.util.concurrent.ConcurrentHashMap<>();
@@ -812,31 +821,49 @@ final class Compile {
     /**
      * Whether the running application never had the type this source declares.
      * <p>
-     * Two independent ways to be that, and it takes both to get the answer
-     * right.
+     * It takes two facts, because neither is sufficient. {@link #applied} says
+     * what was on disk before the application was launched, and a source in it
+     * is one the application read - but a source missing from it proves
+     * nothing, since an edit made since the launch is missing from it too. What
+     * separates the two is the class file: a type the application had nothing
+     * to load when it started is one it never scanned, never mapped and holds
+     * no bean definition for, while an edited type's class was there all along.
      * <p>
-     * {@link #applied} is the first: a source missing from it was not there
-     * when the application registered. On its own it under-reports, because
-     * that map is also seeded when the compile leg is <em>built</em> - which is
-     * on the first apply, by which time a file created since the application
-     * started is already on disk and gets seeded as though the application had
-     * always had it. Measured: start, add an {@code @Component}, apply, and the
-     * first apply of a daemon's life reported {@code hot-reload} over a bean
-     * the context had no definition for.
+     * Both are read against the launch timestamp rather than against the moment
+     * the baseline happened to be taken, and that is the point: measured, a
+     * baseline taken later claimed a source created seconds after {@code start}
+     * as the application's own, and the first apply then reported
+     * {@code hot-reload} over a bean the context had no definition for - or,
+     * when something else had compiled the class first, no change at all.
      * <p>
-     * The artifact is the second, and it settles that case whatever the
-     * inventory believes: a type whose {@code .class} was not on the classpath
-     * before this apply compiled it is one the application had nothing to load,
-     * nothing to scan and nothing to register. Which is why this has to be
-     * asked before javac runs - afterwards every artifact exists.
+     * The artifact side has to be asked before javac runs: afterwards every
+     * class file exists and is newer than the launch, which would make every
+     * edit look new.
      */
     private boolean unknownToTheApp(Path source) {
-        if (!applied.containsKey(source)) {
-            return true;
+        if (applied.containsKey(source)) {
+            // In the baseline, so it was on disk before the application was
+            // launched: whatever it declares, the application read it.
+            return false;
         }
-        return sourceOwner(source)
-                .map(module -> !Files.isRegularFile(module.artifactFor(source)))
-                .orElse(false);
+        // Written since, so the source is no proof either way - an edit looks
+        // exactly like a new file here. The class is what settles it: one the
+        // application had nothing to load when it started is one it never
+        // scanned, never mapped and has no bean definition for.
+        return sourceOwner(source).map(module -> {
+            Path artifact = module.artifactFor(source);
+            return !Files.isRegularFile(artifact)
+                    || modifiedMillis(artifact) > startedAtMillis;
+        }).orElse(false);
+    }
+
+    private static long modifiedMillis(Path file) {
+        try {
+            return Files.getLastModifiedTime(file).toMillis();
+        } catch (IOException e) {
+            // Unreadable is not evidence that the application had it.
+            return Long.MAX_VALUE;
+        }
     }
 
     /** Records that these sources are now live in the running JVM. */
@@ -852,17 +879,33 @@ final class Compile {
      * there.
      */
     void seedFromDisk() {
-        seedFromDisk(Long.MAX_VALUE);
+        seedFromDisk(Long.MAX_VALUE, Long.MAX_VALUE);
     }
 
     /**
+     * @param startedAtMillis
+     *            when the running application was launched, which bounds what
+     *            it can have loaded; see {@link #unknownToTheApp}
      * @param frontendCutoffMillis
      *            how new a frontend file may be and still count as live; see
      *            {@link #seedFrontend(long)}
      */
-    void seedFromDisk(long frontendCutoffMillis) {
+    void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
+        this.startedAtMillis = startedAtMillis;
         applied.clear();
-        forEachSource((module, source, stamp) -> applied.put(source, stamp));
+        forEachSource((module, source, stamp) -> {
+            // Only what the application could have read. A source written
+            // after it was launched is not one it started with, whenever this
+            // baseline happens to be taken - and it can be taken late: the
+            // compile leg is built lazily, and a registration is handled a
+            // moment after the command that waited for it returned. Both are
+            // windows a developer's next keystroke fits into, and a baseline
+            // that walks "whatever is on disk now" claims those edits as the
+            // application's own.
+            if (stamp.modified() <= startedAtMillis) {
+                applied.put(source, stamp);
+            }
+        });
         seedResources();
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and

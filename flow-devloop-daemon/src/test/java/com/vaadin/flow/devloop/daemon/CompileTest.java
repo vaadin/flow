@@ -285,6 +285,10 @@ class CompileTest {
         // own answer to "have you loaded this?" cannot serve: HotswapAgent's
         // watcher defines a new class as soon as it notices the file, and a
         // defined class is still not a bean definition.
+        //
+        // Timestamps are set rather than slept for: the rule is read against
+        // when the application was launched, and a test that raced the clock
+        // for that would be measuring the filesystem's granularity.
         Reactor.Module app = module("app", "Main", """
                 package app;
                 public class Main { }
@@ -292,34 +296,57 @@ class CompileTest {
         Launch.Project project = project(app);
         Compile compile = new Compile(project);
         Path known = source(app, "Main");
-        // What a running application amounts to here: its class is on the
-        // classpath, and the inventory was seeded with its source.
         compile.compile(List.of(known), project);
-        compile.seedFromDisk();
         Path added = known.resolveSibling("Added.java");
         Files.writeString(added, """
                 package app;
                 public class Added { }
                 """);
+        long launched = System.currentTimeMillis();
+        // What the application runs: source and class both older than it.
+        modified(known, launched - 10_000);
+        modified(app.classesDir().resolve("app").resolve("Main.class"),
+                launched - 10_000);
+        // And a source written since.
+        modified(added, launched + 10_000);
+
+        compile.seedFromDisk(launched, launched);
 
         assertEquals(List.of("Added"),
                 compile.typesUnknownToTheApp(List.of(known, added)));
 
-        // The half the inventory cannot answer, and the one that was reported:
-        // the compile leg is built on the first apply and seeds itself from
-        // disk, so a file created since the application started is in the
-        // inventory as though the application had always had it. Its class is
-        // not on the classpath, which is what still says so.
-        compile.seedFromDisk();
-        assertEquals(List.of("Added"),
-                compile.typesUnknownToTheApp(List.of(known, added)));
-
-        // And once it is compiled and a restart has re-seeded, it is one of
-        // the application's own.
+        // Compiled by something other than the daemon - an IDE building on
+        // save - after the launch. The class exists now, and is still not one
+        // the application ever loaded, so the answer must not change.
         compile.compile(List.of(added), project);
-        compile.seedFromDisk();
+        modified(app.classesDir().resolve("app").resolve("Added.class"),
+                launched + 10_000);
+
+        assertEquals(List.of("Added"),
+                compile.typesUnknownToTheApp(List.of(known, added)));
+
+        // The edit case, and the one only the class can answer: re-seeded
+        // after an edit, the edited source is no longer in the baseline
+        // either - but its class was on the classpath when the application
+        // started, so it is a hot swap rather than a type the context has
+        // never had.
+        modified(known, launched + 10_000);
+        compile.seedFromDisk(launched, launched);
+
+        assertEquals(List.of("Added"),
+                compile.typesUnknownToTheApp(List.of(known, added)));
+
+        // And after the restart that applied it, both are the application's
+        // own.
+        compile.seedFromDisk(launched + 20_000, launched + 20_000);
+
         assertTrue(
                 compile.typesUnknownToTheApp(List.of(known, added)).isEmpty());
+    }
+
+    private void modified(Path file, long millis) throws IOException {
+        Files.setLastModifiedTime(file,
+                java.nio.file.attribute.FileTime.fromMillis(millis));
     }
 
     @Test
@@ -485,7 +512,7 @@ class CompileTest {
         long appStarted = System.currentTimeMillis();
         touch("app/src/main/frontend/views/main.ts");
 
-        compile.seedFromDisk(appStarted);
+        compile.seedFromDisk(appStarted, appStarted);
 
         Compile.FrontendChanges changes = compile.staleFrontend();
         assertEquals(

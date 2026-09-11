@@ -318,19 +318,38 @@ final class Launch {
     }
 
     /**
-     * The resolved project if one is already in hand, and never a resolution.
+     * The resolved project if a sound one is already in hand, and never a
+     * resolution.
      * <p>
      * For callers on a path that must not block: {@link #project()} runs Maven
      * when the stamp has moved, which is seconds, and the registration
      * connection is being answered on the thread that would wait for it.
+     * <p>
+     * The fallback does not count. A resolution that wrote a current stamp and
+     * then failed to be read back leaves the application module alone standing
+     * in for the project, and a caller that builds on that builds on the wrong
+     * module set - which the next apply then reports as "module set changed"
+     * with no pom edit behind it. Such a caller is better off waiting for the
+     * apply that can resolve properly.
      *
-     * @return the current project, or empty if resolving is what it would take
-     *         to have one
+     * @return the current project, or empty if resolving - or resolving again -
+     *         is what it would take to have a sound one
      */
     Optional<Project> projectIfResolved() {
         Project current = project;
-        return current != null && stampIsCurrent() ? Optional.of(current)
+        return current != null && !classpathUnusable && stampIsCurrent()
+                ? Optional.of(current)
                 : Optional.empty();
+    }
+
+    /**
+     * The daemon's own sink, for a caller that has nobody else to report to.
+     * <p>
+     * Work triggered by an application registering has no client waiting on it,
+     * and what it has to say belongs in {@code daemon.log} rather than nowhere.
+     */
+    Log log() {
+        return log;
     }
 
     /**

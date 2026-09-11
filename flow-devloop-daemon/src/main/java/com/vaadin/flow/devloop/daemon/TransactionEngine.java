@@ -279,7 +279,8 @@ final class TransactionEngine {
         // edit, first apply" sequence, and answering "no changes" to it is the
         // bug the frontend leg exists to fix. With no app running there is
         // nothing to be newer than: starting it re-seeds through onConnector.
-        fresh.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE));
+        long started = app.startedAtMillis().orElse(Long.MAX_VALUE);
+        fresh.seedFromDisk(started, started);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -1256,7 +1257,7 @@ final class TransactionEngine {
             return;
         }
         Compile current = compile;
-        if (current == null && launch != null) {
+        if (current == null) {
             // Built here rather than left to the first apply, which is what
             // this baseline used to wait for. "What the application started
             // with" is only true of the disk at this moment: a compile leg
@@ -1270,15 +1271,26 @@ final class TransactionEngine {
             // registration connection being answered, and it must not wait on
             // Maven. A project that is mid-resolve leaves the baseline to the
             // first apply, exactly as before.
-            current = launch.projectIfResolved()
-                    .map(project -> compileFor(project, text -> {
-                    })).orElse(null);
+            //
+            // Seeded by compileFor as it is built, and deliberately not seeded
+            // again below: that seed carries the startup cutoff which keeps a
+            // frontend file edited while the application was starting visible
+            // to the first apply, and a second pass with no cutoff would
+            // declare it live and answer "no changes" over it.
+            if (launch != null) {
+                launch.projectIfResolved().ifPresent(
+                        project -> compileFor(project, launch.log()));
+            }
+            return;
         }
-        if (current != null) {
-            // An app that has just registered is running exactly what is on
-            // disk, so that becomes the new "already live" baseline.
-            current.seedFromDisk();
-        }
+        // An app that has just registered is running exactly what is on disk -
+        // for the frontend, which a restart re-reads whole, so the cutoff
+        // there is open. Not for the Java side: this is handled a moment after
+        // the command that waited for the registration returned, and a source
+        // written in that moment is not something the application started
+        // with.
+        current.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE),
+                Long.MAX_VALUE);
     }
 
     /**

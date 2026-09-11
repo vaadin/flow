@@ -15,11 +15,20 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
-import java.nio.file.Path;
+import javax.tools.ToolProvider;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The changes a redefine cannot make live, and the reason each one gives.
@@ -121,23 +130,25 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         outcome.assertOutputContains("new Spring bean (" + type + ")");
     }
 
-    @Test
-    void aNewSpringBean_escalatesOnTheFirstApplyOfADaemonsLife() {
-        // Same rule as above, in the ordering that got past it. The compile
-        // leg is built lazily, on the first apply, and seeds its inventory
-        // from disk as it is built - so a source created between the
-        // application starting and that first apply lands in the inventory as
-        // though the application had always had it, and asking the inventory
-        // alone answered hot-reload over a bean the context has no definition
-        // for. Every other test in this class applies once in setUp, which is
-        // exactly what hides it.
+    @ParameterizedTest(name = "compiled by the daemon: {0}")
+    @ValueSource(booleans = { true, false })
+    void aNewSpringBean_escalatesOnTheFirstApplyOfADaemonsLife(
+            boolean daemonCompilesIt) throws IOException {
+        // Same rule as above, in the ordering that got past it. The baseline
+        // the rule is read against describes what the application started
+        // with, and it used to be taken when the compile leg was first needed
+        // - the first apply - by which time a source created since the start
+        // is on disk and lands in it as though the application had always had
+        // it. Every other test in this class applies once in setUp, which is
+        // exactly what hides this: by then the baseline is already taken.
         //
         // The file has to be created after the start: a start builds the
         // module, so a source already on disk would be compiled and scanned
         // into the application it is meant to be missing from.
         cli.run("shutdown").assertExitCode(0);
         cli.run("start").assertExitCode(0);
-        patch.create(MUTABLE.resolve("ExtraBean.java"), """
+        Path source = MUTABLE.resolve("ExtraBean.java");
+        patch.create(source, """
                 package com.vaadin.flow.devloop.test.app.mutable;
 
                 import org.springframework.stereotype.Component;
@@ -147,11 +158,64 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
                 public class ExtraBean {
                 }
                 """);
+        if (!daemonCompilesIt) {
+            // An IDE building on save, or a plain mvn run, in the same window.
+            // The artifact is then newer than the source and the baseline has
+            // the stamp, so the change-set did not see the file at all and the
+            // apply answered "no changes" - a worse answer than the wrong
+            // verdict, and the same root cause.
+            compileOutsideTheDaemon(source);
+        }
 
         VaadinDevCli.Outcome outcome = cli
                 .run("apply", "--no-restart", "--json").assertExitCode(0);
 
         outcome.assertOutputContains("new Spring bean (ExtraBean)");
+        outcome.assertOutputDoesNotContain("no changes");
+    }
+
+    /**
+     * Compiles a fixture the way anything other than the daemon would, into the
+     * classpath the application is running.
+     */
+    private static void compileOutsideTheDaemon(Path source)
+            throws IOException {
+        // The application's own classpath, as the daemon resolved it when it
+        // launched: this JVM's may be a manifest-only jar, which would not
+        // resolve the annotation.
+        String classpath = Files.readString(
+                APP.resolve("target").resolve("devloop").resolve("cp.txt"),
+                StandardCharsets.UTF_8).trim();
+        int status = ToolProvider.getSystemJavaCompiler().run(null, null, null,
+                "-nowarn", "-proc:none", "-classpath", classpath, "-d",
+                APP.resolve("target").resolve("classes").toString(),
+                source.toString());
+        assertEquals(0, status,
+                "the fixture has to compile for this test to mean anything");
+    }
+
+    /**
+     * The fixtures here are new classes, and a class file whose source was
+     * created and deleted without a restart in between is deliberately left for
+     * the next build - so these take their own artifacts out. Otherwise the
+     * next application to start would component-scan a bean this class
+     * invented, and the test after it would be measuring that.
+     */
+    @AfterEach
+    void removeFixtureArtifacts() throws IOException {
+        Path classes = APP.resolve("target").resolve("classes")
+                .resolve("com/vaadin/flow/devloop/test/app/mutable".replace('/',
+                        java.io.File.separatorChar));
+        if (!Files.isDirectory(classes)) {
+            return;
+        }
+        try (Stream<Path> artifacts = Files.list(classes)) {
+            for (Path artifact : artifacts.filter(
+                    path -> path.getFileName().toString().startsWith("Extra"))
+                    .toList()) {
+                Files.deleteIfExists(artifact);
+            }
+        }
     }
 
     @Test
