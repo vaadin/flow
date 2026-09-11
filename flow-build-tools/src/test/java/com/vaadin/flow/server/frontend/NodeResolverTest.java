@@ -51,6 +51,12 @@ class NodeResolverTest {
 
     private static final String VERSION = "v24.19.0";
 
+    /**
+     * The version that Vaadin 24.0 installed, as still found in token files
+     * written back then.
+     */
+    private static final String OUTDATED_VERSION = "v18.14.1";
+
     private static final Instant LONG_AGO = Instant.now()
             .minus(Duration.ofDays(400));
     private static final Instant RECENTLY = Instant.now()
@@ -117,6 +123,25 @@ class NodeResolverTest {
                 "An installation unused for over 6 months should be removed once a new version is installed");
         assertTrue(recent.getDirectory().isDirectory(),
                 "A recently used installation should be kept");
+    }
+
+    @Test
+    void resolve_configuredVersionTooOld_supportedVersionIsInstalledInstead()
+            throws IOException {
+        stubInstallation(OUTDATED_VERSION);
+        prepareDownloadableNode(FrontendTools.DEFAULT_NODE_VERSION);
+
+        ActiveNodeInstallation active = resolve(OUTDATED_VERSION);
+
+        NodeInstallation installed = NodeInstallation.forVersion(vaadinHome,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        assertEquals(installed.getNodeExecutable().getAbsolutePath(),
+                active.nodeExecutable(),
+                "A configured version that the frontend tooling cannot run should be replaced by the default one, even when it is installed");
+        assertEquals(
+                NodeInstallation
+                        .normalizeVersion(FrontendTools.DEFAULT_NODE_VERSION),
+                active.nodeVersion());
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

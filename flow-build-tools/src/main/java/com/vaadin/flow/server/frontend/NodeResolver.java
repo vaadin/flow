@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -244,6 +245,7 @@ class NodeResolver implements java.io.Serializable {
                         nodeFolderFile.getAbsolutePath()));
             }
 
+            warnIfConfiguredFolderNodeIsTooOld(installation.nodeVersion());
             getLogger().info(
                     "Using Node.js from configured folder: {} (version {})",
                     nodeFolderFile.getAbsolutePath(),
@@ -258,6 +260,26 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
+     * Warns when the Node.js in the configured node folder is too old for the
+     * frontend tooling, which reports the problem much later and without
+     * telling where the version came from.
+     *
+     * @param version
+     *            the version of the Node.js that will be used
+     */
+    private void warnIfConfiguredFolderNodeIsTooOld(String version) {
+        if (new FrontendVersion(version)
+                .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+            getLogger().warn(
+                    "Node.js version {} is older than the minimum supported version {}, so the frontend build is likely to fail. "
+                            + "Remove the '{}' setting to let Vaadin use a supported version instead.",
+                    version,
+                    FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                    InitParameters.NODE_FOLDER);
+        }
+    }
+
+    /**
      * Uses the requested node version from the alternative directory, or
      * installs it there.
      *
@@ -266,6 +288,7 @@ class NodeResolver implements java.io.Serializable {
      *             if installation fails
      */
     private ActiveNodeInstallation resolveOrInstallAlternativeNode() {
+        String versionToUse = supportedNodeVersion();
         File alternativeDirFile = new File(alternativeDir);
         NodeInstaller nodeInstaller = new NodeInstaller(alternativeDirFile,
                 proxies);
@@ -275,23 +298,24 @@ class NodeResolver implements java.io.Serializable {
 
         // Check whether the requested version is already installed
         ActiveNodeInstallation active = tryUseInstalled(
-                NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
+                NodeInstallation.forVersion(alternativeDirFile, versionToUse),
+                versionToUse);
         if (active != null) {
-            getLogger().debug("Node {} is already installed in {}", nodeVersion,
+            getLogger().info("Using Node {} from {}", active.nodeVersion(),
                     alternativeDir);
             return active;
         }
 
         // No suitable version found, install the requested version
-        getLogger().info("Installing Node {} to {}", nodeVersion,
+        getLogger().info("Installing Node {} to {}", versionToUse,
                 alternativeDir);
         try {
-            nodeInstaller.setNodeVersion(nodeVersion);
+            nodeInstaller.setNodeVersion(versionToUse);
             nodeInstaller.install();
             NodeInstallation installation = NodeInstallation
-                    .forVersion(alternativeDirFile, nodeVersion);
+                    .forVersion(alternativeDirFile, versionToUse);
             installation.markUsed();
-            active = createActiveInstallation(installation, nodeVersion);
+            active = createActiveInstallation(installation, versionToUse);
 
             // Only once the new installation is known to work, so that a
             // broken install does not also take away the versions that could
@@ -309,11 +333,13 @@ class NodeResolver implements java.io.Serializable {
      *
      * @param installation
      *            the installation to try, which does not have to exist
+     * @param requestedVersion
+     *            the version that the installation is expected to provide
      * @return the active node installation, or {@code null} if the installation
      *         cannot be used
      */
     private ActiveNodeInstallation tryUseInstalled(
-            NodeInstallation installation) {
+            NodeInstallation installation, String requestedVersion) {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
@@ -327,7 +353,7 @@ class NodeResolver implements java.io.Serializable {
                     installation.getInstalledVersion().getFullVersion());
 
             if (reported.equals(NodeInstallation.forVersion(installDirectory,
-                    nodeVersion))) {
+                    requestedVersion))) {
                 installation.markUsed();
                 return createActiveInstallation(installation,
                         installation.getVersion());
@@ -338,6 +364,43 @@ class NodeResolver implements java.io.Serializable {
                     e);
         }
         return null;
+    }
+
+    /**
+     * Returns the Node.js version to use in the alternative directory, which is
+     * the configured one unless it is too old to run the frontend tooling.
+     * <p>
+     * The configured version is not necessarily one that somebody has chosen on
+     * purpose: it is also read from the token file, where it may have been
+     * written years earlier by an older Vaadin version. Installing such a
+     * version only moves the failure to the frontend build, which then reports
+     * a Node.js version that is found nowhere in the project.
+     *
+     * @return the version to take into use or install
+     */
+    private String supportedNodeVersion() {
+        FrontendVersion configured;
+        try {
+            configured = new FrontendVersion(nodeVersion);
+        } catch (NumberFormatException e) {
+            // Left for the installer to report, as it knows what it accepts
+            getLogger().debug(
+                    "Could not parse the configured Node.js version {}",
+                    nodeVersion, e);
+            return nodeVersion;
+        }
+        if (configured.isOlderThan(FrontendTools.MINIMUM_AUTO_INSTALLED_NODE)) {
+            getLogger().warn(
+                    "The configured Node.js version {} is older than the minimum supported version {}, using {} instead. "
+                            + "The version comes from the '{}' setting, which is also stored in the token file '{}' when the frontend is prepared. "
+                            + "A stale token file in the build output directory is the usual reason for a version that nobody has configured on purpose.",
+                    nodeVersion,
+                    FrontendTools.MINIMUM_AUTO_INSTALLED_NODE.getFullVersion(),
+                    FrontendTools.DEFAULT_NODE_VERSION,
+                    InitParameters.NODE_VERSION, FrontendUtils.TOKEN_FILE);
+            return FrontendTools.DEFAULT_NODE_VERSION;
+        }
+        return nodeVersion;
     }
 
     private ActiveNodeInstallation createActiveInstallation(
