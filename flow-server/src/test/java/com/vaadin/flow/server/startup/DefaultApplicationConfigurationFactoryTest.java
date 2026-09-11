@@ -211,6 +211,8 @@ class DefaultApplicationConfigurationFactoryTest {
             throws IOException {
         assertEquals("v24.10.0", nodeVersionFromTokenFile("v24.10.0"),
                 "A usable Node.js version in the token file should be used");
+        assertEquals("lts", nodeVersionFromTokenFile("lts"),
+                "A version that cannot be parsed should be left for the frontend tooling to report");
         assertNull(nodeVersionFromTokenFile("v18.14.1"),
                 "A Node.js version older than the frontend tooling supports comes from a stale token file and should be ignored");
     }

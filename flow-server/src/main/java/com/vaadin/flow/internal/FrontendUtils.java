@@ -84,14 +84,12 @@ public class FrontendUtils {
     public static final String NODE_MODULES = "node_modules/";
 
     /**
-     * Minimum Node.js version that Vaadin installs and takes into use by
-     * itself, which is newer than the oldest version it accepts from a global
-     * installation.
+     * Oldest Node.js version that the frontend tooling runs on.
      *
      * @since 25.4
      */
-    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
-            24, 10, 0);
+    public static final FrontendVersion MINIMUM_SUPPORTED_NODE_VERSION = new FrontendVersion(
+            24, 0, 0);
 
     /**
      * Default folder used for source and generated folders.

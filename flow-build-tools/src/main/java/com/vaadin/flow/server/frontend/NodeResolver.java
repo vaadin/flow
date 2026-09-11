@@ -245,9 +245,8 @@ class NodeResolver implements java.io.Serializable {
                         nodeFolderFile.getAbsolutePath()));
             }
 
-            warnIfTooOld(installation.nodeVersion(),
-                    FrontendTools.SUPPORTED_NODE_VERSION,
-                    InitParameters.NODE_FOLDER);
+            warnIfTooOld(installation.nodeVersion(), InitParameters.NODE_FOLDER,
+                    "a supported version");
             getLogger().info(
                     "Using Node.js from configured folder: {} (version {})",
                     nodeFolderFile.getAbsolutePath(),
@@ -270,15 +269,16 @@ class NodeResolver implements java.io.Serializable {
      *
      * @param version
      *            the Node.js version that will be used
-     * @param minimum
-     *            the oldest version that the frontend tooling runs on
      * @param setting
      *            the name of the setting that the version comes from
+     * @param replacement
+     *            what Vaadin uses instead once the setting is gone
      */
-    private void warnIfTooOld(String version, FrontendVersion minimum,
-            String setting) {
+    private void warnIfTooOld(String version, String setting,
+            String replacement) {
         try {
-            if (!new FrontendVersion(version).isOlderThan(minimum)) {
+            if (!new FrontendVersion(version)
+                    .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
                 return;
             }
         } catch (NumberFormatException e) {
@@ -290,9 +290,10 @@ class NodeResolver implements java.io.Serializable {
         }
         getLogger().warn(
                 "Node.js version {} configured through '{}' is older than the minimum supported version {}, so the frontend build is likely to fail. "
-                        + "Remove the setting to let Vaadin use Node.js {} instead.",
-                version, setting, minimum.getFullVersion(),
-                FrontendTools.DEFAULT_NODE_VERSION);
+                        + "Remove the setting to let Vaadin use {} instead.",
+                version, setting,
+                FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                replacement);
     }
 
     /**
@@ -304,8 +305,8 @@ class NodeResolver implements java.io.Serializable {
      *             if installation fails
      */
     private ActiveNodeInstallation resolveOrInstallAlternativeNode() {
-        warnIfTooOld(nodeVersion, FrontendTools.MINIMUM_AUTO_INSTALLED_NODE,
-                InitParameters.NODE_VERSION);
+        warnIfTooOld(nodeVersion, InitParameters.NODE_VERSION,
+                "Node.js " + FrontendTools.DEFAULT_NODE_VERSION);
         File alternativeDirFile = new File(alternativeDir);
         NodeInstaller nodeInstaller = new NodeInstaller(alternativeDirFile,
                 proxies);

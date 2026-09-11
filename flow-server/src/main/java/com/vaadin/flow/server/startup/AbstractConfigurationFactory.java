@@ -233,13 +233,13 @@ public class AbstractConfigurationFactory implements Serializable {
      */
     private boolean isUsableNodeVersion(String version) {
         try {
-            if (new FrontendVersion(version)
-                    .isOlderThan(FrontendUtils.MINIMUM_AUTO_INSTALLED_NODE)) {
+            if (new FrontendVersion(version).isOlderThan(
+                    FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION)) {
                 getLogger().warn(
                         "Ignoring Node.js version {} from '{}', as it is older than the minimum supported version {}. "
                                 + "Run the 'prepare-frontend' goal to rewrite the file, or set the '{}' property to use that version anyway.",
                         version, FrontendUtils.TOKEN_FILE,
-                        FrontendUtils.MINIMUM_AUTO_INSTALLED_NODE
+                        FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION
                                 .getFullVersion(),
                         VAADIN_PREFIX + NODE_VERSION);
                 return false;
