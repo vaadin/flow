@@ -13,5 +13,5 @@ fi
 mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -ntp versions:set-property -Dproperty=quarkus.version -DnewVersion=${QUARKUS_VERSION} -DgenerateBackupPoms=false
 
 # run the tests
-mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -e -V -DskipTests -ntp -Drequire.home.node=true clean install
+mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -e -V -DskipTests -DskipITs -ntp -Drequire.home.node=true clean install
 mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -e -V -ntp -Drequire.home.node=true -Dcom.vaadin.testbench.Parameters.maxAttempts=2 verify
