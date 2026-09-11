@@ -132,6 +132,7 @@ class NodeUpdaterTest {
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
         expectedDependencies.add("react-router");
+        expectedDependencies.add("@preact/signals-react");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -147,6 +148,7 @@ class NodeUpdaterTest {
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
         expectedDependencies.add("react-router");
+        expectedDependencies.add("@preact/signals-react");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 

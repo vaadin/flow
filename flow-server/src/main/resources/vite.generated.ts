@@ -617,6 +617,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
             { importSource: 'Frontend/generated/jsx-dev-transform' }
           ],
           !productionMode && addFunctionComponentSourceLocationBabel(),
+          // Adds a useSignals() call from @preact/signals-react/runtime to
+          // every component, so that runtime ends up in the application
+          // bundle. It is declared in
+          // dependencies/react-router/package.json with a version that
+          // satisfies the range this plugin depends on.
           [
             'module:@preact/signals-react-transform',
             {
