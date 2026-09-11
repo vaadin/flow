@@ -34,6 +34,8 @@ import java.util.Objects;
  * which is used for gathering all data that relates to internal entry points.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.1
  **/
 public class ChunkInfo {
 

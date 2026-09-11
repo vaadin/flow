@@ -25,6 +25,8 @@ package com.vaadin.flow.component.geolocation;
  * Each constant holds an integer identifier. Applications rarely need to look
  * at {@link #code()} directly; it is exposed for logging and for round-tripping
  * with {@link GeolocationError#code()}.
+ *
+ * @since 25.2
  */
 public enum GeolocationErrorCode {
     /**

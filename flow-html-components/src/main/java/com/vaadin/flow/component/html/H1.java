@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;h1&gt;</code> element.
+ * <p>
+ * The highest-rank heading on the page. Use one as the document title; lower
+ * ranks follow in order.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/h1">MDN:
+ *      &lt;h1&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -66,6 +72,7 @@ public class H1 extends HtmlContainer implements ClickNotifier<H1> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public H1(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @param <V>
  *            the type of the second component
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 2.0
  */
 public class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {

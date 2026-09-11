@@ -28,6 +28,7 @@ import com.vaadin.flow.server.communication.FragmentedMessageHolder;
  *
  * @author Vaadin Ltd
  *
+ * @since 3.1
  */
 public interface BrowserLiveReload extends FragmentedMessageHolder {
 
@@ -92,6 +93,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      * @param refreshLayouts
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route component
+     * @since 24.5
      */
     default void refresh(boolean refreshLayouts) {
         reload();
@@ -107,6 +109,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the path of the file to update, relative to the servlet path.
      * @param content
      *            the new content of the file
+     * @since 24.1
      */
     void update(String path, String content);
 
@@ -117,6 +120,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the atmosphere resource that received the message
      * @param msg
      *            the received message
+     * @since 23.1
      */
     void onMessage(AtmosphereResource resource, String msg);
 
@@ -127,6 +131,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      *            the event name
      * @param eventData
      *            the event data
+     * @since 24.8
      */
     void sendHmrEvent(String event, JsonNode eventData);
 

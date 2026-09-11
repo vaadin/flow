@@ -8,11 +8,11 @@
  */
 package com.vaadin.flow.component;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -23,7 +23,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@NotThreadSafe
+@Isolated
 class CompositeTest {
 
     @Tag("div")

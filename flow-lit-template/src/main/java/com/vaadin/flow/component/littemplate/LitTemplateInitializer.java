@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @author Vaadin Ltd
  *
+ * @since 4.0
  */
 public class LitTemplateInitializer {
     private static final ConcurrentHashMap<LitTemplateParser, ReflectionCache<LitTemplate, ParserData>> CACHE = new ConcurrentHashMap<>();

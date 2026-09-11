@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
  *
  * @author Vaadin Ltd
  *
+ * @since 5.0
  */
 @FunctionalInterface
 public interface InjectableFieldConsumer {

@@ -23,6 +23,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;details&gt;</code> element.
  *
+ * @since 6.0
  */
 @Element("details")
 public class NativeDetailsElement extends TestBenchElement {

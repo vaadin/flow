@@ -52,6 +52,7 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 @FunctionalInterface
 public interface Signal<T extends @Nullable Object> extends Serializable {
@@ -127,18 +128,24 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
 
     /**
      * Creates a signal effect that is owned by a given component. The effect is
-     * enabled when the component is attached and automatically disabled when it
-     * is detached.
+     * enabled every time the component is attached and automatically disabled
+     * when it is detached.
      * <p>
      * Example of usage:
      *
      * <pre>
-     * Registration effect = Signal.effect(myComponent, () -> {
+     * Signal.effect(myComponent, () -> {
      *     Notification.show("Component is attached and signal value is "
      *             + someSignal.get());
      * });
-     * effect.remove(); // to remove the effect when no longer needed
      * </pre>
+     * 
+     * <p>
+     * It is recommended to create an effect once in a component constructor and
+     * rely on the automatic enabling and disabling of the effect as the owner
+     * component is attached and detached. Alternatively, the effect can be
+     * created in an attach handler while using the returned registration to
+     * close the effect in a corresponding detach handler.
      *
      * @param owner
      *            the owner component for which the effect is applied, must not
@@ -148,6 +155,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1.1
      */
     static Registration effect(Component owner, EffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
@@ -155,10 +163,10 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
 
     /**
      * Creates a context-aware component-scoped signal effect. The effect is
-     * enabled when the component is attached and automatically disabled when it
-     * is detached. The action receives an {@link EffectContext} providing
-     * information about why the effect is running (initial render, effect
-     * owner's request, or background change).
+     * enabled every time the component is attached and automatically disabled
+     * when it is detached. The action receives an {@link EffectContext}
+     * providing information about why the effect is running (initial render,
+     * effect owner's request, or background change).
      * <p>
      * Example of usage:
      *
@@ -170,6 +178,13 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *     }
      * });
      * </pre>
+     * 
+     * <p>
+     * It is recommended to create an effect once in a component constructor and
+     * rely on the automatic enabling and disabling of the effect as the owner
+     * component is attached and detached. Alternatively, the effect can be
+     * created in an attach handler while using the returned registration to
+     * close the effect in a corresponding detach handler.
      *
      * @param owner
      *            the owner component for which the effect is applied, must not
@@ -179,6 +194,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *            <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1.1
      */
     static Registration effect(Component owner,
             ContextualEffectAction effectFunction) {

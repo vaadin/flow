@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -42,6 +44,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  * configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
@@ -130,11 +134,14 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("clientServiceWorkerSource", getServiceWorkerFile());
 
+        settings.put("clientIndexHtmlSource", getIndexHtmlFile());
+
         settings.put("pwaEnabled", pwaConfiguration.isEnabled());
 
         settings.put("offlineEnabled", pwaConfiguration.isOfflineEnabled());
 
-        settings.put("offlinePath", getOfflinePath());
+        settings.put("offlinePath",
+                getOfflinePath(pwaConfiguration, npmFolder));
 
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
@@ -177,15 +184,48 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         }
     }
 
-    private String getOfflinePath() {
+    private String getIndexHtmlFile() {
+        // User-provided index.html in the frontend folder takes precedence
+        // over the default generated into the frontend generated/ folder.
+        File userIndexHtml = new File(frontendDirectory, INDEX_HTML);
+        if (userIndexHtml.exists()) {
+            return userIndexHtml.toPath().toString();
+        }
+        // The default is served by Vite at /generated/index.html, so it must
+        // live in the generated/ folder under the frontend root (alongside the
+        // generated bootstrap), not in frontendGeneratedFolder, which a custom
+        // generatedTsFolder can relocate outside the Vite root.
+        return new File(new File(frontendDirectory, GENERATED), INDEX_HTML)
+                .toPath().toString();
+    }
+
+    /**
+     * Computes the value for the {@code OFFLINE_PATH} constant that Vite
+     * compiles into the service worker.
+     * <p>
+     * Vite substitutes the value verbatim, so the path is wrapped in single
+     * quotes to make it a JavaScript expression. Bundle validation compares
+     * this value against the one recorded in the bundle's {@code stats.json},
+     * so both sides must derive it from this method.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param pwaConfiguration
+     *            the PWA configuration of the application, not {@code null}
+     * @param npmFolder
+     *            the project root, used to relativize an absolute offline path
+     * @return the offline path wrapped in single quotes
+     */
+    public static String getOfflinePath(PwaConfiguration pwaConfiguration,
+            File npmFolder) {
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            return "'" + getEscapedRelativePath(
+            return "'" + getEscapedRelativePath(npmFolder,
                     Paths.get(pwaConfiguration.getOfflinePath())) + "'";
         }
         return "'.'";
     }
 
-    private String getEscapedRelativePath(Path path) {
+    private static String getEscapedRelativePath(File npmFolder, Path path) {
         if (path.isAbsolute()) {
             return FrontendUtils.getUnixRelativePath(npmFolder.toPath(), path);
         } else {

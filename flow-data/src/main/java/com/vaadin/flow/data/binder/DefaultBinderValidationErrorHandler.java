@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.ThemeList;
  *
  * @author Vaadin Ltd
  *
+ * @since 8.0
  */
 public class DefaultBinderValidationErrorHandler
         implements BinderValidationErrorHandler {

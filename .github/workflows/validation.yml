@@ -1,21 +1,29 @@
 name: Flow Validation
 on:
   push:
-    branches: ['25.2', '25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
+    branches: ['25.3', '25.2', '25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    # Deliberately unfiltered by base branch so that PRs stacked on another
+    # feature branch are validated too, not only those targeting main.
+    # PRs against a maintenance branch run that branch's own copy of this file.
   merge_group:
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.head_ref || github.ref_name }}
+  # The merge queue reuses the same branch name (gh-readonly-queue/<base>/pr-<n>-<base sha>)
+  # for every merge group built from the same PR and base commit, so the group has to be keyed
+  # on the merge group's own head sha. Otherwise re-running an obsolete merge queue validation
+  # cancels the run validating the current merge group, which ejects the PR from the queue.
+  group: ${{ github.workflow }}-${{ github.event.merge_group.head_sha || github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_REF: ${{ github.head_ref }}
   _REF_NAME: ${{ github.ref_name }}
+  _MERGE_GROUP_SHA: ${{ github.event.merge_group.head_sha }}
+  _MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -29,32 +37,30 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = ${_HEAD_REF:-$_REF_NAME}"
+      - run: echo "Concurrency Group = $GITHUB_WORKFLOW-${_MERGE_GROUP_SHA:-${_HEAD_REF:-$_REF_NAME}}"
       - name: Check secrets
         if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          [ -z "${{secrets.TB_LICENSE}}" ] \
+          [ -z "$TB_LICENSE" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
+          node-version: '24.21.0'
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -72,7 +78,7 @@ jobs:
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
           tar rf workspace.tar $(find . -d -name target)
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: saved-workspace
           path: workspace.tar
@@ -85,27 +91,23 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -122,8 +124,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Unit Test
@@ -132,13 +135,31 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C $ARGS"
+          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
           LOG=mvn-unit-tests-${{matrix.current}}.out
+          : > "$LOG"
           $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
           MVN_PID=$!
           tail -f --pid=$MVN_PID "$LOG" &
           wait $MVN_PID
+      - name: Package coverage reports
+        # Some modules (see moduleSplits in computeMatrix.js) run their tests
+        # split over several matrix jobs, each producing a partial
+        # target/site/jacoco/jacoco.xml for the same module. Rename the
+        # reports with the matrix index so the Sonar job can extract all
+        # archives without them overwriting each other; Sonar merges the
+        # partial reports.
+        run: |
+          find . -path '*/target/site/jacoco/jacoco.xml' | while read -r f; do
+            mv "$f" "${f%/jacoco.xml}/jacoco-unit-${{matrix.current}}.xml"
+          done
+          find . -path '*/target/site/jacoco/jacoco-unit-*.xml' \
+            | tar -czf coverage-unit-${{matrix.current}}.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-unit-${{ matrix.current }}
+          path: coverage-unit-*.tgz
       - name: Convert Javadoc errors to JUnit XML
         if: ${{ failure() }}
         run: |
@@ -157,7 +178,7 @@ jobs:
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ failure() || success() }}
         with:
           name: tests-output-unit-${{ matrix.current }}
@@ -171,36 +192,32 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.9.0'
-      - uses: pnpm/action-setup@v3
+          node-version: '24.21.0'
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.0.8'
-      - uses: oven-sh/setup-bun@v2
+          version: '11.26.0'
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -216,8 +233,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
@@ -230,6 +248,10 @@ jobs:
             cmd="mvn install -B -ntp -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
+          if [ ${{matrix.current}} -eq 7 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl devloop-shared -am"
+            $cmd || $cmd
+          fi
       - name: Run ITs
         timeout-minutes: 22
         run: |
@@ -239,6 +261,7 @@ jobs:
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
+          : > "$LOG"
           # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
           # the step open by holding the pipe to tee.
@@ -255,11 +278,273 @@ jobs:
       - name: Package test-report files
         if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
+  gradle-tests:
+    name: Gradle Tests
+    # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
+    # as a required check, but the expensive steps are gated on whether
+    # anything the Gradle plugin builds on actually changed, so unrelated PRs
+    # pass immediately. Unlike the other test jobs this one needs no secrets,
+    # so it runs for pull requests from forks too.
+    needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 120
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required to diff against the merge base
+      - name: Decide whether to run
+        # An ignore list rather than an allow list. The job runs `gradlew
+        # build`, and check dependsOn functionalTest, so it also builds the
+        # sample applications under src/functionalTest - and those declare
+        # com.vaadin:flow, the aggregate that pulls in flow-client,
+        # flow-html-components, flow-data, flow-dnd and flow-push, plus
+        # vaadin-spring. Enumerating everything that can break the job is
+        # error prone and goes stale as modules are added, so anything that is
+        # not known to be irrelevant runs it: what is left out is the
+        # integration tests, documentation and the unrelated workflows.
+        # Merge groups carry a base_sha, so they are filtered the same way; a
+        # push or a manual run has nothing to compare against and always
+        # builds. run stays true whenever the comparison cannot be made: a gate
+        # that does not know what changed has to run the job, not report green.
+        id: decide
+        run: |
+          set -euo pipefail
+          run=true
+          DIFF_BASE=
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              # The checkout is by sha, which leaves no remote-tracking branch
+              # for the base, so fetch one explicitly rather than relying on
+              # whatever refs happen to be present.
+              if git fetch --no-tags origin \
+                  "+refs/heads/$_BASE_REF:refs/remotes/origin/$_BASE_REF"; then
+                DIFF_BASE=$(git merge-base HEAD "refs/remotes/origin/$_BASE_REF" || true)
+              fi
+              ;;
+            merge_group)
+              # The merge group branch is built on top of base_sha, so it is
+              # already in the history checked out here.
+              DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+              ;;
+          esac
+          if [ -z "$DIFF_BASE" ]; then
+            echo "No base to compare against, running the job."
+          elif ! CHANGED=$(git diff --name-only "$DIFF_BASE" HEAD); then
+            echo "Could not diff against $DIFF_BASE, running the job."
+          else
+            RELEVANT=$(printf '%s\n' "$CHANGED" | awk '
+              $0 == ".github/workflows/validation.yml" { print; next }
+              /^flow-tests\// { next }
+              /^\.github\// { next }
+              /\.md$/ { next }
+              { print }')
+            if [ -z "$RELEVANT" ]; then
+              echo "No changes affecting the Gradle plugin, skipping."
+              run=false
+            else
+              echo "Changes affecting the Gradle plugin:"
+              printf '%s\n' "$RELEVANT"
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          node-version: '24.21.0'
+      - name: Set up JDK
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The Gradle build takes its version from the root pom, so the poms have
+        # to match the saved workspace for the plugin to resolve
+        # flow-plugin-base from the local repository.
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      # Caching the Gradle home by hand meant every pull request saved its own
+      # copy of it. Those copies alone held 7 of the 10 GB the repository is
+      # allowed, so entries evicted each other within hours and even a second
+      # run of the same pull request started cold. What keeps them down now is
+      # the key: a pull request that edits none of the files it hashes restores
+      # the entry main warmed on the primary key, and the provider skips its
+      # save on an exact hit, so only the ones that change a build script write
+      # at all. The gating below is not what does it, it was already there
+      # while those copies accumulated.
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        with:
+          # The default 'enhanced' provider is a proprietary component that the
+          # MIT licence of the action does not cover, and it is free only as a
+          # preview. 'basic' is the MIT implementation. It saves one entry over
+          # ~/.gradle/caches and ~/.gradle/wrapper, the same tree the hand
+          # written step cached, and deliberately passes no restore keys, so a
+          # change to anything the key covers starts from an empty Gradle home
+          # rather than a near match. gradle-home-cache-includes and its
+          # siblings are read only by the enhanced provider and do nothing here.
+          #
+          # Its key is not the one the replaced step computed either. It hashes
+          # **/*.gradle*, **/gradle-wrapper.properties, gradle/*.versions.toml,
+          # **/versions.properties and a couple of buildSrc paths, across the
+          # whole repository. So flow-gradle-plugin/gradle.properties no longer
+          # takes part, a basename needs a literal .gradle in it, and the two
+          # settings.gradle fixtures under vaadin-dev-server/src/test/resources
+          # now do: editing one of those invalidates the Gradle home.
+          cache-provider: basic
+          # The action would otherwise write only on the default branch, which
+          # this workflow no longer builds.
+          #
+          # Everything but the merge queue writes. Read only would be cheaper,
+          # but the provider has no restore keys, so a pull request that edits a
+          # build script computes a key that exists in no scope and could not
+          # save one either: it would download the whole Kotlin, Dokka and
+          # plugin-publish set again on every push to that branch. Those are
+          # exactly the pull requests this job runs for, and the hand written
+          # step it replaced degraded to a prefix match instead. A merge queue
+          # branch is single use, so what it saves is read by nothing.
+          cache-read-only: ${{ github.event_name == 'merge_group' }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        # Reuse the Flow artifacts installed by the build job instead of
+        # building Flow a second time.
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Run Gradle build and functionalTests
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        working-directory: flow-plugins/flow-gradle-plugin
+        # The sample applications the functional tests build resolve
+        # com.vaadin:flow from the version of the Gradle build, which the poms
+        # set to 999.99-SNAPSHOT above, so they exercise the workspace restored
+        # here rather than a published snapshot. The functionalTest task passes
+        # it on; AbstractGradleTest fails the build if it ever stops arriving.
+        run: |
+          ./gradlew build --stacktrace
+      - name: Package test-report files
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        run: |
+          # -type f, so the matching directories are not listed alongside the
+          # files they contain and archived a second time.
+          find flow-plugins/flow-gradle-plugin -type f \
+            \( -path '*/build/reports/tests/*' -o -path '*/build/test-results/*' \) \
+            > gradle-reports.txt
+          # tar refuses to create an empty archive, so only pack a report if the
+          # Gradle build got far enough to write one.
+          if [ -s gradle-reports.txt ]; then
+            tar -czf gradle-tests-report.tgz -T gradle-reports.txt
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        with:
+          # Deliberately not named tests-output-*: the test-results job merges
+          # that pattern and only understands surefire/failsafe reports.
+          name: gradle-tests-report
+          path: gradle-tests-report.tgz
+          if-no-files-found: ignore
+  sonar-analysis:
+    name: Sonar Analysis
+    # Runs after the unit tests so the analysis can reuse their JaCoCo
+    # coverage reports instead of running the tests a second time.
+    needs: unit-tests
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The saved workspace was built as 999.99-SNAPSHOT; the poms must
+        # match it for the restored target directories and .m2 artifacts
+        # to be picked up.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        # Reuse the classes compiled by the build job instead of recompiling.
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Download coverage reports
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: coverage-unit-*
+          merge-multiple: true
+      - name: Extract coverage reports
+        run: |
+          for i in coverage-unit-*.tgz; do tar xzf "$i"; done
+      - name: Run Sonar analysis
+        # flow-gradle-plugin is excluded because the build job does not
+        # compile it, so the workspace has no classes for it.
+        #
+        # Pull requests are analyzed in pull-request mode; pushes to a
+        # tracked branch (e.g. 25.2, 24.10) are analyzed as that branch.
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            SCOPE="-Dsonar.branch.name=$GITHUB_REF_NAME"
+          else
+            SCOPE="-Dsonar.pullrequest.key=$_PR_NUMBER \
+              -Dsonar.pullrequest.base=$_BASE_REF \
+              -Dsonar.pullrequest.branch=$_HEAD_REF"
+          fi
+          mvn sonar:sonar \
+            -ntp -B -e -V \
+            -pl '!flow-plugins/flow-gradle-plugin' \
+            -Dsonar.projectKey=vaadin_flow \
+            -Dsonar.organization=vaadin \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/*.xml \
+            $SCOPE
   test-results:
     permissions:
       actions: write
@@ -275,25 +560,21 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v5
+        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tests-output
           pattern: tests-output-*
-      - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: tests-output
       - name: extract downloaded files
         run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@v5
-        with:
-          name: |
-            saved-workspace
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
@@ -302,24 +583,52 @@ jobs:
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
+  cleanup-artifacts:
+    permissions:
+      actions: write
+    # The saved-workspace artifact can only be deleted once every job that
+    # restores it has run: deleting it in test-results could race with the
+    # Sonar analysis, which starts as soon as the unit tests finish.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
+    needs: [test-results, sonar-analysis, gradle-tests]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
+        with:
+          name: |
+            saved-workspace
   auto-merge:
     needs: api-diff-labeling
-    if: github.event_name == 'pull_request' && github.base_ref != 'main'
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write
+    env:
+      # A run triggered by Dependabot is given the Dependabot secret store
+      # instead of the Actions one, so this secret is empty there. The secrets
+      # context cannot be read from an if: condition, but env can, so the token
+      # is bound here and every step that needs it is guarded on it.
+      VAADIN_BOT_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - name: Skip auto-merge without a bot token
+        if: ${{ env.VAADIN_BOT_TOKEN == '' }}
+        run: |
+          echo "⏭️ **VAADIN_BOT_TOKEN** is not available to this run, skipping auto-merge" \
+            | tee -a $GITHUB_STEP_SUMMARY
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
           repository: vaadin/platform-build-script
           ref: main
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '24.9.0'
+          node-version: '24.21.0'
       - name: Auto-merge PR
+        if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
           GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN }}
@@ -334,20 +643,24 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
+      # The base build and the apicmp build each run npm install in
+      # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
+      # ~/.npm those six installs dominate the job and exhaust its timeout.
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.9.2
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/.m2/repository
@@ -400,7 +713,7 @@ jobs:
             fi
           done
       - name: Upload API diff artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: apidiff-reports
           path: apidiff/

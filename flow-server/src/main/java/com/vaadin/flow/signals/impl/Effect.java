@@ -43,6 +43,8 @@ import com.vaadin.flow.signals.function.EffectAction;
  * for all signals that are read from the callback. The callback is run again
  * whenever there's a change to any dependency. Dependencies are always updated
  * based the signals read during the most recent invocation.
+ * 
+ * @since 25.1
  */
 public class Effect implements Serializable {
     static {
@@ -56,6 +58,13 @@ public class Effect implements Serializable {
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
+    /*
+     * Guards the mutable state below. A leaf lock so that the invariant "never
+     * hold it while calling into a signal tree" is enforced (see LeafLock and
+     * #25166): observers are always (un)registered without this lock held.
+     */
+    private final LeafLock lock = new LeafLock("Effect");
+
     // Non-final to allow clearing when the effect is closed
     private @Nullable SerializableRunnable action;
 
@@ -66,6 +75,15 @@ public class Effect implements Serializable {
     private boolean firstRun = true;
     private volatile boolean invalidatedFromBackground = false;
     private boolean passivated = false;
+
+    // Identifies the latest re-registration attempt. Each revalidation,
+    // invalidation and activation bumps it while holding the monitor. Because
+    // observers are registered without the monitor held (to avoid an ABBA
+    // deadlock with the signal tree lock), several attempts can run
+    // concurrently; only the one whose captured value still matches is allowed
+    // to install its observers, so the most recent attempt always wins and
+    // stale attempts discard their observers instead of leaking them.
+    private long generation = 0;
 
     /**
      * Creates a signal effect with the given action and the default dispatcher.
@@ -167,17 +185,18 @@ public class Effect implements Serializable {
     private void revalidate() {
         SerializableRunnable currentAction;
         List<Registration> staleRegistrations;
-        synchronized (this) {
+        long myGeneration;
+        try (var ignored = lock.lock()) {
             if (action == null || passivated) {
                 // closed or passivated
                 return;
             }
-            // Drain any leftover registrations. They are usually absent
-            // (invalidate drains before calling here), but a concurrent
-            // revalidate triggered by a signal write can squeeze its
-            // second sync block in between invalidate's drain and this
-            // sync block. Removing them here keeps the observer set
-            // consistent and avoids a stale-observer leak.
+            // This attempt becomes the latest one; any concurrent attempt
+            // that captured an earlier generation will discard its observers
+            // when it reaches its second sync block.
+            myGeneration = ++generation;
+            // Drain any leftover registrations so the observer set is rebuilt
+            // from scratch by this attempt.
             staleRegistrations = drainRegistrations();
             usages.clear();
             currentAction = action;
@@ -208,16 +227,20 @@ public class Effect implements Serializable {
             assert removed == this;
         }
 
-        synchronized (this) {
-            if (action == null || passivated) {
-                // dispose or passivate ran concurrently with the action;
-                // remove the observers we just registered so we don't leak
-                // listeners on the signal trees.
-                newRegistrations.forEach(Registration::remove);
-                return;
+        boolean superseded;
+        try (var ignored = lock.lock()) {
+            // Discard if disposed or passivated concurrently, or if a newer
+            // attempt superseded this one. Removing the observers we just
+            // registered avoids leaking listeners on the signal trees.
+            superseded = action == null || passivated
+                    || generation != myGeneration;
+            if (!superseded) {
+                usages.addAll(newUsages);
+                registrations.addAll(newRegistrations);
             }
-            usages.addAll(newUsages);
-            registrations.addAll(newRegistrations);
+        }
+        if (superseded) {
+            newRegistrations.forEach(Registration::remove);
         }
     }
 
@@ -276,16 +299,13 @@ public class Effect implements Serializable {
     private void invalidate() {
         invalidateScheduled.set(false);
 
-        // Remove registrations outside the synchronized block to avoid ABBA
-        // deadlock.
+        // Remove registrations outside the leaf lock to avoid ABBA deadlock.
         List<Registration> toRemove;
-        synchronized (this) {
-            if (registrations.isEmpty()) {
-                toRemove = List.of();
-            } else {
-                toRemove = new ArrayList<>(registrations);
-                registrations.clear();
-            }
+        try (var ignored = lock.lock()) {
+            // Supersede any revalidation already in flight so it discards its
+            // observers; the revalidate() call below installs the fresh set.
+            ++generation;
+            toRemove = drainRegistrations();
         }
         toRemove.forEach(Registration::remove);
 
@@ -293,7 +313,7 @@ public class Effect implements Serializable {
     }
 
     private List<Registration> drainRegistrations() {
-        assert Thread.holdsLock(this);
+        assert lock.isHeldByCurrentThread();
         if (registrations.isEmpty()) {
             return List.of();
         }
@@ -312,6 +332,7 @@ public class Effect implements Serializable {
      * @param ui
      *            the owner UI, or {@code null} to fall back to
      *            VaadinRequest-based detection
+     * @since 25.1.1
      */
     public void setOwnerUI(@Nullable UI ui) {
         this.ownerUI = ui;
@@ -325,9 +346,11 @@ public class Effect implements Serializable {
      * @param dispatcher
      *            the new dispatcher to use, not <code>null</code>
      */
-    public synchronized void setDispatcher(SerializableExecutor dispatcher) {
+    public void setDispatcher(SerializableExecutor dispatcher) {
         assert dispatcher != null;
-        this.dispatcher = dispatcher;
+        try (var ignored = lock.lock()) {
+            this.dispatcher = dispatcher;
+        }
     }
 
     /**
@@ -342,7 +365,7 @@ public class Effect implements Serializable {
         // signal writer holding that lock can drive Effect.invalidate, which
         // needs the Effect monitor (ABBA deadlock otherwise).
         List<Registration> toRemove;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             passivated = true;
             toRemove = drainRegistrations();
         }
@@ -358,12 +381,14 @@ public class Effect implements Serializable {
      */
     public void activate() {
         List<UsageTracker.Usage> snapshot;
-        synchronized (this) {
+        long myGeneration;
+        try (var ignored = lock.lock()) {
             if (action == null || !passivated) {
                 return;
             }
             passivated = false;
             firstRun = true;
+            myGeneration = ++generation;
             snapshot = new ArrayList<>(usages);
         }
 
@@ -396,12 +421,12 @@ public class Effect implements Serializable {
         }
 
         boolean discardNewRegistrations = false;
-        synchronized (this) {
-            if (action == null || passivated || !registrations.isEmpty()) {
-                // Either disposed/passivated concurrently, or an invalidate
-                // already ran on another thread and installed fresh
-                // registrations. Drop the ones we just installed to avoid
-                // duplicate observers on the signal tree.
+        try (var ignored = lock.lock()) {
+            if (action == null || passivated || generation != myGeneration) {
+                // Either disposed/passivated concurrently, or a newer attempt
+                // (an invalidate or revalidate on another thread) superseded
+                // this one. Drop the observers we just installed to avoid
+                // duplicate or stale observers on the signal tree.
                 discardNewRegistrations = true;
             } else {
                 registrations.addAll(newRegistrations);
@@ -453,7 +478,7 @@ public class Effect implements Serializable {
         // remove outside it. Concurrent invalidate runs that observe
         // action == null will short-circuit in revalidate.
         List<Registration> toRemove;
-        synchronized (this) {
+        try (var ignored = lock.lock()) {
             action = null;
             usages.clear();
             toRemove = drainRegistrations();

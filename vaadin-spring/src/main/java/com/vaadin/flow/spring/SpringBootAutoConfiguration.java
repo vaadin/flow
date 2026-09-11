@@ -23,7 +23,7 @@ import java.util.Map;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,8 +31,6 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
@@ -47,13 +45,11 @@ import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotPro
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
-@Configuration
-@AutoConfigureBefore(WebMvcAutoConfiguration.class)
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
-@Import({ VaadinApplicationConfiguration.class,
-        VaadinServletConfiguration.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -88,6 +84,7 @@ public class SpringBootAutoConfiguration {
      * @param configurationProperties
      *            the vaadin configuration properties
      * @return a custom ServletRegistrationBean instance
+     * @since 23.0.1
      */
     @Bean
     @ConditionalOnMissingBean(value = SpringServlet.class, parameterizedContainer = ServletRegistrationBean.class)

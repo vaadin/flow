@@ -42,9 +42,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.type.classreading.MetadataReader;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -61,6 +63,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -246,6 +249,30 @@ class VaadinServletContextInitializerTest {
                     resource -> assertThat(getResourcePath(resource)).endsWith(
                             "/com/example/application/Application.class"));
         }
+    }
+
+    @Test
+    void classPathScan_reusesApplicationContextSharedMetadataCache() {
+        GenericApplicationContext context = new GenericApplicationContext();
+
+        VaadinServletContextInitializer initializer = new VaadinServletContextInitializer(
+                context);
+
+        // The shared cache is empty until a scan populates it.
+        Map<Resource, MetadataReader> sharedCache = context
+                .getResourceCache(MetadataReader.class);
+        assertThat(sharedCache).isEmpty();
+
+        // Reading class metadata during a scan must go through the
+        // application context's shared, unbounded resource cache instead of a
+        // per-scan bounded cache, so the parsed metadata is reused across the
+        // many scan passes performed at startup.
+        initializer.findBySuperType(
+                Collections.singletonList(FilterableResourceResolver.class
+                        .getPackage().getName()),
+                FilterableResourceResolver.class).count();
+
+        assertThat(context.getResourceCache(MetadataReader.class)).isNotEmpty();
     }
 
     private static String getResourcePath(Resource resource) {

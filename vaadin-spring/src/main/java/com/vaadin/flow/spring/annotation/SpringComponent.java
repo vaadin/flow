@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
  * prevent conflicts with {@link com.vaadin.flow.component.Component}.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 @Target(java.lang.annotation.ElementType.TYPE)
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)

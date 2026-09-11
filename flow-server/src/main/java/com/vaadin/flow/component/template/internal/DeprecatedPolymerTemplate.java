@@ -29,6 +29,7 @@ import java.io.Serializable;
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  *
+ * @since 5.0
  */
 @Deprecated
 public interface DeprecatedPolymerTemplate extends Serializable {

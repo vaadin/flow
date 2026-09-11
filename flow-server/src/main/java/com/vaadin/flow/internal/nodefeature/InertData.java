@@ -45,6 +45,8 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
  * does not ignore parent inert by default. The inert data feature is
  * initialized when the node will be made explicitly inert or to explicitly
  * ignore parent inert data.
+ * 
+ * @since 23.0
  */
 public class InertData extends ServerSideFeature {
     // Null is ignored by Map.computeIfAbsent -> using a marker value instead

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  *
  * @see AnchorTarget
  *
+ * @since 8.0
  */
 @FunctionalInterface
 public interface AnchorTargetValue extends Serializable {

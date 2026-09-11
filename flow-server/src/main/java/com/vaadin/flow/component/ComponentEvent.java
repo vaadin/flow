@@ -70,6 +70,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @param ui
      *            the UI associated with the event, or <code>null</code> if not
      *            available
+     * @since 25.2
      */
     public ComponentEvent(T source, boolean fromClient, UI ui) {
         super(source);
@@ -77,6 +78,16 @@ public class ComponentEvent<T extends Component> extends EventObject {
         this.ui = ui;
     }
 
+    /**
+     * Returns the component on which the listener has been attached.
+     * <p>
+     * This is the component the listener was registered with, not a nested
+     * child where a browser event may first have occurred. For example, if a
+     * listener is added to a layout that contains a checkbox,
+     * {@code getSource()} returns the layout, not the checkbox.
+     *
+     * @return the component on which the listener has been attached
+     */
     @SuppressWarnings("unchecked")
     @Override
     public T getSource() {
@@ -114,6 +125,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @throws IllegalStateException
      *             if the source component is not currently attached to a UI and
      *             no UI was provided at construction time
+     * @since 25.2
      */
     public UI getUI() {
         if (ui != null) {

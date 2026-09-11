@@ -18,7 +18,6 @@ package com.vaadin.client;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Timer;
@@ -36,7 +35,6 @@ import elemental.dom.NodeList;
 import elemental.html.HeadElement;
 import elemental.html.LinkElement;
 import elemental.html.ScriptElement;
-import elemental.html.SpanElement;
 import elemental.html.StyleElement;
 
 /**
@@ -77,39 +75,6 @@ public class ResourceLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            fireError(event);
-        }
-    }
-
-    private class HtmlLoadListener implements ResourceLoadListener, Runnable {
-        private final ResourceLoadEvent event;
-
-        private boolean errorFired;
-
-        private HtmlLoadListener(ResourceLoadEvent event) {
-            this.event = event;
-        }
-
-        @Override
-        public void run() {
-            // Invoked through HTMLImports.whenReady
-            if (!errorFired) {
-                fireLoad(event);
-            }
-        }
-
-        @Override
-        public void onLoad(ResourceLoadEvent event) {
-            if (!supportsHtmlWhenReady) {
-                assert !errorFired;
-                fireLoad(event);
-            }
-        }
-
-        @Override
-        public void onError(ResourceLoadEvent event) {
-            assert !errorFired;
-            errorFired = true;
             fireError(event);
         }
     }
@@ -213,9 +178,6 @@ public class ResourceLoader {
 
     private Registry registry;
 
-    private final boolean supportsHtmlWhenReady = GWT.isClient()
-            && supportsHtmlWhenReady();
-
     /**
      * Creates a new resource loader. You should not create you own resource
      * loader, but instead use {@link Registry#getResourceLoader()} to get an
@@ -277,8 +239,7 @@ public class ResourceLoader {
             LinkElement linkElement = (LinkElement) links.item(i);
             String rel = linkElement.getRel();
             String href = linkElement.getHref();
-            if (("stylesheet".equalsIgnoreCase(rel)
-                    || "import".equalsIgnoreCase(rel)) && href != null
+            if ("stylesheet".equalsIgnoreCase(rel) && href != null
                     && href.length() != 0) {
                 loadedResources.add(href);
                 // Handle stylesheet loaded by AppShellRegistry
@@ -418,115 +379,6 @@ public class ResourceLoader {
     private static HeadElement getHead() {
         return getDocument().getHead();
     }
-
-    /**
-     * Loads an HTML import and notify a listener when the HTML import is
-     * loaded. Calling this method when the HTML import is currently loading or
-     * already loaded doesn't cause the HTML import to be loaded again, but the
-     * listener will still be notified when appropriate.
-     *
-     * @param htmlUrl
-     *            url of HTML import to load
-     * @param resourceLoadListener
-     *            listener to notify when the HTML import is loaded
-     * @param async
-     *            loads the import asynchronously, if {@code true},
-     *            synchronously otherwise
-     */
-    public void loadHtml(final String htmlUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async) {
-        final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
-        ResourceLoadEvent event = new ResourceLoadEvent(this, url);
-        if (loadedResources.has(url)) {
-            if (resourceLoadListener != null) {
-                resourceLoadListener.onLoad(event);
-            }
-            return;
-        }
-
-        if (addListener(url, resourceLoadListener, loadListeners)) {
-            LinkElement linkTag = getDocument().createLinkElement();
-            linkTag.setAttribute("rel", "import");
-            linkTag.setAttribute("href", url);
-            if (async) {
-                linkTag.setAttribute("async", "true");
-            }
-
-            HtmlLoadListener listener = new HtmlLoadListener(event);
-
-            addOnloadHandler(linkTag, listener, event);
-            getHead().appendChild(linkTag);
-
-            if (supportsHtmlWhenReady) {
-                addHtmlImportsReadyHandler(listener);
-            }
-        }
-    }
-
-    /**
-     * Inlines an HTML import and notify a listener when the HTML import is
-     * loaded. Calling this method when the HTML import is currently loading or
-     * already loaded doesn't cause the HTML import to be loaded again, but the
-     * listener will still be notified when appropriate.
-     *
-     * @param htmlContents
-     *            the html contents to inline
-     * @param resourceLoadListener
-     *            listener to notify when the HTML import is loaded
-     */
-    public void inlineHtml(String htmlContents,
-            final ResourceLoadListener resourceLoadListener) {
-        ResourceLoadEvent event = new ResourceLoadEvent(this, htmlContents);
-        if (loadedResources.has(htmlContents)) {
-            if (resourceLoadListener != null) {
-                resourceLoadListener.onLoad(event);
-            }
-            return;
-        }
-
-        if (addListener(htmlContents, resourceLoadListener, loadListeners)) {
-            SpanElement spanElement = getDocument().createSpanElement();
-            spanElement.setInnerHTML(htmlContents);
-            spanElement.setAttribute("hidden", "true");
-
-            HtmlLoadListener listener = new HtmlLoadListener(event);
-            getDocument().appendChild(spanElement);
-            addOnloadHandler(spanElement, listener, event);
-
-            if (supportsHtmlWhenReady) {
-                addHtmlImportsReadyHandler(listener);
-            }
-        }
-    }
-
-    /**
-     * Sets the provided task to be run by <code>HTMLImports.whenReady</code>.
-     * The task is run immediately if <code>HTMLImports.whenReady</code> is not
-     * supported.
-     *
-     * @param task
-     *            the task to run, not <code>null</code>
-     */
-    public void runWhenHtmlImportsReady(Runnable task) {
-        assert task != null;
-        if (supportsHtmlWhenReady) {
-            addHtmlImportsReadyHandler(task);
-        } else {
-            task.run();
-        }
-    }
-
-    private static native boolean supportsHtmlWhenReady()
-    /*-{
-        return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
-    }-*/;
-
-    private static native void addHtmlImportsReadyHandler(Runnable handler)
-    /*-{
-        $wnd.HTMLImports.whenReady($entry(function() {
-            handler.@Runnable::run()();
-        }));
-    }-*/;
 
     /**
      * Adds an onload listener to the given element, which should be a link or a

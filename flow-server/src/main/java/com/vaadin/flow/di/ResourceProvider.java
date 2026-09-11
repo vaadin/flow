@@ -29,6 +29,7 @@ import java.util.List;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 public interface ResourceProvider {
 

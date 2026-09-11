@@ -18,10 +18,14 @@ package com.vaadin.flow.signals.shared;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
@@ -42,10 +46,11 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 public class SharedValueSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<T> {
-    private final Class<T> valueType;
+    private final JavaType valueType;
 
     /**
      * Creates a new value signal with the given initial value. The type of the
@@ -55,10 +60,35 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param initialValue
      *            the initial value to use, not <code>null</code>
      */
-    @SuppressWarnings("unchecked")
     public SharedValueSignal(T initialValue) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                (Class<T>) initialValue.getClass());
+                constructType(initialValue.getClass()));
+        set(initialValue);
+    }
+
+    /**
+     * Creates a new value signal of the given type with the given initial
+     * value. In contrast to {@link #SharedValueSignal(Object)}, which derives
+     * the type from the runtime type of the initial value, this constructor
+     * also retains the type arguments of a parameterized value type such as
+     * <code>Set&lt;String&gt;</code>. The signal does not support clustering.
+     *
+     * <pre>
+     * var roles = new SharedValueSignal&lt;&gt;(Set.of(Role.ADMIN),
+     *         new TypeReference&lt;Set&lt;Role&gt;&gt;() {
+     *         });
+     * </pre>
+     *
+     * @param initialValue
+     *            the initial value to use
+     * @param valueType
+     *            the value type, not <code>null</code>
+     * @since 25.3
+     */
+    public SharedValueSignal(T initialValue,
+            TypeReference<@NonNull T> valueType) {
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
+                constructType(valueType));
         set(initialValue);
     }
 
@@ -69,9 +99,29 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    public SharedValueSignal(Class<T> valueType) {
+    public SharedValueSignal(Class<@NonNull T> valueType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                Objects.requireNonNull(valueType));
+                constructType(valueType));
+    }
+
+    /**
+     * Creates a new value signal of the given type with no value. In contrast
+     * to {@link #SharedValueSignal(Class)}, the type arguments of a
+     * parameterized value type such as <code>Set&lt;String&gt;</code> are
+     * retained. The signal does not support clustering.
+     *
+     * <pre>
+     * var roles = new SharedValueSignal&lt;&gt;(new TypeReference&lt;Set&lt;Role&gt;&gt;() {
+     * });
+     * </pre>
+     *
+     * @param valueType
+     *            the value type, not <code>null</code>
+     * @since 25.3
+     */
+    public SharedValueSignal(TypeReference<@NonNull T> valueType) {
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
+                constructType(valueType));
     }
 
     /**
@@ -89,9 +139,39 @@ public class SharedValueSignal<T extends @Nullable Object>
      *            not <code>null</code>
      * @param valueType
      *            the value type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedValueSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized value type such as
+     *             <code>Set&lt;String&gt;</code>
+     */
+    @Deprecated(since = "25.3", forRemoval = true)
+    protected SharedValueSignal(SignalTree tree, Id id,
+            CommandValidator validator, Class<@NonNull T> valueType) {
+        this(tree, id, validator, constructType(valueType));
+    }
+
+    /**
+     * Creates a new value signal instance with the given id and validator for
+     * the given signal tree with the given value type. The type arguments of a
+     * parameterized value type such as <code>Set&lt;String&gt;</code> are
+     * retained.
+     *
+     * @param tree
+     *            the signal tree that contains the value for this signal, not
+     *            <code>null</code>
+     * @param id
+     *            the id of the signal node within the signal tree, not
+     *            <code>null</code>
+     * @param validator
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
+     * @param valueType
+     *            the value type, not <code>null</code>
+     * @since 25.3
      */
     protected SharedValueSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> valueType) {
+            CommandValidator validator, JavaType valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }
@@ -108,12 +188,14 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param value
      *            the value to set
      * @return an operation containing the eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the value type of this
+     *             signal
      */
     public SignalOperation<T> set(T value) {
-        assert value == null || valueType.isInstance(value);
-
         return submit(
-                new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
+                new SignalCommand.SetCommand(Id.random(), id(),
+                        toJson(valueType, value)),
                 success -> nodeValue(
                         Objects.requireNonNull(success.onlyUpdate().oldNode()),
                         valueType));
@@ -147,12 +229,15 @@ public class SharedValueSignal<T extends @Nullable Object>
      * @param newValue
      *            the new value
      * @return an operation containing the eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the new value is not an instance of the value type of this
+     *             signal
      */
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
-                toJson(newValue));
+                toJson(valueType, newValue));
 
         return submit(new SignalCommand.TransactionCommand(Id.random(),
                 List.of(condition, set)));

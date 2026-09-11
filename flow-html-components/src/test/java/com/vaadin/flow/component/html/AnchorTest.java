@@ -16,6 +16,10 @@
 package com.vaadin.flow.component.html;
 
 import java.beans.IntrospectionException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
@@ -25,13 +29,25 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
+import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnchorTest extends ComponentTest {
@@ -428,8 +444,226 @@ class AnchorTest extends ComponentTest {
                 "Custom download handlers should by default add download attribute");
     }
 
+    @Test
+    void setHref_attached_unsafeScheme_throws() {
+        Anchor anchor = new Anchor();
+        createUiWithDefaultSafeUrlSchemes().add(anchor);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> anchor.setHref("javascript:alert(1)"));
+    }
+
+    @Test
+    void setHref_detached_unsafeScheme_throwsOnAttach() {
+        Anchor anchor = new Anchor();
+        // The configuration of the application isn't known yet
+        anchor.setHref("javascript:alert(1)");
+
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(anchor));
+    }
+
+    @Test
+    void setUnsafeHref_unsafeScheme_setsHrefWithoutValidation() {
+        Anchor anchor = new Anchor();
+        anchor.setUnsafeHref("javascript:alert(1)");
+        assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    void constructor_stringHrefStringText_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(new Anchor("javascript:alert(1)", "Click"));
+    }
+
+    @Test
+    void constructor_stringHrefSignalText_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(
+                new Anchor("javascript:alert(1)", new ValueSignal<>("Click")));
+    }
+
+    @Test
+    void constructor_stringHrefStringTextTarget_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(
+                new Anchor("javascript:alert(1)", "Click", AnchorTarget.BLANK));
+    }
+
+    @Test
+    void constructor_stringHrefComponents_unsafeScheme_throwsOnAttach() {
+        assertThrowsOnAttach(new Anchor("javascript:alert(1)"));
+    }
+
+    private void assertThrowsOnAttach(Anchor anchor) {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(anchor));
+        assertEquals("", anchor.getElement().getAttribute("href"),
+                "The rejected href should be cleared so that it isn't sent to the client");
+    }
+
+    @Test
+    void setHref_detached_unsafeInApplicationConfiguration_throwsOnAttachAndClearsHref() {
+        assertNull(VaadinService.getCurrent(),
+                "The scenario requires that no service is available on this thread");
+
+        Anchor anchor = new Anchor();
+        // Safe according to the framework default, but not according to the
+        // configuration of the application that the anchor ends up in
+        anchor.setHref("http://example.com");
+
+        UI attachTo = createUiWithSafeUrlSchemes("https");
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> attachTo.add(anchor));
+
+        assertTrue(exception.getMessage().contains("http://example.com"),
+                "The message should contain the rejected URL");
+        assertTrue(exception.getMessage().contains("setUnsafeHref(String)"),
+                "The message should point to the method that skips validation");
+        assertEquals("", anchor.getElement().getAttribute("href"),
+                "The rejected href should be cleared so that it isn't sent to the client");
+    }
+
+    @Test
+    void setHref_detached_safeInApplicationConfiguration_attachSucceeds() {
+        Anchor anchor = new Anchor();
+        anchor.setHref("https://example.com");
+
+        createUiWithSafeUrlSchemes("https").add(anchor);
+
+        assertEquals("https://example.com", anchor.getHref());
+    }
+
+    @Test
+    void setHref_attached_usesConfigurationOfOwnUi() {
+        UI attachTo = createUiWithSafeUrlSchemes("https");
+        Anchor anchor = new Anchor();
+        attachTo.add(anchor);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> anchor.setHref("http://example.com"));
+        assertFalse(anchor.getElement().hasAttribute("href"));
+    }
+
+    @Test
+    void setHref_reattachedWithNewValue_validatedAgainOnAttach() {
+        UI attachTo = createUiWithSafeUrlSchemes("https");
+        Anchor anchor = new Anchor();
+        anchor.setHref("https://example.com");
+        attachTo.add(anchor);
+        attachTo.remove(anchor);
+
+        anchor.setHref("http://example.com");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(anchor));
+    }
+
+    @Test
+    void setUnsafeHref_detached_notValidatedOnAttach() {
+        Anchor anchor = new Anchor();
+        anchor.setUnsafeHref("javascript:alert(1)");
+
+        createUiWithSafeUrlSchemes("https").add(anchor);
+
+        assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    void setUnsafeHref_afterSetHref_cancelsValidationOnAttach() {
+        Anchor anchor = new Anchor();
+        anchor.setHref("http://example.com");
+        anchor.setUnsafeHref("javascript:alert(1)");
+
+        createUiWithSafeUrlSchemes("https").add(anchor);
+
+        assertEquals("javascript:alert(1)",
+                anchor.getElement().getAttribute("href"));
+    }
+
+    @Test
+    void removeHref_afterSetHref_cancelsValidationOnAttach() {
+        Anchor anchor = new Anchor();
+        anchor.setHref("http://example.com");
+        anchor.removeHref();
+
+        createUiWithSafeUrlSchemes("https").add(anchor);
+
+        assertFalse(anchor.getElement().hasAttribute("href"));
+    }
+
+    @Test
+    void setHrefStreamResource_afterSetHref_cancelsValidationOnAttach() {
+        UI attachTo = createUiWithSafeUrlSchemes("https");
+        // Generating a URL for a stream resource needs a current UI
+        UI.setCurrent(attachTo);
+
+        Anchor anchor = new Anchor();
+        anchor.setHref("http://example.com");
+        anchor.setHref(new StreamResource("file.txt",
+                () -> new ByteArrayInputStream(new byte[0])));
+
+        attachTo.add(anchor);
+
+        assertTrue(anchor.getElement().hasAttribute("href"));
+    }
+
+    @Test
+    void setHref_detached_pendingValidationIsSerializable() throws Exception {
+        Anchor anchor = new Anchor();
+        anchor.setHref("http://example.com");
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(anchor);
+        }
+        Anchor deserialized;
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            deserialized = (Anchor) in.readObject();
+        }
+
+        // The validation should still take place after deserialization
+        UI attachTo = createUiWithSafeUrlSchemes("https");
+        assertThrows(IllegalArgumentException.class,
+                () -> attachTo.add(deserialized));
+    }
+
     private void mockUI() {
         ui = new UI();
         UI.setCurrent(ui);
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
+    private UI createUiWithDefaultSafeUrlSchemes() {
+        return createUi(new MockDeploymentConfiguration());
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
+    private UI createUiWithSafeUrlSchemes(String safeUrlSchemes) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+        return createUi(configuration);
+    }
+
+    private UI createUi(MockDeploymentConfiguration configuration) {
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(configuration));
+
+        UI attachTo = new MockUI(session);
+        // The interesting scenarios are the ones where the configuration has
+        // to be found through the UI rather than through the current instances
+        CurrentInstance.clearAll();
+        return attachTo;
     }
 }

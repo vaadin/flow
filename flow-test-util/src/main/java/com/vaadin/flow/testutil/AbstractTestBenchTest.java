@@ -178,18 +178,39 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
     }
 
-    protected void waitForWebComponentsBootstrap() {
-        waitUntil(driver -> driver.findElement(By.cssSelector(
-                "script[src*='web-component/web-component-bootstrap.js']")),
-                // longer timeout to prevent failures during dev-bundle creation
+    protected void waitForWebComponent(String tagName) {
+        // The long timeout also covers on-demand dev-bundle creation triggered
+        // by the first request.
+        waitUntil(d -> getCommandExecutor()
+                .executeScript("return await customElements.whenDefined('"
+                        + tagName + "').then(() => true)"),
                 60);
     }
 
-    protected void waitForWebComponent(String tagName) {
-        waitForWebComponentsBootstrap();
-        waitUntil(d -> getCommandExecutor()
-                .executeScript("return await customElements.whenDefined('"
-                        + tagName + "').then(() => true)"));
+    /**
+     * Waits until the exported web component with the given tag name has been
+     * bootstrapped, i.e. its shadow root has been created and populated by the
+     * client engine. Unlike {@link #waitForWebComponent(String)} (which waits
+     * only for the custom element to be defined), this also covers the client
+     * engine being loaded and having rendered the embedded application, which
+     * happens asynchronously once the engine module has been imported.
+     *
+     * @param tagName
+     *            the tag name of the exported web component to wait for
+     */
+    protected void waitForWebComponentShadowRoot(String tagName) {
+        // The element constructor synchronously attaches a shadow root that
+        // initially holds only a :host <style>; the embedded application
+        // content
+        // is rendered into it asynchronously once the client engine has loaded.
+        // Wait for a non-style element to appear so the wait covers the whole
+        // bootstrap. The long timeout also covers on-demand dev-bundle
+        // creation.
+        waitUntil(d -> Boolean.TRUE.equals(getCommandExecutor().executeScript(
+                "const e = document.querySelector(arguments[0]);"
+                        + "return !!(e && e.shadowRoot"
+                        + " && e.shadowRoot.querySelector(':not(style)'));",
+                tagName)), 60);
     }
 
     /**

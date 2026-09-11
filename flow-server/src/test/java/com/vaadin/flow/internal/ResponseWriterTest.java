@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -306,6 +308,35 @@ public class ResponseWriterTest {
         makePathsAvailable(PATH_JS, PATH_GZ, PATH_BR);
 
         assertResponse(fileJsBrotliContents);
+    }
+
+    @Test
+    public void writeDataBrotli_compressedSiblingResolvedFromResourceUrl()
+            throws IOException {
+        // Reproduces serving a static resource from a packaged classpath
+        // location (e.g. a Spring Boot executable jar) where a path based
+        // servletContext.getResource(path + ".br") lookup does not find the
+        // compressed sibling, but it exists next to the resolved resource URL.
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+
+        File dir = Files.createTempDirectory("response-writer-test").toFile();
+        dir.deleteOnExit();
+        File jsFile = new File(dir, "file.js");
+        Files.write(jsFile.toPath(), fileJsContents);
+        File brotliFile = new File(dir, "file.js.br");
+        Files.write(brotliFile.toPath(), fileJsBrotliContents);
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        // servletContext.getResource(...) is left unstubbed, so the path based
+        // lookup returns null and the sibling must be resolved via the
+        // resolved resource URL.
+        responseWriter.writeResponseContents("/static/file.js",
+                jsFile.toURI().toURL(), request, response);
+
+        assertArrayEquals(fileJsBrotliContents, out.getOutput());
+        Mockito.verify(response).setHeader("Content-Encoding", "br");
     }
 
     @Test

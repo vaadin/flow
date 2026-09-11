@@ -52,6 +52,7 @@ public interface RpcInvocationHandler extends Serializable {
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
      * @return an optional runnable
+     * @since 25.0
      */
     Optional<Runnable> handle(UI ui, JsonNode invocationJson);
 

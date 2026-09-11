@@ -25,9 +25,12 @@ import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -49,6 +52,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *
  * @param <T>
  *            the element type
+ * @since 25.1
  */
 public class SharedListSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<@NonNull List<SharedValueSignal<T>>> {
@@ -155,7 +159,7 @@ public class SharedListSignal<T extends @Nullable Object>
         }
     }
 
-    private final Class<T> elementType;
+    private final JavaType elementType;
 
     /**
      * Creates a new list signal with the given element type. The signal does
@@ -164,9 +168,24 @@ public class SharedListSignal<T extends @Nullable Object>
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public SharedListSignal(Class<T> elementType) {
+    public SharedListSignal(Class<@NonNull T> elementType) {
         this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
-                elementType);
+                constructType(elementType));
+    }
+
+    /**
+     * Creates a new list signal with the given element type. In contrast to
+     * {@link #SharedListSignal(Class)}, the type arguments of a parameterized
+     * element type such as <code>Set&lt;String&gt;</code> are retained. The
+     * signal does not support clustering.
+     *
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
+     */
+    public SharedListSignal(TypeReference<@NonNull T> elementType) {
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
+                constructType(elementType));
     }
 
     /**
@@ -184,9 +203,39 @@ public class SharedListSignal<T extends @Nullable Object>
      *            not <code>null</code>
      * @param elementType
      *            the element type, not <code>null</code>
+     * @deprecated use
+     *             {@link #SharedListSignal(SignalTree, Id, CommandValidator, JavaType)}
+     *             instead, which also retains the type arguments of a
+     *             parameterized element type such as
+     *             <code>Set&lt;String&gt;</code>
+     */
+    @Deprecated(since = "25.3", forRemoval = true)
+    protected SharedListSignal(SignalTree tree, Id id,
+            CommandValidator validator, Class<@NonNull T> elementType) {
+        this(tree, id, validator, constructType(elementType));
+    }
+
+    /**
+     * Creates a new list signal instance with the given id and validator for
+     * the given signal tree with the given element type. The type arguments of
+     * a parameterized element type such as <code>Set&lt;String&gt;</code> are
+     * retained.
+     *
+     * @param tree
+     *            the signal tree that contains the value for this signal, not
+     *            <code>null</code>
+     * @param id
+     *            the id of the signal node within the signal tree, not
+     *            <code>null</code>
+     * @param validator
+     *            the validator to check operations submitted to this singal,
+     *            not <code>null</code>
+     * @param elementType
+     *            the element type, not <code>null</code>
+     * @since 25.3
      */
     protected SharedListSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+            CommandValidator validator, JavaType elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -247,11 +296,18 @@ public class SharedListSignal<T extends @Nullable Object>
 
     /**
      * Inserts a value as the first entry in this list.
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #insertAllFirst(Collection)} for
+     * bulk operations.
      *
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertFirst(T value) {
         return insertAt(value, ListPosition.first());
@@ -276,11 +332,18 @@ public class SharedListSignal<T extends @Nullable Object>
 
     /**
      * Inserts a value as the last entry in this list.
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #insertAllLast(Collection)} for
+     * bulk operations.
      *
      * @param value
      *            the value to insert
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertLast(T value) {
         return insertAt(value, ListPosition.last());
@@ -289,19 +352,26 @@ public class SharedListSignal<T extends @Nullable Object>
     /**
      * Inserts a value at the given position in this list. The operation fails
      * if the position is not valid at the time when the operation is processed.
-     *
+     * <p>
+     * Note that each insert operation notifies all subscribers unless run
+     * inside a signal transaction. Use
+     * {@link #insertAllAt(Collection, ListPosition)} for bulk operations.
+     * 
      * @param value
      *            the value to insert
      * @param at
      *            the insert position, not <code>null</code>
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public InsertOperation<SharedValueSignal<T>> insertAt(T value,
             ListPosition at) {
         return submitInsert(
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
-                        toJson(value), Objects.requireNonNull(at)),
+                        toJson(elementType, value), Objects.requireNonNull(at)),
                 this::child);
     }
 
@@ -315,6 +385,10 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllLast(
             Collection<? extends T> values) {
@@ -332,6 +406,10 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the values to insert, not <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllFirst(
             Collection<? extends T> values) {
@@ -356,6 +434,10 @@ public class SharedListSignal<T extends @Nullable Object>
      *            <code>null</code>
      * @return a bulk insert operation containing the inserted signals and a
      *         single result future for the entire batch
+     * @throws InvalidSignalValueTypeException
+     *             if any of the values is not an instance of the element type
+     *             of this signal
+     * @since 25.2
      */
     public BulkInsertOperation<SharedValueSignal<T>> insertAllAt(
             Collection<? extends T> values, ListPosition at) {
@@ -412,7 +494,12 @@ public class SharedListSignal<T extends @Nullable Object>
     /**
      * Removes the given child from this list. The operation fails if the child
      * is not a child of this list at the time when the operation is processed.
-     *
+     * <p>
+     * Note that each remove operation notifies all subscribers unless run
+     * inside a signal transaction. Use {@link #clear()} or wrap bulk updates
+     * inside {@link Signal#runInTransaction(TransactionTask)} to notify
+     * subscribers only once.
+     * 
      * @param child
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result

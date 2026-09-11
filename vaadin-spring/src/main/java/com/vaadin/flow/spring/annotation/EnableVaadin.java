@@ -57,6 +57,7 @@ import com.vaadin.flow.spring.VaadinServletConfiguration;
  *      issue</a>
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -25,6 +25,8 @@ import com.vaadin.flow.server.Constants;
 /**
  * Sets Spring Boot dev tools to run on a free random port if the default port
  * is in use.
+ * 
+ * @since 24.0
  */
 public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
 

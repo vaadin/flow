@@ -49,6 +49,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
@@ -225,7 +226,7 @@ abstract class AbstractUpdateImports implements Runnable {
             if (chunkFolder.exists() && chunkFolder.isDirectory()) {
                 for (File existingChunk : chunkFolder.listFiles()) {
                     if (!outputFiles.containsKey(existingChunk)) {
-                        existingChunk.delete();
+                        FileIOUtils.deleteQuietly(existingChunk);
                     }
                 }
             }

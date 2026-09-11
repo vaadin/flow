@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,8 @@ import com.vaadin.flow.signals.SignalCommand;
  * <p>
  * Validators can be composed using the {@link #and(CommandValidator)} method to
  * require multiple validation rules to pass.
+ * 
+ * @since 25.1
  */
 @FunctionalInterface
 public interface CommandValidator extends Serializable {

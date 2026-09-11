@@ -69,6 +69,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @param <T>
  *            the type of the property
+ * @since 25.0
  */
 public class SignalPropertySupport<T extends @Nullable Object>
         implements Serializable {

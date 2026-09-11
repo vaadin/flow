@@ -61,6 +61,7 @@ public interface RouterLayout extends HasElement {
      *
      * @param oldContent
      *            the old content to remove, not <code>null</code>
+     * @since 2.0
      */
     default void removeRouterLayoutContent(HasElement oldContent) {
         oldContent.getElement().removeFromParent();

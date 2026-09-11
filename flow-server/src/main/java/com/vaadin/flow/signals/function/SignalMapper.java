@@ -33,6 +33,7 @@ import com.vaadin.flow.signals.Signal;
  * @param <R>
  *            the output signal type
  * @see Signal#map(SignalMapper)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SignalMapper<T extends @Nullable Object, R extends @Nullable Object>

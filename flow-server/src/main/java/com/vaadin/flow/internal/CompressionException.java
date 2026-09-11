@@ -21,7 +21,7 @@ package com.vaadin.flow.internal;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.3
+ * @since 25.0
  */
 public class CompressionException extends RuntimeException {
 

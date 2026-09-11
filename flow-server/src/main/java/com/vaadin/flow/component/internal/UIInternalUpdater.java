@@ -28,6 +28,8 @@ import com.vaadin.flow.dom.Element;
  * given content.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 3.0
  */
 public interface UIInternalUpdater extends Serializable {
 

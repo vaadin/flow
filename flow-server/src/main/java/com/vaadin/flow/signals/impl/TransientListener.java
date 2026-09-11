@@ -21,6 +21,8 @@ import java.io.Serializable;
  * A listener that is expected to only be invoked the next time some event
  * occurs but not for subsequent events. The listener can optionally request
  * that it retained also for the following event.
+ * 
+ * @since 25.1
  */
 @FunctionalInterface
 public interface TransientListener extends Serializable {

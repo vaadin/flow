@@ -34,6 +34,8 @@ import java.io.Serializable;
  *     }
  * });
  * </pre>
+ * 
+ * @since 25.1
  */
 public class EffectContext implements Serializable {
 

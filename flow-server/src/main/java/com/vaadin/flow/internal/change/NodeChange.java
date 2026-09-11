@@ -81,6 +81,7 @@ public abstract class NodeChange implements Serializable {
      * @param constantPool
      *            the constant pool to use for serializing constant pool
      *            references
+     * @since 25.0
      */
     protected abstract void populateJson(ObjectNode json,
             ConstantPool constantPool);

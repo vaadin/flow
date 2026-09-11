@@ -31,6 +31,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * Helpers related to the production bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.3
  */
 public class ProdBundleUtils {
 
@@ -92,6 +94,31 @@ public class ProdBundleUtils {
         return FileIOUtils.urlToString(statsJson);
     }
 
+    /**
+     * Checks if the given file is part of the production bundle in use, which
+     * is the application specific bundle when the application has one and the
+     * default bundle from the class path otherwise.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @param finder
+     *            class finder
+     * @param filename
+     *            the file path within the bundle
+     * @return {@code true} if the file is part of the bundle
+     * @throws IOException
+     *             if an I/O exception occurs.
+     */
+    public static boolean hasBundleFile(File projectDir, ClassFinder finder,
+            String filename) throws IOException {
+        File prodBundleFile = getProdBundle(projectDir);
+        if (prodBundleFile.exists()) {
+            return CompressUtil.hasFileInZip(prodBundleFile, filename);
+        }
+        return finder
+                .getResource(Constants.PROD_BUNDLE_JAR_PATH + filename) != null;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ProdBundleUtils.class);
     }
@@ -108,7 +135,7 @@ public class ProdBundleUtils {
         File bundleFile = new File(projectDir,
                 Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (bundleFile.exists()) {
-            bundleFile.delete();
+            FileIOUtils.deleteQuietly(bundleFile);
         } else {
             bundleFile.getParentFile().mkdirs();
         }

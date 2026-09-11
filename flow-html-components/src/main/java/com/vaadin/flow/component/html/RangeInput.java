@@ -36,6 +36,11 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
+ *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range">MDN:
+ *      &lt;input type=&quot;range&quot;&gt;</a>
+ * @since 24.3
  */
 @Tag(Tag.INPUT)
 public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
@@ -92,6 +97,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
         super("value", 0.0, false);
         setValueChangeMode(valueChangeMode);
         set(typeDescriptor, "range");
+        // Explicitly reflect the initial value to the DOM. A value-less
+        // range input defaults on the client to the midpoint of min and max,
+        // so without this the slider would render in the middle even though
+        // the server-side value is 0. Setting the value through setValue would
+        // be a no-op here because it equals the field's default model value.
+        getElement().setProperty("value", 0.0);
     }
 
     @Override

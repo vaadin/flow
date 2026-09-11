@@ -46,7 +46,7 @@ public class ThemeComponentsCssIT extends ChromeBrowserTest {
         Assert.assertFalse(nodeModules.exists());
         waitUntil(driver -> {
             try {
-                TestBenchElement component = $("vaadin-horizontal-layout")
+                TestBenchElement component = $("faux-horizontal-layout")
                         .first();
                 return GREEN_COLOR.equals(getPartBackgroundColor(component, 0))
                         && WHITE_COLOR

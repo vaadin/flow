@@ -30,6 +30,8 @@ import com.vaadin.flow.internal.JacksonUtils;
  * See <a href=
  * "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">HTMLElement.focus()</a>
  * for more information.
+ * 
+ * @since 25.0
  */
 public interface FocusOption extends Serializable {
 

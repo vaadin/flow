@@ -18,6 +18,7 @@ package com.vaadin.flow.component.littemplate;
 /**
  * Thrown to indicate that an element had an illegal or inappropriate attribute.
  *
+ * @since 5.0
  */
 public class IllegalAttributeException extends RuntimeException {
 

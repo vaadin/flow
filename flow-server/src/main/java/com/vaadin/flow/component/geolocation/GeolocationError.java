@@ -52,6 +52,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *            Useful for log lines and bug reports — the wording is not
  *            standardised across browsers and must not be shown to end users
  *            as-is
+ * @since 25.2
  */
 public record GeolocationError(int code,
         @JsonProperty("message") String debugInfo)

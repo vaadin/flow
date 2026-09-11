@@ -35,6 +35,7 @@ public class NavigationStateBuilder {
      *
      * @param router
      *            the router managing navigation
+     * @since 1.3
      */
     public NavigationStateBuilder(Router router) {
         currentState = new NavigationState(router);
@@ -50,6 +51,7 @@ public class NavigationStateBuilder {
      * @param parameters
      *            the route parameters of the navigation target
      * @return this builder, for chaining
+     * @since 4.0
      */
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
@@ -68,6 +70,7 @@ public class NavigationStateBuilder {
      * @param parameters
      *            the route parameters of the navigation target
      * @return this builder, for chaining
+     * @since 4.0
      */
     public NavigationStateBuilder withTarget(RouteTarget routeTarget,
             RouteParameters parameters) {

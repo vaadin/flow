@@ -26,6 +26,7 @@ import java.io.Serializable;
  *            the window height in pixels
  *
  * @author Vaadin Ltd
+ * @since 25.1
  */
 public record WindowSize(int width, int height) implements Serializable {
 }

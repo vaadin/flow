@@ -58,6 +58,8 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 /**
  * Contains utility methods related to request handling.
+ * 
+ * @since 17.0
  */
 public class RequestUtil {
 
@@ -83,6 +85,8 @@ public class RequestUtil {
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
+
+    private PwaResourcesRequestMatcher pwaResourcesRequestMatcher;
 
     /**
      * Checks whether the request is an internal request.
@@ -145,6 +149,7 @@ public class RequestUtil {
      * @deprecated use {@link #isAnonymousHillaRoute(HttpServletRequest)} to
      *             match requests to Hilla views that do not require
      *             authentication
+     * @since 24.4
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public boolean isAllowedHillaView(HttpServletRequest request) {
@@ -162,6 +167,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting an anonymous route,
      *         {@code false} otherwise
+     * @since 18.0
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
@@ -186,6 +192,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting a Flow route secured
      *         with navigation access control, {@code false} otherwise
+     * @since 25.0
      */
     public boolean isSecuredFlowRoute(HttpServletRequest request) {
         return isSecuredFlowRouteInternal(request);
@@ -198,6 +205,7 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to a Hilla route that
      *         allows anonymous access, {@code false} otherwise
+     * @since 25.0
      */
     public boolean isAnonymousHillaRoute(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
@@ -213,6 +221,7 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to a Hilla route that
      *         requires authentication, {@code false} otherwise
+     * @since 25.0
      */
     public boolean isSecuredHillaRoute(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
@@ -248,6 +257,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting a custom PWA icon or a
      *         custom favicon path, {@code false} otherwise
+     * @since 24.3.3
      */
     public boolean isCustomWebIcon(HttpServletRequest request) {
         if (webIconsRequestMatcher == null) {
@@ -264,6 +274,35 @@ public class RequestUtil {
             }
         }
         return webIconsRequestMatcher.matches(request);
+    }
+
+    /**
+     * Checks whether the request targets the PWA manifest, the offline page or
+     * one of the additional offline resources configured by the application.
+     * <p>
+     * The default manifest and offline paths are not considered, as they are
+     * already part of {@link HandlerHelper#getPublicResources()}.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a configured PWA
+     *         resource, {@code false} otherwise
+     */
+    public boolean isPwaResource(HttpServletRequest request) {
+        if (pwaResourcesRequestMatcher == null) {
+            VaadinServletService vaadinService = springServletRegistration
+                    .getServlet().getService();
+            if (vaadinService != null) {
+                pwaResourcesRequestMatcher = new PwaResourcesRequestMatcher(
+                        vaadinService, configurationProperties.getUrlMapping());
+            } else {
+                getLogger().debug(
+                        "PwaResourcesRequestMatcher cannot be created because VaadinService is not yet available. "
+                                + "This may happen after a hot-reload, and can cause requests for PWA resources to be blocked by Spring Security.");
+                return false;
+            }
+        }
+        return pwaResourcesRequestMatcher.matches(request);
     }
 
     /**
@@ -287,6 +326,7 @@ public class RequestUtil {
      * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
      *             removal. This method is deprecated without direct
      *             replacement; use {@code PathPatternRequestMatcher} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
@@ -316,6 +356,7 @@ public class RequestUtil {
      * @deprecated {@code AntPathRequestMatcher} is deprecated and marked for
      *             removal. This method is deprecated without direct
      *             replacement; use {@code PathPatternRequestMatcher} instead.
+     * @since 24.3
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
@@ -442,6 +483,7 @@ public class RequestUtil {
      *
      * @return the url mapping
      * @see VaadinConfigurationProperties#getUrlMapping()
+     * @since 25.0
      */
     public String getUrlMapping() {
         return configurationProperties.getUrlMapping();
@@ -457,6 +499,7 @@ public class RequestUtil {
      *            the path to prepend the url mapping to
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
+     * @since 24.8
      */
     public String applyUrlMapping(String path) {
         return applyUrlMapping(configurationProperties.getUrlMapping(), path);

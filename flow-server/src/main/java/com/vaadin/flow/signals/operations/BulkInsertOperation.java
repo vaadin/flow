@@ -27,6 +27,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @param <T>
  *            the type of the newly inserted signals
+ * @since 25.2
  */
 public class BulkInsertOperation<T extends Signal<?>>
         extends SignalOperation<Void> {

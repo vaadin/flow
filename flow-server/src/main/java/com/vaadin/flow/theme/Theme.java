@@ -95,6 +95,7 @@ public @interface Theme {
      * The theme translation handler.
      *
      * @return theme handler
+     * @since 6.0
      */
     Class<? extends AbstractTheme> themeClass() default AbstractTheme.class;
 

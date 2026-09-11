@@ -15,24 +15,20 @@
  */
 package com.vaadin.flow.component.page;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtendedClientDetailsTest {
 
-    @AfterEach
-    void tearDown() {
-        CurrentInstance.clearAll();
-    }
+    /**
+     * Slack for the time that passes between constructing the details and
+     * reading the time back.
+     */
+    private static final long TIME_TOLERANCE_MS = 1000L;
 
     @Test
     void initializeWithClientValues_gettersReturnExpectedValues() {
@@ -86,62 +82,44 @@ class ExtendedClientDetailsTest {
     }
 
     @Test
-    void differentNavigatorPlatformDetails_Ipod_isIOSReturnsExpectedValue() {
-        ExtendedClientDetails details = new ExtendBuilder()
-                .setNavigatorPlatform("iPod ..").buildDetails();
+    void differentNavigatorPlatformDetails_isIOSReturnsExpectedValue() {
+        ExtendBuilder detailsBuilder = new ExtendBuilder();
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        CurrentInstance.setCurrent(session);
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-        Mockito.when(browser.isIPhone()).thenReturn(false);
+        assertFalse(detailsBuilder.buildDetails().isIOS(), "Linux is not iOS");
 
-        assertTrue(details.isIOS());
+        detailsBuilder.setNavigatorPlatform("iPhone");
+        assertTrue(detailsBuilder.buildDetails().isIOS(), "'iPhone' is iOS");
 
-        CurrentInstance.clearAll();
+        detailsBuilder.setNavigatorPlatform("iPod touch");
+        assertTrue(detailsBuilder.buildDetails().isIOS(),
+                "'iPod touch' is iOS");
+
+        detailsBuilder.setNavigatorPlatform("iPad");
+        assertTrue(detailsBuilder.buildDetails().isIOS(), "an iPad is iOS");
     }
 
     @Test
-    void isIOS_isIPad_returnsTrue() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.doCallRealMethod().when(details).isIOS();
-        Mockito.when(details.isIPad()).thenReturn(true);
+    void clientClockAheadOfServer_getBrowserTimeReturnsClientTime() {
+        long clientTime = System.currentTimeMillis() + 60_000;
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .setClientServerTimeDelta(Long.toString(clientTime))
+                .buildDetails();
 
-        assertTrue(details.isIOS());
+        long browserTime = details.getBrowserTime().toEpochMilli();
+        assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
+                "getBrowserTime() should follow the clock of the browser, but was off by "
+                        + (browserTime - clientTime) + " ms");
     }
 
     @Test
-    void isIOS_notIPadIsIPhone_returnsTrue() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.doCallRealMethod().when(details).isIOS();
+    void getNavigatorPlatform_returnsValueReportedByBrowser() {
+        ExtendBuilder detailsBuilder = new ExtendBuilder();
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        VaadinSession.setCurrent(session);
+        assertEquals("Linux i686",
+                detailsBuilder.buildDetails().getNavigatorPlatform());
 
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-
-        Mockito.when(browser.isIPhone()).thenReturn(true);
-
-        assertTrue(details.isIOS());
-    }
-
-    @Test
-    void isIOS_notIPad_notIsIPhone_returnsFalse() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.doCallRealMethod().when(details).isIOS();
-
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        VaadinSession.setCurrent(session);
-
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-        Mockito.when(browser.isIPhone()).thenReturn(false);
-
-        assertFalse(details.isIOS());
+        detailsBuilder.setNavigatorPlatform(null);
+        assertNull(detailsBuilder.buildDetails().getNavigatorPlatform());
     }
 
     /**

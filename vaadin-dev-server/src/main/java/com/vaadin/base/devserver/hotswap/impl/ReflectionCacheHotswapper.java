@@ -27,6 +27,8 @@ import com.vaadin.flow.internal.ReflectionCache;
  * <p>
  * Should run as last, so other hotswappers can still query
  * {@link ReflectionCache} to get previous data before the cache is cleared.
+ * 
+ * @since 25.1
  */
 @Priority(Integer.MAX_VALUE)
 public class ReflectionCacheHotswapper implements VaadinHotswapper {

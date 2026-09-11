@@ -30,6 +30,7 @@ import com.vaadin.flow.signals.Signal;
  *            if the key already existed
  * @param entry
  *            the signal for the map entry, not <code>null</code>
+ * @since 25.1
  */
 public record PutIfAbsentResult<S extends Signal<?>>(boolean created,
         S entry) implements Serializable {

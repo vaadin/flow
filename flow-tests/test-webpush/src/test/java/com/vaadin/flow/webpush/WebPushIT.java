@@ -32,6 +32,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static com.vaadin.flow.webpush.WebPushView.CHECK_ID;
 import static com.vaadin.flow.webpush.WebPushView.EVENT_LOG_ID;
+import static com.vaadin.flow.webpush.WebPushView.FETCH_ID;
 import static com.vaadin.flow.webpush.WebPushView.NOTIFY_ID;
 import static com.vaadin.flow.webpush.WebPushView.SUBSCRIBE_ID;
 import static com.vaadin.flow.webpush.WebPushView.UNSUBSCRIBE_ID;
@@ -76,7 +77,7 @@ public class WebPushIT extends ChromeBrowserTest {
                 """
                         if(navigator.serviceWorker) {
                           const registration = await navigator.serviceWorker.getRegistration();
-                          const subscription = await registration?.pushManager.getSubscription();
+                          const subscription = await registration?.pushManager?.getSubscription();
                           if (subscription) {
                             await subscription.unsubscribe();
                           }
@@ -135,7 +136,8 @@ public class WebPushIT extends ChromeBrowserTest {
             Assert.assertTrue("", eventLog.$(DivElement.class).id("event-3")
                     .getText().equals("3: Sent notification"));
 
-            waitUntil(driver -> isNotificationPresent(driver));
+            // Use the same generous timeout as the subscribe step above.
+            waitUntil(driver -> isNotificationPresent(driver), 60);
         } finally {
             $(NativeButtonElement.class).id(UNSUBSCRIBE_ID).click();
         }
@@ -143,6 +145,40 @@ public class WebPushIT extends ChromeBrowserTest {
                 eventLog.$(DivElement.class).all().size());
         Assert.assertTrue("", eventLog.$(DivElement.class).id("event-4")
                 .getText().startsWith("4: Unsubscribed "));
+    }
+
+    @Test
+    public void noPushManagerOnRegistration_commandsReportNoSubscription() {
+        open();
+
+        DivElement eventLog = $(DivElement.class).id(EVENT_LOG_ID);
+
+        // Load the web push client code before stubbing the service worker
+        $(NativeButtonElement.class).id(CHECK_ID).click();
+        waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 1);
+
+        // Simulate a browser where the service worker is registered, but the
+        // registration has no push manager, e.g. iOS Safari in a normal tab
+        ((JavascriptExecutor) driver).executeScript(
+                "navigator.serviceWorker.getRegistration = async () => ({ scope: document.baseURI });");
+
+        $(NativeButtonElement.class).id(CHECK_ID).click();
+        waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 2);
+        Assert.assertEquals("No subscription should be reported",
+                "2: Subscription false",
+                eventLog.$(DivElement.class).id("event-2").getText());
+
+        $(NativeButtonElement.class).id(FETCH_ID).click();
+        waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 3);
+        Assert.assertEquals("No subscription should be fetched",
+                "3: Fetched <none>",
+                eventLog.$(DivElement.class).id("event-3").getText());
+
+        $(NativeButtonElement.class).id(UNSUBSCRIBE_ID).click();
+        waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 4);
+        Assert.assertEquals("Unsubscribe should report no subscription",
+                "4: Unsubscribed <unknown>",
+                eventLog.$(DivElement.class).id("event-4").getText());
     }
 
     public boolean isNotificationPresent(WebDriver driver) {

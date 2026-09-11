@@ -52,6 +52,7 @@ public class ErrorEvent implements Serializable {
      *            the throwable to wrap
      * @param componentNode
      *            stateNode of for exception component.
+     * @since 24.3
      */
     public ErrorEvent(Throwable throwable, StateNode componentNode) {
         this.throwable = throwable;
@@ -72,6 +73,7 @@ public class ErrorEvent implements Serializable {
      * empty optional.
      *
      * @return Component that error happened for if available
+     * @since 24.3
      */
     public Optional<Component> getComponent() {
         return getElement().flatMap(Element::getComponent);
@@ -82,6 +84,7 @@ public class ErrorEvent implements Serializable {
      * optional.
      *
      * @return Element that error happened for if available
+     * @since 24.3
      */
     public Optional<Element> getElement() {
         if (componentNode != null) {

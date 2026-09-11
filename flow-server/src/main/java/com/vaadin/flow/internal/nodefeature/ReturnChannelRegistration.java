@@ -54,6 +54,7 @@ public interface ReturnChannelRegistration extends Registration {
      * @param arguments
      *            a JSON array containing passed from the client, not
      *            <code>null</code>
+     * @since 25.0
      */
     void invoke(ArrayNode arguments);
 

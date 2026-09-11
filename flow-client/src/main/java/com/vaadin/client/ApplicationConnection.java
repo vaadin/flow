@@ -25,7 +25,6 @@ import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -270,7 +269,7 @@ public class ApplicationConnection {
 
     private int getNodeId(Element element) {
         StateNode node = registry.getStateTree()
-                .getStateNodeForDomNode(DomApi.wrap(element));
+                .getStateNodeForDomNode(element);
         return node == null ? -1 : node.getId();
     }
 

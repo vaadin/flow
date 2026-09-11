@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring-tests</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>test-spring-boot-reload-time</artifactId>
   <packaging>jar</packaging>
@@ -14,11 +14,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-test-resources</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-common</artifactId>
@@ -32,11 +27,6 @@
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>vaadin-spring</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-test-lumo</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -86,6 +76,9 @@
               <goal>start</goal>
             </goals>
             <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+            </configuration>
           </execution>
           <execution>
             <id>stop-server</id>
@@ -93,6 +86,9 @@
               <goal>stop</goal>
             </goals>
             <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+            </configuration>
           </execution>
         </executions>
       </plugin>

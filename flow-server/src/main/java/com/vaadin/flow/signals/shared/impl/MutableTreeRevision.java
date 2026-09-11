@@ -66,6 +66,8 @@ import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
 
 /**
  * A tree revision that can be mutated by applying signal commands.
+ * 
+ * @since 25.1
  */
 public class MutableTreeRevision extends TreeRevision {
     /**
@@ -493,6 +495,7 @@ public class MutableTreeRevision extends TreeRevision {
      * @param resultCollector
      *            callback to collect command results, or <code>null</code> to
      *            ignore results
+     * @since 25.2
      */
     public void apply(SignalCommand command,
             @Nullable SerializableBiConsumer<Id, CommandResult> resultCollector) {

@@ -93,6 +93,16 @@ class WebBrowserTest {
     }
 
     @Test
+    void isSafariOnIPhone_userDetails_returnsTrue() {
+        VaadinRequest request = initRequest(
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1");
+
+        browser = new WebBrowser(request);
+        assertTrue(browser.isIPhone());
+        assertTrue(browser.isSafari());
+    }
+
+    @Test
     void isFirefoxOnAndroid_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Android; Tablet; rv:33.0) Gecko/33.0 Firefox/33.0");

@@ -583,6 +583,132 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
     }
 
+    /**
+     * `vaadinPrepareFrontend` writes the development token into
+     * `resourceOutputDirectory`, which is registered as a resources source
+     * folder, so `processResources` consumes its output. Invoking the task
+     * directly together with `build` must not fail on a missing task
+     * dependency.
+     */
+    @Test
+    fun prepareFrontend_developmentMode_invokedWithBuild_succeeds() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        val build: BuildResult =
+            testProject.build("vaadinPrepareFrontend", "build")
+
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        // the development token must still reach the classpath
+        expectArchiveContains("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json") {
+            testProject.builtWar
+        }
+    }
+
+    /**
+     * `vaadinPrepareFrontend` is not needed in a production build - since Vaadin
+     * 25 `vaadinBuildFrontend` performs the frontend preparation itself - but
+     * pipelines carried over from earlier versions still invoke it. Doing so
+     * must not corrupt the archive: the production token written by
+     * `vaadinBuildFrontend` has to be the only one packaged, even though
+     * `vaadinPrepareFrontend` also generates one.
+     */
+    @Test
+    fun prepareFrontend_productionMode_invokedWithBuild_keepsProductionToken() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        val build: BuildResult = testProject.build(
+            "-Pvaadin.productionMode", "vaadinPrepareFrontend", "build"
+        )
+
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val war: File = testProject.builtWar
+        // asserts, among others, that there is exactly one flow-build-info.json
+        expectArchiveContainsVaadinBundle(war, false)
+        expectProductionToken(war, "WEB-INF/classes/")
+    }
+
+    /**
+     * A `resourceOutputDirectory` left behind by an earlier development-mode
+     * `vaadinPrepareFrontend` execution must not be packaged by a later
+     * production build: the token it holds always has `productionMode=false`,
+     * and `vaadinBuildFrontend` contributes its own token, so the archive
+     * would end up with two conflicting copies.
+     */
+    @Test
+    fun prepareFrontend_staleGeneratedResources_productionArchiveKeepsProductionToken() {
+        testProject.buildFile.writeText(vaadinWarProject())
+
+        // development mode run, leaves the token in build/vaadin-generated
+        testProject.build("vaadinPrepareFrontend")
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode", "build")
+
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val war: File = testProject.builtWar
+        expectArchiveContainsVaadinBundle(war, false)
+        expectProductionToken(war, "WEB-INF/classes/")
+    }
+
+    /**
+     * Same as
+     * [prepareFrontend_staleGeneratedResources_productionArchiveKeepsProductionToken],
+     * for Spring Boot packaging: an executable jar keeps the production bundle
+     * at the archive root instead of under `WEB-INF/classes`, so the two source
+     * set contributions are merged differently there.
+     */
+    @Test
+    fun prepareFrontend_staleGeneratedResources_springBootArchiveKeepsProductionToken() {
+        doTestSpringProject()
+
+        // Development mode run, leaves the token in build/vaadin-generated.
+        // Spring Boot projects default to production mode - the convention keys
+        // on the presence of a bootJar task - so development mode is forced.
+        testProject.build("-Pvaadin.productionMode=false", "vaadinPrepareFrontend")
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode", "build")
+
+        build.expectTaskSucceded("vaadinBuildFrontend")
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true)
+        expectProductionToken(jar, "")
+    }
+
+    private fun vaadinWarProject(): String = """
+            plugins {
+                id 'war'
+                id 'com.vaadin.flow'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """
+
+    /**
+     * @param resourcePackaging archive prefix the source set resources end up
+     *      under: `WEB-INF/classes/` for a War, empty for a Spring Boot jar.
+     */
+    private fun expectProductionToken(archive: File, resourcePackaging: String) {
+        val token: String? = archive.zipReadEntry(
+            "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json"
+        )
+        expect(true, "flow-build-info.json missing from $archive") {
+            token != null
+        }
+        expect(true, "expected a production token, was:\n$token") {
+            token!!.contains("\"productionMode\" : true")
+        }
+    }
+
     @Test
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
@@ -865,6 +991,389 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
         expect(true) { result.output.contains(
             "Skipping task ':vaadinBuildFrontend' as it is up-to-date") }
+    }
+
+    @Test
+    fun buildFrontendBuildCacheRestoresProductionBundleForWar() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            tasks.register('sourcesJar', Jar) {
+                archiveClassifier = 'sources'
+                from sourceSets.main.allSource
+            }
+        """.trimIndent()
+        )
+
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build", "sourcesJar")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtWar, false)
+        expectArchiveDoesntContainVaadinBundle(
+            testProject.folder("build/libs").find("*-sources.jar").first(),
+            false
+        )
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        File(testProject.dir, "build/libs").deleteRecursively()
+
+        result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectArchiveContainsVaadinBundle(testProject.builtWar, false)
+    }
+
+    @Test
+    fun buildFrontendBuildCacheRestoresProductionBundleForSpringBootJar() {
+        doTestSpringProject()
+
+        var result = testProject.build(
+            "--build-cache", "-Pvaadin.productionMode", "bootJar"
+        )
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, true)
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        File(testProject.dir, "build/libs").deleteRecursively()
+
+        result = testProject.build(
+            "--build-cache", "-Pvaadin.productionMode", "bootJar"
+        )
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectArchiveContainsVaadinBundle(testProject.builtJar, true)
+    }
+
+    @Test
+    fun buildFrontendBuildCacheRestoresProductionBundleForJar() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        File(testProject.dir, "build/libs").deleteRecursively()
+
+        result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+    }
+
+    /**
+     * The vaadinBuildFrontend cache key must not depend on the project's
+     * absolute location, otherwise a shared build cache never hits across
+     * checkouts at different paths. Building an identical copy of the project
+     * at a different absolute path, against the same cache, must reuse the
+     * bundle (FROM_CACHE) rather than re-running the frontend build.
+     */
+    @Test
+    fun buildFrontendBuildCacheIsRelocatable() {
+        // A shared local build cache used by both the original and the
+        // relocated copy. Declared in settings.gradle so it is independent of
+        // each project's own location.
+        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
+
+        // A fixed rootProject.name keeps the generated application identifier
+        // (written into the cached token) identical across both locations, so
+        // the only difference between them is the absolute project path.
+        testProject.settingsFile.writeText(
+            """
+            rootProject.name = 'reloc-test'
+            buildCache {
+                local {
+                    directory = '$buildCachePath'
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        // 1. Populate the shared cache at the original location.
+        var result = testProject.build("--build-cache", "-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expectArchiveContainsVaadinBundle(testProject.builtJar, false)
+
+        // 2. Copy the project to a different absolute path, excluding build
+        //    outputs, Gradle state and node_modules so the relocated copy is a
+        //    clean checkout that can only satisfy vaadinBuildFrontend from the
+        //    shared cache.
+        val relocated = TestProject()
+        val excludedDirs = setOf("build", ".gradle", "node_modules")
+        testProject.dir.walkTopDown()
+            .onEnter { it.name !in excludedDirs }
+            .filter { it.isFile }
+            .forEach { source ->
+                val target =
+                    File(relocated.dir, source.relativeTo(testProject.dir).path)
+                target.parentFile.mkdirs()
+                source.copyTo(target, overwrite = true)
+            }
+
+        try {
+            // 3. Building at the new location must reuse the cached bundle.
+            result = relocated.build(
+                "--build-cache", "-Pvaadin.productionMode", "build"
+            )
+            result.expectTaskOutcome(
+                "vaadinBuildFrontend", TaskOutcome.FROM_CACHE
+            )
+            expectArchiveContainsVaadinBundle(relocated.builtJar, false)
+        } finally {
+            relocated.delete()
+        }
+    }
+
+    /**
+     * A custom `frontendOutputDirectory` that does not follow the
+     * `META-INF/VAADIN/webapp` layout cannot be packaged: the frontend outputs
+     * would fall back into the source set resources directory
+     * (`build/resources/main`), which drops the bundle from the archive and,
+     * on Gradle 9, breaks the build with an implicit task-dependency error.
+     * Such a misconfiguration never produced a servable archive, so the plugin
+     * rejects it during configuration with an actionable message.
+     */
+    @Test
+    fun buildFrontend_customFlatFrontendOutputDirectory_failsWithClearError() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            vaadin {
+                frontendOutputDirectory = layout.buildDirectory.dir("flat-frontend-output").get().asFile
+            }
+        """.trimIndent()
+        )
+
+        // 'help' triggers project configuration (and the production-mode
+        // afterEvaluate validation) without running the frontend build.
+        val result = testProject.buildAndFail("-Pvaadin.productionMode", "help")
+        expect(true, "Build should fail mentioning frontendOutputDirectory, " +
+            "was:\n${result.output}") {
+            result.output.contains("frontendOutputDirectory") &&
+                result.output.contains("META-INF/VAADIN/webapp")
+        }
+    }
+
+    /**
+     * A custom-named archive task that packages the `main` source set output
+     * receives the production bundle (registered as an extra source set output
+     * directory) and transitively depends on `vaadinBuildFrontend` through the
+     * `builtBy` wiring, without any explicit task dependency.
+     */
+    @Test
+    fun buildFrontend_customArchiveTask_containsProductionBundle() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+            tasks.register('appJar', Jar) {
+                archiveClassifier = 'app'
+                from sourceSets.main.output
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "appJar")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val appJar = testProject.folder("build/libs").find("*-app.jar").first()
+        expectArchiveContainsVaadinBundle(appJar, false)
+    }
+
+    /**
+     * The production bundle is exposed as an extra `main` source set output
+     * directory, so it is packaged only into archives that include the source
+     * set output. Source and javadoc jars package `allSource`/javadoc output
+     * instead, so they must never carry the production frontend bundle.
+     */
+    @Test
+    fun buildFrontend_sourcesAndJavadocJars_doNotContainProductionBundle() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            java {
+                withSourcesJar()
+                withJavadocJar()
+            }
+            def jettyVersion = "11.0.12"
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val libs = testProject.folder("build/libs")
+        val mainJar = libs.find("*.jar", 3..3).first {
+            !it.name.endsWith("-sources.jar") &&
+                    !it.name.endsWith("-javadoc.jar")
+        }
+        expectArchiveContainsVaadinBundle(mainJar, false)
+        expectArchiveDoesntContainVaadinBundle(
+            libs.find("*-sources.jar").first(), false
+        )
+        expectArchiveDoesntContainVaadinBundle(
+            libs.find("*-javadoc.jar").first(), false
+        )
+    }
+
+    /**
+     * The production bundle is registered as an extra `main` source set output
+     * directory, so it is on the runtime classpath. This is what lets an
+     * application served in place during a production build (e.g. gretty
+     * integration tests) run in production mode instead of falling back to the
+     * development bundle. Regression test for the bundle being written to a
+     * task-owned directory that was not on the runtime classpath.
+     *
+     * The check uses `stats.json` rather than `flow-build-info.json` because
+     * the token is intentionally removed from the bundle directory after the
+     * build and only restored while an application archive is being packaged;
+     * `stats.json` is a stable marker of the bundle directory's presence on the
+     * classpath.
+     */
+    @Test
+    fun buildFrontend_productionBundle_isOnMainRuntimeClasspath() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            tasks.register('verifyBundleOnRuntimeClasspath') {
+                dependsOn 'vaadinBuildFrontend'
+                def runtimeClasspath = sourceSets.main.runtimeClasspath
+                doLast {
+                    def stats = runtimeClasspath.files.collect {
+                        new File(it, 'META-INF/VAADIN/config/stats.json')
+                    }.find { it.exists() }
+                    if (stats == null) {
+                        throw new GradleException(
+                            'production bundle (META-INF/VAADIN/config/stats.json) ' +
+                            'not found on main runtime classpath')
+                    }
+                    println 'PRODUCTION_BUNDLE_ON_CLASSPATH=' + stats
+                }
+            }
+        """.trimIndent()
+        )
+
+        val result = testProject.build(
+            "-Pvaadin.productionMode", "verifyBundleOnRuntimeClasspath")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+        expect(true) {
+            result.output.contains("PRODUCTION_BUNDLE_ON_CLASSPATH=")
+        }
     }
 
     @Test

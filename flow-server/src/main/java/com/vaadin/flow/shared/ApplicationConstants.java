@@ -52,11 +52,15 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * The URL which should be used to connect server-side VaadinService.
+     * 
+     * @since 2.0
      */
     public static final String SERVICE_URL = "serviceUrl";
 
     /**
      * Whether the application is run in as a exported Web Component.
+     * 
+     * @since 2.0.6
      */
     public static final String APP_WC_MODE = "webComponentMode";
 
@@ -73,6 +77,8 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * The prefix used for all internal static files, relative to context root.
+     * 
+     * @since 25.0
      */
     public static final String VAADIN_STATIC_ASSETS_PATH = VAADIN_STATIC_FILES_PATH
             + "assets/";
@@ -123,6 +129,8 @@ public class ApplicationConstants implements Serializable {
     /**
      * The name of the parameter used to transmit the id of UI used in given
      * request.
+     * 
+     * @since 23.3.2
      */
     public static final String UI_ID = "uiId";
 
@@ -144,6 +152,8 @@ public class ApplicationConstants implements Serializable {
     /**
      * Content type to use for text/javascript responses (should always be
      * UTF-8).
+     * 
+     * @since 2.0
      */
     public static final String CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8 = "text/javascript; charset=utf-8";
 
@@ -162,10 +172,14 @@ public class ApplicationConstants implements Serializable {
      * Parameter for the initial router location when JavaScript bootstrapping.
      * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
      * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
+     * 
+     * @since 3.0
      */
     public static final String REQUEST_LOCATION_PARAMETER = "location";
     /**
      * Parameter for the initial query string when JavaScript bootstrapping.
+     * 
+     * @since 23.3.1
      */
     public static final String REQUEST_QUERY_PARAMETER = "query";
 
@@ -177,11 +191,15 @@ public class ApplicationConstants implements Serializable {
     /**
      * Query parameter appended to static resource URLs for content-based
      * cache-busting (e.g. {@code ?v-c=abcd1234}).
+     * 
+     * @since 25.1
      */
     public static final String CONTENT_HASH_PARAMETER = "v-c";
 
     /**
      * Request type parameter value indicating an init request.
+     * 
+     * @since 3.0
      */
     public static final String REQUEST_TYPE_INIT = "init";
 
@@ -203,12 +221,16 @@ public class ApplicationConstants implements Serializable {
     /**
      * Request type parameter value indicating a WebComponent resynchronization
      * request.
+     * 
+     * @since 23.3.2
      */
     public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
 
     /**
      * Request type parameter value indicating a translation properties file
      * request.
+     * 
+     * @since 24.4
      */
     public static final String REQUEST_TYPE_TRANSLATION_FILE = "i18n";
 
@@ -225,17 +247,23 @@ public class ApplicationConstants implements Serializable {
     /**
      * Web socket parameter which identifies connection as live reload
      * connection.
+     * 
+     * @since 9.0
      */
     public static final String DEBUG_WINDOW_CONNECTION = "debug_window";
 
     /**
      * Boolean client configuration parameter enabling the development tools.
+     * 
+     * @since 23.1
      */
     public static final String DEV_TOOLS_ENABLED = "devToolsEnabled";
 
     /**
      * The name of the parameter used for notifying the server that user closed
      * the tab/window or navigated away.
+     * 
+     * @since 24.1
      */
     public static final String UNLOAD_BEACON = "UNLOAD";
 

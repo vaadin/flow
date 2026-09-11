@@ -214,13 +214,19 @@ public class BuildDevBundleMojo extends AbstractMojo
     /**
      * Minimum age (in days) a frontend (npm) package version must have before
      * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
-     * where a compromised version is briefly available on the registry.
-     * Defaults to {@code 1} day; set to {@code 0} to disable. Requires pnpm
-     * &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     * where a compromised version is briefly available on the registry. Set to
+     * {@code 0} to disable. Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when
+     * those tools are used.
+     * <p>
+     * When not set, the value configured for npm or pnpm itself ({@code .npmrc}
+     * or {@code pnpm-workspace.yaml}) is used, so that a manually run
+     * {@code npm install} behaves the same way. Only when there is no such
+     * value does the check default to {@code 1} day. The configuration of bun
+     * cannot be read, so the default always applies for it.
      */
     @Parameter(property = "vaadin."
-            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "1")
-    private int minimumFrontendPackageAgeDays;
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
+    private Integer minimumFrontendPackageAgeDays;
 
     /**
      * The folder where the META-INF/resources files are copied. Used for
@@ -513,11 +519,24 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public String buildFolder() {
-        if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
+        Path buildDir = Paths.get(projectBuildDir);
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // the project basedir. A build dir outside basedir then yields a "../"
+        // path. Returning the absolute path would instead append it to the
+        // project folder and point outside the build dir.
+        if (!buildDir.isAbsolute()) {
+            return projectBuildDir;
         }
-        return projectBuildDir;
+        // relativize() requires both paths to be absolute; basedir is always
+        // absolute in a real build, toAbsolutePath() only guards exotic setups.
+        try {
+            return projectBaseDirectory().toAbsolutePath().relativize(buildDir)
+                    .toString();
+        } catch (IllegalArgumentException e) {
+            // Different filesystem roots (e.g. on Windows): cannot relativize.
+            return projectBuildDir;
+        }
     }
 
     @Override
@@ -578,7 +597,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public int minimumFrontendPackageAgeDays() {
+    public Integer minimumFrontendPackageAgeDays() {
         return minimumFrontendPackageAgeDays;
     }
 

@@ -48,6 +48,7 @@ import com.vaadin.frontendtools.installer.VerificationException;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 3.1
  */
 public class NodeInstaller {
 
@@ -232,6 +233,11 @@ public class NodeInstaller {
                     userName, password);
 
             extractFile(data.getArchive(), data.getTmpDirectory());
+
+            // The extracted distribution is all that is needed from here on,
+            // so the archive is always removed to keep it from filling up the
+            // install directory
+            FileIOUtils.deleteQuietly(data.getArchive());
         } catch (DownloadException e) {
             throw new InstallationException(
                     "Node.js download failed. This may be due to loss of internet connection.\n"
@@ -416,10 +422,11 @@ public class NodeInstaller {
     }
 
     private static void removeArchiveFile(File archive) {
-        if (!archive.delete()) {
-            getLogger().error("Failed to remove archive file {}. "
-                    + "Please remove it manually and run the application.",
-                    archive.getPath());
+        try {
+            FileIOUtils.delete(archive);
+        } catch (IOException e) {
+            getLogger().error("{} The archive file has to be removed before "
+                    + "the application can be run.", e.getMessage(), e);
         }
     }
 
@@ -514,7 +521,7 @@ public class NodeInstaller {
                             .trim())
                     .findFirst().orElse("-1");
 
-            shaSums.delete();
+            FileIOUtils.deleteQuietly(shaSums);
 
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
                 getLogger().error(
@@ -658,6 +665,7 @@ public class NodeInstaller {
      * 
      * @param platform
      *            platform to get download root for
+     * @since 25.1
      */
     public static String getDownloadRoot(Platform platform) {
         if (platform.isNodeSupportExperimental()) {

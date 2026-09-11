@@ -50,6 +50,7 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -561,6 +562,73 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sneakyThrowCheckedException_delegatedToErrorHandler() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+
+        var events = new ArrayList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        var expected = new Exception("Expected checked exception");
+
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal.effect(ui, () -> {
+            dependency.get();
+            throw sneakyThrow(expected);
+        });
+
+        assertEquals(1, events.size(), "Error handler should have been called");
+        assertSame(expected, events.get(0).getThrowable());
+    }
+
+    @Test
+    void effect_notAttached_sneakyThrowCheckedException_rethrownUnwrapped() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+
+        var expected = new Exception("Expected checked exception");
+
+        // There is no session error handler to use for the probe run that
+        // happens while the component is detached, so the exception ends up in
+        // the uncaught exception handler of the current thread
+        var uncaught = new ArrayList<Throwable>();
+        Thread thread = Thread.currentThread();
+        Thread.UncaughtExceptionHandler originalHandler = thread
+                .getUncaughtExceptionHandler();
+        thread.setUncaughtExceptionHandler((t, throwable) -> {
+            uncaught.add(throwable);
+        });
+        try {
+            ValueSignal<Void> dependency = new ValueSignal<>(null);
+            Signal.effect(component, () -> {
+                dependency.get();
+                throw sneakyThrow(expected);
+            });
+        } finally {
+            thread.setUncaughtExceptionHandler(originalHandler);
+        }
+
+        assertEquals(1, uncaught.size(),
+                "Uncaught exception handler should have been called");
+        assertSame(expected, uncaught.get(0),
+                "The exception should be passed on as-is, without wrapping");
+    }
+
+    /**
+     * Throws the given exception without declaring it, mimicking what e.g.
+     * Kotlin or Lombok's {@code @SneakyThrows} does.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> RuntimeException sneakyThrow(
+            Exception exception) throws T {
+        throw (T) exception;
+    }
+
+    @Test
     void effect_notAttached_effectRunsImmediatelyAsProbe() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
@@ -628,6 +696,49 @@ class ElementEffectTest {
         registration.remove();
         signal.set("test4");
         assertEquals(4, count.get(), "Effect should not be run after remove");
+    }
+
+    @Test
+    void effect_reattachedViaMoveToNewUI_detachDoesNotThrow() {
+        // Reproduces #24973: UIInternals.moveToNewUI (used for
+        // @PreserveOnRefresh) re-attaches an element via
+        // StateNode.removeFromTree(false) followed by appendChild. This fires
+        // the attach listener again without a detach event in between.
+        // ElementEffect must not accumulate multiple detach listeners sharing
+        // the single detachRegistration field, otherwise the next real detach
+        // throws a NullPointerException.
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+
+        // Simulate UIInternals.moveToNewUI: reset the node without firing
+        // detach listeners, then re-attach the element to a new UI.
+        MockUI newUi = new MockUI();
+        component.getElement().getNode().removeFromTree(false);
+        newUi.getElement().appendChild(component.getElement());
+
+        // An ordinary detach must not throw. Before the fix this raised a
+        // NullPointerException from a second, stale ElementEffect detach
+        // listener dereferencing the already-nulled registration.
+        assertDoesNotThrow(() -> component.getElement().removeFromParent());
+
+        // The effect keeps working after the move: it is disabled while
+        // detached and re-enabled (and re-run because the signal changed) on a
+        // fresh attach.
+        signal.set("while detached");
+        int countAfterDetach = count.get();
+        newUi.getElement().appendChild(component.getElement());
+        signal.set("after reattach");
+        assertTrue(count.get() > countAfterDetach,
+                "Effect should still run after re-attach following a move");
     }
 
     @Test

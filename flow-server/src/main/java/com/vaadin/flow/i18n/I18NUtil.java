@@ -17,28 +17,26 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.ResourceFolderUtil;
+
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FILENAME;
-import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
 /**
  * Utility class for use with determining default i18n property files and
  * locales.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.3
  */
 public final class I18NUtil {
 
@@ -54,6 +52,7 @@ public final class I18NUtil {
      * @param classLoader
      *            the class loader to use for finding the translation file
      * @return {@code true} if default property file found
+     * @since 24.3.9
      */
     public static boolean containsDefaultTranslation(ClassLoader classLoader) {
         URL resource = classLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER
@@ -75,6 +74,7 @@ public final class I18NUtil {
      * @param classLoader
      *            the class loader to use for finding translation files
      * @return List of locales parsed from property files.
+     * @since 24.3.9
      */
     public static List<Locale> getDefaultTranslationLocales(
             ClassLoader classLoader) {
@@ -134,58 +134,12 @@ public final class I18NUtil {
 
     protected static List<File> getTranslationFiles(URL resource) {
         List<File> files = new ArrayList<>();
-
-        File bundleFolder = new File(resource.getFile());
-
-        if ("jar".equals(resource.getProtocol()) ||
-        // wsjar check is for OpenLiberty
-                "wsjar".equals(resource.getProtocol())) {
-            String file = resource.getFile().substring("file:".length(),
-                    resource.getFile().indexOf('!'));
-            try {
-                Enumeration<JarEntry> entries = new JarFile(file).entries();
-                entries.asIterator().forEachRemaining(entry -> {
-                    String fileName = entry.getName();
-                    if (fileName.contains(BUNDLE_FOLDER)
-                            && fileName.endsWith(PROPERTIES_SUFFIX)) {
-                        files.add(new File(fileName));
-                    }
-                });
-            } catch (IOException ioe) {
-                getLogger().debug(
-                        "failed to read jar file '" + file + "' contents", ioe);
-            }
-        } else if ("vfs".equals(resource.getProtocol())) {
-            files.addAll(listJBossVfsDirectory(resource));
-        } else if (bundleFolder.exists() && bundleFolder.isDirectory()) {
-            Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
-                    .forEach(files::add);
-        }
-        return files;
-    }
-
-    // Borrowed from DevModeInitializer
-    private static List<File> listJBossVfsDirectory(URL url) {
-        List<File> files = new ArrayList<>();
         try {
-            Object virtualFile = url.openConnection().getContent();
-            Class virtualFileClass = virtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to
-            // WildFly or JBoss
-            Method getChildren = virtualFileClass.getMethod("getChildren");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
-
-            List virtualFiles = (List) getChildren.invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                files.add((File) getPhysicalFileMethod.invoke(child));
-            }
-        } catch (Exception exc) {
-            getLogger().debug(
-                    "Failed to list entries in JBoss VFS directory {}", url,
-                    exc);
+            ResourceFolderUtil.visitFiles(resource,
+                    file -> files.add(new File(file.getName())));
+        } catch (IOException e) {
+            getLogger().debug("Failed to list the translation files in '{}'",
+                    resource, e);
         }
         return files;
     }

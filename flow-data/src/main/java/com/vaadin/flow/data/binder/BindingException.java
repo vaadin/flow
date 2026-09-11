@@ -26,6 +26,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
  * @author Vaadin Ltd
  *
  * @see BindingExceptionHandler
+ * @since 9.0
  */
 public class BindingException extends RuntimeException {
 

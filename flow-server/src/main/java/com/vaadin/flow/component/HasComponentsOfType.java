@@ -54,6 +54,7 @@ import com.vaadin.flow.signals.impl.Effect;
  *            the type of child components accepted by this container
  *
  * @author Vaadin Ltd
+ * @since 25.2
  */
 public interface HasComponentsOfType<T extends Component>
         extends HasElement, HasEnabled {

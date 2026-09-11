@@ -59,6 +59,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @param routeClasses
      *            potential route classes
      * @return a resulting set of the route component classes
+     * @since 9.0
      */
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Component>> validateRouteClasses(
@@ -265,6 +266,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @param routeClasses
      *            potential route classes
      * @return a PWA -annotated class, or null if none exist.
+     * @since 9.0
      */
     @SuppressWarnings("unchecked")
     protected Class<?> validatePwaClass(VaadinContext context,

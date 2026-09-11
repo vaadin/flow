@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.Node;
@@ -48,8 +49,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -91,6 +94,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -181,6 +185,15 @@ public class UITest {
     @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
+    }
+
+    @Test
+    public void getLastUpdateSentTimestamp_delegatesToInternals() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(ui.getInternals().getLastUpdateSentTimestamp(),
+                ui.getLastUpdateSentTimestamp());
     }
 
     @Test
@@ -298,6 +311,123 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQueryStringAndFragmentInLocation_bothAreParsed()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar?t=abc&t=def#total");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(List.of("abc", "def"),
+                location.getQueryParameters().getParameters().get("t"));
+        assertEquals("foo/bar?t=abc&t=def#total",
+                location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQuestionMarkInFragment_fragmentKeptIntact()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        // '?' is a legal fragment character and does not start a query string
+        ui.navigate("foo/bar#a?b");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(Collections.emptyMap(),
+                location.getQueryParameters().getParameters());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToFragmentOnly_leftToClientRouter()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A fragment must not be resolved to the "" route
+        ui.navigate("#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
+                .getPathWithQueryParameters());
+        assertEquals(List.of("#total"), dumpClientNavigations(ui),
+                "The fragment should have been handed to the client router");
+    }
+
+    @Test
+    public void navigateToQueryStringWithFragment_resolvedToRootRoute()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A query string identifies the "" route just like it does without a
+        // fragment, so only the fragment is left for the client
+        ui.navigate("?tab=items#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertEquals("?tab=items#total", ui.getInternals()
+                .getActiveViewLocation().getPathWithQueryParameters());
+        assertEquals(List.of(), dumpClientNavigations(ui));
+    }
+
+    private static List<String> dumpClientNavigations(UI ui) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .filter(invocation -> UI.CLIENT_NAVIGATE_TO
+                        .equals(invocation.getExpression()))
+                .map(invocation -> (String) invocation.getParameters().get(0))
+                .toList();
+    }
+
+    @Test
+    public void navigateWithSeparateQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar", QueryParameters.of("t", "abc"));
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQueryStringOrFragmentAndQueryParameters_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        QueryParameters parameters = QueryParameters.of("t", "def");
+        for (String locationString : List.of("foo/bar?t=abc", "foo/bar#total",
+                "foo/bar#a?b")) {
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> ui.navigate(locationString, parameters));
+            assertTrue(exception.getMessage().contains("navigate(String)"),
+                    "The message should name the overload to use instead: "
+                            + exception.getMessage());
+        }
+    }
+
+    @Test
     public void locationAfterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
@@ -313,6 +443,29 @@ public class UITest {
         Component currentRoute = ui.getCurrentView();
         MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToShownView_notReinstantiated_shownInstanceReturned()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        FooBarNavigationTarget shownView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        // Navigating to the location that is already shown does nothing, so
+        // the returned Optional holds the view that is already shown
+        FooBarNavigationTarget sameView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        assertSame(shownView, sameView,
+                "Navigating to the shown view should not re-instantiate it");
+
+        ui.refreshCurrentRoute(false);
+
+        assertNotSame(shownView, ui.getCurrentView(),
+                "refreshCurrentRoute should re-instantiate the shown view");
     }
 
     @Test
@@ -1318,6 +1471,29 @@ public class UITest {
         verifyInert(fixture.ui, true);
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void pollListener_uiInertDueToModalComponent_listenerStillInvoked() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges(); // the modal add makes the UI inert
+        verifyInert(fixture.ui, true);
+
+        AtomicInteger count = new AtomicInteger();
+        fixture.ui.addPollListener(event -> count.incrementAndGet());
+
+        firePollEvent(fixture.ui);
+
+        assertEquals(1, count.get(),
+                "Poll listener should be invoked even while the UI is inert "
+                        + "because of an open modal component");
+    }
+
+    private void firePollEvent(UI ui) {
+        DomEvent pollEvent = new DomEvent(ui.getElement(),
+                PollEvent.DOM_EVENT_NAME, JacksonUtils.createObjectNode());
+        ui.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(pollEvent);
     }
 
     @Test

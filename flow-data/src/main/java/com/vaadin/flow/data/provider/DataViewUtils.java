@@ -27,6 +27,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  * simplify the filtering and sorting handling, but not limited to it.
  *
  * @author Vaadin Ltd
+ * @since 5.0
  */
 public final class DataViewUtils {
 

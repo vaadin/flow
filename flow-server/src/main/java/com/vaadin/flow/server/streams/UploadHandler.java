@@ -135,6 +135,7 @@ public interface UploadHandler extends ElementRequestHandler {
      *            the result of the upload operation containing success status,
      *            response object, any exception that occurred, and lists of
      *            accepted/rejected files
+     * @since 25.0
      */
     default void responseHandled(UploadResult result) {
         VaadinResponse response = result.response();

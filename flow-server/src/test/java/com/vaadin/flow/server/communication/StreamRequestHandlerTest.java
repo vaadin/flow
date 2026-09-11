@@ -22,10 +22,10 @@ import jakarta.servlet.ServletOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@NotThreadSafe
+@Isolated
 class StreamRequestHandlerTest {
 
     private StreamRequestHandler handler = new StreamRequestHandler();

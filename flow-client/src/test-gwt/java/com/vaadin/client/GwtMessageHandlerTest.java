@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.LinkElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.communication.LoadingIndicatorStateHandler;
 import com.vaadin.client.communication.MessageHandler;
@@ -41,6 +45,9 @@ import elemental.json.JsonObject;
  * required to process all dependencies earlier any other message processing.
  */
 public class GwtMessageHandlerTest extends ClientEngineTestBase {
+
+    // The data-id of the sheet that is on the page when a swap starts.
+    private static final String REMOVED_STYLESHEET_ID = "dep-old";
 
     private Registry registry;
     private TestMessageHandler handler;
@@ -65,12 +72,37 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
     private static class TestRequestResponseTracker
             extends RequestResponseTracker {
+
+        // A response normally arrives while the request that triggered it is
+        // still active, so the tracker starts out with one.
+        private boolean active = true;
+
+        private int endRequestCount;
+
         public TestRequestResponseTracker(Registry registry) {
             super(registry);
         }
 
         @Override
+        public void startRequest() {
+            active = true;
+        }
+
+        @Override
+        public boolean hasActiveRequest() {
+            return active;
+        }
+
+        @Override
         public void endRequest() {
+            // Keeps the real tracker's precondition, without sending the
+            // pending invocations that it would trigger.
+            if (!active) {
+                throw new IllegalStateException(
+                        "endRequest called when no request is active");
+            }
+            active = false;
+            endRequestCount++;
         }
     }
 
@@ -89,6 +121,12 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         private Set<String> scriptUrls = new HashSet<>();
 
+        // Whether the sheet the message removes was still on the page when the
+        // add for the same URL reached the loader, or null if no stylesheet was
+        // loaded. The real loader dedupes by URL, so an add that arrives while
+        // the sheet is still there is dropped as a duplicate.
+        private Boolean removedSheetInDomOnLoad;
+
         private Registry registry;
 
         public TestResourceLoader(Registry registry) {
@@ -105,6 +143,15 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             registry.get(EventsOrder.class).sources
                     .add(ResourceLoader.class.getName());
             addInternalEvent(ResourceLoader.class.getName());
+        }
+
+        @Override
+        public void loadStylesheet(String stylesheetUrl,
+                ResourceLoadListener resourceLoadListener,
+                String dependencyId) {
+            removedSheetInDomOnLoad = isStylesheetInDom(REMOVED_STYLESHEET_ID);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
 
     }
@@ -234,6 +281,42 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                     eventsOrder.sources.get(0));
             // the second one is applying changes to StatTree
             assertEquals(StateTree.class.getName(), eventsOrder.sources.get(1));
+        });
+    }
+
+    public void testMessageProcessing_stylesheetRemovalIsHandledBeforeLoadingDependencies() {
+        resetInternalEvents();
+
+        // given: a stylesheet on the page, as an earlier add left it
+        addStylesheetToDom(REMOVED_STYLESHEET_ID);
+
+        // when: one round trip removes it and adds the same URL back, as a
+        // theme swap does
+        JavaScriptObject object = JavaScriptObject.createObject();
+        JsonObject obj = object.cast();
+
+        JsonArray dependencies = Json.createArray();
+        JsonObject dep = Json.createObject();
+        dep.put(Dependency.KEY_URL, "swapped.css");
+        dep.put(Dependency.KEY_TYPE, Dependency.Type.STYLESHEET.toString());
+        dep.put(Dependency.KEY_ID, "dep-new");
+        dependencies.set(0, dep);
+        obj.put(LoadMode.EAGER.toString(), dependencies);
+
+        JsonArray removals = Json.createArray();
+        removals.set(0, REMOVED_STYLESHEET_ID);
+        obj.put("stylesheetRemovals", removals);
+
+        handler.handleJSON(object.cast());
+
+        doAssert(() -> {
+            // then: the removal has already been applied when the add reaches
+            // the loader, so the add is not a duplicate of the sheet on its way
+            // out
+            assertEquals(Boolean.FALSE,
+                    getResourceLoader().removedSheetInDomOnLoad);
+            assertFalse("The removed stylesheet should be off the page",
+                    isStylesheetInDom(REMOVED_STYLESHEET_ID));
         });
     }
 
@@ -413,6 +496,34 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         });
     }
 
+    public void testHandleJSON_responseIsReceivedTwice_requestIsEndedOnce() {
+        resetInternalEvents();
+
+        JavaScriptObject responseJs = JavaScriptObject.createObject();
+        JsonObject response = responseJs.cast();
+        response.put("syncId", 0);
+
+        handler.handleJSON(responseJs.cast());
+
+        assertEquals("The response should end the request it was sent for", 1,
+                getRequestResponseTracker().endRequestCount);
+        assertFalse("The ended request should no longer be active",
+                getRequestResponseTracker().hasActiveRequest());
+
+        // when: the server delivers the same response once more, with the
+        // request it was sent for already ended by the first copy
+        handler.handleJSON(responseJs.cast());
+
+        assertEquals(
+                "An already seen response should not end a request that is not active",
+                1, getRequestResponseTracker().endRequestCount);
+    }
+
+    private TestRequestResponseTracker getRequestResponseTracker() {
+        return (TestRequestResponseTracker) registry
+                .getRequestResponseTracker();
+    }
+
     private TestResourceLoader getResourceLoader() {
         return (TestResourceLoader) registry.getResourceLoader();
     }
@@ -438,6 +549,24 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                 finishTest();
             }
         }.schedule(assertDelayInMillis);
+    }
+
+    private static void addStylesheetToDom(String dependencyId) {
+        LinkElement link = Document.get().createLinkElement();
+        link.setRel("stylesheet");
+        link.setAttribute("data-id", dependencyId);
+        Document.get().getHead().appendChild(link);
+    }
+
+    private static boolean isStylesheetInDom(String dependencyId) {
+        NodeList<Element> links = Document.get()
+                .getElementsByTagName("link");
+        for (int i = 0; i < links.getLength(); i++) {
+            if (dependencyId.equals(links.getItem(i).getAttribute("data-id"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static native void resetInternalEvents()

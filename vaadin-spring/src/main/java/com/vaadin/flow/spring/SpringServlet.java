@@ -50,11 +50,14 @@ import com.vaadin.flow.shared.util.SharedUtil;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class SpringServlet extends VaadinServlet {
 
     /**
      * Property names that are read from the application.properties file
+     * 
+     * @since 12.0.2
      */
     protected static final List<String> PROPERTY_NAMES = Arrays
             .stream(InitParameters.class.getDeclaredFields())
@@ -94,6 +97,7 @@ public class SpringServlet extends VaadinServlet {
      * @param rootMapping
      *            the incoming HttpServletRequest is wrapped in
      *            ForwardingRequestWrapper if {@code true}
+     * @since 11.0
      */
     public SpringServlet(ApplicationContext context, boolean rootMapping) {
         this.context = context;
@@ -139,13 +143,6 @@ public class SpringServlet extends VaadinServlet {
         Properties properties = new Properties();
         properties.putAll(initParameters);
         PROPERTY_NAMES.forEach(property -> setProperty(property, properties));
-        // transfer non-string init parameters (such as
-        // DeploymentConfigurationFactory.FALLBACK_CHUNK)
-        initParameters.forEach((key, value) -> {
-            if (!(key instanceof String)) {
-                properties.put(key, value);
-            }
-        });
         return properties;
     }
 

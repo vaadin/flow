@@ -68,6 +68,7 @@ public class DragEndEvent<T extends Component> extends AbstractDnDEvent<T> {
      *            the x coordinate of the mouse pointer relative to the viewport
      * @param clientY
      *            the y coordinate of the mouse pointer relative to the viewport
+     * @since 25.2
      */
     public DragEndEvent(T source, boolean fromClient,
             @EventData("event.dataTransfer.dropEffect") String dropEffect,

@@ -160,6 +160,14 @@ public class ComponentTest {
     public static class TestOtherButton extends Component {
     }
 
+    @Tag("button")
+    public static class BrokenToStringButton extends Component {
+        @Override
+        public String toString() {
+            throw new UnsupportedOperationException("broken toString");
+        }
+    }
+
     private Component divWithTextComponent;
     private Component parentDivComponent;
     private Component child1SpanComponent;
@@ -581,6 +589,25 @@ public class ComponentTest {
         TestComponent child = new TestComponent();
         parent.add(child);
         assertEmpty(child.getUI());
+    }
+
+    @Test
+    public void whenAttached_attachAndDetach_handlerAndCleanupRun() {
+        TestComponent component = new TestComponent();
+        UI ui = new UI();
+        List<String> log = new ArrayList<>();
+
+        component.whenAttached(handlerUi -> {
+            log.add("attach:" + (handlerUi == ui));
+            return () -> log.add("detach");
+        });
+        assertEquals(List.of(), log);
+
+        ui.add(component);
+        assertEquals(List.of("attach:true"), log);
+
+        ui.remove(component);
+        assertEquals(List.of("attach:true", "detach"), log);
     }
 
     @Test
@@ -2071,12 +2098,12 @@ public class ComponentTest {
         // Verify it uses parameter passing
         String expression = inv.getExpression();
         MatcherAssert.assertThat(expression,
-                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+                CoreMatchers.containsString("this.scrollIntoView($0)"));
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
-        assertTrue(params.size() >= 2, "Should have at least 2 parameters");
-        String paramJson = params.get(1).toString();
+        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
+        String paramJson = params.get(0).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
                     CoreMatchers.containsString(expectedPart));
@@ -2102,6 +2129,23 @@ public class ComponentTest {
                         + "singleton scoped beans and referencing them from "
                         + "multiple UIs. Offending component: com.vaadin.flow."
                         + "component.ComponentTest$TestButton@"),
+                ex.getMessage());
+    }
+
+    @Test
+    public void cannotMoveComponentsToOtherUI_componentToStringThrows_originalErrorIsReported() {
+        final UI otherUI = createMockedUI();
+        final BrokenToStringButton button = new BrokenToStringButton();
+        otherUI.add(button);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> testUI.add(button));
+        assertTrue(
+                ex.getMessage().contains(BrokenToStringButton.class.getName()),
+                ex.getMessage());
+        assertTrue(
+                ex.getMessage().contains(
+                        UnsupportedOperationException.class.getName()),
                 ex.getMessage());
     }
 

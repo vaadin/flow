@@ -62,6 +62,7 @@ import com.vaadin.flow.router.MenuData;
  * @param detail
  *            additional information to be used in the menu, encoded in JSON
  *            format
+ * @since 24.5
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
@@ -110,6 +111,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + routeParameters + ", detail=" + detail + '}';
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailDeserializer extends ValueDeserializer<String> {
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt) {
@@ -121,6 +125,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         }
     }
 
+    /**
+     * @since 24.8
+     */
     public static class DetailSerializer extends ValueSerializer<String> {
         @Override
         public void serialize(String value, JsonGenerator gen,

@@ -48,6 +48,8 @@ import com.vaadin.flow.dom.JsFunction;
  * every action.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public abstract class Action implements Serializable {
 
@@ -125,11 +127,16 @@ public abstract class Action implements Serializable {
          * {@code event} simply omit the declaration and ignore the argument the
          * caller passes.
          *
+         * <p>
+         * Public so that {@link Action} implementations in any package can
+         * consume inputs they receive as parameters, not only inputs they
+         * created themselves.
+         *
          * @param trigger
          *            the surrounding trigger this render is for, not
          *            {@code null}
          * @return the input's JS function, not {@code null}
          */
-        protected abstract JsFunction toJs(Trigger trigger);
+        public abstract JsFunction toJs(Trigger trigger);
     }
 }

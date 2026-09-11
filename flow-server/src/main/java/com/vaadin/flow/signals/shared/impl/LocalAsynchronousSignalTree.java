@@ -25,6 +25,8 @@ import com.vaadin.flow.signals.SignalEnvironment;
  * {@link #confirm(List)} using the default effect dispatcher from
  * {@link SignalEnvironment}. This makes the behavior consistent with clustered
  * implementations where confirmation happens asynchronously.
+ * 
+ * @since 25.1
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 

@@ -17,6 +17,8 @@ package com.vaadin.flow.server.auth;
 
 /**
  * Default implementation of {@link MenuAccessControl}.
+ * 
+ * @since 24.4
  */
 public class DefaultMenuAccessControl implements MenuAccessControl {
 

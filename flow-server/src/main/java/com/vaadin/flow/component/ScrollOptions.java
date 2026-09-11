@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.JacksonUtils;
  *             with {@link ScrollIntoViewOption.Behavior},
  *             {@link ScrollIntoViewOption.Block}, and
  *             {@link ScrollIntoViewOption.Inline} options instead
+ * @since 24.0
  **/
 @Deprecated(since = "25.0", forRemoval = true)
 public class ScrollOptions implements Serializable {

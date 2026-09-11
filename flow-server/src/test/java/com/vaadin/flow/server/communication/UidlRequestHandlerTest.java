@@ -41,6 +41,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.dau.DAUUtils;
@@ -185,6 +186,68 @@ class UidlRequestHandlerTest {
         // response shouldn't contain async
         assertEquals(responseContent, resendResponseContent,
                 "Server should send same content again");
+    }
+
+    @Test
+    void clientRequestsPreviousIdAndPayload_nothingRecorded_writesANewResponse()
+            throws IOException {
+
+        UI ui = getUi();
+        VaadinSession session = ui.getSession();
+        VaadinService service = session.getService();
+        DeploymentConfiguration conf = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
+        Mockito.when(conf.isRequestTiming()).thenReturn(false);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(conf.isSyncIdCheckEnabled()).thenReturn(true);
+
+        String requestBody = """
+                {
+                   "csrfToken": "d1f44a6f-bbe5-4493-a8a9-3f5f234a2a93",
+                   "rpc": [],
+                   "syncId": 0,
+                   "clientId": 0
+                 }
+                """;
+
+        handler.synchronizedHandleRequest(session, request, response,
+                requestBody).orElseThrow().writeResponse();
+        ObjectNode firstResponse = JacksonUtils.readTree(
+                CommunicationUtil.getStringWhenWriteString(outputStream));
+
+        // The answer to the message the client is about to re-send was never
+        // produced, so there is nothing recorded to send again. This is the
+        // state left behind when creating a response fails, and the state the
+        // push connection leaves when it cannot create one.
+        ui.getInternals().setLastRequestResponse(null);
+
+        response = Mockito.mock(VaadinResponse.class);
+        outputStream = Mockito.mock(OutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+
+        handler.synchronizedHandleRequest(session, request, response,
+                requestBody).orElseThrow().writeResponse();
+        String resendResponseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+        assertTrue(resendResponseContent.startsWith("{"),
+                "The client should get a JSON response, was: "
+                        + resendResponseContent);
+        ObjectNode resendResponse = JacksonUtils
+                .readTree(resendResponseContent);
+
+        // A sync id means a UIDL was written, which rules out the refresh and
+        // critical-notification responses this handler can also produce, and a
+        // sync id that moved on means it is a new one rather than the recorded
+        // response being sent again.
+        assertTrue(resendResponse.has(ApplicationConstants.SERVER_SYNC_ID),
+                "The client should get a UIDL response, was: "
+                        + resendResponseContent);
+        assertTrue(resendResponse.get(ApplicationConstants.SERVER_SYNC_ID)
+                .intValue() > firstResponse
+                        .get(ApplicationConstants.SERVER_SYNC_ID).intValue(),
+                "The response should be a newly created one, was: "
+                        + resendResponseContent);
     }
 
     @Test
@@ -556,6 +619,8 @@ class UidlRequestHandlerTest {
      */
     private static UI getUi() {
         VaadinService service = mock(VaadinService.class);
+        when(service.getEventBus())
+                .thenReturn(new VaadinServiceEventBus(service));
         VaadinSession session = new VaadinSession(service) {
             @Override
             public boolean hasLock() {

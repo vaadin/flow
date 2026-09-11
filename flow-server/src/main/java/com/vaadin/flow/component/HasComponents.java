@@ -44,6 +44,7 @@ public interface HasComponents extends HasComponentsOfType<Component> {
      *
      * @param text
      *            the text to add, not <code>null</code>
+     * @since 1.3
      */
     default void add(String text) {
         add(new Text(text));

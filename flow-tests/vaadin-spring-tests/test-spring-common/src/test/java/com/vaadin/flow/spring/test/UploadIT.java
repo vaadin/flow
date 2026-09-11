@@ -24,11 +24,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.WrapsElement;
-import org.openqa.selenium.remote.LocalFileDetector;
-import org.openqa.selenium.remote.RemoteWebElement;
-
-import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.spring.test.UploadView.UPLOAD_ID;
 
@@ -46,9 +41,7 @@ public class UploadIT extends AbstractSpringTest {
 
         File tempFile = createTempFile("foo");
 
-        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID);
-        setLocalFileDetector(input);
-        input.sendKeys(tempFile.getPath());
+        uploadFileToNativeInput(UPLOAD_ID, tempFile);
 
         waitUntil(driver -> isElementPresent(By.className("uploaded-text")));
         WebElement uploadedText = findElement(By.className("uploaded-text"));
@@ -79,23 +72,5 @@ public class UploadIT extends AbstractSpringTest {
         writer.close();
         tempFile.deleteOnExit();
         return tempFile;
-    }
-
-    private void setLocalFileDetector(WebElement element) throws Exception {
-        if (getRunLocallyBrowser() != null) {
-            return;
-        }
-
-        if (element instanceof WrapsElement) {
-            element = ((WrapsElement) element).getWrappedElement();
-        }
-        if (element instanceof RemoteWebElement) {
-            ((RemoteWebElement) element)
-                    .setFileDetector(new LocalFileDetector());
-        } else {
-            throw new IllegalArgumentException(
-                    "Expected argument of type RemoteWebElement, received "
-                            + element.getClass().getName());
-        }
     }
 }

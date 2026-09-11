@@ -40,6 +40,7 @@ import org.apache.commons.io.IOUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 25.0
  */
 public final class DefaultArchiveExtractor implements ArchiveExtractor {
 

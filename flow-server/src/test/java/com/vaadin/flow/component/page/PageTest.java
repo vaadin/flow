@@ -34,8 +34,12 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -348,6 +352,152 @@ class PageTest {
         assertTrue(windowOpenIndex >= 0, "window.open should be present");
         assertTrue(eventDispatchIndex < windowOpenIndex,
                 "Event dispatch should come before window.open in the script");
+    }
+
+    @Test
+    void open_unsafeScheme_throws() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class,
+                () -> page.open("javascript:alert(1)"));
+        assertThrows(IllegalArgumentException.class,
+                () -> page.open("javascript:alert(1)", "_blank"));
+    }
+
+    @Test
+    void setLocation_unsafeScheme_throws() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class,
+                () -> page.setLocation("javascript:alert(1)"));
+    }
+
+    @Test
+    void open_nullUrl_throwsWithUsefulMessage() {
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Null URL should not reach the client");
+            }
+        };
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.open(null, "_blank"));
+        assertEquals("URL must not be null", ex.getMessage());
+    }
+
+    @Test
+    void open_unsafeInApplicationConfiguration_usesConfigurationOfOwnUi() {
+        // The UI is always known, so the configuration of the right application
+        // is used even though the URL is safe according to the framework
+        // default
+        Page page = new Page(createUI("https")) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return fail("Unsafe URL should not reach the client");
+            }
+        };
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.open("http://example.com"));
+        assertTrue(exception.getMessage().contains("http://example.com"));
+    }
+
+    @Test
+    void open_safeInApplicationConfiguration_opens() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        Page page = new Page(createUI("https")) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.open("https://example.com");
+
+        assertTrue(capture.get().contains("window.open"));
+    }
+
+    /**
+     * Creates a UI that belongs to an application configured to only allow the
+     * given URL schemes, without making the service available through
+     * {@link VaadinService#getCurrent()}.
+     */
+    private UI createUI(String safeUrlSchemes) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setApplicationOrSystemProperty(
+                InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(session.getService()).thenReturn(service);
+
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        return ui;
+    }
+
+    @Test
+    void openUnsafe_unsafeScheme_opensWithoutValidation() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.openUnsafe("javascript:alert(1)");
+
+        assertTrue(capture.get().contains("window.open"),
+                "Should call window.open");
+        assertEquals("javascript:alert(1)", params.get(0));
+    }
+
+    @Test
+    void openUnsafe_twoArg_opensWithoutValidation() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.openUnsafe("javascript:alert(1)", "_blank");
+
+        assertTrue(capture.get().contains("window.open"),
+                "Should call window.open");
+        assertEquals("javascript:alert(1)", params.get(0));
+        assertEquals("_blank", params.get(1));
     }
 
     @Test

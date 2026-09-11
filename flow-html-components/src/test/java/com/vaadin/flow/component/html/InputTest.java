@@ -18,8 +18,11 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.component.InputMode;
 
 class InputTest extends ComponentTest {
 
@@ -32,7 +35,28 @@ class InputTest extends ComponentTest {
             InvocationTargetException, NoSuchMethodException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
+        whitelistProperty("inputMode");
         super.setup();
+    }
+
+    @Test
+    void inputMode_defaultsToNull() {
+        Input input = new Input();
+        Assertions.assertNull(input.getInputMode());
+    }
+
+    @Test
+    void setInputMode_getInputMode() {
+        Input input = new Input();
+
+        input.setInputMode(InputMode.NUMERIC);
+        Assertions.assertEquals(InputMode.NUMERIC, input.getInputMode());
+        Assertions.assertEquals("numeric",
+                input.getElement().getAttribute("inputmode"));
+
+        input.setInputMode(null);
+        Assertions.assertNull(input.getInputMode());
+        Assertions.assertNull(input.getElement().getAttribute("inputmode"));
     }
 
     @Override

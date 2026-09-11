@@ -56,6 +56,7 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  * @author Vaadin Ltd
  *
  * @see AbstractLookupInitializer
+ * @since 6.0
  */
 public class LookupInitializer implements AbstractLookupInitializer {
 
@@ -340,6 +341,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * @param implementation
      *            service implementation class
      * @return an instantiated service implementation object
+     * @since 6.0.1
      */
     protected <T> T instantiate(Class<T> serviceClass,
             Class<?> implementation) {
@@ -357,6 +359,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * This method is public only for internal purposes.
      *
      * @return a set of classes
+     * @since 24.0
      */
     public static Set<Class<?>> getDefaultImplementations() {
         return Set.of(RegularOneTimeInitializerPredicate.class,

@@ -230,6 +230,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *
      * @param elements
      *            list of shadow dom elements
+     * @since 2.2
      */
     public void setShadowDomElements(List<Element> elements) {
         lock();
@@ -245,6 +246,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * the embedded web component.
      *
      * @return copy of shadow dom elements
+     * @since 2.2
      */
     public List<Element> getShadowDomElements() {
         lock();

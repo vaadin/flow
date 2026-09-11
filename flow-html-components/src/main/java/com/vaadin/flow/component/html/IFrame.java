@@ -24,13 +24,18 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Component representing a <code>&lt;iframe&gt;</code> element.
+ * <p>
+ * A nested browsing context that embeds another HTML page. Prefer this over
+ * HtmlObject for documents.
  *
  * @author Vaadin Ltd
  * @since 1.3
@@ -42,8 +47,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent implements HasAriaLabel {
 
+    private static final String SRC = "src";
+
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
-            .attributeWithDefault("src", "");
+            .attributeWithDefault(SRC, "");
 
     private static final PropertyDescriptor<String, Optional<String>> srcdocDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("srcdoc", "");
@@ -148,6 +155,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param downloadHandler
      *            the download handler callback that provides a resource from
      *            server, not null
+     * @since 24.8
      */
     public IFrame(DownloadHandler downloadHandler) {
         setSrc(downloadHandler);
@@ -160,8 +168,41 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param src
      *            Source URL.
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe. The
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration is
+     *             read from the application that this iframe is attached to, so
+     *             for an iframe that isn't attached yet the exception is
+     *             instead thrown when it is attached. See
+     *             {@link #setUnsafeSrc(String)} for setting a URL that
+     *             shouldn't be checked at all.
      */
     public void setSrc(String src) {
+        if (src != null) {
+            UrlUtil.validateUrl(this, SRC, src, "setUnsafeSrc(String)",
+                    () -> set(srcDescriptor, ""));
+        }
+        set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the source of the iframe without validating its scheme.
+     * <p>
+     * Unlike {@link #setSrc(String)}, this method does not reject URLs based on
+     * the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it only
+     * for URLs that are fully under your control and known to be safe, such as
+     * a hard-coded {@code javascript:} or {@code data:} URL. Passing untrusted
+     * input here can expose the application to cross-site scripting (XSS)
+     * attacks.
+     *
+     * @see #setSrc(String)
+     *
+     * @param src
+     *            Source URL.
+     * @since 25.1.12
+     */
+    public void setUnsafeSrc(String src) {
+        UrlUtil.cancelUrlValidation(this, SRC);
         set(srcDescriptor, src);
     }
 
@@ -174,10 +215,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @param src
      *            the resource value, not null
      * @deprecated use {@link #setSrc(DownloadHandler)} instead
+     * @since 24.7
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public void setSrc(AbstractStreamResource src) {
-        getElement().setAttribute("src", src);
+        UrlUtil.cancelUrlValidation(this, SRC);
+        getElement().setAttribute(SRC, src);
     }
 
     /**
@@ -199,14 +242,16 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
+        UrlUtil.cancelUrlValidation(this, SRC);
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
             // change disposition to inline in pre-defined handlers,
             // where it is 'attachment' by default
             handler.inline();
         }
-        getElement().setAttribute("src", downloadHandler.allowDisabled());
+        getElement().setAttribute(SRC, downloadHandler.allowDisabled());
     }
 
     /**
@@ -343,6 +388,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     /**
      * Reloads the IFrame.
+     * 
+     * @since 3.0
      */
     public void reload() {
         getElement().executeJs("this.src = this.src");

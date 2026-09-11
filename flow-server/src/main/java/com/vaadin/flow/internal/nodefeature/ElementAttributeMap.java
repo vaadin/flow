@@ -93,6 +93,7 @@ public class ElementAttributeMap extends NodeMap {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given attribute
+     * @since 25.0
      */
     public SignalBinding<String> bindSignal(Element owner, String attribute,
             Signal<String> signal) {

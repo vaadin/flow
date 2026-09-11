@@ -20,7 +20,7 @@ package com.vaadin.flow.data.provider.hierarchy;
  * data. Uses an instance of {@link TreeData} as its source of data.
  *
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  *
  * @param <T>
  *            data type
@@ -37,7 +37,16 @@ public class TreeDataProvider<T>
      * @param treeData
      *            the backing {@link TreeData} for this provider, not
      *            {@code null}
+     * @deprecated this constructor currently defaults to
+     *             {@link HierarchyFormat#NESTED}, but starting from Vaadin 26
+     *             it will default to {@link HierarchyFormat#FLATTENED} instead.
+     *             This may affect TreeGrid methods whose behavior depends on
+     *             the hierarchy format, such as {@code scrollToIndex}. Switch
+     *             to {@link #TreeDataProvider(TreeData, HierarchyFormat)} and
+     *             pass {@link HierarchyFormat#NESTED} explicitly to preserve
+     *             the current behavior.
      */
+    @Deprecated(since = "25.3")
     public TreeDataProvider(TreeData<T> treeData) {
         super(treeData);
     }
@@ -55,6 +64,7 @@ public class TreeDataProvider<T>
      *            {@code null}
      * @param hierarchyFormat
      *            the hierarchy format to return data in, not {@code null}
+     * @since 25.0
      */
     public TreeDataProvider(TreeData<T> treeData,
             HierarchyFormat hierarchyFormat) {

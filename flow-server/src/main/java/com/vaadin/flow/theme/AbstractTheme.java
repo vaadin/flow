@@ -80,6 +80,7 @@ public interface AbstractTheme extends Serializable {
      * @return a Map with the attributes (keys and values) that should be set in
      *         the body, or an empty Map if nothing should be set for the given
      *         variant.
+     * @since 2.0
      */
     default Map<String, String> getHtmlAttributes(String variant) {
         return Collections.emptyMap();

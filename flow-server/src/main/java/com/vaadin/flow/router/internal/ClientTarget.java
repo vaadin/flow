@@ -22,7 +22,7 @@ import com.vaadin.flow.component.Component;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 24.5
+ * @since 24.5.1
  */
 public class ClientTarget extends RouteTarget {
     private final String template;

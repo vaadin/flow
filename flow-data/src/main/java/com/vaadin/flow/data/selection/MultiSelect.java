@@ -96,6 +96,7 @@ public interface MultiSelect<C extends Component, T> extends
      *
      * @param items
      *            to add to selection, not {@code null}
+     * @since 1.2
      */
     default void select(Iterable<T> items) {
         Objects.requireNonNull(items);
@@ -122,6 +123,7 @@ public interface MultiSelect<C extends Component, T> extends
      *
      * @param items
      *            to remove from selection, not {@code null}
+     * @since 1.2
      */
     default void deselect(Iterable<T> items) {
         Objects.requireNonNull(items);

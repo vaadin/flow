@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.StringUtil;
  * @author Vaadin Ltd
  *
  * @see LitTemplateParser
+ * @since 5.0
  */
 public final class BundleLitParser {
 

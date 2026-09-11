@@ -83,7 +83,7 @@ import com.vaadin.flow.shared.ui.Dependency;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 25.0
+ * @since 25.1
  */
 public class StyleSheetHotswapper implements VaadinHotswapper {
 
@@ -418,9 +418,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     }
 
     private void trackAppShellUrls(VaadinService vaadinService) {
-        ActiveStyleSheetTracker.get(vaadinService)
-                .trackForAppShell(appShellStylesheets.values().stream()
-                        .flatMap(Set::stream).collect(Collectors.toSet()));
+        // appShellStylesheets holds raw annotation values, while the tracker
+        // stores the canonical resolveToContextRoot form used by the component
+        // paths above, so resolve before handing them over.
+        ActiveStyleSheetTracker.get(vaadinService).trackForAppShell(
+                appShellStylesheets.values().stream().flatMap(Set::stream).map(
+                        FrontendDependencyUrlResolver::resolveToContextRoot)
+                        .filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
     private boolean isComponentInUse(UI ui, Class<?> componentClass) {

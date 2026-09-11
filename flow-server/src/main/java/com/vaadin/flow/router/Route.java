@@ -108,6 +108,7 @@ public @interface Route {
      * Default is to register route at startup.
      *
      * @return setting to false skips automatic registration
+     * @since 1.3
      */
     boolean registerAtStartup() default true;
 
@@ -117,6 +118,7 @@ public @interface Route {
      * for.
      *
      * @return {@code false} skips automatic layout
+     * @since 24.5
      */
     boolean autoLayout() default true;
 }

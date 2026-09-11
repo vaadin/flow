@@ -226,34 +226,30 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      *            The servlet registration info for the servlet
      * @param servletContext
      *            the context of the servlet
-     * @return false if the servlet is definitely not a Vaadin servlet, true
-     *         otherwise
+     * @return true if the servlet class is a Vaadin servlet, false otherwise
+     *         (including when the servlet class cannot be loaded)
      */
     protected boolean isVaadinServlet(ServletRegistration servletRegistration,
             ServletContext servletContext) {
         try {
             String servletClassName = servletRegistration.getClassName();
-            if (servletClassName.equals("com.ibm.ws.wsoc.WsocServlet")) {
-                // Websphere servlet which implements websocket endpoints,
-                // dynamically added
-                return false;
-            }
-            if (servletClassName
-                    .equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
-                // Websphere servlet which implements websocket endpoints,
-                // dynamically added
-                return false;
-            }
-
             // Must use servletContext class loader to load servlet class to
-            // work correctly in an OSGi environment (#20024)
+            // work correctly in an OSGi environment (#1311)
             Class<?> servletClass = servletContext.getClassLoader()
                     .loadClass(servletClassName);
             return VaadinServlet.class.isAssignableFrom(servletClass);
         } catch (Exception e) {
-            // This will fail in OSGi environments, assume everything is a
-            // VaadinServlet
-            return true;
+            // If the servlet class cannot be loaded or checked, it is not a
+            // Vaadin servlet we should initialize Atmosphere for. The OSGi
+            // class loading issue that previously required assuming everything
+            // is a VaadinServlet was fixed by using the servlet context class
+            // loader above (#1311). Assuming true here caused Atmosphere to be
+            // initialized for non-Vaadin servlets, e.g. on Liberty (#14889).
+            getLogger().debug(
+                    "Could not determine whether {} is a Vaadin servlet, "
+                            + "assuming it is not",
+                    servletRegistration.getName(), e);
+            return false;
         }
     }
 

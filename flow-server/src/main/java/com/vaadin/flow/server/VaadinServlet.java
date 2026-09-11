@@ -218,6 +218,7 @@ public class VaadinServlet extends HttpServlet {
      *
      * @param runnable
      *            the runnable to run
+     * @since 24.0
      */
     public static void whenFrontendMappingAvailable(Runnable runnable) {
         synchronized (VaadinServlet.class) {
@@ -249,6 +250,7 @@ public class VaadinServlet extends HttpServlet {
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
+     * @since 7.0
      */
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
@@ -386,7 +388,7 @@ public class VaadinServlet extends HttpServlet {
             return;
         }
 
-        if (serveStaticOrWebJarRequest(request, response)) {
+        if (staticFileHandler.serveStaticResource(request, response)) {
             return;
         }
 
@@ -426,15 +428,20 @@ public class VaadinServlet extends HttpServlet {
      * @exception IOException
      *                if an input or output error occurs while the servlet is
      *                handling the HTTP request
+     * @deprecated The name refers to WebJars, which are not handled here. This
+     *             method only delegates to
+     *             {@link StaticFileHandler#serveStaticResource(HttpServletRequest, HttpServletResponse)},
+     *             which
+     *             {@link #service(HttpServletRequest, HttpServletResponse)} now
+     *             calls directly, so overriding this method no longer affects
+     *             request handling. Override
+     *             {@link #createStaticFileHandler(VaadinService)} to customize
+     *             how static resources are served.
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-
-        if (staticFileHandler.serveStaticResource(request, response)) {
-            return true;
-        }
-
-        return false;
+        return staticFileHandler.serveStaticResource(request, response);
     }
 
     /**
@@ -657,6 +664,7 @@ public class VaadinServlet extends HttpServlet {
      * For internal use only.
      *
      * @return the vaadin servlet used for frontend files in development mode
+     * @since 23.2
      */
     public static String getFrontendMapping() {
         return frontendMapping;

@@ -42,10 +42,16 @@ public class BrowserDetails implements Serializable {
         UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS
     }
 
+    /**
+     * @since 25.0
+     */
     public enum BrowserName {
         UNKNOWN, SAFARI, CHROME, FIREFOX, OPERA, IE, EDGE
     }
 
+    /**
+     * @since 25.0
+     */
     public enum BrowserEngine {
         UNKNOWN, GECKO, WEBKIT, PRESTO, TRIDENT
     }
@@ -758,6 +764,7 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run on iPad.
      *
      * @return true if run on iPad, false otherwise
+     * @since 24.6
      */
     public boolean isIPad() {
         if (os == null) {

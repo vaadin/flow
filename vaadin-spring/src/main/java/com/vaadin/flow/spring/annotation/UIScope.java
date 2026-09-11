@@ -29,6 +29,7 @@ import static com.vaadin.flow.spring.scopes.VaadinUIScope.VAADIN_UI_SCOPE_NAME;
  * Stereotype annotation for Spring's {@code @Scope("vaadin-ui")}.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 @Scope(VAADIN_UI_SCOPE_NAME)
 @Target({ ElementType.TYPE, ElementType.METHOD })

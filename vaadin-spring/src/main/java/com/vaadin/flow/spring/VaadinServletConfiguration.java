@@ -27,9 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.util.AntPathMatcher;
@@ -58,8 +59,9 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
-@Configuration
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @Conditional(RootMappedCondition.class)
 public class VaadinServletConfiguration {
 
@@ -99,6 +101,9 @@ public class VaadinServletConfiguration {
         }
     }
 
+    /**
+     * @since 24.0
+     */
     public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
@@ -177,16 +182,20 @@ public class VaadinServletConfiguration {
      *
      * @param environment
      *            the application environment
+     * @param vaadinForwardingController
+     *            the controller forwarding requests to the Vaadin servlet
      * @param resourceHandlerMapping
      *            the resource handler mapping, if available
      * @return an url handler mapping instance which forwards requests to vaadin
      *         servlet
+     * @since 25.3
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,
+            Controller vaadinForwardingController,
             @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
-                vaadinForwardingController(), resourceHandlerMapping);
+                vaadinForwardingController, resourceHandlerMapping);
     }
 
     /**

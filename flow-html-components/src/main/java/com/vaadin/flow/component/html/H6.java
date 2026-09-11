@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;h6&gt;</code> element.
+ * <p>
+ * A rank-6 heading. Keep heading ranks sequential rather than skipping levels
+ * for style.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/h6">MDN:
+ *      &lt;h6&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -66,6 +72,7 @@ public class H6 extends HtmlContainer implements ClickNotifier<H6> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public H6(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

@@ -20,6 +20,7 @@ package com.vaadin.frontendtools.installer;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 25.0
  */
 public final class VerificationException extends Exception {
 

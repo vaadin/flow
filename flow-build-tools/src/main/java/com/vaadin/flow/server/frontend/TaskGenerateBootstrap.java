@@ -40,6 +40,7 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 6.0
  */
 public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 

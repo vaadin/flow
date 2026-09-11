@@ -19,6 +19,8 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 
 /**
  * Dialog modality mode.
+ * 
+ * @since 25.0
  */
 public enum ModalityMode {
 

@@ -25,7 +25,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;p&gt;</code> element.
+ * <p>
+ * A paragraph of text.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/p">MDN:
+ *      &lt;p&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -67,6 +72,7 @@ public class Paragraph extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Paragraph(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

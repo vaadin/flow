@@ -6,8 +6,13 @@ import {
 } from '@vaadin/common-frontend';
 import './Clipboard';
 import { currentFullscreenState } from './Fullscreen';
+import './Download';
+import './ElementResize';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
+import './WakeLock';
+import { isShareSupported } from './WebShare';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -342,8 +347,12 @@ export class Flow {
         await this.config.imports();
       }
 
-      // Load flow-client module
-      const clientMod = await import('./FlowClient');
+      // Load flow-client module. The bare specifier is intentional: the
+      // generated Vite config aliases it to FlowClient.js in jar-resources and
+      // lists it in optimizeDeps, and Vite only redirects bare specifiers to a
+      // pre-bundled dependency. Importing './FlowClient' relatively would make
+      // the dev server serve the ~90 modules of the client engine one by one.
+      const clientMod = await import('vaadin-flow-client');
       await this.flowInitClient(clientMod);
 
       // hide flow progress indicator
@@ -431,13 +440,21 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
 
-      const browserDetailsParam = browserDetails
-        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+      // Browser details are appended as individual query parameters rather
+      // than as a single JSON-encoded value. A JSON payload in the URL
+      // produces many percent-encoded escape sequences (%7B, %22, %3A, ...)
+      // that some firewalls/WAFs (e.g. Sophos) flag and block, which would
+      // fail the bootstrap on the very first page load. Plain key=value pairs
+      // avoid that pattern entirely.
+      const browserDetailsParams = browserDetails
+        ? Object.entries(browserDetails)
+            .map(([key, value]) => `&${key}=${encodeURIComponent(value)}`)
+            .join('')
         : '';
 
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParams}`;
 
       httpRequest.open('GET', requestPath);
 
@@ -549,6 +566,11 @@ export class Flow {
     /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
     params['v-fs'] = currentFullscreenState();
 
+    /* Screen orientation — initial state of screen.orientation, empty
+       when the Screen Orientation API is unavailable. */
+    params['v-so'] = currentScreenOrientationType();
+    params['v-soa'] = currentScreenOrientationAngle();
+
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';
@@ -566,6 +588,15 @@ export class Flow {
     if (geolocation) {
       params['v-ga'] = await geolocation.queryAvailability();
     }
+
+    /* Wake-lock availability — same guard rationale as geolocation. */
+    const wakeLock = ($wnd.Vaadin.Flow as any)?.wakeLock;
+    if (wakeLock) {
+      params['v-wla'] = wakeLock.queryAvailability();
+    }
+
+    /* Web Share API support */
+    params['v-ws'] = isShareSupported();
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

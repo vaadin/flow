@@ -164,6 +164,7 @@ public class DependencyList implements Serializable {
      * @param type
      *            the type of the dependency
      * @return the dependency, or null if not found
+     * @since 25.0
      */
     public Dependency getDependencyByUrl(String url, Dependency.Type type) {
         Dependency dep = urlToLoadedDependency.get(url);
@@ -181,6 +182,7 @@ public class DependencyList implements Serializable {
      * @param dependencyId
      *            the ID of the dependency to remove
      * @return true if the dependency was removed, false if it wasn't found
+     * @since 25.0
      */
     public boolean remove(String dependencyId) {
         Dependency dependency = dependencyIdToDependency.remove(dependencyId);

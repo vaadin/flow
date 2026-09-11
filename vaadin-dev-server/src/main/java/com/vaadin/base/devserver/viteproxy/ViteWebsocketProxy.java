@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
  * connection.
  * <p>
  * Forwards all messages from one to the other.
+ * 
+ * @since 24.0
  */
 public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
 
@@ -46,6 +48,7 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
      *            the port the Vite server is running on
      * @param vitePath
      *            the path Vite is using
+     * @since 24.1.2
      */
     public ViteWebsocketProxy(Session browserSession, Integer vitePort,
             String vitePath) {

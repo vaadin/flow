@@ -34,6 +34,7 @@ import com.vaadin.flow.server.VaadinContext;
  *
  * @see ClassLoaderAwareServletContainerInitializer
  * @see VaadinServletContextStartupInitializer
+ * @since 6.0
  */
 @FunctionalInterface
 public interface VaadinContextStartupInitializer {

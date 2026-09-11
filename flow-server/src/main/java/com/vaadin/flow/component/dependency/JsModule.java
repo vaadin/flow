@@ -88,6 +88,7 @@ public @interface JsModule {
      *
      * @return {@code true} to load the module only in development mode,
      *         {@code false} to always load it
+     * @since 24.2
      */
     boolean developmentOnly() default false;
 

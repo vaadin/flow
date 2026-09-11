@@ -35,6 +35,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
 

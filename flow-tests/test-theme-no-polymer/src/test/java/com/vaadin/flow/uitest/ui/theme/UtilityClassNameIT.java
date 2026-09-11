@@ -24,7 +24,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class UtilityClassNameIT extends ChromeBrowserTest {
 
     @Test
-    public void lumoUtils_customStylesHaveBeenExpanded() {
+    public void utilityClass_themeCssIsAppliedToElement() {
         open();
         checkLogsForErrors();
 

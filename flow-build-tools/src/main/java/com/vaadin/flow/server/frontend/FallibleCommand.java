@@ -24,6 +24,7 @@ package com.vaadin.flow.server.frontend;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 2.2
  */
 public interface FallibleCommand {
 
@@ -45,6 +46,7 @@ public interface FallibleCommand {
      *
      * @param support
      *            the generated file support utility to use.
+     * @since 24.4
      */
     default void setGeneratedFileSupport(GeneratedFilesSupport support) {
     }

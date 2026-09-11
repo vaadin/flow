@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 
 /**
  * A command triggered from a signal.
+ * 
+ * @since 25.1
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(value = {

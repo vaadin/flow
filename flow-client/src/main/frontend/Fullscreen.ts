@@ -90,21 +90,32 @@ $wnd.Vaadin.Flow.fullscreen = {
     if (!originalParent) {
       throw new Error('Component is not attached to the DOM');
     }
+
+    // The view root is the wrapper's current element child (the route
+    // content). Capture it before touching the DOM, because the steps below
+    // insert a placeholder comment and move the element into the wrapper —
+    // after that, the wrapper's first node may be the placeholder rather than
+    // the view root. Use firstElementChild so comment/text nodes are skipped.
+    const viewRoot = wrapper.firstElementChild as HTMLElement | null;
+
     const placeholder = document.createComment('vaadin-fullscreen-placeholder');
     originalParent.insertBefore(placeholder, element);
-
     wrapper.appendChild(element);
-    const viewRoot = wrapper.firstChild as HTMLElement | null;
-    const previousDisplay = viewRoot?.style.display ?? '';
-    if (viewRoot) {
-      viewRoot.style.display = 'none';
+
+    // When the fullscreened component *is* the view root there is nothing
+    // else to hide; hiding it would blank the fullscreen. Otherwise hide the
+    // view root so only the fullscreened component shows.
+    const hidden = viewRoot === element ? null : viewRoot;
+    const previousDisplay = hidden?.style.display ?? '';
+    if (hidden) {
+      hidden.style.display = 'none';
     }
 
     activeComponentReset = () => {
       placeholder.parentNode?.insertBefore(element, placeholder);
       placeholder.remove();
-      if (viewRoot) {
-        viewRoot.style.display = previousDisplay;
+      if (hidden) {
+        hidden.style.display = previousDisplay;
       }
     };
 

@@ -64,6 +64,8 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
  * applications, including registering route classes as beans and providing
  * runtime hints for reflection, resources, and JNI access required by Flow
  * components.
+ * 
+ * @since 24.0
  */
 public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {

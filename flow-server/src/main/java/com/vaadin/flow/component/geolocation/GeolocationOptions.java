@@ -67,6 +67,7 @@ import org.jspecify.annotations.Nullable;
  *            hardware again. {@code 0} means "never use a cached reading";
  *            {@code null} also means {@code 0}. Larger values save battery and
  *            return faster at the cost of freshness
+ * @since 25.2
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
@@ -74,20 +75,13 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
         @Nullable Integer maximumAge) implements Serializable {
 
     /**
-     * Canonical constructor. Rejects negative {@code timeout} and
-     * {@code maximumAge} values — both must be non-negative or {@code null}.
+     * Rejects negative {@code timeout} and {@code maximumAge} values — both
+     * must be non-negative or {@code null}.
      *
-     * @param enableHighAccuracy
-     *            see the record component
-     * @param timeout
-     *            see the record component
-     * @param maximumAge
-     *            see the record component
      * @throws IllegalArgumentException
      *             if {@code timeout} or {@code maximumAge} is negative
      */
-    public GeolocationOptions(@Nullable Boolean enableHighAccuracy,
-            @Nullable Integer timeout, @Nullable Integer maximumAge) {
+    public GeolocationOptions {
         if (timeout != null && timeout < 0) {
             throw new IllegalArgumentException(
                     "timeout must be non-negative, was " + timeout);
@@ -96,9 +90,6 @@ public record GeolocationOptions(@Nullable Boolean enableHighAccuracy,
             throw new IllegalArgumentException(
                     "maximumAge must be non-negative, was " + maximumAge);
         }
-        this.enableHighAccuracy = enableHighAccuracy;
-        this.timeout = timeout;
-        this.maximumAge = maximumAge;
     }
 
     /**

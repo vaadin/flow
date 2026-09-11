@@ -68,6 +68,8 @@ public class ImmutableEmptyStyle implements Style {
      * <p>
      * Immutable style implementation does not support binding a {@link Signal}
      * to a style property,
+     * 
+     * @since 25.0
      */
     @Override
     public SignalBinding<String> bind(String name, Signal<String> signal) {

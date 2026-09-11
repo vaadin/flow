@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/vaadin/flow/issues"
   },
+  "type": "module",
   "files": [
     "rollup-plugin-postcss-lit.js"
   ]

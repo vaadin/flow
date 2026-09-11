@@ -243,6 +243,7 @@ public abstract class WebComponentExporter<C extends Component>
      * @param defaultValue
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
+     * @since 24.8
      */
     public final PropertyConfiguration<C, BaseJsonNode> addProperty(String name,
             BaseJsonNode defaultValue) {
@@ -271,6 +272,8 @@ public abstract class WebComponentExporter<C extends Component>
 
     /**
      * Always called before {@link #configureInstance(WebComponent, Component)}.
+     * 
+     * @since 2.2
      */
     public final void preConfigure() {
         isConfigureInstanceCall = true;
@@ -278,6 +281,8 @@ public abstract class WebComponentExporter<C extends Component>
 
     /**
      * Always called after {@link #configureInstance(WebComponent, Component)}.
+     * 
+     * @since 2.2
      */
     public final void postConfigure() {
         isConfigureInstanceCall = false;
@@ -287,6 +292,7 @@ public abstract class WebComponentExporter<C extends Component>
      * The tag associated with the exported component.
      *
      * @return the tag
+     * @since 2.2
      */
     public final String getTag() {
         return tag;
@@ -463,6 +469,7 @@ public abstract class WebComponentExporter<C extends Component>
      * the actual type parameter.
      *
      * @return component class
+     * @since 2.2
      */
     protected Class<C> getComponentClass() {
         return (Class<C>) ReflectTools.getGenericInterfaceType(this.getClass(),

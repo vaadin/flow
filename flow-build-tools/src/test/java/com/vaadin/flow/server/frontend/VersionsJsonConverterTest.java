@@ -35,7 +35,7 @@ class VersionsJsonConverterTest {
     File temporaryFolder;
 
     @Test
-    void convertPlatformVersions() throws IOException {
+    void convertPinnedNpmVersions() throws IOException {
         // @formatter:off
         String json = "{\"core\": {"+
                             "\"flow\": { "
@@ -385,6 +385,54 @@ class VersionsJsonConverterTest {
         assertFalse(convertedJson.has("react-pro"));
         assertFalse(convertedJson.has("react-components"));
         assertFalse(convertedJson.has("react-components-pro"));
+    }
+
+    @Test
+    void declaredExclusionsLeaveOutWhatTheModeExcludes() {
+        String json = """
+                {
+                  "core": {
+                    "upload": {
+                      "npmName": "@vaadin/vaadin-upload",
+                      "jsVersion": "4.2.2",
+                      "exclusions": ["@vaadin/legacy-upload"]
+                    },
+                    "router": {
+                      "npmName": "@vaadin/router",
+                      "jsVersion": "1.7.5"
+                    }
+                  },
+                  "react": {
+                    "react-components": {
+                      "npmName": "@vaadin/react-components",
+                      "jsVersion": "24.4.0",
+                      "mode": "react",
+                      "exclusions": ["@vaadin/vaadin-upload"]
+                    }
+                  }
+                }
+                """;
+
+        VersionsJsonConverter convert = new VersionsJsonConverter(
+                JacksonUtils.readTree(json), true, true);
+
+        // The React package is left out because web components are excluded,
+        // and the router because React is used, neither of which is something
+        // the file says about those packages
+        assertTrue(
+                convert.getExclusions().contains("@vaadin/react-components"));
+        assertTrue(convert.getExclusions().contains("@vaadin/router"));
+        assertFalse(convert.getDeclaredExclusions()
+                .contains("@vaadin/react-components"));
+        assertFalse(convert.getDeclaredExclusions().contains("@vaadin/router"));
+
+        // What the React package excludes goes with it, while what a package
+        // this file installs excludes is what the file says
+        assertTrue(convert.getExclusions().contains("@vaadin/vaadin-upload"));
+        assertFalse(convert.getDeclaredExclusions()
+                .contains("@vaadin/vaadin-upload"));
+        assertTrue(convert.getDeclaredExclusions()
+                .contains("@vaadin/legacy-upload"));
     }
 
     @Test

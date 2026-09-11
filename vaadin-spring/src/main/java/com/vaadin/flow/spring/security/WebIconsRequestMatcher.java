@@ -48,6 +48,8 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  *
  * Default paths ({@link PwaConfiguration#DEFAULT_ICON} and
  * {@literal /favicon.ico}) are not considered.
+ * 
+ * @since 24.3.3
  */
 public class WebIconsRequestMatcher implements RequestMatcher {
 

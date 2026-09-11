@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
  * refused after a server restart.
  *
  * For internal yse only.
+ * 
+ * @since 24.3.4
  */
 public class DevToolsToken implements Serializable {
 

@@ -73,21 +73,30 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.generateBundle=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.generateBundle", defaultValue = "true")
     private boolean generateBundle;
 
     /**
      * Whether to run <code>npm install</code> after updating dependencies.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.runNpmInstall=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.runNpmInstall", defaultValue = "true")
     private boolean runNpmInstall;
 
     /**
      * Whether to generate embeddable web components from WebComponentExporter
      * inheritors.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.generateEmbeddableWebComponents=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin.generateEmbeddableWebComponents", defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
     /**
@@ -101,8 +110,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
+     * <p>
+     * Can be set from the command line with
+     * {@code -Dvaadin.devmode.optimizeBundle=false}.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = "vaadin."
+            + InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
     private boolean optimizeBundle;
 
     /**
@@ -148,13 +161,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     /**
      * Minimum age (in days) a frontend (npm) package version must have before
      * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
-     * where a compromised version is briefly available on the registry.
-     * Defaults to {@code 1} day; set to {@code 0} to disable. Requires pnpm
-     * &ge; 10.16.0 or bun &ge; 1.3.0 when those tools are used.
+     * where a compromised version is briefly available on the registry. Set to
+     * {@code 0} to disable. Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when
+     * those tools are used.
+     * <p>
+     * When not set, the value configured for npm or pnpm itself ({@code .npmrc}
+     * or {@code pnpm-workspace.yaml}) is used, so that a manually run
+     * {@code npm install} behaves the same way. Only when there is no such
+     * value does the check default to {@code 1} day. The configuration of bun
+     * cannot be read, so the default always applies for it.
      */
     @Parameter(property = "vaadin."
-            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, defaultValue = "1")
-    private int minimumFrontendPackageAgeDays;
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
+    private Integer minimumFrontendPackageAgeDays;
 
     @Override
     protected void executeInternal()
@@ -315,7 +334,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     }
 
     @Override
-    public int minimumFrontendPackageAgeDays() {
+    public Integer minimumFrontendPackageAgeDays() {
         return minimumFrontendPackageAgeDays;
     }
 

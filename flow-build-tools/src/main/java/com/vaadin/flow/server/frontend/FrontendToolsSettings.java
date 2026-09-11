@@ -33,6 +33,8 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  * <p>
  * This can be modified, but the choices will be locked in {@link FrontendTools}
  * when it is initialized. Until then any settings can be changed.
+ * 
+ * @since 9.0
  */
 public class FrontendToolsSettings implements Serializable {
 
@@ -161,6 +163,7 @@ public class FrontendToolsSettings implements Serializable {
      *
      * @param nodeFolder
      *            the folder path, or null to use default resolution
+     * @since 25.0.4
      */
     public void setNodeFolder(String nodeFolder) {
         this.nodeFolder = nodeFolder;
@@ -235,6 +238,7 @@ public class FrontendToolsSettings implements Serializable {
      * Get the configured node folder.
      *
      * @return the node folder path, or null if not configured
+     * @since 25.0.4
      */
     public String getNodeFolder() {
         return nodeFolder;

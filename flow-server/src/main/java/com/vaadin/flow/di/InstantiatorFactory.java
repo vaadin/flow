@@ -22,6 +22,7 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 public interface InstantiatorFactory {
 

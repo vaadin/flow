@@ -41,6 +41,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * the JAR frontend resources folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.1
  */
 public class ExternalDependencyWatcher implements Closeable {
 

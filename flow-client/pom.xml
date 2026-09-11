@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-client</artifactId>
   <packaging>jar</packaging>
@@ -22,7 +22,6 @@
     <maven.compiler.release>8</maven.compiler.release>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <testListener/>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
@@ -93,7 +92,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.22.0</version>
+      <version>1.22.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -144,7 +143,7 @@
     <dependency>
       <groupId>org.eclipse.platform</groupId>
       <artifactId>org.eclipse.core.contenttype</artifactId>
-      <version>3.9.800</version>
+      <version>3.9.900</version>
       <scope>test</scope>
     </dependency>
 
@@ -203,7 +202,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.5.0</version>
         <configuration>
           <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->

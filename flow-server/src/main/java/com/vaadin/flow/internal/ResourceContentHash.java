@@ -35,6 +35,7 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 25.1
  */
 public class ResourceContentHash {
 
@@ -72,6 +73,17 @@ public class ResourceContentHash {
         }
         return cache.computeIfAbsent(resourceUrl,
                 url -> computeHash(service, url));
+    }
+
+    /**
+     * Discards all cached hashes.
+     * <p>
+     * The cache is static and keyed by resource path only, so it outlives the
+     * service that filled it. Tests that assert on hashed URLs need to reset it
+     * to avoid observing a hash computed for the same path by another test.
+     */
+    public static void clearCache() {
+        cache.clear();
     }
 
     private static String computeHash(VaadinService service,

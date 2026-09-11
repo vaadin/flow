@@ -82,6 +82,7 @@ public class RoutesChangedEvent extends EventObject {
      * @param clazz
      *            a route navigation target
      * @return true if the route was added for this change and false otherwise
+     * @since 3.1
      */
     public boolean isRouteAdded(Class<? extends Component> clazz) {
         return checkIfRouteIsPresent(added, clazz);
@@ -94,6 +95,7 @@ public class RoutesChangedEvent extends EventObject {
      * @param clazz
      *            a route navigation target
      * @return true if the route was removed for this change and false otherwise
+     * @since 3.1
      */
     public boolean isRouteRemoved(Class<? extends Component> clazz) {
         return checkIfRouteIsPresent(removed, clazz);
@@ -111,6 +113,7 @@ public class RoutesChangedEvent extends EventObject {
      * @param path
      *            the URL of a route
      * @return true if the route was added for this change and false otherwise
+     * @since 3.1
      */
     public boolean isPathAdded(String path) {
         return checkIfRouteIsPresent(added, path);
@@ -122,6 +125,7 @@ public class RoutesChangedEvent extends EventObject {
      * @param path
      *            the URL of a route
      * @return true if the route was removed for this change and false otherwise
+     * @since 3.1
      */
     public boolean isPathRemoved(String path) {
         return checkIfRouteIsPresent(removed, path);
@@ -131,6 +135,7 @@ public class RoutesChangedEvent extends EventObject {
      * Get every single navigation targets of all added routes in this change.
      *
      * @return immutable list of all added navigation targets
+     * @since 3.1
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
         return Collections.unmodifiableList(
@@ -142,6 +147,7 @@ public class RoutesChangedEvent extends EventObject {
      * Get every single navigation targets of all removed routes in this change.
      *
      * @return immutable list of all removed navigation targets
+     * @since 3.1
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
         return Collections.unmodifiableList(
@@ -153,6 +159,7 @@ public class RoutesChangedEvent extends EventObject {
      * Get every single URL of all added routes in this change.
      *
      * @return immutable list of all added URLs
+     * @since 3.1
      */
     public List<String> getAddedURLs() {
         return Collections.unmodifiableList(added.stream()
@@ -163,6 +170,7 @@ public class RoutesChangedEvent extends EventObject {
      * Get every single URL of all removed routes in this change.
      *
      * @return immutable list of all removed URLs
+     * @since 3.1
      */
     public List<String> getRemovedURLs() {
         return Collections.unmodifiableList(removed.stream()

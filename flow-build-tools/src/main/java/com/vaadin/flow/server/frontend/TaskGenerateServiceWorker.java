@@ -29,7 +29,7 @@ import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 6.0
  */
 public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 

@@ -154,6 +154,9 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
+    /**
+     * @since 25.1
+     */
     public record InternalSignalBinding(Signal<?> signal, Serializable value,
             SerializableConsumer<?> writeCallback) implements Serializable {
     }
@@ -537,6 +540,7 @@ public abstract class NodeMap extends NodeFeature {
      *            the new value for the {@code key}
      * @return {@code true} if a change should be produced, {@code false}
      *         otherwise
+     * @since 4.0
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
             Serializable newValue) {
@@ -570,6 +574,7 @@ public abstract class NodeMap extends NodeFeature {
      *             thrown when there is already an existing binding for the
      *             given key
      *
+     * @since 25.1
      */
     protected <T extends @Nullable Object> SignalBinding<T> bindSignal(
             Element owner, String key, Signal<T> signal,
@@ -601,6 +606,7 @@ public abstract class NodeMap extends NodeFeature {
      * @param key
      *            the key to check
      * @return true if there is an active signal binding, false otherwise
+     * @since 25.1
      */
     public boolean hasSignal(String key) {
         return doGet(key) instanceof InternalSignalBinding binding

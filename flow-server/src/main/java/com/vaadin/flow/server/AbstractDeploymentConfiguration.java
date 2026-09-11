@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -31,11 +34,14 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 public abstract class AbstractDeploymentConfiguration extends
         AbstractPropertyConfiguration implements DeploymentConfiguration {
 
+    private volatile Set<String> urlSafeSchemes;
+
     /**
      * Creates a new configuration based on {@code properties}.
      *
      * @param properties
      *            configuration properties
+     * @since 6.0
      */
     protected AbstractDeploymentConfiguration(Map<String, String> properties) {
         super(properties);
@@ -50,6 +56,37 @@ public abstract class AbstractDeploymentConfiguration extends
     @Override
     public String getClassLoaderName() {
         return getStringProperty("ClassLoader", null);
+    }
+
+    @Override
+    public Set<String> getUrlSafeSchemes() {
+        Set<String> cached = urlSafeSchemes;
+        if (cached == null) {
+            String configured = getStringProperty(
+                    InitParameters.URL_SAFE_SCHEMES, null);
+            if (configured == null) {
+                configured = getStringProperty(
+                        InitParameters.URL_SAFE_SCHEMES_LEGACY, null);
+            }
+            cached = parseUrlSafeSchemes(configured);
+            urlSafeSchemes = cached;
+        }
+        return cached;
+    }
+
+    private static Set<String> parseUrlSafeSchemes(String configured) {
+        if (configured == null || configured.isBlank()) {
+            return Constants.DEFAULT_URL_SAFE_SCHEMES;
+        }
+        Set<String> schemes = new HashSet<>();
+        for (String scheme : configured.split(",")) {
+            String trimmed = scheme.trim();
+            if (!trimmed.isEmpty()) {
+                schemes.add(trimmed.toLowerCase(Locale.ROOT));
+            }
+        }
+        return schemes.isEmpty() ? Constants.DEFAULT_URL_SAFE_SCHEMES
+                : Set.copyOf(schemes);
     }
 
 }

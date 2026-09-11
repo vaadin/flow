@@ -36,6 +36,8 @@ import com.vaadin.flow.shared.Registration;
  * {@link #get}, the {@code onUpdate} consumer passed to {@link #startWatch},
  * and the {@code onChange} consumer passed to {@link #subscribeAvailability})
  * must be invoked on the UI thread.
+ *
+ * @since 25.2
  */
 @NullMarked
 public interface GeolocationClient extends Serializable {

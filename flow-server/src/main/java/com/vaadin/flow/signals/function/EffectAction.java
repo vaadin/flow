@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.Signal;
  * re-run with updated dependencies.
  *
  * @see Signal#unboundEffect(EffectAction)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface EffectAction extends Serializable {

@@ -134,6 +134,8 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
  * </ul>
+ * 
+ * @since 24.8
  */
 public final class VaadinSecurityConfigurer
         extends AbstractHttpConfigurer<VaadinSecurityConfigurer, HttpSecurity> {
@@ -324,6 +326,7 @@ public final class VaadinSecurityConfigurer
      *            the default success url
      * @return the current configurer instance for method chaining
      * @see #defaultSuccessUrl(String, boolean)
+     * @since 24.9.8
      */
     public VaadinSecurityConfigurer defaultSuccessUrl(
             String defaultSuccessUrl) {
@@ -343,6 +346,7 @@ public final class VaadinSecurityConfigurer
      *            authentication, even when a protected page was previously
      *            accessed
      * @return the current configurer instance for method chaining
+     * @since 24.9.8
      */
     public VaadinSecurityConfigurer defaultSuccessUrl(String defaultSuccessUrl,
             boolean alwaysUse) {
@@ -506,7 +510,8 @@ public final class VaadinSecurityConfigurer
      * <p>
      * This matcher combines multiple specific matchers, including those for
      * framework internal requests, anonymous endpoints, allowed Hilla views,
-     * anonymous routes, custom web icons, and default security configurations.
+     * anonymous routes, custom web icons, PWA resources, and default security
+     * configurations.
      *
      * @return a {@link RequestMatcher} that matches requests to be allowed
      *         without authentication
@@ -521,6 +526,9 @@ public final class VaadinSecurityConfigurer
                 getRequestUtil()::isAnonymousRoute,
                 // Custom web icons (and favicons) are permitted
                 getRequestUtil()::isCustomWebIcon,
+                // Configured PWA resources are permitted, so that the
+                // service worker can install and precache them
+                getRequestUtil()::isPwaResource,
                 // Matchers for Vaadin static resources
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
@@ -607,6 +615,7 @@ public final class VaadinSecurityConfigurer
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
      *
      * @return default {@link HttpSecurity} bypass matcher
+     * @since 25.0
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
         return getDefaultHttpSecurityPermitMatcher("/*");
@@ -619,6 +628,7 @@ public final class VaadinSecurityConfigurer
      * @param urlMapping
      *            url mapping for the Vaadin servlet.
      * @return default {@link HttpSecurity} bypass matcher
+     * @since 25.0
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher(
             String urlMapping) {
@@ -640,6 +650,7 @@ public final class VaadinSecurityConfigurer
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
      *
      * @return default matcher for Vaadin static (public) resources.
+     * @since 25.0
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
         return getDefaultWebSecurityIgnoreMatcher("/*");
@@ -654,6 +665,7 @@ public final class VaadinSecurityConfigurer
      * @param urlMapping
      *            the url mapping for the Vaadin servlet
      * @return default matcher for Vaadin static (public) resources.
+     * @since 25.0
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
             String urlMapping) {

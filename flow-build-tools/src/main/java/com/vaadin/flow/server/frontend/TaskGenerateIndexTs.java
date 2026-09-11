@@ -120,7 +120,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     }
 
     private void cleanup() {
-        FileIOUtils.deleteFileQuietly(getGeneratedFile());
+        FileIOUtils.deleteQuietly(getGeneratedFile());
     }
 
     /**

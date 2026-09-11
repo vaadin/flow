@@ -221,6 +221,7 @@ public final class BeanUtil implements Serializable {
      *         "type"])
      * @throws IntrospectionException
      *             if bean introspection fails
+     * @since 25.0
      */
     public static List<String> getBeanPropertyPaths(Class<?> type)
             throws IntrospectionException {

@@ -48,6 +48,7 @@ public class InlineTargets {
      *            inline dependency to add to bootstrap page
      * @param service
      *            the service that can find the dependency
+     * @since 7.0
      */
     public void addInlineDependency(Inline inline, VaadinService service) {
         Inline.Wrapping type;

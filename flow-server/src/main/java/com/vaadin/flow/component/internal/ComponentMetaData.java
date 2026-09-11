@@ -72,6 +72,7 @@ public class ComponentMetaData {
          * Gets the style sheets defined for the component.
          * 
          * @return an list of style sheets
+         * @since 25.1
          */
         public List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);

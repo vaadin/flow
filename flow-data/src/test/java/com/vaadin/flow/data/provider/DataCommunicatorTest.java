@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -274,6 +275,42 @@ public class DataCommunicatorTest {
         dataCommunicator.refreshViewport();
         fakeClientCommunication();
         assertEquals(Range.withLength(0, 6), lastSet);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void refreshViewport_dataProviderNotQueried(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        var dataProviderQueryCount = new AtomicInteger(0);
+        dataCommunicator.setDataProvider(new AbstractDataProvider<>() {
+            @Override
+            public boolean isInMemory() {
+                return true;
+            }
+
+            @Override
+            public int size(Query<Item, Object> query) {
+                dataProviderQueryCount.incrementAndGet();
+                return 100;
+            }
+
+            @Override
+            public Stream<Item> fetch(Query<Item, Object> query) {
+                dataProviderQueryCount.incrementAndGet();
+                return asParallelIfRequired(IntStream.range(query.getOffset(),
+                        query.getLimit() + query.getOffset()))
+                        .mapToObj(Item::new);
+            }
+        }, null);
+        dataCommunicator.setViewportRange(0, 6);
+        fakeClientCommunication();
+        dataProviderQueryCount.set(0);
+
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        assertEquals(0, dataProviderQueryCount.get(),
+                "Expected no data provider queries on viewport refresh");
     }
 
     @ParameterizedTest
@@ -2106,6 +2143,11 @@ public class DataCommunicatorTest {
                 MockService service = Mockito.mock(MockService.class);
                 Mockito.when(service.getRouteRegistry())
                         .thenReturn(Mockito.mock(RouteRegistry.class));
+                // A real service always has an event bus, so the mock has to
+                // supply one too rather than have production code work around
+                // a null
+                Mockito.when(service.getEventBus())
+                        .thenReturn(new VaadinServiceEventBus(service));
                 session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }

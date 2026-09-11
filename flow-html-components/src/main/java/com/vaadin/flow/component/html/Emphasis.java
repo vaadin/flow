@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;em&gt;</code> element.
+ * <p>
+ * Text that should be stressed. Screen readers typically change pronunciation
+ * for this element.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/em">MDN:
+ *      &lt;em&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -66,6 +72,7 @@ public class Emphasis extends HtmlContainer implements ClickNotifier<Emphasis> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Emphasis(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

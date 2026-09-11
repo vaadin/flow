@@ -41,6 +41,7 @@ public interface DataGenerator<T> extends Serializable {
      *            the data item being serialized
      * @param jsonObject
      *            the JSON object being sent to the client
+     * @since 25.0
      */
     void generateData(T item, ObjectNode jsonObject);
 

@@ -68,6 +68,7 @@ public class ComponentEventBus implements Serializable {
 
         private ComponentEventListener<T> listener;
         private DomListenerRegistration domRegistration;
+        private Registration registration;
 
         public ListenerWrapper(ComponentEventListener<T> listener) {
             this.listener = listener;
@@ -132,6 +133,7 @@ public class ComponentEventBus implements Serializable {
      * @return an object which can be used to remove the event listener
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
+     * @since 1.1
      */
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener,
@@ -167,7 +169,12 @@ public class ComponentEventBus implements Serializable {
         componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1))
                 .add(wrapper);
 
-        return Registration.once(() -> removeListener(eventType, wrapper));
+        // The same registration instance is also used by
+        // ComponentEvent#unregisterListener so that removing the listener stays
+        // idempotent regardless of which way it is removed
+        wrapper.registration = Registration
+                .once(() -> removeListener(eventType, wrapper));
+        return wrapper.registration;
     }
 
     /**
@@ -194,6 +201,7 @@ public class ComponentEventBus implements Serializable {
      *            the component event type
      * @return A collection with all registered listeners for a given event
      *         type. Empty if no listeners are found.
+     * @since 23.2
      */
     public Collection<?> getListeners(
             Class<? extends ComponentEvent> eventType) {
@@ -232,13 +240,9 @@ public class ComponentEventBus implements Serializable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends ComponentEvent<?>> void fireEventForListener(T event,
             ListenerWrapper<T> wrapper) {
-        Class<T> eventType = (Class<T>) event.getClass();
-        event.setUnregisterListenerCommand(() -> {
-            removeListener(eventType, wrapper);
-        });
+        event.setUnregisterListenerCommand(wrapper.registration::remove);
         wrapper.listener.onComponentEvent(event);
         event.setUnregisterListenerCommand(null);
     }

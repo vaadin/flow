@@ -82,6 +82,32 @@ class CallbackActionTest {
     }
 
     @Test
+    void valueLess_handlerCallsChannelWithNoArgsAndRunsCallback() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        List<String> received = new ArrayList<>();
+        DomEventTrigger trigger = new DomEventTrigger(button, "click");
+        trigger.triggers(new CallbackAction<>(() -> received.add("ran")));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // No value to forward, so the channel ($0) is called with no arguments.
+        JsFunction action = actionOf(singleInstallFn(ui));
+        assertEquals("$0();", action.getBody());
+        assertTrue(
+                action.getCaptures()
+                        .get(0) instanceof ReturnChannelRegistration,
+                "Expected $0 to be the return channel");
+
+        ((ReturnChannelRegistration) action.getCaptures().get(0))
+                .invoke(JacksonUtils.createArrayNode());
+
+        assertEquals(List.of("ran"), received);
+    }
+
+    @Test
     void nullArgument_throwsIllegalState() {
         UI ui = new MockUI();
         TagComponent input = new TagComponent("input");

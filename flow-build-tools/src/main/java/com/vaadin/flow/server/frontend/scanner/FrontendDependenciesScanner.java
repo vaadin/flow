@@ -31,6 +31,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 2.1
  */
 public interface FrontendDependenciesScanner extends Serializable {
 
@@ -89,6 +90,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get all npm packages needed only for development.
      *
      * @return the `devDependencies` packages
+     * @since 24.3
      */
     Map<String, String> getDevPackages();
 
@@ -96,6 +98,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get all npm package assets for the application.
      *
      * @return the npm packages assets
+     * @since 24.9
      */
     Map<String, List<String>> getAssets();
 
@@ -103,6 +106,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get all npm packages assets needed only for development.
      *
      * @return the `dev` npm package assets
+     * @since 24.9
      */
     Map<String, List<String>> getDevAssets();
 
@@ -119,6 +123,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * theme dependencies are guaranteed to precede other modules in the result.
      *
      * @return the JS modules
+     * @since 24.2
      */
     Map<ChunkInfo, List<String>> getModulesDevelopment();
 
@@ -133,6 +138,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get all the JS files needed only in development mode.
      *
      * @return the JS files
+     * @since 24.2
      */
     Map<ChunkInfo, List<String>> getScriptsDevelopment();
 
@@ -168,6 +174,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get the {@link PwaConfiguration} of the application.
      *
      * @return the PWA configuration
+     * @since 6.0
      */
     PwaConfiguration getPwaConfiguration();
 }

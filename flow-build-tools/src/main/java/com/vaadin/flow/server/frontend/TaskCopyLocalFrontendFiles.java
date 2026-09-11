@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.FileIOUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.5
  */
 public class TaskCopyLocalFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
@@ -71,6 +71,8 @@ public class TaskCopyLocalFrontendFiles
             log().info("Copying project local frontend resources.");
             Set<String> files = copyLocalResources(localResourcesFolder,
                     target);
+            TaskGenerateJarResourcesTsConfig.discardCopiedTsConfigs(target,
+                    files);
             track(files.stream()
                     .map(path -> target.toPath().resolve(path).toFile())
                     .toList());

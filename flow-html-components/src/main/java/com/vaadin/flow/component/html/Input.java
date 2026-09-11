@@ -21,6 +21,7 @@ import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasPlaceholder;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.InputMode;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
@@ -29,7 +30,13 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
+ * <p>
+ * An empty form field. The type attribute selects the control (text, checkbox,
+ * and so on).
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input">MDN:
+ *      &lt;input&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -62,6 +69,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @param valueChangeMode
      *            initial value change mode, or <code>null</code> to disable the
      *            value synchronization
+     * @since 2.0
      */
     public Input(ValueChangeMode valueChangeMode) {
         super("value", "", false);
@@ -99,6 +107,41 @@ public class Input extends AbstractSinglePropertyField<Input, String>
         return get(typeDescriptor);
     }
 
+    /**
+     * Sets the {@link InputMode} that hints at the type of virtual keyboard to
+     * display when the user interacts with the field on a mobile device. If not
+     * set, the browser defaults to {@link InputMode#TEXT}.
+     *
+     * @param inputMode
+     *            the {@code inputmode} value, or {@code null} to unset
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode">The
+     *      inputmode global attribute (MDN)</a>
+     * @since 25.3
+     */
+    public void setInputMode(InputMode inputMode) {
+        if (inputMode == null) {
+            getElement().removeAttribute("inputmode");
+        } else {
+            getElement().setAttribute("inputmode", inputMode.getValue());
+        }
+    }
+
+    /**
+     * Gets the {@link InputMode} of this input.
+     *
+     * @return the {@code inputmode} value, or {@code null} if not set
+     * @see #setInputMode(InputMode)
+     * @since 25.3
+     */
+    public InputMode getInputMode() {
+        String inputMode = getElement().getAttribute("inputmode");
+        if (inputMode == null || inputMode.isEmpty()) {
+            return null;
+        }
+        return InputMode.valueOf(inputMode.toUpperCase());
+    }
+
     @Override
     public ValueChangeMode getValueChangeMode() {
         return currentMode;
@@ -122,6 +165,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * {@inheritDoc}
      *
      * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     *
+     * @since 2.0
      */
     @Override
     public int getValueChangeTimeout() {

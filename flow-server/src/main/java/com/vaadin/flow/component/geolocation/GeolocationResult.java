@@ -36,6 +36,8 @@ import java.io.Serializable;
  * case GeolocationError err -&gt; showError(err.errorCode());
  * }
  * </pre>
+ *
+ * @since 25.2
  */
 public sealed interface GeolocationResult extends Serializable
         permits GeolocationOutcome, GeolocationPending {

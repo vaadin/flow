@@ -25,9 +25,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@NotThreadSafe
+@Isolated
 class PolymerServerEventHandlersTest extends HasCurrentService {
     private StateNode stateNode;
     private PolymerServerEventHandlers handlers;

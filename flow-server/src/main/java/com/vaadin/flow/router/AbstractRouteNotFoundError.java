@@ -40,6 +40,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 /**
  * This is abstract error view for routing exceptions.
  *
+ * @since 24.3
  */
 public abstract class AbstractRouteNotFoundError extends Component {
 
