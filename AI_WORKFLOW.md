@@ -203,7 +203,10 @@ round table: everyone takes a turn on one thing — a PR they opened, a PR they 
 reviewing, or what they are working on right now. One item each, not a tour of
 everything. The second half walks the day's new issues and PRs, confirming the
 verdicts AI proposed and stopping only where somebody objects, is blocked, or
-raises a question that concerns everyone.
+raises a question that concerns everyone. Some days nothing arrives and it takes
+five minutes; some days thirty do, and then the digest's *decide today* block is
+what we talk through while the rest is confirmed in bulk. The hour is fixed; what
+fills it is not.
 
 **The digest is what makes the second half possible.** AI writes it before the
 daily, and it is a list of decisions rather than a news feed:
@@ -544,24 +547,20 @@ thing to catch.
 
 Still to decide:
 
-1. **How many live issues can one daily carry before it stops being a
-   discussion?** That number, not the filing rate, is our real capacity. The
-   same limit applies to the round table: when turns start sounding like a tour
-   of the week, the first half is what we cut, not the second.
-2. Does *every* new issue get a probe, or only ones that pass triage — and when
+1. Does *every* new issue get a probe, or only ones that pass triage — and when
    is a stale probe closed, by whom?
-3. Who owns an issue in its first hour, before the first daily sees it?
-4. Who owns the eval suite, and how big can it get before it is too slow to run
+2. Who owns an issue in its first hour, before the first daily sees it?
+3. Who owns the eval suite, and how big can it get before it is too slow to run
    on every change?
-5. Two days of understanding before the scope meeting fits a short project. What
+4. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research has historically taken weeks?
-6. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+5. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-7. Maintenance arriving mid-project: does the project team absorb it, or do we
+6. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-8. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+7. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-9. Do routine bulk changes need a **fast lane**: no design note, AI states the
+8. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-10. Where do external contributor PRs enter — at review, or back at the problem?
-11. Design notes for bugfixes too, or is a probe with a failing test enough?
+9. Where do external contributor PRs enter — at review, or back at the problem?
+10. Design notes for bugfixes too, or is a probe with a failing test enough?
