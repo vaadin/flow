@@ -417,6 +417,44 @@ describe('SimpleElementBindingStrategy children binding (full tree)', () => {
     expect(element.textContent).to.equal('bar');
   });
 
+  it('inserts a text-node child with its text already in place', () => {
+    // The children of a node are bound and inserted while the flush that
+    // applies the reactive values is still running, so a text node that only
+    // gets its data from that flush would be inserted empty. A web component
+    // that resolves the state of its slotted content while it renders would
+    // then see no content, and changing the data of a text node that is
+    // already assigned to a slot fires no slotchange to correct that.
+    const textNode = new StateNode(nextId++, harness.tree);
+    harness.tree.registerNode(textNode);
+    textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT).setValue('foo');
+    children.add(0, textNode);
+
+    const insertedData: Array<string | null> = [];
+    const record = (child: Node) => {
+      insertedData.push(child.nodeType === Node.TEXT_NODE ? (child as Text).data : null);
+    };
+    const originalAppendChild = Node.prototype.appendChild;
+    const originalInsertBefore = Node.prototype.insertBefore;
+    Node.prototype.appendChild = function appendChild<T extends Node>(this: Node, child: T): T {
+      record(child);
+      return originalAppendChild.call(this, child) as T;
+    };
+    Node.prototype.insertBefore = function insertBefore<T extends Node>(this: Node, child: T, ref: Node | null): T {
+      record(child);
+      return originalInsertBefore.call(this, child, ref) as T;
+    };
+    try {
+      bind(node, element);
+    } finally {
+      Node.prototype.appendChild = originalAppendChild;
+      Node.prototype.insertBefore = originalInsertBefore;
+    }
+
+    expect(insertedData).to.eql(['foo']);
+    // Also in place without the flush that the binding leaves pending.
+    expect(element.textContent).to.equal('foo');
+  });
+
   it('removes a text-node child that is spliced out', () => {
     // Ported from testRemoveTextNode.
     bind(node, element);
