@@ -601,9 +601,7 @@ thing to catch.
 
 Still to decide:
 
-1. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
-   who breaks the tie?
-2. Do routine bulk changes need a **fast lane**: no design note, AI states the
+1. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-3. Where do external contributor PRs enter — at review, or back at the problem?
-4. Design notes for bugfixes too, or is a probe with a failing test enough?
+2. Where do external contributor PRs enter — at review, or back at the problem?
+3. Design notes for bugfixes too, or is a probe with a failing test enough?
