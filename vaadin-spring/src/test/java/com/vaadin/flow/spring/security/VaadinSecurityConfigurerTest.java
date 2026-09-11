@@ -37,6 +37,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
 import org.springframework.security.authentication.TestingAuthenticationToken;
@@ -54,6 +55,7 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -77,6 +79,7 @@ import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
@@ -479,6 +482,58 @@ class VaadinSecurityConfigurerTest {
         assertThat(handler).isNotNull();
         assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void sessionConcurrency_expiredUidlRequest_getsRefreshToken()
+            throws Exception {
+        var response = expireSessionAndRunFilters(configurer);
+
+        assertThat(response.getContentAsString())
+                .isEqualTo("Vaadin-Refresh: /");
+    }
+
+    @Test
+    void expiredSessionStrategy_customStrategyIsUsed() throws Exception {
+        var response = expireSessionAndRunFilters(
+                configurer.expiredSessionStrategy((event) -> event.getResponse()
+                        .getWriter().write("expired")));
+
+        assertThat(response.getContentAsString()).isEqualTo("expired");
+    }
+
+    @Test
+    void sessionManagementConfigurationDisabled_strategyIsNotConfigured()
+            throws Exception {
+        var response = expireSessionAndRunFilters(
+                configurer.enableSessionManagementConfiguration(false));
+
+        assertThat(response.getContentAsString())
+                .doesNotContain("Vaadin-Refresh");
+    }
+
+    private MockHttpServletResponse expireSessionAndRunFilters(
+            VaadinSecurityConfigurer configurer) throws Exception {
+        var sessionRegistry = new SessionRegistryImpl();
+        var filters = http.with(configurer, Customizer.withDefaults())
+                .sessionManagement(sessionManagement -> sessionManagement
+                        .sessionConcurrency(
+                                concurrency -> concurrency.maximumSessions(1)
+                                        .sessionRegistry(sessionRegistry)))
+                .build().getFilters();
+
+        var request = new MockHttpServletRequest("GET", "/");
+        request.setParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_UIDL);
+        var sessionId = request.getSession().getId();
+        sessionRegistry.registerNewSession(sessionId, "principal");
+        sessionRegistry.getSessionInformation(sessionId).expireNow();
+
+        var response = new MockHttpServletResponse();
+        for (var filter : filters) {
+            filter.doFilter(request, response, chain);
+        }
+        return response;
     }
 
     // Helper methods to access protected fields using reflection

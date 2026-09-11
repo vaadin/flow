@@ -41,6 +41,7 @@ import org.springframework.security.config.annotation.web.configurers.ExceptionH
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -57,6 +58,7 @@ import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -120,6 +122,9 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link AuthorizeHttpRequestsConfigurer} to permit internal framework
  * requests and other public endpoints (can be disabled with
  * {@link #enableAuthorizedRequestsConfiguration(boolean)})</li>
+ * <li>{@link SessionManagementConfigurer} to handle expired sessions in a way
+ * the Vaadin client understands (can be disabled with
+ * {@link #enableSessionManagementConfiguration(boolean)})</li>
  * </ul>
  *
  * <h2>Shared Objects</h2>
@@ -168,6 +173,10 @@ public final class VaadinSecurityConfigurer
     private boolean enableExceptionHandlingConfiguration = true;
 
     private boolean enableAuthorizedRequestsConfiguration = true;
+
+    private boolean enableSessionManagementConfiguration = true;
+
+    private SessionInformationExpiredStrategy expiredSessionStrategy;
 
     private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::denyAll;
 
@@ -470,6 +479,51 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Enables or disables automatic configuration of session management
+     * (enabled by default).
+     * <p>
+     * This configurer will automatically configure a
+     * {@link UidlExpiredSessionStrategy}, so that a session expired by Spring
+     * Security concurrency control is also detected by the Vaadin client. The
+     * strategy is only used by Spring Security when concurrency control is
+     * active, i.e. when the application sets a maximum number of sessions.
+     * <p>
+     * The strategy is only configured if the application has session management
+     * configured, which Spring Boot does by default.
+     * <p>
+     * Note that the configured strategy replaces a strategy set directly on
+     * {@link HttpSecurity}. Use
+     * {@link #expiredSessionStrategy(SessionInformationExpiredStrategy)} to
+     * configure a custom strategy, or disable this configuration.
+     *
+     * @param enableSessionManagementConfiguration
+     *            whether configuration of session management should be enabled
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer enableSessionManagementConfiguration(
+            boolean enableSessionManagementConfiguration) {
+        this.enableSessionManagementConfiguration = enableSessionManagementConfiguration;
+        return this;
+    }
+
+    /**
+     * Sets the strategy used when Spring Security concurrency control detects
+     * an expired session.
+     * <p>
+     * Defaults to {@link UidlExpiredSessionStrategy}.
+     *
+     * @param expiredSessionStrategy
+     *            the strategy to use, or {@code null} to use the default one
+     * @return the current configurer instance for method chaining
+     * @see #enableSessionManagementConfiguration(boolean)
+     */
+    public VaadinSecurityConfigurer expiredSessionStrategy(
+            SessionInformationExpiredStrategy expiredSessionStrategy) {
+        this.expiredSessionStrategy = expiredSessionStrategy;
+        return this;
+    }
+
+    /**
      * Configures the access rule for any request not matching other configured
      * rules.
      * <p>
@@ -569,6 +623,14 @@ public final class VaadinSecurityConfigurer
         }
         if (enableAuthorizedRequestsConfiguration && !alreadyInitializedOnce) {
             http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
+        }
+        if (enableSessionManagementConfiguration && http
+                .getConfigurer(SessionManagementConfigurer.class) != null) {
+            // Session management is only customized when the application has
+            // it configured, which Spring Boot does by default. Otherwise the
+            // filter chain has no session management at all, and there is no
+            // expired session to handle.
+            http.sessionManagement(this::customizeSessionManagement);
         }
 
         // The init method might be called multiple times if the configurer is
@@ -880,6 +942,14 @@ public final class VaadinSecurityConfigurer
                         new AccessDeniedHandlerImpl()));
         return new RequestMatcherDelegatingAccessDeniedHandler(requestHandlers,
                 new AccessDeniedHandlerImpl());
+    }
+
+    private void customizeSessionManagement(
+            SessionManagementConfigurer<HttpSecurity> configurer) {
+        configurer.sessionConcurrency(
+                concurrency -> concurrency.expiredSessionStrategy(
+                        Objects.requireNonNullElseGet(expiredSessionStrategy,
+                                UidlExpiredSessionStrategy::new)));
     }
 
     private void customizeAuthorizeHttpRequests(
