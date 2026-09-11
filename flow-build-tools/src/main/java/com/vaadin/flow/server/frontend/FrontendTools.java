@@ -128,8 +128,7 @@ public class FrontendTools {
      * 
      * @since 25.0
      */
-    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
-            24, 10, 0);
+    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = FrontendUtils.MINIMUM_AUTO_INSTALLED_NODE;
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);

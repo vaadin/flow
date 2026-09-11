@@ -52,8 +52,7 @@ class NodeResolverTest {
     private static final String VERSION = "v24.19.0";
 
     /**
-     * The version that Vaadin 24.0 installed, as still found in token files
-     * written back then.
+     * A version that the current frontend tooling cannot run on.
      */
     private static final String OUTDATED_VERSION = "v18.14.1";
 
@@ -126,21 +125,16 @@ class NodeResolverTest {
     }
 
     @Test
-    void resolve_configuredVersionTooOld_supportedVersionIsInstalledInstead()
+    void resolve_configuredVersionTooOld_isStillUsedAsConfigured()
             throws IOException {
-        stubInstallation(OUTDATED_VERSION);
-        prepareDownloadableNode(FrontendTools.DEFAULT_NODE_VERSION);
+        NodeInstallation installation = stubInstallation(OUTDATED_VERSION);
 
         ActiveNodeInstallation active = resolve(OUTDATED_VERSION);
 
-        NodeInstallation installed = NodeInstallation.forVersion(vaadinHome,
-                FrontendTools.DEFAULT_NODE_VERSION);
-        assertEquals(installed.getNodeExecutable().getAbsolutePath(),
+        assertEquals(installation.getNodeExecutable().getAbsolutePath(),
                 active.nodeExecutable(),
-                "A configured version that the frontend tooling cannot run should be replaced by the default one, even when it is installed");
-        assertEquals(
-                NodeInstallation
-                        .normalizeVersion(FrontendTools.DEFAULT_NODE_VERSION),
+                "A configured version should be used even when it is too old, as only a warning is given for it");
+        assertEquals(NodeInstallation.normalizeVersion(OUTDATED_VERSION),
                 active.nodeVersion());
     }
 

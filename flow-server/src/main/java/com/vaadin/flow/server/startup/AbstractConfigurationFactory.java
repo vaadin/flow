@@ -24,9 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -112,7 +115,10 @@ public class AbstractConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.has(NODE_VERSION)) {
-            params.put(NODE_VERSION, buildInfo.get(NODE_VERSION).asString());
+            String nodeVersion = buildInfo.get(NODE_VERSION).asString();
+            if (isUsableNodeVersion(nodeVersion)) {
+                params.put(NODE_VERSION, nodeVersion);
+            }
         }
         if (buildInfo.has(NODE_DOWNLOAD_ROOT)) {
             params.put(NODE_DOWNLOAD_ROOT,
@@ -209,6 +215,45 @@ public class AbstractConfigurationFactory implements Serializable {
     }
 
     /**
+     * Checks whether a Node.js version from the token file is one that the
+     * frontend tooling can run on.
+     * <p>
+     * The version in the token file is written when the frontend is prepared,
+     * so a file left behind by an older Vaadin version carries a Node.js
+     * version that nobody has chosen for this project. Honoring it would
+     * install an unsupported Node.js and fail the frontend build with a version
+     * that is found nowhere in the project, so it is ignored and the current
+     * default is used instead. A version configured through the
+     * {@code vaadin.node.version} property is not affected, as it does not come
+     * from the token file.
+     *
+     * @param version
+     *            the Node.js version read from the token file
+     * @return {@code true} if the version can be used
+     */
+    private boolean isUsableNodeVersion(String version) {
+        try {
+            if (new FrontendVersion(version)
+                    .isOlderThan(FrontendUtils.MINIMUM_AUTO_INSTALLED_NODE)) {
+                getLogger().warn(
+                        "Ignoring Node.js version {} from '{}', as it is older than the minimum supported version {}. "
+                                + "Run the 'prepare-frontend' goal to rewrite the file, or set the '{}' property to use that version anyway.",
+                        version, FrontendUtils.TOKEN_FILE,
+                        FrontendUtils.MINIMUM_AUTO_INSTALLED_NODE
+                                .getFullVersion(),
+                        VAADIN_PREFIX + NODE_VERSION);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            // Left for the frontend tooling to report, as it knows what it
+            // accepts
+            getLogger().debug("Could not parse the Node.js version {} from {}",
+                    version, FrontendUtils.TOKEN_FILE, e);
+        }
+        return true;
+    }
+
+    /**
      * Sets to the dev mode properties to the configuration parameters.
      *
      * @see #getConfigParametersUsingTokenData(JsonNode)
@@ -301,5 +346,9 @@ public class AbstractConfigurationFactory implements Serializable {
             String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
             throw new IllegalStateException(message);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(AbstractConfigurationFactory.class);
     }
 }
