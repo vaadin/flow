@@ -173,6 +173,9 @@ class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        // the transform injects imports from the signals runtime into the
+        // application sources, so the runtime must be declared too
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("magic-string");
         expectedDependencies.add("@types/node");
 
