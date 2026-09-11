@@ -371,6 +371,16 @@ week without a decision is closed by automation, with a line in the issue: the
 branch costs nothing to reopen, and an open PR nobody decided about costs
 attention every day.
 
+**External contributors have two doors.** Something small and obviously right —
+a typo, documentation, a one-line bug with a test — goes straight to review;
+filing an issue for it would be theatre. Anything larger enters at the problem:
+the PR stays open, but what we discuss first is whether this is the problem we
+want solved, with their diff serving as a free probe — it already shows the cost
+and the blast radius. They get an answer within one daily, and that is a promise,
+because the alternative is silent neglect. If the design we agree matches what
+they wrote, review proceeds normally; if it does not, we say what we would take
+instead, and they decide whether to rework it or hand it over.
+
 **2 · Triage** — AI proposes a verdict in the brief and the daily confirms it in
 bulk, stopping only where someone objects. The question is shallow on purpose:
 "worth our design time?", not "is this right?". Rejecting closes the probe with
@@ -624,6 +634,6 @@ thing to catch.
 | Steering files | eval pass rate when a rule changes · time from a process incident to an eval | **spot-check mismatch rate** (the honesty metric) · rules added per month |
 | Project | use cases done vs. agreed on day 2 | how much scope we managed *not* to build · how many people spoke |
 
-Still to decide:
-
-1. Where do external contributor PRs enter — at review, or back at the problem?
+**Still to decide:** nothing, for the first time — every open question this draft
+started with has an answer above. New ones belong here, and the empty list is a
+sign that the document is young rather than finished.
