@@ -11,10 +11,8 @@ moment automation moves it: a brief and a draft PR within the hour, revisions
 after every decision. What the team supplies is decisions.
 
 Two layers: how a **project** runs (a PRD becomes a shipped increment, §4) and
-how an **issue** moves (a filed issue becomes a merged PR, §5–6). Companion to
-[CLAUDE.md](CLAUDE.md), [CONVENTIONS.md](CONVENTIONS.md) and
-[guidelines/](guidelines/overview.md), which hold the content; this holds the
-process.
+how an **issue** moves (a filed issue becomes a merged PR, §5–6). Our conventions
+and guidelines hold the content of how we build; this holds the process.
 
 **Deliberately not covered yet:** where issues come from. Turning Slack threads,
 forum posts and support tickets into issues — and noticing when five of them are
@@ -58,31 +56,23 @@ Automation is not a helper we invoke when we remember to. A new issue triggers
 it, and it keeps going until it needs a decision — then it stops and says so.
 
 **Automation does this without being asked:** reads the issue and everything
-linked from it; labels it; points at likely duplicates; writes the Analysis
-Brief; opens a draft PR with a reproducing test and the sketched API; keeps CI
-green; revises on comment; drafts docs, demo and DX tests; keeps the board and
-labels truthful; flags issues that have gone stale.
+linked from it; files it in the right area; points at likely duplicates; writes
+the Analysis Brief; opens a draft PR with a reproducing test and the sketched
+API; keeps CI green; revises on comment; drafts docs, demo and DX tests; keeps
+the board truthful; flags issues that have gone stale.
 
-**What starts it is a label, not a person remembering:**
-
-| Event | What automation does |
-| --- | --- |
-| issue opened | brief and probe PR — §6 stage 1 |
-| `accepted` | drafts the design note, and revises it on every comment |
-| `design:agreed` | finishes the PR and marks it ready for review |
-| `@claude` in a comment | one revision — of the note, or of the code |
-| merged | proposes what to harvest — §6 stage 7 |
-
-A label is a switch, not a sticker on a board — which is also why the board stays
-truthful. The label is what actually moves the work, so it cannot quietly drift
-away from what is happening.
+**What starts it is a state, not a person remembering.** A filed issue starts the
+brief and the probe; an accepted problem starts the design note; an agreed design
+starts the finished implementation; a question in the thread starts a revision.
+The state of an issue is a switch rather than a sticker on a board — which is
+also why the board cannot drift away from what is happening.
 
 **A human decides, three times per issue:**
 
-| # | Decision | Where | Label after |
+| # | Decision | Where | State after |
 | --- | --- | --- | --- |
-| 1 | Is this a real problem, and is it ours? | Triage, in a round — §6 stage 2 | `accepted` / closed / `parked` / `needs-info` |
-| 2 | Is this the design — the probe's shape, or another? | Design, in a round — §6 stage 3 | `design:agreed` |
+| 1 | Is this a real problem, and is it ours? | Triage, in a round — §6 stage 2 | accepted · closed · parked · waiting on the reporter |
+| 2 | Is this the design — the probe's shape, or another? | Design, in a round — §6 stage 3 | design agreed |
 | 3 | Do we merge, and who owns it afterwards? | Review, in a round — §6 stage 5 | merged |
 
 Everything between and around those three is automation's. If an issue needs a
@@ -94,9 +84,9 @@ two issues duplicates on its own, never changes an agreed API contract, and
 never rules its own deviation acceptable. The agent that wrote a change has no
 route to approving it.
 
-**Nothing safe waits for permission.** Build, test, lint and `git` commands are
-pre-approved in the repository settings. An agent idling on a permission prompt
-for `mvn test` costs exactly what a PR idling on a reviewer costs.
+**Nothing safe waits for permission.** The routine commands — building, testing,
+formatting — are approved in advance. An agent idling on a permission prompt
+costs exactly what a PR idling on a reviewer costs.
 
 Everything automation produces before decision 2 is **disposable**, and that is
 precisely what makes it safe to produce early.
@@ -232,14 +222,13 @@ The issue holds the record, the PR holds the code, and both exist from the first
 hour — so there is never a moment where the conversation moves house, drops half
 its context and restarts in front of a different audience.
 
-**Every artefact is a file, not a comment.** The brief and the design note live
-in the PR as `.github/notes/<issue>-<slug>.md`, so revision 4 arrives as a diff
-against revision 3 instead of as the fourth long comment that nobody can line up
-with the other three. The issue keeps the problem and the decisions; the PR keeps
-everything that changes as the work does. Notes stay after the merge — a
-searchable answer to "why does this API read like this", and the raw material
-for harvesting (§6 stage 7). If the directory turns into noise, we will say so
-and prune it.
+**Every artefact is a document, not a comment.** The brief and the design note
+live in the PR as a file, so revision 4 arrives as a diff against revision 3
+instead of as the fourth long comment that nobody can line up with the other
+three. The issue keeps the problem and the decisions; the PR keeps everything
+that changes as the work does. Notes stay after the merge — a searchable answer
+to "why does this API read like this", and the raw material for harvesting
+(§6 stage 7).
 
 **The round.** The whole team walks the live issues together, daily, 30 minutes,
 run by the lead; an issue that needs no decision takes ten seconds. **The round
@@ -249,10 +238,10 @@ two.
 
 | Issue state | The question the round answers |
 | --- | --- |
-| `new` — brief and draft PR already attached | What is the problem, and is it ours? (not: what do we build) |
-| `accepted` | What is the design — this shape, or another? And how do we build it? |
-| `design:agreed` | Nothing. AI is finishing it; speak only if it is blocked |
-| `in review` | Do we merge? |
+| **new** — brief and draft PR already attached | What is the problem, and is it ours? (not: what do we build) |
+| **accepted** | What is the design — this shape, or another? And how do we build it? |
+| **design agreed** | Nothing. AI is finishing it; speak only if it is blocked |
+| **in review** | Do we merge? |
 
 - **Problem before solution, always** — *even though a PR is already open.* The
   draft PR is evidence about the problem, not a proposal awaiting approval. An
@@ -292,17 +281,17 @@ to ignore than "it has been a few days".
 
 ```mermaid
 flowchart TD
-    S0["Stage 0 · A GITHUB ISSUE<br/>a human files it — that is the entry ticket"]
+    S0["Stage 0 · AN ISSUE IS FILED<br/>by a human — that is the entry ticket"]
     S1["Stage 1 · BRIEF + DRAFT PR<br/>AI, ~30 min<br/>context · verdict · sketch · a probe that compiles"]
     S2{"Stage 2 · TRIAGE<br/>round: what is the problem, is it ours?"}
     RJ["close — issue and probe; the brief is the answer"]
     NI["question back to the reporter"]
     PK["parked — the brief stays, the probe is closed"]
-    S3{"Stage 3 · DESIGN + APPROACH<br/>round: this shape, or another?<br/>AI drafts · team agrees · design:agreed"}
+    S3{"Stage 3 · DESIGN + APPROACH<br/>round: this shape, or another?<br/>AI drafts · team agrees · design agreed"}
     S4["Stage 4 · IMPLEMENTATION<br/>AI · the same PR grows up<br/>tests first · green CI · ready for review"]
     S5{"Stage 5 · REVIEW<br/>round: do we merge?"}
     S6["Stage 6 · MERGE<br/>a human owns it"]
-    S7["Stage 7 · HARVEST<br/>rules → CONVENTIONS.md · guidelines/ · skills · CI"]
+    S7["Stage 7 · HARVEST<br/>what would have made this cheaper<br/>→ a rule, a block, or a check"]
 
     S0 --> S1 --> S2
     S2 -- rejected --> RJ
@@ -322,7 +311,7 @@ continued. Everything else happens between rounds. The same pipeline in plain
 text, for editors that do not render Mermaid:
 
 ```text
-  Stage 0  A GITHUB ISSUE ....... a human files it; the problem, in their words
+  Stage 0  AN ISSUE IS FILED .... by a human; the problem, in their words
                                 │
                                 ▼
   Stage 1  BRIEF + DRAFT PR .......................... AI, ~30 min
@@ -337,7 +326,7 @@ text, for editors that do not render Mermaid:
               └── accepted
                                 ▼
   Stage 3  DESIGN + APPROACH ... round: this shape, or another? And how?
-           AI drafts · team agrees · design:agreed
+           AI drafts · team agrees · design agreed
                                 ▼
   Stage 4  IMPLEMENTATION ............................ AI
            the same PR grows up · tests first · green CI · ready for review
@@ -349,36 +338,35 @@ text, for editors that do not render Mermaid:
                                 ▼
   Stage 6  MERGE ..................................... a human owns it
                                 ▼
-  Stage 7  HARVEST ................................... rules → CONVENTIONS.md,
-                                                       guidelines/, skills, CI
+  Stage 7  HARVEST ................................... a rule, a block,
+                                                       or a check
 ```
 
 **0 · The issue.** Anyone files it — team, support, PM, a user. What a filer owes
 is **the problem, not a solution**; a proposed API is welcome as a hint, but the
 first line has to say what somebody could not do. AI reacts to the new issue
-immediately: reads it and everything linked from it, labels it, and *points at*
-likely duplicates without closing anything.
+immediately: reads it and everything linked from it, files it in the right area,
+and *points at* likely duplicates without closing anything.
 
 **1 · Brief and draft PR** (AI, ~30 min). One reaction, two artefacts:
 
-- the **Analysis Brief**, committed in the probe PR as
-  `.github/notes/<issue>-<slug>.md` and linked from the issue — context, verdict,
-  sketch, and what it could not verify. It is the pre-read that makes a round
-  possible;
+- the **Analysis Brief**, committed as a document in the probe PR and linked from
+  the issue — context, verdict, sketch, and what it could not verify. It is the
+  pre-read that makes a round possible;
 - a **draft PR** — a probe: a test that reproduces the problem (failing), the
   sketched API compiling, and CI showing what else moves.
 
-**Why the PR exists before any decision.** A brief can claim "two lines in
-`Element`" and be wrong; a branch that compiles states what the change actually
+**Why the PR exists before any decision.** A brief can claim "two lines in one
+class" and be wrong; a branch that compiles states what the change actually
 costs, and CI turns blast radius from an estimate into a list of names. It also
 gives the round something concrete to react to, and reacting is far easier than
 originating (§10). If the round agrees with the shape we are already at review; if
 it does not, we close a branch — the cheapest artefact we produce.
 
-The probe is **a draft**, labelled `probe`, and refs the issue rather than
-`Fixes`-ing it, so nothing closes by accident. Its description says what it does
-*not* settle, and the brief still carries the alternatives AI did not build —
-otherwise the one shape that exists wins by default.
+The probe is **a draft**, marked as one, and cannot close the issue by accident.
+Its description says what it does *not* settle, and the brief still carries the
+alternatives AI did not build — otherwise the one shape that exists wins by
+default.
 
 **2 · Triage** — clear rejections the lead makes alone; everything else goes to a
 round. Shallow on purpose: "worth our design time?", not "is this right?".
@@ -389,8 +377,8 @@ waste.
 same file, so every revision is a diff with a one-line "what changed and why",
 and the current version is the file rather than the newest comment. The note is
 what the team argues about; the probe is exhibit A, not the proposal.
-*"@claude, rework it: use an event instead of a callback, and define what happens
-on detach."* Every conclusion lands back in the note. **Right problem, wrong
+*"Rework it: use an event instead of a callback, and define what happens on
+detach."* Every conclusion lands back in the note. **Right problem, wrong
 shape** is a first-class outcome: the probe is discarded and the next revision
 starts from the design, not from the code that happens to exist.
 
@@ -407,13 +395,12 @@ not as a paragraph at the bottom of a description. Silent deviation is still the
 worst failure mode of this process; it is now also the easiest to spot.
 
 **Nothing reaches a human before the check has run.** Every issue has one
-verification target and one quantifiable statement of done — the module's tests
-green, the failing test from Stage 1 now passing, the API-compatibility check
-clean — and AI pastes the output as evidence instead of asserting it. Two
-consequences worth spelling out:
+verification target and one quantifiable statement of done — the tests green, the
+failing test from stage 1 now passing, compatibility unbroken — and AI shows the
+output as evidence instead of asserting it. Two consequences worth spelling out:
 
-- **A fix starts with a failing test, and that test is then off limits.** A hook
-  blocks edits to test files for the rest of the task, so the check that proves
+- **A fix starts with a failing test, and that test is then off limits.** Edits
+  to test files are blocked for the rest of the task, so the check that proves
   the bug cannot be quietly weakened into agreement.
 - **If the target cannot be stated, the issue is not ready to implement.** That
   is a gap in Stage 3, not in Stage 4.
@@ -421,11 +408,11 @@ consequences worth spelling out:
 **5 · Review** — read the description: does it solve the problem? Is the API what
 we agreed, and what we want to live with? What happens at the edges — null,
 detach, concurrency, serialization, back-compat? Are the tests aimed at
-behaviour? What is the blast radius? Comment in the PR, `@claude` revises;
-reviewers do not push fixes themselves, because asking keeps the rule
-harvestable. AI then carries the PR to the gate on its own — sweeping unresolved
-comments and red checks until everything is green — and waits there, because the
-approval is not its to give. Anything with design content is decided in the round by the people
+behaviour? What is the blast radius? Comment in the PR and AI revises; reviewers
+do not push fixes themselves, because asking keeps the rule harvestable. AI then
+carries the PR to the gate on its own — sweeping unresolved comments and red
+checks until everything is green — and waits there, because the approval is not
+its to give. Anything with design content is decided in the round by the people
 who agreed the design; small and routine changes async. Bouncing back to Stage 3
 is a success, not a failure.
 
@@ -438,124 +425,102 @@ matters more than the writing:
 
 | Strength | Form | Use when |
 | --- | --- | --- |
-| advisory | a rule in `CONVENTIONS.md`, a chapter in `guidelines/`, a skill | the default is clear, and real exceptions exist |
-| enforced | a hook | it must hold every time, and a violation is recognisable before the fact |
-| proved | a CI check | it must hold every time, and only running the code can show it |
+| advisory | a written rule or guideline AI reads before working | the default is clear, and real exceptions exist |
+| enforced | an automatic block before the action | it must hold every time, and a violation is recognisable in advance |
+| proved | a check that runs on every change | it must hold every time, and only running the code can show it |
 
 **Prose cannot hold a rule that must always hold.** A convention that admits no
-exception belongs in a hook or a CI check; writing it down again, in bolder
-words, is what we do instead of fixing it. A recurring analysis becomes a skill.
-And because these files are what steer AI, changing them is a change that gets
-tested — §9. This is what makes the next cycle shorter than this one.
+exception belongs in a block or a check; writing it down again, in bolder words,
+is what we do instead of fixing it. A recurring piece of analysis becomes a
+standing instruction AI loads by itself. And because all of this is what steers
+AI, changing it is a change that gets tested — §9. This is what makes the next
+cycle shorter than this one.
 
 ---
 
-## 7. Templates
+## 7. The four artefacts
 
-The brief and the note are one file, `.github/notes/<issue>-<slug>.md`: the brief
-is its first revision, the design note is what it becomes once the issue is
-accepted.
+Formats belong somewhere else. What matters here is what each artefact has to
+answer, and that the next stage reads the previous one instead of starting over.
 
-```markdown
-ANALYSIS BRIEF — revision 1 of the note
-## Context     Area · how it works today · why · related API and decisions
-## Verdict     accept / reject / needs info / park — why · alternatives
-               (userland, add-on, docs) · cost of accepting
-## Sketch      proposed API (signatures, no bodies) · affected modules ·
-               lifecycle & threading · open questions for the team
-## Confidence  verified: <what I read or ran>   assumed: <what I did not>
-```
+**The brief** — where this lands in Flow and how that area works today; a verdict
+with the alternatives to accepting it, including solving it outside Flow; a
+sketch of the API and what it touches; and, kept separate, what AI verified
+versus what it assumed.
 
-```markdown
-DRAFT PR — opened with the issue, before any decision
-## Problem                 one paragraph, user-facing; link to the issue
-## What this probe shows   the reproducing test · the API as it would read ·
-                           what CI says breaks · what the change costs
-## What it does not settle the design is open; alternatives are in the brief
-## Discard it if           the condition under which this shape is wrong
-Refs #<issue>              — deliberately not "Fixes"
-```
+**The probe PR** — the problem in one paragraph; what the probe demonstrates
+(the reproducing test, how the API would read, what else moves); what it does
+*not* settle; and the condition that would make this shape wrong.
 
-```markdown
-DESIGN NOTE — revision N of the same file; "changed in this revision" in one line
-## Problem                 user-facing, not the solution
-## Goals / Non-goals
-## Proposed design         API with signatures and contracts
-## Behaviour               lifecycle, threading, null, errors, edge cases
-## How we will build it    approach, main pieces, anything AI needs decided
-## Alternatives rejected   option — why not. This section is the point.
-## Compatibility · Testing strategy · Risks
-```
+**The design note** — the same document as the brief, one revision later: the
+problem in the user's terms, goals and non-goals, the design and its contracts,
+behaviour at the edges (lifecycle, threading, null, errors), how we intend to
+build it, and the alternatives we rejected with the reason for each. That last
+part is the point of the document.
 
-The PR description follows the repository's `commit-and-pr` skill — it is the
-squash-merge commit message, and this document does not get a second format for
-it. The process adds three lines to it:
+**The PR description** — enough to review without opening the diff: what and why,
+the design it was built against, which piece does what and which decisions were
+not obvious, what survived from the probe, the evidence that the check passed,
+what is tested and deliberately not tested, and the blast radius. It follows the
+repository's normal format; this process only adds the link to the note, the
+probe's remains, and the evidence.
 
-```markdown
-PR DESCRIPTION — additions this process requires
-link to the note      the revision the change was built against
-from the probe        what survived the design decision, and what was cut
-verification          the output of the check, not the claim that it passed
-```
-
-If you are reading Anthropic's [AI-native SDLC
-playbook](https://claude.com/blog/the-ai-native-sdlc-playbook), which several of
-these mechanics come from: their `intent.md` is our issue, their `spec.md` and
-`plan.md` are the two revisions of our one note, their `REVIEW.md` and eval suite
-are §8 and §9. We keep two artefacts where they keep three, on purpose — a third
-document is one nobody reads.
+Several mechanics here come from Anthropic's [AI-native SDLC
+playbook](https://claude.com/blog/the-ai-native-sdlc-playbook). It keeps three
+documents per change where we keep two, which is the one place we deliberately
+went simpler: a third document is one nobody reads.
 
 ---
 
 ## 8. What replaces line-by-line review
 
-The real gate is the design discussion; automated gates (build, tests, ITs,
-`spotless`, `checkstyle`, API compatibility) are a precondition for review, not
-its outcome. On top of that, **a human still reads the code** — mark the PR
-`review:code-required` — when it touches:
+The real gate is the design discussion; the automated gates — build, tests,
+formatting, API compatibility — are a precondition for review, not its outcome.
+On top of that, **a human still reads the code**, and the PR is marked as
+needing that, when it touches:
 
 - public API surface;
 - security-sensitive paths: request handling, session, class-loading,
   deserialization, path resolution;
-- the client-server protocol, `StateNode` / `StateTree`, anything crossing the
-  wire;
-- concurrency, `UI.access`, push;
+- the client-server protocol, anything crossing the wire;
+- concurrency and push;
 - performance-critical paths, or any change justified by performance;
 - anything AI flagged as uncertain, or that deviates from the note.
 
 **Before any of that, AI reviews the PR**, and what it looks for is written down
-rather than improvised per reviewer. `REVIEW.md` in the repository root defines
-the passes — correctness · security · protocol and serialization · public API and
-back-compatibility · conventions against `CONVENTIONS.md` — the line between
-*important* and *nit*, a cap on nits per PR, and what not to look at at all
-(generated sources, anything `checkstyle` or `spotless` already enforces). The
-findings inform the humans; they neither approve nor block, and the agent that
-wrote the change has no route to approving it.
+rather than improvised per reviewer: the passes it makes — correctness,
+security, the protocol and serialization, public API and back-compatibility, our
+own conventions — the line between *important* and *nit*, a cap on nits per PR,
+and what not to look at at all (generated sources, and anything the automated
+gates already enforce). The findings inform the humans; they neither approve nor
+block, and the agent that wrote the change has no route to approving it.
 
 Plus **one random PR per week, read in full.** This is our calibration: it tells
 us whether the descriptions we trust match the code. A mismatch is a process
 incident — discuss it and fix the rule, do not quietly fix the PR, and turn that
-case into an eval (§9) so it cannot come back unnoticed.
+case into a standing task in the eval suite (§9), so it cannot come back
+unnoticed.
 
 ---
 
 ## 9. Testing what steers AI
 
-`CLAUDE.md`, `CONVENTIONS.md`, `guidelines/`, the skills and the hooks are not
-documentation. They are the program that decides how every change in this
-repository gets written — and we edit them weekly with no idea what the edits do.
-A rule added for one awkward case can quietly make ten ordinary ones worse, and
-we find out a month later, by accident, in an unrelated review.
+Our conventions, our guidelines, the standing instructions AI loads for a task,
+the automatic blocks — none of that is documentation. It is the program that
+decides how every change in this repository gets written, and we edit it weekly
+with no idea what the edits do. A rule added for one awkward case can quietly
+make ten ordinary ones worse, and we find out a month later, by accident, in an
+unrelated review.
 
-So **the files that steer AI are tested like code.**
+So **what steers AI is tested like code.** The tests are called evals; the set of
+them is the suite.
 
-- **The suite is 20–50 real tasks**, taken from issues we have already closed:
-  the issue as it arrived, and what a good answer looks like — tests pass, the
-  convention is followed, the API matches what we actually merged, nothing
-  unrelated is touched.
-- **It runs when the steering files change** — any PR touching `CLAUDE.md`,
-  `CONVENTIONS.md`, `guidelines/` or `.claude/**` — and on a schedule, because
-  the models change under us even when our files do not.
+- **The suite is a few dozen real tasks**, taken from issues we have already
+  closed: the issue as it arrived, and what a good answer looks like — tests
+  pass, the convention is followed, the API matches what we actually merged,
+  nothing unrelated is touched.
+- **It runs whenever we change what steers AI**, and on a schedule too, because
+  the models change under us even when our own rules do not.
 - **The pass rate is a merge signal.** A rule that fixes one task and breaks four
   is visible before it is merged. That is the whole point.
 - **Every process incident becomes a permanent task in the suite:** the weekly
@@ -622,8 +587,8 @@ rest works.
 Adopt the **project layer (§4) whole** on the next project — roles, allocation
 and rituals only work as a set. The **issue layer** can be phased: two weeks of
 briefs only, then briefs plus probe PRs, then design notes, then the full
-pipeline with spot-checks and `REVIEW.md`, and the eval suite (§9) as soon as we
-start editing the steering files weekly — which is immediately. Widen only while
+pipeline with spot-checks and a written review policy, and the eval suite (§9)
+as soon as we start changing what steers AI every week — which is immediately. Widen only while
 the spot-check mismatch rate stays low, and review this document at the end of
 each phase.
 
