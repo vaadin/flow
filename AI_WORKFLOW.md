@@ -18,9 +18,10 @@ process.
 
 **Deliberately not covered yet:** where issues come from. Turning Slack threads,
 forum posts and support tickets into issues — and noticing when five of them are
-one problem — is a real problem and a separate one. This document assumes the
-issue exists and is only about what happens next, because that is where we lose
-the weeks.
+one problem — is a real problem and a separate one; so is having automation file
+its own issues when a metric we watch, such as the flaky-test rate, leaves its
+usual range. This document assumes the issue exists and is only about what
+happens next, because that is where we lose the weeks.
 
 ---
 
@@ -62,6 +63,20 @@ Brief; opens a draft PR with a reproducing test and the sketched API; keeps CI
 green; revises on comment; drafts docs, demo and DX tests; keeps the board and
 labels truthful; flags issues that have gone stale.
 
+**What starts it is a label, not a person remembering:**
+
+| Event | What automation does |
+| --- | --- |
+| issue opened | brief and probe PR — §6 stage 1 |
+| `accepted` | drafts the design note, and revises it on every comment |
+| `design:agreed` | finishes the PR and marks it ready for review |
+| `@claude` in a comment | one revision — of the note, or of the code |
+| merged | proposes what to harvest — §6 stage 7 |
+
+A label is a switch, not a sticker on a board — which is also why the board stays
+truthful. The label is what actually moves the work, so it cannot quietly drift
+away from what is happening.
+
 **A human decides, three times per issue:**
 
 | # | Decision | Where | Label after |
@@ -76,7 +91,12 @@ the design was never actually settled — say which, in the issue.
 
 **Automation never** merges, never closes an issue as won't-fix, never declares
 two issues duplicates on its own, never changes an agreed API contract, and
-never rules its own deviation acceptable.
+never rules its own deviation acceptable. The agent that wrote a change has no
+route to approving it.
+
+**Nothing safe waits for permission.** Build, test, lint and `git` commands are
+pre-approved in the repository settings. An agent idling on a permission prompt
+for `mvn test` costs exactly what a PR idling on a reviewer costs.
 
 Everything automation produces before decision 2 is **disposable**, and that is
 precisely what makes it safe to produce early.
@@ -212,6 +232,15 @@ The issue holds the record, the PR holds the code, and both exist from the first
 hour — so there is never a moment where the conversation moves house, drops half
 its context and restarts in front of a different audience.
 
+**Every artefact is a file, not a comment.** The brief and the design note live
+in the PR as `.github/notes/<issue>-<slug>.md`, so revision 4 arrives as a diff
+against revision 3 instead of as the fourth long comment that nobody can line up
+with the other three. The issue keeps the problem and the decisions; the PR keeps
+everything that changes as the work does. Notes stay after the merge — a
+searchable answer to "why does this API read like this", and the raw material
+for harvesting (§6 stage 7). If the directory turns into noise, we will say so
+and prune it.
+
 **The round.** The whole team walks the live issues together, daily, 30 minutes,
 run by the lead; an issue that needs no decision takes ten seconds. **The round
 is where decisions happen; between rounds automation does the work.** During a
@@ -238,6 +267,10 @@ two.
   PR. Splitting across two rounds is the exception, for genuinely new ground.
 - **Progress is never reported aloud** — it lives in the issue. That is what
   keeps this from becoming a status meeting.
+- **Two or three issues per person, then stop adding.** Running more sessions
+  is nearly free; reading what they produce is not. Add a fourth only while the
+  review quality of the first three holds. The limit is the person steering, not
+  the machine.
 
 Target: **agreed in the first round that sees it, merged in the next.**
 
@@ -328,8 +361,10 @@ likely duplicates without closing anything.
 
 **1 · Brief and draft PR** (AI, ~30 min). One reaction, two artefacts:
 
-- the **Analysis Brief** as an issue comment — context, verdict, sketch, and what
-  it could not verify. It is the pre-read that makes a round possible;
+- the **Analysis Brief**, committed in the probe PR as
+  `.github/notes/<issue>-<slug>.md` and linked from the issue — context, verdict,
+  sketch, and what it could not verify. It is the pre-read that makes a round
+  possible;
 - a **draft PR** — a probe: a test that reproduces the problem (failing), the
   sketched API compiling, and CI showing what else moves.
 
@@ -337,7 +372,7 @@ likely duplicates without closing anything.
 `Element`" and be wrong; a branch that compiles states what the change actually
 costs, and CI turns blast radius from an estimate into a list of names. It also
 gives the round something concrete to react to, and reacting is far easier than
-originating (§9). If the round agrees with the shape we are already at review; if
+originating (§10). If the round agrees with the shape we are already at review; if
 it does not, we close a branch — the cheapest artefact we produce.
 
 The probe is **a draft**, labelled `probe`, and refs the issue rather than
@@ -350,43 +385,79 @@ round. Shallow on purpose: "worth our design time?", not "is this right?".
 Rejecting closes the probe with the issue, and that is an ordinary Tuesday, not
 waste.
 
-**3 · Design and approach** — the design note is what the team argues about; the
-probe is exhibit A, not the proposal. *"@claude, rework it: use an event instead
-of a callback, and define what happens on detach."* Every conclusion lands back
-in the note, with a one-line "what changed and why" per revision. **Right
-problem, wrong shape** is a first-class outcome: the probe is discarded and the
-next revision starts from the design, not from the code that happens to exist.
+**3 · Design and approach** — the brief grows into the **design note** in the
+same file, so every revision is a diff with a one-line "what changed and why",
+and the current version is the file rather than the newest comment. The note is
+what the team argues about; the probe is exhibit A, not the proposal.
+*"@claude, rework it: use an event instead of a callback, and define what happens
+on detach."* Every conclusion lands back in the note. **Right problem, wrong
+shape** is a first-class outcome: the probe is discarded and the next revision
+starts from the design, not from the code that happens to exist.
 
 **4 · Implementation** (AI) — the same PR grows up against the agreed note: tests
 first (if they expose a design problem, **go back to Stage 3** rather than bend
-the tests), green CI, a description reviewable without the diff, and **every
-deviation from the note declared**. An undeclared deviation is the worst failure
-mode of this process. Because the branch predates the design, the PR also says
-**which parts of the probe survived the decision** — code that is there because
-it was there on day one is the failure mode of starting early.
+the tests), green CI, a description reviewable without the diff. Because the
+branch predates the design, the PR also says **which parts of the probe survived
+the decision** — code that is there because it was there on day one is the
+failure mode of starting early.
+
+**A deviation from the note is corrected in the note, in the same commit.** The
+note is a file in this PR, so a change of plan arrives as a diff anyone can see,
+not as a paragraph at the bottom of a description. Silent deviation is still the
+worst failure mode of this process; it is now also the easiest to spot.
+
+**Nothing reaches a human before the check has run.** Every issue has one
+verification target and one quantifiable statement of done — the module's tests
+green, the failing test from Stage 1 now passing, the API-compatibility check
+clean — and AI pastes the output as evidence instead of asserting it. Two
+consequences worth spelling out:
+
+- **A fix starts with a failing test, and that test is then off limits.** A hook
+  blocks edits to test files for the rest of the task, so the check that proves
+  the bug cannot be quietly weakened into agreement.
+- **If the target cannot be stated, the issue is not ready to implement.** That
+  is a gap in Stage 3, not in Stage 4.
 
 **5 · Review** — read the description: does it solve the problem? Is the API what
 we agreed, and what we want to live with? What happens at the edges — null,
 detach, concurrency, serialization, back-compat? Are the tests aimed at
 behaviour? What is the blast radius? Comment in the PR, `@claude` revises;
 reviewers do not push fixes themselves, because asking keeps the rule
-harvestable. Anything with design content is decided in the round by the people
+harvestable. AI then carries the PR to the gate on its own — sweeping unresolved
+comments and red checks until everything is green — and waits there, because the
+approval is not its to give. Anything with design content is decided in the round by the people
 who agreed the design; small and routine changes async. Bouncing back to Stage 3
 is a success, not a failure.
 
 **6 · Merge** — approving means *"I understand this and I am comfortable owning
 it."* Never approve to unblock someone.
 
-**7 · Harvest** — a recurring comment becomes a rule in `CONVENTIONS.md` or a
-chapter in `guidelines/`, a recurring analysis becomes a skill, a recurring check
-becomes a CI check. This is what makes the next cycle shorter than this one.
+**7 · Harvest** — every merge ends with one question: *what would have made this
+cheaper?* The answer becomes one of three things, and choosing the right one
+matters more than the writing:
+
+| Strength | Form | Use when |
+| --- | --- | --- |
+| advisory | a rule in `CONVENTIONS.md`, a chapter in `guidelines/`, a skill | the default is clear, and real exceptions exist |
+| enforced | a hook | it must hold every time, and a violation is recognisable before the fact |
+| proved | a CI check | it must hold every time, and only running the code can show it |
+
+**Prose cannot hold a rule that must always hold.** A convention that admits no
+exception belongs in a hook or a CI check; writing it down again, in bolder
+words, is what we do instead of fixing it. A recurring analysis becomes a skill.
+And because these files are what steer AI, changing them is a change that gets
+tested — §9. This is what makes the next cycle shorter than this one.
 
 ---
 
 ## 7. Templates
 
+The brief and the note are one file, `.github/notes/<issue>-<slug>.md`: the brief
+is its first revision, the design note is what it becomes once the issue is
+accepted.
+
 ```markdown
-ANALYSIS BRIEF
+ANALYSIS BRIEF — revision 1 of the note
 ## Context     Area · how it works today · why · related API and decisions
 ## Verdict     accept / reject / needs info / park — why · alternatives
                (userland, add-on, docs) · cost of accepting
@@ -406,7 +477,7 @@ Refs #<issue>              — deliberately not "Fixes"
 ```
 
 ```markdown
-DESIGN NOTE — Revision N; "changed in this revision" in one line
+DESIGN NOTE — revision N of the same file; "changed in this revision" in one line
 ## Problem                 user-facing, not the solution
 ## Goals / Non-goals
 ## Proposed design         API with signatures and contracts
@@ -416,18 +487,23 @@ DESIGN NOTE — Revision N; "changed in this revision" in one line
 ## Compatibility · Testing strategy · Risks
 ```
 
+The PR description follows the repository's `commit-and-pr` skill — it is the
+squash-merge commit message, and this document does not get a second format for
+it. The process adds three lines to it:
+
 ```markdown
-PR DESCRIPTION — when it is ready for review
-## What · Why              user-facing paragraph; link to the issue
-## Design                  link to the agreed note + 5–15 lines restating it
-## How it is implemented   which class does what; the non-obvious decisions.
-                           Enough to review without opening the diff.
-## From the probe          what survived the design decision, and what was cut
-## Deviations from the note   none / list, with reasons
-## Testing                 covered, and deliberately not covered
-## Risk & blast radius     what breaks if this is wrong; how we would notice
-Fixes #<issue>
+PR DESCRIPTION — additions this process requires
+link to the note      the revision the change was built against
+from the probe        what survived the design decision, and what was cut
+verification          the output of the check, not the claim that it passed
 ```
+
+If you are reading Anthropic's [AI-native SDLC
+playbook](https://claude.com/blog/the-ai-native-sdlc-playbook), which several of
+these mechanics come from: their `intent.md` is our issue, their `spec.md` and
+`plan.md` are the two revisions of our one note, their `REVIEW.md` and eval suite
+are §8 and §9. We keep two artefacts where they keep three, on purpose — a third
+document is one nobody reads.
 
 ---
 
@@ -447,13 +523,52 @@ its outcome. On top of that, **a human still reads the code** — mark the PR
 - performance-critical paths, or any change justified by performance;
 - anything AI flagged as uncertain, or that deviates from the note.
 
+**Before any of that, AI reviews the PR**, and what it looks for is written down
+rather than improvised per reviewer. `REVIEW.md` in the repository root defines
+the passes — correctness · security · protocol and serialization · public API and
+back-compatibility · conventions against `CONVENTIONS.md` — the line between
+*important* and *nit*, a cap on nits per PR, and what not to look at at all
+(generated sources, anything `checkstyle` or `spotless` already enforces). The
+findings inform the humans; they neither approve nor block, and the agent that
+wrote the change has no route to approving it.
+
 Plus **one random PR per week, read in full.** This is our calibration: it tells
 us whether the descriptions we trust match the code. A mismatch is a process
-incident — discuss it and fix the rule, do not quietly fix the PR.
+incident — discuss it and fix the rule, do not quietly fix the PR, and turn that
+case into an eval (§9) so it cannot come back unnoticed.
 
 ---
 
-## 9. Culture
+## 9. Testing what steers AI
+
+`CLAUDE.md`, `CONVENTIONS.md`, `guidelines/`, the skills and the hooks are not
+documentation. They are the program that decides how every change in this
+repository gets written — and we edit them weekly with no idea what the edits do.
+A rule added for one awkward case can quietly make ten ordinary ones worse, and
+we find out a month later, by accident, in an unrelated review.
+
+So **the files that steer AI are tested like code.**
+
+- **The suite is 20–50 real tasks**, taken from issues we have already closed:
+  the issue as it arrived, and what a good answer looks like — tests pass, the
+  convention is followed, the API matches what we actually merged, nothing
+  unrelated is touched.
+- **It runs when the steering files change** — any PR touching `CLAUDE.md`,
+  `CONVENTIONS.md`, `guidelines/` or `.claude/**` — and on a schedule, because
+  the models change under us even when our files do not.
+- **The pass rate is a merge signal.** A rule that fixes one task and breaks four
+  is visible before it is merged. That is the whole point.
+- **Every process incident becomes a permanent task in the suite:** the weekly
+  spot-check mismatch (§8), the bug that got through review, the convention AI
+  kept ignoring. Same move as adding a regression test, one level up.
+
+This is also the honest answer to *"is harvesting working?"*. Stage 7 adds rules;
+this is what tells us a rule did what we hoped, rather than making us feel
+organised.
+
+---
+
+## 10. Culture
 
 - **Design is discussed, code is generated.** Code existing early does not make
   it the design. Arguing about code in a PR means we skipped a design
@@ -469,7 +584,8 @@ incident — discuss it and fix the rule, do not quietly fix the PR.
 - **Never approve what you do not understand**, and own the merge afterwards.
   "The AI wrote it and CI was green" explains nothing.
 - **Correct the constitution, not just the output.** Fixing the same thing twice
-  by hand means we forgot Stage 7.
+  by hand means we forgot Stage 7 — and a correction nobody tested is a hope,
+  not a rule (§9).
 - **Reward good rejections.** An issue closed in an hour with a clear explanation
   is a first-class outcome.
 - **No silent local rewrites.** If you take an issue over and write it yourself,
@@ -501,46 +617,57 @@ rest works.
 
 ---
 
-## 10. Adoption, signals, open questions
+## 11. Adoption, signals, open questions
 
 Adopt the **project layer (§4) whole** on the next project — roles, allocation
 and rituals only work as a set. The **issue layer** can be phased: two weeks of
 briefs only, then briefs plus probe PRs, then design notes, then the full
-pipeline with spot-checks, and widen only while the spot-check mismatch rate
-stays low. Review this document at the end of each phase.
+pipeline with spot-checks and `REVIEW.md`, and the eval suite (§9) as soon as we
+start editing the steering files weekly — which is immediately. Widen only while
+the spot-check mismatch rate stays low, and review this document at the end of
+each phase.
 
-Watch: rounds from filing to merge · share of issues agreed in the first round
-that saw them · **spot-check mismatch rate** (the honesty metric) · **probes
-discarded at design** (too low means we are rubber-stamping the first shape) ·
-issues that needed a fourth decision · bounces back to design · rules added per
-month · use cases done vs. agreed on day 2 · how much scope we managed *not* to
-build · how many people spoke.
+**What to watch.** Fast signals say the process is moving; slow ones say it was
+worth moving. A fast signal that looks good while its slow partner rots is the
+thing to catch.
+
+| What | Fast — visible this week | Slow — visible over months |
+| --- | --- | --- |
+| Filing → decision | hours from filing to brief and probe · brief to first round | issues that needed a fourth decision |
+| Design | share agreed in the first round that saw them · **probes discarded at design** (near zero means we rubber-stamp the first shape) | bounces back to design after review |
+| Implementation | first-pass CI success · issues one person steers at once while review holds | rework per merged change |
+| Review | time to the first AI review · comments resolved without a human touching the branch | defects found before merge vs. after release |
+| Steering files | eval pass rate when a rule changes · time from a process incident to an eval | **spot-check mismatch rate** (the honesty metric) · rules added per month |
+| Project | use cases done vs. agreed on day 2 | how much scope we managed *not* to build · how many people spoke |
 
 Still to decide:
 
-1. Round cadence — daily 30 minutes, or three longer rounds a week?
+1. Round cadence — daily 30 minutes or three longer rounds a week, does
+   everyone attend, and is it our only scheduled meeting?
 2. **How many live issues can one round carry before it stops being a
    discussion?** That number, not the filing rate, is our real capacity.
-3. Does *every* new issue get a probe PR, or only ones that pass triage? Probes
-   are cheap in money and not free in attention.
+3. Does *every* new issue get a probe PR, or only ones that pass triage — and
+   when is a stale probe closed, by whom? Probes are cheap in money and not free
+   in attention.
 4. Who owns an issue in its first hour? Something has to be the lead before the
    first round sees it — auto-assign by area, or whoever runs the next round?
-5. Does the design note live in the issue, or as a file in the PR that reviewers
-   can diff revision by revision?
+5. Who owns the eval suite (§9), and how big can it get before it is too slow to
+   run on every change to a steering file?
 6. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research alone has historically taken weeks — a longer
    day 2, or an explicit research phase with its own end date?
-7. Does everyone attend every round — is it our only scheduled meeting?
-8. Who becomes lead — rotation, whoever triaged it, or the area owner? And can a
+7. Who becomes lead — rotation, whoever triaged it, or the area owner? And can a
    project lead also lead issues inside that project, or is that one head too
    many things?
-9. Maintenance arriving mid-project: does the project team absorb it, or do we
+8. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out of the project — which breaks the 100% rule?
-10. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
-    who breaks the tie?
-11. Do routine bulk changes need a **fast lane**: no design note, AI states the
+9. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+   who breaks the tie?
+10. Do routine bulk changes need a **fast lane**: no design note, AI states the
     invariant it preserved and how it proved it, review is of the invariant?
-12. Where do external contributor PRs enter — at review, or back at the problem?
-13. Is one weekly spot-check enough — per team, or per person?
-14. Design notes for bugfixes too, or is a probe with a failing test enough?
-15. When is a stale probe closed, and by whom?
+11. Where do external contributor PRs enter — at review, or back at the problem?
+12. Is one weekly spot-check enough — per team, or per person?
+13. Design notes for bugfixes too, or is a probe with a failing test enough?
+14. Do we want the loop to close itself — a script watching one metric, say the
+    flaky-test rate, filing its own issue when the metric leaves its usual range?
+    That is the day we stop pretending we do not care where issues come from.
