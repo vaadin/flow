@@ -126,9 +126,12 @@ Where expectations quietly diverge today:
   whole, though — a prepared meeting, a truthful board, decisions reached — and
   an engineering manager who cannot meet them hands the lead role to someone who
   can, rather than holding it at half strength.
-- **The engineering manager does not decide design or scope.** Design is the
-  session's, scope is the PM's and the team's. What the engineering manager
-  decides is that a decision gets made at all, and by whom.
+- **Design is not settled by rank.** The engineering manager argues like anyone
+  else, and the argument weighs as an argument rather than as a position —
+  otherwise the cheapest thing for the room is to wait and see what the manager
+  thinks, which is how a discussion dies. Scope stays the PM's and the team's.
+  But a design decision that will not converge is the engineering manager's to
+  end: pick, or name who picks, and record that it was forced.
 
 **The lead** carries one piece of work to the end. The lead does not build it —
 AI does — and is accountable for the outcome rather than for having typed it, and
