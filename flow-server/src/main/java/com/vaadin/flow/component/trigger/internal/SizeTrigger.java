@@ -18,6 +18,8 @@ package com.vaadin.flow.component.trigger.internal;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Size;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;
 
@@ -57,6 +59,16 @@ public class SizeTrigger extends Trigger {
      *            the component whose root element is observed, not {@code null}
      */
     public SizeTrigger(Component host) {
+        super(host);
+    }
+
+    /**
+     * Creates a size trigger on the given element.
+     *
+     * @param host
+     *            the element that is observed, not {@code null}
+     */
+    public SizeTrigger(Element host) {
         super(host);
     }
 
