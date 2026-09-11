@@ -7,8 +7,8 @@ Developers spend their time on **problems, design and decisions**. AI does the
 
 **The process starts when a GitHub issue appears.** A human files it — deciding
 that something deserves the team's attention is the entry ticket — and from that
-moment automation moves it: a brief and a draft PR within the hour, revisions
-after every decision. What the team supplies is decisions.
+moment automation moves it: a brief within the hour, a branch when we ask for
+one, revisions after every decision. What the team supplies is decisions.
 
 Two layers: how a **project** runs (a PRD becomes a shipped increment, §4) and
 how an **issue** moves (a filed issue becomes a merged PR, §5–6). Our conventions
@@ -51,8 +51,8 @@ it, and it keeps going until it needs a decision — then it stops and says so.
 
 **Automation does this without being asked:** reads the issue and everything
 linked from it; files it in the right area; points at likely duplicates; writes
-the Analysis Brief with a proposed verdict; opens a draft PR with a reproducing
-test and the sketched API; keeps CI green; revises on comment; drafts docs, demo
+the Analysis Brief with a proposed verdict; opens a probe PR when somebody asks
+for one; keeps CI green; revises on comment; drafts docs, demo
 and DX tests; keeps the board truthful; and writes the daily digest (§5), with
 what needs our judgement at the top.
 
@@ -188,13 +188,8 @@ the scope agreed on day 2 is what the team can do *including* the incoming, and
 when the incoming starts eating the project, it shows up in the daily instead of
 in a missed date.
 
-**Rituals.** The project runs its own daily and design session (§5), and the PM
-sees a working walkthrough weekly — to confirm we are solving the right problem,
-not to accept or reject the work.
-
-**The board is public and truthful.** At any moment anyone can see what is in
-progress, what is done, and what nobody has picked up; knowing what to do next
-should never require asking someone.
+**The PM sees a working walkthrough weekly** — to confirm we are solving the
+right problem, not to accept or reject the work.
 
 **Done does the reminding.** Demos, docs and DX tests get dropped because they
 are tracked apart from the code and postponed one day at a time. So they belong
@@ -213,20 +208,20 @@ rather than discussed twice. It is named as **the problem in the user's words** 
 *"Grid loses selection after a refresh"*, not *"add a keepSelection flag"*.
 
 It stays **one continuous discussion, from the problem to the merge decision.**
-The issue holds the problem and the decisions, the PR holds everything that
-changes as the work does, and both exist from the first hour — so the
-conversation never moves house and restarts with half its context. The brief and
-the design note are documents in that PR rather than comments, so revision 4
-arrives as a diff against revision 3. They stay after the merge: a searchable
-answer to "why does this API read like this", and the raw material for
-harvesting (§6 stage 7).
+The issue holds the problem and the decisions; everything that changes as the
+work does lives in the PR — so the conversation never moves house and restarts
+with half its context. The brief and the design note are committed documents
+rather than comments: they sit in the probe PR when there is one and in a PR of
+their own when there is not, so revision 4 arrives as a diff against revision 3.
+They stay after the merge: a searchable answer to "why does this API read like
+this", and the raw material for harvesting (§6 stage 7).
 
 **The board, and nobody's name on it.** An issue moves *needs triage → needs
 design → ready to go → in progress → on review → done*, and skips *needs design*
 when there is nothing to design. Until someone picks it up it belongs to the
-board, not to a person: we do not assign work, we make it possible to take. The
-person who takes it becomes its lead (§3); before that, an issue has no owner and
-needs none.
+board, not to a person: we do not assign work, we make it possible to take, and
+knowing what to do next never requires asking someone. The person who takes it
+becomes its lead (§3); before that, an issue has no owner and needs none.
 
 **Status is written, not spoken.** Everyone posts their update in the team
 channel before the daily, prompted by a bot. Updates are nearly always trivial,
@@ -257,7 +252,7 @@ name of whoever reviewed that one. That is how work someone has already touched
 finds the person who touched it, without anyone reporting it.
 
 **The design session — once a week, two blocks of 45 minutes with a break.**
-Anything with design content goes to a *needs a design* column and waits for the
+Anything with design content goes to the *needs design* column and waits for the
 session; three or four topics. Design is the decision we least want taken in a
 hurry, and the one place where the whole team in one room is worth what it costs.
 Preparation is what keeps it to 90 minutes:
@@ -275,8 +270,8 @@ Preparation is what keeps it to 90 minutes:
 During a project the daily and the design session are the project's, and members
 skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 
-- **Problem before solution, always** — *even though a PR is already open.* The
-  draft PR is evidence about the problem, not a proposal awaiting approval. An
+- **Problem before solution, always** — *even when a PR is already open.* The
+  probe is evidence about the problem, not a proposal awaiting approval. An
   issue may not be discussed as an implementation until the team has said out
   loud what the problem is. Most disagreements about *how* are unnoticed
   disagreements about *what*.
@@ -291,13 +286,13 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 - **Design and implementation in one pass.** The same session settles the design
   *and* the approach, so AI goes straight from it to a finished PR. Splitting
   across two sessions is the exception, for genuinely new ground.
-- **Two or three issues per person, then stop adding.** Running more sessions is
-  nearly free; reading what they produce is not. The limit is the person
+- **Two or three issues per person, then stop adding.** Running more agents at
+  once is nearly free; reading what they produce is not. The limit is the person
   steering, not the machine.
 
 | Step | Target | Limit |
 | --- | --- | --- |
-| Issue filed → brief + draft PR | 30 min | 2 h |
+| Issue filed → brief | 30 min | 2 h |
 | Brief → first daily | next daily | 1 day |
 | Problem agreed → design agreed | next design session | 2 sessions |
 | Design agreed → PR ready for review | 1–4 h | 1 day |
@@ -321,7 +316,7 @@ flowchart TD
     NI["question back to the reporter"]
     PK["parked — the brief stays as the record"]
     S3{"Stage 3 · DESIGN + APPROACH<br/>design session: this shape, or another?<br/>AI drafts · team agrees · design agreed"}
-    S4["Stage 4 · IMPLEMENTATION<br/>AI · the same PR grows up<br/>tests first · green CI · ready for review"]
+    S4["Stage 4 · IMPLEMENTATION<br/>AI · tests first · green CI<br/>ready for review"]
     S5{"Stage 5 · REVIEW<br/>do we merge?"}
     S6["Stage 6 · MERGE<br/>a human owns it"]
     S7["Stage 7 · HARVEST<br/>what would have made this cheaper<br/>→ a rule, a block, or a check"]
@@ -346,6 +341,16 @@ happens between meetings, without us.
 is **the problem, not a solution**; a proposed API is welcome as a hint, but the
 first line has to say what somebody could not do.
 
+**External contributors have two doors.** Something small and obviously right —
+a typo, documentation, a one-line bug with a test — goes straight to review;
+filing an issue for it would be theatre. Anything larger enters at the problem:
+the PR stays open, but what we discuss first is whether this is the problem we
+want solved, with their diff serving as a free probe — it already shows the cost
+and the blast radius. They get an answer within one daily, and that is a promise,
+because the alternative is silent neglect. If the design we agree matches what
+they wrote, review proceeds normally; if it does not, we say what we would take
+instead, and they decide whether to rework it or hand it over.
+
 **1 · Brief** (AI, ~30 min), **and a probe PR when a human asks for one.** Every
 issue gets a brief automatically; none gets a branch automatically, because a
 thirty-issue day would leave thirty PRs in a queue we cannot read. Asking for a
@@ -359,27 +364,15 @@ pre-read that makes a decision possible. The **probe** is a failing test that
 reproduces the problem, the sketched API compiling, and CI showing what else
 moves.
 
-**Why the PR exists before any decision.** A brief can claim "two lines in one
-class" and be wrong; a branch that compiles says what the change actually costs,
-and CI turns blast radius from an estimate into a list of names. It also gives
-the team something concrete to react to, and reacting is far easier than
-originating (§10). If the shape survives the design session we are already at
-review; if it does not, we close a branch — the cheapest artefact we produce. The
-probe says in its own description what it does *not* settle, and the brief still
-carries the alternatives AI did not build. A probe on an issue that has gone a
-week without a decision is closed by automation, with a line in the issue: the
-branch costs nothing to reopen, and an open PR nobody decided about costs
-attention every day.
-
-**External contributors have two doors.** Something small and obviously right —
-a typo, documentation, a one-line bug with a test — goes straight to review;
-filing an issue for it would be theatre. Anything larger enters at the problem:
-the PR stays open, but what we discuss first is whether this is the problem we
-want solved, with their diff serving as a free probe — it already shows the cost
-and the blast radius. They get an answer within one daily, and that is a promise,
-because the alternative is silent neglect. If the design we agree matches what
-they wrote, review proceeds normally; if it does not, we say what we would take
-instead, and they decide whether to rework it or hand it over.
+**Why a probe is worth opening before the decision.** A brief can claim "two
+lines in one class" and be wrong; a branch that compiles says what the change
+costs, and CI turns blast radius from an estimate into a list of names. If the
+shape survives the design session we are already at review; if it does not, we
+close a branch — the cheapest artefact we make. The probe states what it does
+*not* settle, and the brief still carries the alternatives AI did not build. One
+left undecided for a week is closed automatically, with a line in the issue:
+reopening a branch costs nothing, an open PR nobody decided about costs attention
+every day.
 
 **2 · Triage** — AI proposes a verdict in the brief and the daily confirms it in
 bulk, stopping only where someone objects. The question is shallow on purpose:
@@ -403,7 +396,7 @@ detach."* Every conclusion lands back in the note. **Right problem, wrong
 shape** is a first-class outcome: the probe is discarded and the next revision
 starts from the design, not from the code that happens to exist.
 
-**4 · Implementation** (AI) — the same PR grows up against the agreed note: tests
+**4 · Implementation** (AI) — the PR grows up against the agreed note: tests
 first (if they expose a design problem, **go back to Stage 3** rather than bend
 the tests), green CI, a description reviewable without the diff, and a line on
 **which parts of the probe survived the decision** — code that is there because
@@ -510,7 +503,7 @@ security, the protocol and serialization, public API and back-compatibility, our
 own conventions — the line between *important* and *nit*, a cap on nits per PR,
 and what not to look at at all (generated sources, and anything the automated
 gates already enforce). The findings inform the humans; they neither approve nor
-block, and the agent that wrote the change has no route to approving it.
+block.
 
 **Chore, test and refactor are approved automatically.** A PR of that type gets
 its approval without a reviewer when all of this holds: nothing in the public API
@@ -537,9 +530,9 @@ unnoticed.
 
 Our conventions, our guidelines, the standing instructions AI loads for a task,
 the automatic blocks — none of that is documentation. It is the program that
-decides how every change here gets written, and we edit it weekly with no idea
-what the edits do: a rule added for one awkward case can quietly make ten
-ordinary ones worse, and we find out a month later, by accident.
+decides how every change here gets written, and until now we changed it without
+knowing what the changes did: a rule added for one awkward case can quietly make
+ten ordinary ones worse, and we find out a month later, by accident.
 
 So **what steers AI is tested like code.** The tests are called evals; the set of
 them is the suite.
@@ -571,9 +564,9 @@ is what tells us a rule did what we hoped rather than making us feel organised.
   discussion.
 - **A PR must be reviewable without the diff.** If it is not, the description is
   the defect.
-- **A human always decides** — three times per issue (§2), and never fewer; an
-  automatic approval (§8) is us having decided once about a class, not AI
-  deciding. Never approve what you do not understand, and own the merge
+- **A human always decides** — three times per issue (§2), and never fewer. An
+  automatic approval (§8) is a decision we took once about a class of change, not
+  one AI took. Never approve what you do not understand, and own the merge
   afterwards.
 - **Correct the constitution, not just the output.** Fixing the same thing twice
   by hand means we forgot Stage 7 — and a correction nobody tested is a hope,
@@ -616,10 +609,9 @@ rest works.
 Adopt the **project layer (§4) whole** on the next project — roles, allocation
 and rituals only work as a set. The **issue layer** can be phased: two weeks of
 briefs only, then briefs plus probe PRs, then design notes, then the full
-pipeline with spot-checks and a written review policy, and the eval suite (§9) as
-soon as we start changing what steers AI weekly — which is immediately. Widen
-only while the spot-check mismatch rate stays low, and review this document at
-the end of each phase.
+pipeline with spot-checks and a written review policy, and the eval suite (§9)
+from the first weekly harvest onwards. Widen only while the spot-check mismatch
+rate stays low, and review this document at the end of each phase.
 
 **What to watch.** Fast signals say the process is moving; slow ones say it was
 worth moving. A fast signal that looks good while its slow partner rots is the
@@ -631,9 +623,9 @@ thing to catch.
 | Design | share agreed in the first session that saw them · **probes discarded at design** (near zero means we rubber-stamp the first shape) | bounces back to design after review |
 | Implementation | first-pass CI success · issues one person steers at once while review holds | rework per merged change |
 | Review | time to the first AI review · comments resolved without a human touching the branch | defects found before merge vs. after release |
-| Steering files | eval pass rate when a rule changes · time from a process incident to an eval | **spot-check mismatch rate** (the honesty metric) · rules added per month |
+| Steering files | eval pass rate on the weekly harvest · time from a process incident to an eval | **spot-check mismatch rate** (the honesty metric) · rules added per month |
 | Project | use cases done vs. agreed on day 2 | how much scope we managed *not* to build · how many people spoke |
 
-**Still to decide:** nothing, for the first time — every open question this draft
-started with has an answer above. New ones belong here, and the empty list is a
-sign that the document is young rather than finished.
+**Still to decide:** every question this draft opened with now has an answer
+above. New ones belong here — an empty list means the document is young, not
+finished.
