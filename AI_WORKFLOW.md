@@ -398,9 +398,12 @@ changes async. Bouncing back to Stage 3 is a success, not a failure.
 it."* Never approve to unblock someone: "the AI wrote it and CI was green"
 explains nothing.
 
-**7 · Harvest** — every merge ends with one question: *what would have made this
-cheaper?* The answer becomes one of three things, and choosing the right one
-matters more than the writing:
+**7 · Harvest** — once a week, automation reads the review comments of the week,
+finds what was said more than once, and opens a single PR that changes our
+conventions and guidelines in one go. Nobody edits them in the middle of a
+merge; the question *what would have made this cheaper?* is answered in bulk,
+where a repetition is visible and a one-off is not. Each proposal comes as one
+of three things, and choosing the right one matters more than the writing:
 
 | Strength | Form | Use when |
 | --- | --- | --- |
@@ -411,9 +414,11 @@ matters more than the writing:
 **Prose cannot hold a rule that must always hold.** A convention that admits no
 exception belongs in a block or a check; writing it down again, in bolder words,
 is what we do instead of fixing it. A recurring piece of analysis becomes a
-standing instruction AI loads by itself. And because all of this is what steers
-AI, changing it is a change that gets tested — §9. This is what makes the next
-cycle shorter than this one.
+standing instruction AI loads by itself.
+
+The weekly PR is read by a person — it changes how everything else gets written,
+so it is design, not housekeeping, and it goes to the design session when it is
+more than wording. It is also what the eval suite (§9) runs against.
 
 ---
 
@@ -491,17 +496,20 @@ them is the suite.
 - **A few dozen real tasks**, taken from issues we have already closed: the issue
   as it arrived, and what a good answer looks like — tests pass, the convention
   is followed, the API matches what we merged, nothing unrelated is touched.
-- **It runs whenever we change what steers AI**, and on a schedule too, because
-  the models change under us even when our own rules do not.
-- **The pass rate is a merge signal.** A rule that fixes one task and breaks four
-  is visible before it is merged. That is the whole point.
+- **It runs once a week, against the weekly harvest PR** (§6 stage 7), and that
+  is the only place it has to run: nothing else changes what steers AI. The same
+  run also catches the models changing under us while our own rules stand still.
+- **The pass rate decides whether the harvest lands.** A rule that fixes one task
+  and breaks four is visible before it is merged. That is the whole point.
 - **Every process incident becomes a permanent task in it:** the weekly
   spot-check mismatch (§8), the bug that got through review, the convention AI
   kept ignoring.
+- **Whoever takes the harvest PR that week owns the suite** — adds the new task,
+  retires the ones whose expected answer the code has outgrown, and says which a
+  red run means: bad rule, or stale eval.
 
-It is also the honest answer to *"is harvesting working?"* — Stage 7 adds rules,
-this is what tells us a rule did what we hoped rather than making us feel
-organised.
+It is the honest answer to *"is harvesting working?"* — Stage 7 adds rules, this
+is what tells us a rule did what we hoped rather than making us feel organised.
 
 ---
 
@@ -575,17 +583,15 @@ thing to catch.
 
 Still to decide:
 
-1. Who owns the eval suite, and how big can it get before it is too slow to run
-   on every change?
-2. Two days of understanding before the scope meeting fits a short project. What
+1. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research has historically taken weeks?
-3. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+2. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-4. Maintenance arriving mid-project: does the project team absorb it, or do we
+3. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-5. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+4. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-6. Do routine bulk changes need a **fast lane**: no design note, AI states the
+5. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-7. Where do external contributor PRs enter — at review, or back at the problem?
-8. Design notes for bugfixes too, or is a probe with a failing test enough?
+6. Where do external contributor PRs enter — at review, or back at the problem?
+7. Design notes for bugfixes too, or is a probe with a failing test enough?
