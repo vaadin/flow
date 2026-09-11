@@ -77,11 +77,12 @@ work, and we speak only if it is blocked. Everything around those three decision
 is automation's. If an issue needs a fourth, that is a signal — either the brief
 was thin or the design was never settled; say which, in the issue.
 
-**Automation never** closes an issue as won't-fix, never declares two issues
-duplicates on its own, never changes an agreed API contract, and never rules its
-own deviation acceptable. It merges in one place only — the fast lane (§8), where
-we decided in advance that a whole class of change may merge itself. Everywhere
-else the agent that wrote a change has no route to approving it.
+**Automation never merges**, never closes an issue as won't-fix, never declares
+two issues duplicates on its own, never changes an agreed API contract, and never
+rules its own deviation acceptable. It approves in one place only — the fast lane
+(§8), where we ruled in advance on a whole class of change. Everywhere else the
+agent that wrote a change has no route to approving it, and the merge is always
+somebody's.
 
 **Nothing safe waits for permission:** building, testing and formatting are
 approved in advance, because an agent idling on a prompt costs what a PR idling
@@ -493,16 +494,18 @@ and what not to look at at all (generated sources, and anything the automated
 gates already enforce). The findings inform the humans; they neither approve nor
 block, and the agent that wrote the change has no route to approving it.
 
-**Chore, test and refactor merge themselves.** A PR of that type needs no human
-approval when all of this holds: nothing in the public API changed and the
-compatibility check says so, no test was weakened, CI is green, and it stays out
-of the areas listed above. What it must state is the invariant it preserved —
-behaviour unchanged, only the call sites moved — how it was preserved, and how
-that was proved. **Every place where the mechanical rule had to be broken is
-listed, and a single exception takes the PR out of the lane** into a human's
-hands; a long list means the change was never routine. The human decision here is
-about the class, taken once, not about the PR — and what keeps it honest is the
-weekly read below and the fact that a revert is one command.
+**Chore, test and refactor are approved automatically.** A PR of that type gets
+its approval without a reviewer when all of this holds: nothing in the public API
+changed and the compatibility check says so, no test was weakened, CI is green,
+and it stays out of the areas listed above. What it must state is the invariant
+it preserved — behaviour unchanged, only the call sites moved — how it was
+preserved, and how that was proved. **Every place where the mechanical rule had
+to be broken is listed, and a single exception takes the PR out of the lane** to
+a reviewer; a long list means the change was never routine. Merging stays a
+person's act: the approval is what stops these PRs from waiting in a queue they
+have nothing to gain from. The judgement here is about the class of change, taken
+once — and what keeps it honest is the weekly read below and the fact that a
+revert is one command.
 
 Plus **one random PR per week, read in full.** This is our calibration: it tells
 us whether the descriptions we trust match the code. A mismatch is a process
@@ -550,9 +553,10 @@ is what tells us a rule did what we hoped rather than making us feel organised.
   discussion.
 - **A PR must be reviewable without the diff.** If it is not, the description is
   the defect.
-- **A human always decides** — three times per issue (§2), and never fewer; the
-  one exception is a class of change we ruled on in advance (§8). Never approve
-  what you do not understand, and own the merge afterwards.
+- **A human always decides** — three times per issue (§2), and never fewer; an
+  automatic approval (§8) is us having decided once about a class, not AI
+  deciding. Never approve what you do not understand, and own the merge
+  afterwards.
 - **Correct the constitution, not just the output.** Fixing the same thing twice
   by hand means we forgot Stage 7 — and a correction nobody tested is a hope,
   not a rule (§9).
