@@ -88,9 +88,7 @@ public abstract class Trigger implements Serializable {
     }
 
     /**
-     * Creates a new trigger bound to the given element. Used by triggers that
-     * are wired from element-level API, where there is no component to go
-     * through.
+     * Creates a new trigger bound to the given element.
      *
      * @param host
      *            the element the trigger fires on, not {@code null}
