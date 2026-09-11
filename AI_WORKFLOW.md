@@ -376,8 +376,16 @@ bulk, stopping only where someone objects. The question is shallow on purpose:
 "worth our design time?", not "is this right?". Rejecting closes the probe with
 the issue — an ordinary Tuesday, not waste.
 
-**3 · Design and approach** — the brief grows into the **design note** in the
-same file, so every revision is a diff with a one-line "what changed and why",
+**3 · Design and approach** — not every issue comes here. A bugfix whose expected
+behaviour is not in doubt skips it: the failing test *is* the specification, and
+the PR description carries the rest. It does need a note when the fix changes
+behaviour somebody could depend on, or when "what should it do instead?" has more
+than one defensible answer — a design question in a bug's clothes. The tell is
+quick: if a reviewer could disagree with the *expected value in the test* rather
+than with the implementation, you have design on your hands.
+
+For everything that does come here, the brief grows into the **design note** in
+the same file, so every revision is a diff with a one-line "what changed and why",
 and the current version is the file rather than the newest comment. The note is
 what the team argues about; the probe is exhibit A, not the proposal.
 *"Rework it: use an event instead of a callback, and define what happens on
@@ -619,4 +627,3 @@ thing to catch.
 Still to decide:
 
 1. Where do external contributor PRs enter — at review, or back at the problem?
-2. Design notes for bugfixes too, or is a probe with a failing test enough?
