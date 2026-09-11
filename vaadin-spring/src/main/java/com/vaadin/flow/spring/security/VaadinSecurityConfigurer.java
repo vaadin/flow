@@ -133,6 +133,8 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link VaadinDefaultRequestCache}</li>
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
+ * <li>{@code OidcUserService}, when Keycloak role mapping is enabled with
+ * {@link #keycloakRoleMapping()}</li>
  * </ul>
  * 
  * @since 24.8
@@ -158,6 +160,8 @@ public final class VaadinSecurityConfigurer
     private String logoutSuccessUrl;
 
     private String postLogoutRedirectUri;
+
+    private boolean keycloakRoleMapping = false;
 
     private boolean enableCsrfConfiguration = true;
 
@@ -313,6 +317,33 @@ public final class VaadinSecurityConfigurer
             String postLogoutRedirectUri) {
         this.oauth2LoginPage = oauth2LoginPage;
         this.postLogoutRedirectUri = postLogoutRedirectUri;
+        return this;
+    }
+
+    /**
+     * Enables mapping of Keycloak realm and client roles to Spring Security
+     * granted authorities (disabled by default).
+     * <p>
+     * Keycloak puts the roles of a user into the access token, so they are not
+     * part of the authenticated user by default. This opts in to decoding the
+     * access token and mapping its roles, which makes
+     * {@code @RolesAllowed("admin")} and {@code hasRole("admin")} match a
+     * Keycloak role named {@code admin}. See {@link KeycloakOidcUserMapper} for
+     * what exactly is mapped.
+     * <p>
+     * Works only together with {@link #oauth2LoginPage(String)} and its
+     * overloads, and replaces the {@code OidcUserService} that this security
+     * filter chain uses to load the authenticated user. An application that
+     * needs to customize that service can share its own instance with
+     * {@code HttpSecurity.setSharedObject(OidcUserService.class, service)},
+     * which is then used instead of a new one.
+     *
+     * @return the current configurer instance for method chaining
+     * @see KeycloakOidcUserMapper
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer keycloakRoleMapping() {
+        this.keycloakRoleMapping = true;
         return this;
     }
 
@@ -553,7 +584,23 @@ public final class VaadinSecurityConfigurer
             http.oauth2Login(configurer -> {
                 configurer.loginPage(oauth2LoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
+                if (keycloakRoleMapping) {
+                    // The role prefix holder is only populated with the prefix
+                    // of the filter chain in configure(), which runs after
+                    // this, so the prefix is resolved when a user is mapped
+                    var rolePrefixHolder = getVaadinRolePrefixHolder();
+                    KeycloakRoleMapping.apply(configurer, getBuilder(),
+                            () -> rolePrefixHolder != null
+                                    && rolePrefixHolder.isSet()
+                                            ? rolePrefixHolder.getRolePrefix()
+                                            : null);
+                }
             });
+        } else if (keycloakRoleMapping) {
+            LOGGER.warn(
+                    "Keycloak role mapping is enabled but no OAuth2 login page "
+                            + "is configured, so it has no effect. Configure "
+                            + "one with VaadinSecurityConfigurer.oauth2LoginPage().");
         }
         if (enableCsrfConfiguration) {
             http.csrf(this::customizeCsrf);

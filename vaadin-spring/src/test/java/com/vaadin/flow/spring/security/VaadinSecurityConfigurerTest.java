@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -66,6 +68,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -179,6 +182,67 @@ class VaadinSecurityConfigurerTest {
 
         assertThat(filters).hasAtLeastOneElementOfType(
                 OAuth2LoginAuthenticationFilter.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withOAuth2LoginPage_oidcUserServiceMapsRoles()
+            throws Exception {
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+
+        var oidcUserService = http.getSharedObject(OidcUserService.class);
+
+        assertThat(oidcUserService).isNotNull();
+        assertThat(getOidcUserConverter(oidcUserService))
+                .isInstanceOf(KeycloakOidcUserMapper.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withoutOAuth2LoginPage_notConfigured() {
+        http.with(configurer, VaadinSecurityConfigurer::keycloakRoleMapping)
+                .build();
+
+        assertNull(http.getSharedObject(OidcUserService.class));
+    }
+
+    @Test
+    void keycloakRoleMapping_sharedOidcUserService_isReused() throws Exception {
+        var sharedService = new OidcUserService();
+        http.setSharedObject(OidcUserService.class, sharedService);
+
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+
+        assertThat(http.getSharedObject(OidcUserService.class))
+                .isSameAs(sharedService);
+        assertThat(getOidcUserConverter(sharedService))
+                .isInstanceOf(KeycloakOidcUserMapper.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_rolePrefixOfChain_isUsedForRoles()
+            throws Exception {
+        var rolePrefixHolder = new VaadinRolePrefixHolder(null);
+        http.setSharedObject(VaadinRolePrefixHolder.class, rolePrefixHolder);
+
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+        // The prefix of the filter chain is only known to the holder after the
+        // chain has been configured, so the mapper must pick it up afterwards
+        var securityContextFilter = new SecurityContextHolderAwareRequestFilter();
+        securityContextFilter.setRolePrefix("AUTHORITY_");
+        rolePrefixHolder.resetRolePrefix(securityContextFilter);
+
+        var mapper = (KeycloakOidcUserMapper) getOidcUserConverter(
+                http.getSharedObject(OidcUserService.class));
+
+        assertThat(mapper.rolePrefix()).isEqualTo("AUTHORITY_");
     }
 
     @Test
@@ -481,7 +545,77 @@ class VaadinSecurityConfigurerTest {
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
     }
 
+    @Test
+    void withoutOAuth2ClientOnClasspath_configurerStillLinks() {
+        // spring-security-oauth2-client is an optional dependency, and a class
+        // is verified as a whole when it is loaded, so a reference to one of
+        // its types here would break every application that does not have it
+        assertThatCode(
+                () -> Class.forName(VaadinSecurityConfigurer.class.getName(),
+                        true, new OAuth2ClientHidingClassLoader()))
+                .doesNotThrowAnyException();
+    }
+
+    /**
+     * Loads the Vaadin security classes itself, so that they are verified
+     * against a classpath without {@code spring-security-oauth2-client}.
+     */
+    private static class OAuth2ClientHidingClassLoader extends ClassLoader {
+
+        private static final String HIDDEN_PACKAGE = "org.springframework.security.oauth2.client.";
+
+        private static final String RELOADED_PACKAGE = "com.vaadin.flow.spring.security.";
+
+        OAuth2ClientHidingClassLoader() {
+            super(VaadinSecurityConfigurer.class.getClassLoader());
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve)
+                throws ClassNotFoundException {
+            if (name.startsWith(HIDDEN_PACKAGE)) {
+                throw new ClassNotFoundException(name);
+            }
+            if (name.startsWith(RELOADED_PACKAGE)) {
+                synchronized (getClassLoadingLock(name)) {
+                    var loaded = findLoadedClass(name);
+                    if (loaded == null) {
+                        loaded = defineClass(name, readBytes(name));
+                    }
+                    if (resolve) {
+                        resolveClass(loaded);
+                    }
+                    return loaded;
+                }
+            }
+            return super.loadClass(name, resolve);
+        }
+
+        private Class<?> defineClass(String name, byte[] bytes) {
+            return defineClass(name, bytes, 0, bytes.length);
+        }
+
+        private byte[] readBytes(String name) throws ClassNotFoundException {
+            var resource = name.replace('.', '/') + ".class";
+            try (var stream = getParent().getResourceAsStream(resource)) {
+                if (stream == null) {
+                    throw new ClassNotFoundException(name);
+                }
+                return stream.readAllBytes();
+            } catch (IOException e) {
+                throw new ClassNotFoundException(name, e);
+            }
+        }
+    }
+
     // Helper methods to access protected fields using reflection
+    private Object getOidcUserConverter(OidcUserService oidcUserService)
+            throws Exception {
+        var field = OidcUserService.class.getDeclaredField("oidcUserConverter");
+        field.setAccessible(true);
+        return field.get(oidcUserService);
+    }
+
     private String getDefaultTargetUrl(
             VaadinSavedRequestAwareAuthenticationSuccessHandler handler)
             throws Exception {
