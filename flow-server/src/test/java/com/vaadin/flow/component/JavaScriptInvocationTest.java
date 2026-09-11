@@ -21,6 +21,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,5 +43,27 @@ class JavaScriptInvocationTest {
         assertEquals("string", deserialized.getParameters().get(0));
         assertEquals("jsonString",
                 ((JsonNode) deserialized.getParameters().get(1)).asString());
+    }
+
+    @Test
+    void testSerializable_parameterNotSerializable_sameClientEncoding() {
+        // A bean Jackson can encode but Java serialization cannot write. It is
+        // stored as the JSON it encodes to, so the browser sees no difference.
+        JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
+                "expression", new NotSerializableBean());
+        JsonNode expected = JacksonCodec
+                .encodeWithTypeInfo(invocation.getParameters().get(0));
+
+        JavaScriptInvocation deserialized = SerializationUtils
+                .deserialize(SerializationUtils.serialize(invocation));
+
+        assertEquals(expected, JacksonCodec
+                .encodeWithTypeInfo(deserialized.getParameters().get(0)));
+    }
+
+    public static class NotSerializableBean {
+        public String getName() {
+            return "name";
+        }
     }
 }
