@@ -153,8 +153,12 @@ they are the product.
 estimates, no scope commitment** — nobody understands the problem yet. Output:
 the roster (100% each) and the first written questions to the PM.
 
-**Days 0–2.** AI produces an Analysis Brief (§6) per candidate use case: where
-it lands, how that area works today, what supporting it would cost.
+**Days 0–2 — understanding, not planning.** AI produces a brief (§6) per
+candidate use case: where it lands, how that area works today, what supporting it
+would cost. The team reads them next to the PRD, gets into the context, and comes
+out with the open questions written down and an opinion ready for the scope
+meeting. Nobody arrives at day 2 to be informed. In unfamiliar ground this takes
+longer than two days — what matters is the output, not the number.
 
 **Day 2 — the scope meeting.** The team agrees the **Use Case List**: what we
 will support, and what we identified and deliberately will **not**, one line of
@@ -583,15 +587,13 @@ thing to catch.
 
 Still to decide:
 
-1. Two days of understanding before the scope meeting fits a short project. What
-   replaces it when the research has historically taken weeks?
-2. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+1. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-3. Maintenance arriving mid-project: does the project team absorb it, or do we
+2. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-4. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+3. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-5. Do routine bulk changes need a **fast lane**: no design note, AI states the
+4. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-6. Where do external contributor PRs enter — at review, or back at the problem?
-7. Design notes for bugfixes too, or is a probe with a failing test enough?
+5. Where do external contributor PRs enter — at review, or back at the problem?
+6. Design notes for bugfixes too, or is a probe with a failing test enough?
