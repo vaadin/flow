@@ -49,6 +49,14 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
+    /**
+     * Cache slot for the signal returned by
+     * {@link com.vaadin.flow.dom.Element#sizeSignal()}, not a rendered binding
+     * like the other keys: the value flows from the client to the signal
+     * through a resize trigger instead of from the signal to a client-side
+     * property, and nothing reads the binding except {@code sizeSignal()}
+     * itself, which uses it to return the same signal for every call.
+     */
     public static final String SIZE = "size";
 
     private final Map<String, SignalBinding> values = new HashMap<>();

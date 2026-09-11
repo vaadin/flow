@@ -1729,6 +1729,12 @@ public class Element extends Node<Element> {
      * The browser observes the element as long as it is present in the DOM, and
      * the signal is updated on every observed resize. The returned signal is
      * read-only.
+     * <p>
+     * While the element is detached there is nothing to observe, so the signal
+     * keeps the size that was last reported for it rather than falling back to
+     * {@code Size(0, 0)}. Observation resumes when the element is attached
+     * again, and the value is updated as soon as the browser reports a size for
+     * it.
      *
      * @return a read-only signal with the current size of this element, never
      *         <code>null</code>
@@ -1741,6 +1747,9 @@ public class Element extends Node<Element> {
             return existing;
         }
 
+        // The check above and the caching below are deliberately not atomic:
+        // like all other element state, this is only safe to touch while
+        // holding the session lock, so there is no second thread to race with.
         ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
         Signal<Size> readonly = signal.asReadonly();
         // Cached on the node so that repeated calls share one signal and one
