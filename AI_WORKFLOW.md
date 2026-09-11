@@ -137,6 +137,12 @@ it forces context out of one head. Concretely:
 - **Keeps the board honest**, pulls people in by name, records every conclusion
   in the issue, and decides alone only between meetings, marked as unilateral.
 
+**The lead's own work comes last.** Direction, pace and a prepared meeting are
+the job; taking issues is what the lead does with the time left over, and the
+first thing to drop when there is none — because the person who would notice
+that preparation slipped is the lead. On a project of one or two people that is
+not possible, and then the lead takes work too, but no more than half the time.
+
 Leads rotate. On a project the lead is fixed for its duration.
 
 ---
@@ -587,13 +593,11 @@ thing to catch.
 
 Still to decide:
 
-1. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
-   project lead also lead issues inside that project?
-2. Maintenance arriving mid-project: does the project team absorb it, or do we
+1. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-3. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+2. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-4. Do routine bulk changes need a **fast lane**: no design note, AI states the
+3. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-5. Where do external contributor PRs enter — at review, or back at the problem?
-6. Design notes for bugfixes too, or is a probe with a failing test enough?
+4. Where do external contributor PRs enter — at review, or back at the problem?
+5. Design notes for bugfixes too, or is a probe with a failing test enough?
