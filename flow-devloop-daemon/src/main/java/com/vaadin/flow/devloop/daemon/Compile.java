@@ -246,11 +246,39 @@ final class Compile {
     private final Map<String, String> compiledAgainst = new java.util.concurrent.ConcurrentHashMap<>();
 
     Compile(Launch.Project project) {
+        this(project, null);
+    }
+
+    /**
+     * Carries what each surviving module was compiled against over from the
+     * baseline it replaces.
+     * <p>
+     * The event that rebuilds this instance - a changed module set - is itself
+     * a classpath change: a reactor sibling is in the loop only while the
+     * application depends on it, so dropping that dependency drops the module
+     * too. Seeding the new baseline from the project as it now stands would
+     * declare that move already compiled, and the apply would restart the
+     * application against a classpath its own sources no longer compile against
+     * - the removed type surfacing as a {@code
+     * ClassNotFoundException} on the next page load rather than as a diagnostic
+     * from the apply that caused it. Only the classpath baseline is carried;
+     * the per-file stamps deliberately start afresh, as they describe a
+     * different build.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     */
+    Compile(Launch.Project project, Compile previous) {
         this.modules = List.copyOf(project.modules());
         this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
-            compiledAgainst.put(module.artifactId(),
-                    Launch.membership(project.compileClasspath(module)));
+            String carried = previous == null ? null
+                    : previous.compiledAgainst.get(module.artifactId());
+            compiledAgainst.put(module.artifactId(), carried != null ? carried
+                    : Launch.membership(project.compileClasspath(module)));
         }
     }
 
@@ -1032,10 +1060,12 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            List<String> options = new ArrayList<>(
-                    List.of("-classpath", project.compileClasspath(module),
-                            "-d", module.classesDir().toString(), "-proc:none",
-                            "-encoding", "UTF-8", "-nowarn"));
+            // -parameters and -g: on in a normal build, off in javac. See
+            // README, "Known limits".
+            List<String> options = new ArrayList<>(List.of("-classpath",
+                    project.compileClasspath(module), "-d",
+                    module.classesDir().toString(), "-proc:none", "-encoding",
+                    "UTF-8", "-nowarn", "-parameters", "-g"));
             // Without it javac emits at the daemon's own level, which the
             // application's JVM may be too old to load - every redefine would
             // then fail with UnsupportedClassVersionError rather than a

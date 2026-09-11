@@ -143,7 +143,7 @@
     <dependency>
       <groupId>org.eclipse.platform</groupId>
       <artifactId>org.eclipse.core.contenttype</artifactId>
-      <version>3.9.800</version>
+      <version>3.9.900</version>
       <scope>test</scope>
     </dependency>
 

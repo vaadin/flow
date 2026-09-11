@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,11 @@ class ThemeListBindTest extends SignalsUnitTest {
                 () -> component.removeThemeNames("locked", "open"));
         assertThrows(BindingActiveException.class,
                 () -> component.getThemeNames().retainAll(Set.of("open")));
+        assertThrows(BindingActiveException.class, () -> {
+            Iterator<String> iterator = component.getThemeNames().iterator();
+            iterator.next();
+            iterator.remove();
+        });
 
         component.addThemeName("open");
         assertTrue(component.getThemeNames().retainAll(Set.of("locked")));

@@ -16,7 +16,7 @@
 .gitattributes text
 .gitignore text
 
-.github/workflows/*.lock.yml linguist-generated=true merge=ours
+.github/workflows/*.lock.yml linguist-generated=true
 
 vaadin-dev text eol=lf
 *.ps1 text eol=lf
