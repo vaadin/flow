@@ -190,7 +190,7 @@ class DefaultApplicationConfigurationFactoryTest {
         // built the dependency and carries the Node version used there.
         String npmFolder = new File(temporaryFolder.toFile(), "other-project")
                 .getAbsolutePath().replace("\\", "\\\\");
-        mockClassPathTokenFile(resourceProvider, "addon.jar",
+        mockJarTokenFile(resourceProvider, "addon.jar",
                 "{ \"productionMode\": false, \"npmFolder\": \"" + npmFolder
                         + "\", \"node.version\": \"v18.14.1\" }");
 
@@ -218,7 +218,7 @@ class DefaultApplicationConfigurationFactoryTest {
 
         // A packaged application, where the token file of the application
         // itself is inside a jar
-        mockClassPathTokenFile(resourceProvider, "application.jar",
+        mockJarTokenFile(resourceProvider, "application.jar",
                 "{ \"productionMode\": true, \"externalStatsFile\": true }");
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -286,11 +286,17 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,
             String content) throws IOException, MalformedURLException {
-        mockClassPathTokenFile(resourceProvider, "foo.jar", content);
+        mockClassPathTokenFile(resourceProvider, "classes/", content);
+    }
+
+    private void mockJarTokenFile(ResourceProvider resourceProvider,
+            String jarName, String content)
+            throws IOException, MalformedURLException {
+        mockClassPathTokenFile(resourceProvider, jarName + "!/", content);
     }
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,
-            String jarName, String content)
+            String pathPrefix, String content)
             throws IOException, MalformedURLException {
         String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
@@ -305,7 +311,7 @@ class DefaultApplicationConfigurationFactoryTest {
                 return tmpFile.toURI().toURL().openConnection();
             }
         };
-        URL url = new URL("file", "", -1, jarName + "!/" + path, handler);
+        URL url = new URL("file", "", -1, pathPrefix + path, handler);
 
         Mockito.when(resourceProvider.getApplicationResources(path))
                 .thenReturn(Collections.singletonList(url));
