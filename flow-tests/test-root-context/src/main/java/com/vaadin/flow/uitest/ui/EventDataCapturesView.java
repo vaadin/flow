@@ -44,11 +44,13 @@ public class EventDataCapturesView extends AbstractDivView {
         // show that their values and filters stay apart
         NativeButton filterButton = new NativeButton("Filtered by capture");
         filterButton.setId("filterButton");
-        filterButton.getElement().addEventListener("click",
-                event -> filterResult.setText("primary"))
+        filterButton.getElement()
+                .addEventListener("click",
+                        event -> filterResult.setText("primary"))
                 .setFilter("event.button === $0", 0);
-        filterButton.getElement().addEventListener("click",
-                event -> filterResult.setText("secondary"))
+        filterButton.getElement()
+                .addEventListener("click",
+                        event -> filterResult.setText("secondary"))
                 .setFilter("event.button === $0", 2);
 
         add(dataButton, filterButton, dataResult, filterResult);
