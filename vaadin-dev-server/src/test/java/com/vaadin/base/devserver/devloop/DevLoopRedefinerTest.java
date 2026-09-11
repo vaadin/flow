@@ -207,16 +207,30 @@ class DevLoopRedefinerTest {
 
         assertFalse(DevLoopRedefiner.declaresSpringBean(plain), "plain class");
         assertFalse(DevLoopRedefiner.declaresEntity(plain), "plain class");
-        // Spelled out rather than compiled in: Spring is not on this module's
-        // classpath, and what the check reads is the descriptor javac writes
-        // into the constant pool for @Service.
-        assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
-                "Lorg/springframework/stereotype/Service;")));
-        // @RestController is a @Component through a meta-annotation, which the
-        // annotated class's own constant pool never mentions, so it counts only
-        // because it is listed in its own right.
-        assertTrue(DevLoopRedefiner.declaresSpringBean(withConstant(plain,
-                "Lorg/springframework/web/bind/annotation/RestController;")));
+        // Every entry, spelled out rather than read from the production list -
+        // which would pass whatever that list happened to say. A stereotype is
+        // matched by exactly one literal, so a typo in one of them is one
+        // annotation that silently stops escalating while the rest keep
+        // working, and this is where that is cheap to rule out. Spelled out
+        // rather than compiled in for a second reason too: Spring is not on
+        // this module's classpath, and what the check reads is the descriptor
+        // javac writes into the constant pool.
+        //
+        // @RestController and the two advice annotations are listed in their
+        // own right because each is a @Component through a meta-annotation
+        // that the annotated class's own constant pool never mentions.
+        for (String stereotype : List.of(
+                "Lorg/springframework/stereotype/Component;",
+                "Lorg/springframework/stereotype/Service;",
+                "Lorg/springframework/stereotype/Repository;",
+                "Lorg/springframework/stereotype/Controller;",
+                "Lorg/springframework/web/bind/annotation/RestController;",
+                "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
+                "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
+                "Lorg/springframework/context/annotation/Configuration;")) {
+            assertTrue(DevLoopRedefiner.declaresSpringBean(
+                    withConstant(plain, stereotype)), stereotype);
+        }
         // The two escalate on separate fields and carry separate reasons, so
         // neither may answer for the other.
         assertFalse(DevLoopRedefiner.declaresSpringBean(

@@ -89,11 +89,12 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
         // rule it is here to pin, and only a JVM with enhanced class
         // redefinition would show the difference.
         //
-        // Run per stereotype rather than once: the connector reads these out
-        // of the constant pool by descriptor, one literal per annotation, so
-        // each is its own entry that can be wrong on its own - and
-        // @Component, the one every other stereotype is composed from, is the
-        // one a reader expects to see covered.
+        // Two stereotypes rather than one, and only two: @Component is the
+        // one every other is composed from and @Service the one an
+        // application reaches for, so between them they show the rule is
+        // about the change-set rather than about a particular annotation.
+        // That each remaining entry of the list matches its own descriptor is
+        // pinned in DevLoopRedefinerTest, where it costs no application.
         String type = "Extra" + stereotype;
         patch.create(MUTABLE.resolve(type + ".java"), """
                 package com.vaadin.flow.devloop.test.app.mutable;
