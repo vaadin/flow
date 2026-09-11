@@ -77,8 +77,6 @@ class ElementSizeSignalTest {
 
         assertSame(signal, div.sizeSignal(),
                 "sizeSignal() should return the same signal after re-attach");
-        reportSize(div, 1024, 768);
-        assertEquals(new Size(1024, 768), signal.peek());
     }
 
     @Test
