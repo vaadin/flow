@@ -32,6 +32,13 @@ jobs:
 
       - name: Run dependency update script
         run: |
+          # A branch added to the matrix before the script reached it would
+          # otherwise fail the job every week. Warn and leave it alone until
+          # the script is there; without changes no pull request is created.
+          if [ ! -f scripts/update-frontend-dependencies.sh ]; then
+            echo "::warning::scripts/update-frontend-dependencies.sh is missing on ${{ matrix.branch }}, skipping the update"
+            exit 0
+          fi
           chmod +x scripts/update-frontend-dependencies.sh
           ./scripts/update-frontend-dependencies.sh
 
