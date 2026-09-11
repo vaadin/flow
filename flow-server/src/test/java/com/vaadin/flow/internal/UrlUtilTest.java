@@ -178,6 +178,23 @@ class UrlUtilTest {
     }
 
     @Test
+    void decodeURIComponent_literalNonAsciiCharacters_returnedUnchanged() {
+        // Characters that were never percent-encoded, for example because a
+        // servlet container already decoded the path, must not be treated as
+        // UTF-8 bytes
+        assertEquals("grüße", UrlUtil.decodeURIComponent("grüße"));
+        assertEquals("日本", UrlUtil.decodeURIComponent("日本"));
+        assertEquals("emoji 😀", UrlUtil.decodeURIComponent("emoji 😀"));
+    }
+
+    @Test
+    void decodeURIComponent_literalAndEncodedNonAsciiCharacters_bothDecoded() {
+        String result = UrlUtil
+                .decodeURIComponent("gr%C3%BC%C3%9Fe-ü-%C3%A4x%C3%B6");
+        assertEquals("grüße-ü-äxö", result);
+    }
+
+    @Test
     void decodeURIComponent_specialCharacters_decoded() {
         String result = UrlUtil.decodeURIComponent("special%26%3Dchars.txt");
         assertEquals("special&=chars.txt", result);
