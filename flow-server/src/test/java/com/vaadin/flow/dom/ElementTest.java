@@ -57,6 +57,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -73,6 +74,8 @@ import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -80,6 +83,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
@@ -3213,6 +3218,56 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
+    @Test
+    void sizeSignal_isReadOnlyAndCached() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        assertFalse(signal instanceof ValueSignal,
+                "sizeSignal() should return a read-only signal");
+        assertEquals(new Size(0, 0), signal.peek());
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal for an element");
+    }
+
+    @Test
+    void sizeSignal_updatedByClientReportedSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        reportSize(div, 800, 600);
+        assertEquals(new Size(800, 600), signal.peek());
+
+        reportSize(div, 1024, 768);
+        assertEquals(new Size(1024, 768), signal.peek());
+    }
+
+    @Test
+    void sizeSignal_detachedAndReattached_keepsSignalAndLastSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+        reportSize(div, 800, 600);
+
+        div.removeFromParent();
+
+        assertEquals(new Size(800, 600), signal.peek(),
+                "the last reported size should be kept while detached");
+
+        ui.getElement().appendChild(div);
+
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal after re-attach");
+    }
+
     @Override
     protected Element createParentNode() {
         return ElementFactory.createDiv();
@@ -3244,6 +3299,23 @@ class ElementTest extends AbstractNodeTest {
     private static ArrayNode createNumberArray(double... items) {
         return DoubleStream.of(items).mapToObj(JacksonUtils::createNode)
                 .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Simulates the browser-side resize observer reporting a new size through
+     * the return channel that the size trigger registered on the element.
+     */
+    private void reportSize(Element element, int width, int height) {
+        ReturnChannelRegistration channel = element.getNode()
+                .getFeature(ReturnChannelMap.class).get(0);
+
+        ObjectNode size = JacksonUtils.createObjectNode();
+        size.put("width", width);
+        size.put("height", height);
+        ArrayNode arguments = JacksonUtils.createArrayNode();
+        arguments.add(size);
+
+        channel.invoke(arguments);
     }
 
     @Tag("div")
