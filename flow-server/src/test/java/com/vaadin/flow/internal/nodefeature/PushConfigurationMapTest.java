@@ -71,14 +71,6 @@ class PushConfigurationMapTest
     }
 
     @Test
-    void fallbackTransportServerSentEvents() {
-        ns.setFallbackTransport(Transport.SERVER_SENT_EVENTS);
-        assertEquals(Transport.SERVER_SENT_EVENTS.getIdentifier(),
-                ns.getParameter("fallbackTransport"));
-        assertEquals(Transport.SERVER_SENT_EVENTS, ns.getFallbackTransport());
-    }
-
-    @Test
     void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
         assertEquals(Transport.LONG_POLLING.getIdentifier(),

@@ -93,6 +93,18 @@ class PushConfigurationTest {
     }
 
     @Test
+    void setTransport_serverSentEventsWithoutService_throws() {
+        UI.setCurrent(null);
+        VaadinSession.setCurrent(null);
+        VaadinService.setCurrent(null);
+        UI detachedUi = new UI();
+
+        assertThrows(DisabledFeatureException.class,
+                () -> detachedUi.getPushConfiguration()
+                        .setTransport(Transport.SERVER_SENT_EVENTS));
+    }
+
+    @Test
     void setTransport_otherTransportsWithoutFeatureFlag_transportIsUsed() {
         ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
         ui.getPushConfiguration().setFallbackTransport(Transport.LONG_POLLING);

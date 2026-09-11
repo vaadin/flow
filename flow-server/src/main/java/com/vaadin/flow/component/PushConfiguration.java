@@ -272,7 +272,9 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /**
      * Checks that the given transport can be used, i.e. that the feature flag
-     * guarding an experimental transport is enabled.
+     * guarding an experimental transport is enabled. An experimental transport
+     * is also rejected when there is no service to read the feature flags from,
+     * for example for a UI that is not attached to a session.
      *
      * @param transport
      *            the transport to check
@@ -284,12 +286,7 @@ class PushConfigurationImpl implements PushConfiguration {
         VaadinSession session = ui.getSession();
         VaadinService service = session == null ? VaadinService.getCurrent()
                 : session.getService();
-        if (service == null) {
-            // No context available for resolving the feature flag
-            return;
-        }
-        FeatureFlags featureFlags = FeatureFlags.get(service.getContext());
-        if (!featureFlags
+        if (service == null || !FeatureFlags.get(service.getContext())
                 .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
             throw new DisabledFeatureException(
                     CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
