@@ -318,7 +318,7 @@ class NodeResolver implements java.io.Serializable {
         ActiveNodeInstallation active = tryUseInstalled(
                 NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
         if (active != null) {
-            getLogger().info("Using Node {} from {}", active.nodeVersion(),
+            getLogger().debug("Node {} is already installed in {}", nodeVersion,
                     alternativeDir);
             return active;
         }
