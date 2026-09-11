@@ -413,19 +413,6 @@ final class TransactionEngine {
             }
             Compile.ResourceChanges staleResources = compile.staleResources();
             Compile.FrontendChanges frontendChanges = compile.staleFrontend();
-            // Read here and nowhere later: this is what the classpath held
-            // before the compile leg wrote to it, and afterwards every class
-            // in the change-set exists. The runtime leg decides on it several
-            // hundred lines below, which is exactly why it cannot ask for it
-            // there.
-            Compile.ClassesOnDisk classesBefore;
-            try {
-                classesBefore = compile.classesBefore(changes.modified());
-            } catch (java.io.IOException e) {
-                return finish(tx, Outcome.FAILED,
-                        "reading target/classes: " + e.getMessage(), "none",
-                        "check file permissions under target/classes", started);
-            }
             tx.detectMs = (System.nanoTime() - detectStart) / 1_000_000;
             tx.changeSet = new ArrayList<>(changes.modified().stream()
                     .map(compile::relative).toList());
@@ -701,11 +688,14 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
-                        // Per class rather than per source: a nested
-                        // @Component added to a file the application has
-                        // always had is a class it has never had.
+                        // Per class rather than per source: a class added to a
+                        // file the application has always had is still a class
+                        // it has never had. Answered from the snapshot taken
+                        // when the application was launched, so it does not
+                        // matter that this apply has already written to the
+                        // classpath by now.
                         Optional<String> blocker = blockedReason(fields,
-                                classesBefore.unknownToTheApp(tx.classes));
+                                compile.classesUnknownToTheApp(tx.classes));
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);
@@ -1569,7 +1559,7 @@ final class TransactionEngine {
      * @param unknownClasses
      *            the binary names of the change-set's classes the running
      *            application never had; see
-     *            {@link Compile.ClassesOnDisk#unknownToTheApp}
+     *            {@link Compile#classesUnknownToTheApp}
      */
     static Optional<String> blockedReason(Map<String, String> fields,
             List<String> unknownClasses) {

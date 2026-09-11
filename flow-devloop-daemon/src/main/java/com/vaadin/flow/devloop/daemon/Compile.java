@@ -220,13 +220,19 @@ final class Compile {
     private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
-     * When the running application was launched, as of the last seed. What it
-     * bounds is which classes it can possibly have loaded: see
-     * {@link #unknownToTheApp}. {@code MAX_VALUE} means "assume it has
-     * everything on disk", which is what a baseline with no application behind
-     * it has to assume.
+     * The binary names of the class files the running application was launched
+     * with, as of the last seed.
+     * <p>
+     * This is the whole of the answer to "has the application ever had this
+     * class?", and it has to be a snapshot rather than anything computed later.
+     * A timestamp cannot serve: the class file of a bean the application does
+     * run is rewritten by the first apply that hot swaps it, and every apply
+     * after that would then read it as a class the application never had -
+     * measured, the second method-body edit to a @Service restarted for a bean
+     * the context had held all along.
      */
-    private volatile long startedAtMillis = Long.MAX_VALUE;
+    private final Set<String> launchedWith = java.util.concurrent.ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Fingerprints as of the last browser notification, keyed by source path.
@@ -798,96 +804,28 @@ final class Compile {
     }
 
     /**
-     * The class files the packages a change-set compiles into hold before it is
-     * compiled, by binary name.
+     * Which of these classes the running application never had.
      * <p>
-     * <b>Must be read before the compile leg writes anything.</b> What it is
-     * for is {@link ClassesOnDisk#unknownToTheApp}, and afterwards every class
-     * file in the change-set exists and is newer than the launch, which would
-     * make every edit look new.
+     * Asked per class rather than per source, which is the only way to get it
+     * right: a second top-level class or a nested one, added to a file the
+     * application has always had, is a class the application has never had. And
+     * answered from the snapshot taken when the application was launched, which
+     * is the only thing that stays true - an apply rewrites the class files it
+     * swaps, so anything read off the classpath afterwards says the
+     * application's own beans are strangers to it.
      * <p>
-     * Asking the application which classes it has loaded looks like the same
-     * question and is not: HotswapAgent watches the output directory on its own
-     * schedule and defines a new class when it sees one, so by the time a reply
-     * is composed the class may well be loaded - and a class being loaded is
-     * not a bean definition, an entity mapping or anything else the application
-     * built while it was starting.
+     * A class compiled by an earlier apply is therefore still unknown, and
+     * rightly: the application has had it on the classpath since, but component
+     * scanning ran before it existed and no apply re-runs that. Only the
+     * restart does, and that re-seeds this.
      *
-     * @param sources
-     *            the change-set, whose output packages are the ones read
-     * @return the class files those packages held, by binary name
-     * @throws IOException
-     *             if an output directory cannot be read, which is not a state
-     *             to decide a verdict from
+     * @param binaryNames
+     *            the classes this apply compiled
+     * @return those of them the application never had, sorted
      */
-    ClassesOnDisk classesBefore(List<Path> sources) throws IOException {
-        Map<String, Long> modified = new LinkedHashMap<>();
-        Set<Path> read = new HashSet<>();
-        for (Path source : sources) {
-            Optional<Reactor.Module> owner = sourceOwner(source);
-            if (owner.isEmpty()) {
-                continue;
-            }
-            Reactor.Module module = owner.get();
-            // The whole output package, not just the artifact this source is
-            // named after: a nested type, a second top-level class in the same
-            // file and an anonymous class all land beside it, and each of them
-            // is a class of its own that the application may never have had.
-            Path directory = module.artifactFor(source).getParent();
-            if (directory == null || !read.add(directory)
-                    || !Files.isDirectory(directory)) {
-                continue;
-            }
-            try (Stream<Path> files = Files.list(directory)) {
-                for (Path file : files.filter(candidate -> candidate.toString()
-                        .endsWith(CLASS_SUFFIX)).toList()) {
-                    modified.put(binaryNameOf(module, file),
-                            Files.getLastModifiedTime(file).toMillis());
-                }
-            }
-        }
-        return new ClassesOnDisk(modified, startedAtMillis);
-    }
-
-    /**
-     * What was on the classpath before an apply compiled anything, and the
-     * launch it is judged against.
-     *
-     * @param modifiedMillis
-     *            when each class file was last written, by binary name
-     * @param startedAtMillis
-     *            when the running application was launched
-     */
-    record ClassesOnDisk(Map<String, Long> modifiedMillis,
-            long startedAtMillis) {
-
-        /**
-         * Which of these classes the running application never had.
-         * <p>
-         * Asked per class rather than per source, which is the only way to get
-         * it right: a nested {@code @Component} or a second top-level class
-         * added to a file the application has always had is a class it has
-         * never had, and a source it compiled on an earlier apply is not a
-         * class it ever scanned.
-         * <p>
-         * A class file that was not there is the plain case. One that was there
-         * but is newer than the launch is the other: something compiled it
-         * after the application started - an earlier apply, an IDE building on
-         * save, a bare {@code mvn} run - so the application still started
-         * without it. An edited type's class predates the launch and is
-         * therefore the application's own, which is what keeps a method-body
-         * change a hot swap.
-         *
-         * @param binaryNames
-         *            the classes this apply compiled
-         * @return those of them the application never had, sorted
-         */
-        List<String> unknownToTheApp(List<String> binaryNames) {
-            return binaryNames.stream().filter(name -> {
-                Long before = modifiedMillis.get(name);
-                return before == null || before > startedAtMillis;
-            }).sorted(Comparator.naturalOrder()).toList();
-        }
+    List<String> classesUnknownToTheApp(List<String> binaryNames) {
+        return binaryNames.stream().filter(name -> !launchedWith.contains(name))
+                .sorted(Comparator.naturalOrder()).toList();
     }
 
     private static String binaryNameOf(Reactor.Module module, Path classFile) {
@@ -914,14 +852,14 @@ final class Compile {
 
     /**
      * @param startedAtMillis
-     *            when the running application was launched, which bounds what
-     *            it can have loaded; see {@link #unknownToTheApp}
+     *            when the running application was launched, which bounds which
+     *            sources it can have read
      * @param frontendCutoffMillis
      *            how new a frontend file may be and still count as live; see
      *            {@link #seedFrontend(long)}
      */
     void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
-        this.startedAtMillis = startedAtMillis;
+        seedClasses();
         applied.clear();
         forEachSource((module, source, stamp) -> {
             // Only what the application could have read. A source written
@@ -943,6 +881,23 @@ final class Compile {
         // restart that already folded it into the bundle, and would restart the
         // app for ever.
         seedFrontend(frontendCutoffMillis);
+    }
+
+    /**
+     * The classpath as the application was launched with it, by binary name.
+     * <p>
+     * One walk per application start, which is where a walk of the output
+     * directories belongs: every other answer about it is a comparison against
+     * this.
+     */
+    private void seedClasses() {
+        launchedWith.clear();
+        for (Reactor.Module module : modules) {
+            walk(module, module.classesDir(),
+                    path -> path.toString().endsWith(CLASS_SUFFIX),
+                    (owner, file, stamp) -> launchedWith
+                            .add(binaryNameOf(owner, file)));
+        }
     }
 
     private void forEachSource(Visitor action) {

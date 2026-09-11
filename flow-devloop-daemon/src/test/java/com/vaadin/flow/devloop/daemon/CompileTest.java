@@ -279,69 +279,58 @@ class CompileTest {
     }
 
     @Test
-    void unknownToTheApp_answersPerClassAgainstTheLaunch() throws IOException {
+    void classesUnknownToTheApp_answersFromTheLaunchSnapshot()
+            throws IOException {
         // The signal a new bean or entity is escalated on. The application's
         // own answer to "have you loaded this?" cannot serve: HotswapAgent's
         // watcher defines a new class as soon as it notices the file, and a
         // defined class is still not a bean definition.
-        //
-        // Timestamps are set rather than slept for: the rule is read against
-        // when the application was launched, and a test that raced the clock
-        // for that would be measuring the filesystem's granularity.
         Reactor.Module app = module("app", "Main", """
                 package app;
-                public class Main {
-                    static class Inner { }
-                }
+                public class Main { }
                 """);
         Launch.Project project = project(app);
         Compile compile = new Compile(project);
         Path known = source(app, "Main");
+        // What the application was launched with: one class on the classpath,
+        // and the baseline taken from it.
         compile.compile(List.of(known), project);
-        long launched = System.currentTimeMillis();
-        Path classes = app.classesDir().resolve("app");
-        // What the application runs: its classes were on the classpath before
-        // it was launched. The nested one is deleted again, so that this file
-        // now declares a class the application never had - which is the case a
-        // source-level answer gets wrong, because the source itself is one it
-        // has always had.
-        modified(classes.resolve("Main.class"), launched - 10_000);
-        Files.delete(classes.resolve("Main$Inner.class"));
-        compile.seedFromDisk(launched, launched);
+        compile.seedFromDisk();
 
-        Compile.ClassesOnDisk before = compile.classesBefore(List.of(known));
+        // A class of its own in a file the application has always had, which
+        // is the case a per-source answer gets wrong.
+        assertEquals(List.of("app.Main$Inner", "app.Second"),
+                compile.classesUnknownToTheApp(
+                        List.of("app.Main", "app.Main$Inner", "app.Second")));
 
-        assertEquals(List.of("app.Main$Inner"),
-                before.unknownToTheApp(List.of("app.Main", "app.Main$Inner")));
-
-        // Compiled by something other than the daemon - an IDE building on
-        // save, or an earlier apply - after the launch. The class exists now,
-        // and the application still started without it.
+        // Compiled since - by an earlier apply, an IDE building on save, a
+        // bare mvn run. The application has it on the classpath now and still
+        // started without it, so the answer must not change.
         Path added = known.resolveSibling("Added.java");
         Files.writeString(added, """
                 package app;
                 public class Added { }
                 """);
         compile.compile(List.of(added), project);
-        modified(classes.resolve("Added.class"), launched + 10_000);
 
-        Compile.ClassesOnDisk withAdded = compile
-                .classesBefore(List.of(known, added));
+        assertEquals(List.of("app.Added"), compile
+                .classesUnknownToTheApp(List.of("app.Main", "app.Added")));
 
-        assertEquals(List.of("app.Added"),
-                withAdded.unknownToTheApp(List.of("app.Main", "app.Added")));
+        // And what the application does run stays its own however often it is
+        // recompiled, which is what keeps a second method-body edit a hot
+        // swap rather than a restart for a bean the context has always held.
+        compile.compile(List.of(known), project);
 
-        // And after the restart that applied them, every class on disk is one
-        // the application was launched with.
-        compile.seedFromDisk(launched + 20_000, launched + 20_000);
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main")).isEmpty());
 
-        assertTrue(compile.classesBefore(List.of(known, added))
-                .unknownToTheApp(List.of("app.Main", "app.Added")).isEmpty());
-    }
+        // Until the restart re-seeds, which is when the application has them
+        // all.
+        compile.seedFromDisk();
 
-    private void modified(Path file, long millis) throws IOException {
-        Files.setLastModifiedTime(file,
-                java.nio.file.attribute.FileTime.fromMillis(millis));
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main", "app.Added"))
+                        .isEmpty());
     }
 
     @Test
