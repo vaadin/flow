@@ -695,15 +695,15 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         JsonObject expressions = Json.createObject();
         // Data expressions
-        expressions.put(booleanExpression, false);
-        expressions.put(numberExpression, false);
-        expressions.put(stringExpression, false);
+        putExpression(expressions, booleanExpression, false);
+        putExpression(expressions, numberExpression, false);
+        putExpression(expressions, stringExpression, false);
 
         // Filter expressions
 
-        expressions.put(trueFilter, true);
-        expressions.put(falseFilter, true);
-        expressions.put(tagNameFilter, true);
+        putExpression(expressions, trueFilter, true);
+        putExpression(expressions, falseFilter, true);
+        putExpression(expressions, tagNameFilter, true);
 
         addToConstantPool(constantPoolKey, expressions);
 
@@ -733,13 +733,62 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(false, eventData.getBoolean(falseFilter));
     }
 
+    public void testEventFiredWithCaptures() {
+        Binder.bind(node, element);
+
+        String constantPoolKey = "expressionsKey";
+
+        // One shared expression that is evaluated once per set of captures
+        JsonObject sharedEntry = Json.createObject();
+        sharedEntry.put("e", "element.hasAttribute($0)");
+        sharedEntry.put("d", false);
+        sharedEntry.put("c", 1);
+
+        JsonObject expressions = Json.createObject();
+        expressions.put("shared", sharedEntry);
+
+        addToConstantPool(constantPoolKey, expressions);
+
+        JsonArray firstCaptures = Json.createArray();
+        firstCaptures.set(0, "shared");
+        firstCaptures.set(1, "id");
+        JsonArray secondCaptures = Json.createArray();
+        secondCaptures.set(0, "shared");
+        secondCaptures.set(1, "data-absent");
+
+        JsonObject captured = Json.createObject();
+        captured.put("first", firstCaptures);
+        captured.put("second", secondCaptures);
+
+        JsonArray settings = Json.createArray();
+        settings.set(0, constantPoolKey);
+        settings.set(1, captured);
+
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
+                .setValue(settings);
+        Reactive.flush();
+        Browser.getDocument().getBody().appendChild(element);
+        element.setAttribute("id", "set");
+
+        element.click();
+
+        assertEquals(1, tree.collectedNodes.length());
+
+        JsonObject eventData = tree.collectedEventData.get(0);
+
+        // One value per set of captures, and nothing for the shared entry
+        assertEquals(2, eventData.keys().length);
+        assertEquals(true, eventData.getBoolean("first"));
+        assertEquals(false, eventData.getBoolean("second"));
+    }
+
     public void testFilterPreventsEvent() {
         Binder.bind(node, element);
 
         String constantPoolKey = "expressionsKey";
 
         JsonObject expressions = Json.createObject();
-        expressions.put("false", true);
+        putExpression(expressions, "false", true);
 
         addToConstantPool(constantPoolKey, expressions);
 
@@ -760,7 +809,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         JsonObject expressions = Json.createObject();
         // Expression is not used as a filter
-        expressions.put("false", false);
+        putExpression(expressions, "false", false);
 
         addToConstantPool(constantPoolKey, expressions);
 
@@ -776,6 +825,26 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private void addToConstantPool(String key, JsonValue value) {
         addToConstantPool(constantPool, key, value);
+    }
+
+    /**
+     * Adds an expression to the shared event settings in the format that the
+     * server sends, using the expression itself as the key that the client
+     * reports the value under.
+     *
+     * @param expressions
+     *            the settings object to add the expression to
+     * @param expression
+     *            the JavaScript expression
+     * @param filter
+     *            whether the expression is used as a filter
+     */
+    public static void putExpression(JsonObject expressions, String expression,
+            boolean filter) {
+        JsonObject entry = Json.createObject();
+        entry.put("e", expression);
+        entry.put("d", filter);
+        expressions.put(expression, entry);
     }
 
     public static void addToConstantPool(ConstantPool constantPool, String key,

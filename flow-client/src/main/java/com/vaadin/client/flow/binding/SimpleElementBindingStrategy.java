@@ -19,8 +19,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
@@ -50,6 +48,7 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.client.flow.util.ClientJsonCodec;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -89,27 +88,25 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     /**
-     * Callback interface for an event expression parsed using new Function() in
-     * JavaScript.
+     * The key of the JavaScript expression in the shared settings of an entry
+     * that the client evaluates when an event occurs.
      */
-    @FunctionalInterface
-    @JsFunction
-    @SuppressWarnings("unusable-by-js")
-    private interface EventExpression {
-        /**
-         * Callback interface for an event expression parsed using new
-         * Function() in JavaScript.
-         *
-         * @param event
-         *            Event to expand
-         * @param element
-         *            target Element
-         * @return Result of evaluated function
-         */
-        JsonValue evaluate(Event event, Element element);
-    }
+    private static final String KEY_EXPRESSION = "e";
 
-    private static JsMap<String, EventExpression> expressionCache;
+    /**
+     * The key of the debounce settings in the shared settings of an entry that
+     * the client evaluates when an event occurs.
+     */
+    private static final String KEY_DEBOUNCE = "d";
+
+    /**
+     * The key of the capture count in the shared settings of an entry that the
+     * client evaluates when an event occurs. Entries with captures are only
+     * evaluated for the capture values sent separately for each element.
+     */
+    private static final String KEY_CAPTURE_COUNT = "c";
+
+    private static JsMap<String, NativeFunction> expressionCache;
 
     /**
      * This is used as a weak set. Only keys are important so that they are
@@ -1383,58 +1380,98 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         ConstantPool constantPool = node.getTree().getRegistry()
                 .getConstantPool();
-        String expressionConstantKey = (String) listenerMap.getProperty(type)
-                .getValue();
-        assert expressionConstantKey != null;
+        /*
+         * The value is either the constant pool key of the shared settings, or
+         * a pair of that key and the capture values that are specific to this
+         * element.
+         */
+        Object settingsValue = listenerMap.getProperty(type).getValue();
+        assert settingsValue != null;
+
+        String expressionConstantKey;
+        JsonObject capturedExpressions;
+        if (settingsValue instanceof String) {
+            expressionConstantKey = (String) settingsValue;
+            capturedExpressions = Json.createObject();
+        } else {
+            JsonArray settingsArray = WidgetUtil.crazyJsCast(settingsValue);
+            expressionConstantKey = settingsArray.getString(0);
+            capturedExpressions = settingsArray.getObject(1);
+        }
 
         assert constantPool.has(expressionConstantKey);
 
-        JsonObject expressionSettings = constantPool.get(expressionConstantKey);
-        String[] expressions = expressionSettings.keys();
+        JsonObject sharedSettings = constantPool.get(expressionConstantKey);
+        String[] sharedKeys = sharedSettings.keys();
+        String[] capturedKeys = capturedExpressions.keys();
+
+        /*
+         * Debounce settings by the key that the value is reported under, i.e.
+         * including one entry per set of captures for parameterized
+         * expressions.
+         */
+        JsonObject entrySettings = Json.createObject();
 
         JsonObject eventData;
         JsSet<String> synchronizeProperties = JsCollections.set();
 
-        if (expressions.length == 0) {
+        if (sharedKeys.length == 0 && capturedKeys.length == 0) {
             eventData = null;
         } else {
             eventData = Json.createObject();
         }
-        for (String expressionString : expressions) {
-            if (expressionString
-                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
-                String property = expressionString.substring(
+        for (String key : sharedKeys) {
+            JsonObject settings = sharedSettings.getObject(key);
+            if (settings.hasKey(KEY_CAPTURE_COUNT)) {
+                // Only evaluated through the capture values of this element
+                continue;
+            }
+            entrySettings.put(key, (JsonValue) settings.get(KEY_DEBOUNCE));
+
+            if (key.startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
+                String property = key.substring(
                         JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
                 synchronizeProperties.add(property);
-            } else if (expressionString
-                    .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+            } else if (key.equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
                 // map event.target to the closest state node
                 int targetNodeId = getClosestStateNodeIdToEventTarget(node,
                         event.getTarget());
                 eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                         targetNodeId);
-            } else if (expressionString
+            } else if (key
                     .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
                 // map element returned by JS to the closest state node
-                String jsEvaluation = expressionString.substring(
+                String jsEvaluation = key.substring(
                         JsonConstants.MAP_STATE_NODE_EVENT_DATA.length());
-                EventExpression expression = getOrCreateExpression(
-                        jsEvaluation);
-                JsonValue expressionValue = expression.evaluate(event,
-                        (Element) element);
+                JsonValue expressionValue = evaluateExpression(jsEvaluation,
+                        event, (Element) element, JsCollections.array());
                 // find the closest state node matching the expression value
                 int targetNodeId = getClosestStateNodeIdToDomNode(
                         node.getTree(), expressionValue, jsEvaluation);
-                eventData.put(expressionString, targetNodeId);
+                eventData.put(key, targetNodeId);
             } else {
-                EventExpression expression = getOrCreateExpression(
-                        expressionString);
-
-                JsonValue expressionValue = expression.evaluate(event,
-                        (Element) element);
-
-                eventData.put(expressionString, expressionValue);
+                eventData.put(key,
+                        evaluateExpression(settings.getString(KEY_EXPRESSION),
+                                event, (Element) element,
+                                JsCollections.array()));
             }
+        }
+        for (String key : capturedKeys) {
+            JsonArray captureValues = capturedExpressions.getArray(key);
+            JsonObject settings = sharedSettings
+                    .getObject(captureValues.getString(0));
+            assert settings != null;
+            entrySettings.put(key, (JsonValue) settings.get(KEY_DEBOUNCE));
+
+            JsArray<Object> captures = JsCollections.array();
+            for (int i = 1; i < captureValues.length(); i++) {
+                captures.push(ClientJsonCodec.decodeWithTypeInfo(node.getTree(),
+                        captureValues.get(i)));
+            }
+
+            eventData.put(key,
+                    evaluateExpression(settings.getString(KEY_EXPRESSION),
+                            event, (Element) element, captures));
         }
         synchronizeProperties.forEach(name -> {
             NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
@@ -1451,7 +1488,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             sendEventToServer(node, type, eventData, debouncePhase);
         };
 
-        boolean sendNow = resolveFilters(element, type, expressionSettings,
+        boolean sendNow = resolveFilters(element, type, entrySettings,
                 eventData, sendCommand, commands);
 
         if (sendNow) {
@@ -1625,17 +1662,68 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private static EventExpression getOrCreateExpression(
-            String expressionString) {
+    /**
+     * Evaluates an event data or filter expression with the given captures. The
+     * compiled function is cached based on the expression and the number of
+     * captures, so that the same function is reused for all elements that use
+     * the same expression regardless of the capture values.
+     *
+     * @param expressionString
+     *            the JavaScript expression to evaluate
+     * @param event
+     *            the event to evaluate the expression for
+     * @param element
+     *            the element that the listener is bound to
+     * @param captures
+     *            the values to pass as <code>$0</code>, <code>$1</code>, ...
+     * @return the value of the expression
+     */
+    private static JsonValue evaluateExpression(String expressionString,
+            Event event, Element element, JsArray<Object> captures) {
+        NativeFunction expression = getOrCreateExpression(expressionString,
+                captures.length());
+
+        JsArray<Object> arguments = JsCollections.array();
+        arguments.push(event);
+        arguments.push(element);
+        for (int i = 0; i < captures.length(); i++) {
+            arguments.push(captures.get(i));
+        }
+
+        return applyExpression(expression, arguments);
+    }
+
+    /**
+     * Applies a compiled expression to the given arguments. Implemented as JSNI
+     * since the result is a plain JavaScript value that cannot be cast to
+     * {@link JsonValue} through Java.
+     */
+    private static native JsonValue applyExpression(NativeFunction expression,
+            JsArray<Object> arguments)
+    /*-{
+        return expression.apply(null, arguments);
+    }-*/;
+
+    private static NativeFunction getOrCreateExpression(String expressionString,
+            int captureCount) {
         if (expressionCache == null) {
             expressionCache = JsCollections.map();
         }
-        EventExpression expression = expressionCache.get(expressionString);
+        String cacheKey = captureCount + ":" + expressionString;
+        NativeFunction expression = expressionCache.get(cacheKey);
 
         if (expression == null) {
-            expression = NativeFunction.create("event", "element",
-                    "return (" + expressionString + ")");
-            expressionCache.set(expressionString, expression);
+            String[] paramsAndCode = new String[captureCount + 3];
+            paramsAndCode[0] = "event";
+            paramsAndCode[1] = "element";
+            for (int i = 0; i < captureCount; i++) {
+                paramsAndCode[i + 2] = "$" + i;
+            }
+            paramsAndCode[captureCount + 2] = "return (" + expressionString
+                    + ")";
+
+            expression = new NativeFunction(paramsAndCode);
+            expressionCache.set(cacheKey, expression);
         }
 
         return expression;

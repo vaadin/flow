@@ -68,6 +68,44 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration addEventData(String eventData);
 
     /**
+     * Adds a JavaScript expression for extracting event data, using the given
+     * name for the result and the given values as captures.
+     * <p>
+     * This works like {@link #addEventData(String)} except that the expression
+     * can be parameterized: captures are referenced as <code>$0</code>,
+     * <code>$1</code>, &hellip; in the expression (the same naming convention
+     * as for {@link Element#executeJs(String, Object...) executeJs} parameters
+     * and {@link JsFunction} captures), and the result is available in
+     * {@link DomEvent#getEventData()} using <code>name</code> as the key.
+     * <p>
+     * Using captures instead of concatenating values into the expression means
+     * that the same expression is used regardless of the values, which lets the
+     * browser reuse the same compiled function for all listeners that use the
+     * expression. It also removes the need to escape the values, which reduces
+     * the risk of XSS vulnerabilities.
+     * <p>
+     * An expression might be e.g. <code>element.closest($0).textContent</code>
+     * with a CSS selector as the capture.
+     *
+     * @param name
+     *            the name to use for the value in
+     *            {@link DomEvent#getEventData()}, not <code>null</code>
+     * @param expression
+     *            definition for data that should be passed back to the server
+     *            together with the event, not <code>null</code>
+     * @param captures
+     *            the values to capture; each must be a type supported as a
+     *            parameter to {@link Element#executeJs(String, Object...)}
+     * @return this registration, for chaining
+     * @throws IllegalArgumentException
+     *             if any capture has a type that cannot be sent to the client
+     * @see #addEventData(String)
+     * @since 25.3
+     */
+    DomListenerRegistration addEventData(String name, String expression,
+            Object... captures);
+
+    /**
      * Sets a JavaScript expression that is used for filtering events to this
      * listener. When an event is fired in the browser, the expression is
      * evaluated and an event is sent to the server only if the expression value
@@ -86,6 +124,41 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      */
     DomListenerRegistration setFilter(String filter);
+
+    /**
+     * Sets a JavaScript expression that is used for filtering events to this
+     * listener, using the given values as captures.
+     * <p>
+     * This works like {@link #setFilter(String)} except that the expression can
+     * be parameterized: captures are referenced as <code>$0</code>,
+     * <code>$1</code>, &hellip; in the expression (the same naming convention
+     * as for {@link Element#executeJs(String, Object...) executeJs} parameters
+     * and {@link JsFunction} captures).
+     * <p>
+     * Using captures instead of concatenating values into the expression means
+     * that the same expression is used regardless of the values, which lets the
+     * browser reuse the same compiled function for all listeners that use the
+     * expression. It also removes the need to escape the values, which reduces
+     * the risk of XSS vulnerabilities.
+     * <p>
+     * An expression might be e.g. <code>event.key === $0</code> to only forward
+     * events for one specific key.
+     * <p>
+     * Any previous filter for this registration is discarded.
+     *
+     * @param filter
+     *            the JavaScript filter expression, or <code>null</code> to
+     *            clear the filter
+     * @param captures
+     *            the values to capture; each must be a type supported as a
+     *            parameter to {@link Element#executeJs(String, Object...)}
+     * @return this registration, for chaining
+     * @throws IllegalArgumentException
+     *             if any capture has a type that cannot be sent to the client
+     * @see #setFilter(String)
+     * @since 25.3
+     */
+    DomListenerRegistration setFilter(String filter, Object... captures);
 
     /**
      * Gets the currently set filter expression.
