@@ -236,10 +236,13 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 - **No unprepared meeting.** Everyone arrives having read the digest or the
   pre-read; the lead arrives with an agenda — one question per item, each with a
   recommendation. A meeting without one is moved, not endured.
-- **One item per person, and only what someone can act on.** The round table is
-  for what is worth another person's attention: a PR that needs eyes, a decision
-  drifting, something you are stuck on. Status that changes nothing for anybody
-  belongs in the digest.
+- **One item per person, and only what someone can act on.** A PR: explain in a
+  few sentences what it does, so whoever reviews it starts warm. A new issue:
+  explain the problem, so the team recognises it when it comes back. A piece of
+  research: ask the question you are stuck on. What the turn is not is a long
+  account of your week — when nothing is required of the room, the room stops
+  listening, and everything that changes nothing for anybody is in the digest
+  already.
 - **Design and implementation in one pass.** The same session settles the design
   *and* the approach, so AI goes straight from it to a finished PR. Splitting
   across two sessions is the exception, for genuinely new ground.
@@ -541,25 +544,24 @@ thing to catch.
 
 Still to decide:
 
-1. Does the round table stay useful as the team grows, or does it turn into a
-   tour of everything? The digest is meant to carry status; if people start
-   reading it aloud, the first half is the thing to cut.
-2. **How many live issues can one daily carry before it stops being a
-   discussion?** That number, not the filing rate, is our real capacity.
-3. Does *every* new issue get a probe, or only ones that pass triage — and when
+1. **How many live issues can one daily carry before it stops being a
+   discussion?** That number, not the filing rate, is our real capacity. The
+   same limit applies to the round table: when turns start sounding like a tour
+   of the week, the first half is what we cut, not the second.
+2. Does *every* new issue get a probe, or only ones that pass triage — and when
    is a stale probe closed, by whom?
-4. Who owns an issue in its first hour, before the first daily sees it?
-5. Who owns the eval suite, and how big can it get before it is too slow to run
+3. Who owns an issue in its first hour, before the first daily sees it?
+4. Who owns the eval suite, and how big can it get before it is too slow to run
    on every change?
-6. Two days of understanding before the scope meeting fits a short project. What
+5. Two days of understanding before the scope meeting fits a short project. What
    replaces it when the research has historically taken weeks?
-7. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
+6. Who becomes lead — rotation, whoever triaged it, or the area owner? Can a
    project lead also lead issues inside that project?
-8. Maintenance arriving mid-project: does the project team absorb it, or do we
+7. Maintenance arriving mid-project: does the project team absorb it, or do we
    keep someone out — which breaks the 100% rule?
-9. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+8. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-10. Do routine bulk changes need a **fast lane**: no design note, AI states the
-    invariant it preserved and how it proved it, review is of the invariant?
-11. Where do external contributor PRs enter — at review, or back at the problem?
-12. Design notes for bugfixes too, or is a probe with a failing test enough?
+9. Do routine bulk changes need a **fast lane**: no design note, AI states the
+   invariant it preserved and how it proved it, review is of the invariant?
+10. Where do external contributor PRs enter — at review, or back at the problem?
+11. Design notes for bugfixes too, or is a probe with a failing test enough?
