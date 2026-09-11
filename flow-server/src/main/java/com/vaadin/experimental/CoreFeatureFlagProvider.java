@@ -41,10 +41,14 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
             "Tailwind CSS framework", "tailwindCss",
             "https://github.com/vaadin/flow/issues/21643", true, null);
 
+    public static final Feature SSE_PUSH_TRANSPORT = new Feature(
+            "Server-sent events as a push transport", "ssePushTransport",
+            "https://github.com/vaadin/flow/issues/23048", true, null);
+
     @Override
     public List<Feature> getFeatures() {
         return List.of(COLLABORATION_ENGINE_BACKEND,
                 ACCESSIBLE_DISABLED_BUTTONS, COMPONENT_STYLE_INJECTION,
-                TAILWIND_CSS);
+                TAILWIND_CSS, SSE_PUSH_TRANSPORT);
     }
 }
