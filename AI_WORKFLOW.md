@@ -178,6 +178,14 @@ one line, who raised it, why it looked good — and **nobody starts on a parked
 idea**; at the end it is filed as an issue like anything else. Good ideas are not
 the problem; good ideas started quietly are.
 
+**The project team solves the project's problems.** Whatever arrives while the
+project runs — bugs, regressions, escalations in the areas it touches — is
+absorbed by the people on it. Nobody is kept outside the project to catch it and
+nothing is handed to another team. The consequence is stated rather than hidden:
+the scope agreed on day 2 is what the team can do *including* the incoming, and
+when the incoming starts eating the project, it shows up in the daily instead of
+in a missed date.
+
 **Rituals.** The project runs its own daily and design session (§5), and the PM
 sees a working walkthrough weekly — to confirm we are solving the right problem,
 not to accept or reject the work.
@@ -593,11 +601,9 @@ thing to catch.
 
 Still to decide:
 
-1. Maintenance arriving mid-project: does the project team absorb it, or do we
-   keep someone out — which breaks the 100% rule?
-2. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
+1. PM says the agreed scope no longer fulfils the PRD and the team disagrees —
    who breaks the tie?
-3. Do routine bulk changes need a **fast lane**: no design note, AI states the
+2. Do routine bulk changes need a **fast lane**: no design note, AI states the
    invariant it preserved and how it proved it, review is of the invariant?
-4. Where do external contributor PRs enter — at review, or back at the problem?
-5. Design notes for bugfixes too, or is a probe with a failing test enough?
+3. Where do external contributor PRs enter — at review, or back at the problem?
+4. Design notes for bugfixes too, or is a probe with a failing test enough?
