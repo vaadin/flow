@@ -416,6 +416,13 @@ public class InitParameters implements Serializable {
      * or {@code pnpm-workspace.yaml}) is used, defaulting to {@code 1} day if
      * there is none. The configuration of bun cannot be read, so the default
      * always applies for it.
+     * <p>
+     * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
+     * the check, so that a project can be built right after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 24.19.0
+     * ships with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the
+     * command line, so with bun an installation may fail during the first day
+     * after a Vaadin release.
      *
      * @since 25.1.6
      */

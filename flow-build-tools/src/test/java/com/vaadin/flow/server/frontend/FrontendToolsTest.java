@@ -997,6 +997,54 @@ class FrontendToolsTest {
     }
 
     @Test
+    void getConfiguredSettingValues_listAndCommaSeparatedValue_areRead()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/*\", \"lit\"]}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+
+            // a single value written into an .npmrc may also arrive as a
+            // comma separated string
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": \"@acme/*, lit\"}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_keyWithoutValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": null, \"omit\": []}");
+
+            assertEquals(List.of(),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+            assertEquals(List.of(), tools.getConfiguredSettingValues(
+                    List.of("npm"), new File(baseDir), "omit"));
+        }
+    }
+
+    @Test
     void getConfiguredSetting_firstKeyMissing_fallsBackToTheNextOne()
             throws CommandExecutionException {
         try (MockedStatic<FrontendUtils> frontendUtils = Mockito
