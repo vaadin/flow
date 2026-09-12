@@ -9,16 +9,16 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "6.3.6",
-    "@vitejs/plugin-react": "4.4.1",
-    "@preact/signals-react-transform": "0.5.1",
-    "@rollup/plugin-replace": "6.0.2",
-    "@rollup/pluginutils": "5.1.4",
-    "@babel/preset-react": "7.26.3",
+    "vite": "6.4.3",
+    "@vitejs/plugin-react": "4.7.0",
+    "@preact/signals-react-transform": "0.8.2",
+    "@rollup/plugin-replace": "6.0.3",
+    "@rollup/pluginutils": "5.4.0",
+    "@babel/preset-react": "7.29.7",
     "rollup-plugin-visualizer": "5.14.0",
     "rollup-plugin-brotli": "3.1.0",
-    "vite-plugin-checker": "0.9.1",
-    "workbox-build": "7.3.0",
+    "vite-plugin-checker": "0.14.5",
+    "workbox-build": "7.4.1",
     "transform-ast": "2.4.4"
   }
 }
