@@ -43,7 +43,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
@@ -144,6 +143,12 @@ public class StateNode implements Serializable {
     }
 
     private static final ReplacedViaPreserveOnRefresh REPLACED_MARKER = new ReplacedViaPreserveOnRefresh();
+
+    /**
+     * Maximum length of a single application-provided part, such as an
+     * attribute value, in the description produced by {@link #describe()}.
+     */
+    private static final int MAX_DESCRIPTION_PART_LENGTH = 200;
 
     /**
      * Cache of immutable node feature type set instances.
@@ -835,7 +840,7 @@ public class StateNode implements Serializable {
                                 + "by assigning components to static members or "
                                 + "spring singleton scoped beans and referencing "
                                 + "them from multiple UIs. Offending component: "
-                                + formatOwnerComponentToString());
+                                + describe());
             } else {
                 id = -1;
             }
@@ -846,45 +851,6 @@ public class StateNode implements Serializable {
             reset(false);
         }
         owner = tree;
-    }
-
-    private String formatOwnerComponentToString() {
-        // This is only used to describe a component in an error message, so a
-        // misbehaving application implementation of e.g. toString() or
-        // hashCode() must not replace the original error with its own.
-        Component component = null;
-        try {
-            final Element ownerElement = ElementUtil.from(this).orElse(null);
-            if (ownerElement == null) {
-                return "unknown element";
-            }
-            component = ownerElement.getComponent().orElse(null);
-            if (component == null) {
-                return "element " + ownerElement + ", no component";
-            }
-            final ComponentTracker.Location createLocation = ComponentTracker
-                    .findCreate(component);
-            final ComponentTracker.Location attachLocation = ComponentTracker
-                    .findAttach(component);
-            if (createLocation != null || attachLocation != null) {
-                // the location.toString() includes the component class as well
-                return "created: " + createLocation + ", attached: "
-                        + attachLocation;
-            }
-            // createLocation is null in production mode. Just return the
-            // component's toString() which should provide enough information to
-            // the programmer.
-            return component.toString();
-        } catch (RuntimeException e) {
-            final String describedComponent = component == null
-                    ? "the component"
-                    : "the component of type " + component.getClass().getName();
-            LoggerFactory.getLogger(StateNode.class).debug(
-                    "Failed to describe the owner component of a state node",
-                    e);
-            return "unavailable, describing " + describedComponent + " threw "
-                    + e.getClass().getName();
-        }
     }
 
     private boolean handleOnAttach() {
@@ -1246,10 +1212,17 @@ public class StateNode implements Serializable {
 
     /**
      * Describes which part of the application this node belongs to, for
-     * inclusion in a log message. In addition to the node id, the description
-     * contains the element tag and, when available, the component class, the
-     * routing target the component is used in, and the location where the
-     * component was created.
+     * inclusion in a log or error message. In addition to the node id, the
+     * description contains the element tag and, when available, the component
+     * class, the routing target the component is used in, and the locations
+     * where the component was created and attached. When no locations are
+     * available, which is the case in production mode, the description contains
+     * what the component itself says about the instance instead. An element
+     * that has no component is instead identified by its id and class
+     * attributes.
+     * <p>
+     * Only structural information is included: neither the markup of the
+     * element nor the content of a text node ends up in a log message.
      * <p>
      * This method never throws: if describing the node fails, the description
      * says so instead and contains the details gathered so far.
@@ -1261,51 +1234,94 @@ public class StateNode implements Serializable {
         StringBuilder targetInfo = new StringBuilder("node id=")
                 .append(getId());
         // The node is not necessarily usable as an element even when it has
-        // the feature, and a description for a log message must never throw
+        // the feature, and describing it runs application code such as an
+        // overridden toString() or getParent(), so it must never throw
         try {
-            if (BasicElementStateProvider.get().supports(this)) {
-                Element element = Element.get(this);
-                targetInfo.append(", element with tag '")
-                        .append(element.getTag()).append("'");
-                Optional<Component> component = element.getComponent();
-                if (component.isPresent()) {
-                    targetInfo.append(", component '")
-                            .append(component.get().getClass().getName())
-                            .append("'");
-                    /*
-                     * The routing target is identified by its class since the
-                     * path in its annotation is not necessarily the path it is
-                     * served from: the path may be a placeholder for a name
-                     * derived from the class, and it doesn't include the
-                     * prefixes that parent layouts contribute.
-                     */
-                    ComponentUtil.getRouteComponent(component.get()).filter(
-                            routeComponent -> routeComponent != component.get())
-                            .ifPresent(routeComponent -> targetInfo
-                                    .append(", used in '")
-                                    .append(routeComponent.getClass().getName())
-                                    .append("'"));
-
-                    // Only available while component tracking is enabled,
-                    // which is the case in development mode
-                    ComponentTracker.Location location = ComponentTracker
-                            .findCreate(component.get());
-                    if (location != null) {
-                        targetInfo.append(", created at ")
-                                .append(location.filename()).append(":")
-                                .append(location.lineNumber());
-                    }
-                }
-            }
+            ElementUtil.from(this)
+                    .ifPresent(element -> describeElement(element, targetInfo));
         } catch (RuntimeException e) {
-            // Application code, e.g. an overridden getParent() or hashCode(),
-            // must not turn a log message into an error
             LoggerFactory.getLogger(StateNode.class)
                     .debug("Failed to describe a state node", e);
             targetInfo.append(", describing it further threw ")
                     .append(e.getClass().getName());
         }
         return targetInfo.toString();
+    }
+
+    private static void describeElement(Element element,
+            StringBuilder targetInfo) {
+        Component component = element.getComponent().orElse(null);
+        if (element.isTextNode()) {
+            // Not the text itself: describe() is used in log messages, and the
+            // text is application content
+            targetInfo.append(", text node");
+        } else {
+            targetInfo.append(", element with tag '").append(element.getTag())
+                    .append("'");
+            if (component == null) {
+                // Without a component, these attributes are what identifies
+                // the element. Its markup is deliberately not included: the
+                // outer HTML is serialized from the whole subtree.
+                targetInfo.append(", no component");
+                appendAttribute(element, "id", targetInfo);
+                appendAttribute(element, "class", targetInfo);
+            }
+        }
+        if (component == null) {
+            return;
+        }
+        targetInfo.append(", component '")
+                .append(component.getClass().getName()).append("'");
+        /*
+         * The routing target is identified by its class since the path in its
+         * annotation is not necessarily the path it is served from: the path
+         * may be a placeholder for a name derived from the class, and it
+         * doesn't include the prefixes that parent layouts contribute.
+         */
+        ComponentUtil.getRouteComponent(component)
+                .filter(routeComponent -> routeComponent != component)
+                .ifPresent(routeComponent -> targetInfo.append(", used in '")
+                        .append(routeComponent.getClass().getName())
+                        .append("'"));
+
+        // Locations are only available while component tracking is enabled,
+        // which is the case in development mode
+        ComponentTracker.Location createLocation = ComponentTracker
+                .findCreate(component);
+        ComponentTracker.Location attachLocation = ComponentTracker
+                .findAttach(component);
+        if (createLocation != null) {
+            targetInfo.append(", created at ").append(createLocation.filename())
+                    .append(":").append(createLocation.lineNumber());
+        }
+        if (attachLocation != null) {
+            targetInfo.append(", attached at ")
+                    .append(attachLocation.filename()).append(":")
+                    .append(attachLocation.lineNumber());
+        }
+        if (createLocation == null && attachLocation == null) {
+            // Without tracking information, which is the situation in
+            // production mode, the component's own toString() is the only way
+            // of telling instances of the same class apart
+            targetInfo.append(", ").append(truncate(component.toString()));
+        }
+    }
+
+    private static void appendAttribute(Element element, String attribute,
+            StringBuilder targetInfo) {
+        String value = element.getAttribute(attribute);
+        if (value != null) {
+            targetInfo.append(", ").append(attribute).append(" '")
+                    .append(truncate(value)).append("'");
+        }
+    }
+
+    private static String truncate(String descriptionPart) {
+        if (descriptionPart.length() <= MAX_DESCRIPTION_PART_LENGTH) {
+            return descriptionPart;
+        }
+        return descriptionPart.substring(0, MAX_DESCRIPTION_PART_LENGTH)
+                + "...";
     }
 
     /**
