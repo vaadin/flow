@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -244,6 +245,8 @@ class NodeResolver implements java.io.Serializable {
                         nodeFolderFile.getAbsolutePath()));
             }
 
+            warnIfTooOld(installation.nodeVersion(), InitParameters.NODE_FOLDER,
+                    "a supported version");
             getLogger().info(
                     "Using Node.js from configured folder: {} (version {})",
                     nodeFolderFile.getAbsolutePath(),
@@ -258,6 +261,42 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
+     * Warns when a configured Node.js version is too old for the frontend
+     * tooling, which reports the problem much later and without telling where
+     * the version came from. The configured version is used regardless, as
+     * overriding what somebody has asked for is worse than a build that fails
+     * for a stated reason.
+     *
+     * @param version
+     *            the Node.js version that will be used
+     * @param setting
+     *            the name of the setting that the version comes from
+     * @param replacement
+     *            what Vaadin uses instead once the setting is gone
+     */
+    private void warnIfTooOld(String version, String setting,
+            String replacement) {
+        try {
+            if (!new FrontendVersion(version)
+                    .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+                return;
+            }
+        } catch (NumberFormatException e) {
+            // Left for the frontend tooling to report, as it knows what it
+            // accepts
+            getLogger().debug("Could not parse the Node.js version {}", version,
+                    e);
+            return;
+        }
+        getLogger().warn(
+                "Node.js version {} configured through '{}' is older than the minimum supported version {}, so the frontend build is likely to fail. "
+                        + "Remove the setting to let Vaadin use {} instead.",
+                version, setting,
+                FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                replacement);
+    }
+
+    /**
      * Uses the requested node version from the alternative directory, or
      * installs it there.
      *
@@ -266,6 +305,8 @@ class NodeResolver implements java.io.Serializable {
      *             if installation fails
      */
     private ActiveNodeInstallation resolveOrInstallAlternativeNode() {
+        warnIfTooOld(nodeVersion, InitParameters.NODE_VERSION,
+                "Node.js " + FrontendTools.DEFAULT_NODE_VERSION);
         File alternativeDirFile = new File(alternativeDir);
         NodeInstaller nodeInstaller = new NodeInstaller(alternativeDirFile,
                 proxies);

@@ -69,8 +69,7 @@ public class FrontendTools {
 
     /**
      * This is the version that is installed if there is no node installed or
-     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
-     * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}.
      * 
      * @since 4.0
      */
@@ -106,8 +105,6 @@ public class FrontendTools {
     private static final List<@NonNull FrontendVersion> BAD_NPM_VERSIONS = Collections
             .singletonList(new FrontendVersion("9.2.0"));
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
     /**
      * Maximum supported Node.js major version. Versions with a higher major
      * version are not tested and may not be compatible.
@@ -118,8 +115,7 @@ public class FrontendTools {
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
-    public static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
-            SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
+    public static final FrontendVersion SUPPORTED_NODE_VERSION = FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION;
 
     /**
      * Minimum Node.js version for auto-installed versions in ~/.vaadin. Global
