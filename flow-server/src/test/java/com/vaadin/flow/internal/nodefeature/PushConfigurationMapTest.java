@@ -62,6 +62,15 @@ class PushConfigurationMapTest
     }
 
     @Test
+    void transportServerSentEvents() {
+        ns.setTransport(Transport.SERVER_SENT_EVENTS);
+        assertEquals(Transport.SERVER_SENT_EVENTS.getIdentifier(),
+                ns.getParameter("transport"));
+        assertFalse(ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        assertEquals(Transport.SERVER_SENT_EVENTS, ns.getTransport());
+    }
+
+    @Test
     void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
         assertEquals(Transport.LONG_POLLING.getIdentifier(),
