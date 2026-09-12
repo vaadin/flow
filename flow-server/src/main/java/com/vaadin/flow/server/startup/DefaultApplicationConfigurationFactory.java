@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -185,6 +186,14 @@ public class DefaultApplicationConfigurationFactory
      * <p>
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
+     * <p>
+     * Only a token file written by a production build is accepted from a jar. A
+     * development mode one describes the project and the machine the jar was
+     * built on, so it is of no use for the application that is being run and is
+     * there by mistake.
+     *
+     * @return the token file content, or {@code null} if no usable file was
+     *         found
      */
     private String getPossibleJarResource(VaadinContext context,
             List<URL> resources) throws IOException {
@@ -200,34 +209,71 @@ public class DefaultApplicationConfigurationFactory
         URL viteGenerated = resourceProvider
                 .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);
 
-        // If jar!/ exists 2 times for webpack.generated.json then we are
+        // If jar!/ exists 2 times for vite.generated.ts then we are
         // running from a jar
-        if (viteGenerated != null
-                && countInstances(viteGenerated.getPath(), "jar!/") >= 2) {
-            for (URL resource : resources) {
-                // As we now know that we are running from a jar we can accept a
-                // build info with a single jar in the path
-                if (countInstances(resource.getPath(), "jar!/") == 1) {
-                    return FrontendUtils.streamToString(resource.openStream());
-                }
+        boolean runningFromJar = viteGenerated != null
+                && countInstances(viteGenerated.getPath(), "jar!/") >= 2;
+
+        // As we now know that we are running from a jar we can accept a
+        // build info with a single jar in the path, so look at those first
+        List<URL> candidates = runningFromJar ? resources.stream()
+                .sorted(Comparator.comparingInt(
+                        url -> countInstances(url.getPath(), "jar!/") == 1 ? 0
+                                : 1))
+                .toList() : resources;
+
+        for (URL candidate : candidates) {
+            String content = FrontendUtils
+                    .streamToString(candidate.openStream());
+            if (!isProductionModeTokenFile(content)) {
+                getLogger().warn(
+                        """
+                                Ignoring the file '{}', as it is inside a jar and was not written by a production build.
+                                Such a file describes the project it was built from, not the application being run, and is packaged into a dependency by mistake.""",
+                        candidate.getPath());
+                continue;
             }
+            // The file is only known to be the right one when it was
+            // picked by the rule for a packaged application
+            boolean confidentPick = runningFromJar
+                    && countInstances(candidate.getPath(), "jar!/") == 1;
+            if (candidates.size() > 1 && !confidentPick) {
+                String warningMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s' first match of '%s' possible (%s).%n"
+                                + "Please verify flow-build-info file content.",
+                        candidate.getPath(), resources.size(), resources);
+                getLogger().warn(warningMessage);
+            } else {
+                String debugMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s'",
+                        candidate.getPath());
+                getLogger().debug(debugMessage);
+            }
+            return content;
         }
-        URL firstResource = resources.get(0);
-        if (resources.size() > 1) {
-            String warningMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
-                            + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size(), resources);
-            getLogger().warn(warningMessage);
-        } else {
-            String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
-                    firstResource.getPath());
-            getLogger().debug(debugMessage);
+        return null;
+    }
+
+    /**
+     * Checks whether the given token file content was written by a production
+     * build.
+     *
+     * @param content
+     *            the token file content, not {@code null}
+     * @return {@code true} if the file declares production mode, {@code false}
+     *         if it does not or cannot be parsed
+     */
+    private boolean isProductionModeTokenFile(String content) {
+        try {
+            JsonNode buildInfo = JacksonUtils.readTree(content);
+            return buildInfo.has(SERVLET_PARAMETER_PRODUCTION_MODE) && buildInfo
+                    .get(SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue();
+        } catch (RuntimeException e) {
+            getLogger().debug("Unable to parse a token file from a jar", e);
+            return false;
         }
-        return FrontendUtils.streamToString(firstResource.openStream());
     }
 
     /**

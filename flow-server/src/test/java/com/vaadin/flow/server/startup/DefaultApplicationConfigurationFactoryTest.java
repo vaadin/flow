@@ -39,6 +39,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
@@ -47,6 +48,7 @@ import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultApplicationConfigurationFactoryTest {
@@ -176,6 +178,131 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
+    void create_onlyDevelopmentModeTokenFileInsideJar_tokenFileIsIgnored()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // A token file written by prepare-frontend and packaged into a
+        // dependency by mistake: it points to the folders of the machine that
+        // built the dependency and carries the Node version used there.
+        String npmFolder = new File(temporaryFolder.toFile(), "other-project")
+                .getAbsolutePath().replace("\\", "\\\\");
+        mockJarTokenFile(resourceProvider, "addon.jar",
+                "{ \"productionMode\": false, \"npmFolder\": \"" + npmFolder
+                        + "\", \"node.version\": \"v18.14.1\" }");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertNull(
+                configuration.getStringProperty(InitParameters.NODE_VERSION,
+                        null),
+                "Node version should not be read from a development mode token file inside a jar");
+        assertNull(
+                configuration.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                        null),
+                "Project folder should not be read from a development mode token file inside a jar");
+        assertFalse(configuration.isProductionMode());
+    }
+
+    @Test
+    void create_productionModeTokenFileInsideJar_tokenFileIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // A packaged application, where the token file of the application
+        // itself is inside a jar
+        mockJarTokenFile(resourceProvider, "application.jar",
+                "{ \"productionMode\": true, \"externalStatsFile\": true }");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertTrue(configuration.isProductionMode());
+        assertTrue(configuration
+                .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
+    }
+
+    @Test
+    void create_developmentModeTokenFileInsideJarIsFoundFirst_productionModeOneIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        mockClassPathTokenFiles(resourceProvider, mockTokenFileUrl(
+                "addon.jar!/",
+                "{ \"productionMode\": false, \"externalStatsUrl\": \"http://addon/stats.json\" }"),
+                mockTokenFileUrl("application.jar!/",
+                        "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }"));
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertEquals("http://application/stats.json",
+                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
+                        null),
+                "A development mode token file should be skipped for a production mode one");
+        assertTrue(configuration.isProductionMode());
+    }
+
+    @Test
+    void create_packagedApplicationWithNestedJars_tokenFileOfTheApplicationIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // The jar of flow-server is inside the jar of the application, so
+        // the application is packaged
+        Mockito.when(resourceProvider
+                .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG))
+                .thenReturn(new URL("file", "", -1,
+                        "/opt/app.jar!/BOOT-INF/lib/flow-server.jar!/"
+                                + FrontendUtils.VITE_GENERATED_CONFIG));
+
+        mockClassPathTokenFiles(resourceProvider, mockTokenFileUrl(
+                "/opt/app.jar!/BOOT-INF/lib/addon.jar!/",
+                "{ \"productionMode\": true, \"externalStatsUrl\": \"http://addon/stats.json\" }"),
+                mockTokenFileUrl("/opt/app.jar!/",
+                        "{ \"productionMode\": true, \"externalStatsUrl\": \"http://application/stats.json\" }"));
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertEquals("http://application/stats.json",
+                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
+                        null),
+                "The token file of the application should be used instead of the one of a dependency");
+    }
+
+    @Test
+    void create_unparseableTokenFileInsideJar_tokenFileIsIgnored()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        mockJarTokenFile(resourceProvider, "addon.jar", "not json at all");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertFalse(configuration.isProductionMode());
+        assertFalse(Collections.list(configuration.getPropertyNames())
+                .contains(Constants.EXTERNAL_STATS_URL));
+    }
+
+    @Test
     void getMode_returnsLivereload_tailwindCssIsEnabled() throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -232,6 +359,33 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,
             String content) throws IOException, MalformedURLException {
+        mockClassPathTokenFile(resourceProvider, "classes/", content);
+    }
+
+    private void mockJarTokenFile(ResourceProvider resourceProvider,
+            String jarName, String content)
+            throws IOException, MalformedURLException {
+        mockClassPathTokenFile(resourceProvider, jarName + "!/", content);
+    }
+
+    private void mockClassPathTokenFile(ResourceProvider resourceProvider,
+            String pathPrefix, String content)
+            throws IOException, MalformedURLException {
+        Mockito.when(resourceProvider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections
+                        .singletonList(mockTokenFileUrl(pathPrefix, content)));
+    }
+
+    private void mockClassPathTokenFiles(ResourceProvider resourceProvider,
+            URL... urls) throws IOException {
+        Mockito.when(resourceProvider
+                .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(List.of(urls));
+    }
+
+    private URL mockTokenFileUrl(String pathPrefix, String content)
+            throws IOException, MalformedURLException {
         String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
         File tmpFile = java.nio.file.Files
@@ -245,10 +399,7 @@ class DefaultApplicationConfigurationFactoryTest {
                 return tmpFile.toURI().toURL().openConnection();
             }
         };
-        URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
-
-        Mockito.when(resourceProvider.getApplicationResources(path))
-                .thenReturn(Collections.singletonList(url));
+        return new URL("file", "", -1, pathPrefix + path, handler);
     }
 
     private ResourceProvider mockResourceProvider(VaadinConfig config,
