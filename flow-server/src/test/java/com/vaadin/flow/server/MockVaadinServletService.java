@@ -194,4 +194,15 @@ public class MockVaadinServletService extends VaadinServletService {
                             t.getName(), e);
                 });
     }
+
+    /**
+     * Runs the session cleanup that the framework runs at the end of each
+     * request, for tests that are not in the same package as the service.
+     *
+     * @param session
+     *            the session to clean up
+     */
+    public void runSessionCleanup(VaadinSession session) {
+        cleanupSession(session);
+    }
 }

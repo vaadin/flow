@@ -372,6 +372,10 @@ public class UI extends Component
      * framework that the UI should be detached. Overriding it is not a reliable
      * way to catch UIs that are to be detached. Instead,
      * {@code #onDetach(DetachEvent)} should be overridden.
+     * <p>
+     * A UI that is serving an upload or download request is detached only once
+     * that request has been served, so that listeners and callbacks bound to
+     * this UI are still effective for the ongoing transfer.
      */
     public void close() {
         closing = true;
