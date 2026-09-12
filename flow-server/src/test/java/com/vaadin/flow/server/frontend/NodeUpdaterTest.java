@@ -52,7 +52,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
-    private static final String POLYMER_VERSION = "3.5.1";
+    private static final String POLYMER_VERSION = "3.5.2";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -213,7 +213,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.4.5", packageJson
+        Assert.assertEquals("10.5.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
