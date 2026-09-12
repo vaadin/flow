@@ -59,6 +59,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.frontend.scanner.JsImportsData;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -108,6 +109,9 @@ abstract class AbstractUpdateImports implements Runnable {
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;\n"
             + " return !ae || ae.blur() || ae.focus() || true;\n" + "}";
     private static final String IMPORT_TEMPLATE = "import '%s';";
+    static final String JS_IMPORTS_REGISTRY_INIT = "window.Vaadin.Flow.imports = window.Vaadin.Flow.imports || {};";
+    private static final Pattern JS_IDENTIFIER = Pattern
+            .compile("[A-Za-z_$][A-Za-z0-9_$]*");
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     private static final Pattern VAADIN_LUMO_GLOBAL_IMPORT = Pattern
             .compile(".*@vaadin/vaadin-lumo-styles/.*-global.js.*");
@@ -421,7 +425,11 @@ abstract class AbstractUpdateImports implements Runnable {
 
         List<String> chunkLoader = new ArrayList<>();
 
-        if (!lazyJavascript.isEmpty() || !lazyCss.isEmpty()) {
+        Map<String, List<JsImportsData>> jsImports = groupJsImportsByClass(
+                options.getFrontendDependenciesScanner().getJsImports());
+
+        if (!lazyJavascript.isEmpty() || !lazyCss.isEmpty()
+                || !jsImports.isEmpty()) {
             getLogger().debug("Start generating lazy loaded chunks.");
             start = System.nanoTime();
 
@@ -473,6 +481,9 @@ abstract class AbstractUpdateImports implements Runnable {
                     files.put(chunkFile, chunkLines);
                 }
             }
+
+            addJsImportsChunks(jsImports, chunkLoader, processedChunkHashes,
+                    files);
 
             chunkLoader.add("  return Promise.all(pending);" + "\n" + "}");
             chunkLoader.add("");
@@ -529,6 +540,9 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
         mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
+        // Populated by the js-imports chunks, which are only evaluated after
+        // this file has been, so initializing it here is enough
+        mainLines.add(JS_IMPORTS_REGISTRY_INIT);
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         files.put(generatedFlowImports, mainLines);
@@ -826,6 +840,202 @@ abstract class AbstractUpdateImports implements Runnable {
         return getUniqueEs6ImportPaths(modules).stream()
                 .map(path -> String.format(IMPORT_TEMPLATE, path))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Groups the import declarations found by the scanner by the class that
+     * declares them, preserving the scanner's order within each class.
+     * <p>
+     * Declarations marked as {@code developmentOnly} are left out of a
+     * production build, the same way a plain {@code @JsModule} marked that way
+     * is only part of the development bundle. A class whose declarations are
+     * all development only therefore gets no chunk in production.
+     */
+    private Map<String, List<JsImportsData>> groupJsImportsByClass(
+            List<JsImportsData> jsImports) {
+        Map<String, List<JsImportsData>> grouped = new LinkedHashMap<>();
+        if (jsImports == null) {
+            return grouped;
+        }
+        boolean productionMode = options.isProductionMode();
+        for (JsImportsData data : jsImports) {
+            if (productionMode && data.isDevelopmentOnly()) {
+                continue;
+            }
+            grouped.computeIfAbsent(data.getClassName(),
+                    key -> new ArrayList<>()).add(data);
+        }
+        return grouped;
+    }
+
+    /**
+     * Generates one lazily loaded chunk per class that declares JS module
+     * imports, and registers it in the {@code loadOnDemand} function under the
+     * chunk id of the declaring class.
+     * <p>
+     * Giving each declaring class its own chunk keeps the imported modules out
+     * of the eager bundle and lets the server request exactly the chunk it
+     * needs before running an expression that uses the imports, in the same way
+     * a component's own chunk is requested when the component is attached.
+     */
+    private void addJsImportsChunks(Map<String, List<JsImportsData>> jsImports,
+            List<String> chunkLoader, Set<String> processedChunkHashes,
+            Map<File, List<String>> files) {
+        for (Entry<String, List<JsImportsData>> entry : jsImports.entrySet()) {
+            String className = entry.getKey();
+            List<String> chunkLines = getJsImportsChunkLines(className,
+                    entry.getValue());
+
+            String chunkContentHash = BundleUtils.getChunkHash(chunkLines);
+            String chunkFilename = "chunk-" + chunkContentHash + ".js";
+
+            chunkLoader.add(String.format("  if (key === '%s') {",
+                    BundleUtils.getChunkId(className)) + "\n"
+                    + String.format("    pending.push(import('./chunks/%s'));",
+                            chunkFilename)
+                    + "\n" + "  }");
+
+            if (processedChunkHashes.add(chunkContentHash)) {
+                files.put(new File(chunkFolder, chunkFilename), chunkLines);
+            }
+        }
+    }
+
+    /**
+     * Generates the contents of the chunk that publishes the values imported by
+     * the given class into the client-side imports registry.
+     */
+    private List<String> getJsImportsChunkLines(String className,
+            List<JsImportsData> declarations) {
+        declarations
+                .forEach(declaration -> validateJsImportsDeclaration(className,
+                        declaration));
+
+        List<JsImportsData> importAllDeclarations = declarations.stream()
+                .filter(JsImportsData::isImportAll).toList();
+        if (!importAllDeclarations.isEmpty() && declarations.size() > 1) {
+            throw new IllegalStateException(String.format(
+                    "The class %s uses @JsModule(importAll = true) for '%s' together with other import declarations. "
+                            + "Importing a whole module namespace would shadow the other imported values, so it must be the only "
+                            + "import declaration on the class. Split the declarations into separate classes instead.",
+                    className, importAllDeclarations.get(0).getModule()));
+        }
+
+        List<String> importLines = new ArrayList<>();
+        List<String> entries = new ArrayList<>();
+        Map<String, String> nameToModule = new LinkedHashMap<>();
+        // Theme translated and transitively imported files that the same module
+        // pulls in as a plain @JsModule; kept as side-effect imports so that
+        // both spellings put the same files into the bundle
+        LinkedHashSet<String> sideEffectPaths = new LinkedHashSet<>();
+        Set<String> boundPaths = new LinkedHashSet<>();
+
+        for (int i = 0; i < declarations.size(); i++) {
+            JsImportsData declaration = declarations.get(i);
+            List<String> paths = resolveJsImportsModule(className, declaration);
+            String module = paths.get(0);
+            boundPaths.add(module);
+            sideEffectPaths.addAll(paths.subList(1, paths.size()));
+
+            if (declaration.isImportAll()) {
+                String alias = "jsImport" + i;
+                importLines.add(String.format("import * as %s from '%s';",
+                        alias, module));
+                return registryLines(className, importLines, sideEffectPaths,
+                        boundPaths, alias);
+            }
+
+            for (int j = 0; j < declaration.getNames().size(); j++) {
+                String name = declaration.getNames().get(j);
+                validateJsImportName(className, declaration, name);
+                String previousModule = nameToModule.putIfAbsent(name,
+                        declaration.getModule());
+                if (previousModule != null) {
+                    throw new IllegalStateException(String.format(
+                            "The class %s imports the name '%s' from both '%s' and '%s'. "
+                                    + "Only one declaration per name is allowed, since all imports of a class are published under the same key. "
+                                    + "Use separate classes for the conflicting modules instead.",
+                            className, name, previousModule,
+                            declaration.getModule()));
+                }
+                String alias = "jsImport" + i + "_" + j;
+                importLines.add(String.format("import { %s as %s } from '%s';",
+                        name, alias, module));
+                entries.add(String.format("%s: %s", name, alias));
+            }
+        }
+
+        return registryLines(className, importLines, sideEffectPaths,
+                boundPaths, "{ " + String.join(", ", entries) + " }");
+    }
+
+    private static List<String> registryLines(String className,
+            List<String> importLines, Set<String> sideEffectPaths,
+            Set<String> boundPaths, String value) {
+        List<String> lines = new ArrayList<>(importLines);
+        sideEffectPaths.stream().filter(path -> !boundPaths.contains(path))
+                .map(path -> String.format(IMPORT_TEMPLATE, path))
+                .forEach(lines::add);
+        lines.add(JS_IMPORTS_REGISTRY_INIT);
+        lines.add(String.format("window.Vaadin.Flow.imports['%s'] = %s;",
+                BundleUtils.getChunkId(className), value));
+        return lines;
+    }
+
+    /**
+     * Rejects the combinations a single {@code @JsModule} declaration cannot
+     * express, so that neither part of it is silently ignored.
+     */
+    private static void validateJsImportsDeclaration(String className,
+            JsImportsData declaration) {
+        if (declaration.isImportAll() && !declaration.getNames().isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "The class %s declares @JsModule(value = \"%s\") with both 'importAll' and 'imports' = %s. "
+                            + "The whole namespace already contains the named values, so only one of the two can be used. "
+                            + "Drop 'imports' to get the namespace, or drop 'importAll' to get only the named values.",
+                    className, declaration.getModule(),
+                    declaration.getNames()));
+        }
+        if (UrlUtil.isExternal(declaration.getModule())) {
+            throw new IllegalStateException(String.format(
+                    "The class %s declares imports from the external URL '%s'. Only modules that are part of the bundle can be imported by name, "
+                            + "since the import has to be resolved when the bundle is built. Use a module in the frontend folder or an npm package, "
+                            + "or load the URL at runtime with @JavaScript(value = \"...\", type = MODULE) and have it publish what it exports.",
+                    className, declaration.getModule()));
+        }
+    }
+
+    private static void validateJsImportName(String className,
+            JsImportsData declaration, String name) {
+        if (name == null || !JS_IDENTIFIER.matcher(name).matches()) {
+            throw new IllegalStateException(String.format(
+                    "The class %s declares @JsModule(value = \"%s\", imports = {\"%s\"}), which is not a valid JavaScript identifier. "
+                            + "Each entry in 'imports' must name a single export of the module; use 'default' to import the default export. "
+                            + "To rename an export, write a JavaScript module that re-exports it under the wanted name.",
+                    className, declaration.getModule(), name));
+        }
+    }
+
+    /**
+     * Resolves the module of an import declaration with the same rules as a
+     * plain {@code @JsModule} value.
+     *
+     * @return the paths a plain {@code @JsModule} with this value would import.
+     *         The first one is the module itself and is the one the named
+     *         values are bound from; it is added before {@code handleImports}
+     *         appends the theme translated and transitively imported files,
+     *         which make up the rest of the list.
+     */
+    private List<String> resolveJsImportsModule(String className,
+            JsImportsData declaration) {
+        List<String> paths = new ArrayList<>(getUniqueEs6ImportPaths(
+                Collections.singletonList(declaration.getModule())));
+        if (paths.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "Failed to resolve the module '%s' declared by @JsModule on %s.",
+                    declaration.getModule(), className));
+        }
+        return paths;
     }
 
     private boolean frontendFileExists(String jsImport) {

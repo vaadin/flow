@@ -396,6 +396,18 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return visitedClasses.keySet();
     }
 
+    @Override
+    public List<JsImportsData> getJsImports() {
+        // Keyed by the declaring class rather than by entry point, since the
+        // imports registry is looked up by the declaring class as well
+        List<JsImportsData> all = new ArrayList<>();
+        // visitedClasses is a HashMap, so sort by class name to keep the
+        // generated chunks stable between builds
+        visitedClasses.keySet().stream().sorted().forEach(className -> all
+                .addAll(visitedClasses.get(className).jsImports));
+        return all;
+    }
+
     /**
      * Get all entryPoints in the application.
      *

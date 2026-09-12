@@ -150,6 +150,21 @@ public interface FrontendDependenciesScanner extends Serializable {
     Map<ChunkInfo, List<CssData>> getCss();
 
     /**
+     * Get all {@code @JsModule} declarations that name values to import, i.e.
+     * those setting {@code imports} or {@code importAll}.
+     * <p>
+     * These are not part of {@link #getModules()}: instead of being imported
+     * for their side effects, the named values are published in the client-side
+     * imports registry so that a JavaScript expression sent by the server can
+     * receive them as a parameter.
+     *
+     * @return the import declarations, never {@code null}
+     */
+    default List<JsImportsData> getJsImports() {
+        return List.of();
+    }
+
+    /**
      * Get the {@link ThemeDefinition} of the application.
      *
      * @return the theme definition

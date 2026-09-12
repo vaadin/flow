@@ -69,6 +69,7 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.frontend.scanner.JsImportsData;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -597,6 +598,48 @@ class BuildFrontendUtilTest {
                     "Expected exception message to suggest usage of commercial banner build");
             assertFalse(adapter.frontendOutputDirectory().exists(),
                     "Expected output directory to be deleted but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProductUsedOnlyThroughJsModuleImports_detected()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules())
+                .thenReturn(Collections.emptyMap());
+        // Reached only through @JsModule(imports = ...), so not part of
+        // getModules(); the development only one must not count as used
+        Mockito.when(frontendDependencies.getJsImports())
+                .thenReturn(List.of(
+                        new JsImportsData("com.example.CommImports",
+                                "comm-component/foo.js", List.of("render"),
+                                false, false),
+                        new JsImportsData("com.example.DevImports",
+                                "comm-component2/bar.js", List.of("debug"),
+                                false, true)));
+
+        withMockedLicenseChecker(false, () -> {
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            assertTrue(exception.getMessage().contains("comm-comp"),
+                    "A commercial product used through JS module imports should be detected, was: "
+                            + exception.getMessage());
+            assertFalse(exception.getMessage().contains("comm-comp2"),
+                    "A development only declaration should not mark the product as used, was: "
+                            + exception.getMessage());
         });
     }
 

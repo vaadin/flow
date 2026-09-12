@@ -34,6 +34,7 @@ public class ClassInfo {
     final LinkedHashSet<String> scripts = new LinkedHashSet<>();
     final LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
+    final List<JsImportsData> jsImports = new ArrayList<>();
     String route = "";
     String layout;
     ThemeData theme = new ThemeData();
