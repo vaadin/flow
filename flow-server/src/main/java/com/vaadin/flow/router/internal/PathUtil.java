@@ -68,6 +68,13 @@ public class PathUtil implements Serializable {
      * may contain URL-encoded data that should be preserved after decoding. For
      * example, a path segment containing {@code %2F} will be decoded to
      * {@code /}, but this slash will not be treated as a path separator.
+     * <p>
+     * The path is expected to be percent-encoded. A path that is already
+     * decoded, such as the one of a servlet request or the one an application
+     * passes to {@link com.vaadin.flow.component.UI#navigate(String)}, is
+     * decoded a second time here, which consumes a percent sign that the path
+     * contains as a character of its own. See
+     * <a href="https://github.com/vaadin/flow/issues/25690">#25690</a>.
      *
      * @param path
      *            url path to split into segments and decode. The path may also

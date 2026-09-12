@@ -122,6 +122,12 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    @Route("grüße")
+    @Tag(Tag.DIV)
+    public static class NonAsciiNavigationTarget extends Component {
+
+    }
+
     @Route("foo/bar")
     @Tag(Tag.DIV)
     public static class FooBarNavigationTarget extends Component
@@ -2560,6 +2566,46 @@ public class RouterTest extends RoutingTestBase {
                 "Expected event amount was wrong");
         assertEquals("path/encoded/normal/another/one", WildParameter.param,
                 "Should decode individual segments but preserve literal slashes");
+    }
+
+    @Test
+    public void static_route_with_non_ascii_character()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NonAsciiNavigationTarget.class);
+
+        // A servlet container decodes the path info, so the route is resolved
+        // from literal characters
+        assertEquals(HttpStatusCode.OK.getCode(),
+                router.navigate(ui, new Location("grüße"),
+                        NavigationTrigger.PROGRAMMATIC),
+                "A literal non-ASCII segment should match the route");
+        assertEquals(NonAsciiNavigationTarget.class, getUIComponentClass());
+
+        // The same route is also resolved when the segment is still encoded,
+        // which is the case for client side navigation
+        assertEquals(HttpStatusCode.OK.getCode(),
+                router.navigate(ui, new Location("gr%C3%BC%C3%9Fe"),
+                        NavigationTrigger.PROGRAMMATIC),
+                "A percent-encoded non-ASCII segment should match the route");
+        assertEquals(NonAsciiNavigationTarget.class, getUIComponentClass());
+    }
+
+    @Test
+    public void wildcard_parameter_with_non_ascii_characters()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        router.navigate(ui, new Location("wild/grüße"),
+                NavigationTrigger.PROGRAMMATIC);
+        assertEquals("grüße", WildParameter.param,
+                "Literal non-ASCII characters should be preserved");
+
+        router.navigate(ui, new Location("wild/gr%C3%BC%C3%9Fe"),
+                NavigationTrigger.PROGRAMMATIC);
+        assertEquals("grüße", WildParameter.param,
+                "Encoded non-ASCII characters should be decoded");
     }
 
     @Test
