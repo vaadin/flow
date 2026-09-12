@@ -70,6 +70,15 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
 
         Computation computation = Reactive.runWhenDependenciesChange(
                 () -> htmlNode.setData((String) textProperty.getValue()));
+        /*
+         * The text is applied right away instead of waiting for the flush,
+         * since the node is inserted into the DOM while the flush is still
+         * pending. A web component that resolves the state of its slotted
+         * content when it renders would otherwise see an empty text node, and
+         * changing the data of a text node that is already assigned to a slot
+         * fires no slotchange to correct that.
+         */
+        computation.recompute();
 
         stateNode.addUnregisterListener(e -> unbind(stateNode, computation));
 

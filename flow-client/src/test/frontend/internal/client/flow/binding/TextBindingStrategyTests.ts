@@ -58,6 +58,10 @@ describe('TextBindingStrategy', () => {
       setText(node, 'hello');
 
       strategy.bind(node, text, context);
+      // Applied by the bind itself, since the node is inserted into the DOM
+      // while the flush is still pending
+      expect(text.data).to.equal('hello');
+
       Reactive.flush();
       expect(text.data).to.equal('hello');
 

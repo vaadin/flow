@@ -24,6 +24,7 @@ import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -826,6 +827,47 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
         assertEquals("bar", element.getTextContent());
     }
+
+    public void testAddTextNodeBeforeBind() {
+        StateNode textNode = new StateNode(nextId++, node.getTree());
+        textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT)
+                .setValue("foo");
+
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, textNode);
+
+        JsArray<String> dataOnInsert = JsCollections.array();
+        recordInsertedChildData(element, dataOnInsert);
+
+        Binder.bind(node, element);
+
+        /*
+         * The children are inserted while the flush that applies the reactive
+         * values is still pending, so the text must already be in place when
+         * the node is inserted. A web component that resolves the state of its
+         * slotted content while it renders would otherwise see an empty text
+         * node, and changing the data of a text node that is already assigned
+         * to a slot fires no slotchange to correct that.
+         */
+        assertEquals(1, dataOnInsert.length());
+        assertEquals("foo", dataOnInsert.get(0));
+
+        Reactive.flush();
+        assertEquals("foo", element.getTextContent());
+    }
+
+    /**
+     * Collects the text of every child inserted into the element, as it is at
+     * the moment of the insertion.
+     */
+    private static native void recordInsertedChildData(Element element,
+            JsArray<String> dataOnInsert)
+    /*-{
+        var appendChild = element.appendChild;
+        element.appendChild = function(child) {
+            dataOnInsert.push(child.data);
+            return appendChild.call(element, child);
+        };
+    }-*/;
 
     public void testRemoveTextNode() {
         Binder.bind(node, element);
