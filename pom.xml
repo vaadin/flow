@@ -110,7 +110,7 @@
         <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
              repository metadata when modules install in parallel (-T). -->
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
-        <testbench.version>9.6.3</testbench.version>
+        <testbench.version>9.4.5</testbench.version>
         <jetty.version>12.0.27</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>

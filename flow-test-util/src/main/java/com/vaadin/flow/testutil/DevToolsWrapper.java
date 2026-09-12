@@ -27,7 +27,6 @@ import org.openqa.selenium.devtools.ConverterFunctions;
 import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.json.Json;
-import org.openqa.selenium.remote.http.ClientConfig;
 
 /**
  * Controls browser network conditions through the Chrome DevTools Protocol.
@@ -98,8 +97,7 @@ public class DevToolsWrapper {
      */
     private void createConnectionIfThereIsNotOne() {
         if (connection == null) {
-            connection = SeleniumCdpConnection
-                    .create(driver, ClientConfig.defaultConfig()).get();
+            connection = SeleniumCdpConnection.create(driver).get();
         }
     }
 
