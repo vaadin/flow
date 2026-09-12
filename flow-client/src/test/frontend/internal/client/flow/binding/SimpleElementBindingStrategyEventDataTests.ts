@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
+import { type CollectingTree, makeCollectingTree, sharedEventSettings } from '../bindingTestHelpers';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
@@ -42,8 +42,24 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   // Binds the node and registers a "click" listener with the given expressions.
   function bindWithClickExpressions(expressions: Record<string, unknown>): void {
     bind(node, element);
-    harness.constantPool.importFromJson({ expressionsKey: expressions });
+    harness.constantPool.importFromJson({ expressionsKey: sharedEventSettings(expressions) });
     node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue('expressionsKey');
+    Reactive.flush();
+  }
+
+  // Binds the node and registers a "click" listener whose expressions are
+  // parameterized, i.e. where the capture values are sent for this element
+  // instead of being shared through the constant pool.
+  function bindWithClickCaptures(
+    shared: Record<string, { c: number; d: unknown; e: string }>,
+    captured: Record<string, unknown[]>
+  ): void {
+    bind(node, element);
+    harness.constantPool.importFromJson({ expressionsKey: shared });
+    node
+      .getMap(NodeFeatures.ELEMENT_LISTENERS)
+      .getProperty('click')
+      .setValue(['expressionsKey', captured] as unknown as string);
     Reactive.flush();
   }
 
@@ -141,5 +157,61 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
     const eventData = harness.collectedEventData[0] as Record<string, unknown>;
     expect(eventData[expression]).to.equal(-1);
+  });
+
+  it('evaluates a parameterized expression with its captures', () => {
+    bindWithClickCaptures({ shared: { c: 2, d: false, e: '$0 + $1' } }, { shared$captures: ['shared', 3, 4] });
+
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    // The captures are only reported under the key of the captured entry;
+    // the shared entry itself is not evaluated without captures.
+    expect(eventData).to.deep.equal({ shared$captures: 7 });
+  });
+
+  it('reports one value per set of captures for the same expression', () => {
+    bindWithClickCaptures(
+      { shared: { c: 1, d: false, e: 'element.hasAttribute($0)' } },
+      { shared$first: ['shared', 'id'], shared$second: ['shared', 'title'] }
+    );
+    element.setAttribute('id', 'set');
+
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData).to.deep.equal({ shared$first: true, shared$second: false });
+  });
+
+  it('debounces a parameterized filter per set of captures', () => {
+    bindWithClickCaptures(
+      { shared: { c: 1, d: [[0]], e: 'element.hasAttribute($0)' } },
+      { shared$first: ['shared', 'id'], shared$second: ['shared', 'title'] }
+    );
+
+    // Neither filter matches, so nothing is sent.
+    element.click();
+    expect(harness.collectedNodes).to.have.length(0);
+
+    // One of the two filters matching is enough.
+    element.setAttribute('id', 'set');
+    element.click();
+    expect(harness.collectedNodes).to.have.length(1);
+  });
+
+  it('decodes an element capture into a DOM node', () => {
+    // The child is added after binding, so its state node id is reserved here
+    const childNodeId = nextId;
+    bindWithClickCaptures(
+      { shared: { c: 1, d: false, e: '$0.tagName' } },
+      { shared$node: ['shared', { '@v-node': childNodeId }] }
+    );
+    const { childElement, childNode } = addChild('span');
+    expect(childNode.getId()).to.equal(childNodeId);
+
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData['shared$node']).to.equal(childElement.tagName);
   });
 });

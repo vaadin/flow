@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
@@ -781,6 +782,16 @@ class ComponentEventBusTest {
 
     @Test // #7826
     void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
+        // Count the expressions without mocking, since the mocked digest
+        // makes all the derived keys collapse into one
+        final TestButton reference = new TestButton();
+        reference.addClickListener(event -> {
+        });
+        int expressionCount = ElementListenersTest
+                .getExpressions(reference.getElement().getNode()
+                        .getFeature(ElementListenerMap.class), "click")
+                .size();
+
         final TestButton button = new TestButton();
         try (MockedStatic<MessageDigestUtil> util = Mockito
                 .mockStatic(MessageDigestUtil.class)) {
@@ -789,7 +800,18 @@ class ComponentEventBusTest {
                             new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
-            util.verifyNoInteractions();
+
+            /*
+             * Each expression is hashed once for deriving the key that the
+             * client uses when reporting its value, and the key is then cached
+             * for the lifetime of the registration. The constant pool key for
+             * the settings of all expressions is still only hashed when the
+             * settings are actually sent to the client, i.e. the work stays
+             * linear in the number of expressions instead of being redone for
+             * all of them every time one is added.
+             */
+            util.verify(() -> MessageDigestUtil.sha256(Mockito.anyString()),
+                    Mockito.times(expressionCount));
         }
     }
 
