@@ -196,10 +196,12 @@ public class OpenInNewTabAction extends Action {
         // resolved URL is a javascript: URL; see its Javadoc for the regex.
         // $0 = URL input's JsFunction; $1 = features input's JsFunction —
         // both invoked with the firing event so handler-scoped inputs work.
-        return JsFunction.of("((u) => " + JAVASCRIPT_SCHEME_JS_GUARD
-                + " || window.open(u, \"_blank\", $1(event)))" + "($0(event))",
+        return JsFunction.of(
+                "((u) => " + JAVASCRIPT_SCHEME_JS_GUARD
+                        + " || window.open(u, \"_blank\", $1(event, context)))"
+                        + "($0(event, context))",
                 urlInput.toJs(trigger), featuresInput.toJs(trigger))
-                .withArguments("event");
+                .withArguments("event", "context");
     }
 
     private static LiteralInput<String> urlLiteral(String url) {

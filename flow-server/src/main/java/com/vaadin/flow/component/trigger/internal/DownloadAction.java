@@ -167,13 +167,15 @@ public class DownloadAction extends Action {
         // emitted JS minimal. Both URL and filename are JsFunctions invoked
         // with event so any handler-scoped inputs read live state.
         if (filenameInput == null) {
-            return JsFunction.of("window.Vaadin.Flow.download.start($0(event))",
-                    urlInput.toJs(trigger)).withArguments("event");
+            return JsFunction
+                    .of("window.Vaadin.Flow.download.start($0(event, context))",
+                            urlInput.toJs(trigger))
+                    .withArguments("event", "context");
         }
-        return JsFunction
-                .of("window.Vaadin.Flow.download.start($0(event), $1(event))",
-                        urlInput.toJs(trigger), filenameInput.toJs(trigger))
-                .withArguments("event");
+        return JsFunction.of(
+                "window.Vaadin.Flow.download.start($0(event, context), $1(event, context))",
+                urlInput.toJs(trigger), filenameInput.toJs(trigger))
+                .withArguments("event", "context");
     }
 
     private static LiteralInput<String> literal(String value, String name) {

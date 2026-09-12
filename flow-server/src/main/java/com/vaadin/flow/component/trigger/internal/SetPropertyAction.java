@@ -120,7 +120,8 @@ public class SetPropertyAction<T> extends Action {
         // $0 = target element (captured), $1 = property name (string
         // capture, Jackson-quoted on the client), $2 = source JsFunction
         // (invoked with event so handler-scoped inputs work).
-        return JsFunction.of("$0[$1] = $2(event)", target, propertyName,
-                source.toJs(trigger)).withArguments("event");
+        return JsFunction.of("$0[$1] = $2(event, context)", target,
+                propertyName, source.toJs(trigger))
+                .withArguments("event", "context");
     }
 }
