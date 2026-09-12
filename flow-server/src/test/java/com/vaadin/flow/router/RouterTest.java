@@ -2585,6 +2585,41 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void wildcard_parameter_with_literal_percent_sign()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        // A browser request for /wild/a%2541 is decoded by the container to
+        // the path info /wild/a%41, so the literal text is a%41
+        router.navigate(ui, new Location("wild/a%41"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEquals("a%41", WildParameter.param,
+                "An already decoded path must not be decoded again");
+    }
+
+    @Test
+    public void parameter_with_encoded_and_decoded_path_sameValue()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(RouteWithParameter.class);
+
+        // How the location looks after a client side navigation
+        router.navigate(ui, new Location("param/john%20doe"),
+                NavigationTrigger.PROGRAMMATIC);
+        String fromEncodedPath = RouteWithParameter.param;
+
+        // How the location looks when the container decoded the path info
+        router.navigate(ui, new Location("param/john doe"),
+                NavigationTrigger.PROGRAMMATIC);
+        String fromDecodedPath = RouteWithParameter.param;
+
+        assertEquals(fromDecodedPath, fromEncodedPath,
+                "The same URL must give the same parameter value regardless of the navigation trigger");
+    }
+
+    @Test
     public void root_navigation_target_with_required_parameter()
             throws InvalidRouteConfigurationException {
         RootParameter.events.clear();
