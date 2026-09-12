@@ -81,6 +81,8 @@ class VersionsJsonConverter {
 
     private Set<String> declaredExclusions;
 
+    private Set<String> modeExclusions;
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
@@ -91,6 +93,7 @@ class VersionsJsonConverter {
         this.excludeWebComponents = excludeWebComponents;
         exclusions = new HashSet<>();
         declaredExclusions = new HashSet<>();
+        modeExclusions = new HashSet<>();
         convertedObject = JacksonUtils.createObjectNode();
 
         collectDependencies(pinnedNpmVersions);
@@ -108,15 +111,28 @@ class VersionsJsonConverter {
     }
 
     /**
-     * Get the exclusions set of npm package names.
-     * <p>
-     * Includes the packages left out because of the mode they apply to, which
-     * are excluded for this versions file rather than by the file saying so.
+     * Get the exclusions set of npm package names, the ones the versions file
+     * excludes wherever they are declared.
      *
      * @return the exclusions set
      */
     Set<String> getExclusions() {
         return exclusions;
+    }
+
+    /**
+     * Gets the npm package names left out because of the mode they are
+     * installed in, which are excluded for this versions file rather than by
+     * the file saying so.
+     * <p>
+     * A package another versions file installs in the mode being built is still
+     * installed, so these are only excluded where no file installs them, which
+     * the caller reading several files decides.
+     *
+     * @return the npm package names this file does not install in this mode
+     */
+    Set<String> getModeExclusions() {
+        return modeExclusions;
     }
 
     /**
@@ -145,14 +161,16 @@ class VersionsJsonConverter {
 
     private void excludeDependencies() {
         for (String key : JacksonUtils.getKeys(convertedObject)) {
-            if (exclusions.contains(key)) {
+            if (exclusions.contains(key) || modeExclusions.contains(key)) {
                 convertedObject.remove(key);
             }
         }
     }
 
     private boolean isIncludedByMode(String mode) {
-        if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
+        if (!isOneModeOnly(mode)) {
+            // A package that is not declared for one mode alone is installed
+            // in every mode, whether it says so or says nothing at all
             return true;
         } else if (excludeWebComponents) {
             return false;
@@ -161,6 +179,36 @@ class VersionsJsonConverter {
         } else {
             return MODE_LIT.equalsIgnoreCase(mode);
         }
+    }
+
+    /**
+     * Checks whether the mode is one that leaves the package out of the other
+     * mode, which only {@value #MODE_LIT} and {@value #MODE_REACT} are.
+     * <p>
+     * Anything else, a mode that is missing, empty, {@value #MODE_ALL} or a
+     * value that is not a mode at all, says nothing about when the package is
+     * used, so the package is installed in every mode. Reading an unknown value
+     * as a mode of its own would take the package out of both modes over a
+     * typo.
+     */
+    private static boolean isOneModeOnly(String mode) {
+        return MODE_LIT.equalsIgnoreCase(mode)
+                || MODE_REACT.equalsIgnoreCase(mode);
+    }
+
+    /**
+     * Warns about a mode that is not one of the modes there are, which is
+     * ignored so that the package is installed in every mode.
+     */
+    private static void warnAboutUnknownMode(String npmName, String mode) {
+        if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)
+                || isOneModeOnly(mode)) {
+            return;
+        }
+        getLogger().warn(
+                "The npm package '{}' is declared for the mode '{}', which is not '{}', '{}' or '{}',"
+                        + " so it is installed in every mode. Report it to whoever ships the versions file.",
+                npmName, mode, MODE_LIT, MODE_REACT, MODE_ALL);
     }
 
     private void addDependency(JsonNode obj) {
@@ -176,15 +224,20 @@ class VersionsJsonConverter {
             exclusions.add(npmName);
             return;
         }
+        warnAboutUnknownMode(npmName, mode);
         if (!isIncludedByMode(mode)) {
+            // The package declares the mode it is installed in, and it is not
+            // the mode of this build, so this file does not install it here:
+            // whatever installs it in that mode brings it there instead, the
+            // way the React components bring the web components of a Lit
+            // package. Only a package declaring a mode gets here, as one
+            // without a mode is included in every mode.
+            // This says nothing about the other versions files though, so it
+            // is kept apart from what the file excludes outright.
+            modeExclusions.add(npmName);
             if (excludeWebComponents) {
-                // collecting exclusions also from non-included dependencies
-                // with a mode (react), when web components are not wanted.
                 // The package is not installed from this file, so what it
                 // excludes is not something this file says about the package
-                if (MODE_REACT.equalsIgnoreCase(mode)) {
-                    exclusions.add(npmName);
-                }
                 collectExclusions(obj, false);
             }
             return;

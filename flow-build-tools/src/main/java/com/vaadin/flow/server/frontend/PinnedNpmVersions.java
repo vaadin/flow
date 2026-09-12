@@ -325,7 +325,8 @@ class PinnedNpmVersions {
     }
 
     /**
-     * Gets the npm packages that the versions files exclude.
+     * Gets the npm packages that the versions files exclude, including the ones
+     * no file installs in the mode being built.
      *
      * @param reactEnabled
      *            whether React is enabled
@@ -336,9 +337,22 @@ class PinnedNpmVersions {
     Set<String> getExclusions(boolean reactEnabled,
             boolean excludeWebComponents) {
         Set<String> exclusions = new TreeSet<>();
-        files.forEach(file -> exclusions
-                .addAll(new VersionsJsonConverter(file.content(), reactEnabled,
-                        excludeWebComponents).getExclusions()));
+        Set<String> modeExclusions = new TreeSet<>();
+        Set<String> installed = new TreeSet<>();
+        for (VersionsFile file : files) {
+            VersionsJsonConverter converter = new VersionsJsonConverter(
+                    file.content(), reactEnabled, excludeWebComponents);
+            exclusions.addAll(converter.getExclusions());
+            modeExclusions.addAll(converter.getModeExclusions());
+            installed
+                    .addAll(JacksonUtils.getKeys(converter.getConvertedJson()));
+        }
+        // A package left out of a file because of the mode it is installed in
+        // is only excluded where no file installs it in the mode being built:
+        // the mode of one file says nothing about what another one declares,
+        // the same way it does not for the versions being pinned
+        modeExclusions.removeAll(installed);
+        exclusions.addAll(modeExclusions);
         return exclusions;
     }
 

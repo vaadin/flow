@@ -816,7 +816,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
+    void reactEnabled_scannerDependencies_litOnlyDependenciesNotAdded()
             throws IOException {
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
                 PINNED_ELEMENT_MIXIN_VERSION, PINNED_OVERLAY_VERSION);
@@ -833,9 +833,11 @@ class TaskUpdatePackagesNpmTest {
         task.execute();
         final ObjectNode newPackageJson = getOrCreatePackageJson();
 
-        assertTrue(newPackageJson.has("dependencies")
+        // The dialog is declared for the Lit mode, so the React components
+        // bring the web component instead of the application installing it
+        assertFalse(newPackageJson.has("dependencies")
                 && newPackageJson.get("dependencies").has(VAADIN_DIALOG));
-        assertTrue(newPackageJson.has("vaadin") && newPackageJson.get("vaadin")
+        assertFalse(newPackageJson.has("vaadin") && newPackageJson.get("vaadin")
                 .get("dependencies").has(VAADIN_DIALOG));
         assertTrue(newPackageJson.has("dependencies")
                 && newPackageJson.get("dependencies").has(VAADIN_OVERLAY));
@@ -957,8 +959,10 @@ class TaskUpdatePackagesNpmTest {
         execTaskUpdatePackages(createApplicationDependencies(), options);
         JsonNode pkgJson = getOrCreatePackageJson();
 
-        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
-        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        // The dialog declares a mode, so it is a web component package and
+        // is left out without the versions file having to list it
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
         assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
         assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
         assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));
@@ -1024,8 +1028,10 @@ class TaskUpdatePackagesNpmTest {
         execTaskUpdatePackages(createApplicationDependencies(), options);
         JsonNode pkgJson = getOrCreatePackageJson();
 
-        assertTrue(hasInDependencies(pkgJson, VAADIN_DIALOG));
-        assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
+        // The dialog declares a mode, so it is a web component package and
+        // is left out without the versions file having to list it
+        assertFalse(hasInDependencies(pkgJson, VAADIN_DIALOG));
+        assertFalse(hasInVaadinDependencies(pkgJson, VAADIN_DIALOG));
         assertTrue(hasInDependencies(pkgJson, VAADIN_OVERLAY));
         assertTrue(hasInVaadinDependencies(pkgJson, VAADIN_OVERLAY));
         assertFalse(hasInDependencies(pkgJson, REACT_COMPONENTS));

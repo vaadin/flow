@@ -388,6 +388,94 @@ class VersionsJsonConverterTest {
     }
 
     @Test
+    void modeThatIsNotAMode_thePackageIsInstalledInEveryMode() {
+        String json = """
+                {
+                  "core": {
+                    "text-field": {
+                      "npmName": "@vaadin/text-field",
+                      "jsVersion": "25.3.0",
+                      "mode": "Lit "
+                    }
+                  }
+                }
+                """;
+
+        // A value that is not a mode says nothing about when the package is
+        // used, so it is installed in every mode rather than in neither of
+        // them, which a typo would otherwise cause
+        for (boolean reactEnabled : new boolean[] { true, false }) {
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    JacksonUtils.readTree(json), reactEnabled, false);
+            assertTrue(convert.getConvertedJson().has("@vaadin/text-field"),
+                    "The package should be pinned with react " + reactEnabled);
+            assertFalse(
+                    convert.getModeExclusions().contains("@vaadin/text-field"),
+                    "The package should be installed with react "
+                            + reactEnabled);
+            assertFalse(convert.getExclusions().contains("@vaadin/text-field"));
+        }
+    }
+
+    @Test
+    void modeExcludesThePackagesInstalledInTheOtherModeOnly() {
+        String json = """
+                {
+                  "core": {
+                    "text-field": {
+                      "npmName": "@vaadin/text-field",
+                      "jsVersion": "25.3.0",
+                      "mode": "lit"
+                    },
+                    "date-fns": {
+                      "npmName": "date-fns",
+                      "jsVersion": "4.4.0"
+                    }
+                  },
+                  "react": {
+                    "react-components": {
+                      "npmName": "@vaadin/react-components",
+                      "jsVersion": "25.3.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """;
+
+        // With React, the Lit package is not installed, as the React
+        // components bring the web component instead
+        VersionsJsonConverter react = new VersionsJsonConverter(
+                JacksonUtils.readTree(json), true, false);
+        assertTrue(react.getModeExclusions().contains("@vaadin/text-field"),
+                "A Lit package should not be installed when React is used");
+        assertFalse(
+                react.getModeExclusions().contains("@vaadin/react-components"));
+        assertFalse(react.getModeExclusions().contains("date-fns"),
+                "A package without a mode is installed in every mode");
+        assertTrue(react.getConvertedJson().has("@vaadin/react-components"));
+        assertTrue(react.getConvertedJson().has("date-fns"));
+
+        // Leaving a package out because of the mode is not something the file
+        // says about the package, so it does not exclude it from the others
+        assertFalse(react.getExclusions().contains("@vaadin/text-field"));
+        assertFalse(
+                react.getDeclaredExclusions().contains("@vaadin/text-field"));
+
+        // Without React, it is the React package that is not installed
+        VersionsJsonConverter lit = new VersionsJsonConverter(
+                JacksonUtils.readTree(json), false, false);
+        assertTrue(lit.getModeExclusions().contains("@vaadin/react-components"),
+                "A React package should not be installed when Lit is used");
+        assertFalse(lit.getModeExclusions().contains("@vaadin/text-field"));
+        assertFalse(lit.getModeExclusions().contains("date-fns"));
+        assertTrue(lit.getConvertedJson().has("@vaadin/text-field"));
+        assertTrue(lit.getConvertedJson().has("date-fns"));
+        assertFalse(lit.getExclusions().contains("@vaadin/react-components"));
+        assertFalse(lit.getDeclaredExclusions()
+                .contains("@vaadin/react-components"));
+    }
+
+    @Test
     void declaredExclusionsLeaveOutWhatTheModeExcludes() {
         String json = """
                 {
@@ -418,8 +506,11 @@ class VersionsJsonConverterTest {
 
         // The React package is left out because web components are excluded,
         // and the router because React is used, neither of which is something
-        // the file says about those packages
-        assertTrue(
+        // the file says about those packages. The React package is left out by
+        // its mode, so it is only excluded where no file installs it
+        assertTrue(convert.getModeExclusions()
+                .contains("@vaadin/react-components"));
+        assertFalse(
                 convert.getExclusions().contains("@vaadin/react-components"));
         assertTrue(convert.getExclusions().contains("@vaadin/router"));
         assertFalse(convert.getDeclaredExclusions()

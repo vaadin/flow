@@ -342,6 +342,74 @@ class PinnedNpmVersionsTest {
     }
 
     @Test
+    void packageLeftOutOfOneFileByItsMode_isNotExcludedWhenAnotherFileInstallsIt()
+            throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "components": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0"
+                    }
+                  }
+                }
+                """);
+
+        // The first file does not install the package without React, which
+        // says nothing about the file declaring it for every mode: excluding
+        // it would drop the version that file pins, and the one an add-on or
+        // an application declares for it
+        assertFalse(
+                pinnedNpmVersions.getExclusions(false, false)
+                        .contains("@vaadin/grid"),
+                "A package another versions file installs should not be excluded");
+    }
+
+    @Test
+    void packageNoFileInstallsInTheMode_isExcluded() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
+                {
+                  "core": {
+                    "grid": {
+                      "npmName": "@vaadin/grid",
+                      "jsVersion": "25.1.0",
+                      "mode": "lit"
+                    }
+                  }
+                }
+                """, """
+                {
+                  "react": {
+                    "react-components": {
+                      "npmName": "@vaadin/react-components",
+                      "jsVersion": "25.1.0",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """);
+
+        // Nothing installs the web component with React, so the React
+        // components bring it instead of the application installing it
+        assertTrue(pinnedNpmVersions.getExclusions(true, false)
+                .contains("@vaadin/grid"));
+        // And the other way round, the React package is not installed by a
+        // Lit application
+        assertTrue(pinnedNpmVersions.getExclusions(false, false)
+                .contains("@vaadin/react-components"));
+    }
+
+    @Test
     void packageWithoutAVersion_theOtherPackagesArePinnedAllTheSame()
             throws IOException {
         PinnedNpmVersions pinnedNpmVersions = createPinnedNpmVersions("""
