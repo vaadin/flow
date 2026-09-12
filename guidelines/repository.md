@@ -33,6 +33,7 @@ Every top-level Maven module of the repository:
 | `flow-devloop-daemon`            | Daemon for the `vaadin-dev` dev loop.                                           |
 | `vaadin-dev-server`              | Development tooling served to the browser.                                      |
 | `vaadin-spring`                  | Spring Framework integration.                                                   |
+| `vaadin-cdi`                     | CDI integration, for Jakarta EE application servers.                            |
 | `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
 | `flow-jandex`                    | Jandex index of the Flow packages, for use outside Vaadin Platform.             |
 | `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |

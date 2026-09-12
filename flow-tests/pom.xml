@@ -384,6 +384,7 @@
         <module>test-custom-frontend-directory</module>
 
         <module>vaadin-spring-tests</module>
+        <module>vaadin-cdi-tests</module>
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
