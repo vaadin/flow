@@ -15,97 +15,100 @@
  */
 package com.vaadin.viteapp;
 
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-public class SourceMapsIT {
+public class SourceMapsIT extends BundleAccess {
 
-    private static final String BUILD_PATH = "/VAADIN/build/";
-
-    private String getRootURL() {
-        return "http://localhost:8888";
-    }
+    private static final Pattern IMPORTED_BUNDLE = Pattern
+            .compile("[\"']\\./([^\"']+\\.js)[\"']");
+    private static final Pattern SOURCE_MAPPING_URL = Pattern
+            .compile("//# sourceMappingURL=(\\S+)");
 
     /**
      * A build plugin that rewrites a chunk must chain its sourcemap onto the
      * one the bundler already has for that chunk, otherwise the emitted .map
-     * file ends up without sources and mappings and the browser cannot map the
-     * bundle back to the original files.
+     * file ends up without the original sources and the browser cannot map the
+     * bundle back to them.
      */
     @Test
-    public void bundleSourceMapsHaveSourcesAndMappings() throws Exception {
+    public void bundleSourceMapsPointToOriginalSources() throws Exception {
         String entryBundle = getJsBundleName();
-        Set<String> bundles = new LinkedHashSet<>();
-        bundles.add(entryBundle);
-        bundles.addAll(getImportedBundles(entryBundle));
+        int checkedBundles = 0;
 
-        Assert.assertNotNull(
-                entryBundle + " should refer to an emitted sourcemap",
-                getSourceMapName(download(BUILD_PATH + entryBundle)));
-
-        for (String bundle : bundles) {
-            String sourceMapName = getSourceMapName(
-                    download(BUILD_PATH + bundle));
-            if (sourceMapName == null) {
+        for (String bundle : getBundles(entryBundle)) {
+            String contents = download(BUILD_PATH + bundle);
+            Matcher matcher = SOURCE_MAPPING_URL.matcher(contents);
+            if (!matcher.find()) {
+                Assert.assertNotEquals(
+                        entryBundle + " should refer to an emitted sourcemap",
+                        entryBundle, bundle);
                 // Bundler runtime helpers are emitted without a sourcemap
                 continue;
             }
-            JsonNode sourceMap = JsonMapper.shared()
-                    .readTree(download(BUILD_PATH + sourceMapName));
+            assertSourceMapUsable(bundle, JsonMapper.shared()
+                    .readTree(download(BUILD_PATH + matcher.group(1))));
+            checkedBundles++;
+        }
+
+        Assert.assertNotEquals("No bundle with a sourcemap was found", 0,
+                checkedBundles);
+    }
+
+    private void assertSourceMapUsable(String bundle, JsonNode sourceMap) {
+        JsonNode sources = sourceMap.get("sources");
+        JsonNode sourcesContent = sourceMap.get("sourcesContent");
+        Assert.assertNotEquals(bundle + " should have a sourcemap with sources",
+                0, sources.size());
+        Assert.assertNotEquals(
+                bundle + " should have a sourcemap with mappings", "",
+                sourceMap.get("mappings").asString());
+        Assert.assertEquals(
+                bundle + " should have the contents of every source in its "
+                        + "sourcemap",
+                sources.size(), sourcesContent.size());
+        for (int i = 0; i < sources.size(); i++) {
             Assert.assertNotEquals(
-                    bundle + " should have a sourcemap with sources", 0,
-                    sourceMap.get("sources").size());
+                    bundle + " should have a sourcemap referring to the "
+                            + "original files, was " + sources.get(i),
+                    "", sources.get(i).asString().trim());
             Assert.assertNotEquals(
-                    bundle + " should have a sourcemap with mappings", "",
-                    sourceMap.get("mappings").asString());
+                    bundle + " should have the contents of "
+                            + sources.get(i).asString() + " in its sourcemap",
+                    "", sourcesContent.get(i).asString().trim());
         }
     }
 
     /**
-     * Finds the bundles that the given bundle statically imports, so that the
-     * chunks which are not referenced from index.html are covered as well.
+     * Collects the given bundle and the bundles it imports, directly or through
+     * another bundle. Names that are not served are left out, as not every file
+     * name in a bundle is an emitted chunk.
      */
-    private Set<String> getImportedBundles(String bundle) throws Exception {
+    private Set<String> getBundles(String entryBundle) throws Exception {
         Set<String> bundles = new LinkedHashSet<>();
-        Matcher matcher = Pattern.compile("[\"']\\./([^\"']+\\.js)[\"']")
-                .matcher(download(BUILD_PATH + bundle));
-        while (matcher.find()) {
-            bundles.add(matcher.group(1));
+        Deque<String> pending = new ArrayDeque<>();
+        pending.add(entryBundle);
+        while (!pending.isEmpty()) {
+            String bundle = pending.remove();
+            String contents = downloadIfAvailable(BUILD_PATH + bundle);
+            if (contents == null || !bundles.add(bundle)) {
+                continue;
+            }
+            Matcher matcher = IMPORTED_BUNDLE.matcher(contents);
+            while (matcher.find()) {
+                pending.add(matcher.group(1));
+            }
         }
         return bundles;
-    }
-
-    private String getSourceMapName(String bundleContents) {
-        Matcher matcher = Pattern.compile("//# sourceMappingURL=(\\S+)")
-                .matcher(bundleContents);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private String getJsBundleName() throws Exception {
-        String indexHtml = download("/index.html");
-        Matcher matcher = Pattern
-                .compile(".* src=\"\\./VAADIN/build/([^\"]*)\".*",
-                        Pattern.DOTALL)
-                .matcher(indexHtml);
-        if (!matcher.matches()) {
-            throw new IllegalStateException("No script found");
-        }
-        return matcher.group(1);
-    }
-
-    private String download(String path) throws Exception {
-        return IOUtils.toString(new URL(getRootURL() + path),
-                StandardCharsets.UTF_8);
     }
 
 }
