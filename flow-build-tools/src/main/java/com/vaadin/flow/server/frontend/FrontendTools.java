@@ -691,7 +691,7 @@ public class FrontendTools {
      * {@code .npmrc} may also arrive as a comma separated string. Only that
      * string is split, as the values of an array are complete on their own and
      * may contain a comma themselves, such as the brace expansion
-     * {@code @acme/&#123;ui,core&#125;}.
+     * {@code @acme/{ui,core}}.
      *
      * @param toolCommand
      *            the npm or pnpm command to run

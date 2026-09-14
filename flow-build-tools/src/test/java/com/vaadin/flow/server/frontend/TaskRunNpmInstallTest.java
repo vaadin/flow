@@ -795,12 +795,31 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void resolveMinimumFrontendPackageAge_zeroConfigured_noArgument() {
+    void resolveMinimumFrontendPackageAge_zeroConfigured_noArgumentAndNoAge() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Options options = new MockOptions(npmFolder)
+                .withMinimumFrontendPackageAgeDays(0);
 
-        assertFalse(resolveMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder).withMinimumFrontendPackageAgeDays(0),
-                tools).isPresent());
+        // nothing blocks a version, so nothing has to be excluded either
+        assertMinimumFrontendPackageAge(options, tools, false, null);
+
+        // an age npm is configured with is a value that blocks nothing too
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age")))
+                .thenReturn(Optional.of("0"));
+
+        assertMinimumFrontendPackageAge(options, tools, false, null);
+    }
+
+    private void assertMinimumFrontendPackageAge(Options options,
+            FrontendTools tools, boolean applies, String argument) {
+        TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(options, tools,
+                        List.of(TaskRunNpmInstall.getToolName(options)),
+                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
+
+        assertEquals(applies, minimumAge.applies());
+        assertEquals(Optional.ofNullable(argument), minimumAge.argument());
     }
 
     @Test
@@ -909,8 +928,10 @@ class TaskRunNpmInstallTest {
         assertFalse(minimumAge.argument().isPresent());
         // so the packages Vaadin publishes are excluded from it
         assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
-                resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
-                        new MockLogger()));
+                TaskRunNpmInstall
+                        .resolveMinimumFrontendPackageAgeExcludeArguments(
+                                options, tools, List.of("npm"),
+                                minimumAge.applies(), new MockLogger()));
     }
 
     @Test
