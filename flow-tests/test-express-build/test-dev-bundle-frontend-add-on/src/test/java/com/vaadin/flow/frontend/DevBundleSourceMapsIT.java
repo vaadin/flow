@@ -23,13 +23,13 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.SourceMapTestUtil;
 
 /**
  * A build plugin that hands back the code of a module without a sourcemap drops
@@ -44,80 +44,94 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class DevBundleSourceMapsIT extends ChromeBrowserTest {
 
     private static final String LIT_VIEW_SOURCE = "src/main/frontend/views/lit-view.ts";
+    private static final String USAGE_STATISTICS_SOURCE = "src/main/frontend/vaadin-usage-statistics.js";
 
     @Override
     protected String getTestPath() {
         return "/view/com.vaadin.flow.frontend.LitView";
     }
 
-    @Test
-    public void devBundleSourceMapsPointToOriginalSources() throws IOException {
+    @Before
+    public void init() {
         // The dev bundle is built when the application is first opened
         open();
         waitForElementPresent(By.tagName("lit-view"));
+    }
 
-        boolean litViewFound = false;
+    @Test
+    public void devBundleSourceMaps_pointToOriginalSources()
+            throws IOException {
+        List<String> sources = new ArrayList<>();
         List<File> sourceMaps = getDevBundleSourceMaps();
         for (File sourceMap : sourceMaps) {
-            litViewFound |= assertSourceMapUsable(sourceMap);
+            sources.addAll(SourceMapTestUtil.assertSourceMapUsable(
+                    sourceMap.getName(), read(sourceMap)));
         }
 
-        Assert.assertTrue(
-                "A sourcemap of the dev bundle should refer to "
-                        + LIT_VIEW_SOURCE + ", only found " + sourceMaps,
-                litViewFound);
+        assertHasSource(sources, LIT_VIEW_SOURCE);
+        assertHasSource(sources, USAGE_STATISTICS_SOURCE);
     }
 
     /**
-     * Asserts that the given sourcemap can be used to map the chunk back to the
-     * files it was built from, and tells whether the view source is one of
-     * them.
+     * The plugin that keeps the usage statistics comment rewrites the module it
+     * is in, which is the one case where the plugin has to produce a sourcemap
+     * of its own instead of leaving the module alone.
      */
-    private boolean assertSourceMapUsable(File sourceMap) throws IOException {
-        String name = sourceMap.getName();
-        JsonNode contents = JsonMapper.shared().readTree(
-                FileUtils.readFileToString(sourceMap, StandardCharsets.UTF_8));
-        JsonNode sources = contents.get("sources");
-        JsonNode sourcesContent = contents.get("sourcesContent");
+    @Test
+    public void usageStatisticsComment_isRewrittenInTheBundle()
+            throws IOException {
+        File chunk = getDevBundleChunkOf("vaadin-dev-mode:start");
+        String contents = read(chunk);
 
-        Assert.assertNotEquals(name + " should have a sourcemap with sources",
-                0, sources.size());
-        Assert.assertNotEquals(name + " should have a sourcemap with mappings",
-                "", contents.get("mappings").asString());
-        Assert.assertEquals(
-                name + " should have the contents of every source in its "
-                        + "sourcemap",
-                sources.size(), sourcesContent.size());
+        Assert.assertTrue(
+                chunk.getName() + " should have the usage statistics comment "
+                        + "rewritten so that it is kept in the bundle",
+                contents.contains("/*! vaadin-dev-mode:start"));
+        Assert.assertFalse(
+                chunk.getName() + " should no longer have the original "
+                        + "usage statistics comment",
+                contents.contains("/** vaadin-dev-mode:start"));
+    }
 
-        boolean litViewFound = false;
-        for (int i = 0; i < sources.size(); i++) {
-            String source = sources.get(i).asString();
-            Assert.assertNotEquals(
-                    name + " should have a sourcemap referring to the "
-                            + "original files, was " + source,
-                    "", source.trim());
-            Assert.assertNotEquals(
-                    name + " should have the contents of " + source
-                            + " in its sourcemap",
-                    "", sourcesContent.get(i).asString().trim());
-            litViewFound |= source.replace('\\', '/').endsWith(LIT_VIEW_SOURCE);
-        }
-        return litViewFound;
+    private void assertHasSource(List<String> sources, String source) {
+        Assert.assertTrue(
+                "A sourcemap of the dev bundle should refer to " + source
+                        + ", only found " + sources,
+                sources.stream().anyMatch(name -> name.endsWith(source)));
     }
 
     private List<File> getDevBundleSourceMaps() {
-        File baseDir = new File(System.getProperty("user.dir", "."));
-        File buildFolder = new File(baseDir, "target/"
-                + Constants.DEV_BUNDLE_LOCATION + "/webapp/VAADIN/build");
-        Assert.assertTrue("The dev bundle should have been built into "
-                + buildFolder.getPath(), buildFolder.isDirectory());
-
-        List<File> sourceMaps = new ArrayList<>(List.of(buildFolder
-                .listFiles((dir, name) -> name.endsWith(".js.map"))));
+        List<File> sourceMaps = List.of(getDevBundleBuildFolder()
+                .listFiles((dir, name) -> name.endsWith(".js.map")));
         Assert.assertFalse(
                 "The dev bundle should have been built with sourcemaps "
                         + "enabled, see vite.config.ts",
                 sourceMaps.isEmpty());
         return sourceMaps;
+    }
+
+    private File getDevBundleChunkOf(String marker) throws IOException {
+        List<File> chunks = List.of(getDevBundleBuildFolder()
+                .listFiles((dir, name) -> name.endsWith(".js")));
+        for (File chunk : chunks) {
+            if (read(chunk).contains(marker)) {
+                return chunk;
+            }
+        }
+        throw new AssertionError("No chunk of the dev bundle contains '"
+                + marker + "', looked at " + chunks);
+    }
+
+    private File getDevBundleBuildFolder() {
+        File baseDir = new File(System.getProperty("user.dir", "."));
+        File buildFolder = new File(baseDir, "target/"
+                + Constants.DEV_BUNDLE_LOCATION + "/webapp/VAADIN/build");
+        Assert.assertTrue("The dev bundle should have been built into "
+                + buildFolder.getPath(), buildFolder.isDirectory());
+        return buildFolder;
+    }
+
+    private String read(File file) throws IOException {
+        return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     }
 }

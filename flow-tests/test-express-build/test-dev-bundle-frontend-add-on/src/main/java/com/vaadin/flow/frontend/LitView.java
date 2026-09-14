@@ -23,6 +23,9 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.frontend.LitView")
 @Tag("lit-view")
 @JsModule("./views/lit-view.ts")
+// Brings the usage statistics stand-in into the bundle, so that the build runs
+// the plugin that keeps its vaadin-dev-mode comment, see DevBundleSourceMapsIT
+@JsModule("./vaadin-usage-statistics.js")
 public class LitView extends LitTemplate {
 
 }
