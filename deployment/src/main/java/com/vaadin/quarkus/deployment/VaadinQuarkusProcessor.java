@@ -39,7 +39,7 @@ import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.builder.BuildException;
-import io.quarkus.deployment.IsNormal;
+import io.quarkus.deployment.IsProduction;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -353,7 +353,7 @@ class VaadinQuarkusProcessor {
         return new CustomScopeBuildItem(RouteScoped.class);
     }
 
-    @BuildStep(onlyIf = IsNormal.class)
+    @BuildStep(onlyIf = IsProduction.class)
     void buildFrontendTask(CurateOutcomeBuildItem outcomeBuildItem,
             OutputTargetBuildItem outputTarget,
             VaadinBuildTimeConfig vaadinConfig,
