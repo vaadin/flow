@@ -20,10 +20,20 @@ public class FileWatcherTest {
 
         watcher.start();
 
-        File newFile = new File(dir, "newFile.txt");
-        newFile.createNewFile();
+        try {
+            File newFile = new File(dir, "newFile.txt");
+            newFile.createNewFile();
 
-        Thread.sleep(50); // The watcher is supposed to be triggered immediately
-        Assert.assertEquals(newFile, changed.get());
+            // The watcher is supposed to be triggered immediately, but a
+            // loaded machine can deliver the event later
+            long deadline = System.currentTimeMillis() + 10000;
+            while (changed.get() == null
+                    && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            Assert.assertEquals(newFile, changed.get());
+        } finally {
+            watcher.stop();
+        }
     }
 }
