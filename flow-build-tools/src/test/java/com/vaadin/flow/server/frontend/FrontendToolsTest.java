@@ -672,6 +672,29 @@ class FrontendToolsTest {
     }
 
     @Test
+    void getSuitablePnpm_notUsingGlobalPnpm_pinsDefaultPnpmVersion()
+            throws IOException {
+        assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
+        createStubNode(
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NODE)
+                        .build(),
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NPM)
+                        .withVersion(SUPPORTED_PNPM_VERSION).build(),
+                vaadinHomeDir);
+
+        List<String> pnpmCommand = tools.getSuitablePnpm();
+
+        // npx must be given an explicit version, otherwise it resolves
+        // whatever it considers latest, which is not necessarily a pnpm
+        // version Flow supports
+        assertTrue(
+                pnpmCommand
+                        .contains("pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION),
+                "expected pnpm to be pinned to DEFAULT_PNPM_VERSION, but the command was "
+                        + pnpmCommand);
+    }
+
+    @Test
     void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
         assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
@@ -970,6 +993,73 @@ class FrontendToolsTest {
             frontendUtils.verify(() -> FrontendUtils.executeCommand(Mockito.eq(
                     List.of("node", "pnpm.cjs", "config", "list", "--json")),
                     Mockito.any()));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_listAndCommaSeparatedValue_areRead()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/*\", \"lit\"]}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+
+            // a single value written into an .npmrc may also arrive as a
+            // comma separated string
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": \"@acme/*, lit\"}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_braceExpansionInAList_isKeptTogether()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // the values of a list are complete on their own, and the comma
+            // of a brace expansion does not separate two patterns
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/{ui,core}\"]}");
+
+            assertEquals(List.of("@acme/{ui,core}"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_keyWithoutValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": null, \"omit\": []}");
+
+            assertEquals(List.of(),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+            assertEquals(List.of(), tools.getConfiguredSettingValues(
+                    List.of("npm"), new File(baseDir), "omit"));
         }
     }
 
