@@ -303,11 +303,17 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
-          fetch-depth: 0  # Full history required to diff against the merge base
+          # Full history only where the step below actually diffs. tomee is
+          # ungated, so cloning the whole repository for it buys nothing.
+          fetch-depth: ${{ matrix.profile == 'tomee' && 1 || 0 }}
       - name: Decide whether to run
         # Same gating as gradle-tests below: a push or a manual run has nothing
         # to compare against, and a gate that cannot tell what changed has to
         # run the job rather than report green.
+        #
+        # The root pom counts as a CDI source: it manages weld.version, which
+        # the tomcat-weld profile resolves weld-servlet-shaded from, so a bump
+        # there is exactly the kind of change only the gated containers see.
         id: decide
         run: |
           set -euo pipefail
@@ -331,7 +337,7 @@ jobs:
               echo "Could not diff against $DIFF_BASE, running every container."
             else
               RELEVANT=$(printf '%s\n' "$CHANGED" | grep -E \
-                '^(vaadin-cdi/|flow-tests/vaadin-cdi-tests/|\.github/workflows/validation\.yml$)' || true)
+                '^(vaadin-cdi/|flow-tests/vaadin-cdi-tests/|pom\.xml$|\.github/workflows/validation\.yml$)' || true)
               if [ -z "$RELEVANT" ]; then
                 echo "No changes to the CDI modules, tomee alone covers this."
                 run=false
@@ -345,11 +351,11 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '24.20.0'
+          node-version: '24.21.0'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          version: '11.21.0'
+          version: '11.26.0'
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -750,7 +756,7 @@ jobs:
     # restores it has run: deleting it in test-results could race with the
     # Sonar analysis, which starts as soon as the unit tests finish.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [test-results, sonar-analysis, gradle-tests, cdi-tests]
+    needs: [test-results, sonar-analysis, gradle-tests]
     runs-on: ubuntu-24.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
