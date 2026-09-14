@@ -754,7 +754,7 @@ final class TransactionEngine {
             app.stop();
             AppProcess.Startup startup;
             try {
-                startup = app.start(log);
+                startup = app.start(log, "apply");
             } catch (java.io.IOException e) {
                 tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
                 return finish(tx, Outcome.FAILED, "restart: " + e.getMessage(),
