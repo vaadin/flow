@@ -403,6 +403,52 @@ class AbstractListDataViewTest {
     }
 
     @Test
+    void addItem_firesItemAddedEventInsteadOfRefreshAll() {
+        AtomicReference<DataChangeEvent<String>> received = new AtomicReference<>();
+        dataProvider.addDataProviderListener(received::set);
+
+        dataView.addItem("new");
+
+        DataChangeEvent<String> event = received.get();
+        assertNotNull(event, "Expected an event to be fired");
+        assertTrue(event instanceof DataChangeEvent.ItemAddedEvent,
+                "Expected an ItemAddedEvent, got " + event.getClass());
+        assertEquals("new",
+                ((DataChangeEvent.ItemAddedEvent<String>) event).getItem());
+    }
+
+    @Test
+    void removeItem_firesItemRemovedEventInsteadOfRefreshAll() {
+        AtomicReference<DataChangeEvent<String>> received = new AtomicReference<>();
+        dataProvider.addDataProviderListener(received::set);
+
+        dataView.removeItem("middle");
+
+        DataChangeEvent<String> event = received.get();
+        assertNotNull(event, "Expected an event to be fired");
+        assertTrue(event instanceof DataChangeEvent.ItemRemovedEvent,
+                "Expected an ItemRemovedEvent, got " + event.getClass());
+        assertEquals("middle",
+                ((DataChangeEvent.ItemRemovedEvent<String>) event).getItem());
+    }
+
+    @Test
+    void removeItem_notPresent_fallsBackToRefreshAll() {
+        AtomicReference<DataChangeEvent<String>> received = new AtomicReference<>();
+        dataProvider.addDataProviderListener(received::set);
+
+        dataView.removeItem("not present");
+
+        DataChangeEvent<String> event = received.get();
+        assertNotNull(event, "Expected an event to be fired");
+        // When nothing is removed, the data provider has no item to notify
+        // about, so it falls back to the original refreshAll behavior
+        assertFalse(event instanceof DataChangeEvent.DataRefreshEvent);
+        assertFalse(event instanceof DataChangeEvent.ItemRemovedEvent);
+        assertFalse(event instanceof DataChangeEvent.ItemAddedEvent);
+    }
+
+    @Test
     void addItemBefore_itemIsAddedAtExpectedPosition() {
         dataView.addItemBefore("newItem", "middle");
 
