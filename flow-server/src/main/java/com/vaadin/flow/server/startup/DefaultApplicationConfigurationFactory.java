@@ -189,10 +189,8 @@ public class DefaultApplicationConfigurationFactory
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
      * <p>
-     * Only a token file written by a production build is accepted from a jar. A
-     * development mode one describes the project and the machine the jar was
-     * built on, so it is of no use for the application that is being run and is
-     * there by mistake.
+     * A candidate that cannot be used for the application that is being run is
+     * skipped, see {@link #getReasonToIgnore(String)}.
      *
      * @return the token file content, or {@code null} if no usable file was
      *         found
