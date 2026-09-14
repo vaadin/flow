@@ -23,12 +23,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,18 +83,6 @@ class StreamRequestHandlerTest {
     private VaadinResponse response;
     private StreamResourceRegistry streamResourceRegistry;
     private UI ui;
-
-    /*
-     * Used by the tests that cover the lifecycle of a UI and its session while
-     * a transfer is being served. Those need a UI that is added to the session
-     * and servlet based request and response instances, since a transfer is
-     * terminated through the streams that those hand out.
-     */
-    private int uiId;
-    private HttpServletRequest httpRequest;
-    private VaadinServletRequest servletRequest;
-    private VaadinServletResponse servletResponse;
-    private ByteArrayOutputStream responseBody;
 
     @BeforeEach
     void setUp() throws ServletException, ServiceException {
@@ -494,7 +480,7 @@ class StreamRequestHandlerTest {
     @Test
     void ongoingDownload_uiClosed_uiStaysAttachedUntilDownloadHasCompleted()
             throws IOException {
-        Element owner = initTransferFixture();
+        TransferFixture fixture = initTransferFixture();
         byte[] contents = "Downloaded file contents"
                 .getBytes(StandardCharsets.UTF_8);
         List<Boolean> attachedWhileDownloading = new ArrayList<>();
@@ -505,60 +491,55 @@ class StreamRequestHandlerTest {
             ui.close();
             service.runSessionCleanup(session);
 
-            attachedWhileDownloading.add(session.getUIById(uiId) != null);
+            attachedWhileDownloading
+                    .add(session.getUIById(fixture.uiId()) != null);
 
             event.getOutputStream().write(contents);
         };
 
-        handleTransferRequest(downloadHandler, owner);
+        handleTransferRequest(fixture, downloadHandler);
 
         assertEquals(List.of(Boolean.TRUE), attachedWhileDownloading,
                 "A closed UI should stay attached to the session while a download for it is ongoing");
-        assertArrayEquals(contents, responseBody.toByteArray(),
+        assertArrayEquals(contents, fixture.responseBody().toByteArray(),
                 "The whole download should have been written to the response");
 
         // The download request has ended, so nothing keeps the UI alive
         service.runSessionCleanup(session);
-        assertNull(session.getUIById(uiId),
+        assertNull(session.getUIById(fixture.uiId()),
                 "A closed UI should be detached from the session once its download has completed");
     }
 
     @Test
     void ongoingUpload_uiClosed_uploadCompletionCallbackIsInvoked()
             throws IOException {
-        Element owner = initTransferFixture();
-        List<File> uploadedFiles = new ArrayList<>();
+        TransferFixture fixture = initTransferFixture();
+        List<String> uploadedContents = new ArrayList<>();
         UploadHandler uploadHandler = UploadHandler
-                .toTempFile((metadata, file) -> uploadedFiles.add(file));
+                .inMemory((metadata, data) -> uploadedContents
+                        .add(new String(data, StandardCharsets.UTF_8)));
 
         String contents = "Uploaded file contents";
-        mockUploadRequest(contents, () -> {
+        mockUploadRequest(fixture, contents, () -> {
             // The browser tab is closed while the upload is ongoing
             ui.close();
             service.runSessionCleanup(session);
         });
 
-        try {
-            handleTransferRequest(uploadHandler, owner);
-            // The completion callback is run through UI.access, and the
-            // pending access queue is not purged automatically for a session
-            // that is permanently locked in this test
-            service.runPendingAccessTasks(session);
+        handleTransferRequest(fixture, uploadHandler);
+        // The completion callback is run through UI.access, and the pending
+        // access queue is not purged automatically for a session that is
+        // permanently locked in this test
+        service.runPendingAccessTasks(session);
 
-            assertEquals(1, uploadedFiles.size(),
-                    "The upload completion callback should be invoked for a UI that was closed while the upload was ongoing");
-            assertEquals(contents,
-                    Files.readString(uploadedFiles.get(0).toPath()),
-                    "The whole upload should have been written to the file");
-        } finally {
-            uploadedFiles.forEach(File::delete);
-        }
+        assertEquals(List.of(contents), uploadedContents,
+                "The whole upload should have been delivered to the completion callback of a UI that was closed while the upload was ongoing");
     }
 
     @Test
     void ongoingDownload_sessionInvalidated_downloadIsTerminated()
             throws IOException {
-        Element owner = initTransferFixture();
+        TransferFixture fixture = initTransferFixture();
         // Three buffers worth of data, so that the transfer has to loop
         byte[] contents = new byte[3 * TransferUtil.DEFAULT_BUFFER_SIZE];
         InputStream contentStream = new ByteArrayInputStream(contents) {
@@ -582,18 +563,17 @@ class StreamRequestHandlerTest {
                 });
 
         assertThrows(IOException.class,
-                () -> handleTransferRequest(downloadHandler, owner),
+                () -> handleTransferRequest(fixture, downloadHandler),
                 "A download should be terminated when the session is invalidated");
-        assertTrue(responseBody.size() < contents.length,
+        assertTrue(fixture.responseBody().size() < contents.length,
                 "A terminated download should not have written all of its contents");
     }
 
     @Test
     void ongoingDownload_customHandlerWritingToResponse_sessionInvalidatedTerminatesIt()
             throws IOException {
-        Element transferOwner = initTransferFixture();
+        TransferFixture fixture = initTransferFixture();
         byte[] chunk = new byte[1024];
-        int chunkCount = 10;
 
         // A handler that implements the interface directly and writes to the
         // response instead of using TransferUtil
@@ -604,52 +584,53 @@ class StreamRequestHandlerTest {
 
             invalidateSession();
 
-            for (int i = 1; i < chunkCount; i++) {
-                outputStream.write(chunk);
-            }
+            outputStream.write(chunk);
         };
 
         assertThrows(IOException.class,
-                () -> handleTransferRequest(rawHandler, transferOwner),
+                () -> handleTransferRequest(fixture, rawHandler),
                 "A download writing to the response should be terminated when the session is invalidated");
-        assertTrue(responseBody.size() < chunkCount * chunk.length,
-                "A terminated download should not have written all of its contents");
+        assertEquals(chunk.length, fixture.responseBody().size(),
+                "Only the content written before the invalidation should have reached the response");
     }
 
     /**
      * Adds an initialized UI with an owner component to the session and creates
-     * the servlet based request and response that a transfer for that owner is
-     * served with.
-     *
-     * @return the owner element to scope a request handler to
+     * the request and response that a transfer for that owner is served with.
+     * The servlet types are used since a transfer is terminated through the
+     * streams that a request and a response hand out.
      */
-    private Element initTransferFixture() throws IOException {
-        httpRequest = mock(HttpServletRequest.class);
-        servletRequest = new VaadinServletRequest(httpRequest, service);
+    private TransferFixture initTransferFixture() throws IOException {
+        HttpServletRequest httpRequest = mock(HttpServletRequest.class);
 
-        responseBody = new ByteArrayOutputStream();
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
         HttpServletResponse httpResponse = mock(HttpServletResponse.class);
         when(httpResponse.getOutputStream())
                 .thenReturn(TestServletStreams.outputStream(responseBody));
-        servletResponse = new VaadinServletResponse(httpResponse, service);
 
-        uiId = session.getNextUIid();
+        VaadinServletRequest servletRequest = new VaadinServletRequest(
+                httpRequest, service);
+
+        int uiId = session.getNextUIid();
         ui.doInit(servletRequest, uiId, "app-id");
         session.addUI(ui);
 
         TransferOwnerComponent owner = new TransferOwnerComponent();
         ui.add(owner);
-        return owner.getElement();
+
+        return new TransferFixture(uiId, owner.getElement(), httpRequest,
+                servletRequest,
+                new VaadinServletResponse(httpResponse, service), responseBody);
     }
 
-    private void handleTransferRequest(ElementRequestHandler requestHandler,
-            Element owner) throws IOException {
+    private void handleTransferRequest(TransferFixture fixture,
+            ElementRequestHandler requestHandler) throws IOException {
         StreamRegistration registration = streamResourceRegistry
-                .registerResource(requestHandler, owner);
-        when(httpRequest.getPathInfo())
+                .registerResource(requestHandler, fixture.owner());
+        when(fixture.httpRequest().getPathInfo())
                 .thenReturn("/" + registration.getResourceUri().toString());
 
-        handler.handleRequest(session, servletRequest, servletResponse);
+        handler.handleRequest(session, fixture.request(), fixture.response());
     }
 
     private void invalidateSession() {
@@ -660,8 +641,9 @@ class StreamRequestHandlerTest {
         service.runPendingAccessTasks(session);
     }
 
-    private void mockUploadRequest(String contents, Runnable onFirstRead)
-            throws IOException {
+    private void mockUploadRequest(TransferFixture fixture, String contents,
+            Runnable onFirstRead) throws IOException {
+        HttpServletRequest httpRequest = fixture.httpRequest();
         when(httpRequest.getMethod()).thenReturn("POST");
         when(httpRequest.getHeader("X-Filename")).thenReturn("file.txt");
         when(httpRequest.getContentLengthLong())
@@ -669,6 +651,16 @@ class StreamRequestHandlerTest {
         when(httpRequest.getInputStream()).thenReturn(TestServletStreams
                 .inputStream(contents.getBytes(StandardCharsets.UTF_8),
                         onFirstRead));
+    }
+
+    /**
+     * The UI and the request and response that the tests covering the lifecycle
+     * of a UI and its session use for serving one transfer.
+     */
+    private record TransferFixture(int uiId, Element owner,
+            HttpServletRequest httpRequest, VaadinServletRequest request,
+            VaadinServletResponse response,
+            ByteArrayOutputStream responseBody) {
     }
 
     @Tag("div")
