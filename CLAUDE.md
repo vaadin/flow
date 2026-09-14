@@ -27,6 +27,7 @@ React support).
 - `flow-devloop-daemon`: daemon for the `vaadin-dev` dev loop
 - `flow-tests/`: integration test suite
 - `vaadin-spring`: Spring Framework integration
+- `vaadin-cdi`: CDI integration
 
 See `guidelines/repository.md` for the full module map and
 `guidelines/architecture.md` for how the pieces fit together.
