@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -153,23 +154,31 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     @Override
     public boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer) {
-        if (model.getRuntimeDependencies().stream().noneMatch(
-                dependency -> dependency.getGroupId().equals(groupId))) {
-            if (missingDependencyMessageConsumer != null) {
-                missingDependencyMessageConsumer.accept(String.format(
-                        """
-                                The dependency %1$s:%2$s has not been found in the project configuration.
-                                Please add the following dependency to your POM file:
+        Objects.requireNonNull(groupId, "groupId cannot be null");
+        Objects.requireNonNull(artifactId, "artifactId cannot be null");
+        if (missingDependencyMessageConsumer == null) {
+            missingDependencyMessageConsumer = text -> {
+            };
+        }
+        // Unlike Maven, there is no need to inspect the dependency scope, since
+        // the Quarkus application model already reports only dependencies that
+        // are present at runtime.
+        if (model.getRuntimeDependencies().stream()
+                .noneMatch(dependency -> groupId.equals(dependency.getGroupId())
+                        && artifactId.equals(dependency.getArtifactId()))) {
+            missingDependencyMessageConsumer.accept(String.format(
+                    """
+                            The dependency %1$s:%2$s has not been found in the project configuration.
+                            Please add the following dependency to your POM file:
 
-                                <dependency>
-                                    <groupId>%1$s</groupId>
-                                    <artifactId>%2$s</artifactId>
-                                    <scope>runtime</scope>
-                                </dependency>
-                                """,
-                        groupId, artifactId));
-            }
-            return true;
+                            <dependency>
+                                <groupId>%1$s</groupId>
+                                <artifactId>%2$s</artifactId>
+                                <scope>runtime</scope>
+                            </dependency>
+                            """,
+                    groupId, artifactId));
+            return false;
         }
         return true;
     }
@@ -253,7 +262,7 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
 
     @Override
     public boolean isDebugEnabled() {
-        return false;
+        return LOGGER.isDebugEnabled();
     }
 
     @Override
@@ -393,12 +402,25 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
 
     @Override
     public String buildFolder() {
-        Path projectDir = appModule.getModuleDir().toPath();
         Path buildDir = appModule.getBuildDir().toPath();
-        if (buildDir.startsWith(projectDir)) {
-            return projectDir.relativize(buildDir).toString();
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // the project basedir. A build dir outside basedir then yields a "../"
+        // path. Returning the absolute path would instead append it to the
+        // project folder and point outside the build dir.
+        if (!buildDir.isAbsolute()) {
+            return buildDir.toString();
         }
-        return buildDir.toString();
+        // relativize() requires both paths to be absolute; the module dir is
+        // always absolute in a real build, toAbsolutePath() only guards exotic
+        // setups.
+        try {
+            return projectBaseDirectory().toAbsolutePath().relativize(buildDir)
+                    .toString();
+        } catch (IllegalArgumentException e) {
+            // Different filesystem roots (e.g. on Windows): cannot relativize.
+            return buildDir.toString();
+        }
     }
 
     @Override
@@ -436,10 +458,12 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     @Override
     public String applicationIdentifier() {
         return config.applicationIdentifier().filter(id -> !id.isBlank())
-                .orElseGet(() -> "app-" + StringUtil.getHash(
-                        model.getAppArtifact().getGroupId()
-                                + model.getAppArtifact().getArtifactId(),
-                        StandardCharsets.UTF_8));
+                .orElseGet(
+                        () -> "app-" + StringUtil.getHash(
+                                model.getAppArtifact().getGroupId() + ":"
+                                        + model.getAppArtifact()
+                                                .getArtifactId(),
+                                StandardCharsets.UTF_8));
     }
 
     @Override
@@ -459,7 +483,7 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
 
     @Override
     public Integer minimumFrontendPackageAgeDays() {
-        return config.minimumFrontendPackageAgeDays();
+        return config.minimumFrontendPackageAgeDays().orElse(null);
     }
 
     /**
