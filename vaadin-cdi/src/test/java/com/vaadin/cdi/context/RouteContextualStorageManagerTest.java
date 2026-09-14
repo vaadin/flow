@@ -545,6 +545,21 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
         customEventEventTrigger.fire(new CustomEvent());
     }
 
+    @Test
+    public void customEvent_noNavigationDataYet_conditionalBean_doesNotThrow() {
+        // An IF_EXISTS observer has the container look the bean up without
+        // creating it, which reaches the navigation chain check with
+        // createIfNotExist false - the other side of the branch covered by
+        // get_noNavigationDataYet_ownedBean_scopeDoesNotExist_Throws. That
+        // path has to answer "no storage" rather than fail on the absent
+        // navigation data, so firing the event before any navigation must
+        // simply notify nobody.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        customEventEventTrigger.fire(new CustomEvent());
+    }
+
     private void navigateTo(Class navigationTarget,
             Class<? extends RouterLayout> layout) {
         Mockito.when(event.getNavigationTarget()).thenReturn(navigationTarget);

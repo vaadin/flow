@@ -426,12 +426,13 @@ public class BeanManagerProvider implements Extension {
     }
 
     /**
-     * This method recurses into the parent ClassLoaders and checks whether a
-     * BeanManagerInfo for it exists.
+     * Returns the {@link BeanManagerInfo} of the given ClassLoader's immediate
+     * parent, creating and storing an empty one if that ClassLoader has none
+     * yet.
      *
-     * @return the BeanManagerInfo of the parent ClassLoader hierarchy if any
-     *         exists, or <code>null</code> if there is no
-     *         {@link BeanManagerInfo} for the ClassLoaders in the hierarchy.
+     * @return the parent ClassLoader's BeanManagerInfo, or <code>null</code>
+     *         only when the given ClassLoader has no parent - that is, when it
+     *         is the bootstrap ClassLoader.
      */
     private BeanManagerInfo getParentBeanManagerInfo(ClassLoader classLoader) {
         ClassLoader parentClassLoader = classLoader.getParent();
@@ -439,9 +440,6 @@ public class BeanManagerProvider implements Extension {
             return null;
         }
 
-        // getBeanManagerInfo creates and stores an entry when the ClassLoader
-        // has none, so it never returns null and the recursion that used to
-        // guard against that could not run.
         return getBeanManagerInfo(parentClassLoader);
     }
 
