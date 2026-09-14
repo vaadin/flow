@@ -192,7 +192,7 @@ public class DnDIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\"> no-effect </div>";
+        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\">no-effect</div>";
         Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
     }
 
