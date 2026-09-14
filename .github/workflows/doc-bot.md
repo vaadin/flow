@@ -91,13 +91,21 @@ concurrency:
 
 # vaadin/docs is checked out beside this repository so the agent reads it with
 # `grep` instead of the code-search API. `doc-bot/*` brings in the branch of an
-# existing documentation pull request, which Phase 5b commits onto.
+# existing documentation pull request, which Phase 5b commits onto. `main` is
+# listed next to it because `fetch:` compiles into a single shallow
+# `git fetch --depth=1`, and a shallow fetch whose every refspec matches
+# nothing exits 1 without printing a reason. Most of the time no `doc-bot/*`
+# branch is open, and that step runs in both the agent job and the safe-output
+# job, so the empty wildcard alone would fail the run before the agent starts.
+# `main` always matches, which keeps the fetch successful whether or not a
+# documentation pull request is open, and costs nothing: it is the ref this
+# checkout already pulls.
 checkout:
   - fetch-depth: 1
   - repository: vaadin/docs
     path: docs-repo
     ref: main
-    fetch: ['doc-bot/*']
+    fetch: ['doc-bot/*', 'main']
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
 
 env:

@@ -442,6 +442,26 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "pnpm install in CI build should not use --no-frozen-lockfile");
     }
 
+    @Test
+    void runPnpmInstall_excludesVaadinPackagesFromTheMinimumAge()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+
+        task.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(
+                Mockito.eq("using '{}' for frontend package installation"),
+                captor.capture());
+        assertTrue(
+                captor.getValue().contains(
+                        "--config.minimum-release-age-exclude=@vaadin/*"),
+                "pnpm install should let the packages Vaadin publishes be "
+                        + "installed regardless of the minimum frontend "
+                        + "package age");
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";

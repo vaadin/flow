@@ -237,7 +237,20 @@ final class AppProcess {
         return List.of(command.get(0), "@" + file);
     }
 
-    Startup start(Launch.Log log) throws IOException {
+    /**
+     * Launches the application.
+     *
+     * @param log
+     *            where provisioning progress goes
+     * @param launchKind
+     *            why the app is being launched - {@code start}, {@code restart}
+     *            or {@code apply} - passed on to the app so it can report which
+     *            it was. See {@link Launch#command(int, String, String)}.
+     * @return the outcome of the launch
+     * @throws IOException
+     *             if the command line cannot be built or the process started
+     */
+    Startup start(Launch.Log log, String launchKind) throws IOException {
         lifecycle.lock();
         try {
             if (alreadyLaunching()) {
@@ -245,7 +258,7 @@ final class AppProcess {
                         : "already running");
             }
             List<String> command = launch.command(Daemon.currentPort(),
-                    Daemon.currentToken());
+                    Daemon.currentToken(), launchKind);
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
 
