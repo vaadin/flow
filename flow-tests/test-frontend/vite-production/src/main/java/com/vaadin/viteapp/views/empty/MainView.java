@@ -29,6 +29,8 @@ import com.vaadin.flow.router.Route;
 @JsModule("@vaadin/test-package-outside-npm/index.js")
 @JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./toplevelawait-main.js")
+@JsModule("./i18n-chunk.js")
+@JsModule("./i18n-chunk-extra.js")
 @CssImport("./image.css")
 @StyleSheet("styles/static-stylesheet.css")
 public class MainView extends Div {
