@@ -310,6 +310,11 @@ final class DevLoopRedefiner {
         boolean pageReload = observer != null
                 && observer.isPageReloadRequired();
 
+        // The single success return: every earlier exit is an ERR, so nothing
+        // is reported for a redefine that did not happen. One REDEFINE command
+        // per apply, so this counts applied changes rather than classes.
+        DevLoopStatistics.changeApplied();
+
         return reply(inspected, new Applied(structural, proxied, frontend,
                 completed, pageReload, redefineMs, hotswapMs));
     }

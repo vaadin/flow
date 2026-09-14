@@ -343,7 +343,7 @@ public final class Daemon {
                 out.println("EXIT " + tx.outcome.exitCode);
             }
             case "start" -> {
-                AppProcess.Startup startup = app.start(log);
+                AppProcess.Startup startup = app.start(log, "start");
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -353,7 +353,7 @@ public final class Daemon {
             }
             case "restart" -> {
                 app.stop();
-                AppProcess.Startup startup = app.start(log);
+                AppProcess.Startup startup = app.start(log, "restart");
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
