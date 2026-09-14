@@ -13,6 +13,20 @@
   <name>vaadin-cdi</name>
   <description>Provides CDI integration for Vaadin applications.</description>
 
+  <properties>
+    <!--
+      com.vaadin.cdi.util is CDI plumbing derived from Apache DeltaSpike and
+      carried along unchanged. What exercises it is the Arquillian suite in
+      flow-tests/vaadin-cdi-tests, which deploys to real application servers -
+      and Sonar is fed unit-test coverage only (see the sonar-analysis job),
+      so those lines read as untested however much of them the containers run.
+      Measuring this package therefore says nothing about how well it is
+      tested. The rest of the module, which is Vaadin's own code, stays
+      measured and sits above the quality gate on its own.
+    -->
+    <sonar.coverage.exclusions>src/main/java/com/vaadin/cdi/util/**</sonar.coverage.exclusions>
+  </properties>
+
   <dependencies>
     <!-- Core -->
     <dependency>

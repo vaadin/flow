@@ -143,7 +143,7 @@ public class BeanManagerProvider implements Extension {
      * {@link #bmpSingleton} singleton!
      * </p>
      */
-    private volatile Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<ClassLoader, BeanManagerInfo>();
+    private final Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<>();
 
     /**
      * Indicates whether the {@link BeanManagerProvider} has been initialized.
@@ -439,13 +439,10 @@ public class BeanManagerProvider implements Extension {
             return null;
         }
 
-        BeanManagerInfo bmi = getBeanManagerInfo(parentClassLoader);
-        if (bmi == null) {
-            // recursive call up to the root ClassLoader
-            bmi = getParentBeanManagerInfo(parentClassLoader);
-        }
-
-        return bmi;
+        // getBeanManagerInfo creates and stores an entry when the ClassLoader
+        // has none, so it never returns null and the recursion that used to
+        // guard against that could not run.
+        return getBeanManagerInfo(parentClassLoader);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -213,6 +213,19 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
 
             memberOfGroup1.get();
         });
+    }
+
+    @Test
+    public void get_noNavigationDataYet_ownedBean_scopeDoesNotExist_Throws() {
+        // A bean that names its owner resolves it from the qualifier without
+        // consulting the navigation data, so it reaches the chain check even
+        // when no navigation has happened on this UI at all. That has to be
+        // reported as a missing scope rather than failing on the absent data.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> memberOfGroup1.get());
     }
 
     @Test

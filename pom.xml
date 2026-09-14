@@ -86,9 +86,20 @@
       Scoped to this one rule, so the lock files keep being analyzed for
       everything else.
     -->
-    <sonar.issue.ignore.multicriteria>agenticInstallScripts</sonar.issue.ignore.multicriteria>
+    <!--
+      DependentProvider serializes the CreationalContext it holds. S2118 flags
+      that because the declared type is not Serializable, but the instances a
+      CDI container actually supplies are - Weld's CreationalContextImpl among
+      them - and the class round-trips fine on the containers the CDI suite
+      deploys to. Writing it is deliberate: without it a deserialized provider
+      could not destroy its @Dependent instance. Scoped to this one rule in
+      this one file.
+    -->
+    <sonar.issue.ignore.multicriteria>agenticInstallScripts,cdiDependentProviderSerialization</sonar.issue.ignore.multicriteria>
     <sonar.issue.ignore.multicriteria.agenticInstallScripts.ruleKey>githubactions:S6505</sonar.issue.ignore.multicriteria.agenticInstallScripts.ruleKey>
     <sonar.issue.ignore.multicriteria.agenticInstallScripts.resourceKey>**/.github/workflows/*.lock.yml</sonar.issue.ignore.multicriteria.agenticInstallScripts.resourceKey>
+    <sonar.issue.ignore.multicriteria.cdiDependentProviderSerialization.ruleKey>java:S2118</sonar.issue.ignore.multicriteria.cdiDependentProviderSerialization.ruleKey>
+    <sonar.issue.ignore.multicriteria.cdiDependentProviderSerialization.resourceKey>**/com/vaadin/cdi/util/DependentProvider.java</sonar.issue.ignore.multicriteria.cdiDependentProviderSerialization.resourceKey>
 
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <failOnMissingWebXml>false</failOnMissingWebXml>

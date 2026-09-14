@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -369,6 +369,13 @@ public class RouteScopedContext extends AbstractContext {
 
     private boolean navigationChainHasOwner(UI ui, Class<?> owner) {
         NavigationData data = ComponentUtil.getData(ui, NavigationData.class);
+        if (data == null) {
+            // No navigation has happened on this UI yet, so there is no chain
+            // for the owner to be part of. Reporting that as "not in the chain"
+            // lets the caller raise its own IllegalStateException, which names
+            // the owner and the bean, instead of failing with a bare NPE.
+            return false;
+        }
         if (owner.equals(data.getNavigationTarget())) {
             return true;
         }

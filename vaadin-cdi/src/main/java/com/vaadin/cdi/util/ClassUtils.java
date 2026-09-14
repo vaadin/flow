@@ -468,6 +468,12 @@ public abstract class ClassUtils {
             Method sourceMethod) {
         Method exactMethod = extractMethod(clazz, sourceMethod);
         if (exactMethod == null) {
+            if (clazz == null) {
+                // extractMethod tolerates a null class and returns null for
+                // it, so the generic fallback below has to as well rather
+                // than dereferencing it.
+                return null;
+            }
             String methodName = sourceMethod.getName();
             Class<?>[] parameterTypes = sourceMethod.getParameterTypes();
             for (Method method : clazz.getMethods()) {
