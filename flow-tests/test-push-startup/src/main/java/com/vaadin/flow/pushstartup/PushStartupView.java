@@ -13,18 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger.internal;
+package com.vaadin.flow.pushstartup;
 
-import java.io.Serializable;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 
 /**
- * Represents a 2D pixel size with a width and a height.
- *
- * @param width
- *            the width in pixels
- * @param height
- *            the height in pixels
- * @since 25.2
+ * A view whose only job is to give the test something to request, so that the
+ * servlet starts initializing its service.
  */
-public record Size(int width, int height) implements Serializable {
+@Route("")
+public class PushStartupView extends Div {
+
+    public PushStartupView() {
+        Div message = new Div();
+        message.setId("message");
+        message.setText("View attached");
+        add(message);
+    }
 }

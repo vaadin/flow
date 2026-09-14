@@ -18,8 +18,10 @@ package com.vaadin.flow.component;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -528,6 +530,76 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void ownerScopeGuard_componentLifecycleOwner_filterLocatesOwnerByToken() {
+        UI realUi = spyUiWithSession();
+        Component owner = new FakeComponent();
+        realUi.add(owner);
+        new ShortcutRegistration(owner, () -> new Component[] { realUi },
+                event -> {
+                }, Key.KEY_A);
+
+        realUi.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        final String token = owner.getElement()
+                .getAttribute(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE);
+        assertNotNull(token, "component owner should be marked");
+        assertTrue(
+                shortcutFilter(realUi).contains("eventInOwnerScope(event, '["
+                        + ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE + "~=\""
+                        + token + "\"]')"),
+                "filter should locate the owner element by its marker token");
+    }
+
+    @Test
+    void ownerScopeGuard_uiLifecycleOwner_filterHasNoTokenAndUiIsNotMarked() {
+        UI realUi = spyUiWithSession();
+        realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+
+        realUi.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        assertNull(
+                realUi.getElement().getAttribute(
+                        ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "the UI element can never be inside a popover, so it needs no marker");
+        final String filter = shortcutFilter(realUi);
+        assertTrue(filter.contains("eventInTopLevelScope(event)"),
+                "UI-owned shortcut should use the token-free origin guard "
+                        + filter);
+        assertFalse(
+                filter.contains(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "UI-owned shortcut should not embed an owner token " + filter);
+    }
+
+    @Test
+    void ownerScopeGuard_uiLifecycleOwner_repeatedRegistrationsShareFilter() {
+        // #25624: a filter text that differs per registration is retained
+        // forever by the client expression cache and both constant pools, so
+        // re-registering the same shortcut must not produce a new expression.
+        UI realUi = spyUiWithSession();
+        final StateTree tree = realUi.getInternals().getStateTree();
+
+        ShortcutRegistration first = realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+        tree.runExecutionsBeforeClientResponse();
+        // The whole expression map is what keys the constant pool entry.
+        final Set<String> firstExpressions = new HashSet<>(
+                keydownExpressions(realUi));
+
+        first.remove();
+        realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(firstExpressions,
+                new HashSet<>(keydownExpressions(realUi)),
+                "re-registering the same UI shortcut should reuse the very "
+                        + "same expressions");
+    }
+
+    @Test
     void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
@@ -924,6 +996,24 @@ class ShortcutRegistrationTest {
                 .filter(e -> e.contains("registerKeydownDelegate(this,"))
                 .findFirst().orElseThrow(() -> new AssertionError(
                         "No registerKeydownDelegate call scheduled"));
+    }
+
+    private static Set<String> keydownExpressions(Component component) {
+        return component.getElement().getNode()
+                .getFeature(ElementListenerMap.class).getExpressions("keydown");
+    }
+
+    /**
+     * The single keydown listener filter carrying the shortcut origin guard.
+     */
+    private static String shortcutFilter(Component component) {
+        return keydownExpressions(component).stream()
+                .filter(e -> e.contains("window.Vaadin.Flow.shortcut."))
+                .reduce((a, b) -> {
+                    throw new AssertionError(
+                            "More than one shortcut filter: " + a + " / " + b);
+                }).orElseThrow(() -> new AssertionError(
+                        "No shortcut filter registered for keydown"));
     }
 
     private boolean hasKeyAInKeyDownExpression(Component component) {

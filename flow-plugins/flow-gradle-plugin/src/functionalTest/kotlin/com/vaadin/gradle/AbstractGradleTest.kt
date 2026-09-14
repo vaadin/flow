@@ -56,7 +56,7 @@ abstract class AbstractGradleTest {
 
     private companion object {
         const val VERSION_ENV = "vaadin.version"
-        const val FALLBACK_VERSION = "25.3-SNAPSHOT"
+        const val FALLBACK_VERSION = "25.4-SNAPSHOT"
 
         /**
          * The version the generated test projects build against, taken from the

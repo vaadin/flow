@@ -1225,7 +1225,7 @@ public class Options implements Serializable {
      * @return this builder
      * @throws IllegalArgumentException
      *             if {@code minimumFrontendPackageAgeDays} is negative
-     * @since 25.1.6
+     * @since 25.2.8
      */
     public Options withMinimumFrontendPackageAgeDays(
             @Nullable Integer minimumFrontendPackageAgeDays) {

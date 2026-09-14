@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Element;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -282,5 +283,172 @@ class ThemeListImplTest {
         assertEquals(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
                 notRemovedTheme,
                 "Theme left in ThemeList after removal should be the only theme preset in the corresponding element");
+    }
+
+    @Test
+    void themeListReflectsAttributeSetAfterCreation() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        element.setAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME, "dark");
+
+        assertFalse(themeList.isEmpty(),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertEquals(1, themeList.size(),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertTrue(themeList.contains("dark"),
+                "ThemeList should reflect the theme attribute set after the list was obtained");
+        assertEquals("dark", themeList.iterator().next(),
+                "ThemeList iterator should reflect the theme attribute set after the list was obtained");
+    }
+
+    @Test
+    void themeListReflectsAttributeRemovedAfterCreation() {
+        MockElement element = new MockElement("dark");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        element.removeAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME);
+
+        assertTrue(themeList.isEmpty(),
+                "ThemeList should reflect the theme attribute removed after the list was obtained");
+        assertFalse(themeList.contains("dark"),
+                "ThemeList should reflect the theme attribute removed after the list was obtained");
+    }
+
+    @Test
+    void modificationKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement();
+        ThemeListImpl firstList = new ThemeListImpl(element);
+        ThemeListImpl secondList = new ThemeListImpl(element);
+
+        secondList.add("dark");
+        firstList.add("compact");
+
+        assertEquals(Set.of("dark", "compact"),
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Modifying one ThemeList instance should not discard themes added through another instance");
+        assertTrue(firstList.containsAll(Arrays.asList("dark", "compact")),
+                "Every ThemeList instance of the same element should see the same themes");
+        assertTrue(secondList.containsAll(Arrays.asList("dark", "compact")),
+                "Every ThemeList instance of the same element should see the same themes");
+    }
+
+    @Test
+    void removalKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl firstList = new ThemeListImpl(element);
+        ThemeListImpl secondList = new ThemeListImpl(element);
+
+        secondList.add("dark");
+        firstList.remove("theme1");
+
+        assertEquals(Set.of("dark", "theme2"),
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Removing through one ThemeList instance should only remove the requested theme");
+    }
+
+    @Test
+    void iteratorRemovalKeepsThemesAddedThroughAnotherInstance() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+        ThemeListImpl otherList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        String removedTheme = iterator.next();
+        otherList.add("dark");
+        iterator.remove();
+
+        Set<String> expected = new HashSet<>(
+                Arrays.asList("theme1", "theme2", "dark"));
+        expected.remove(removedTheme);
+        assertEquals(expected,
+                Set.of(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
+                        .split(" ")),
+                "Iterator removal should only remove the theme it returned, keeping themes added through another instance");
+        assertFalse(themeList.contains(removedTheme),
+                "Iterator removal should remove the theme it returned");
+    }
+
+    @Test
+    void themesKeepInsertionOrderInAttribute() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        themeList.add("theme1");
+        themeList.add("theme2");
+        themeList.add("theme3");
+
+        assertEquals("theme1 theme2 theme3",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "Themes should be written to the theme attribute in the order they were added");
+    }
+
+    @Test
+    void iteratorDoesNotReflectChangesMadeDuringIteration() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        assertEquals("theme1", iterator.next());
+        new ThemeListImpl(element).add("dark");
+        new ThemeListImpl(element).remove("theme2");
+
+        assertTrue(iterator.hasNext(),
+                "The iterator walks the themes present when it was created");
+        assertEquals("theme2", iterator.next(),
+                "The iterator walks the themes present when it was created");
+        assertFalse(iterator.hasNext(),
+                "The iterator does not pick up themes added after it was created");
+    }
+
+    @Test
+    void iteratorRemoveWithoutNext_throwsIllegalStateException() {
+        MockElement element = new MockElement("theme1");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        Iterator<String> iterator = themeList.iterator();
+        assertThrows(IllegalStateException.class, iterator::remove,
+                "Iterator removal without a preceding next() should throw");
+
+        iterator.next();
+        iterator.remove();
+        assertThrows(IllegalStateException.class, iterator::remove,
+                "Repeated iterator removal for the same theme should throw");
+    }
+
+    @Test
+    void addThemeNameContainingSpaces_throws() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> themeList.add("primary small"),
+                "A theme name containing spaces cannot be stored as a single theme name");
+        assertThrows(IllegalArgumentException.class,
+                () -> themeList.addAll(Arrays.asList("primary small")),
+                "A theme name containing spaces cannot be stored as a single theme name");
+        assertThrows(IllegalArgumentException.class, () -> themeList.add(null),
+                "A null theme name should be rejected");
+        assertThrows(IllegalArgumentException.class, () -> themeList.add(""),
+                "An empty theme name should be rejected");
+        assertNull(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "A rejected theme name should not be written to the theme attribute");
+    }
+
+    @Test
+    void removeAllWithNonStringValues_ignoresThem() {
+        MockElement element = new MockElement("theme1", "theme2");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+
+        assertTrue(
+                themeList
+                        .removeAll(Arrays.asList("theme1", Integer.valueOf(1))),
+                "Removing a known theme name should modify the theme list");
+
+        assertEquals("theme2",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "A value that cannot be a theme name should simply be ignored");
     }
 }

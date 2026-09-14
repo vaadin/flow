@@ -419,6 +419,8 @@ public final class Constants implements Serializable {
      * <p>
      * Every jar pinning npm package versions ships one or more {@code .json}
      * files in this folder and all of them are read and merged.
+     * 
+     * @since 25.3
      */
     public static final String PINNED_NPM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
             + "versions/";

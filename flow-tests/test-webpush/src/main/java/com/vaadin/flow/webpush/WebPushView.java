@@ -33,13 +33,14 @@ public class WebPushView extends Div {
     public static final String SUBSCRIBE_ID = "subscribe";
     public static final String UNSUBSCRIBE_ID = "unsubscribe";
     public static final String NOTIFY_ID = "notify";
+    public static final String FETCH_ID = "fetch";
     private static final String PUBLIC_KEY = "BPXZkCj3rxN6a1v21aCyMQHmTaAn1QZyWRDeBfwQ4qperQNszSD9JhnZv9b45vHLQLxnK3zsCvCl1r8EDpPDjoM";
     private static final String PRIVATE_KEY = "W-J0f4QwsjrEwDnJJTky5waIX9xNaM87-Dfd42_SEDM";
     public static final String TEST_TITLE = "Test title";
 
     private int eventCounter = 0;
 
-    NativeButton check, subscribe, unsubscribe, notify;
+    NativeButton check, subscribe, unsubscribe, notify, fetch;
 
     WebPush webPush;
 
@@ -96,10 +97,18 @@ public class WebPushView extends Div {
         });
         notify.setId(NOTIFY_ID);
 
+        fetch = new NativeButton("Fetch",
+                event -> webPush.fetchExistingSubscription(
+                        event.getSource().getUI().get(),
+                        result -> addLogEntry(
+                                "Fetched " + (result != null ? result.endpoint()
+                                        : "<none>"))));
+        fetch.setId(FETCH_ID);
+
         log = new Div(new Text("Click events and their sources:"));
         log.setId(EVENT_LOG_ID);
 
-        add(check, subscribe, unsubscribe, notify, log);
+        add(check, subscribe, unsubscribe, notify, fetch, log);
     }
 
     private void addLogEntry(String eventDetails) {

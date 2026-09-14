@@ -91,8 +91,18 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
         }
 
-        LOGGER.debug("Generating PWA icons from '{}'",
-                pwaConfiguration.getIconPath());
+        // A custom icon path is worth reporting: it lets the developer see
+        // which image the shipped icons were actually scaled from.
+        // The fluent SLF4J 2 API is off limits here: this code runs inside
+        // Maven, which exports its own slf4j-api 1.7 to plugin class loaders.
+        if (PwaConfiguration.DEFAULT_ICON
+                .equals(pwaConfiguration.getIconPath())) {
+            LOGGER.debug("Generating PWA icons from '{}'",
+                    pwaConfiguration.getIconPath());
+        } else {
+            LOGGER.info("Generating PWA icons from '{}'",
+                    pwaConfiguration.getIconPath());
+        }
 
         try {
             BufferedImage baseImage = loadBaseImage(iconURL);
