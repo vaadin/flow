@@ -68,7 +68,7 @@ class LaunchTest {
 
     @Test
     void forwardedToApp_holdsBackWhatTheLoopItselfSets() {
-        // These three are put on the app's command line with the value the loop
+        // These four are put on the app's command line with the value the loop
         // requires. The forwarding runs after them and a later -D wins, so a
         // forwarded copy does not merely duplicate - it overrides. For
         // devtools that would put Spring's own restart back in the ring
@@ -76,6 +76,10 @@ class LaunchTest {
         assertFalse(Launch.forwardedToApp("spring.devtools.restart.enabled"));
         assertFalse(Launch.forwardedToApp("vaadin.launch-browser"));
         assertFalse(Launch.forwardedToApp("vaadin.devloop.classes"));
+        // And without this one, a developer who happened to set
+        // VAADIN_DEV_DAEMON_OPTS="-Dvaadin.devloop.launch=apply" would have
+        // every launch reported as an escalated apply.
+        assertFalse(Launch.forwardedToApp("vaadin.devloop.launch"));
     }
 
     @Test
