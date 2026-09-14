@@ -409,6 +409,7 @@
           <artifactId>arquillian-liberty-managed-jakarta-junit</artifactId>
           <version>2.1.4</version>
           <type>pom</type>
+          <scope>test</scope>
         </dependency>
       </dependencies>
       <build>
@@ -497,6 +498,11 @@
           <version>${weld.version}</version>
           <scope>test</scope>
         </dependency>
+        <!-- No scope on purpose: it overrides the provided scope this
+             module declares above, so the API reaches the compile classpath
+             (src/main/java/.../push/ManagedExecutorPushComponent.java) and the
+             archive ShrinkWrap assembles. Tomcat+Weld is not a full Jakarta EE
+             server and supplies neither. -->
         <dependency>
           <groupId>jakarta.enterprise.concurrent</groupId>
           <artifactId>jakarta.enterprise.concurrent-api</artifactId>
