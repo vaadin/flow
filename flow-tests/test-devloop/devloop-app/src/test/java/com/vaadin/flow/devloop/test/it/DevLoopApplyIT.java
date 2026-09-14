@@ -47,6 +47,30 @@ class DevLoopApplyIT extends AbstractDevLoopIT {
     }
 
     @Test
+    void aBeanEditedTwiceOverStaysAHotSwapBothTimes() {
+        // A bean, and two edits in a row, which is the shape that catches a
+        // "has the application ever had this class?" answer built out of
+        // timestamps: the first apply rewrites the class file, and a second
+        // apply that reads only "this class file is newer than the launch"
+        // then mistakes the application's own bean for one it has never
+        // scanned - and restarts for it.
+        java.nio.file.Path bean = MUTABLE.resolve("TaskService.java");
+
+        patch.replace(bean, "\"Write the plan\"", "\"Write the plan, once\"");
+        cli.run("apply").assertExitCode(0).assertOutputContains("hot-reload:")
+                .assertOutputDoesNotContain("restarting");
+
+        patch.replace(bean, "\"Write the plan, once\"",
+                "\"Write the plan, twice\"");
+
+        VaadinDevCli.Outcome outcome = cli.run("apply").assertExitCode(0);
+
+        outcome.assertOutputContains("hot-reload:");
+        outcome.assertOutputDoesNotContain("restarting");
+        outcome.assertOutputDoesNotContain("new Spring bean");
+    }
+
+    @Test
     void compileError_failsWithADiagnosticAndKeepsTheAppRunning() {
         patch.replace(MUTABLE.resolve("TaskListView.java"),
                 "return \"Task List\";", "return nope();");

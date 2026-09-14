@@ -15,16 +15,28 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
-import java.nio.file.Path;
+import javax.tools.ToolProvider;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The changes a redefine cannot make live, and the reason each one gives.
  * <p>
- * Both cases here are ones that used to be reported as live: the JVM accepts
- * the redefine, and what the application built from the old class at startup -
- * a bean's proxy, an ORM's metamodel - silently no longer matches.
+ * Every case here is one that used to be reported as live: what the application
+ * built at startup - a bean's proxy, an ORM's metamodel, the set of bean
+ * definitions - silently no longer matches the sources, and the redefine that
+ * says so is either accepted or not needed at all.
  */
 class DevLoopRestartIT extends AbstractDevLoopIT {
 
@@ -64,6 +76,198 @@ class DevLoopRestartIT extends AbstractDevLoopIT {
 
         outcome.assertOutputContains(
                 "entity mapping cannot hot reload (TaskListView)");
+    }
+
+    @ParameterizedTest(name = "@{0}")
+    @ValueSource(strings = { "Component", "Service" })
+    void aNewSpringBean_escalatesEvenThoughNothingWasRedefined(
+            String stereotype) {
+        // The case with no redefine behind it: a class the running JVM has
+        // never loaded has nothing to swap, so every signal the two cases above
+        // turn on is empty and the apply reported Stable. Component scanning is
+        // a startup act, though, so the context has no definition for the new
+        // bean and the first view to inject it fails with Spring's own
+        // NoSuchBeanDefinitionException - which names Spring rather than the
+        // restart nobody was told to do.
+        //
+        // The change-set is deliberately one new file and no edit to a loaded
+        // class. Taking the new bean as a constructor parameter of a view that
+        // is already running would restart on a stock JVM whatever this
+        // reports, because adding a parameter is a structural change and
+        // redefineClasses rejects it - so the fixture would pass without the
+        // rule it is here to pin, and only a JVM with enhanced class
+        // redefinition would show the difference.
+        //
+        // Two stereotypes rather than one, and only two: @Component is the
+        // one every other is composed from and @Service the one an
+        // application reaches for, so between them they show the rule is
+        // about the change-set rather than about a particular annotation.
+        // That each remaining entry of the list matches its own descriptor is
+        // pinned in DevLoopRedefinerTest, where it costs no application.
+        //
+        // What this one cannot see, and did not: setUp applies before the
+        // fixture exists, so the daemon's baseline is already built and
+        // already seeded by the time the file appears. A miss that needs the
+        // file to appear *before* the first apply - which is what a developer
+        // does, and what was reported - is invisible from here however many
+        // stereotypes it runs. That ordering has its own case below.
+        String type = "Extra" + stereotype;
+        patch.create(MUTABLE.resolve(type + ".java"), """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                import org.springframework.stereotype.%1$s;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                @%1$s
+                public class %2$s {
+                }
+                """.formatted(stereotype, type));
+
+        // --no-restart stops at the verdict, as in the case above.
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (" + type + ")");
+    }
+
+    @Test
+    void aSecondClassInAFileTheAppAlreadyHas_stillEscalates() {
+        // A class of its own, in a source the application has always had. Read
+        // per source rather than per class, the file is one the application
+        // read at startup and the answer comes back "known" - while the class
+        // beside it is one the application has never seen and has no bean
+        // definition for.
+        //
+        // A second top-level class rather than a nested one: nesting rewrites
+        // the enclosing class's NestMembers attribute, which redefineClasses
+        // rejects outright, so that fixture would escalate on the JVM's word
+        // and prove nothing about this rule. Appending leaves the enclosing
+        // class byte-identical.
+        patch.append(MUTABLE.resolve("TaskService.java"), """
+
+                @org.springframework.stereotype.Component
+                class ExtraInTheSameFile {
+                }
+                """);
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraInTheSameFile)");
+    }
+
+    @Test
+    void aClassAnnotatedAfterAnEarlierApply_stillEscalates() {
+        // The class was compiled by an apply, not by the build the application
+        // started from, so component scanning has never seen it however many
+        // applies have. An answer that treats "this apply put it on the
+        // classpath" as "the application has it" reports the second apply as a
+        // hot swap over a bean that does not exist.
+        Path source = MUTABLE.resolve("ExtraLater.java");
+        patch.create(source, """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                public class ExtraLater {
+                }
+                """);
+        cli.run("apply").assertExitCode(0);
+
+        patch.replace(source, "public class ExtraLater {",
+                "@org.springframework.stereotype.Component\npublic class ExtraLater {");
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraLater)");
+    }
+
+    @ParameterizedTest(name = "compiled by the daemon: {0}")
+    @ValueSource(booleans = { true, false })
+    void aNewSpringBean_escalatesOnTheFirstApplyOfADaemonsLife(
+            boolean daemonCompilesIt) throws IOException {
+        // Same rule as above, in the ordering that got past it. The baseline
+        // the rule is read against describes what the application started
+        // with, and it used to be taken when the compile leg was first needed
+        // - the first apply - by which time a source created since the start
+        // is on disk and lands in it as though the application had always had
+        // it. Every other test in this class applies once in setUp, which is
+        // exactly what hides this: by then the baseline is already taken.
+        //
+        // The file has to be created after the start: a start builds the
+        // module, so a source already on disk would be compiled and scanned
+        // into the application it is meant to be missing from.
+        cli.run("shutdown").assertExitCode(0);
+        cli.run("start").assertExitCode(0);
+        Path source = MUTABLE.resolve("ExtraBean.java");
+        patch.create(source, """
+                package com.vaadin.flow.devloop.test.app.mutable;
+
+                import org.springframework.stereotype.Component;
+
+                /** Created by DevLoopRestartIT and deleted again by it. */
+                @Component
+                public class ExtraBean {
+                }
+                """);
+        if (!daemonCompilesIt) {
+            // An IDE building on save, or a plain mvn run, in the same window.
+            // The artifact is then newer than the source and the baseline has
+            // the stamp, so the change-set did not see the file at all and the
+            // apply answered "no changes" - a worse answer than the wrong
+            // verdict, and the same root cause.
+            compileOutsideTheDaemon(source);
+        }
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("new Spring bean (ExtraBean)");
+        outcome.assertOutputDoesNotContain("no changes");
+    }
+
+    /**
+     * Compiles a fixture the way anything other than the daemon would, into the
+     * classpath the application is running.
+     */
+    private static void compileOutsideTheDaemon(Path source)
+            throws IOException {
+        // The application's own classpath, as the daemon resolved it when it
+        // launched: this JVM's may be a manifest-only jar, which would not
+        // resolve the annotation.
+        String classpath = Files.readString(
+                APP.resolve("target").resolve("devloop").resolve("cp.txt"),
+                StandardCharsets.UTF_8).trim();
+        int status = ToolProvider.getSystemJavaCompiler().run(null, null, null,
+                "-nowarn", "-proc:none", "-classpath", classpath, "-d",
+                APP.resolve("target").resolve("classes").toString(),
+                source.toString());
+        assertEquals(0, status,
+                "the fixture has to compile for this test to mean anything");
+    }
+
+    /**
+     * The fixtures here are new classes, and a class file whose source was
+     * created and deleted without a restart in between is deliberately left for
+     * the next build - so these take their own artifacts out. Otherwise the
+     * next application to start would component-scan a bean this class
+     * invented, and the test after it would be measuring that.
+     */
+    @AfterEach
+    void removeFixtureArtifacts() throws IOException {
+        Path classes = APP.resolve("target").resolve("classes")
+                .resolve("com/vaadin/flow/devloop/test/app/mutable".replace('/',
+                        java.io.File.separatorChar));
+        if (!Files.isDirectory(classes)) {
+            return;
+        }
+        try (Stream<Path> artifacts = Files.list(classes)) {
+            for (Path artifact : artifacts.filter(
+                    path -> path.getFileName().toString().startsWith("Extra"))
+                    .toList()) {
+                Files.deleteIfExists(artifact);
+            }
+        }
     }
 
     @Test
