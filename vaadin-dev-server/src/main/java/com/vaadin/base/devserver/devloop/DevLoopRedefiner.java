@@ -106,6 +106,12 @@ final class DevLoopRedefiner {
     private static final String CLASSES_PROPERTY = "vaadin.devloop.classes";
 
     /**
+     * The free-text tail of a reply. Always last, and the only field that may
+     * contain a space, so the daemon reads it as the rest of the line.
+     */
+    private static final String MESSAGE = " message=";
+
+    /**
      * The directory names that make a public resource root, as whole path
      * segments so a match cannot land in the middle of one.
      * {@code META-INF/resources} is listed first only for readability - the
@@ -114,6 +120,33 @@ final class DevLoopRedefiner {
     private static final String[] PUBLIC_RESOURCE_ROOTS = {
             "/META-INF/resources/", "/static/", "/public/", "/resources/",
             "/webapp/" };
+
+    /**
+     * The annotations {@link #isEntity} asks a loaded class for, as they are
+     * spelled in a class file.
+     */
+    private static final List<String> ENTITY_DESCRIPTORS = List.of(
+            "Ljakarta/persistence/Entity;",
+            "Ljakarta/persistence/MappedSuperclass;",
+            "Ljakarta/persistence/Embeddable;");
+
+    /**
+     * The stereotypes that register a bean, as they are spelled in a class
+     * file. {@code @RestController} and the two advice annotations are listed
+     * in their own right because each is a {@code @Component} through a
+     * meta-annotation that the annotated class's own constant pool does not
+     * mention - see {@link #declaresSpringBean} for the ones that cannot be
+     * listed.
+     */
+    private static final List<String> BEAN_DESCRIPTORS = List.of(
+            "Lorg/springframework/stereotype/Component;",
+            "Lorg/springframework/stereotype/Service;",
+            "Lorg/springframework/stereotype/Repository;",
+            "Lorg/springframework/stereotype/Controller;",
+            "Lorg/springframework/web/bind/annotation/RestController;",
+            "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
+            "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
+            "Lorg/springframework/context/annotation/Configuration;");
 
     /**
      * Where Vite puts the failure in the error page it serves for a module it
@@ -179,7 +212,8 @@ final class DevLoopRedefiner {
     static String redefine(String csv) {
         Instrumentation inst = instrumentation();
         if (inst == null) {
-            return "ERR kind=no-agent message=Instrumentation-unavailable";
+            return "ERR kind=no-agent" + MESSAGE
+                    + "Instrumentation-unavailable";
         }
         Hotswapper hotswapper = DevLoopRegistration.hotswapper().orElse(null);
         if (hotswapper == null) {
@@ -189,7 +223,7 @@ final class DevLoopRedefiner {
         List<String> requested = Arrays.stream(csv.split(",")).map(String::trim)
                 .filter(name -> !name.isEmpty()).toList();
         if (requested.isEmpty()) {
-            return "ERR kind=protocol message=no-classes";
+            return "ERR kind=protocol" + MESSAGE + "no-classes";
         }
 
         List<Path> classesDirs = searchPath();
@@ -207,47 +241,12 @@ final class DevLoopRedefiner {
             }
         }
 
-        List<ClassDefinition> definitions = new ArrayList<>();
-        List<String> notLoaded = new ArrayList<>();
-        int duplicates = 0;
-        Set<String> entities = new LinkedHashSet<>();
-        Set<String> beans = new LinkedHashSet<>();
-        Set<String> uiClasses = new LinkedHashSet<>();
-
-        for (String name : requested) {
-            List<Class<?>> targets = loaded.getOrDefault(name, List.of());
-            if (targets.isEmpty()) {
-                notLoaded.add(name);
-                continue;
-            }
-            if (targets.size() > 1) {
-                duplicates += targets.size() - 1;
-            }
-            Class<?> first = targets.get(0);
-            // The class as the application has been running it, which answers
-            // for an annotation the change is taking away: a type that stops
-            // being an entity was still mapped by the metamodel the application
-            // started with.
-            classify(first, entities, beans, uiClasses);
-            byte[] bytes = readClassBytes(classesDirs, name);
-            if (bytes == null) {
-                return "ERR kind=missing-class-file searched="
-                        + classesDirs.size() + " message=" + name;
-            }
-            // And the class the JVM is about to be given. A type that is only
-            // now being made an entity is not one yet in the loop above, and
-            // Hibernate mapped neither version: the metamodel and the schema
-            // were fixed at startup. Asked of the bytes rather than of the
-            // class after the redefine, because the loaded class is not a
-            // reliable witness to what it has just been given - see
-            // declaresEntity.
-            if (declaresEntity(bytes)) {
-                entities.add(simple(name));
-            }
-            for (Class<?> target : targets) {
-                definitions.add(new ClassDefinition(target, bytes));
-            }
+        Inspection inspected = inspect(requested, loaded, classesDirs);
+        if (inspected.error() != null) {
+            return inspected.error();
         }
+        // The one part of it this method works with rather than only reports.
+        List<ClassDefinition> definitions = inspected.definitions();
 
         DevLoopHotswapper observer = DevLoopHotswapper.getActive();
         if (observer != null) {
@@ -275,7 +274,7 @@ final class DevLoopRedefiner {
                         definitions.toArray(new ClassDefinition[0]));
             } catch (Throwable t) {
                 return "ERR kind=redefine-rejected class="
-                        + t.getClass().getSimpleName() + " message="
+                        + t.getClass().getSimpleName() + MESSAGE
                         + oneLine(String.valueOf(t.getMessage()));
             }
         }
@@ -311,14 +310,177 @@ final class DevLoopRedefiner {
         boolean pageReload = observer != null
                 && observer.isPageReloadRequired();
 
-        return "OK redefined=" + definitions.size() + " notLoaded="
-                + notLoaded.size() + " dupes=" + duplicates + " completed="
-                + completed + " pageReload=" + pageReload + " entities="
-                + join(entities) + " beans=" + join(beans) + " proxied="
-                + join(proxied) + " structural=" + join(structural) + " ui="
-                + join(uiClasses) + " frontendImports=" + join(frontend)
-                + " hotswapAgent=" + hotswapAgentLoaded() + " redefineMs="
-                + redefineMs + " hotswapMs=" + hotswapMs;
+        return reply(inspected, new Applied(structural, proxied, frontend,
+                completed, pageReload, redefineMs, hotswapMs));
+    }
+
+    /**
+     * What the redefine, and the refresh that followed it, turned out to do.
+     *
+     * @param structural
+     *            redefined types whose shape changed
+     * @param proxied
+     *            redefined types a live proxy was generated from
+     * @param frontend
+     *            redefined types whose build-time imports changed
+     * @param completed
+     *            whether Flow's refresh ran to the end
+     * @param pageReload
+     *            whether Flow asked for the page to be reloaded
+     * @param redefineMs
+     *            how long {@code redefineClasses} took
+     * @param hotswapMs
+     *            how long {@code onHotswap} took
+     */
+    record Applied(Set<String> structural, Set<String> proxied,
+            Set<String> frontend, boolean completed, boolean pageReload,
+            long redefineMs, long hotswapMs) {
+    }
+
+    /**
+     * The one line the daemon reads a verdict out of.
+     * <p>
+     * Every field here is part of the wire contract: the daemon splits the line
+     * on whitespace and reads by name, so a renamed or dropped field is a
+     * silently different answer rather than a parse failure. A field it does
+     * not know is ignored, which is what makes adding one safe in either
+     * direction.
+     *
+     * @param inspected
+     *            what the request amounted to
+     * @param applied
+     *            what happened to it
+     * @return the reply line
+     */
+    static String reply(Inspection inspected, Applied applied) {
+        return "OK redefined=" + inspected.definitions().size() + " notLoaded="
+                + inspected.notLoaded().size() + " dupes="
+                + inspected.duplicates() + " completed=" + applied.completed()
+                + " pageReload=" + applied.pageReload() + " entities="
+                + join(inspected.entities()) + " beans="
+                + join(inspected.beans()) + " proxied="
+                + join(applied.proxied()) + " structural="
+                + join(applied.structural()) + " ui="
+                + join(inspected.uiClasses()) + " frontendImports="
+                + join(applied.frontend()) + " hotswapAgent="
+                + hotswapAgentLoaded() + " redefineMs=" + applied.redefineMs()
+                + " hotswapMs=" + applied.hotswapMs()
+                // Last rather than in among the others, so adding it left every
+                // field a daemon already reads exactly where it was.
+                + " stereotypes=" + join(inspected.stereotypes());
+    }
+
+    /**
+     * What the requested names amount to before anything is redefined.
+     *
+     * @param definitions
+     *            every loaded copy paired with the bytes to give it
+     * @param notLoaded
+     *            requested names this JVM has no class for
+     * @param duplicates
+     *            how many extra loaded copies were found
+     * @param entities
+     *            types mapped as JPA entities before or after the change
+     * @param beans
+     *            types the application is running as Spring beans
+     * @param stereotypes
+     *            types whose new bytes carry a Spring stereotype
+     * @param uiClasses
+     *            types {@code onHotswap} visibly refreshes
+     * @param error
+     *            the reply to send instead of redefining, or {@code null}
+     */
+    record Inspection(List<ClassDefinition> definitions, List<String> notLoaded,
+            int duplicates, Set<String> entities, Set<String> beans,
+            Set<String> stereotypes, Set<String> uiClasses, String error) {
+    }
+
+    /**
+     * Reads what one {@code REDEFINE} request is asking for: which loaded
+     * copies to hand the JVM, and what the classes and their new bytes say
+     * about whether a redefine can be the whole answer.
+     * <p>
+     * Separated from {@link #redefine} because this is the whole of the
+     * decision and none of the effect - it defines nothing, refreshes nothing
+     * and needs no running application - which is also what makes it the part
+     * that can be tested without one.
+     *
+     * @param requested
+     *            the requested binary names
+     * @param loaded
+     *            every loaded copy of them, by binary name
+     * @param classesDirs
+     *            where to read the new bytes from, in classpath order
+     * @return what the request amounts to
+     */
+    static Inspection inspect(List<String> requested,
+            Map<String, List<Class<?>>> loaded, List<Path> classesDirs) {
+        List<ClassDefinition> definitions = new ArrayList<>();
+        List<String> notLoaded = new ArrayList<>();
+        int duplicates = 0;
+        Set<String> entities = new LinkedHashSet<>();
+        Set<String> beans = new LinkedHashSet<>();
+        Set<String> stereotypes = new LinkedHashSet<>();
+        Set<String> uiClasses = new LinkedHashSet<>();
+
+        for (String name : requested) {
+            List<Class<?>> targets = loaded.getOrDefault(name, List.of());
+            if (targets.isEmpty()) {
+                notLoaded.add(name);
+            } else {
+                if (targets.size() > 1) {
+                    duplicates += targets.size() - 1;
+                }
+                // The class as the application has been running it, which
+                // answers for an annotation the change is taking away: a type
+                // that stops being an entity was still mapped by the metamodel
+                // the application started with.
+                classify(targets.get(0), entities, beans, uiClasses);
+            }
+            byte[] bytes = readClassBytes(classesDirs, name);
+            if (bytes == null) {
+                if (targets.isEmpty()) {
+                    // Neither loaded here nor on this search path, so there is
+                    // nothing to redefine and nothing to answer for.
+                    continue;
+                }
+                return new Inspection(definitions, notLoaded, duplicates,
+                        entities, beans, stereotypes, uiClasses,
+                        "ERR kind=missing-class-file searched="
+                                + classesDirs.size() + MESSAGE + name);
+            }
+            // And the class the JVM is about to be given. A type that is only
+            // now being made an entity is not one yet in the classify above,
+            // and Hibernate mapped neither version: the metamodel and the
+            // schema were fixed at startup. Asked of the bytes rather than of
+            // the class after the redefine, because the loaded class is not a
+            // reliable witness to what it has just been given - see
+            // declaresEntity.
+            if (declaresEntity(bytes)) {
+                entities.add(simple(name));
+            }
+            // Reported for every requested class rather than only for the ones
+            // this JVM has not loaded, and deliberately: whether the
+            // application ever *had* this class is the daemon's question, not
+            // this one's. HotswapAgent watches the output directory on its own
+            // schedule and defines a new class when it sees one, so "not
+            // loaded here" is a race, and losing it would report a brand-new
+            // bean as live. What the bytes say is not a race, and the daemon
+            // knows which of these classes it has just brought into being.
+            //
+            // Under its binary name, unlike every other field here: this one
+            // is read by machine and matched against the change-set, and two
+            // classes in different packages can share a simple name - which
+            // would make one of them answer for the other.
+            if (declaresSpringBean(bytes)) {
+                stereotypes.add(name);
+            }
+            for (Class<?> target : targets) {
+                definitions.add(new ClassDefinition(target, bytes));
+            }
+        }
+        return new Inspection(definitions, notLoaded, duplicates, entities,
+                beans, stereotypes, uiClasses, null);
     }
 
     /**
@@ -1007,12 +1169,6 @@ final class DevLoopRedefiner {
                 "jakarta.persistence.Embeddable");
     }
 
-    /** The same annotations, as they are spelled in a class file. */
-    private static final List<String> ENTITY_DESCRIPTORS = List.of(
-            "Ljakarta/persistence/Entity;",
-            "Ljakarta/persistence/MappedSuperclass;",
-            "Ljakarta/persistence/Embeddable;");
-
     /**
      * Whether the compiled bytes carry a JPA annotation, read from the class
      * file rather than from the class once it is loaded.
@@ -1036,12 +1192,46 @@ final class DevLoopRedefiner {
      * needed, and the cost of a false negative is {@code Stable} over a mapping
      * the application never had.
      */
-    private static boolean declaresEntity(byte[] bytes) {
+    static boolean declaresEntity(byte[] bytes) {
+        return declares(bytes, ENTITY_DESCRIPTORS);
+    }
+
+    /**
+     * Whether the compiled bytes carry a Spring stereotype, read from the class
+     * file because there is no loaded class to ask.
+     * <p>
+     * This is the question {@link #isSpringBean} cannot answer: it reports what
+     * the application has been running with, and the class this is asked about
+     * is one the application has never run at all.
+     * <p>
+     * It errs in both directions, unlike {@link #declaresEntity}, and the
+     * asymmetry is worth knowing before trusting the answer. A descriptor in
+     * the constant pool is not proof that the annotation is on the class - it
+     * could sit on a member, or be a type the class merely mentions - which
+     * costs a restart that was not needed. In the other direction, a stereotype
+     * composed through a meta-annotation is invisible: a project's own
+     * {@code @MyService}, itself annotated {@code @Service}, puts only
+     * {@code @MyService} in this class's pool, and the annotation type whose
+     * pool would say the rest is a separate class file.
+     * {@link #BEAN_DESCRIPTORS} names the composed stereotypes Spring itself
+     * ships; a project's own are a restart its author still has to ask for, and
+     * the same limit as {@link #hasAnnotation}, which resolves one level of
+     * meta-annotation and no more.
+     */
+    static boolean declaresSpringBean(byte[] bytes) {
+        return declares(bytes, BEAN_DESCRIPTORS);
+    }
+
+    /**
+     * Whether any of these annotation descriptors appears in the class file's
+     * constant pool.
+     */
+    private static boolean declares(byte[] bytes, List<String> descriptors) {
         // ISO-8859-1 maps every byte to the char of the same value, so a
         // substring search over it is an exact byte search - and a descriptor
         // is ASCII, which the class file's modified UTF-8 encodes unchanged.
         String constants = new String(bytes, StandardCharsets.ISO_8859_1);
-        return ENTITY_DESCRIPTORS.stream().anyMatch(constants::contains);
+        return descriptors.stream().anyMatch(constants::contains);
     }
 
     /**
