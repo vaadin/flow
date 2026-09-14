@@ -516,7 +516,19 @@
                             <id>default-cli</id>
                             <configuration>
                                 <rules>
-                                    <dependencyConvergence/>
+                                    <dependencyConvergence>
+                                        <excludes>
+                                            <!-- Guava 33.7.1 brings in jspecify
+                                                 1.0.1 while Selenium and
+                                                 flow-server still depend on
+                                                 1.0.0. The releases differ only
+                                                 in documentation, so the split
+                                                 is harmless. Remove once the
+                                                 transitive dependencies have
+                                                 caught up. -->
+                                            <exclude>org.jspecify:jspecify</exclude>
+                                        </excludes>
+                                    </dependencyConvergence>
                                 </rules>
                             </configuration>
                             <goals>
