@@ -159,7 +159,6 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-core");
         expectedDependencies.add("workbox-precaching");
         expectedDependencies.add("glob");
-        expectedDependencies.add("async");
         return expectedDependencies;
     }
 
