@@ -91,7 +91,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.spring.VaadinScanPackages;
 import com.vaadin.flow.spring.io.FilterableResourceResolver;
 import com.vaadin.flow.theme.Theme;
 

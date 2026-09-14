@@ -299,7 +299,7 @@ class VaadinServletContextInitializerTest {
         vaadinServletContextInitializer.onStartup(servletContext);
 
         Mockito.when(applicationContext.getBeanNamesForType(
-                VaadinScanPackagesRegistrar.VaadinScanPackages.class))
+                VaadinScanPackages.class))
                 .thenReturn(new String[] {});
 
         autoConfigurationPackagesMock

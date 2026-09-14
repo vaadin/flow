@@ -16,9 +16,6 @@
 package com.vaadin.flow.spring;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -38,39 +35,54 @@ import com.vaadin.flow.spring.annotation.EnableVaadin;
  */
 public class VaadinScanPackagesRegistrar
         implements ImportBeanDefinitionRegistrar {
-
-    static class VaadinScanPackages {
-
-        private final List<String> scanPackages;
-
-        private VaadinScanPackages(String[] scanPackages) {
-            assert scanPackages != null;
-            this.scanPackages = Collections
-                    .unmodifiableList(Arrays.asList(scanPackages));
-        }
-
-        List<String> getScanPackages() {
-            return scanPackages;
-        }
-
-    }
-
     @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata,
-            BeanDefinitionRegistry registry) {
-        String[] packages = getPackages(annotationMetadata, EnableVaadin.class,
-                "value");
-        if (packages.length > 0) {
-            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                                        BeanDefinitionRegistry registry) {
+
+        String[] packages = getPackages(annotationMetadata,
+                EnableVaadin.class, "value");
+
+        if (packages.length == 0) {
+            return;
+        }
+
+        String beanName = VaadinScanPackages.class.getName();
+
+        if (registry.containsBeanDefinition(beanName)) {
+
+            BeanDefinition existingBeanDefinition = registry
+                    .getBeanDefinition(beanName);
+
+            Object existingValue = existingBeanDefinition
+                    .getConstructorArgumentValues()
+                    .getIndexedArgumentValue(0, String[].class)
+                    .getValue();
+
+            String[] existingPackages = (String[]) existingValue;
+
+            String[] mergedPackages = VaadinScanPackages.merge(
+                    existingPackages, packages);
+
+            existingBeanDefinition.getConstructorArgumentValues()
+                    .addIndexedArgumentValue(0, mergedPackages);
+
+        } else {
+
+            GenericBeanDefinition beanDefinition =
+                    new GenericBeanDefinition();
+
             beanDefinition.setBeanClass(VaadinScanPackages.class);
+
             beanDefinition.getConstructorArgumentValues()
                     .addIndexedArgumentValue(0, packages);
-            beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            registry.registerBeanDefinition(VaadinScanPackages.class.getName(),
+
+            beanDefinition.setRole(
+                    BeanDefinition.ROLE_INFRASTRUCTURE);
+
+            registry.registerBeanDefinition(beanName,
                     beanDefinition);
         }
     }
-
     private <T> T getPackages(Class<T> clazz,
             AnnotationMetadata annotationMetadata,
             Class<? extends Annotation> annotation, String getterName) {
