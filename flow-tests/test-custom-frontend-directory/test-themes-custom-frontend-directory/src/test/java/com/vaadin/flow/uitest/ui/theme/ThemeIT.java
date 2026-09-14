@@ -260,12 +260,7 @@ public class ThemeIT extends ChromeBrowserTest {
     public void documentCssImport_externalUrlLoaded() {
         open();
         checkLogsForErrors();
-
-        Assert.assertTrue("Font should have been loaded",
-                (boolean) executeScript(
-                        "return document.fonts.check(arguments[0])",
-                        "10px Itim"));
-
+        waitForFont("10px Itim");
     }
 
     @Test
