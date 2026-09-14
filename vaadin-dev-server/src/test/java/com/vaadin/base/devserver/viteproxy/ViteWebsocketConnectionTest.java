@@ -58,7 +58,7 @@ public class ViteWebsocketConnectionTest {
         }
     }
 
-    @Test
+    @Test(timeout = 7000)
     public void waitForConnection_clientWebsocketAvailable_blocksUntilConnectionIsEstablished()
             throws ExecutionException, InterruptedException {
         CountDownLatch connectionLatch = new CountDownLatch(1);
