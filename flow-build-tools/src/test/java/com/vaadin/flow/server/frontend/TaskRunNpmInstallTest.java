@@ -890,6 +890,30 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
+    void resolveMinimumFrontendPackageAge_zeroConfiguredWithNpmrcValue_ageStillApplies() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm keeps applying the 7 days of its own configuration, as Vaadin
+        // only leaves out the command line argument
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age")))
+                .thenReturn(Optional.of("7"));
+        Options options = new MockOptions(npmFolder)
+                .withMinimumFrontendPackageAgeDays(0);
+
+        TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(options, tools,
+                        List.of("npm"),
+                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
+
+        assertTrue(minimumAge.applies());
+        assertFalse(minimumAge.argument().isPresent());
+        // so the packages Vaadin publishes are excluded from it
+        assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
+                        new MockLogger()));
+    }
+
+    @Test
     void resolveMinimumFrontendPackageAge_npmrcValueOfZero_noAgeApplies() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // npm is configured not to block anything, so neither does Vaadin

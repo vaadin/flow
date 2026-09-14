@@ -1026,6 +1026,25 @@ class FrontendToolsTest {
     }
 
     @Test
+    void getConfiguredSettingValues_braceExpansionInAList_isKeptTogether()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // the values of a list are complete on their own, and the comma
+            // of a brace expansion does not separate two patterns
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/{ui,core}\"]}");
+
+            assertEquals(List.of("@acme/{ui,core}"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
     void getConfiguredSettingValues_keyWithoutValue_isEmpty()
             throws CommandExecutionException {
         try (MockedStatic<FrontendUtils> frontendUtils = Mockito

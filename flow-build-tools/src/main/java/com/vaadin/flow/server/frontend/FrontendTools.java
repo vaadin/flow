@@ -688,7 +688,10 @@ public class FrontendTools {
      * Several keys can be given for a setting that the tool spells differently
      * depending on its version; the first one that has a value is used. Both
      * tools list such a setting as an array, but a single value written into a
-     * {@code .npmrc} may also arrive as a comma separated string.
+     * {@code .npmrc} may also arrive as a comma separated string. Only that
+     * string is split, as the values of an array are complete on their own and
+     * may contain a comma themselves, such as the brace expansion
+     * {@code @acme/&#123;ui,core&#125;}.
      *
      * @param toolCommand
      *            the npm or pnpm command to run
@@ -709,13 +712,11 @@ public class FrontendTools {
             if (value == null || value.isNull()) {
                 continue;
             }
-            List<JsonNode> items = value.isArray()
-                    ? value.valueStream().toList()
-                    : List.of(value);
-            List<String> values = items.stream()
-                    .flatMap(item -> Stream.of(item.asString().split(",")))
-                    .map(String::trim).filter(entry -> !entry.isEmpty())
-                    .toList();
+            Stream<String> entries = value.isArray()
+                    ? value.valueStream().map(JsonNode::asString)
+                    : Stream.of(value.asString().split(","));
+            List<String> values = entries.map(String::trim)
+                    .filter(entry -> !entry.isEmpty()).toList();
             if (!values.isEmpty()) {
                 return values;
             }

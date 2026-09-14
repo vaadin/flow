@@ -481,12 +481,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * installing frontend package versions that are too new, or nothing if the
      * age should not be restricted from here.
      * <p>
-     * A value configured through Vaadin is always used as is, {@code 0}
-     * disabling the check. When nothing is configured, the package manager is
-     * asked what it resolves for its own minimum release age setting; if it
-     * already has one, no argument is passed so that the package manager
-     * applies its own configuration. Only when neither is configured does
+     * A value configured through Vaadin is always used as is, {@code 0} adding
+     * no restriction. When nothing is configured, the package manager is asked
+     * what it resolves for its own minimum release age setting; if it already
+     * has one, no argument is passed so that the package manager applies its
+     * own configuration. Only when neither is configured does
      * {@link #DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} apply.
+     * <p>
+     * An age the package manager resolves for itself is reported as applying
+     * even when Vaadin is configured with {@code 0}, as a command line argument
+     * is the only thing Vaadin leaves out in that case.
      *
      * @param options
      *            current build options
@@ -504,12 +508,19 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Options options, FrontendTools tools, List<String> toolCommand,
             Logger logger) {
         Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
-        if (configuredDays != null && configuredDays == 0) {
-            return new MinimumFrontendPackageAge(false, Optional.empty());
-        }
         boolean npmSupportsMinReleaseAge = !options.isEnableBun()
                 && !options.isEnablePnpm()
                 && tools.npmSupportsMinReleaseAge(toolCommand);
+        if (configuredDays != null && configuredDays == 0) {
+            // Vaadin adds no restriction of its own, but an age the package
+            // manager is configured with still applies to the install
+            return new MinimumFrontendPackageAge(
+                    getPackageManagerConfiguredMinimumReleaseAge(options, tools,
+                            toolCommand, npmSupportsMinReleaseAge)
+                            .filter(TaskRunNpmInstall::blocksSomeVersion)
+                            .isPresent(),
+                    Optional.empty());
+        }
         int days;
         if (configuredDays != null) {
             days = configuredDays;
