@@ -178,7 +178,7 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    void create_onlyDevelopmentModeTokenFileInsideJar_tokenFileIsIgnored()
+    void create_developmentModeTokenFileInsideJarForAnotherProject_tokenFileIsIgnored()
             throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
@@ -205,6 +205,34 @@ class DefaultApplicationConfigurationFactoryTest {
                 configuration.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                         null),
                 "Project folder should not be read from a development mode token file inside a jar");
+        assertFalse(configuration.isProductionMode());
+    }
+
+    @Test
+    void create_developmentModeTokenFileInsideJarForThisProject_tokenFileIsUsed()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // An application packaged into a jar in development mode and run on
+        // the machine it was built on, where the project is still there
+        String npmFolder = temporaryFolder.toFile().getAbsolutePath()
+                .replace("\\", "\\\\");
+        mockJarTokenFile(resourceProvider, "application.jar",
+                "{ \"productionMode\": false, \"npmFolder\": \"" + npmFolder
+                        + "\", \"node.version\": \"v24.10.0\" }");
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        assertEquals("v24.10.0",
+                configuration.getStringProperty(InitParameters.NODE_VERSION,
+                        null),
+                "A development mode token file of this project should be used");
+        assertEquals(temporaryFolder.toFile().getAbsolutePath(), configuration
+                .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null));
         assertFalse(configuration.isProductionMode());
     }
 
