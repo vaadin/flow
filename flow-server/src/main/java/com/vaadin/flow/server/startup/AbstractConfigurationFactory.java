@@ -238,7 +238,7 @@ public class AbstractConfigurationFactory implements Serializable {
                 getLogger().warn(
                         "Ignoring Node.js version {} from '{}', as it is older than the minimum supported version {}. "
                                 + "The file is out of date, so clear the build output folder to have it written again. "
-                                + "If the version comes back, the file is packaged into a dependency by mistake. "
+                                + "If the version comes back, the file may be packaged into a dependency by mistake. "
                                 + "Set the '{}' property to use the version anyway.",
                         version, FrontendUtils.TOKEN_FILE,
                         FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION
