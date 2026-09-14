@@ -7,6 +7,7 @@
     "@polymer/polymer": "3.5.2",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.23",
+    "@vaadin/hilla-react-i18n": "../vite-test-assets/packages/@vaadin/hilla-react-i18n",
     "@vaadin/test-package-outside-npm": "file:../vite-test-assets/packages/@vaadin/test-package-outside-npm",
     "@vaadin/test-package2-outside-npm": "../vite-test-assets/packages/@vaadin/test-package2-outside-npm",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
