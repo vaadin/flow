@@ -51,7 +51,7 @@ jobs:
         id: set-matrix
         run: |
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)" >> $GITHUB_OUTPUT
-          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -66,6 +66,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -105,8 +106,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Unit Test
@@ -116,18 +118,32 @@ jobs:
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -ntp -T 1C $ARGS"
-          set -x -e -o pipefail
-          $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-unit-tests-${{matrix.current}}.out
+          : > "$LOG"
+          # Detach mvn's stdio from this shell so that an orphan child JVM
+          # cannot pin the step open by holding the pipe to tee.
+          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         with:
           name: tests-output-unit-${{ matrix.current }}
           path: tests-report-*.tgz
   it-tests:
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -175,8 +191,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
@@ -190,18 +207,33 @@ jobs:
             $cmd -T 1C || $cmd
           fi
       - name: Run ITs
+        timeout-minutes: 22
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
-          set -x -e -o pipefail
-          $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
+          set -x -e
+          LOG=mvn-it-tests-${{matrix.current}}.out
+          : > "$LOG"
+          # Detach mvn's stdio from this shell so that an orphan child JVM
+          # (e.g. a Spring Boot fork that spring-boot:stop failed to kill)
+          # cannot pin the step open by holding the pipe to tee.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
       - name: Package test-report files
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
@@ -211,7 +243,7 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ failure() || success() }}
+    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-24.04
     steps:
