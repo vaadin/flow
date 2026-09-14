@@ -8,6 +8,10 @@
 # frontend tooling and bundled Vite plugins (e.g. the React function
 # location plugin) import transitive deps that pnpm's symlink-based
 # layout did not consistently hoist, even with shamefully-hoist=true.
+#
+# shamefully-hoist=true is kept below so that a manual `pnpm install`
+# still gets the legacy partial hoisting if the node-linker line is
+# removed or overridden by a user level .npmrc.
 node-linker=hoisted
 shamefully-hoist=true
 strict-peer-dependencies=false
