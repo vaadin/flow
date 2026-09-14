@@ -1011,8 +1011,22 @@ final class Launch {
         return found;
     }
 
-    /** The full command line, in the order a human would want to read it. */
-    List<String> command(int daemonPort, String token) throws IOException {
+    /**
+     * The full command line, in the order a human would want to read it.
+     *
+     * @param daemonPort
+     *            the port the daemon listens on
+     * @param token
+     *            the handshake token the app registers with
+     * @param launchKind
+     *            why the app is being launched - {@code start}, {@code restart}
+     *            or {@code apply}. The three produce a JVM that is otherwise
+     *            identical, so the app can only tell them apart if the daemon
+     *            says which it is.
+     * @return the command line, ready for a {@link ProcessBuilder}
+     */
+    List<String> command(int daemonPort, String token, String launchKind)
+            throws IOException {
         Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
@@ -1079,6 +1093,10 @@ final class Launch {
                         .add("-D" + name + "=" + System.getProperty(name)));
         cmd.add("-Dvaadin.devloop.daemonPort=" + daemonPort);
         cmd.add("-Dvaadin.devloop.token=" + token);
+        // Why this JVM exists, for the usage statistics the app reports. Only
+        // the daemon knows: a restart and an escalated apply are both just "a
+        // new process with the same three properties" from inside the app.
+        cmd.add("-Dvaadin.devloop.launch=" + launchKind);
         // Where the connector reads the bytes of a class it is asked to
         // redefine.
         // A list, in classpath order, because a change can land in any in-loop
@@ -1144,7 +1162,7 @@ final class Launch {
      */
     private static final Set<String> LOOP_OWNED = Set.of(
             "spring.devtools.restart.enabled", "vaadin.launch-browser",
-            "vaadin.devloop.classes");
+            "vaadin.devloop.classes", "vaadin.devloop.launch");
 
     /** Minimal sink so provisioning progress reaches the client that asked. */
     interface Log {
