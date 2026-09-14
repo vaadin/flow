@@ -15,6 +15,8 @@
  */
 package com.vaadin.base.devserver.devloop;
 
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,6 +46,30 @@ class DevLoopRegistrationTest {
         // The entries are a static set, so one test's marking would otherwise
         // be the next one's starting state.
         UsageStatistics.resetEntries();
+        clearRegisteredService();
+    }
+
+    /**
+     * Forgets the service a test left registered.
+     * <p>
+     * {@code start} assigns the static service before anything that can fail,
+     * so a test that lets the listener reach it leaves a mock behind - and
+     * every later test in the JVM then reads that mock instead of "no
+     * application registered", which is what {@code DevLoopRedefinerTest}
+     * asserts about. Reflection because the field is production state that one
+     * registration owns for the life of the JVM, not a test hook.
+     */
+    private static void clearRegisteredService() {
+        try {
+            Field field = DevLoopRegistration.class.getDeclaredField("service");
+            field.setAccessible(true);
+            field.set(null, null);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(
+                    "could not forget the registered service; later tests in "
+                            + "this JVM would read a mock",
+                    e);
+        }
     }
 
     @Test
