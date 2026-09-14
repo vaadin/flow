@@ -57,15 +57,7 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
      */
     @Test
     public void devBundleSourceMapsPointToOriginalSources() throws IOException {
-        File buildFolder = new File(
-                new File(System.getProperty("user.dir", "."),
-                        "target/" + Constants.DEV_BUNDLE_LOCATION),
-                "webapp/VAADIN/build");
-        Assert.assertTrue("Dev bundle should have been built",
-                buildFolder.isDirectory());
-
-        List<File> sourceMaps = List.of(
-                buildFolder.listFiles((dir, name) -> name.endsWith(".map")));
+        List<File> sourceMaps = getBundleFiles(".map");
         Assert.assertNotEquals("Dev bundle should contain sourcemaps", 0,
                 sourceMaps.size());
 
@@ -80,14 +72,53 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
     }
 
     /**
+     * The plugin that rewrites the dev mode comment of the usage statistics
+     * module is the one that has to return a sourcemap of its own. The
+     * rewritten comment starts with {@code /*!}, which tells a minifier to keep
+     * it, and the rewritten module has to stay in the sourcemap of its chunk.
+     */
+    @Test
+    public void usageStatisticsCommentIsRewrittenAndStaysInSourceMap()
+            throws IOException {
+        File chunk = null;
+        for (File bundle : getBundleFiles(".js")) {
+            String contents = FileUtils.readFileToString(bundle,
+                    StandardCharsets.UTF_8);
+            Assert.assertFalse(
+                    bundle.getName() + " should have the dev mode comment "
+                            + "rewritten into the form a minifier keeps",
+                    contents.contains("/** vaadin-dev-mode:start"));
+            if (contents.contains("/*! vaadin-dev-mode:start")) {
+                chunk = bundle;
+            }
+        }
+        Assert.assertNotNull(
+                "The dev bundle should contain the dev mode comment of the "
+                        + "usage statistics module",
+                chunk);
+
+        File sourceMap = new File(chunk.getParentFile(),
+                chunk.getName() + ".map");
+        Assert.assertTrue(chunk.getName() + " should have a sourcemap",
+                sourceMap.isFile());
+
+        boolean stubFound = false;
+        for (JsonNode source : readSourceMap(sourceMap).get("sources")) {
+            stubFound |= source.asString()
+                    .endsWith("vaadin-usage-statistics-stub.ts");
+        }
+        Assert.assertTrue("The rewritten module should be in the sourcemap of "
+                + chunk.getName(), stubFound);
+    }
+
+    /**
      * Asserts that the given sourcemap has the original sources with their
      * contents, and tells whether one of them is the Lit view of this
      * application.
      */
     private boolean assertSourceMapUsable(File sourceMap) throws IOException {
         String name = sourceMap.getName();
-        JsonNode json = JsonMapper.shared().readTree(
-                FileUtils.readFileToString(sourceMap, StandardCharsets.UTF_8));
+        JsonNode json = readSourceMap(sourceMap);
         JsonNode sources = json.get("sources");
         JsonNode sourcesContent = json.get("sourcesContent");
 
@@ -110,6 +141,26 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
             litViewFound |= source.endsWith("views/lit-view.ts");
         }
         return litViewFound;
+    }
+
+    private JsonNode readSourceMap(File sourceMap) throws IOException {
+        return JsonMapper.shared().readTree(
+                FileUtils.readFileToString(sourceMap, StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Returns the files of the built dev bundle whose name ends with the given
+     * suffix.
+     */
+    private List<File> getBundleFiles(String suffix) {
+        File buildFolder = new File(
+                new File(System.getProperty("user.dir", "."),
+                        "target/" + Constants.DEV_BUNDLE_LOCATION),
+                "webapp/VAADIN/build");
+        Assert.assertTrue("Dev bundle should have been built",
+                buildFolder.isDirectory());
+        return List.of(
+                buildFolder.listFiles((dir, name) -> name.endsWith(suffix)));
     }
 
 }
