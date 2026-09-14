@@ -14,6 +14,15 @@ The available profiles are `tomee`, `wildfly`, `payara`, `liberty` and
 CDI sources themselves change; see the `cdi-tests` job in
 `.github/workflows/validation.yml`.
 
+Run these on **JDK 21**, the version validation uses. On JDK 24 and later
+`java.security.Policy.setPolicy` throws `UnsupportedOperationException` (the
+Security Manager is gone, JEP 486), and TomEE calls it while installing its
+JACC policy provider, so the container never starts and every test fails with
+`Could not install JACC Policy Provider` rather than anything about CDI.
+
+The tests drive a real Chrome through TestBench, so a `~/.vaadin/proKey` is
+required and browser windows open while they run.
+
 The tests carrying the `SlowTests` category are excluded by default. They
 still need a container, so enable them alongside one:
 
