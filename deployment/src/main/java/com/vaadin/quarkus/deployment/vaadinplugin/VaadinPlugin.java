@@ -249,12 +249,25 @@ public final class VaadinPlugin {
      * configurations such as frontend directory, npm folder, and generated
      * TypeScript folder to locate the files. - Makes use of the
      * `TaskCleanFrontendFiles` for cleanup operations.
+     * <p>
+     * Unlike the Vaadin Maven plugin, which only cleans when a frontend bundle
+     * has been built, this runs after every successful build. This plugin
+     * always reports frontend hotdeploy as enabled, so even a build that reuses
+     * a prebuilt production bundle writes {@literal package.json}, the Vite
+     * configuration files, {@literal tsconfig.json} and {@literal types.d.ts}
+     * into the project directory. Skipping the cleanup for those builds would
+     * leave the files behind.
+     * <p>
+     * Errors are logged rather than propagated, including unchecked ones. This
+     * method runs as a Quarkus build closeable, which cannot fail the build and
+     * logs anything thrown out of here at debug level only, so an error that is
+     * not caught here goes unnoticed.
      */
     public void clean() {
         if (cleanTask != null) {
             try {
                 cleanTask.execute();
-            } catch (ExecutionFailedException exception) {
+            } catch (ExecutionFailedException | RuntimeException exception) {
                 pluginAdapter.logError("Error cleaning frontend files",
                         exception);
             }
