@@ -1,0 +1,45 @@
+name: Flow PR Example App
+
+# Ends the life of the example application of a pull request.
+#
+# The start of it is in pr-snapshot.yml, which is where the version of the
+# snapshot the example is built from exists. This is the other half: when the
+# pull request is closed or the "example app" label is taken off, the
+# application is destroyed. The module that holds its source is kept in
+# flow-pr-examples, as a record of what was tried out.
+on:
+  pull_request:
+    types: [closed, unlabeled]
+
+permissions: {}
+
+jobs:
+  cleanup:
+    name: Destroy the example application
+    # A fork never had one - the snapshot it would have been built from is
+    # never published - and the token this needs is not handed to a fork
+    # anyway.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && ((github.event.action == 'closed'
+          && contains(github.event.pull_request.labels.*.name, 'example app'))
+        || (github.event.action == 'unlabeled'
+          && github.event.label.name == 'example app'))
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Ask for the application to be destroyed
+        env:
+          GH_TOKEN: ${{ secrets.FLOW_PR_EXAMPLES_TOKEN }}
+          PR_EXAMPLES_REPO: ${{ vars.PR_EXAMPLES_REPO || 'vaadin/flow-pr-examples' }}
+          _PR_NUMBER: ${{ github.event.number }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "🚫 The **FLOW_PR_EXAMPLES_TOKEN** secret is not defined, check the configuration of **${{ github.repository }}**" \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          jq -n --arg pr "$_PR_NUMBER" \
+            '{event_type: "example-app-cleanup", client_payload: {pr: ($pr | tonumber)}}' \
+            | gh api "repos/${PR_EXAMPLES_REPO}/dispatches" --input -
+          echo "🧹 Asked [${PR_EXAMPLES_REPO}](${{ github.server_url }}/${PR_EXAMPLES_REPO}/actions) to destroy the example application of this pull request." \
+            | tee -a $GITHUB_STEP_SUMMARY

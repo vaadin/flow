@@ -130,6 +130,9 @@ merged. It is opt-in per pull request: add the `snapshot build` label and the
 build starts, and every commit pushed while the label is there republishes the
 snapshot. Removing the label stops that.
 
+The `example app` label below starts the same build, because the application
+it asks for is built from the snapshot.
+
 The version comes from the branch name — everything up to the last slash is
 dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
 `25.4.my-thing-SNAPSHOT`. That is the scheme the TeamCity feature branch
@@ -160,3 +163,46 @@ Configuration:
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
+
+## Pull request example applications
+
+`pr-snapshot.yml` and `pr-example-app.yml` together build a small Vaadin
+application for a pull request and deploy it, so that a change can be looked at
+in a browser instead of read as a diff. Add the `example app` label to a pull
+request against `main` and a few minutes later a comment on it points at
+`https://flow-pr-<number>.fly.dev/`.
+
+The label implies `snapshot build`: the application is built from the snapshot
+of the pull request, so the same run publishes it first and asks for the
+application afterwards. Implying it rather than adding the other label to the
+pull request is what makes it work when `snapshot build` is already there —
+GitHub sends no `labeled` event for a label a pull request already has, so
+nothing would start the build the example is waiting for.
+
+Everything after that happens in
+[vaadin/flow-pr-examples](https://github.com/vaadin/flow-pr-examples), which is
+told the pull request number, the version and the commit, and reads the rest
+from the pull request itself. It scaffolds a module named `pr-<number>` pinned
+to that snapshot, has Claude write an example of whatever the pull request
+changes, builds it, pushes it to `main` and deploys it. A later commit on the
+branch republishes the snapshot under the same version, and the application is
+redeployed rather than written again.
+
+Only pull requests against `main`: an example is a whole application and is
+pinned to the platform prerelease that goes with the branch it is built from,
+and the examples repository carries the one for `main`. A pull request against a
+maintenance branch gets its snapshot as before, just no application.
+
+The application is destroyed when the pull request is closed or the label is
+removed. Its source is kept, and so is a module whose snapshot has long since
+expired — removing one is a manual decision.
+
+Configuration:
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `FLOW_PR_EXAMPLES_TOKEN` | secret | Token the two events are sent with. It needs `contents: write` on the examples repository — that is what a `repository_dispatch` takes — and nothing at all on this one. |
+| `PR_EXAMPLES_REPO` | variable (optional) | Repository the applications are built in. Defaults to `vaadin/flow-pr-examples`, so only a fork pointing at one of its own has to set it. |
+
+The `example app` label has to exist in the repository for it to be selectable,
+and the examples repository has its own secrets — see its README.

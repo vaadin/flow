@@ -3,7 +3,9 @@ name: Flow PR Snapshot
 # Builds and publishes a Flow snapshot for a pull request, so that the change
 # can be tried out from a Maven repository before it is merged. The build is
 # opt-in per pull request: it runs once the "snapshot build" label is added and
-# then again for every commit pushed while the label is there.
+# then again for every commit pushed while the label is there. The "example app"
+# label implies it and, once the snapshot is published, asks flow-pr-examples
+# for an application built from it.
 #
 # The version is derived from the branch name the same way the TeamCity feature
 # branch snapshot builds of the other Vaadin repositories derive theirs, so that
@@ -41,6 +43,10 @@ env:
   # has to stay public - a secret would only be masked in the run log anyway,
   # not in a comment. Overridable for a repository that publishes elsewhere.
   MAVEN_SNAPSHOT_READ_URL: ${{ vars.MAVEN_SNAPSHOT_READ_URL || 'https://maven.vaadin.com/vaadin-prereleases' }}
+  # Repository the example applications are built and deployed from. A variable
+  # so that a fork of this workflow can point at one of its own; there is
+  # nothing secret about the name of a public repository.
+  PR_EXAMPLES_REPO: ${{ vars.PR_EXAMPLES_REPO || 'vaadin/flow-pr-examples' }}
   _HEAD_REF: ${{ github.head_ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -59,12 +65,24 @@ jobs:
     #
     # The label has to be present for both event types, and a `labeled` event
     # for some other label must not start a build of its own.
+    #
+    # `example app` is the second way in, because an example application is
+    # built from the snapshot and is nothing without it. Implying the snapshot
+    # here rather than by adding the other label to the pull request is what
+    # makes it work when the other label is already there: GitHub sends no
+    # `labeled` event for a label a pull request already has, so nothing would
+    # start the build the example is waiting for.
     if: >-
       !github.event.pull_request.head.repo.fork
-      && contains(github.event.pull_request.labels.*.name, 'snapshot build')
-      && (github.event.action != 'labeled' || github.event.label.name == 'snapshot build')
+      && (contains(github.event.pull_request.labels.*.name, 'snapshot build')
+        || contains(github.event.pull_request.labels.*.name, 'example app'))
+      && (github.event.action != 'labeled'
+        || github.event.label.name == 'snapshot build'
+        || github.event.label.name == 'example app')
     timeout-minutes: 90
     runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Check configuration
         # The address is a variable and the credentials are secrets, but an
@@ -263,3 +281,42 @@ jobs:
           else
             gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@comment.md
           fi
+
+  example-app:
+    name: Example application
+    needs: snapshot
+    # Only for pull requests against main. An example is a full application and
+    # is pinned to the platform prerelease that goes with the branch it is built
+    # from, and flow-pr-examples carries the one for main. That is where almost
+    # every pull request goes; one against a maintenance branch gets its
+    # snapshot as before, just no application.
+    #
+    # The label is checked again rather than inherited from the job above,
+    # which also runs for `snapshot build` alone.
+    if: >-
+      github.base_ref == 'main'
+      && contains(github.event.pull_request.labels.*.name, 'example app')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Ask for an example application
+        # Everything the other repository needs and cannot look up itself: the
+        # pull request it is building for, the version that was just published,
+        # and the commit it was built from. The title, the description and the
+        # diff it reads from this pull request, which is public.
+        env:
+          # Not GITHUB_TOKEN: the event goes to another repository. A token with
+          # `contents: write` on PR_EXAMPLES_REPO, which is what a dispatch
+          # takes, and nothing on this one.
+          GH_TOKEN: ${{ secrets.FLOW_PR_EXAMPLES_TOKEN }}
+          VERSION: ${{ needs.snapshot.outputs.version }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "🚫 The **FLOW_PR_EXAMPLES_TOKEN** secret is not defined, check the configuration of **${{ github.repository }}**" \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          jq -n --arg pr "$_PR_NUMBER" --arg version "$VERSION" --arg sha "$_HEAD_SHA" \
+            '{event_type: "example-app", client_payload: {pr: ($pr | tonumber), version: $version, sha: $sha}}' \
+            | gh api "repos/${PR_EXAMPLES_REPO}/dispatches" --input -
+          echo "🧑‍💻 Asked [${PR_EXAMPLES_REPO}](${{ github.server_url }}/${PR_EXAMPLES_REPO}/actions) for an example application of \`$VERSION\`. It comments here when it is deployed." \
+            | tee -a $GITHUB_STEP_SUMMARY
