@@ -8,6 +8,12 @@ description: >
 on:
   pull_request:
     types: [opened, ready_for_review, labeled]
+  # The role gate only admits actors with write access, and a GitHub App actor
+  # never satisfies it however the app is permissioned. Coding agents that open
+  # pull requests in this repository are listed here so their work gets the
+  # same reading as a human contributor's.
+  bots:
+    - totally-not-ai[bot]
 
 # Skip drafts. The `labeled` trigger is the manual override: adding the
 # `diagram` label asks for a diagram on a PR the bot passed over, so every

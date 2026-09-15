@@ -37,6 +37,12 @@ on:
       - 'scripts/**'
       - '**/Dockerfile'
       - '**/*.md'
+  # The actor here is whoever pressed Merge, which is usually a human and
+  # usually passes the role gate on its own. A GitHub App actor never does,
+  # however the app is permissioned, so a coding agent that merges its own
+  # pull request is listed to keep it from silently going undocumented.
+  bots:
+    - totally-not-ai[bot]
 
 # One way in: a pull request merged into `main`, minus the conventional-commit
 # types that never reach a reader of the documentation. A pull request that was
