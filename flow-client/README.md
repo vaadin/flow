@@ -2,7 +2,7 @@
 
 This is the client part of flow. It is composed by two parts
 
-   - The flow client protocol, developed in java and compiled with GWT.
+   - The flow client protocol, written in TypeScript.
    - An npm package that can be used as a JS library to use flow UI in any client app.
 
 ## Building the project
@@ -38,21 +38,18 @@ To make your changes in `flow-client` module be included into the Flow test modu
 
 ## Debugging
 
-In short debugging is building flow client JS in pretty/detailed mode and then adding it to your project and then using it for debugging in the browser.
+The client ships as TypeScript: the `flow-client` JAR carries the sources under `META-INF/frontend`, Flow copies them into the application's `frontend/generated/jar-resources`, and the application's own Vite build compiles them. There is no obfuscated build to opt out of - a development mode application already serves the client with sourcemaps.
 1. `git clone git@github.com:vaadin/flow.git`
 2. `git checkout <appropriate branch/tag>`
-3. Build the project: `mvn clean install -Dgwt.module.style=DETAILED -DskipTests` in the `flow-client` folder.
-   - `-Dgwt.module.style=DETAILED` - this can be on of the followings: `DETAILED` or `PRETTY`
+3. Build the project: `mvn clean install -DskipTests` in the `flow-client` folder.
    - `-DskipTests` - skipping tests is recommended, because tests are not needed for debugging and make the build process slower
-   - Do not mind the many ERRORS happening while building the JAR, eventually build can be SUCCESS still,
    - the built JAR should be at the /target directory e.g. `target/flow-client-X.Y-SNAPSHOT.jar`
-4. Make sure your project is using the non-obfuscated `flow-client.jar`:
+4. Make sure your project is using the `flow-client.jar` you just built:
    - Please make sure that your build tool config file (`pom.xml` or `gradle.build`) contains the proper information:
      - `flow-client` dependency in an application project points to the built version (e.g.: be sure it is `X.Y-SNAPSHOT`),
-   - OR just uncompress the built JAR file and then copy the `FlowClient.js` from it to your proper directory 
+   - OR just uncompress the built JAR file and then copy the changed files from its `META-INF/frontend` to your proper directory 
 (where it is served to frontend) in e.g.: `frontend/generated/jar-resources`
-     - this option will make sure you use the non-obfuscated JS file (the other option can cause still some optimization)
-5. Then you can debug the JS code in your browser's dev tools (e.g.sources tab: `VAADIN/generated/jar-resources/FlowClient.js`)
+5. Then you can debug the client in your browser's dev tools (e.g. sources tab, under `frontend/generated/jar-resources`)
 
 #### Note for debugging:
    - you shall add the `flow-client` dependency if it is not present.
