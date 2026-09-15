@@ -63,8 +63,10 @@ class JavaScriptBootstrapHandlerTest {
     static public class PushAppShell implements AppShellConfigurator {
     }
 
-    @Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
-    static public class AutomaticPushAppShell implements AppShellConfigurator {
+    // Transport differs from the default the UI is created with, so that
+    // applying the annotation is observable
+    @Push(transport = Transport.WEBSOCKET)
+    static public class WebSocketPushAppShell implements AppShellConfigurator {
     }
 
     @BeforeEach
@@ -238,7 +240,7 @@ class JavaScriptBootstrapHandlerTest {
         VaadinServletContext context = new VaadinServletContext(
                 mocks.getServletContext());
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        registry.setShell(AutomaticPushAppShell.class);
+        registry.setShell(WebSocketPushAppShell.class);
         mocks.setAppShellRegistry(registry);
 
         mocks.getService().addUIInitListener(event -> {
@@ -246,7 +248,7 @@ class JavaScriptBootstrapHandlerTest {
             // The app shell annotation must already have been applied when
             // the listener runs, so that it can be inspected and overridden
             assertEquals(PushMode.AUTOMATIC, push.getPushMode());
-            assertEquals(Transport.WEBSOCKET_XHR, push.getTransport());
+            assertEquals(Transport.WEBSOCKET, push.getTransport());
 
             push.setPushMode(PushMode.MANUAL);
             push.setTransport(Transport.LONG_POLLING);
