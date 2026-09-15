@@ -86,6 +86,11 @@ class DevLoopCssIT extends AbstractDevLoopIT {
         VaadinDevCli.Outcome outcome = cli.run("apply").assertExitCode(0);
 
         outcome.assertOutputContains("hot-reload:");
+        // Both legs ran, so both are reported: the redefine alone would leave
+        // the reader unable to tell a stylesheet that went to the page from
+        // one that never left the classpath. No page is open here, which is
+        // what the push says.
+        outcome.assertOutputContains("hmr: 1 resource(s) copied");
         outcome.assertOutputDoesNotContain("restarting");
         assertTrue(fetch("/task-list.css").contains("55px"),
                 "the served stylesheet should hold the edited value");
