@@ -172,6 +172,27 @@ class VaadinQuarkusNativeProcessorTest {
                 "Should detect NestedDto from multi-level Component subclass");
     }
 
+    @Test
+    void isI18nClassName_matchesTranslationClassesAndTheirInnerClasses() {
+        assertTrue(VaadinQuarkusNativeProcessor
+                .isI18nClassName("com.vaadin.flow.component.login.LoginI18n"));
+        // The Upload component spells it with a capital N
+        assertTrue(VaadinQuarkusNativeProcessor.isI18nClassName(
+                "com.vaadin.flow.component.upload.UploadI18N"));
+        assertTrue(VaadinQuarkusNativeProcessor.isI18nClassName(
+                "com.vaadin.flow.component.login.LoginI18n$Form"));
+        assertTrue(VaadinQuarkusNativeProcessor.isI18nClassName(
+                "com.vaadin.flow.component.upload.UploadI18N$Uploading$Status"));
+
+        // Neither ends at I18n nor continues into an inner class of one
+        assertFalse(VaadinQuarkusNativeProcessor
+                .isI18nClassName("com.vaadin.flow.component.UI"));
+        assertFalse(VaadinQuarkusNativeProcessor.isI18nClassName(
+                "com.vaadin.flow.component.login.LoginI18nProvider"));
+        assertFalse(VaadinQuarkusNativeProcessor
+                .isI18nClassName("com.vaadin.flow.i18n.I18NProvider"));
+    }
+
     private static Predicate<ClassInfo> containsClass(Class<?> expectedClass) {
         return ci -> ci.name().toString().equals(expectedClass.getName());
     }

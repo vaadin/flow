@@ -393,6 +393,26 @@ public class VaadinQuarkusNativeProcessor {
         return index.getKnownClasses().stream().filter(predicate);
     }
 
+    /**
+     * A common pattern in Flow components is to handle translations in classes
+     * with a name ending in I18n and their potential inner classes, which are
+     * serialized as JSON and sent to the client. An exception is the Upload
+     * component, whose translations class has a capitalized N (UploadI18N).
+     * <p>
+     * Not private for testing purposes only.
+     *
+     * @param className
+     *            the fully qualified class name to test
+     * @return whether the name is that of a translations class or of one of its
+     *         inner classes
+     */
+    static boolean isI18nClassName(String className) {
+        // matches() anchors the whole name, so what used to be an alternation
+        // of anchors inside the group is simply an optional group: the name
+        // either ends at I18n/I18N or continues into an inner class.
+        return className.matches(".*I18[nN](\\$.*)?");
+    }
+
     // These should really go into the separate components but are here for now
     // to ease testing
     private Set<ClassInfo> getCommonComponentClasses(IndexView index) {
@@ -404,13 +424,7 @@ public class VaadinQuarkusNativeProcessor {
                 .map(Class::getName).map(index::getClassByName)
                 .filter(Objects::nonNull).forEach(classes::add);
 
-        // A common pattern in Flow components is to handle translations in
-        // classes with name ending in I18n and their potential inner classes,
-        // that are serialized as JSON and sent to the client.
-        // An exception is the Upload component whose translations class has
-        // capitalized N (UploadI18N)
-        Predicate<String> i18nClasses = className -> className
-                .matches(".*I18[nN]($|\\$.*$)");
+        Predicate<String> i18nClasses = VaadinQuarkusNativeProcessor::isI18nClassName;
         // Charts and Map configurations are serialized as JSON to be sent to
         // the client. All configuration classes need to be registered for
         // reflection.

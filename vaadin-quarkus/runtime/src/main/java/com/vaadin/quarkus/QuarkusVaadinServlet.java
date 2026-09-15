@@ -45,7 +45,11 @@ public class QuarkusVaadinServlet extends VaadinServlet {
     @Inject
     BeanManager beanManager;
 
-    private static final ThreadLocal<Optional<String>> SERVLET_NAME = new ThreadLocal<>();
+    // withInitial, so that getCurrentServletName() keeps the contract its
+    // Optional return type states on a thread that has never been inside
+    // init() or service() - a plain ThreadLocal answers null there.
+    private static final ThreadLocal<Optional<String>> SERVLET_NAME = ThreadLocal
+            .withInitial(Optional::empty);
 
     @Override
     protected VaadinServletService createServletService(

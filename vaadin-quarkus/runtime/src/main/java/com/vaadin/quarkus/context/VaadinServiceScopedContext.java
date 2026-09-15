@@ -62,8 +62,11 @@ public class VaadinServiceScopedContext extends AbstractContext {
     @Override
     public boolean isActive() {
         VaadinServlet servlet = VaadinServlet.getCurrent();
+        // isPresent(), not a null check: getCurrentServletName() returns an
+        // Optional and so is never null, which made this arm always true and
+        // let getContextualStorage() reach its get() on an empty Optional.
         return servlet instanceof QuarkusVaadinServlet || (servlet == null
-                && QuarkusVaadinServlet.getCurrentServletName() != null);
+                && QuarkusVaadinServlet.getCurrentServletName().isPresent());
     }
 
     @ApplicationScoped

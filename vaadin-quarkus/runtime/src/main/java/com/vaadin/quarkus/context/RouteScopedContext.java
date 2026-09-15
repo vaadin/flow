@@ -309,6 +309,13 @@ public class RouteScopedContext extends AbstractContext {
 
     private boolean navigationChainHasOwner(UI ui, Class<?> owner) {
         NavigationData data = ComponentUtil.getData(ui, NavigationData.class);
+        if (data == null) {
+            // No navigation has happened on this UI yet, so there is no chain
+            // for the owner to be part of. Reporting that as "not in the chain"
+            // lets the caller raise its own IllegalStateException, which names
+            // the owner and the bean, instead of failing with a bare NPE.
+            return false;
+        }
         if (owner.equals(data.getNavigationTarget())) {
             return true;
         }

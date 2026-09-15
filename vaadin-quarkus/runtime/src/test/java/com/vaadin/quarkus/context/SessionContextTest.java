@@ -16,10 +16,33 @@
 package com.vaadin.quarkus.context;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.server.VaadinSession;
 
 @QuarkusTest
 public class SessionContextTest
         extends AbstractContextTest<VaadinSessionScopedContext> {
+
+    @Test
+    public void getContextualStorage_noCurrentSession_answersNull() {
+        // Arc destroys a context outside any Vaadin session thread, and that
+        // goes through destroyAllActive() rather than through the get methods,
+        // so it runs without their checkActive(). With no session there is no
+        // storage and none can be created either, which has to be answered
+        // rather than read off the absent session.
+        createContext().activate();
+        getContext().get(contextual, creationalContext);
+
+        VaadinSession.setCurrent(null);
+
+        Assertions.assertNull(
+                getContext().getContextualStorage(contextual, false));
+        Assertions.assertNull(
+                getContext().getContextualStorage(contextual, true));
+        getContext().destroyAllActive();
+    }
 
     @Override
     protected UnderTestContext newContextUnderTest() {

@@ -139,6 +139,24 @@ public class RouteContextualStorageManagerTest {
     }
 
     @Test
+    public void noNavigationDataYet_ownedBean_scopeDoesNotExist_Throws() {
+        // Nothing has navigated on this UI, so there is no chain for the owner
+        // to be part of. Both the creating and the looking up path have to
+        // report that as the missing scope they already report for a chain
+        // that does not hold the owner, rather than failing on the absent
+        // navigation data - the lookup one is how the container resolves an
+        // IF_EXISTS observer, so it is reachable before any navigation.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        Supplier<MemberOfGroup1> producer = getMemberOfGroupProducer(
+                contextual);
+        Assertions.assertThrows(IllegalStateException.class, producer::get);
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> routeContext.get(contextual));
+    }
+
+    @Test
     public void onBeforeEnter_group1Navigation_beansAreScoped() {
         Mockito.when(event.getNavigationTarget())
                 .thenReturn((Class) Group1.class);

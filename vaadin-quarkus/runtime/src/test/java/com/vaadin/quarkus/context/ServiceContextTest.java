@@ -18,8 +18,13 @@ package com.vaadin.quarkus.context;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 
-import io.quarkus.test.junit.QuarkusTest;
+import java.util.concurrent.atomic.AtomicReference;
 
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.quarkus.QuarkusVaadinServlet;
 import com.vaadin.quarkus.annotation.VaadinServiceScoped;
 
 @QuarkusTest
@@ -27,6 +32,32 @@ public class ServiceContextTest
         extends AbstractContextTest<VaadinServiceScopedContext> {
     @Inject
     private BeanManager beanManager;
+
+    @Test
+    public void isActive_noServletAndNoServletName_notActive()
+            throws InterruptedException {
+        // getCurrentServletName() returns an Optional, so it is never null and
+        // asking whether it is decided nothing: the context reported itself
+        // active with no servlet name on the thread, and then read the name
+        // off the empty Optional. Checked on a thread of its own so that
+        // neither the current servlet nor the name can be left over from
+        // another test.
+        AtomicReference<Boolean> active = new AtomicReference<>();
+        AtomicReference<Boolean> namePresent = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            namePresent.set(
+                    QuarkusVaadinServlet.getCurrentServletName().isPresent());
+            active.set(new VaadinServiceScopedContext().isActive());
+        });
+        thread.start();
+        thread.join();
+
+        Assertions.assertFalse(namePresent.get(),
+                "a thread that has not been inside init() or service() has no "
+                        + "servlet name, and asking must not throw");
+        Assertions.assertFalse(active.get(),
+                "the service context is not active without a servlet name");
+    }
 
     @Override
     protected UnderTestContext newContextUnderTest() {

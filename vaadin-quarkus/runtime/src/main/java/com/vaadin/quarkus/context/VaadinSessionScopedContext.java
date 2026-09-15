@@ -44,6 +44,13 @@ public class VaadinSessionScopedContext extends AbstractContext {
     protected ContextualStorage getContextualStorage(Contextual<?> contextual,
             boolean createIfNotExist) {
         VaadinSession session = VaadinSession.getCurrent();
+        if (session == null) {
+            // Nothing is stored against a thread that has no session, and
+            // nothing can be created for one either. Reached when Arc destroys
+            // the context, which goes through destroyAllActive() rather than
+            // through the get methods and so runs without their checkActive().
+            return null;
+        }
         ContextualStorage storage = findContextualStorage(session);
         if (storage == null && createIfNotExist) {
             storage = new SessionContextualStorage(session);
