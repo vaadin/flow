@@ -24,6 +24,7 @@ import {
 } from 'vite';
 
 import brotli from 'rollup-plugin-brotli';
+import MagicString from 'magic-string';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
@@ -468,24 +469,31 @@ function preserveUsageStats() {
   return {
     name: 'vaadin:preserve-usage-stats',
 
+    // A hook that returns code must return a sourcemap for it as well, or
+    // return null to leave the module as it is. Code without a map makes the
+    // bundler drop the module from the sourcemap of the chunk it ends up in,
+    // and this hook sees every module of the bundle.
     transform(src: string, id: string) {
-      if (id.includes('vaadin-usage-statistics')) {
-        if (src.includes('vaadin-dev-mode:start')) {
-          const expectedComment = '/*! vaadin-dev-mode:start';
-          const newSrc = src.replace(DEV_MODE_START_REGEXP, expectedComment);
-          if (newSrc === src) {
-            if (!src.includes(expectedComment)) {
-              console.error('vaadin-dev-mode:start tag not found');
-            }
-          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
-            console.error('New comment fails to match original regexp');
-          } else {
-            return { code: newSrc };
-          }
-        }
+      if (!id.includes('vaadin-usage-statistics') || !src.includes('vaadin-dev-mode:start')) {
+        return null;
       }
 
-      return { code: src };
+      const expectedComment = '/*! vaadin-dev-mode:start';
+      const magicString = new MagicString(src).replace(DEV_MODE_START_REGEXP, expectedComment);
+      if (!magicString.hasChanged()) {
+        if (!src.includes(expectedComment)) {
+          console.error('vaadin-dev-mode:start tag not found');
+        }
+        return null;
+      }
+
+      const code = magicString.toString();
+      if (!code.match(DEV_MODE_CODE_REGEXP)) {
+        console.error('New comment fails to match original regexp');
+        return null;
+      }
+
+      return { code, map: magicString.generateMap({ hires: true }) };
     }
   };
 }
