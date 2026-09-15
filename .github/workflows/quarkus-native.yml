@@ -88,3 +88,72 @@ jobs:
         with:
           name: tests-output-quarkus-native
           path: tests-report-*.tgz
+  report:
+    # A nightly has no pull request to annotate, so the failure signal is one
+    # GitHub issue kept in sync by title - the mechanism release-check.yml
+    # already uses. Opened or updated when the native build breaks, closed
+    # again once it is green, so nobody has to watch the Actions tab.
+    if: ${{ always() && github.repository == 'vaadin/flow' }}
+    needs: native-tests
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Sync the native build issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.native-tests.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TITLE="Quarkus native image build is failing on $BRANCH"
+          # Created before the lookup because `gh issue list --label` errors on
+          # a label the repository does not have yet.
+          gh label create quarkus-native \
+            --description "Nightly Quarkus native image build" \
+            --color B60205 2>/dev/null || true
+          # Matched on the exact title rather than through search, which would
+          # tokenize it; see the same lookup in release-check.yml.
+          EXISTING=$(gh issue list --state open --label quarkus-native --limit 100 \
+            --json number,title --jq ".[] | select(.title==\"$TITLE\") | .number" | head -n1)
+          if [ "$RESULT" = "success" ]; then
+            if [ -n "$EXISTING" ]; then
+              gh issue close "$EXISTING" \
+                --comment "The nightly native image build is green again: $RUN_URL. Closing automatically."
+              echo "Closed #$EXISTING"
+            else
+              echo "Native image build is green and no issue is open."
+            fi
+            exit 0
+          fi
+          cat > body.md <<EOF
+          The nightly \`Quarkus Native Image\` workflow finished with \`$RESULT\`.
+
+          Latest run: $RUN_URL
+
+          This builds \`flow-tests/vaadin-quarkus-tests/embedded-plugin\` as a
+          GraalVM native image and runs its integration tests against it. The
+          JVM leg of the same module runs in validation, so a failure here is
+          specific to the extension's native build configuration — usually a
+          missing reflection or resource hint in
+          \`vaadin-quarkus/deployment/src/main/java/com/vaadin/quarkus/deployment\`.
+
+          Reproduce locally with GraalVM on the path:
+
+          \`\`\`sh
+          mvn install -DskipTests -pl '!flow-plugins/flow-gradle-plugin'
+          mvn verify -f flow-tests/vaadin-quarkus-tests/pom.xml -pl embedded-plugin -am -Dnative
+          \`\`\`
+
+          This issue is updated by each nightly run and closed automatically
+          once the build is green.
+          EOF
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --body-file body.md
+            echo "Updated #$EXISTING"
+          else
+            gh issue create --title "$TITLE" --label quarkus-native --body-file body.md
+            echo "Created — $TITLE"
+          fi
