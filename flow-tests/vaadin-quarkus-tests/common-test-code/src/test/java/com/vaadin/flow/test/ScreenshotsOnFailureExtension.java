@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.test;
 
-import java.util.logging.Logger;
-
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.testbench.ScreenshotOnFailureRule;
 
@@ -43,7 +43,7 @@ public class ScreenshotsOnFailureExtension
     public void handleTestExecutionException(ExtensionContext context,
             Throwable throwable) throws Throwable {
         if (!context.getTestInstance().isPresent()) {
-            getLogger().warning(
+            getLogger().warn(
                     "There is no test instance in the context, can't generate a screenshot");
             throw throwable;
         }
@@ -53,7 +53,7 @@ public class ScreenshotsOnFailureExtension
         ScreenshotOnFailureRuleDelegate delegate = new ScreenshotOnFailureRuleDelegate(
                 test);
         if (!context.getTestClass().isPresent()) {
-            getLogger().warning(
+            getLogger().warn(
                     "There is no test class in the context, can't generate a screenshot");
             throw throwable;
         }
@@ -73,6 +73,6 @@ public class ScreenshotsOnFailureExtension
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(ScreenshotsOnFailureExtension.class.getName());
+        return LoggerFactory.getLogger(ScreenshotsOnFailureExtension.class);
     }
 }

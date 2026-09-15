@@ -4,8 +4,8 @@
 
   <parent>
     <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-quarkus-integration-tests</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <artifactId>vaadin-quarkus-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>vaadin-quarkus-production-tests</artifactId>
@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>reusable-theme</artifactId>
+      <artifactId>vaadin-quarkus-reusable-theme</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -107,7 +107,7 @@
       <plugin>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-maven-plugin</artifactId>
-        <version>${vaadin.flow.version}</version>
+        <version>${project.version}</version>
         <configuration>
           <productionMode>true</productionMode>
         </configuration>

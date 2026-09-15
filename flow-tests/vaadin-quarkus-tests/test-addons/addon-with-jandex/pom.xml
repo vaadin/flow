@@ -5,8 +5,8 @@
 
   <parent>
     <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-quarkus-integration-tests</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <artifactId>vaadin-quarkus-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
