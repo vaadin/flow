@@ -457,9 +457,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         if (redefined) {
-            // A full chain refresh should be triggered if there are modal
-            // components, since they could be attached to UI or parent layouts
-            if (ui.hasModalComponent()) {
+            // A full chain refresh should be triggered if there are components
+            // with modality, since they could be attached to UI or parent
+            // layouts. Both strictly and visually modal components are taken
+            // into account, as for example dialogs are visually modal by
+            // default.
+            if (ui.getInternals().hasModalityComponent()) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             } else if (!targetChainChangedItems.isEmpty()) {
                 refreshStrategy = targetChainChangedItems.stream()
