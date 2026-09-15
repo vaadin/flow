@@ -6,7 +6,6 @@
 /.cvsignore
 /.tomcatplugin
 /work
-/.gwt-cache
 /.externalToolBuilders
 /extras
 **/bin
