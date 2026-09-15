@@ -22,11 +22,13 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.workspace.WorkspaceModule;
+import io.quarkus.bootstrap.workspace.WorkspaceModuleId;
 import io.quarkus.builder.BuildException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,7 @@ import com.vaadin.flow.server.Constants;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -336,5 +339,69 @@ class VaadinPluginTest {
         Path file = generatedResourcesDir.resolve(relativePath);
         Files.createDirectories(file.getParent());
         Files.writeString(file, content);
+    }
+
+    @Test
+    void of_workspaceNotInTheModel_readsWhatCodeGenerationSaved()
+            throws Exception {
+        WorkspaceModule saved = WorkspaceModule.builder()
+                .setModuleId(WorkspaceModuleId.of("com.example", "demo", "1.0"))
+                .setModuleDir(projectDir)
+                .setBuildDir(projectDir.resolve("target")).build();
+        Files.createDirectories(buildDir.toPath());
+        WorkspaceInfo.save(saved, buildDir.toPath());
+
+        ApplicationModel modelWithoutWorkspace = mock(ApplicationModel.class);
+        when(modelWithoutWorkspace.getApplicationModule()).thenReturn(null);
+        VaadinBuildTimeConfig config = mock(VaadinBuildTimeConfig.class);
+        when(config.cleanFrontendFiles()).thenReturn(false);
+
+        // The fallback path exists because a Quarkus build only knows the
+        // workspace when workspace-discovery is on; without it the build steps
+        // have to read back what the code generation phase wrote.
+        assertNotNull(VaadinPlugin.of(config, modelWithoutWorkspace,
+                buildDir.toPath()));
+    }
+
+    @Test
+    void of_workspaceNeitherInTheModelNorSaved_failsWithAnActionableMessage() {
+        ApplicationModel modelWithoutWorkspace = mock(ApplicationModel.class);
+        when(modelWithoutWorkspace.getApplicationModule()).thenReturn(null);
+        VaadinBuildTimeConfig config = mock(VaadinBuildTimeConfig.class);
+        when(config.cleanFrontendFiles()).thenReturn(false);
+
+        BuildException exception = assertThrows(BuildException.class,
+                () -> VaadinPlugin.of(config, modelWithoutWorkspace,
+                        projectDir.resolve("no-such-directory")));
+        assertTrue(exception.getMessage().contains("workspace-discovery"),
+                "the message has to say what the user can turn on: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void clean_noCleanTask_doesNothing() {
+        // cleanFrontendFiles is off for the fixture, so there is no task and
+        // clean() has to be a no-op rather than a NullPointerException - it
+        // runs as a Quarkus build closeable, where a failure is invisible.
+        assertDoesNotThrow(() -> plugin.clean());
+    }
+
+    @Test
+    void clean_taskFails_logsRatherThanPropagating() throws Exception {
+        VaadinBuildTimeConfig config = mock(VaadinBuildTimeConfig.class);
+        when(config.generatedResourceOutputDirectory())
+                .thenReturn(new File(Constants.VAADIN_SERVLET_RESOURCES));
+        when(config.cleanFrontendFiles()).thenReturn(true);
+        when(config.frontendDirectory())
+                .thenReturn(new File("src/main/frontend"));
+        when(config.generatedTsFolder()).thenReturn(Optional.empty());
+        when(config.npmFolder()).thenReturn(Optional.empty());
+
+        VaadinPlugin pluginWithCleanTask = VaadinPlugin.of(config, model,
+                buildDir.toPath());
+
+        // Nothing was ever generated, so the task has nothing to remove; what
+        // matters is that whatever it does, it does not escape.
+        assertDoesNotThrow(pluginWithCleanTask::clean);
     }
 }

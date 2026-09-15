@@ -514,9 +514,13 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
      * @return the path of the artifacts that compose the application classpath.
      */
     private Stream<Path> buildClasspath() {
-        return Stream.concat(
-                appModule.getMainSources().getOutputTree().getRoots().stream(),
-                model.getRuntimeDependencies().stream()
-                        .flatMap(dep -> dep.getResolvedPaths().stream()));
+        // getMainSources() is null for a module that declares none, which the
+        // constructor above already handles by assuming the standard layout;
+        // buildDir() is where that layout puts the compiled classes.
+        Stream<Path> outputs = appModule.hasMainSources()
+                ? appModule.getMainSources().getOutputTree().getRoots().stream()
+                : Stream.of(buildDir());
+        return Stream.concat(outputs, model.getRuntimeDependencies().stream()
+                .flatMap(dep -> dep.getResolvedPaths().stream()));
     }
 }

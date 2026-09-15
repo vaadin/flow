@@ -107,6 +107,15 @@ public final class VaadinPlugin {
                         "Cannot load workspace information for Vaadin plugin. quarkus.bootstrap.workspace-discovery=true might be required.",
                         e, List.of());
             }
+            if (module == null) {
+                // Nothing was saved either, which is the same situation as a
+                // failed read and has the same remedy. Without this the plugin
+                // is built around a null module and fails later with a bare
+                // NullPointerException that says none of it.
+                throw new BuildException(
+                        "Cannot load workspace information for Vaadin plugin. quarkus.bootstrap.workspace-discovery=true might be required.",
+                        List.of());
+            }
         }
         return new VaadinPlugin(vaadinConfig, applicationModel, module);
     }

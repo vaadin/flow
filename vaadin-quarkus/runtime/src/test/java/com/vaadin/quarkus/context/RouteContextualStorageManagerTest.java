@@ -15,8 +15,10 @@
  */
 package com.vaadin.quarkus.context;
 
+import jakarta.enterprise.context.spi.Contextual;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.spi.Bean;
 import jakarta.inject.Inject;
 
 import java.lang.annotation.Annotation;
@@ -307,6 +309,35 @@ public class RouteContextualStorageManagerTest {
 
         Assertions.assertTrue(destroyedBeans.contains(bean1));
         Assertions.assertNotEquals(STATE, anotherBean.getState());
+    }
+
+    @Test
+    public void noNavigationDataYet_beanWithoutOwner_scopeDoesNotExist_Throws() {
+        // A bean with no @RouteScopeOwner is scoped to whatever the UI is
+        // showing, so before any navigation it has no scope at all. The
+        // message has to say that rather than fail on the absent data.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        Supplier<NoOwnerBean> producer = getNoOwnerProducer();
+        IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, producer::get);
+        Assertions.assertTrue(
+                exception.getMessage().contains(NoOwnerBean.class.getName()),
+                "the message has to name the bean: " + exception.getMessage());
+    }
+
+    @Test
+    public void get_contextualIsNotABean_reportsWhatWasPassed() {
+        Contextual<?> notABean = Mockito.mock(Contextual.class);
+
+        IllegalArgumentException exception = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> routeContext.get(notABean));
+        Assertions.assertTrue(
+                exception.getMessage().contains(Bean.class.getName()),
+                "the message has to say what was expected instead: "
+                        + exception.getMessage());
     }
 
     private UI doSetUp(String windowName, VaadinSession session) {

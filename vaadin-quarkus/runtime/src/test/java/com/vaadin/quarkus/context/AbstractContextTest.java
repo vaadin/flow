@@ -15,9 +15,14 @@
  */
 package com.vaadin.quarkus.context;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Basic tests for all custom abstract contexts.
@@ -68,4 +73,66 @@ public abstract class AbstractContextTest<C extends AbstractContext>
         assertEquals(2, getDestroyedBeans().size());
     }
 
+    @Test
+    public void get_nothingStored_answersNullWithoutCreating() {
+        createContext().activate();
+
+        // The lookup-only overload is how the container resolves an IF_EXISTS
+        // observer: it has to report the absence rather than create the bean.
+        assertNull(getContext().get(contextual));
+        assertEquals(0, getCreatedBeansCount());
+    }
+
+    @Test
+    public void get_nullCreationalContext_isALookupNotACreation() {
+        createContext().activate();
+
+        assertNull(getContext().get(contextual, null));
+        assertEquals(0, getCreatedBeansCount());
+    }
+
+    @Test
+    public void get_beanStored_theLookupFindsTheSameInstance() {
+        createContext().activate();
+        TestBean created = getContext().get(contextual, creationalContext);
+
+        assertSame(created, getContext().get(contextual));
+    }
+
+    @Test
+    public void destroy_beanNotInContext_doesNothing() {
+        createContext().activate();
+
+        getContext().destroy(contextual);
+
+        assertTrue(getDestroyedBeans().isEmpty());
+    }
+
+    @Test
+    public void destroy_beanInContext_destroysOnlyThatBean() {
+        createContext().activate();
+        TestBean created = getContext().get(contextual, creationalContext);
+
+        getContext().destroy(contextual);
+
+        assertEquals(Set.of(created), getDestroyedBeans());
+        // Gone from the context too, not just destroyed
+        assertNull(getContext().get(contextual));
+    }
+
+    @Test
+    public void getState_nothingStored_isEmpty() {
+        createContext().activate();
+
+        assertTrue(getContext().getState().getContextualInstances().isEmpty());
+    }
+
+    @Test
+    public void getState_beanStored_reportsIt() {
+        createContext().activate();
+        TestBean created = getContext().get(contextual, creationalContext);
+
+        assertTrue(getContext().getState().getContextualInstances()
+                .containsValue(created));
+    }
 }

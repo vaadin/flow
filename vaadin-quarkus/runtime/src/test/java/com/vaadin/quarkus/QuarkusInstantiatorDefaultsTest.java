@@ -72,6 +72,21 @@ class QuarkusInstantiatorDefaultsTest {
                 menuAccessControl instanceof DefaultMenuAccessControl);
     }
 
+    @Test
+    public void getOrCreate_typeIsNotABean_fallsBackToPlainInstantiation() {
+        // The unsatisfied handler only logs; what the caller gets has to be a
+        // working instance, so that a view that is not a bean still renders.
+        NotABean first = instantiator.getOrCreate(NotABean.class);
+        NotABean second = instantiator.getOrCreate(NotABean.class);
+
+        Assertions.assertNotNull(first);
+        Assertions.assertNotSame(first, second,
+                "nothing scopes a non-bean, so each call builds a new one");
+    }
+
+    public static class NotABean {
+    }
+
     public static class NoBeansTestProfile implements QuarkusTestProfile {
         @Override
         public String getConfigProfile() {

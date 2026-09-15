@@ -17,7 +17,6 @@ package com.vaadin.quarkus.deployment.vaadinplugin;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,9 +69,13 @@ class WorkspaceInfo {
     static void save(WorkspaceModule module, Path workDir) throws Exception {
         Path projectInfoFile = resolveProjectInfoFile(workDir);
         var info = collectWorkspaceInfo(module);
+        // The default options, which are CREATE and TRUNCATE_EXISTING. Asking
+        // for CREATE alone keeps whatever an earlier run wrote and overwrites
+        // it from the start, so a second pass over the same work directory -
+        // a dev mode restart, say - leaves the tail of the longer previous
+        // document behind and the file no longer parses.
         Files.writeString(projectInfoFile,
-                JacksonUtils.getMapper().writeValueAsString(info),
-                StandardOpenOption.CREATE);
+                JacksonUtils.getMapper().writeValueAsString(info));
     }
 
     /**
@@ -95,15 +98,8 @@ class WorkspaceInfo {
                     .setModuleDir(Path.of(info.moduleDir()))
                     .setBuildDir(Path.of(info.buildDir()))
                     .addArtifactSources(new DefaultArtifactSources(
-                            ArtifactSources.MAIN,
-                            info.sourceDirs.stream()
-                                    .map(d -> SourceDir.of(Path.of(d.dir()),
-                                            Path.of(d.outputDir())))
-                                    .toList(),
-                            info.resourceDirs.stream()
-                                    .map(d -> SourceDir.of(Path.of(d.dir()),
-                                            Path.of(d.outputDir())))
-                                    .toList()))
+                            ArtifactSources.MAIN, toSourceDirs(info.sourceDirs),
+                            toSourceDirs(info.resourceDirs)))
                     .build();
         }
         return null;
@@ -113,9 +109,28 @@ class WorkspaceInfo {
         return workDir.resolve("vaadin-plugin-project-info.txt");
     }
 
+    /**
+     * Converts the persisted directory entries into source dirs, tolerating the
+     * null an older build wrote for a module without main sources.
+     *
+     * @param dirs
+     *            the persisted entries, possibly null
+     * @return the source dirs, empty if there were none
+     */
+    private static List<SourceDir> toSourceDirs(List<SourceDirInfo> dirs) {
+        if (dirs == null) {
+            return List.of();
+        }
+        return dirs.stream().map(
+                d -> SourceDir.of(Path.of(d.dir()), Path.of(d.outputDir())))
+                .toList();
+    }
+
     private static ProjectInfo collectWorkspaceInfo(WorkspaceModule module) {
-        List<SourceDirInfo> sourceDirs = null;
-        List<SourceDirInfo> resourceDirs = null;
+        // Empty rather than null for a module without main sources, so that
+        // what is written back can be read again.
+        List<SourceDirInfo> sourceDirs = List.of();
+        List<SourceDirInfo> resourceDirs = List.of();
         if (module.hasMainSources()) {
             sourceDirs = module.getMainSources().getSourceDirs().stream()
                     .map(SourceDirInfo::new).collect(Collectors.toList());
