@@ -45,10 +45,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.internal.ReflectTools;
@@ -351,15 +354,13 @@ class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         // Running npm using node and npm-cli.js script by default
-        assertEquals(5, tools.getNpmExecutable().size());
+        assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("node"));
         assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
                 containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(4),
-                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
@@ -671,6 +672,29 @@ class FrontendToolsTest {
     }
 
     @Test
+    void getSuitablePnpm_notUsingGlobalPnpm_pinsDefaultPnpmVersion()
+            throws IOException {
+        assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
+        createStubNode(
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NODE)
+                        .build(),
+                FrontendStubs.ToolStubInfo.builder(FrontendStubs.Tool.NPM)
+                        .withVersion(SUPPORTED_PNPM_VERSION).build(),
+                vaadinHomeDir);
+
+        List<String> pnpmCommand = tools.getSuitablePnpm();
+
+        // npx must be given an explicit version, otherwise it resolves
+        // whatever it considers latest, which is not necessarily a pnpm
+        // version Flow supports
+        assertTrue(
+                pnpmCommand
+                        .contains("pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION),
+                "expected pnpm to be pinned to DEFAULT_PNPM_VERSION, but the command was "
+                        + pnpmCommand);
+    }
+
+    @Test
     void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
         assumeFalse(FrontendUtils.isWindows(), "Skipping test on windows.");
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
@@ -949,4 +973,158 @@ class FrontendToolsTest {
                 "only the non-default scoped registry should be returned");
     }
 
+    @Test
+    void getConfiguredSetting_pnpm_readsTheConfigurationWithConfigList()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"minimumReleaseAge\": 4320}");
+
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
+
+            // the subcommand has to be 'list', as pnpm does not know the 'ls'
+            // alias npm accepts
+            frontendUtils.verify(() -> FrontendUtils.executeCommand(Mockito.eq(
+                    List.of("node", "pnpm.cjs", "config", "list", "--json")),
+                    Mockito.any()));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_listAndCommaSeparatedValue_areRead()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/*\", \"lit\"]}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+
+            // a single value written into an .npmrc may also arrive as a
+            // comma separated string
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": \"@acme/*, lit\"}");
+
+            assertEquals(List.of("@acme/*", "lit"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_braceExpansionInAList_isKeptTogether()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // the values of a list are complete on their own, and the comma
+            // of a brace expansion does not separate two patterns
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": [\"@acme/{ui,core}\"]}");
+
+            assertEquals(List.of("@acme/{ui,core}"),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+        }
+    }
+
+    @Test
+    void getConfiguredSettingValues_keyWithoutValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn(
+                            "{\"min-release-age-exclude\": null, \"omit\": []}");
+
+            assertEquals(List.of(),
+                    tools.getConfiguredSettingValues(List.of("npm"),
+                            new File(baseDir), "min-release-age-exclude"));
+            assertEquals(List.of(), tools.getConfiguredSettingValues(
+                    List.of("npm"), new File(baseDir), "omit"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_firstKeyMissing_fallsBackToTheNextOne()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // pnpm 10 reports the setting kebab-cased, pnpm 11 camel-cased
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"minimum-release-age\": 4320}");
+
+            assertEquals(Optional.of("4320"),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge",
+                            "minimum-release-age"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_keyWithoutScalarValue_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            // npm lists every key it knows, using null for the unconfigured
+            // ones and an array for some of the others, while pnpm lists only
+            // the configured ones
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenReturn("{\"min-release-age\": null, \"omit\": []}");
+
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "min-release-age"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "before"));
+            assertEquals(Optional.empty(), tools.getConfiguredSetting(
+                    List.of("npm"), new File(baseDir), "omit"));
+        }
+    }
+
+    @Test
+    void getConfiguredSetting_configurationCannotBeRead_isEmpty()
+            throws CommandExecutionException {
+        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            frontendUtils
+                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
+                            Mockito.any()))
+                    .thenThrow(new CommandExecutionException(1, "",
+                            "unknown subcommand"))
+                    .thenReturn("minimum-release-age=4320\n");
+
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimumReleaseAge"),
+                    "a tool that fails should be ignored rather than failing the build");
+            // the key the output would yield if it were read as key=value
+            // pairs, so that only JSON is accepted
+            assertEquals(Optional.empty(),
+                    tools.getConfiguredSetting(List.of("node", "pnpm.cjs"),
+                            new File(baseDir), "minimum-release-age"),
+                    "a tool answering in some other format should be ignored rather than failing the build");
+        }
+    }
 }

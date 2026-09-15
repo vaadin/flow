@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Assert;
@@ -56,6 +57,35 @@ public class CompressUtilTest {
                 extracted.exists());
         Assert.assertEquals("<html></html>",
                 Files.readString(extracted.toPath()));
+    }
+
+    @Test
+    public void hasFileInZip_onlyExistingEntryIsFound() throws IOException {
+        File zip = temporaryFolder.newFile("prod.bundle");
+        try (ZipOutputStream zipOut = new ZipOutputStream(
+                new FileOutputStream(zip))) {
+            zipOut.putNextEntry(new ZipEntry("config/templates/my-view.js"));
+            zipOut.write("export {}".getBytes(StandardCharsets.UTF_8));
+            zipOut.closeEntry();
+        }
+
+        Assert.assertTrue(
+                CompressUtil.hasFileInZip(zip, "config/templates/my-view.js"));
+        Assert.assertFalse(CompressUtil.hasFileInZip(zip,
+                "config/templates/another-view.js"));
+    }
+
+    @Test
+    public void hasFileInZip_fileIsNotAZip_throwsIOException()
+            throws IOException {
+        File notAZip = temporaryFolder.newFile("prod.bundle");
+        Files.writeString(notAZip.toPath(), "not a zip");
+
+        // ZipException is an IOException and is let through as it is
+        ZipException exception = Assert.assertThrows(ZipException.class,
+                () -> CompressUtil.hasFileInZip(notAZip, "config/stats.json"));
+        Assert.assertNull("The failure should not be wrapped",
+                exception.getCause());
     }
 
     @Test

@@ -179,12 +179,11 @@ class ComputedSignalTest extends SignalTestBase {
     void cached_constantCallback_runOnceAndConstantSignalValue() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
-        Signal<@Nullable Object> signal = Signal
-                .<@Nullable Object> cached(() -> {
-                    dependency.get();
-                    count.incrementAndGet();
-                    return null;
-                });
+        Signal<@Nullable Object> signal = Signal.cached(() -> {
+            dependency.get();
+            count.incrementAndGet();
+            return null;
+        });
 
         assertNull(signal.peek());
         assertEquals(1, count.intValue());
@@ -334,12 +333,11 @@ class ComputedSignalTest extends SignalTestBase {
         var dependency = createDependency();
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
-        Signal<@Nullable String> signal = Signal
-                .<@Nullable String> cached((() -> {
-                    dependency.get();
-                    other.set("update");
-                    return null;
-                }));
+        Signal<@Nullable String> signal = Signal.cached(() -> {
+            dependency.get();
+            other.set("update");
+            return null;
+        });
 
         // Trigger running the callback
         signal.peek();

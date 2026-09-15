@@ -23,7 +23,12 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;header&gt;</code> element.
+ * <p>
+ * Introductory content or navigation for the nearest sectioning ancestor.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/header">MDN:
+ *      &lt;header&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

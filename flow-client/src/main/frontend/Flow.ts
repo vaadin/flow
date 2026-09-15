@@ -347,8 +347,12 @@ export class Flow {
         await this.config.imports();
       }
 
-      // Load flow-client module
-      const clientMod = await import('./FlowClient');
+      // Load flow-client module. The bare specifier is intentional: the
+      // generated Vite config aliases it to FlowClient.js in jar-resources and
+      // lists it in optimizeDeps, and Vite only redirects bare specifiers to a
+      // pre-bundled dependency. Importing './FlowClient' relatively would make
+      // the dev server serve the ~90 modules of the client engine one by one.
+      const clientMod = await import('vaadin-flow-client');
       await this.flowInitClient(clientMod);
 
       // hide flow progress indicator

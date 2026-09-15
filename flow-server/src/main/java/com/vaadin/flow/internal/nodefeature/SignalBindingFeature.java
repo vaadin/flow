@@ -21,10 +21,13 @@ import java.util.Map;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -46,6 +49,15 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
+    /**
+     * Cache slot for the signal returned by
+     * {@link com.vaadin.flow.dom.Element#sizeSignal()}, not a rendered binding
+     * like the other keys: the value flows from the client to the signal
+     * through a resize trigger instead of from the signal to a client-side
+     * property, and nothing reads the binding except {@code sizeSignal()}
+     * itself, which uses it to return the same signal for every call.
+     */
+    public static final String SIZE = "size";
 
     private final Map<String, SignalBinding> values = new HashMap<>();
 
@@ -158,6 +170,15 @@ public class SignalBindingFeature extends ServerSideFeature {
      * value. If the signal value differs from the expected new value after the
      * callback, the revert callback will be invoked with the current signal
      * value to revert the change.
+     * <p>
+     * The new value may originate from the client, in which case there is no
+     * guarantee that its type matches the value type of the bound signal. The
+     * write callback rejects such a value either with a
+     * {@link ClassCastException} from the cast that the compiler generated into
+     * the callback or with an {@link InvalidSignalValueTypeException} from the
+     * signal itself when generic code has erased that cast. Since the only
+     * purpose of the callback is to pass the value on to the signal, both cases
+     * are logged and reverted rather than propagated.
      *
      * @param key
      *            the key for which to update the signal value
@@ -190,9 +211,21 @@ public class SignalBindingFeature extends ServerSideFeature {
                     "Cannot set value on a read-only signal binding. "
                             + "Provide a write callback to enable two-way binding.");
         }
-        ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        Signal<T> signal = (Signal<T>) binding.signal;
+
+        try {
+            ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        } catch (ClassCastException | InvalidSignalValueTypeException e) {
+            getLogger().warn(
+                    "Ignoring the value for the signal binding '{}' since the bound signal cannot hold it.",
+                    key, e);
+            revertCallback.accept(signal.peek());
+            // no need to fire event since the signal value didn't change
+            return false;
+        }
+
         // Re-consult the signal after the callback
-        T signalValue = ((Signal<T>) binding.signal).peek();
+        T signalValue = signal.peek();
         if (!valueEquals.test(signalValue, newValue)) {
             // Signal value differs, revert
             revertCallback.accept(signalValue);
@@ -200,6 +233,10 @@ public class SignalBindingFeature extends ServerSideFeature {
             return false;
         }
         return true;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(SignalBindingFeature.class);
     }
 
 }

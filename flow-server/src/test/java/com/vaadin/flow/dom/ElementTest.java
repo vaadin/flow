@@ -16,6 +16,9 @@
 package com.vaadin.flow.dom;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -54,6 +57,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -70,12 +74,17 @@ import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
@@ -87,6 +96,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -171,6 +181,7 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("executeJs");
         // Returns Registration
         ignore.add("addJsInitializer");
+        ignore.add("whenAttached");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -182,6 +193,9 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("bindAttribute");
         ignore.add("bindText");
         ignore.add("bindVisible");
+
+        // returns a read-only Signal
+        ignore.add("sizeSignal");
 
         // returns void
         ignore.add("flashClass");
@@ -2235,6 +2249,216 @@ class ElementTest extends AbstractNodeTest {
                 body.getNode().getFeature(VirtualChildrenList.class).size());
     }
 
+    private static Registration logWhenAttached(Element element,
+            List<String> log, String prefix) {
+        return element.whenAttached(ui -> {
+            log.add(prefix + "attach");
+            return () -> log.add(prefix + "detach");
+        });
+    }
+
+    @Test
+    void whenAttached_notAttached_handlerNotRunUntilAttach() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        assertEquals(List.of(), log);
+
+        body.appendChild(child);
+        assertEquals(List.of("attach"), log);
+    }
+
+    @Test
+    void whenAttached_alreadyAttached_handlerRunImmediately() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+
+        logWhenAttached(child, log, "");
+        assertEquals(List.of("attach"), log);
+    }
+
+    @Test
+    void whenAttached_detach_cleanupRun() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromParent();
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_reattach_handlerRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        body.appendChild(child);
+        child.removeFromParent();
+        body.appendChild(child);
+
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_handlerReceivesCurrentUi() {
+        UI ui = new UI();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(child);
+
+        List<UI> seen = new ArrayList<>();
+        child.whenAttached(handlerUi -> {
+            seen.add(handlerUi);
+            return null;
+        });
+
+        assertEquals(1, seen.size());
+        assertSame(ui, seen.get(0));
+    }
+
+    @Test
+    void whenAttached_nullCleanup_accepted() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        child.whenAttached(ui -> null);
+
+        child.removeFromParent();
+        body.appendChild(child);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationWhileAttached_cleanupRunAndHandlerNotRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+
+        child.removeFromParent();
+        body.appendChild(child);
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationWhileDetached_noCleanupAndHandlerNotRunAgain() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+        child.removeFromParent();
+
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+
+        body.appendChild(child);
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_removeRegistrationTwice_cleanupRunOnce() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration registration = logWhenAttached(child, log, "");
+
+        registration.remove();
+        registration.remove();
+        assertEquals(List.of("attach", "detach"), log);
+    }
+
+    @Test
+    void whenAttached_multipleScopes_independent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        Registration first = logWhenAttached(child, log, "first-");
+        logWhenAttached(child, log, "second-");
+
+        first.remove();
+        child.removeFromParent();
+
+        assertEquals(List.of("first-attach", "second-attach", "first-detach",
+                "second-detach"), log);
+    }
+
+    @Test
+    void whenAttached_movedToNewUi_cleanupAndHandlerRunOncePerUi() {
+        // Mimics UIInternalUpdater.moveToNewUI for @PreserveOnRefresh
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromTree(false);
+        assertEquals(List.of("attach", "detach"), log);
+
+        new UI().getElement().appendChild(child);
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_nodeReattachedWithoutDetachEvent_cleanupRunBeforeNewAttach() {
+        // A node can be reset and reattached without a detach event reaching
+        // its listeners. The cleanup must still run before the handler runs
+        // again, so that a scope never has two live cleanups at once.
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.getNode().removeFromTree(false);
+        assertEquals(List.of("attach"), log);
+
+        new UI().getElement().appendChild(child);
+        assertEquals(List.of("attach", "detach", "attach"), log);
+    }
+
+    @Test
+    void whenAttached_failingCleanup_reportedToErrorHandlerAndOtherCleanupsRun() {
+        UI ui = createUI();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(child);
+
+        List<ErrorEvent> errors = new ArrayList<>();
+        ui.getSession().setErrorHandler(errors::add);
+
+        child.whenAttached(ignored -> () -> {
+            throw new IllegalStateException("cleanup failed");
+        });
+        List<String> log = new ArrayList<>();
+        logWhenAttached(child, log, "");
+
+        child.removeFromParent();
+
+        assertEquals(List.of("attach", "detach"), log);
+        assertEquals(1, errors.size());
+        assertEquals("cleanup failed",
+                errors.get(0).getThrowable().getMessage());
+    }
+
+    @Test
+    void whenAttached_nullHandler_throws() {
+        Element child = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> child.whenAttached(null));
+    }
+
     private StreamResource createEmptyResource(String resName) {
         return new StreamResource(resName,
                 () -> new ByteArrayInputStream(new byte[0]));
@@ -2668,6 +2892,22 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void addJsInitializer_serializeAndDeserializeOwner_succeeds()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer("return () => {};");
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(element.getNode());
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            assertInstanceOf(StateNode.class, in.readObject());
+        }
+    }
+
+    @Test
     void attachShadowRoot_shadowRootCreatedAndChildrenArePreserved() {
         Element element = ElementFactory.createDiv();
         Element button = ElementFactory.createButton();
@@ -2978,6 +3218,56 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
+    @Test
+    void sizeSignal_isReadOnlyAndCached() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        assertFalse(signal instanceof ValueSignal,
+                "sizeSignal() should return a read-only signal");
+        assertEquals(new Size(0, 0), signal.peek());
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal for an element");
+    }
+
+    @Test
+    void sizeSignal_updatedByClientReportedSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        reportSize(div, 800, 600);
+        assertEquals(new Size(800, 600), signal.peek());
+
+        reportSize(div, 1024, 768);
+        assertEquals(new Size(1024, 768), signal.peek());
+    }
+
+    @Test
+    void sizeSignal_detachedAndReattached_keepsSignalAndLastSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+        reportSize(div, 800, 600);
+
+        div.removeFromParent();
+
+        assertEquals(new Size(800, 600), signal.peek(),
+                "the last reported size should be kept while detached");
+
+        ui.getElement().appendChild(div);
+
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal after re-attach");
+    }
+
     @Override
     protected Element createParentNode() {
         return ElementFactory.createDiv();
@@ -3009,6 +3299,23 @@ class ElementTest extends AbstractNodeTest {
     private static ArrayNode createNumberArray(double... items) {
         return DoubleStream.of(items).mapToObj(JacksonUtils::createNode)
                 .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Simulates the browser-side resize observer reporting a new size through
+     * the return channel that the size trigger registered on the element.
+     */
+    private void reportSize(Element element, int width, int height) {
+        ReturnChannelRegistration channel = element.getNode()
+                .getFeature(ReturnChannelMap.class).get(0);
+
+        ObjectNode size = JacksonUtils.createObjectNode();
+        size.put("width", width);
+        size.put("height", height);
+        ArrayNode arguments = JacksonUtils.createArrayNode();
+        arguments.add(size);
+
+        channel.invoke(arguments);
     }
 
     @Tag("div")

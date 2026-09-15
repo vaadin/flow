@@ -34,7 +34,7 @@ copying the test. Never add the same test in two places.
 
 1. Needs a non-Spring-Boot container? → plain `VaadinServlet` / custom servlet
    service: **test-plain-servlet**; Spring MVC without Boot: **test-plain-spring**;
-   CDI: **test-cdi**.
+   CDI: **vaadin-cdi-tests**.
 2. Needs Spring Security? → **test-spring-security** (its url-mapping /
    context-path / method-security / route-path variants live here as profiles).
 3. Needs a specific theme setting? → custom application theme: **test-themes**;
@@ -73,12 +73,14 @@ copying the test. Never add the same test in two places.
 | **test-spring-security** | Spring Security (auth, url-mapping, method / route-path checks) |
 | **test-livereload** | live reload |
 | **test-redeployment** | Spring DevTools restart |
-| **test-cdi** (future) | the CDI container |
+| **vaadin-cdi-tests** | the CDI container (deploys to a real application server, so it runs only under a container profile) |
 
 Some tests need irreducible special infrastructure and keep their own modules:
 `servlet-containers` (non-Jetty containers), `test-multi-war`,
-`test-commercial-banner`, the proxy-based fault-tolerance tests, and
-`test-npm-performance-regression`.
+`test-commercial-banner`, the proxy-based fault-tolerance tests,
+`test-npm-performance-regression`, and `test-devloop` (its own two-module Maven
+reactor, and the dev-loop daemon owns the application process instead of a Maven
+plugin — see [test-devloop/README.md](test-devloop/README.md)).
 
 ---
 
@@ -176,6 +178,7 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **servlet-containers** | Aggregator that runs integration tests on servlet containers other than the default Jetty. Contains a `tomcat10` submodule deploying the root-context WAR onto Apache Tomcat 10 via the Cargo plugin. |
+| **vaadin-cdi-tests** | Arquillian suite for the `vaadin-cdi` integration, deploying to TomEE, WildFly, Payara, Open Liberty and Tomcat+Weld: CDI scopes and contexts, the instantiator, push, i18n, templates and deployment validation. Every test needs an application server, so its tests are skipped unless one of the container profiles is active — see [vaadin-cdi-tests/README.md](vaadin-cdi-tests/README.md). |
 
 ## Nightly Profile
 

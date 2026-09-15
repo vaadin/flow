@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;span&gt;</code> element.
+ * <p>
+ * A generic inline container with no meaning of its own. Prefer a more specific
+ * element when one fits.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/span">MDN:
+ *      &lt;span&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

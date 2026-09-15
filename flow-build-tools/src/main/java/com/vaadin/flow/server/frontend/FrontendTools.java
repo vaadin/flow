@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -73,15 +74,15 @@ public class FrontendTools {
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.19.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.21.0";
     /**
      * This is the version shipped with the default Node version.
      * 
      * @since 9.0
      */
-    public static final String DEFAULT_NPM_VERSION = "11.17.0";
+    public static final String DEFAULT_NPM_VERSION = "11.19.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.22.0";
+    public static final String DEFAULT_PNPM_VERSION = "11.26.0";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -138,6 +139,25 @@ public class FrontendTools {
     // achieves the same supply-chain mitigation with day-level precision.
     static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE = new FrontendVersion(
             11, 10, 0);
+
+    // npm 11.17.0 is the first version that supports
+    // --min-release-age-exclude, which exempts the packages matching a
+    // minimatch pattern from both --min-release-age and --before. Older
+    // versions only warn about an unknown configuration and keep blocking
+    // the packages.
+    static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            11, 17, 0);
+
+    // Node.js 24.19.0 is the first release of the supported Node.js line that
+    // ships npm 11.17.0, which is what a global installation has to be
+    // upgraded to. The Node.js version Vaadin installs itself is newer.
+    static final FrontendVersion MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            24, 19, 0);
+
+    // pnpm 10.17.0 is the first version that supports the
+    // minimumReleaseAgeExclude setting; pnpm 10.16 ignores it.
+    static final FrontendVersion MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
+            10, 17, 0);
 
     // pnpm 10.16.0 is the first version that supports the
     // minimumReleaseAge setting used to delay installation of newly
@@ -604,7 +624,7 @@ public class FrontendTools {
 
     /**
      * Reads the registry URLs npm resolves for the given directory by running
-     * {@code npm config ls --json}. The returned map contains the global
+     * {@code npm config list --json}. The returned map contains the global
      * {@code registry} entry and every scoped {@code @scope:registry} entry, as
      * resolved by npm across all its configuration sources.
      *
@@ -614,26 +634,129 @@ public class FrontendTools {
      *         map if the configuration cannot be read
      */
     Map<String, String> getConfiguredRegistries(File workingDirectory) {
-        List<String> command = new ArrayList<>(getNpmExecutable(false));
-        command.add("config");
-        command.add("ls");
-        command.add("--json");
+        JsonNode config = getResolvedConfiguration(getNpmExecutable(false),
+                workingDirectory);
         Map<String, String> registries = new HashMap<>();
+        for (String key : config.propertyNames()) {
+            if ((key.equals("registry") || key.endsWith(":registry"))
+                    && config.get(key).isString()) {
+                registries.put(key, config.get(key).asString());
+            }
+        }
+        return registries;
+    }
+
+    /**
+     * Reads the value the given npm or pnpm command resolves for a
+     * configuration key.
+     * <p>
+     * Several keys can be given for a setting that the tool spells differently
+     * depending on its version; the first one that has a value is returned.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @param keys
+     *            the configuration keys to look for, in order of preference
+     * @return the configured value, or an empty optional if none of the keys
+     *         has a scalar value or the configuration cannot be read
+     */
+    Optional<String> getConfiguredSetting(List<String> toolCommand,
+            File workingDirectory, String... keys) {
+        JsonNode config = getResolvedConfiguration(toolCommand,
+                workingDirectory);
+        for (String key : keys) {
+            JsonNode value = config.get(key);
+            // npm lists every key it knows, using null for the ones that are
+            // not configured; pnpm lists only the configured ones. Settings
+            // that npm lists as an array, such as omit or noproxy, are not
+            // values this can return.
+            if (value != null && value.isValueNode() && !value.isNull()) {
+                return Optional.of(value.asString());
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Reads the values the given npm or pnpm command resolves for a
+     * configuration key that holds a list, such as
+     * {@code min-release-age-exclude}.
+     * <p>
+     * Several keys can be given for a setting that the tool spells differently
+     * depending on its version; the first one that has a value is used. Both
+     * tools list such a setting as an array, but a single value written into a
+     * {@code .npmrc} may also arrive as a comma separated string. Only that
+     * string is split, as the values of an array are complete on their own and
+     * may contain a comma themselves, such as the brace expansion
+     * {@code @acme/{ui,core}}.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @param keys
+     *            the configuration keys to look for, in order of preference
+     * @return the configured values, empty if none of the keys has a value or
+     *         the configuration cannot be read
+     */
+    List<String> getConfiguredSettingValues(List<String> toolCommand,
+            File workingDirectory, String... keys) {
+        JsonNode config = getResolvedConfiguration(toolCommand,
+                workingDirectory);
+        for (String key : keys) {
+            JsonNode value = config.get(key);
+            if (value == null || value.isNull()) {
+                continue;
+            }
+            Stream<String> entries = value.isArray()
+                    ? value.valueStream().map(JsonNode::asString)
+                    : Stream.of(value.asString().split(","));
+            List<String> values = entries.map(String::trim)
+                    .filter(entry -> !entry.isEmpty()).toList();
+            if (!values.isEmpty()) {
+                return values;
+            }
+        }
+        return List.of();
+    }
+
+    /**
+     * Reads the configuration the given npm or pnpm command resolves for a
+     * directory by running {@code config list --json}.
+     * <p>
+     * The configuration is read from the tool itself, so it accounts for every
+     * configuration source and precedence rule the tool applies (command line,
+     * environment variables, project/user/global/builtin {@code .npmrc} and,
+     * for pnpm, {@code pnpm-workspace.yaml}). The subcommand has to be spelled
+     * {@code list}, as pnpm does not know the {@code ls} alias npm accepts.
+     *
+     * @param toolCommand
+     *            the npm or pnpm command to run
+     * @param workingDirectory
+     *            the directory the configuration is resolved from, so that a
+     *            project {@code .npmrc} is taken into account
+     * @return the resolved configuration, or an empty object if it cannot be
+     *         read
+     */
+    JsonNode getResolvedConfiguration(List<String> toolCommand,
+            File workingDirectory) {
+        List<String> command = new ArrayList<>(toolCommand);
+        command.add("config");
+        command.add("list");
+        command.add("--json");
         try {
             String output = FrontendUtils.executeCommand(command,
                     builder -> builder.directory(workingDirectory));
-            JsonNode config = JacksonUtils.readTree(output);
-            for (String key : config.propertyNames()) {
-                if ((key.equals("registry") || key.endsWith(":registry"))
-                        && config.get(key).isString()) {
-                    registries.put(key, config.get(key).asString());
-                }
-            }
+            return JacksonUtils.readTree(output);
         } catch (CommandExecutionException | RuntimeException e) {
-            getLogger().debug("Could not read the npm registry configuration; "
-                    + "assuming the default registry.", e);
+            getLogger().debug("Could not read the configuration using '{}'",
+                    String.join(" ", command), e);
+            return JacksonUtils.createObjectNode();
         }
-        return registries;
     }
 
     /**
@@ -679,9 +802,9 @@ public class FrontendTools {
      * the {@code --min-release-age} install flag (see
      * {@link #MIN_NPM_VERSION_FOR_RELEASE_AGE}). Used when building the
      * {@code npm install} command for the minimum-package-age check (see
-     * {@link Options#withMinimumFrontendPackageAgeDays(int)}) to decide between
-     * {@code --min-release-age} and the {@code --before=<date>} fallback
-     * supported by older npm versions.
+     * {@link Options#withMinimumFrontendPackageAgeDays(Integer)}) to decide
+     * between {@code --min-release-age} and the {@code --before=<date>}
+     * fallback supported by older npm versions.
      *
      * @param npmCommand
      *            the npm command to invoke for {@code --version}
@@ -690,16 +813,50 @@ public class FrontendTools {
      * @since 25.2
      */
     public boolean npmSupportsMinReleaseAge(List<String> npmCommand) {
-        List<String> versionCmd = new ArrayList<>(npmCommand);
+        return isAtLeast("npm", npmCommand, MIN_NPM_VERSION_FOR_RELEASE_AGE);
+    }
+
+    /**
+     * Checks whether the given npm is new enough to know
+     * {@code --min-release-age-exclude}, which exempts the packages Vaadin
+     * publishes itself from the minimum frontend package age.
+     *
+     * @param npmCommand
+     *            the npm command to invoke for {@code --version}
+     * @return {@code true} if the installed npm is new enough; {@code false} if
+     *         it is older or its version cannot be determined
+     */
+    boolean npmSupportsMinReleaseAgeExclude(List<String> npmCommand) {
+        return isAtLeast("npm", npmCommand,
+                MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE);
+    }
+
+    /**
+     * Checks whether the given pnpm is new enough to know the
+     * {@code minimumReleaseAgeExclude} setting, which exempts the packages
+     * Vaadin publishes itself from the minimum frontend package age.
+     *
+     * @param pnpmCommand
+     *            the pnpm command to invoke for {@code --version}
+     * @return {@code true} if the installed pnpm is new enough; {@code false}
+     *         if it is older or its version cannot be determined
+     */
+    boolean pnpmSupportsMinimumReleaseAgeExclude(List<String> pnpmCommand) {
+        return isAtLeast("pnpm", pnpmCommand,
+                MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE);
+    }
+
+    private boolean isAtLeast(String tool, List<String> toolCommand,
+            FrontendVersion required) {
+        List<String> versionCmd = new ArrayList<>(toolCommand);
         versionCmd.add("--version"); // NOSONAR
         try {
-            FrontendVersion actual = FrontendUtils.getVersion("npm",
-                    versionCmd);
-            return actual.isEqualOrNewer(MIN_NPM_VERSION_FOR_RELEASE_AGE);
+            return FrontendUtils.getVersion(tool, versionCmd)
+                    .isEqualOrNewer(required);
         } catch (UnknownVersionException e) {
             getLogger().debug(
-                    "Could not determine npm version; falling back to --before for the minimum frontend package age check",
-                    e);
+                    "Could not determine the {} version; assuming it is older than {}",
+                    tool, required.getFullVersion(), e);
             return false;
         }
     }
@@ -781,7 +938,6 @@ public class FrontendTools {
                 getNpmCliToolExecutable(BuildTool.NPM));
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
-        returnCommand.add("--scripts-prepend-node-path=true");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.

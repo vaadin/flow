@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>test-express-build</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>test-flow-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
@@ -59,7 +59,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.15.2</version>
+          <version>3.16.0</version>
           <configuration>
             <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
             <goalPrefix>test-flow</goalPrefix>

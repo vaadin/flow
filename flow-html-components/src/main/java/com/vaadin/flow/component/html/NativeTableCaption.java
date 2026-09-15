@@ -22,7 +22,11 @@ import com.vaadin.flow.component.Tag;
  * Represents the table caption element ({@code <caption>}).
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use
+ *             {@code TableCaption} instead, the equivalent in the {@code Table}
+ *             component family.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.CAPTION)
 public class NativeTableCaption extends HtmlContainer {
 }

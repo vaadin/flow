@@ -17,6 +17,8 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class VaadinAwareSecurityContextHolderStrategyTest {
 
@@ -37,11 +40,15 @@ class VaadinAwareSecurityContextHolderStrategyTest {
     @BeforeEach
     void setup() {
         vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
+        // The thread specific context is shared by all instances, so it has to
+        // be cleared between tests
+        vaadinAwareSecurityContextHolderStrategy.clearContext();
         CurrentInstance.clearAll();
     }
 
     @AfterEach
     void teardown() {
+        vaadinAwareSecurityContextHolderStrategy.clearContext();
         CurrentInstance.clearAll();
     }
 
@@ -81,6 +88,44 @@ class VaadinAwareSecurityContextHolderStrategyTest {
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
         assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
+    }
+
+    @Test
+    void separateInstances_shareThreadSecurityContext() {
+        VaadinAwareSecurityContextHolderStrategy other = new VaadinAwareSecurityContextHolderStrategy();
+
+        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
+        assertEquals(explicit, other.getContext(),
+                "Instance should see the context set on another instance");
+
+        other.clearContext();
+        assertNotEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext(),
+                "Clearing on one instance should clear for all instances");
+    }
+
+    @Test
+    void separateThreads_doNotShareThreadSecurityContext()
+            throws InterruptedException {
+        SecurityContext main = Mockito.mock(SecurityContext.class);
+        vaadinAwareSecurityContextHolderStrategy.setContext(main);
+
+        SecurityContext onOtherThread = Mockito.mock(SecurityContext.class);
+        AtomicReference<SecurityContext> seenOnOtherThread = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            seenOnOtherThread
+                    .set(vaadinAwareSecurityContextHolderStrategy.getContext());
+            vaadinAwareSecurityContextHolderStrategy.setContext(onOtherThread);
+        });
+        thread.start();
+        thread.join();
+
+        assertNotEquals(main, seenOnOtherThread.get(),
+                "Another thread should not see the context of this thread");
+        assertEquals(main,
+                vaadinAwareSecurityContextHolderStrategy.getContext(),
+                "Context set on another thread should not leak into this thread");
     }
 
     @Test

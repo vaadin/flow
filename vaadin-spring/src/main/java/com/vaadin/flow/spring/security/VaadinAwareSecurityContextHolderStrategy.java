@@ -33,13 +33,26 @@ import static java.util.Objects.requireNonNull;
  * <p>
  * Falls back to the default thread specific security context when no
  * vaadinSession is available.
- * 
+ * <p>
+ * The thread specific security context is stored in a static field, shared by
+ * all instances of this class, mirroring Spring Security's own
+ * {@code ThreadLocalSecurityContextHolderStrategy}.
+ * {@link org.springframework.security.core.context.SecurityContextHolder} holds
+ * one strategy per classloader, while a strategy is contributed as a bean of an
+ * application context. Several application contexts in the same JVM, for
+ * example the contexts cached by the Spring test framework, would therefore
+ * each get an instance with its own store: the instance installed last serves
+ * {@code SecurityContextHolder}, while components wired to the strategy bean of
+ * another context, such as the method security interceptors, keep reading that
+ * context's instance. Sharing the store makes all instances interchangeable, so
+ * that it does not matter which one is installed.
+ *
  * @since 19.0
  */
 public final class VaadinAwareSecurityContextHolderStrategy
         implements SecurityContextHolderStrategy {
 
-    private final ThreadLocal<SecurityContext> contextHolder = new ThreadLocal<>();
+    private static final ThreadLocal<SecurityContext> contextHolder = new ThreadLocal<>();
 
     @Override
     public void clearContext() {

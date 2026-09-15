@@ -260,10 +260,19 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     void minimumFrontendPackageAgeDays_readFromConfig_passedToOptions()
             throws Exception {
         Mockito.when(appConfig.getStringProperty(
-                InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"))
+                InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, null))
                 .thenReturn("7");
 
         assertEquals(7,
+                captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeDays_notInConfig_leftUnsetInOptions()
+            throws Exception {
+        // Null lets the package manager configuration decide instead of
+        // overriding it with a command line argument
+        assertNull(
                 captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
     }
 

@@ -42,16 +42,23 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeTrigger;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.DiscardAwareExecution;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -65,6 +72,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -1548,6 +1556,16 @@ public class Element extends Node<Element> {
      * remove the theme names, changes to the set will be reflected in the
      * attribute value.
      * <p>
+     * The returned set is a live view of the {@code theme} attribute, so it
+     * also reflects theme names that are added or removed by other means after
+     * this method has been called. Its iterator is the one exception: it
+     * iterates the theme names present when {@link Set#iterator()} was called.
+     * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * added to the set cannot contain spaces. Use
+     * {@link #setAttribute(String, String)} to set a space separated value in
+     * one go.
+     * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
      * {@link Set} in Java.
@@ -1661,6 +1679,84 @@ public class Element extends Node<Element> {
                                 .onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
+    }
+
+    /**
+     * Runs the given handler each time this element is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the element is
+     * detached again. The handler is run immediately if the element is already
+     * attached.
+     * <p>
+     * This makes it possible to set up state that should live exactly as long
+     * as the element is attached, and to carry that state over from an attach
+     * to the matching detach without keeping it in a field:
+     *
+     * <pre>
+     * element.whenAttached(ui -&gt; registerForPush(element, ui));
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whenAttached(
+            SerializableFunction<UI, Registration> attachHandler) {
+        return new AttachScope(this, attachHandler);
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as reported
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on the first call and the same instance
+     * is returned for subsequent calls on the same element. The value is
+     * {@code Size(0, 0)} until the browser has reported the actual size, which
+     * happens shortly after the element has been attached. Sub-pixel sizes are
+     * rounded to whole pixels.
+     * <p>
+     * The browser observes the element as long as it is present in the DOM, and
+     * the signal is updated on every observed resize. The returned signal is
+     * read-only.
+     * <p>
+     * While the element is detached there is nothing to observe, so the signal
+     * keeps the size that was last reported for it rather than falling back to
+     * {@code Size(0, 0)}. Observation resumes when the element is attached
+     * again, and the value is updated as soon as the browser reports a size for
+     * it.
+     *
+     * @return a read-only signal with the current size of this element, never
+     *         <code>null</code>
+     */
+    public Signal<Size> sizeSignal() {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+        Signal<Size> existing = feature.getSignal(SignalBindingFeature.SIZE);
+        if (existing != null) {
+            return existing;
+        }
+
+        ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
+        Signal<Size> readonly = signal.asReadonly();
+        // Cached on the node so that repeated calls share one signal and one
+        // browser-side observer.
+        feature.setBinding(SignalBindingFeature.SIZE, readonly);
+
+        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
+                SizeTrigger.EventData.size));
+
+        return readonly;
     }
 
     @Override
@@ -1918,15 +2014,48 @@ public class Element extends Node<Element> {
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> {
+            // Counts the invocation if the node was not attached to any UI
+            // when it was scheduled, and there was no count to add it to
+            pending.countWhenAttached();
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    new QueueJavaScriptInvocation(pending));
+        });
 
         return pending;
+    }
+
+    /**
+     * Queues a scheduled invocation for the client when a response is written
+     * for the tree of its owner, and keeps the invocation out of the count of
+     * undelivered invocations while no response is coming for it.
+     */
+    private static class QueueJavaScriptInvocation
+            implements DiscardAwareExecution {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
+        }
+
+        @Override
+        public void executionDiscarded() {
+            invocation.stopCounting();
+        }
+
+        @Override
+        public void executionRestored() {
+            invocation.countWhenAttached();
+        }
     }
 
     /**
