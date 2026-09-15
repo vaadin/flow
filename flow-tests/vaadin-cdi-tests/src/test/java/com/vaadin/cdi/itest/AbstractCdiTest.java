@@ -106,12 +106,15 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
     private void waitForDeployment() throws InterruptedException {
         long deadline = System.currentTimeMillis()
                 + TimeUnit.SECONDS.toMillis(DEPLOYMENT_TIMEOUT_SECONDS);
-        IOException lastFailure;
+        Exception lastFailure;
         do {
             try {
-                slurp("?getCount=" + DEPLOYMENT_PROBE);
+                // Parsed, not just read: a container that is up but has not
+                // installed the application yet answers the request with an
+                // error page rather than refusing it.
+                Integer.parseInt(slurp("?getCount=" + DEPLOYMENT_PROBE).trim());
                 return;
-            } catch (IOException failure) {
+            } catch (IOException | RuntimeException failure) {
                 lastFailure = failure;
             }
             Thread.sleep(500);
@@ -126,7 +129,7 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
     }
 
     protected void follow(String linkText) {
-        findElement(By.linkText(linkText)).click();
+        awaitElement(By.linkText(linkText)).click();
     }
 
     protected String getText(String id) {
