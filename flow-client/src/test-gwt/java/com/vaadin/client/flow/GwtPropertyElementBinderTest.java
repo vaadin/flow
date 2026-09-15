@@ -170,7 +170,7 @@ public abstract class GwtPropertyElementBinderTest
 
         JsonObject expressions = Json.createObject();
         boolean isFilter = false;
-        expressions.put(
+        GwtBasicElementBinderTest.putExpression(expressions,
                 JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "offsetWidth",
                 isFilter);
 
@@ -214,7 +214,7 @@ public abstract class GwtPropertyElementBinderTest
 
         String constantPoolKey = "expressionsKey";
         JsonObject expressions = Json.createObject();
-        expressions.put(
+        GwtBasicElementBinderTest.putExpression(expressions,
                 JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "offsetWidth",
                 false);
         GwtBasicElementBinderTest.addToConstantPool(constantPool,
