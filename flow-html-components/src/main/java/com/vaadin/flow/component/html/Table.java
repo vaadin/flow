@@ -66,6 +66,41 @@ public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
 
     /**
+     * A stylesheet that makes a native <code>&lt;table&gt;</code> and the
+     * elements inside it look at home in a Vaadin application: theme colors,
+     * spacing and corner radii, a separated header and footer, and the
+     * light/dark switch of the theme.
+     * <p>
+     * It is opt-in, and loading it is the opt-in — after that every
+     * <code>&lt;table&gt;</code> on the page is styled:
+     *
+     * <pre>
+     * &#64;StyleSheet(Aura.STYLESHEET)
+     * &#64;StyleSheet(Table.AURA_STYLESHEET)
+     * public class Application implements AppShellConfigurator {
+     * }
+     * </pre>
+     * <p>
+     * Every selector in it is wrapped in {@code :where()}, so all of it has
+     * zero specificity and a plain {@code table { ... }} rule in the
+     * application's own stylesheet wins over it. The values come from the
+     * shared {@code --vaadin-*} custom properties the theme defines on
+     * {@code :root}, and individual tables pick a variant with the
+     * {@code theme} attribute, using the same names as the corresponding
+     * {@code <vaadin-grid>} variants:
+     *
+     * <pre>
+     * table.getElement().getThemeList().add("row-stripes");
+     * </pre>
+     *
+     * The variants are {@code row-stripes}, {@code column-borders},
+     * {@code no-row-borders} and {@code compact}.
+     *
+     * @since 25.4
+     */
+    public static final String AURA_STYLESHEET = "aura/table.css";
+
+    /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
      * HTML specification requires them to appear.
      */

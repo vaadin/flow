@@ -19,14 +19,17 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.HandlerHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -530,5 +533,25 @@ class TableTest extends ComponentTest {
         assertEquals(List.of(table.getCaption(), table.getHead(),
                 table.getBody(), table.getFoot()),
                 table.getChildren().toList());
+    }
+
+    @Test
+    void auraStylesheet_isOnTheClasspathUnderAnAlwaysPermittedPath() {
+        assertNotNull(
+                Table.class.getClassLoader().getResource(
+                        "META-INF/resources/" + Table.AURA_STYLESHEET),
+                Table.AURA_STYLESHEET
+                        + " is not packaged in META-INF/resources, so @StyleSheet(Table.AURA_STYLESHEET) would 404");
+
+        // A secured application renders its login view before the user is
+        // authenticated, so the stylesheet has to live under one of the paths
+        // Flow lets through without a security context
+        assertTrue(
+                Stream.of(HandlerHelper.getPublicResourcesRoot())
+                        .map(pattern -> pattern.replace("/**", "/"))
+                        .anyMatch(prefix -> ("/" + Table.AURA_STYLESHEET)
+                                .startsWith(prefix)),
+                Table.AURA_STYLESHEET
+                        + " is outside every always-permitted public resource root, so a secured application would not serve it on the login view");
     }
 }
