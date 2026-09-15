@@ -16,15 +16,19 @@
 package com.vaadin.quarkus.deployment.vaadinplugin;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.workspace.WorkspaceModule;
 import io.quarkus.builder.BuildException;
+import io.quarkus.deployment.annotations.BuildProducer;
+import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -146,6 +150,15 @@ public final class VaadinPlugin {
      * in the classpath,</li>
      * <li>Update {@link FrontendUtils#VITE_CONFIG} file.</li>
      * </ul>
+     * <p>
+     * Once the build is done the generated files are handed to the emitter and
+     * the build info token file is deleted from the build output directory.
+     * Nothing is deleted before the files that have to reach the application
+     * whichever way it is packaged are known to have reached it: a file that
+     * cannot be read fails the build, and so does one that was not emitted.
+     * Deleting the token file after it failed to reach the application would
+     * package an application without a {@literal flow-build-info.json} while
+     * the build reports success.
      *
      * @param emitter
      *            generated files emitter.
@@ -195,46 +208,202 @@ public final class VaadinPlugin {
         pluginAdapter.logInfo("Build frontend completed in " + ms + " ms.");
 
         emitGeneratedFiles(emitter);
+        verifyAlwaysEmitted(emitter);
+        removeTokenFile();
     }
 
-    private void emitGeneratedFiles(BiConsumer<String, byte[]> emitter)
+    /**
+     * Fails the build when a file that has to reach the application whichever
+     * way it is packaged did not.
+     * <p>
+     * {@link #removeTokenFile()} runs right after this and deletes the build
+     * info token file from the build output directory, so a token file that did
+     * not reach the application is gone for good: the application is packaged
+     * without a {@literal flow-build-info.json}, Flow cannot find the
+     * production bundle at run time, and the build reports success. Stopping
+     * here leaves the file where it is and says what happened.
+     * <p>
+     * Telling which generated file is the token file is
+     * {@link GeneratedResourceEmitter}'s job, and it asks the file system so
+     * that the answer holds wherever the build runs. This is the check that the
+     * answer was what it had to be, so that a file system behaving in a way
+     * nobody anticipated fails the build instead of shipping an application
+     * that cannot start in production mode.
+     * <p>
+     * Only the emitter this plugin creates keeps track of what it emitted. A
+     * caller passing its own emitter decides for itself what reaches the
+     * application, and nothing is checked.
+     *
+     * @param emitter
+     *            the emitter the generated files were handed to.
+     * @throws BuildException
+     *             if a file that has to be emitted was not.
+     */
+    void verifyAlwaysEmitted(BiConsumer<String, byte[]> emitter)
+            throws BuildException {
+        if (!(emitter instanceof GeneratedResourceEmitter generatedResources)) {
+            return;
+        }
+        Set<Path> notEmitted = generatedResources.notEmitted();
+        if (!notEmitted.isEmpty()) {
+            throw new BuildException(
+                    "The Vaadin build produced files that have to be added to the application because the build deletes them from the build output directory, but they were not added: "
+                            + notEmitted
+                            + ". The application would be packaged without them and would not start in production mode.",
+                    List.of());
+        }
+    }
+
+    /**
+     * Creates the emitter that registers the generated Vaadin files with the
+     * application.
+     * <p>
+     * The emitter skips the files that packaging already copies into the
+     * artifact by itself, so that they are not added a second time.
+     *
+     * @param packagedRootDirectories
+     *            the directories Quarkus packages the application from, as
+     *            reported by
+     *            {@link io.quarkus.deployment.builditem.ArchiveRootBuildItem#getRootDirectories()}.
+     * @param producer
+     *            the producer registering the files with the application.
+     * @return the emitter to pass to {@link #buildFrontend(BiConsumer)}.
+     * @see GeneratedResourceEmitter
+     */
+    public BiConsumer<String, byte[]> createGeneratedResourceEmitter(
+            Iterable<Path> packagedRootDirectories,
+            BuildProducer<GeneratedResourceBuildItem> producer) {
+        return GeneratedResourceEmitter.of(packagedRootDirectories,
+                pluginAdapter.servletResourceOutputDirectory().toPath()
+                        .normalize(),
+                pluginAdapter.buildDir().normalize(), producer);
+    }
+
+    /**
+     * Deletes the build info token file from the build output directory.
+     * <p>
+     * The token file has already been added to the application as a generated
+     * resource, so the copy on disk is not needed to package it. Leaving it
+     * there adds the same file to the artifact twice, which makes Flow log a
+     * warning that it cannot tell which {@literal flow-build-info.json} is the
+     * correct one. It would also be picked up by a later Quarkus dev mode run
+     * from the same output directory, starting the application in production
+     * mode. The Vaadin Maven plugin deletes the file for the same reasons.
+     * <p>
+     * Deleting it here is why {@link GeneratedResourceEmitter} emits the token
+     * file whichever way the application is packaged: once it is gone from the
+     * output directory, emitting is the only way it reaches the application.
+     * <p>
+     * A failure to delete it is reported as a warning rather than failing the
+     * build. By the time this runs the token file has already been added to the
+     * application, so the copy left behind costs the duplicate warning and the
+     * stale dev mode read described above, which are a nuisance and not a
+     * broken artifact. Deleting a file that another process holds open fails on
+     * Windows, where locking is mandatory, so a build whose frontend build
+     * fully succeeded would otherwise fail there for a leftover file.
+     */
+    void removeTokenFile() {
+        try {
+            BuildFrontendUtil.removeBuildFile(pluginAdapter);
+        } catch (IOException e) {
+            pluginAdapter.logWarn(
+                    "Failed to delete the Vaadin build info token file from the build output directory. "
+                            + "It is packaged with the application anyway, but the copy left behind is packaged as well, "
+                            + "so Flow may warn that it cannot tell which flow-build-info.json is the correct one, "
+                            + "and a later dev mode run on the same output directory starts in production mode. "
+                            + "Another process holding the file open, such as a virus scanner, is a likely cause.",
+                    e);
+        }
+    }
+
+    /**
+     * Hands every file the Vaadin build produced to the emitter.
+     * <p>
+     * A file that cannot be read fails the build instead of being skipped with
+     * a warning. The emitter is the only way some of those files reach the
+     * application, the build info token file in particular, which
+     * {@link #removeTokenFile()} deletes from the build output directory right
+     * after this method returns. Skipping one would package an application
+     * missing it, with nothing but a warning to say so.
+     *
+     * @param emitter
+     *            generated files emitter.
+     * @throws BuildException
+     *             if the generated resources directory is outside the build
+     *             output directory, cannot be walked, or one of the files in it
+     *             cannot be read or handed to the emitter.
+     */
+    void emitGeneratedFiles(BiConsumer<String, byte[]> emitter)
             throws BuildException {
         Path vaadinMetaInfDir = pluginAdapter.servletResourceOutputDirectory()
-                .toPath();
-        Path buildFolder = pluginAdapter.buildDir();
+                .toPath().normalize();
+        Path buildFolder = pluginAdapter.buildDir().normalize();
 
-        if (Files.exists(vaadinMetaInfDir)) {
-            try (var stream = Files.walk(vaadinMetaInfDir)) {
-                stream.filter(Files::isRegularFile).forEach(filePath -> {
-                    try {
-                        // Calculate relative path from target/classes
-                        Path relativePath = buildFolder.relativize(filePath);
-                        byte[] content = Files.readAllBytes(filePath);
-                        emitter.accept(
-                                relativePath.toString().replace('\\', '/'),
-                                content);
-
-                        pluginAdapter.logDebug(
-                                "Added Vaadin resource: " + relativePath);
-                    } catch (IOException e) {
-                        pluginAdapter
-                                .logWarn("Failed to read Vaadin resource file: "
-                                        + filePath, e);
-                    }
-                });
-
-                pluginAdapter.logInfo(
-                        "Added Vaadin frontend resources from META-INF/VAADIN to artifact");
-
-            } catch (IOException e) {
-                throw new BuildException(
-                        "Failed to scan Vaadin resources directory", e,
-                        List.of());
-            }
-        } else {
+        if (!Files.exists(vaadinMetaInfDir)) {
             pluginAdapter.logInfo(
                     "No META-INF/VAADIN directory found, skipping resource addition");
+            return;
         }
+
+        // Files are added to the application under their path relative to the
+        // build output directory, which only names a resource when they are
+        // below it. Path.startsWith is false for a path of another file
+        // system, and on Windows for a path on another drive, where
+        // Path.relativize would throw. On a file system that can express the
+        // relative path anyway, it would come out prefixed with '..' and name
+        // no resource the application can load.
+        if (!vaadinMetaInfDir.startsWith(buildFolder)) {
+            throw new BuildException("The Vaadin build writes into "
+                    + vaadinMetaInfDir
+                    + ", which is outside the build output directory "
+                    + buildFolder
+                    + ". The files it produces cannot be added to the application from there. "
+                    + "Set 'vaadin.build.generated-resource-output-directory' to a directory inside the build output directory.",
+                    List.of());
+        }
+
+        List<Path> generatedFiles;
+        // Files.walk reports a failure to walk the tree as an
+        // UncheckedIOException thrown by the terminal operation, so the files
+        // are collected inside the try block.
+        try (var stream = Files.walk(vaadinMetaInfDir)) {
+            generatedFiles = stream.filter(Files::isRegularFile).toList();
+        } catch (IOException | UncheckedIOException e) {
+            throw new BuildException(
+                    "Failed to list the files produced by the Vaadin build in "
+                            + vaadinMetaInfDir
+                            + ". The generated META-INF/VAADIN resources cannot be added to the application.",
+                    e, List.of());
+        }
+
+        for (Path filePath : generatedFiles) {
+            // Calculate relative path from target/classes
+            Path relativePath = buildFolder.relativize(filePath);
+            byte[] content;
+            try {
+                content = Files.readAllBytes(filePath);
+            } catch (IOException e) {
+                throw new BuildException("Failed to read " + filePath
+                        + ", a file produced by the Vaadin build in the META-INF/VAADIN directory. The application would be packaged without it.",
+                        e, List.of());
+            }
+            try {
+                emitter.accept(relativePath.toString().replace('\\', '/'),
+                        content);
+            } catch (UncheckedIOException e) {
+                // The emitter asks the file system which of the generated
+                // files it has to add whichever way the application is
+                // packaged, and cannot answer that here.
+                throw new BuildException("Failed to add " + filePath
+                        + ", a file produced by the Vaadin build, to the application. "
+                        + e.getMessage(), e, List.of());
+            }
+
+            pluginAdapter.logDebug("Added Vaadin resource: " + relativePath);
+        }
+
+        pluginAdapter.logInfo(
+                "Added Vaadin frontend resources from META-INF/VAADIN to artifact");
     }
 
     /**
