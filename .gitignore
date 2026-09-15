@@ -8,6 +8,7 @@
 .vscode
 .settings
 **/frontend/generated/
+**/src/main/frontend/index.html
 **/src/main/bundles/
 **/node_modules/
 *.npmrc
