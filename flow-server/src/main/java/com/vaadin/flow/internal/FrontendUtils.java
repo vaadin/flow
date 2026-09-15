@@ -84,6 +84,14 @@ public class FrontendUtils {
     public static final String NODE_MODULES = "node_modules/";
 
     /**
+     * Oldest Node.js version that the frontend tooling runs on.
+     *
+     * @since 25.4
+     */
+    public static final FrontendVersion MINIMUM_SUPPORTED_NODE_VERSION = new FrontendVersion(
+            24, 0, 0);
+
+    /**
      * Default folder used for source and generated folders.
      */
     public static final String FRONTEND = "frontend/";

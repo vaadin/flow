@@ -51,6 +51,11 @@ class NodeResolverTest {
 
     private static final String VERSION = "v24.19.0";
 
+    /**
+     * A version that the current frontend tooling cannot run on.
+     */
+    private static final String OUTDATED_VERSION = "v18.14.1";
+
     private static final Instant LONG_AGO = Instant.now()
             .minus(Duration.ofDays(400));
     private static final Instant RECENTLY = Instant.now()
@@ -117,6 +122,20 @@ class NodeResolverTest {
                 "An installation unused for over 6 months should be removed once a new version is installed");
         assertTrue(recent.getDirectory().isDirectory(),
                 "A recently used installation should be kept");
+    }
+
+    @Test
+    void resolve_configuredVersionTooOld_isStillUsedAsConfigured()
+            throws IOException {
+        NodeInstallation installation = stubInstallation(OUTDATED_VERSION);
+
+        ActiveNodeInstallation active = resolve(OUTDATED_VERSION);
+
+        assertEquals(installation.getNodeExecutable().getAbsolutePath(),
+                active.nodeExecutable(),
+                "A configured version should be used even when it is too old, as only a warning is given for it");
+        assertEquals(NodeInstallation.normalizeVersion(OUTDATED_VERSION),
+                active.nodeVersion());
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {
