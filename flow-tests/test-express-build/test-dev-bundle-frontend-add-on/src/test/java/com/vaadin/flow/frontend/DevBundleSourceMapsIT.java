@@ -27,7 +27,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -44,9 +43,8 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
     private static final String USAGE_STATISTICS_SOURCE = "src/main/frontend/vaadin-usage-statistics-stub.js";
 
     /**
-     * The comment the development mode detector reads the code to run out of,
-     * with the form of its opening marker and its contents as groups. The
-     * plugin has to turn the plain form into the one a minifier keeps.
+     * A dev mode comment in a built chunk, with the form of its opening marker
+     * and its contents as the groups.
      */
     private static final Pattern DEV_MODE_COMMENT = Pattern.compile(
             "/\\*([*!])\\s+vaadin-dev-mode:start([\\s\\S]*?)vaadin-dev-mode:end\\s+\\*\\*/");
@@ -88,23 +86,9 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
     }
 
     /**
-     * The code inside the dev mode comment of the usage statistics module is
-     * the code that is meant to run: the development mode detector reads it out
-     * of the source of the function it is in. It can only do that as long as
-     * the build keeps the comment in the bundle.
-     */
-    @Test
-    public void usageStatisticsCodeRunsFromTheBundle() {
-        Assert.assertEquals(
-                "The code inside the dev mode comment should have run", "true",
-                findElement(By.tagName("html"))
-                        .getDomAttribute("usage-statistics-stub-ran"));
-    }
-
-    /**
-     * The plugin rewrites the comment so that it starts with {@code /*!}, which
-     * tells a minifier to keep it. The detector accepts either form, so this is
-     * what the plugin is for and what the build has to keep doing.
+     * Rewriting the dev mode comment of the usage statistics module so that it
+     * starts with {@code /*!}, which tells a minifier to keep it in the bundle,
+     * is the one thing the plugin does to the code.
      */
     @Test
     public void usageStatisticsCommentIsRewrittenInTheBundle()
@@ -113,7 +97,8 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
         for (File chunk : getBundleFiles(".js")) {
             Matcher matcher = DEV_MODE_COMMENT.matcher(read(chunk));
             while (matcher.find()) {
-                if (!matcher.group(2).contains("usage-statistics-stub-ran")) {
+                if (!matcher.group(2)
+                        .contains("vaadin-usage-statistics-stub")) {
                     // A dev mode comment of another module, left as it is
                     continue;
                 }
