@@ -18,17 +18,17 @@ package com.vaadin.flow.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.SourceMapTestUtil;
 
 /**
  * Verifies that the dev bundle can be mapped back to the original sources. This
@@ -36,6 +36,9 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * {@code vite.config.ts}.
  */
 public class DevBundleSourceMapsIT extends ChromeBrowserTest {
+
+    private static final String LIT_VIEW_SOURCE = "src/main/frontend/views/lit-view.ts";
+    private static final String USAGE_STATISTICS_SOURCE = "src/main/frontend/vaadin-usage-statistics-stub.ts";
 
     @Before
     public void init() {
@@ -57,95 +60,63 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
      */
     @Test
     public void devBundleSourceMapsPointToOriginalSources() throws IOException {
-        List<File> sourceMaps = getBundleFiles(".map");
-        Assert.assertNotEquals("Dev bundle should contain sourcemaps", 0,
-                sourceMaps.size());
+        List<File> sourceMaps = getBundleFiles(".js.map");
+        Assert.assertFalse(
+                "The dev bundle should have been built with sourcemaps "
+                        + "enabled, see vite.config.ts",
+                sourceMaps.isEmpty());
 
-        boolean litViewFound = false;
+        List<String> sources = new ArrayList<>();
         for (File sourceMap : sourceMaps) {
-            litViewFound |= assertSourceMapUsable(sourceMap);
+            sources.addAll(SourceMapTestUtil.assertSourceMapUsable(
+                    sourceMap.getName(), read(sourceMap)));
         }
-        Assert.assertTrue(
-                "The sourcemaps should refer to views/lit-view.ts, so that the "
-                        + "browser can show the original source of the view",
-                litViewFound);
+
+        assertHasSource(sources, LIT_VIEW_SOURCE);
+        assertHasSource(sources, USAGE_STATISTICS_SOURCE);
     }
 
     /**
      * The plugin that rewrites the dev mode comment of the usage statistics
      * module is the one that has to return a sourcemap of its own. The
      * rewritten comment starts with {@code /*!}, which tells a minifier to keep
-     * it, and the rewritten module has to stay in the sourcemap of its chunk.
+     * it.
      */
     @Test
-    public void usageStatisticsCommentIsRewrittenAndStaysInSourceMap()
+    public void usageStatisticsCommentIsRewrittenInTheBundle()
             throws IOException {
-        File chunk = null;
-        for (File bundle : getBundleFiles(".js")) {
-            String contents = FileUtils.readFileToString(bundle,
-                    StandardCharsets.UTF_8);
-            Assert.assertFalse(
-                    bundle.getName() + " should have the dev mode comment "
-                            + "rewritten into the form a minifier keeps",
-                    contents.contains("/** vaadin-dev-mode:start"));
-            if (contents.contains("/*! vaadin-dev-mode:start")) {
-                chunk = bundle;
-            }
-        }
-        Assert.assertNotNull(
-                "The dev bundle should contain the dev mode comment of the "
-                        + "usage statistics module",
-                chunk);
+        File chunk = getBundleChunkOf("vaadin-dev-mode:start");
+        String contents = read(chunk);
 
-        File sourceMap = new File(chunk.getParentFile(),
-                chunk.getName() + ".map");
-        Assert.assertTrue(chunk.getName() + " should have a sourcemap",
-                sourceMap.isFile());
+        Assert.assertTrue(
+                chunk.getName() + " should have the usage statistics comment "
+                        + "rewritten so that a minifier keeps it",
+                contents.contains("/*! vaadin-dev-mode:start"));
+        Assert.assertFalse(
+                chunk.getName() + " should no longer have the original "
+                        + "usage statistics comment",
+                contents.contains("/** vaadin-dev-mode:start"));
+    }
 
-        boolean stubFound = false;
-        for (JsonNode source : readSourceMap(sourceMap).get("sources")) {
-            stubFound |= source.asString()
-                    .endsWith("vaadin-usage-statistics-stub.ts");
-        }
-        Assert.assertTrue("The rewritten module should be in the sourcemap of "
-                + chunk.getName(), stubFound);
+    private void assertHasSource(List<String> sources, String source) {
+        Assert.assertTrue(
+                "A sourcemap of the dev bundle should refer to " + source
+                        + ", only found " + sources,
+                sources.stream().anyMatch(name -> name.endsWith(source)));
     }
 
     /**
-     * Asserts that the given sourcemap has the original sources with their
-     * contents, and tells whether one of them is the Lit view of this
-     * application.
+     * Returns the chunk of the dev bundle that contains the given marker.
      */
-    private boolean assertSourceMapUsable(File sourceMap) throws IOException {
-        String name = sourceMap.getName();
-        JsonNode json = readSourceMap(sourceMap);
-        JsonNode sources = json.get("sources");
-        JsonNode sourcesContent = json.get("sourcesContent");
-
-        Assert.assertNotEquals(name + " should have sources", 0,
-                sources.size());
-        Assert.assertNotEquals(name + " should have mappings", "",
-                json.get("mappings").asString());
-        Assert.assertEquals(name + " should have the contents of every source",
-                sources.size(), sourcesContent.size());
-
-        boolean litViewFound = false;
-        for (int i = 0; i < sources.size(); i++) {
-            String source = sources.get(i).asString();
-            Assert.assertNotEquals(
-                    name + " should refer to the original files, was " + source,
-                    "", source.trim());
-            Assert.assertNotEquals(
-                    name + " should have the contents of " + source, "",
-                    sourcesContent.get(i).asString().trim());
-            litViewFound |= source.endsWith("views/lit-view.ts");
+    private File getBundleChunkOf(String marker) throws IOException {
+        List<File> chunks = getBundleFiles(".js");
+        for (File chunk : chunks) {
+            if (read(chunk).contains(marker)) {
+                return chunk;
+            }
         }
-        return litViewFound;
-    }
-
-    private JsonNode readSourceMap(File sourceMap) throws IOException {
-        return JsonMapper.shared().readTree(
-                FileUtils.readFileToString(sourceMap, StandardCharsets.UTF_8));
+        throw new AssertionError("No chunk of the dev bundle contains '"
+                + marker + "', looked at " + chunks);
     }
 
     /**
@@ -157,10 +128,14 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
                 new File(System.getProperty("user.dir", "."),
                         "target/" + Constants.DEV_BUNDLE_LOCATION),
                 "webapp/VAADIN/build");
-        Assert.assertTrue("Dev bundle should have been built",
-                buildFolder.isDirectory());
+        Assert.assertTrue("The dev bundle should have been built into "
+                + buildFolder.getPath(), buildFolder.isDirectory());
         return List.of(
                 buildFolder.listFiles((dir, name) -> name.endsWith(suffix)));
+    }
+
+    private String read(File file) throws IOException {
+        return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     }
 
 }
