@@ -34,6 +34,7 @@ Every top-level Maven module of the repository:
 | `vaadin-dev-server`              | Development tooling served to the browser.                                      |
 | `vaadin-spring`                  | Spring Framework integration.                                                   |
 | `vaadin-cdi`                     | CDI integration, for Jakarta EE application servers.                            |
+| `vaadin-quarkus`                 | Quarkus extension: `runtime` is the extension itself, `deployment` its build steps. |
 | `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
 | `flow-jandex`                    | Jandex index of the Flow packages, for use outside Vaadin Platform.             |
 | `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |
