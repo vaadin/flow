@@ -128,6 +128,10 @@ describe('Flow', () => {
   });
 
   afterEach(() => {
+    // Every spy and stub below is created on the default sandbox, so one
+    // restore covers them all and keeps a case that throws mid-way from
+    // leaking a replaced function (e.g. console.error) into later cases.
+    sinon.restore();
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
@@ -556,12 +560,7 @@ describe('Flow', () => {
       pathname: 'Foo/Bar.baz',
       search: ''
     };
-    let view;
-    try {
-      view = await route.action(params);
-    } finally {
-      consoleError.restore();
-    }
+    const view = await route.action(params);
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
     // Nothing was attempted, so there is nothing to report. Staying silent
@@ -593,12 +592,7 @@ describe('Flow', () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     const consoleError = sinon.stub(console, 'error');
-    let view;
-    try {
-      view = await route.action(params);
-    } finally {
-      consoleError.restore();
-    }
+    const view = await route.action(params);
     expect(view).not.to.be.null;
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
