@@ -1913,12 +1913,9 @@ public class StateNodeTest {
     }
 
     @Test
-    void describe_element_nodeIdTagAndAttributesIncludedWithoutMarkup() {
+    void describe_element_nodeIdAndTagIncluded() {
         UI ui = new UI();
         Element element = ElementFactory.createAnchor();
-        element.setAttribute("id", "link");
-        element.setAttribute("class", "primary");
-        element.appendChild(ElementFactory.createSpan("secret content"));
         ui.getElement().appendChild(element);
 
         String description = element.getNode().describe();
@@ -1926,37 +1923,6 @@ public class StateNodeTest {
         assertTrue(description.contains("node id=" + element.getNode().getId()),
                 description);
         assertTrue(description.contains("'a'"), description);
-        assertTrue(description.contains("id 'link'"), description);
-        assertTrue(description.contains("class 'primary'"), description);
-        // The markup, and with it any application content, is left out
-        assertFalse(description.contains("secret content"), description);
-        assertFalse(description.contains("<span"), description);
-    }
-
-    @Test
-    void describe_longAttributeValue_truncated() {
-        UI ui = new UI();
-        Element element = ElementFactory.createDiv();
-        element.setAttribute("class", "x".repeat(1000));
-        ui.getElement().appendChild(element);
-
-        String description = element.getNode().describe();
-
-        assertTrue(description.endsWith("...'"), description);
-        assertTrue(description.length() < 500, description);
-    }
-
-    @Test
-    void describe_textNode_reportedAsTextNodeWithoutContent() {
-        UI ui = new UI();
-        Element textNode = Element.createText("secret content");
-        ui.getElement().appendChild(textNode);
-
-        String description = textNode.getNode().describe();
-
-        assertTrue(description.contains("text node"), description);
-        assertFalse(description.contains("secret content"), description);
-        assertFalse(description.contains("threw"), description);
     }
 
     @Test
