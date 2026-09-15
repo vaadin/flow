@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class UidlExpiredSessionStrategyTest {
+class VaadinExpiredSessionStrategyTest {
 
     private final MockHttpServletRequest request = new MockHttpServletRequest(
             "GET", "/app/");
@@ -54,7 +54,7 @@ class UidlExpiredSessionStrategyTest {
         var event = new SessionInformationExpiredEvent(session, request,
                 response, filterChain);
 
-        new UidlExpiredSessionStrategy().onExpiredSessionDetected(event);
+        new VaadinExpiredSessionStrategy().onExpiredSessionDetected(event);
 
         verify(filterChain).doFilter(request, response);
         assertThat(response.getContentAsString()).isEmpty();
@@ -68,7 +68,7 @@ class UidlExpiredSessionStrategyTest {
         var event = new SessionInformationExpiredEvent(session, request,
                 response);
 
-        new UidlExpiredSessionStrategy().onExpiredSessionDetected(event);
+        new VaadinExpiredSessionStrategy().onExpiredSessionDetected(event);
 
         assertThat(response.getRedirectedUrl()).isEqualTo("/app/");
     }

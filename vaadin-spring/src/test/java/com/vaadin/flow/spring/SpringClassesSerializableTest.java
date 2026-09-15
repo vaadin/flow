@@ -112,7 +112,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSecurityConfigurer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinDefaultRequestCache",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.UidlRedirectStrategy",
-                "com\\.vaadin\\.flow\\.spring\\.security\\.UidlExpiredSessionStrategy",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinExpiredSessionStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.WebIconsRequestMatcher(\\$.*)?",

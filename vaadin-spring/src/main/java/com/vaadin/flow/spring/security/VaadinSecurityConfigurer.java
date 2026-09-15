@@ -483,7 +483,7 @@ public final class VaadinSecurityConfigurer
      * (enabled by default).
      * <p>
      * This configurer will automatically configure a
-     * {@link UidlExpiredSessionStrategy}, so that a session expired by Spring
+     * {@link VaadinExpiredSessionStrategy}, so that a session expired by Spring
      * Security concurrency control is handled in a way the Vaadin client
      * understands. The strategy is only used by Spring Security when
      * concurrency control is active, i.e. when the application sets a maximum
@@ -513,7 +513,7 @@ public final class VaadinSecurityConfigurer
      * Sets the strategy used when Spring Security concurrency control detects
      * an expired session.
      * <p>
-     * Defaults to {@link UidlExpiredSessionStrategy}.
+     * Defaults to {@link VaadinExpiredSessionStrategy}.
      *
      * @param expiredSessionStrategy
      *            the strategy to use, or {@code null} to use the default one
@@ -954,7 +954,7 @@ public final class VaadinSecurityConfigurer
         configurer.sessionConcurrency(
                 concurrency -> concurrency.expiredSessionStrategy(
                         Objects.requireNonNullElseGet(expiredSessionStrategy,
-                                UidlExpiredSessionStrategy::new)));
+                                VaadinExpiredSessionStrategy::new)));
     }
 
     private void customizeAuthorizeHttpRequests(

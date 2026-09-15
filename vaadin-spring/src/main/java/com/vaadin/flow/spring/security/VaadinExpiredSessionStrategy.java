@@ -37,7 +37,7 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
  * request through its own handler, while a request for a view ends in the login
  * view of the application.
  */
-public class UidlExpiredSessionStrategy
+public class VaadinExpiredSessionStrategy
         implements SessionInformationExpiredStrategy {
 
     private static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy();
@@ -52,7 +52,7 @@ public class UidlExpiredSessionStrategy
             // The event may be created without a filter chain, in which case
             // the request cannot continue and the browser is sent to the
             // application root instead.
-            LoggerFactory.getLogger(UidlExpiredSessionStrategy.class).debug(
+            LoggerFactory.getLogger(VaadinExpiredSessionStrategy.class).debug(
                     "Session expired, but the event carries no filter chain: "
                             + "redirecting to the application root.");
             REDIRECT_STRATEGY.sendRedirect(request, response, "/");
