@@ -81,11 +81,11 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> scannedApplicationDevDependencies = frontDeps
                     .getDevPackages();
             ObjectNode packageJson = getPackageJson();
-            warnOnVersionRangeMismatch(packageJson);
-
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
+            warnOnVersionRangeMismatch(packageJson);
+
             generateVersionsJson(packageJson);
             modified = pinVersionsForNpm(packageJson) || modified;
 
@@ -791,10 +791,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      * {@code package.json} with a version from a different minor or major range
      * than the one the current Vaadin version pins them to.
      * <p>
-     * This is checked on the package.json as it is read, before the version
-     * pinning updates it, so that versions the build would simply overwrite are
-     * not reported. Only values that differ from the ones Vaadin manages (kept
-     * in the {@code vaadin} section) are considered, as those are the explicit
+     * This is checked once the dependencies have been updated, so that a
+     * version the build overwrites with the one it ships is not reported. Only
+     * values that differ from the ones Vaadin manages (kept in the
+     * {@code vaadin} section) are considered, as those are the explicit
      * opt-outs that the build leaves untouched. Entries in the
      * {@code overrides} section are intentionally not reported here, as those
      * are reconciled with the pinned versions by the override management.
@@ -806,7 +806,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      * page).
      *
      * @param packageJson
-     *            the package.json as read, before version pinning
+     *            the package.json with the dependencies updated, before the
+     *            overrides pin the versions
      * @throws IOException
      *             if the versions files cannot be read
      */
@@ -868,7 +869,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private FrontendVersion parseVersion(String version) {
-        if (version == null || version.startsWith("$")) {
+        if (version == null) {
             return null;
         }
         try {
@@ -888,7 +889,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (section == null) {
             return Map.of();
         }
-        final Map<String, String> map = new HashMap<>();
+        // Keeps the package.json order, so that the warning lists the
+        // packages the same way from one build to the next
+        final Map<String, String> map = new LinkedHashMap<>();
         for (String key : JacksonUtils.getKeys(section)) {
             map.put(key, section.get(key).asString());
         }
