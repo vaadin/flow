@@ -16,6 +16,7 @@
 package com.vaadin.flow.frontend;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
@@ -25,7 +26,8 @@ import com.vaadin.flow.router.Route;
 @JsModule("./js/test.js")
 // Pulls a module named like @vaadin/vaadin-usage-statistics into the bundle,
 // so that the build plugin that rewrites its dev mode comment runs
-@JsModule("./vaadin-usage-statistics-stub.ts")
+@NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "2.0.7")
+@JsModule("./vaadin-usage-statistics-stub.js")
 public class DevBundleJsModuleView extends Div {
     static final String SPAN_ID = "test-js-module-frontend-span";
 

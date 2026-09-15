@@ -20,11 +20,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -38,7 +41,15 @@ import com.vaadin.flow.testutil.SourceMapTestUtil;
 public class DevBundleSourceMapsIT extends ChromeBrowserTest {
 
     private static final String LIT_VIEW_SOURCE = "src/main/frontend/views/lit-view.ts";
-    private static final String USAGE_STATISTICS_SOURCE = "src/main/frontend/vaadin-usage-statistics-stub.ts";
+    private static final String USAGE_STATISTICS_SOURCE = "src/main/frontend/vaadin-usage-statistics-stub.js";
+
+    /**
+     * The comment the development mode detector reads the code to run out of,
+     * with the form of its opening marker and its contents as groups. The
+     * plugin has to turn the plain form into the one a minifier keeps.
+     */
+    private static final Pattern DEV_MODE_COMMENT = Pattern.compile(
+            "/\\*([*!])\\s+vaadin-dev-mode:start([\\s\\S]*?)vaadin-dev-mode:end\\s+\\*\\*/");
 
     @Before
     public void init() {
@@ -77,27 +88,45 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
     }
 
     /**
-     * The plugin that rewrites the dev mode comment of the usage statistics
-     * module is the one that has to return a sourcemap of its own. The
-     * rewritten comment starts with {@code /*!}, which tells a minifier to keep
-     * it.
+     * The code inside the dev mode comment of the usage statistics module is
+     * the code that is meant to run: the development mode detector reads it out
+     * of the source of the function it is in. It can only do that as long as
+     * the build keeps the comment in the bundle.
+     */
+    @Test
+    public void usageStatisticsCodeRunsFromTheBundle() {
+        Assert.assertEquals(
+                "The code inside the dev mode comment should have run", "true",
+                findElement(By.tagName("html"))
+                        .getDomAttribute("usage-statistics-stub-ran"));
+    }
+
+    /**
+     * The plugin rewrites the comment so that it starts with {@code /*!}, which
+     * tells a minifier to keep it. The detector accepts either form, so this is
+     * what the plugin is for and what the build has to keep doing.
      */
     @Test
     public void usageStatisticsCommentIsRewrittenInTheBundle()
             throws IOException {
-        boolean rewritten = false;
+        int rewritten = 0;
         for (File chunk : getBundleFiles(".js")) {
-            String contents = read(chunk);
-            Assert.assertFalse(
-                    chunk.getName() + " should no longer have the original "
-                            + "usage statistics comment",
-                    contents.contains("/** vaadin-dev-mode:start"));
-            rewritten |= contents.contains("/*! vaadin-dev-mode:start");
+            Matcher matcher = DEV_MODE_COMMENT.matcher(read(chunk));
+            while (matcher.find()) {
+                if (!matcher.group(2).contains("usage-statistics-stub-ran")) {
+                    // A dev mode comment of another module, left as it is
+                    continue;
+                }
+                Assert.assertEquals(chunk.getName()
+                        + " should have the usage statistics comment rewritten "
+                        + "into the form a minifier keeps", "!",
+                        matcher.group(1));
+                rewritten++;
+            }
         }
-        Assert.assertTrue(
-                "A chunk of the dev bundle should have the usage statistics "
-                        + "comment rewritten so that a minifier keeps it",
-                rewritten);
+        Assert.assertNotEquals(
+                "No chunk of the dev bundle has the usage statistics comment",
+                0, rewritten);
     }
 
     private void assertHasSource(List<String> sources, String source) {
