@@ -21,13 +21,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * {@link AbstractTableStylesView} with the Aura table stylesheet loaded.
+ * {@link AbstractTableStylesView} with the Lumo table stylesheet loaded.
  */
-@Route(value = "com.vaadin.flow.uitest.ui.AuraTableStylesView", layout = ViewTestLayout.class)
-@StyleSheet(Table.AURA_STYLESHEET)
-public class AuraTableStylesView extends AbstractTableStylesView {
+@Route(value = "com.vaadin.flow.uitest.ui.LumoTableStylesView", layout = ViewTestLayout.class)
+@StyleSheet(Table.LUMO_STYLESHEET)
+public class LumoTableStylesView extends AbstractTableStylesView {
 
-    public AuraTableStylesView() {
-        super(Table.AURA_STYLESHEET);
+    public LumoTableStylesView() {
+        super(Table.LUMO_STYLESHEET);
     }
 }

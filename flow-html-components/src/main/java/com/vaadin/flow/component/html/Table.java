@@ -67,9 +67,9 @@ public class Table extends HtmlComponent
 
     /**
      * A stylesheet that makes a native <code>&lt;table&gt;</code> and the
-     * elements inside it look at home in a Vaadin application: theme colors,
-     * spacing and corner radii, a separated header and footer, and the
-     * light/dark switch of the theme.
+     * elements inside it look at home in an Aura application: a rounded surface
+     * with a tinted header and footer, Aura's spacing and colors, and its
+     * light/dark switch.
      * <p>
      * It is opt-in, and loading it is the opt-in — after that every
      * <code>&lt;table&gt;</code> on the page is styled:
@@ -84,8 +84,9 @@ public class Table extends HtmlComponent
      * Every selector in it is wrapped in {@code :where()}, so all of it has
      * zero specificity and a plain {@code table { ... }} rule in the
      * application's own stylesheet wins over it. The values come from the
-     * shared {@code --vaadin-*} custom properties the theme defines on
-     * {@code :root}, and individual tables pick a variant with the
+     * shared {@code --vaadin-*} custom properties Aura defines on
+     * {@code :root}, each one reachable through a {@code --vaadin-table-*}
+     * property of its own, and individual tables pick a variant with the
      * {@code theme} attribute, using the same names as the corresponding
      * {@code <vaadin-grid>} variants:
      *
@@ -96,9 +97,33 @@ public class Table extends HtmlComponent
      * The variants are {@code row-stripes}, {@code column-borders},
      * {@code no-row-borders} and {@code compact}.
      *
+     * @see #LUMO_STYLESHEET
      * @since 25.4
      */
     public static final String AURA_STYLESHEET = "aura/table.css";
+
+    /**
+     * The {@link #AURA_STYLESHEET} counterpart for a Lumo application: the same
+     * opt-in, the same {@code theme} variants and the same
+     * {@code --vaadin-table-*} properties, reading the {@code --lumo-*} tokens
+     * and matching what Lumo does to a {@code <vaadin-grid>} — a square box on
+     * {@code --lumo-base-color}, a lighter line between the rows than around
+     * the table, and a header told apart by type rather than by a background.
+     * <p>
+     * Load either this or {@link #AURA_STYLESHEET}, not both: they style the
+     * same elements, and the one that loads last would win.
+     *
+     * <pre>
+     * &#64;StyleSheet(Lumo.STYLESHEET)
+     * &#64;StyleSheet(Table.LUMO_STYLESHEET)
+     * public class Application implements AppShellConfigurator {
+     * }
+     * </pre>
+     *
+     * @see #AURA_STYLESHEET
+     * @since 25.4
+     */
+    public static final String LUMO_STYLESHEET = "lumo/table.css";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the

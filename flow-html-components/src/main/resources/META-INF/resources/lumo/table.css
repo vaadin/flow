@@ -1,10 +1,12 @@
 /*
  * Opt-in styles that make a native <table> and the elements around it look at
- * home in a Vaadin application.
+ * home in a Lumo application. The Aura counterpart is aura/table.css; the two
+ * files have the same structure and share the --vaadin-table-* vocabulary,
+ * and differ in what they read and in how a table ends up looking.
  *
  * Nothing loads this file automatically. An application asks for it with
  *
- *     @StyleSheet(Table.AURA_STYLESHEET)
+ *     @StyleSheet(Table.LUMO_STYLESHEET)
  *     public class Application implements AppShellConfigurator {
  *     }
  *
@@ -16,11 +18,12 @@
  *   A single `table { ... }` in the application stylesheet overrides anything
  *   here, without !important and without counting selectors.
  *
- * - The values come from the shared --vaadin-* token layer that Aura defines
- *   on :root, so the table picks up the theme's colors, spacing and radii
- *   (including the light/dark switch) for free. Each token has a plain
- *   fallback, so the file still produces a reasonable table when no theme is
- *   loaded.
+ * - The values come from the --lumo-* tokens, chosen to match what Lumo does
+ *   to a <vaadin-grid>: a square, fully bordered box on --lumo-base-color,
+ *   --lumo-contrast-20pct around it and the lighter --lumo-contrast-10pct
+ *   between the rows, and a header told apart by type rather than by a
+ *   background. Each token has a fallback equal to the value Lumo gives it, so
+ *   the file still produces a reasonable table when no theme is loaded at all.
  *
  * Individual tables opt into variants with the `theme` attribute, spelled the
  * same way as the <vaadin-grid> variants: `no-row-borders`, `column-borders`,
@@ -29,20 +32,27 @@
 
 :where(table) {
   /* Override these on the table, the view or :root to retheme a table. */
-  --vaadin-table-background: var(--vaadin-background-color, #fff);
-  --vaadin-table-border-color: var(--vaadin-border-color, rgba(0, 0, 0, 0.14));
-  --vaadin-table-row-border-color: var(--vaadin-table-border-color);
-  --vaadin-table-border-radius: var(--vaadin-radius-m, 8px);
+  --vaadin-table-background: var(--lumo-base-color, #fff);
+  --vaadin-table-border-color: var(--lumo-contrast-20pct, rgba(0, 0, 0, 0.16));
+  /* Lumo separates the rows with a lighter line than the one around the
+     table, the way <vaadin-grid> does. */
+  --vaadin-table-row-border-color: var(--lumo-contrast-10pct, rgba(0, 0, 0, 0.08));
+  /* A Lumo grid has square corners; the token is here so that an application
+     that wants rounded tables only has to set this one value. */
+  --vaadin-table-border-radius: 0px;
   --vaadin-table-border-width: 1px;
   --vaadin-table-row-border-width: 1px;
   --vaadin-table-column-border-width: 0px;
-  --vaadin-table-cell-padding-block: var(--vaadin-padding-s, 0.5rem);
-  --vaadin-table-cell-padding-inline: var(--vaadin-padding-m, 0.75rem);
-  --vaadin-table-header-background: var(--vaadin-background-container, rgba(0, 0, 0, 0.03));
-  --vaadin-table-header-text-color: var(--vaadin-text-color, inherit);
-  --vaadin-table-header-font-weight: var(--aura-font-weight-medium, 500);
-  --vaadin-table-row-stripe-background: var(--vaadin-background-container, rgba(0, 0, 0, 0.03));
-  --vaadin-table-caption-text-color: var(--vaadin-text-color-secondary, inherit);
+  --vaadin-table-cell-padding-block: var(--lumo-space-xs, 0.25rem);
+  --vaadin-table-cell-padding-inline: var(--lumo-space-m, 1rem);
+  --vaadin-table-header-background: transparent;
+  --vaadin-table-header-text-color: inherit;
+  --vaadin-table-header-font-size: var(--lumo-font-size-s, 0.875rem);
+  --vaadin-table-header-font-weight: 500;
+  /* A Lumo grid footer carries the smaller header type but not its weight. */
+  --vaadin-table-footer-font-weight: 400;
+  --vaadin-table-row-stripe-background: var(--lumo-contrast-5pct, rgba(0, 0, 0, 0.04));
+  --vaadin-table-caption-text-color: var(--lumo-secondary-text-color, inherit);
 
   /* The inner corners have to be smaller than the outer ones to stay inside
      the border. */
@@ -51,11 +61,14 @@
   background: var(--vaadin-table-background);
   border: var(--vaadin-table-border-width) solid var(--vaadin-table-border-color);
   border-radius: var(--vaadin-table-border-radius);
-  /* `separate` keeps the table's own rounded border visible; `border-spacing:
-     0` is what makes it look collapsed. */
+  /* `separate` keeps the table's own border a border of its own rather than
+     letting the edge cells collapse into it; `border-spacing: 0` is what makes
+     it look collapsed. */
   border-collapse: separate;
   border-spacing: 0;
-  color: var(--vaadin-text-color, inherit);
+  color: var(--lumo-body-text-color, inherit);
+  font-family: var(--lumo-font-family, inherit);
+  font-size: var(--lumo-font-size-m, inherit);
   text-align: start;
   text-indent: 0;
 }
@@ -63,7 +76,7 @@
 :where(table) > :where(caption) {
   caption-side: top;
   color: var(--vaadin-table-caption-text-color);
-  padding-block-end: var(--vaadin-gap-s, 0.5rem);
+  padding-block-end: var(--lumo-space-s, 0.5rem);
   text-align: start;
 }
 
@@ -79,11 +92,16 @@
 :where(table) :where(thead, tfoot) :where(th, td) {
   background: var(--vaadin-table-header-background);
   color: var(--vaadin-table-header-text-color);
+  font-size: var(--vaadin-table-header-font-size);
   font-weight: var(--vaadin-table-header-font-weight);
 }
 
+:where(table) > :where(tfoot) :where(th, td) {
+  font-weight: var(--vaadin-table-footer-font-weight);
+}
+
 /* A row header (<th scope="row">) stands out by weight only — giving it the
-   header background would draw a second, competing column. */
+   header type as well would read as a second header row turned sideways. */
 :where(table) > :where(tbody) > :where(tr) > :where(th) {
   font-weight: var(--vaadin-table-header-font-weight);
 }
@@ -103,8 +121,8 @@
   border-block-end-width: 0;
 }
 
-/* Round the four corner cells so a header or footer background does not fill
-   in the corners of the rounded border. */
+/* Round the four corner cells so a row stripe or a header background does not
+   fill in the corners when --vaadin-table-border-radius is set. */
 :where(table) > :where(thead):first-of-type > :where(tr):first-child > :where(th, td):first-child,
 :where(table:not(:has(thead))) > :where(tbody):first-of-type > :where(tr):first-child > :where(th, td):first-child {
   border-start-start-radius: var(--_vaadin-table-inner-radius);
@@ -136,9 +154,10 @@
 }
 
 :where(table[theme~='compact']) {
-  --vaadin-table-cell-padding-block: var(--vaadin-padding-xs, 0.25rem);
-  --vaadin-table-cell-padding-inline: var(--vaadin-padding-s, 0.5rem);
-  font-size: var(--aura-font-size-s, 0.875em);
+  --vaadin-table-cell-padding-block: calc(var(--lumo-space-xs, 0.25rem) / 2);
+  --vaadin-table-cell-padding-inline: var(--lumo-space-s, 0.5rem);
+  --vaadin-table-header-font-size: var(--lumo-font-size-xs, 0.8125rem);
+  font-size: var(--lumo-font-size-s, 0.875rem);
 }
 
 :where(table[theme~='row-stripes']) > :where(tbody) > :where(tr):nth-child(even) > :where(th, td) {

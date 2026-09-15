@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.HandlerHelper;
@@ -535,13 +537,15 @@ class TableTest extends ComponentTest {
                 table.getChildren().toList());
     }
 
-    @Test
-    void auraStylesheet_isOnTheClasspathUnderAnAlwaysPermittedPath() {
+    @ParameterizedTest
+    @ValueSource(strings = { Table.AURA_STYLESHEET, Table.LUMO_STYLESHEET })
+    void themeStylesheet_isOnTheClasspathUnderAnAlwaysPermittedPath(
+            String stylesheet) {
         assertNotNull(
-                Table.class.getClassLoader().getResource(
-                        "META-INF/resources/" + Table.AURA_STYLESHEET),
-                Table.AURA_STYLESHEET
-                        + " is not packaged in META-INF/resources, so @StyleSheet(Table.AURA_STYLESHEET) would 404");
+                Table.class.getClassLoader()
+                        .getResource("META-INF/resources/" + stylesheet),
+                stylesheet
+                        + " is not packaged in META-INF/resources, so @StyleSheet would 404 on it");
 
         // A secured application renders its login view before the user is
         // authenticated, so the stylesheet has to live under one of the paths
@@ -549,9 +553,9 @@ class TableTest extends ComponentTest {
         assertTrue(
                 Stream.of(HandlerHelper.getPublicResourcesRoot())
                         .map(pattern -> pattern.replace("/**", "/"))
-                        .anyMatch(prefix -> ("/" + Table.AURA_STYLESHEET)
+                        .anyMatch(prefix -> ("/" + stylesheet)
                                 .startsWith(prefix)),
-                Table.AURA_STYLESHEET
+                stylesheet
                         + " is outside every always-permitted public resource root, so a secured application would not serve it on the login view");
     }
 }

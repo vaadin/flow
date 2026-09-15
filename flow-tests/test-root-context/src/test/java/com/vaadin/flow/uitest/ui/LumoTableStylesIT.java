@@ -15,31 +15,32 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-public class AuraTableStylesIT extends AbstractTableStylesIT {
+public class LumoTableStylesIT extends AbstractTableStylesIT {
 
     @Override
     protected String expectedCellPaddingBlock() {
-        return "8px";
+        return "4px";
     }
 
     @Override
     protected String expectedCellPaddingInline() {
-        return "12px";
-    }
-
-    @Override
-    protected String expectedHeaderFontSize() {
-        // Aura tells the header apart with a background, not with type
         return "16px";
     }
 
     @Override
+    protected String expectedHeaderFontSize() {
+        // Lumo tells the header apart with type: --lumo-font-size-s
+        return "14px";
+    }
+
+    @Override
     protected String expectedBorderRadius() {
-        return "8px";
+        // A Lumo grid, and so a Lumo table, has square corners
+        return "0px";
     }
 
     @Override
     protected String[] expectedCompactCellPadding() {
-        return new String[] { "4px", "8px" };
+        return new String[] { "2px", "8px" };
     }
 }
