@@ -112,7 +112,10 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
   if (!magicString.hasChanged()) {
     return null;
   }
-  return { code: magicString.toString(), map: magicString.generateMap({ hires: true }) };
+  // Boundary resolution maps every token rather than every character. The
+  // rewriting replaces whole url(...) tokens, so nothing is lost, and the map
+  // stays less than half the size of a per-character one.
+  return { code: magicString.toString(), map: magicString.generateMap({ hires: 'boundary' }) };
 }
 
 export { rewriteCssUrls };
