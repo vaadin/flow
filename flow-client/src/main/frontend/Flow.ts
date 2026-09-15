@@ -211,7 +211,15 @@ export class Flow {
           await this.flowInit();
         } catch (error) {
           if (error instanceof FlowUiInitializationError) {
-            // error initializing Flow: assume connection lost
+            // error initializing Flow: assume connection lost. Report the
+            // cause first: the message carries the HTTP status and response
+            // body of the failed init request, and the offline stub returned
+            // below replaces the view without a trace of why, so swallowing
+            // this leaves nothing to diagnose but a missing UI.
+            console.error(
+              'Failed to initialize the Flow UI, assuming the connection was lost and showing the offline stub.',
+              error
+            );
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return this.offlineStubAction();
           } else {
