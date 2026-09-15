@@ -27,6 +27,7 @@ React support).
 - `flow-devloop-daemon`: daemon for the `vaadin-dev` dev loop
 - `flow-tests/`: integration test suite
 - `vaadin-spring`: Spring Framework integration
+- `vaadin-cdi`: CDI integration
 
 See `guidelines/repository.md` for the full module map and
 `guidelines/architecture.md` for how the pieces fit together.
@@ -37,7 +38,7 @@ Always read `CONVENTIONS.md` in full when **authoring** or **reviewing** code, a
 
 Design and implementation guidelines live in `guidelines/`. Read the chapters mapped in `guidelines/overview.md` selectively for the topics your work touches.
 
-The commit message format and the expectations for opening a pull request are in the Commit & PR Hygiene section of `CONVENTIONS.md`.
+The commit message format, the PR description format and the expectations for opening a pull request are in the `commit-and-pr` skill (`.claude/skills/commit-and-pr/SKILL.md`), linked from the Commit & PR Hygiene section of `CONVENTIONS.md`.
 
 ## Development Commands
 

@@ -451,5 +451,89 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 "vaadin-dev-server-settings.json leaked under the web source dir: $leaked") { leaked }
     }
 
+    /**
+     * In development mode `vaadinPrepareFrontend` does not run, so there is no
+     * `flow-build-info.json` telling the runtime where the project is and it
+     * has to determine that from the classpath. The working directory of the
+     * process must not be what decides it: an application started with the root
+     * of the build as its working directory - what a run configuration in an
+     * IDE typically does - has to prepare its frontend in the module being run
+     * and not in the root project.
+     *
+     * https://github.com/vaadin/flow/issues/25630
+     */
+    @Test
+    fun `dev mode project folder is the module folder, not the working directory`() {
+        // The :web module is configured from the root project, so it has
+        // no build script of its own
+        testProject.settingsFile.writeText("include 'web'")
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':web') {
+                apply plugin: 'java'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                tasks.register('printProjectFolder', JavaExec) {
+                    classpath = sourceSets.main.runtimeClasspath
+                    mainClass = 'example.PrintProjectFolder'
+                    // Run from the root of the build instead of from the module
+                    workingDir = rootProject.projectDir
+                }
+            }
+        """.trimIndent())
+        testProject.newFile("web/src/main/java/example/PrintProjectFolder.java", """
+            package example;
+
+            import com.vaadin.flow.server.AbstractConfiguration;
+
+            public class PrintProjectFolder {
+                public static void main(String[] args) throws Exception {
+                    AbstractConfiguration configuration = new AbstractConfiguration() {
+                        @Override
+                        public boolean isProductionMode() {
+                            return false;
+                        }
+
+                        @Override
+                        public String getStringProperty(String name,
+                                String defaultValue) {
+                            return defaultValue;
+                        }
+
+                        @Override
+                        public boolean getBooleanProperty(String name,
+                                boolean defaultValue) {
+                            return defaultValue;
+                        }
+                    };
+                    System.out.println("PROJECT_FOLDER="
+                            + configuration.getProjectFolder().getCanonicalPath());
+                    System.out.println("FRONTEND_FOLDER="
+                            + configuration.getFrontendFolder().getCanonicalPath());
+                }
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("web:printProjectFolder")
+
+        val webFolder = File(testProject.dir, "web").canonicalFile
+        assertContains(result.output, "PROJECT_FOLDER=$webFolder")
+        assertContains(result.output,
+                "FRONTEND_FOLDER=${File(webFolder, "src/main/frontend")}")
+    }
 
 }

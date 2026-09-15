@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2026 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,18 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger.internal;
+package com.vaadin.cdi.itest.routecontext;
 
-import java.io.Serializable;
+import java.util.UUID;
 
-/**
- * Represents a 2D pixel size with a width and a height.
- *
- * @param width
- *            the width in pixels
- * @param height
- *            the height in pixels
- * @since 25.2
- */
-public record Size(int width, int height) implements Serializable {
+import com.vaadin.cdi.annotation.CdiComponent;
+import com.vaadin.cdi.annotation.RouteScopeOwner;
+import com.vaadin.cdi.annotation.RouteScoped;
+
+@RouteScoped
+@RouteScopeOwner(ErrorHandlerView.class)
+@CdiComponent
+public class CustomExceptionSubDiv extends AbstractCountedView {
+
+    public CustomExceptionSubDiv() {
+        setId("custom-exception-div");
+        setText(UUID.randomUUID().toString());
+    }
 }

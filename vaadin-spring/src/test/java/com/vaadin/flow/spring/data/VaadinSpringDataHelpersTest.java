@@ -59,6 +59,18 @@ class VaadinSpringDataHelpersTest {
     }
 
     @Test
+    void toSpringPageRequest_nullSortOrders_generatesUnsortedPageRequest() {
+        Query<?, ?> query = new Query<>(0, 500, null, null, null);
+
+        PageRequest pageRequest = VaadinSpringDataHelpers
+                .toSpringPageRequest(query);
+
+        assertEquals(500, pageRequest.getPageSize());
+        assertEquals(0, pageRequest.getPageNumber());
+        assertEquals(Sort.unsorted(), pageRequest.getSort());
+    }
+
+    @Test
     void toSpringPageRequest_generatesSpringPageRequestWithPagingAndSort() {
         List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name")
                 .build();

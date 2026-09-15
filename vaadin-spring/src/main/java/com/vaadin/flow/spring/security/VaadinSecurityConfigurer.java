@@ -510,7 +510,8 @@ public final class VaadinSecurityConfigurer
      * <p>
      * This matcher combines multiple specific matchers, including those for
      * framework internal requests, anonymous endpoints, allowed Hilla views,
-     * anonymous routes, custom web icons, and default security configurations.
+     * anonymous routes, custom web icons, PWA resources, and default security
+     * configurations.
      *
      * @return a {@link RequestMatcher} that matches requests to be allowed
      *         without authentication
@@ -525,6 +526,9 @@ public final class VaadinSecurityConfigurer
                 getRequestUtil()::isAnonymousRoute,
                 // Custom web icons (and favicons) are permitted
                 getRequestUtil()::isCustomWebIcon,
+                // Configured PWA resources are permitted, so that the
+                // service worker can install and precache them
+                getRequestUtil()::isPwaResource,
                 // Matchers for Vaadin static resources
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
@@ -860,6 +864,22 @@ public final class VaadinSecurityConfigurer
                             getRequestUtil()::isEndpointRequest);
         }
         if (formLoginPage != null) {
+            // Requests the browser makes for a sub-resource, e.g. a
+            // stylesheet, a script or an image, cannot render a login view, so
+            // redirecting them is pointless. Worse, the redirected request is
+            // not an HTML request either, so the login view is not served for
+            // it and the request is denied and redirected again, ending in a
+            // redirect loop that hides the resource that was actually blocked.
+            // Respond with 401 Unauthorized instead, so that the browser
+            // reports the failing resource.
+            //
+            // The status is 401 and not 404: this entry point is reached from
+            // the authorization decision, before any resource lookup, so a
+            // denied path answers the same whether the resource exists or not,
+            // and reporting it as missing would name the wrong cause.
+            configurer.defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    HandlerHelper::isNonHtmlInitiatedRequest);
             configurer.defaultAuthenticationEntryPointFor(
                     new LoginUrlAuthenticationEntryPoint(formLoginPage),
                     AnyRequestMatcher.INSTANCE);

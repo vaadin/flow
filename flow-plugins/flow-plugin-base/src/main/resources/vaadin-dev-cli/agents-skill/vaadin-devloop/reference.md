@@ -44,13 +44,14 @@ that refreshes the data provider) or reload the page to see it. Do not re-apply;
 nothing left to compile.
 
 In **Vite mode** a TypeScript or JavaScript compile error reaches you as a `frontend → Failed`
-with `dev server:` under it, and `apply` exits `1`. Vite compiles on save rather than on apply,
-so its errors are in the log before `apply` runs and before the browser shows its red overlay;
-`apply` carries them into its own window and fails on them rather than answering a clean
-`Stable` over a file the browser is refusing to load. This is the one failure the daemon
-reports without escalating — a restart cannot compile a broken module. Fix the file and
-re-apply — the next apply is clean. A Java edit that arrived in the same change-set is already
-live; the dev server's error is about the frontend half.
+with `dev server:` under it, and `apply` exits `1`. Vite compiles a module when something
+requests it, so `apply` asks it — fetching each changed file the way the browser would — rather
+than waiting to overhear a complaint in the log. That answer does not depend on whether a page
+is open or happened to re-fetch, so a broken module is reported every time and never as a clean
+`Stable`. This is the one failure the daemon reports without escalating — a restart cannot
+compile a broken module. Fix the file and re-apply — the next apply is clean, because the dev
+server is asked again and serves the fixed file. A Java edit that arrived in the same
+change-set is already live; the dev server's error is about the frontend half.
 
 An `app log:` line means the app logged an error while the change went live — the bytes are
 live, the code did something wrong. `Stable` with this line under it is not a green result:
@@ -68,7 +69,8 @@ the app turns up.
 | CSS/icons under `META-INF/resources/` | updates in place, **no reload** |
 | Java in a **component/view** class (method bodies, string literals, most view code) | updates in place, **no reload** |
 | Java in a **plain class** (formatter, mapper, helper) called from a renderer | live immediately, but already-rendered output keeps its old values — `apply` says so and tells you to interact with the view or reload |
-| Structural Java (new fields/beans, new repository methods, changed routes or annotations) | restart → **reload the page** |
+| Structural Java — a new field, a new method, a new inner class — in an ordinary class | on a **JetBrains Runtime** enhanced class redefinition takes it like a method body: hot-swapped in place, **no reload**. On a stock JDK the JVM rejects the redefine, so `apply` **restarts** and names the reason |
+| Structural Java in a Spring bean, a Spring Data repository or any other proxied type | the live proxy was generated from the old shape, so `apply` **restarts** whatever the JVM → **reload the page** |
 | A JPA entity's mapping, or adding `@Entity` to a class | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
 | A deleted `src/main/resources/` file | the copy under `target/classes` is removed too, or the app would go on serving it; a public one then **reloads the page**, a startup one **restarts** |
@@ -86,9 +88,13 @@ the app turns up.
 ## Verifying in the browser
 
 First, whether to look at all: only a change with a visual surface earns a browser, as the
-shared file's step 5 says. Then use whatever browser automation this agent has — a
-Playwright/browser MCP server, a built-in browser tool, or a headless Playwright/Selenium
-script. The rules are the same whichever it is:
+shared file's step 5 says. Then use whatever browser automation this agent already has — a
+Playwright or browser MCP server, a built-in browser tool, a headless Playwright/Selenium
+script, or the browser tests the project itself already runs. Any of them is preferred over the
+others only by convenience; none of them is required, and **building a new browser harness for
+one change costs more than the change** — extend an existing `*BrowserTest`/`*IT` class instead,
+or take the no-browser answer below and say that is what you did. The rules are the same
+whichever tool it is:
 
 - **Navigate before the first `apply`, then keep the page open across applies.** CSS pushes and
   Java hot-swaps land in an already-open page; re-navigating hides what you are testing. Reload
@@ -133,7 +139,10 @@ test can cover.
   starter does).
 - Hot-swap coverage depends on the JVM: only a JetBrains Runtime gets enhanced class
   redefinition, so on a stock JDK more edits escalate to a restart. Nothing is wrong when they
-  do — the restart is the honest answer.
+  do — the restart is the honest answer. `target/devloop/daemon.log` names the JVM that was
+  chosen and what it cost; runtimes are looked for under `~/.jdks` and `~/.vaadin/jdk` (where
+  the Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse install one), then `JAVA_HOME` and
+  `JDK_HOME`, and `-Dvaadin.dev.javaHome=<dir>` names one directly.
 
 ## Environment
 
@@ -185,12 +194,17 @@ of this.
 - The target application's `./mvnw test` for unit + UI tests. Update a test the change
   actually broke — its assertion is the behaviour you replaced — and say that you did. Leave
   the rest alone: a test suite rewritten around a one-line edit is scope nobody asked for.
-- If a **Vaadin MCP server** is available (`search_vaadin_docs`, `get_component_java_api`,
-  `get_component_styling`, `get_theme_css_properties`), use it instead of recalling API from
-  memory; otherwise check the Vaadin version in the application's `pom.xml` and read
-  vaadin.com/docs for that version. Prefer theme CSS properties (`--vaadin-*`, `--aura-*`)
-  over hard-coded values. This covers a test framework's API too: unpacking jars out of
-  `~/.m2` to find a method name spends minutes on what a docs query answers in seconds.
-- Browser verification needs a browser automation tool. Nothing installs or configures one for
-  you: register a Playwright MCP server (or the equivalent for your agent) yourself, and the
-  Vaadin docs MCP server alongside it.
+- Every MCP server named here is **preferred, never required**. The loop runs on the `vaadin-dev`
+  CLI and nothing else; a missing server changes which fallback you take, never whether the work
+  can be done. Take the fallback, and say which one you used.
+- For Vaadin API and docs, in order of preference: a **Vaadin MCP server**
+  (`search_vaadin_docs`, `get_component_java_api`, `get_component_styling`,
+  `get_theme_css_properties`); else vaadin.com/docs for the version in the application's
+  `pom.xml`; else the sources, pulled once with `./mvnw -q dependency:sources` and read like any
+  other source. Prefer theme CSS properties (`--vaadin-*`, `--aura-*`) over hard-coded values.
+  This covers a test framework's API too. Unpacking jars out of `~/.m2` and reading `javap`
+  output is the **last** resort, not the first: one method name at a time, it spends minutes on
+  what a docs query or a sources jar answers at once.
+- Browser verification wants a browser automation tool, and nothing installs one for you: a
+  Playwright MCP server (or your agent's equivalent) alongside the Vaadin docs server is the
+  smoothest setup, and *Verifying in the browser* above says what to do with neither.

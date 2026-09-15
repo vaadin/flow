@@ -8,6 +8,9 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
+  // Deploys to a real application server, so it needs one of the container
+  // profiles and has its own job in validation.yml
+  'flow-tests/vaadin-cdi-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
@@ -116,6 +119,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-pwa': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
   'flow-tests/test-live-reload-multimodule': {pos:6},
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
