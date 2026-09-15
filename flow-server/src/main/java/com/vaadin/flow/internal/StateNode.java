@@ -1229,11 +1229,10 @@ public class StateNode implements Serializable {
                 Element element = Element.get(this);
                 targetInfo.append(", element with tag '")
                         .append(element.getTag()).append("'");
-                Optional<Component> component = element.getComponent();
-                if (component.isPresent()) {
+                Component component = element.getComponent().orElse(null);
+                if (component != null) {
                     targetInfo.append(", component '")
-                            .append(component.get().getClass().getName())
-                            .append("'");
+                            .append(component.getClass().getName()).append("'");
                     /*
                      * The routing target is identified by its class since the
                      * path in its annotation is not necessarily the path it is
@@ -1241,8 +1240,8 @@ public class StateNode implements Serializable {
                      * derived from the class, and it doesn't include the
                      * prefixes that parent layouts contribute.
                      */
-                    ComponentUtil.getRouteComponent(component.get()).filter(
-                            routeComponent -> routeComponent != component.get())
+                    ComponentUtil.getRouteComponent(component).filter(
+                            routeComponent -> routeComponent != component)
                             .ifPresent(routeComponent -> targetInfo
                                     .append(", used in '")
                                     .append(routeComponent.getClass().getName())
@@ -1251,9 +1250,9 @@ public class StateNode implements Serializable {
                     // Only available while component tracking is enabled,
                     // which is the case in development mode
                     ComponentTracker.Location createLocation = ComponentTracker
-                            .findCreate(component.get());
+                            .findCreate(component);
                     ComponentTracker.Location attachLocation = ComponentTracker
-                            .findAttach(component.get());
+                            .findAttach(component);
                     if (createLocation != null) {
                         targetInfo.append(", created at ")
                                 .append(createLocation.filename()).append(":")
@@ -1268,7 +1267,7 @@ public class StateNode implements Serializable {
                         // Without tracking information, which is the situation
                         // in production mode, the component's own toString()
                         // is the only way of telling instances apart
-                        targetInfo.append(", ").append(component.get());
+                        targetInfo.append(", ").append(component);
                     }
                 }
             }
