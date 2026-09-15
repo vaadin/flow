@@ -11,6 +11,14 @@ const chunkNameMarker = '__VAADIN_I18n_chunkName__';
 const registerChunkImport = `import { i18n } from '@vaadin/hilla-react-i18n';\n`;
 const registerChunkCall = `await i18n.registerChunk('${chunkNameMarker}');\n`;
 
+// Matches a registerChunk call with the chunk name marker in the rendered
+// chunk, where the i18n binding may have been renamed by the bundler and the
+// string quotes may have been rewritten.
+const registerChunkCallPattern = new RegExp(
+  `(?:await\\s*)?[\\w$]+\\.registerChunk\\(\\s*(['"\`])${chunkNameMarker}\\1\\s*\\)\\s*;?`,
+  'g'
+);
+
 /**
  * Vaadin Rollup/Vite plugin for automatic splitting of i18n bundles for Hilla
  * apps based on the chunks in the JS bundle output.
@@ -125,34 +133,42 @@ export default function vaadinI18n(options = {}) {
     renderStart() {
       chunkKeySets.clear();
     },
+    renderChunk(code, chunk) {
+      const magicString = new MagicString(code);
+      // Extra imports are removed automatically from the final chunk, but
+      // there might be still multiple registerChunk calls originating from
+      // the modules using Hilla i18n. One such call per chunk is enough
+      // to load all the translations for the code below it, so let us keep
+      // the first one, with the marker replaced by the actual chunk name,
+      // and remove the rest.
+      let isFirstCall = true;
+      for (const match of code.matchAll(registerChunkCallPattern)) {
+        const start = match.index;
+        const end = start + match[0].length;
+        if (isFirstCall) {
+          magicString.overwrite(start, end, match[0].replace(chunkNameMarker, chunk.fileName));
+          isFirstCall = false;
+        } else {
+          magicString.remove(start, end);
+        }
+      }
+
+      if (!magicString.hasChanged()) {
+        // Nothing to rewrite in this chunk: leave it and its sourcemap as is
+        return null;
+      }
+
+      // The rewriting happens in renderChunk, not in generateBundle, so that
+      // the bundler composes this sourcemap with the one it has for the chunk
+      // instead of the chunk ending up with a sourcemap without sources.
+      return {
+        code: magicString.toString(),
+        map: magicString.generateMap({ hires: true })
+      };
+    },
     async generateBundle(_options, bundle) {
       for (const [fileName, chunk] of Object.entries(bundle)) {
         if (chunk.type === 'chunk') {
-          const magicString = new MagicString(chunk.code);
-          // Extra imports are removed automatically from the final chunk, but
-          // there might be still multiple registerChunk calls originating from
-          // the modules using Hilla i18n. One such call per chunk is enough
-          // to load all the translations for the code below it, so let us
-          // remove the duplicate calls.
-          let idx = 0;
-          let firstIdx = -1;
-          let searchIdx = 0;
-          while ((idx = magicString.toString().indexOf(registerChunkCall, searchIdx)) !== -1) {
-            if (firstIdx === -1) {
-              firstIdx = idx;
-              searchIdx = idx + registerChunkCall.length;
-            } else {
-              // Remove this occurrence
-              magicString.remove(idx, idx + registerChunkCall.length);
-              searchIdx = idx; // Don't advance, as string just got shorter
-            }
-          }
-
-          // Replace the chunk name markers with the actual chunk name
-          magicString.replace(chunkNameMarker, fileName);
-          chunk.code = magicString.toString();
-          chunk.map = magicString.generateMap({ hires: true });
-
           // Collect i18n translation keys from all modules of the chunk
           const chunkKeySet = new Set();
           for (const id of chunk.moduleIds) {
