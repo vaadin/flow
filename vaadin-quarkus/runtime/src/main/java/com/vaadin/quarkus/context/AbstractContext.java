@@ -211,6 +211,13 @@ public abstract class AbstractContext implements InjectableContext {
         }
         Map<InjectableBean<?>, Object> state = new HashMap<>();
         for (ContextualStorage storage : storages) {
+            if (storage == null) {
+                // A subclass answers null for a scope that has nothing stored,
+                // and this is the other entry point Arc reaches without the
+                // checkActive() the get methods do, so skip it the way
+                // destroyAllActive() already does.
+                continue;
+            }
             for (Map.Entry<Object, ContextualInstanceInfo<?>> entry : storage
                     .getStorage().entrySet()) {
                 state.put((InjectableBean<?>) storage.getBean(entry.getKey()),

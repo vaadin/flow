@@ -42,6 +42,10 @@ public class SessionContextTest
         Assertions.assertNull(
                 getContext().getContextualStorage(contextual, true));
         getContext().destroyAllActive();
+        // getState() is the sibling path Arc reaches the same way, and it
+        // walks the same storages, so it has to tolerate the absent one too.
+        Assertions.assertTrue(
+                getContext().getState().getContextualInstances().isEmpty());
     }
 
     @Override
