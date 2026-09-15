@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-quarkus-parent</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>vaadin-quarkus-deployment</artifactId>
   <name>Vaadin Quarkus - Deployment</name>
+  <description>Build time part of the Quarkus integration for Vaadin applications.</description>
 
   <dependencies>
     <dependency>
@@ -33,7 +34,7 @@
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-plugin-base</artifactId>
-      <version>${vaadin.flow.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Test scope -->
@@ -53,21 +54,4 @@
       <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>io.quarkus</groupId>
-              <artifactId>quarkus-extension-processor</artifactId>
-              <version>${quarkus.version}</version>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
