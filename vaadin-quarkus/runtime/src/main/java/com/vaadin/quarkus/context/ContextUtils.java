@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,13 @@
  */
 package com.vaadin.quarkus.context;
 
-import java.lang.annotation.Annotation;
-
-import io.quarkus.arc.Arc;
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.inject.Typed;
 import jakarta.enterprise.inject.spi.BeanManager;
+
+import java.lang.annotation.Annotation;
+
+import io.quarkus.arc.Arc;
 
 /**
  * A modified copy of org.apache.deltaspike.core.util.ContextUtils.

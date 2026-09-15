@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,8 @@
  * the License.
  */
 package com.vaadin.quarkus;
+
+import jakarta.servlet.http.HttpSession;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -44,7 +46,6 @@ import io.undertow.websockets.vertx.VertxWebSocketHandler;
 import io.undertow.websockets.vertx.VertxWebSocketHttpExchange;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.servlet.http.HttpSession;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;

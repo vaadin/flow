@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,8 @@
  * the License.
  */
 package com.vaadin.quarkus.deployment;
+
+import jakarta.inject.Inject;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -43,7 +45,6 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.quarkus.vertx.http.deployment.DefaultRouteBuildItem;
-import jakarta.inject.Inject;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.config.managed.ManagedServiceInterceptor;

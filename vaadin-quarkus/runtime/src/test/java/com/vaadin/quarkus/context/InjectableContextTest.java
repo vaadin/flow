@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.quarkus.context;
 
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.spi.CreationalContext;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,8 +27,6 @@ import java.util.Set;
 import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InjectableContext;
 import io.quarkus.arc.InjectableContext.ContextState;
-import jakarta.enterprise.context.ContextNotActiveException;
-import jakarta.enterprise.context.spi.CreationalContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

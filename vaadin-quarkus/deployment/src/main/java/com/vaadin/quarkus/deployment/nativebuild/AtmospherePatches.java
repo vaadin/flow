@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.quarkus.deployment.nativebuild;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletConnection;
+
 import java.util.Arrays;
 import java.util.ServiceLoader;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,8 +30,6 @@ import io.quarkus.gizmo.ClassTransformer;
 import io.quarkus.gizmo.Gizmo;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletConnection;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.inject.InjectableObjectFactory;

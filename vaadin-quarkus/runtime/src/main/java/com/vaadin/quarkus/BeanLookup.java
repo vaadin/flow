@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,16 @@
  */
 package com.vaadin.quarkus;
 
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.AmbiguousResolutionException;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import jakarta.enterprise.context.spi.CreationalContext;
-import jakarta.enterprise.inject.AmbiguousResolutionException;
-import jakarta.enterprise.inject.spi.Bean;
-import jakarta.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
 

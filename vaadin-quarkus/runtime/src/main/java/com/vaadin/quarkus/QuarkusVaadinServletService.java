@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,6 @@
  */
 package com.vaadin.quarkus;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
-
-import io.quarkus.arc.Arc;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.spi.Context;
 import jakarta.enterprise.context.spi.CreationalContext;
@@ -28,6 +22,13 @@ import jakarta.enterprise.inject.AmbiguousResolutionException;
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+
+import io.quarkus.arc.Arc;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

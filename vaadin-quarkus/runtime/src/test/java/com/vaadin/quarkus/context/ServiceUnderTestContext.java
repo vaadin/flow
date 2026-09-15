@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,13 +15,13 @@
  */
 package com.vaadin.quarkus.context;
 
-import java.util.Set;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.spi.AlterableContext;
 import jakarta.enterprise.context.spi.Context;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
+
+import java.util.Set;
 
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceException;

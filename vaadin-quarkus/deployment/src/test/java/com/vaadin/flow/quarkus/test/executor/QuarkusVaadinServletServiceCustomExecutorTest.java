@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.quarkus.test.executor;
 
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
+
 import java.util.concurrent.Executor;
 
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 

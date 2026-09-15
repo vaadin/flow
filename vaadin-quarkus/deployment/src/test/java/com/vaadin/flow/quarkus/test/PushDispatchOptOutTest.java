@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.quarkus.test;
 
-import io.quarkus.test.QuarkusUnitTest;
-import io.undertow.websockets.ServerWebSocketContainer;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.WebSocketContainer;
+
+import io.quarkus.test.QuarkusUnitTest;
+import io.undertow.websockets.ServerWebSocketContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;

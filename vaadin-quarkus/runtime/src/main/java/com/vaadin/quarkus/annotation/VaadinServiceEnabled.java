@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.quarkus.annotation;
 
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.inject.Qualifier;
+
 import java.io.Serial;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import jakarta.enterprise.util.AnnotationLiteral;
-import jakarta.inject.Qualifier;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,11 @@
  */
 package com.vaadin.quarkus;
 
+import jakarta.enterprise.inject.spi.BeanManager;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import jakarta.enterprise.inject.spi.BeanManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

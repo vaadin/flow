@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.quarkus.test.executor;
 
-import java.util.Properties;
-
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.servlet.ServletContext;
+
+import java.util.Properties;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;

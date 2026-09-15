@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,6 @@
  */
 package com.vaadin.quarkus;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
-import java.util.Locale;
-
-import io.quarkus.arc.Unremovable;
-import io.quarkus.test.junit.QuarkusTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
@@ -36,6 +27,16 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InterceptorBinding;
 import jakarta.interceptor.InvocationContext;
 import jakarta.servlet.ServletException;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Locale;
+
+import io.quarkus.arc.Unremovable;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

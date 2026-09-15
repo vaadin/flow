@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,12 @@
  */
 package com.vaadin.quarkus;
 
+import jakarta.enterprise.inject.spi.BeanManager;
+
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import jakarta.enterprise.inject.spi.BeanManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

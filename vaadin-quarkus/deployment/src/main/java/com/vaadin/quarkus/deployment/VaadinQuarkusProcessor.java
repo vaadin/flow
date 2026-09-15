@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,8 @@
  * the License.
  */
 package com.vaadin.quarkus.deployment;
+
+import jakarta.servlet.annotation.WebServlet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +64,6 @@ import io.quarkus.vertx.http.deployment.FilterBuildItem;
 import io.quarkus.websockets.client.deployment.ServerWebSocketContainerBuildItem;
 import io.quarkus.websockets.client.deployment.WebSocketDeploymentInfoBuildItem;
 import io.quarkus.websockets.client.deployment.WebsocketConfig;
-import jakarta.servlet.annotation.WebServlet;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
