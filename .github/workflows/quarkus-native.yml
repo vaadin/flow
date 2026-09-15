@@ -1,0 +1,90 @@
+name: Quarkus Native Image
+on:
+  workflow_dispatch:
+  schedule:
+    # 02:40 UTC, after the day's merges have landed and well clear of the
+    # other scheduled workflows.
+    - cron: '40 2 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # The native image build needs GraalVM; the rest of validation runs on
+  # Temurin 21, which is what the compiler targets either way.
+  GRAALVM_VERSION: '25'
+  NODE_VERSION: '24.21.0'
+jobs:
+  native-tests:
+    # The embedded-plugin suite packaged as a native image. Building it takes
+    # around half an hour, far too long to sit in front of every pull request,
+    # so it runs once a day instead. A failure here is a regression in the
+    # extension's native build configuration, not in the change that happened
+    # to be merged last, and the JVM leg of the same suite already runs in
+    # validation.
+    if: ${{ github.repository == 'vaadin/flow' }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: '11.26.0'
+      - name: Set up GraalVM
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: ${{ env.GRAALVM_VERSION }}
+          distribution: 'graalvm'
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Compile and Install Flow
+        # Builds its own reactor rather than reusing validation's saved
+        # workspace: that artifact is built on Temurin and is gone by the time
+        # this runs.
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Test with native image
+        timeout-minutes: 45
+        run: |
+          # -am because the install above skips tests, which deactivates the
+          # it-test-modules profile and leaves the fixture modules this one
+          # depends on out of the local repository.
+          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
+            -pl embedded-plugin -am -Dnative \
+            -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          set -x -e
+          LOG=mvn-quarkus-native.out
+          : > "$LOG"
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
+      - name: Package test-report files
+        if: ${{ always() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-quarkus-native.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: tests-output-quarkus-native
+          path: tests-report-*.tgz

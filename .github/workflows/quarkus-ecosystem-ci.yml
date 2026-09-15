@@ -1,16 +1,26 @@
 name: "Quarkus ecosystem CI"
+# Builds the Vaadin Quarkus extension against the latest Quarkus main
+# snapshot, so that a breaking change upstream is reported while it can still
+# be discussed rather than after a Quarkus release.
+#
+# quarkusio/quarkus-ecosystem-ci drives this: quarkusbot stars the repository,
+# which fires the `watch` event below, and the checked out `setup-and-test`
+# script then runs .github/quarkus-ecosystem-test here. Two things outside
+# this repository have to line up for it to work:
+#
+#  * quarkusio/quarkus-ecosystem-ci vaadin/context.yaml has to name this
+#    repository, since it used to name vaadin/quarkus
+#  * ECOSYSTEM_CI_TOKEN has to be a secret of this repository
 on:
   watch:
     types: [started]
   workflow_dispatch:
 
-  # For this CI to work, ECOSYSTEM_CI_TOKEN needs to contain a GitHub with rights to close the Quarkus issue that the user/bot has opened,
-  # while 'ECOSYSTEM_CI_REPO_PATH' needs to be set to the corresponding path in the 'quarkusio/quarkus-ecosystem-ci' repository
-
 env:
   ECOSYSTEM_CI_REPO: quarkusio/quarkus-ecosystem-ci
   ECOSYSTEM_CI_REPO_FILE: context.yaml
   JAVA_VERSION: 21
+  NODE_VERSION: '24.21.0'
 
   #########################
   # Repo specific setting #
@@ -28,6 +38,8 @@ jobs:
   quarkus-main:
     name: "Build against latest Quarkus main snapshot"
     runs-on: ubuntu-latest
+    # The `watch` event fires whenever anyone stars this repository, so the
+    # actor check is what keeps this from running hundreds of times a day.
     if: github.actor == 'quarkusbot' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -47,6 +59,14 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: '11.26.0'
 
       - name: Set TB License
         run: |
