@@ -162,18 +162,20 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         String requestURL = getRequestUrl(request);
 
-        PushConfiguration pushConfiguration = context.getUI()
-                .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
-
-        AppShellRegistry registry = AppShellRegistry
-                .getInstance(session.getService().getContext());
-        registry.modifyPushConfiguration(pushConfiguration);
-
         config.put("requestURL", requestURL);
 
         return context;
+    }
+
+    @Override
+    protected void modifyPushConfiguration(BootstrapContext context,
+            PushConfiguration pushConfiguration) {
+        // The @Push annotation of the app shell is not reachable through the
+        // page configuration annotations of the context, so it is applied
+        // separately here
+        AppShellRegistry
+                .getInstance(context.getSession().getService().getContext())
+                .modifyPushConfiguration(pushConfiguration);
     }
 
     @Override
