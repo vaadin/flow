@@ -15,94 +15,61 @@
  */
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UidlExpiredSessionStrategyTest {
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private HttpServletRequest request;
+    private final MockHttpServletRequest request = new MockHttpServletRequest(
+            "GET", "/app/");
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private HttpServletResponse response;
+    private final MockHttpServletResponse response = new MockHttpServletResponse();
 
-    private SessionInformationExpiredEvent event;
+    private final SessionInformation session = new SessionInformation(
+            "principal", "1234", Date.from(Instant.now()));
 
-    @BeforeEach
-    void setup() {
-        var session = new SessionInformation("principal", "1234",
-                Date.from(Instant.now()));
-        event = new SessionInformationExpiredEvent(session, request, response);
-        when(request.getHttpServletMapping().getPattern()).thenReturn("/");
-    }
+    @Mock
+    private FilterChain filterChain;
 
     @Test
-    void internalRequest_writesRefreshTokenForContextRoot() throws IOException {
-        markAsUidlRequest();
-        when(request.getContextPath()).thenReturn("");
+    void filterChainAvailable_requestContinues()
+            throws IOException, ServletException {
+        var event = new SessionInformationExpiredEvent(session, request,
+                response, filterChain);
 
         new UidlExpiredSessionStrategy().onExpiredSessionDetected(event);
 
-        verify(response.getWriter()).write("Vaadin-Refresh: /");
+        verify(filterChain).doFilter(request, response);
+        assertThat(response.getContentAsString()).isEmpty();
+        assertThat(response.getRedirectedUrl()).isNull();
     }
 
     @Test
-    void internalRequestWithContextPath_refreshTokenKeepsContextPath()
-            throws IOException {
-        markAsUidlRequest();
-        when(request.getContextPath()).thenReturn("/app");
+    void noFilterChain_redirectsToApplicationRoot()
+            throws IOException, ServletException {
+        request.setContextPath("/app");
+        var event = new SessionInformationExpiredEvent(session, request,
+                response);
 
         new UidlExpiredSessionStrategy().onExpiredSessionDetected(event);
 
-        verify(response.getWriter()).write("Vaadin-Refresh: /app/");
-    }
-
-    @Test
-    void internalRequestWithCustomUrl_refreshTokenPointsToCustomUrl()
-            throws IOException {
-        markAsUidlRequest();
-        when(request.getContextPath()).thenReturn("");
-
-        new UidlExpiredSessionStrategy("/login")
-                .onExpiredSessionDetected(event);
-
-        verify(response.getWriter()).write("Vaadin-Refresh: /login");
-    }
-
-    @Test
-    void externalRequest_redirectsToContextRelativeUrl() throws IOException {
-        when(request.getContextPath()).thenReturn("/app");
-        when(response.encodeRedirectURL(anyString()))
-                .thenAnswer(i -> i.getArguments()[0]);
-
-        new UidlExpiredSessionStrategy("/login")
-                .onExpiredSessionDetected(event);
-
-        verify(response).sendRedirect("/app/login");
-    }
-
-    private void markAsUidlRequest() {
-        when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
-                .thenReturn(ApplicationConstants.REQUEST_TYPE_UIDL);
+        assertThat(response.getRedirectedUrl()).isEqualTo("/app/");
     }
 }

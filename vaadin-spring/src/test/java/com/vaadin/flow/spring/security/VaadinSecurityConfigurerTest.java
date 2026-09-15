@@ -68,6 +68,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -88,6 +89,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -485,35 +487,54 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void sessionConcurrency_expiredUidlRequest_getsRefreshToken()
+    void sessionConcurrency_expiredUidlRequest_continuesThroughFilterChain()
             throws Exception {
-        var response = expireSessionAndRunFilters(configurer);
+        var request = uidlRequest();
 
-        assertThat(response.getContentAsString())
-                .isEqualTo("Vaadin-Refresh: /");
+        var response = expireSessionAndRunConcurrentSessionFilter(configurer,
+                request);
+
+        verify(chain).doFilter(request, response);
+        assertThat(response.getContentAsString()).isEmpty();
     }
 
     @Test
     void expiredSessionStrategy_customStrategyIsUsed() throws Exception {
-        var response = expireSessionAndRunFilters(
-                configurer.expiredSessionStrategy((event) -> event.getResponse()
-                        .getWriter().write("expired")));
+        var request = uidlRequest();
+
+        var response = expireSessionAndRunConcurrentSessionFilter(
+                configurer.expiredSessionStrategy(event -> event.getResponse()
+                        .getWriter().write("expired")),
+                request);
 
         assertThat(response.getContentAsString()).isEqualTo("expired");
+        verifyNoInteractions(chain);
     }
 
     @Test
-    void sessionManagementConfigurationDisabled_strategyIsNotConfigured()
+    void sessionManagementConfigurationDisabled_springDefaultIsUsed()
             throws Exception {
-        var response = expireSessionAndRunFilters(
-                configurer.enableSessionManagementConfiguration(false));
+        var request = uidlRequest();
+
+        var response = expireSessionAndRunConcurrentSessionFilter(
+                configurer.enableSessionManagementConfiguration(false),
+                request);
 
         assertThat(response.getContentAsString())
-                .doesNotContain("Vaadin-Refresh");
+                .startsWith("This session has been expired");
+        verifyNoInteractions(chain);
     }
 
-    private MockHttpServletResponse expireSessionAndRunFilters(
-            VaadinSecurityConfigurer configurer) throws Exception {
+    private MockHttpServletRequest uidlRequest() {
+        var request = new MockHttpServletRequest("GET", "/");
+        request.setParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_UIDL);
+        return request;
+    }
+
+    private MockHttpServletResponse expireSessionAndRunConcurrentSessionFilter(
+            VaadinSecurityConfigurer configurer, MockHttpServletRequest request)
+            throws Exception {
         var sessionRegistry = new SessionRegistryImpl();
         var filters = http.with(configurer, Customizer.withDefaults())
                 .sessionManagement(sessionManagement -> sessionManagement
@@ -522,17 +543,13 @@ class VaadinSecurityConfigurerTest {
                                         .sessionRegistry(sessionRegistry)))
                 .build().getFilters();
 
-        var request = new MockHttpServletRequest("GET", "/");
-        request.setParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_UIDL);
         var sessionId = request.getSession().getId();
         sessionRegistry.registerNewSession(sessionId, "principal");
         sessionRegistry.getSessionInformation(sessionId).expireNow();
 
         var response = new MockHttpServletResponse();
-        for (var filter : filters) {
-            filter.doFilter(request, response, chain);
-        }
+        filters.stream().filter(ConcurrentSessionFilter.class::isInstance)
+                .findFirst().orElseThrow().doFilter(request, response, chain);
         return response;
     }
 

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletException;
+
 import java.io.IOException;
 
 import org.slf4j.LoggerFactory;
@@ -23,65 +25,39 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
-import com.vaadin.flow.server.HandlerHelper;
-
 /**
- * A strategy to handle expired sessions which is aware of UIDL requests.
+ * A strategy to handle expired sessions which is aware of Vaadin requests.
+ * <p>
+ * When Spring Security concurrency control detects an expired session, it has
+ * already logged the user out and invalidated the HTTP session. Instead of
+ * writing a response the Vaadin client cannot make sense of, this strategy lets
+ * the request continue through the filter chain, so that it is answered like
+ * any other request that arrives without a session: Vaadin answers a UIDL
+ * request with a session expired message, a heartbeat with 403 and a push
+ * request through its own handler, while a request for a view ends in the login
+ * view of the application.
  */
 public class UidlExpiredSessionStrategy
         implements SessionInformationExpiredStrategy {
 
-    private static final String UIDL_REFRESH_TOKEN = "Vaadin-Refresh";
-
-    private final String destinationUrl;
-
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-
-    /**
-     * Creates a strategy that sends the browser to the context root.
-     */
-    public UidlExpiredSessionStrategy() {
-        this("/");
-    }
-
-    /**
-     * Creates a strategy that sends the browser to the given context-relative
-     * URL.
-     *
-     * @param destinationUrl
-     *            the context-relative URL to redirect to
-     */
-    public UidlExpiredSessionStrategy(String destinationUrl) {
-        this.destinationUrl = destinationUrl;
-    }
-
-    /**
-     * Sets the redirect strategy used for non-UIDL requests.
-     *
-     * @param redirectStrategy
-     *            the redirect strategy to use
-     */
-    public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
-        this.redirectStrategy = redirectStrategy;
-    }
+    private static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy();
 
     @Override
     public void onExpiredSessionDetected(SessionInformationExpiredEvent event)
-            throws IOException {
+            throws IOException, ServletException {
         var request = event.getRequest();
         var response = event.getResponse();
-        var servletMapping = request.getHttpServletMapping().getPattern();
-        if (HandlerHelper.isFrameworkInternalRequest(servletMapping, request)) {
-            var refreshUrl = request.getContextPath() + destinationUrl;
+        var filterChain = event.getFilterChain();
+        if (filterChain == null) {
+            // The event may be created without a filter chain, in which case
+            // the request cannot continue and the browser is sent to the
+            // application root instead.
             LoggerFactory.getLogger(UidlExpiredSessionStrategy.class).debug(
-                    "Session expired during an internal request: writing a "
-                            + "{} token pointing to {} into the response body.",
-                    UIDL_REFRESH_TOKEN, refreshUrl);
-            response.getWriter().write(UIDL_REFRESH_TOKEN + ": " + refreshUrl);
-        } else {
-            LoggerFactory.getLogger(UidlExpiredSessionStrategy.class).debug(
-                    "Session expired: redirecting to {}.", destinationUrl);
-            redirectStrategy.sendRedirect(request, response, destinationUrl);
+                    "Session expired, but the event carries no filter chain: "
+                            + "redirecting to the application root.");
+            REDIRECT_STRATEGY.sendRedirect(request, response, "/");
+            return;
         }
+        filterChain.doFilter(request, response);
     }
 }

@@ -484,15 +484,18 @@ public final class VaadinSecurityConfigurer
      * <p>
      * This configurer will automatically configure a
      * {@link UidlExpiredSessionStrategy}, so that a session expired by Spring
-     * Security concurrency control is also detected by the Vaadin client. The
-     * strategy is only used by Spring Security when concurrency control is
-     * active, i.e. when the application sets a maximum number of sessions.
+     * Security concurrency control is handled in a way the Vaadin client
+     * understands. The strategy is only used by Spring Security when
+     * concurrency control is active, i.e. when the application sets a maximum
+     * number of sessions.
      * <p>
      * The strategy is only configured if the application has session management
-     * configured, which Spring Boot does by default.
+     * configured, which {@code @EnableWebSecurity} does by default through
+     * Spring Security's {@code HttpSecurityConfiguration}.
      * <p>
-     * Note that the configured strategy replaces a strategy set directly on
-     * {@link HttpSecurity}. Use
+     * Note that the configured strategy replaces both a strategy and an expired
+     * URL set directly on {@link HttpSecurity}, since Spring Security uses the
+     * expired URL only when no strategy is set. Use
      * {@link #expiredSessionStrategy(SessionInformationExpiredStrategy)} to
      * configure a custom strategy, or disable this configuration.
      *
@@ -624,10 +627,12 @@ public final class VaadinSecurityConfigurer
         if (enableAuthorizedRequestsConfiguration && !alreadyInitializedOnce) {
             http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
         }
-        if (enableSessionManagementConfiguration && http
-                .getConfigurer(SessionManagementConfigurer.class) != null) {
+        if (enableSessionManagementConfiguration && !alreadyInitializedOnce
+                && http.getConfigurer(
+                        SessionManagementConfigurer.class) != null) {
             // Session management is only customized when the application has
-            // it configured, which Spring Boot does by default. Otherwise the
+            // it configured, which @EnableWebSecurity does by default through
+            // Spring Security's HttpSecurityConfiguration. Otherwise the
             // filter chain has no session management at all, and there is no
             // expired session to handle.
             http.sessionManagement(this::customizeSessionManagement);
