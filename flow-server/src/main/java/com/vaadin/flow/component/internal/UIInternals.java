@@ -494,6 +494,7 @@ public class UIInternals implements Serializable {
      *
      * @return the time the pending updates were last purged
      * @see UI#getLastUpdateSentTimestamp()
+     * @since 25.3
      */
     public Instant getLastUpdateSentTimestamp() {
         return lastUpdateSentTimestamp;
@@ -836,6 +837,7 @@ public class UIInternals implements Serializable {
      *
      * @param owner
      *            the node whose invocations to discard, not <code>null</code>
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations(StateNode owner) {
         checkInvocationQueueLock();
@@ -857,6 +859,8 @@ public class UIInternals implements Serializable {
      * Called by {@link StateTree} when resynchronizing, which reinitializes the
      * whole client side, so the queue is emptied in one go rather than node by
      * node.
+     * 
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations() {
         checkInvocationQueueLock();

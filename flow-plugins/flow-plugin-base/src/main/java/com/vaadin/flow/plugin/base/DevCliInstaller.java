@@ -55,8 +55,8 @@ import com.vaadin.flow.internal.FileIOUtils;
  * this module; see there for why.
  * <p>
  * Everything is installed relative to one directory, and the two skill trees
- * are installed as siblings, because the Claude adapter links to the shared
- * instructions by relative path.
+ * are installed as siblings, because the Claude adapter reaches the shared
+ * reference by relative path.
  * <p>
  * All of it is meant to be <em>committed</em> by the developer: it is project
  * tooling, like {@code mvnw}, and the point is that every agent and every
@@ -76,6 +76,19 @@ public final class DevCliInstaller {
      * see {@link #provisionHotswapAgent}.
      */
     private static final String PROVISIONER = "com.vaadin.flow.devloop.daemon.HotswapAgentJar";
+
+    /** The shared, tool-agnostic instructions: the single source of truth. */
+    private static final String SHARED_SKILL = "agents-skill/vaadin-devloop/SKILL.md";
+
+    /** The Claude Code adapter, a template around {@link #SHARED_SKILL}. */
+    private static final String CLAUDE_SKILL = "claude-skill/vaadin-devloop/SKILL.md";
+
+    private static final String DESCRIPTION_PLACEHOLDER = "{{shared-description}}";
+
+    private static final String INSTRUCTIONS_PLACEHOLDER = "{{shared-instructions}}";
+
+    /** Where the adapter reaches the shared reference, once installed. */
+    private static final String SHARED_REFERENCE_LINK = "../../../.agents/skills/vaadin-devloop/reference.md";
 
     /**
      * What is installed where, resource path to project-relative path.
@@ -101,14 +114,12 @@ public final class DevCliInstaller {
         files.put("gitignore", ".vaadin/.gitignore");
         // The canonical, tool-agnostic instructions: the single source of truth
         // for the loop's behaviour, and what a non-Claude agent reads.
-        files.put("agents-skill/vaadin-devloop/SKILL.md",
-                ".agents/skills/vaadin-devloop/SKILL.md");
+        files.put(SHARED_SKILL, ".agents/skills/vaadin-devloop/SKILL.md");
         files.put("agents-skill/vaadin-devloop/reference.md",
                 ".agents/skills/vaadin-devloop/reference.md");
-        // A thin adapter carrying the frontmatter Claude Code requires and the
-        // tool bindings for it; it links to the .agents copy above.
-        files.put("claude-skill/vaadin-devloop/SKILL.md",
-                ".claude/skills/vaadin-devloop/SKILL.md");
+        // The frontmatter Claude Code requires and the tool notes for it,
+        // wrapped around a copy of the shared instructions; see compose().
+        files.put(CLAUDE_SKILL, ".claude/skills/vaadin-devloop/SKILL.md");
         return Map.copyOf(files);
     }
 
@@ -162,7 +173,7 @@ public final class DevCliInstaller {
             String relative = entry.getValue();
             Path target = targetDirectory.resolve(relative);
             if (FileIOUtils.writeIfChanged(target.toFile(),
-                    read(entry.getKey()))) {
+                    content(entry.getKey()))) {
                 written.add(target);
             } else {
                 unchanged.add(target);
@@ -280,6 +291,71 @@ public final class DevCliInstaller {
         } catch (UnsupportedOperationException | IOException e) {
             LOGGER.debug("Could not set the executable bit on {}", target, e);
         }
+    }
+
+    /**
+     * The bytes to install for a payload resource: the resource itself, except
+     * for the Claude adapter, which is composed.
+     */
+    private static String content(String resource) throws IOException {
+        return CLAUDE_SKILL.equals(resource) ? compose() : read(resource);
+    }
+
+    /**
+     * Composes the Claude Code adapter by folding the shared instructions into
+     * its template.
+     * <p>
+     * The adapter used to be three paragraphs telling the agent to go and read
+     * the shared file, and that indirection cost a tool call before the first
+     * command and got the detail behind it read only sometimes. So the cycle,
+     * the command set and the outcome table are inlined here instead, and the
+     * adapter carries only what is specific to Claude Code: the frontmatter
+     * that tool requires and which of its tools to reach for.
+     * <p>
+     * Inlined at install time rather than checked in twice, so the shared file
+     * stays the single source of truth for behaviour <em>and</em> for the
+     * description - the text an agent decides on when picking a skill, and the
+     * last thing that should be allowed to drift between the two copies.
+     */
+    private static String compose() throws IOException {
+        String shared = read(SHARED_SKILL);
+        String template = read(CLAUDE_SKILL);
+        // The shared body links to a reference.md sitting beside it, which the
+        // adapter's own directory does not have.
+        String body = stripFrontmatter(shared).replace("](reference.md)",
+                "](" + SHARED_REFERENCE_LINK + ")");
+        // Stripped: the template already spaces the placeholder off from what
+        // surrounds it, so the body must contribute no blank line of its own.
+        return template.replace(DESCRIPTION_PLACEHOLDER, description(shared))
+                .replace(INSTRUCTIONS_PLACEHOLDER, body.strip());
+    }
+
+    /**
+     * The {@code description:} line of a skill's frontmatter, verbatim.
+     * <p>
+     * One line by construction: a folded YAML value would arrive here as the
+     * first line of several, so the shared file keeps it on one.
+     */
+    private static String description(String skill) throws IOException {
+        return skill.lines().filter(line -> line.startsWith("description: "))
+                .findFirst()
+                .orElseThrow(() -> new IOException("the shared skill "
+                        + SHARED_SKILL + " has no single-line description in "
+                        + "its frontmatter; this is a build error"));
+    }
+
+    private static String stripFrontmatter(String markdown) throws IOException {
+        if (!markdown.startsWith("---\n")) {
+            throw new IOException("the shared skill " + SHARED_SKILL
+                    + " does not open with YAML frontmatter; this is a build "
+                    + "error");
+        }
+        int end = markdown.indexOf("\n---\n", 3);
+        if (end < 0) {
+            throw new IOException("the frontmatter of the shared skill "
+                    + SHARED_SKILL + " is never closed; this is a build error");
+        }
+        return markdown.substring(end + "\n---\n".length());
     }
 
     private static String read(String resource) throws IOException {

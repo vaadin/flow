@@ -357,6 +357,8 @@ public class FrontendUtils {
 
     /**
      * ANSI foreground colors usable with {@link #console(AnsiColor, String)}.
+     * 
+     * @since 25.2.8
      */
     public enum AnsiColor {
         YELLOW("\u001b[38;5;220m"),
@@ -1178,6 +1180,7 @@ public class FrontendUtils {
      *            the ANSI color to wrap the message with
      * @param message
      *            the message to show, printed literally
+     * @since 25.2.8
      */
     @SuppressWarnings("squid:S106")
     public static void console(AnsiColor ansiColor, String message) {

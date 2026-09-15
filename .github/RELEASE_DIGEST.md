@@ -13,7 +13,7 @@ Every run writes the message it built into the job summary, posted or not.
 One entry per branch that has unreleased work, always including `main`:
 
 - the branch and the version it would be released as (`25.2.6` → `25.2.7`,
-  `25.3.0-alpha7` → `25.3.0-alpha8`);
+  `25.4.0-alpha7` → `25.4.0-alpha8`);
 - how many unreleased commits there are, split into feat/fix, dependency bumps,
   and everything else;
 - the commit subjects, feat/fix first, with a link to the full diff;
@@ -26,7 +26,7 @@ Branches with nothing worth releasing collapse into a single closing line.
 **Branch list.** Read from `on.push.branches` in
 [`validation.yml`](workflows/validation.yml), so CI remains the single source of
 truth. `main` is added by the digest and its version line comes from its POM
-version, because pre-releases are tagged `25.3.0-alphaN`, not `main.N`.
+version, because pre-releases are tagged `25.4.0-alphaN`, not `main.N`.
 
 **Commit classification** ([`checkReleases.js`](../scripts/checkReleases.js)) —
 every commit since the branch's latest tag, by conventional-commit type:

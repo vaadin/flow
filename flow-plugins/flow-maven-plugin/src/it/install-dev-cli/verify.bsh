@@ -42,24 +42,64 @@ if (ignore.indexOf("daemon.properties") < 0) {
             ".vaadin/.gitignore should keep the handshake out of the repository");
 }
 
-// --- the Claude adapter's relative link resolves ----------------------------
-File adapter = new File(basedir, ".claude/skills/vaadin-devloop/SKILL.md");
-String adapterContent = read(adapter);
-String link = "../../../.agents/skills/vaadin-devloop/SKILL.md";
-if (adapterContent.indexOf(link) < 0) {
-    throw new RuntimeException(
-            "the Claude adapter should link to the shared instructions");
-}
-if (!new File(adapter.getParentFile(), link).getCanonicalFile().isFile()) {
-    throw new RuntimeException("the adapter's link to " + link
-            + " does not resolve; the two skill trees must install as siblings");
-}
-
 // --- the command examples name the installed location -----------------------
 String skill = read(new File(basedir, ".agents/skills/vaadin-devloop/SKILL.md"));
 if (skill.indexOf(".vaadin/vaadin-dev status") < 0) {
     throw new RuntimeException(
             "the skill should invoke the script where the goal installs it");
+}
+
+// --- the Claude adapter is composed out of the shared instructions ----------
+File adapter = new File(basedir, ".claude/skills/vaadin-devloop/SKILL.md");
+String adapterContent = read(adapter);
+if (adapterContent.indexOf("{{") >= 0) {
+    throw new RuntimeException(
+            "a template placeholder survived composition: " + adapterContent);
+}
+// Inlined, not linked: reaching the cycle used to cost a tool call.
+if (adapterContent.indexOf("## The cycle") < 0
+        || adapterContent.indexOf(".vaadin/vaadin-dev apply") < 0) {
+    throw new RuntimeException(
+            "the adapter should carry the cycle and the command set inline");
+}
+// A skill that restricts the tool set cannot be loaded before the first edit,
+// which is exactly when this one has to be.
+if (adapterContent.indexOf("allowed-tools") >= 0) {
+    throw new RuntimeException("the adapter must not restrict the tool set");
+}
+// The description drives skill selection, so the two copies of it must not
+// drift: the adapter's is the shared one, verbatim.
+int at = skill.indexOf("description: ");
+int newline = skill.indexOf("\n", at);
+if (at < 0 || newline < 0) {
+    throw new RuntimeException(
+            "the shared skill should carry a single-line description");
+}
+String description = skill.substring(at, newline);
+if (description.endsWith("\r")) {
+    description = description.substring(0, description.length() - 1);
+}
+if (adapterContent.indexOf(description) < 0) {
+    throw new RuntimeException(
+            "the adapter should reuse the shared description verbatim");
+}
+
+// --- the Claude adapter's relative link resolves ----------------------------
+// The adapter carries no reference.md of its own, so the detail it points at
+// is the .agents copy - which only resolves because both trees install as
+// siblings under one directory.
+String link = "../../../.agents/skills/vaadin-devloop/reference.md";
+if (adapterContent.indexOf(link) < 0) {
+    throw new RuntimeException(
+            "the Claude adapter should link to the shared reference");
+}
+if (!new File(adapter.getParentFile(), link).getCanonicalFile().isFile()) {
+    throw new RuntimeException("the adapter's link to " + link
+            + " does not resolve; the two skill trees must install as siblings");
+}
+if (adapterContent.indexOf("](reference.md)") >= 0) {
+    throw new RuntimeException(
+            "the adapter links to a reference.md that is not beside it");
 }
 
 // --- run 1 replaced the edited file, run 2 wrote nothing --------------------

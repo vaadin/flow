@@ -227,6 +227,13 @@ final class DevLoopRegistration {
             if (request.equals("FRONTEND")) {
                 return DevLoopRedefiner.frontend(null);
             }
+            // The paths ride in as the argument for the same reason the
+            // frontend folder does above: a reply is parsed on whitespace and
+            // a Windows path can contain a space.
+            if (request.startsWith("FRONTEND_CHECK ")) {
+                return DevLoopRedefiner.frontendCheck(
+                        request.substring("FRONTEND_CHECK ".length()).trim());
+            }
             if (request.equals("PING")) {
                 return "OK pong";
             }

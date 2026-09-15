@@ -72,6 +72,7 @@ public class Platform implements Serializable {
      * @param classLoader
      *            the class loader to look the Vaadin version up from
      * @return the platform version or {@link Optional#empty()} if unavailable.
+     * @since 25.3
      */
     public static Optional<String> getVaadinVersion(ClassLoader classLoader) {
         return readVaadinVersion(classLoader);

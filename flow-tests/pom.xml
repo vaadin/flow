@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -384,11 +384,13 @@
         <module>test-custom-frontend-directory</module>
 
         <module>vaadin-spring-tests</module>
+        <module>vaadin-cdi-tests</module>
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
         <module>test-legacy-frontend</module>
         <module>test-client-queue</module>
+        <module>test-push-startup</module>
         <module>test-devloop</module>
         <module>test-commercial-banner</module>
       </modules>

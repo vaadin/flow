@@ -24,7 +24,13 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;main&gt;</code> element.
+ * <p>
+ * The dominant content of the page. There should typically be only one, and it
+ * should not sit inside article, aside, footer, header or nav.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/main">MDN:
+ *      &lt;main&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

@@ -73,7 +73,8 @@ class PwaHandlerTest {
 
         Mockito.when(response.getWriter())
                 .thenReturn(new PrintWriter(new StringWriter()));
-        Mockito.when(registry.getRuntimeServiceWorkerJs()).thenReturn("");
+        Mockito.when(registry.getRuntimeServiceWorkerJs(Mockito.any()))
+                .thenReturn("");
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/sw-runtime-resources-precache.js");
@@ -92,7 +93,8 @@ class PwaHandlerTest {
 
         Mockito.when(response.getWriter())
                 .thenReturn(new PrintWriter(new StringWriter()));
-        Mockito.when(registry.getRuntimeServiceWorkerJs()).thenReturn("");
+        Mockito.when(registry.getRuntimeServiceWorkerJs(Mockito.any()))
+                .thenReturn("");
         Mockito.when(request.getPathInfo())
                 .thenReturn("/sw-runtime-resources-precache.js");
 

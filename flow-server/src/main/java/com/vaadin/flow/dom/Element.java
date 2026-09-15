@@ -42,11 +42,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeTrigger;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
@@ -69,6 +72,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -1552,6 +1556,16 @@ public class Element extends Node<Element> {
      * remove the theme names, changes to the set will be reflected in the
      * attribute value.
      * <p>
+     * The returned set is a live view of the {@code theme} attribute, so it
+     * also reflects theme names that are added or removed by other means after
+     * this method has been called. Its iterator is the one exception: it
+     * iterates the theme names present when {@link Set#iterator()} was called.
+     * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * added to the set cannot contain spaces. Use
+     * {@link #setAttribute(String, String)} to set a space separated value in
+     * one go.
+     * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
      * {@link Set} in Java.
@@ -1700,6 +1714,49 @@ public class Element extends Node<Element> {
     public Registration whenAttached(
             SerializableFunction<UI, Registration> attachHandler) {
         return new AttachScope(this, attachHandler);
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as reported
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on the first call and the same instance
+     * is returned for subsequent calls on the same element. The value is
+     * {@code Size(0, 0)} until the browser has reported the actual size, which
+     * happens shortly after the element has been attached. Sub-pixel sizes are
+     * rounded to whole pixels.
+     * <p>
+     * The browser observes the element as long as it is present in the DOM, and
+     * the signal is updated on every observed resize. The returned signal is
+     * read-only.
+     * <p>
+     * While the element is detached there is nothing to observe, so the signal
+     * keeps the size that was last reported for it rather than falling back to
+     * {@code Size(0, 0)}. Observation resumes when the element is attached
+     * again, and the value is updated as soon as the browser reports a size for
+     * it.
+     *
+     * @return a read-only signal with the current size of this element, never
+     *         <code>null</code>
+     */
+    public Signal<Size> sizeSignal() {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+        Signal<Size> existing = feature.getSignal(SignalBindingFeature.SIZE);
+        if (existing != null) {
+            return existing;
+        }
+
+        ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
+        Signal<Size> readonly = signal.asReadonly();
+        // Cached on the node so that repeated calls share one signal and one
+        // browser-side observer.
+        feature.setBinding(SignalBindingFeature.SIZE, readonly);
+
+        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
+                SizeTrigger.EventData.size));
+
+        return readonly;
     }
 
     @Override

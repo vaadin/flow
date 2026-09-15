@@ -28,6 +28,7 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -187,11 +188,13 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      * @param value
      *            the value to set
      * @return an operation containing the eventual result
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public SignalOperation<T> put(String key, T value) {
-        return submit(
-                new SignalCommand.PutCommand(Id.random(), id(),
-                        Objects.requireNonNull(key), toJson(value)),
+        return submit(new SignalCommand.PutCommand(Id.random(), id(),
+                Objects.requireNonNull(key), toJson(elementType, value)),
                 success -> {
                     if (success.updates().size() == 1) {
                         return nodeValue(
@@ -219,13 +222,15 @@ public class SharedMapSignal<T extends @Nullable Object> extends
      * @param value
      *            the value to set
      * @return an operation containing the eventual result with the entry signal
+     * @throws InvalidSignalValueTypeException
+     *             if the value is not an instance of the element type of this
+     *             signal
      */
     public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
             String key, T value) {
         Id commandId = Id.random();
-        return submit(
-                new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
-                        Objects.requireNonNull(key), toJson(value)),
+        return submit(new SignalCommand.PutIfAbsentCommand(commandId, id(),
+                null, Objects.requireNonNull(key), toJson(elementType, value)),
                 success -> {
                     boolean created = success.updates().containsKey(commandId);
                     Id childId;

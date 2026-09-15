@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,6 +37,8 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskCopyTemplateFilesTest {
@@ -43,6 +47,13 @@ class TaskCopyTemplateFilesTest {
     @JsModule("./my-lit-element-view.js")
     public static class MyLitElementView implements Template {
     }
+
+    @Tag("npm-package-view")
+    @JsModule(NPM_PACKAGE_TEMPLATE)
+    public static class NpmPackageView implements Template {
+    }
+
+    private static final String NPM_PACKAGE_TEMPLATE = "@vaadin-component-factory/vcf-breadcrumb/dist/src/vcf-breadcrumbs.js";
 
     @TempDir
     File temporaryFolder;
@@ -78,6 +89,151 @@ class TaskCopyTemplateFilesTest {
     void should_copyTemplateFilesFromCustomFrontendDirectory()
             throws Exception {
         executeTaskCopyTemplateFiles("frontend-custom");
+    }
+
+    @Test
+    void bundleReused_npmPackageTemplateInBundle_projectTemplateCopied()
+            throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class)).thenReturn(
+                Set.of(MyLitElementView.class, NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+        new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
+
+        // The bundle matches, so npm install has not been run and
+        // node_modules does not exist. The template of the npm package comes
+        // from the bundle, unpacked into the resource output folder.
+        File bundledTemplate = new File(resourceOutputDirectory,
+                Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE);
+        bundledTemplate.getParentFile().mkdirs();
+        Files.writeString(bundledTemplate.toPath(), "from the bundle");
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory)
+                .withBundleBuild(false);
+
+        new TaskCopyTemplateFiles(finder, options).execute();
+
+        List<String> files = TestUtils
+                .listFilesRecursively(resourceOutputDirectory);
+        assertTrue(
+                files.stream().anyMatch(
+                        file -> file.contains("my-lit-element-view.js")),
+                "Project template source is always available and should be copied");
+        assertEquals("from the bundle",
+                Files.readString(bundledTemplate.toPath()),
+                "Template source from the bundle should have been kept");
+    }
+
+    @Test
+    void templateFromNpmPackage_copiedIntoBundle_foundWhenBundleIsReused()
+            throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class))
+                .thenReturn(Set.of(NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+
+        // The bundle build has run npm install, so the template source of the
+        // add-on is in node_modules
+        File nodeModules = new File(projectDirectory,
+                FrontendUtils.NODE_MODULES);
+        File source = new File(nodeModules, NPM_PACKAGE_TEMPLATE);
+        source.getParentFile().mkdirs();
+        Files.writeString(source.toPath(), "export class Breadcrumbs {}");
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
+        new TaskCopyTemplateFiles(finder, options).execute();
+
+        // The build compresses the folder the template was copied into, which
+        // is the bundle that gets committed to the project
+        ProdBundleUtils.compressBundle(projectDirectory,
+                resourceOutputDirectory);
+
+        // A clean checkout has neither node_modules nor the build output
+        FileUtils.deleteDirectory(nodeModules);
+        FileUtils.deleteDirectory(resourceOutputDirectory);
+
+        assertTrue(
+                ProdBundleUtils.hasBundleFile(projectDirectory, finder,
+                        Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE),
+                "Bundle validation should find the template source in the bundle, "
+                        + "so that reusing the bundle is allowed");
+
+        ProdBundleUtils.unpackBundle(projectDirectory, resourceOutputDirectory);
+        new TaskCopyTemplateFiles(finder, options.withBundleBuild(false))
+                .execute();
+
+        File template = new File(resourceOutputDirectory,
+                Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE);
+        assertEquals("export class Breadcrumbs {}",
+                Files.readString(template.toPath()),
+                "The template source should be available for the template parser");
+    }
+
+    @Test
+    void bundleBuild_templateSourceNotFound_executionFails() throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class))
+                .thenReturn(Set.of(NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+
+        // Left over from an earlier build, while the npm package no longer
+        // has the file, e.g. because a version upgrade moved it
+        File staleTemplate = new File(resourceOutputDirectory,
+                Constants.TEMPLATE_DIRECTORY + NPM_PACKAGE_TEMPLATE);
+        staleTemplate.getParentFile().mkdirs();
+        Files.writeString(staleTemplate.toPath(), "from an earlier build");
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
+        TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
+
+        assertThrows(ExecutionFailedException.class, task::execute,
+                "A stale copy should not stand in for a source that the bundle "
+                        + "build is expected to have");
+    }
+
+    @Test
+    void templateSourceNotFound_executionFailsNamingTheClass()
+            throws Exception {
+        Mockito.when(finder.getSubTypesOf(Template.class))
+                .thenReturn(Set.of(NpmPackageView.class));
+
+        File frontendDirectory = new File(projectDirectory,
+                FrontendUtils.FRONTEND);
+        frontendDirectory.mkdirs();
+
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory);
+        TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class, task::execute);
+        assertTrue(
+                exception.getMessage().contains(NPM_PACKAGE_TEMPLATE)
+                        && exception.getMessage()
+                                .contains(NpmPackageView.class.getName()),
+                "The error should tell which template class uses the missing file, was: "
+                        + exception.getMessage());
     }
 
     private void executeTaskCopyTemplateFiles(String frontedDirectoryName)

@@ -114,6 +114,41 @@ final class AppLog {
                     + "|Failed to resolve import ");
 
     /**
+     * A failure from the dev server's checker, which type-checks in the
+     * background rather than on the way to the browser.
+     * <p>
+     * A separate question from {@link #DEV_SERVER_ERROR}, and the distinction
+     * is load-bearing: a transform error means the module cannot be served, and
+     * fetching it answers that definitively. A type error does not - oxc strips
+     * the types without checking them, so the module is served, runs, and is
+     * still wrong. Fetching it comes back {@code 200}, so the log is the only
+     * place this failure exists and a clean fetch must not be taken to overrule
+     * it.
+     * <p>
+     * Matched on {@code vite-plugin-checker}'s own opener, not on
+     * {@code [TypeScript] Found N error(s)}: that line comes after the report,
+     * so counting it too would make one broken file two errors, and it is
+     * printed for a clean run as {@code Found 0 error(s)}.
+     */
+    private static final Pattern CHECKER_ERROR = Pattern
+            .compile("\\bERROR\\((?:TypeScript|ESLint|Stylelint|vue-tsc)\\)");
+
+    /**
+     * The checker saying the project is clean, which is what makes its verdict
+     * answerable at all.
+     * <p>
+     * It announces both outcomes on every pass, so the pair of patterns is a
+     * state the daemon can track rather than a stream of events whose currency
+     * it has to guess. Without the clean half an error stayed true for the rest
+     * of the run: fixing the file and applying reported the failure that had
+     * just been repaired, because the report was still in the window and
+     * nothing said it had been superseded.
+     */
+    private static final Pattern CHECKER_CLEAN = Pattern
+            .compile("\\[(?:TypeScript|ESLint|Stylelint|vue-tsc)\\]\\s+"
+                    + "(?:No errors|Found 0 error)");
+
+    /**
      * The line that opens a stack trace - the exception's own type and message.
      * A logger prints its message first and the throwable on the line below, so
      * this is where the type is, and the type is what says whether a redefine
@@ -209,7 +244,7 @@ final class AppLog {
      * position above it are what they actually need. The log keeps the rest.
      */
     private static final Pattern REPORT_DECORATION = Pattern
-            .compile("^\\s*\\d+\\s*[|│]" + "|^[\\s|│─┬╭╰"
+            .compile("^\\s*>?\\s*\\d+\\s*[|│]" + "|^[\\s|│─┬╭╰"
                     + "╯├┤┌┐└┘^~'`,.:*-]*$" + "|^at\\s");
 
     /** Errors kept per window; a reply quoting more than this helps nobody. */
@@ -237,6 +272,79 @@ final class AppLog {
      */
     static boolean devServerError(String line) {
         return DEV_SERVER_ERROR.matcher(line).find();
+    }
+
+    /**
+     * Whether one log line is a failure the dev server's checker reported.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the checker reported a failure on it
+     */
+    static boolean checkerError(String line) {
+        return CHECKER_ERROR.matcher(line).find();
+    }
+
+    /**
+     * Whether one log line is a frontend failure of either kind - a module the
+     * dev server could not transform, or one its checker rejected. What both
+     * have in common is that they are attributable to a frontend change, which
+     * is what earns them a carry across {@link Watch#mark()}.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the frontend toolchain reported a failure on it
+     */
+    static boolean frontendError(String line) {
+        return devServerError(line) || checkerError(line);
+    }
+
+    /**
+     * A dev-server report compacted to the parts that diagnose it: the opening
+     * line, the line naming the error, and the source position.
+     * <p>
+     * The same rule {@link Watch} applies to a report it reads line by line out
+     * of the log, for one that arrives whole instead - the connector asks the
+     * dev server directly and gets the entire message back in one piece.
+     * Without it the source excerpt, the caret diagram and the JavaScript stack
+     * all come along, and a verdict line that is mostly box-drawing says less
+     * than the three parts that matter.
+     *
+     * @param lines
+     *            the report, one entry per line
+     * @return the parts worth reporting, joined with {@link #SEGMENT}
+     */
+    static String report(List<String> lines) {
+        List<String> parts = new ArrayList<>();
+        boolean detailTaken = false;
+        boolean locationTaken = false;
+        for (String raw : lines) {
+            String line = message(raw);
+            if (line.isEmpty() || (!parts.isEmpty()
+                    && REPORT_DECORATION.matcher(line).find())) {
+                // Layout and the developer's own source, not the diagnosis.
+                // Read past it: what is wanted may still be below.
+                continue;
+            }
+            if (parts.isEmpty()) {
+                parts.add(line);
+                continue;
+            }
+            java.util.regex.Matcher location = SOURCE_LOCATION.matcher(line);
+            if (location.find()) {
+                if (!locationTaken) {
+                    parts.add(location.group(1) + ":" + location.group(2));
+                    locationTaken = true;
+                }
+            } else if (!detailTaken) {
+                parts.add(line);
+                detailTaken = true;
+            }
+            if (detailTaken && locationTaken) {
+                break;
+            }
+        }
+        return String.join(SEGMENT, parts);
     }
 
     /**
@@ -333,6 +441,22 @@ final class AppLog {
         private int count;
         private String failure;
         private boolean continuing;
+
+        /**
+         * The checker's latest verdict: its report while the project does not
+         * type-check, or {@code null} once it says the project is clean.
+         * <p>
+         * Deliberately outlives {@link #mark()}, unlike everything else here. A
+         * logged error is an event belonging to a window; a type-check result
+         * is the current state of the project, and the checker only
+         * re-announces it when something changes. Clearing it per window would
+         * mean an apply saw the verdict only if the developer happened to save
+         * during it.
+         */
+        private String checkerFailure;
+
+        /** Whether the parts now being appended belong to that verdict. */
+        private boolean checkerBuilding;
         /**
          * Whether the last error was a dev-server one still missing its detail.
          * <p>
@@ -391,6 +515,11 @@ final class AppLog {
          * apply} can only report as an internal failure.
          */
         private void append(String text) {
+            if (checkerBuilding && checkerFailure != null) {
+                // Kept in step with the entry below so the verdict carries the
+                // position too - it outlives the window that entry lives in.
+                checkerFailure = checkerFailure + SEGMENT + text;
+            }
             int last = errors.size() - 1;
             if (last < 0) {
                 return;
@@ -402,16 +531,28 @@ final class AppLog {
         synchronized List<String> drain() {
             List<String> lines = cursor.drain();
             for (String line : lines) {
+                if (CHECKER_CLEAN.matcher(line).find()) {
+                    // Supersedes whatever it last said: the project
+                    // type-checks now.
+                    checkerFailure = null;
+                    checkerBuilding = false;
+                }
                 boolean header = THROWN_HEADER.matcher(line).find();
                 boolean logged = ERROR_LINE.matcher(line).find()
                         || DEV_SERVER_ERROR.matcher(line).find();
                 if (logged) {
+                    if (checkerError(line)) {
+                        checkerFailure = line;
+                        checkerBuilding = true;
+                    } else {
+                        checkerBuilding = false;
+                    }
                     count++;
                     continuing = errors.size() < MAX_ERRORS;
                     if (continuing) {
                         errors.add(line);
                     }
-                    detailScan = continuing && devServerError(line)
+                    detailScan = continuing && frontendError(line)
                             ? DETAIL_SCAN_LINES
                             : 0;
                     detailTaken = false;
@@ -477,6 +618,9 @@ final class AppLog {
             detailScan = 0;
             detailTaken = false;
             locationTaken = false;
+            // The verdict itself stays - see the field. Only the half-built
+            // detail is dropped, exactly as it is for the errors above.
+            checkerBuilding = false;
         }
 
         /**
@@ -512,6 +656,17 @@ final class AppLog {
                 }
             }
             return errors();
+        }
+
+        /**
+         * The checker's verdict as it stands, drained up to now: its report
+         * while the project does not type-check, empty once it is clean.
+         *
+         * @return the report, or empty when the project type-checks
+         */
+        synchronized Optional<String> checkerFailure() {
+            drain();
+            return Optional.ofNullable(checkerFailure);
         }
 
         /** The errors in this window, without waiting for more. */

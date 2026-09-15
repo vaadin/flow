@@ -23,7 +23,13 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;article&gt;</code> element.
+ * <p>
+ * A self-contained composition, such as a post, story or comment, that still
+ * makes sense on its own.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/article">MDN:
+ *      &lt;article&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

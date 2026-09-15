@@ -1,6 +1,6 @@
 ---
 name: vaadin-devloop
-description: Requires Vaadin 25.3 or newer in the target application; on an older version the dev loop does not exist and none of this applies. Applies to any edit of Vaadin application source under src/main/java, src/main/resources or the frontend folder (src/main/frontend) — a view, component, layout, theme, stylesheet or TypeScript module — and makes that edit live in the already-running app, then verifies it in the browser. The edit itself is the trigger, not any particular wording: read this BEFORE touching such a file, and follow it again once the file is saved, because a source edit that has not been applied is not done, however small the edit looks. Also covers starting or restarting the app, checking whether a change is actually live, and any request to look at the app in a browser. Phrases like "make this live", "is the change running", "start the app", "reload", "hot reload", "apply my edits" and "why doesn't the page show my change" are explicit invocations, but none of them are required. A daemon owns the app process, so this replaces running the app through Maven.
+description: Makes a saved edit live in the already-running Vaadin application in seconds and verifies it there, through a daemon that owns the app process — so it replaces `mvn spring-boot:run`, `mvn jetty:run` and IDE run configurations for running the app, and replaces `mvn compile` and `mvn test` as the way to find out whether an edit works: a Maven cycle pays for a fresh JVM and Spring context to answer what `apply` answers without one. Read this BEFORE the first edit to Vaadin application source — a view, component, layout, theme, stylesheet or TypeScript module under src/main/java, src/main/resources or the frontend folder (src/main/frontend) — and follow it again once the file is saved, because a source edit that has not been applied is not done, however small the edit looks. Also covers starting or restarting the app, checking whether a change is actually live, and any request to look at the app in a browser; phrases like "make this live", "is the change running", "start the app", "reload", "hot reload", "apply my edits" and "why doesn't the page show my change" are explicit invocations, but none of them are required — the edit itself is the trigger. Requires Vaadin 25.3 or newer in the target application (`vaadin.version` in its pom.xml); on anything older the dev loop does not exist and none of this applies.
 ---
 
 # Vaadin dev loop
@@ -69,6 +69,13 @@ use.
 configuration): the daemon owns the app, and a second process fights it for the HTTP port. The
 daemon auto-spawns on first use and survives between commands, so every command — from any
 shell, agent or IDE — answers for the same running app.
+
+**And do not reach for Maven to check an edit.** `mvn compile` and `mvn test` boot a fresh JVM
+and a fresh Spring context to answer what `apply` answers against the app already running, and
+they answer a narrower question: that the code compiles, not that the change is live in the
+page. Compile errors come out of `apply` with the same diagnostics, against the same sources.
+Run the project's own test suite once, at the end, over the change as a whole — never as the
+per-edit feedback loop.
 
 ## What is in the loop
 

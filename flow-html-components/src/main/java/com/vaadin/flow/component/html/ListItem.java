@@ -25,7 +25,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;li&gt;</code> element.
+ * <p>
+ * One item in an ordered or unordered list.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li">MDN:
+ *      &lt;li&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

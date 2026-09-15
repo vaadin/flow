@@ -50,6 +50,8 @@ import com.vaadin.flow.server.VaadinService;
  * apply classification. The daemon reports what it did itself instead.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.3
  */
 @Priority(10_000)
 public class DevLoopHotswapper implements VaadinHotswapper {

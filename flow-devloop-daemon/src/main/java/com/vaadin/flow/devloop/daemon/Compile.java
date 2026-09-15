@@ -200,6 +200,17 @@ final class Compile {
     private static final List<String> PUBLIC_RESOURCE_ROOTS = List
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
+    /**
+     * What makes a file a Java source, and what a type's name is its file name
+     * minus.
+     */
+    private static final String JAVA_SUFFIX = ".java";
+
+    /**
+     * What makes a file a class file, and what a binary name is its path minus.
+     */
+    private static final String CLASS_SUFFIX = ".class";
+
     /** A file and the module it belongs to, which is all a walk ever needs. */
     private interface Visitor {
         void accept(Reactor.Module module, Path file, Stamp stamp);
@@ -207,6 +218,21 @@ final class Compile {
 
     /** Fingerprints of Java sources as of the last time they went live. */
     private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The binary names of the class files the running application was launched
+     * with, as of the last seed.
+     * <p>
+     * This is the whole of the answer to "has the application ever had this
+     * class?", and it has to be a snapshot rather than anything computed later.
+     * A timestamp cannot serve: the class file of a bean the application does
+     * run is rewritten by the first apply that hot swaps it, and every apply
+     * after that would then read it as a class the application never had -
+     * measured, the second method-body edit to a @Service restarted for a bean
+     * the context had held all along.
+     */
+    private final Set<String> launchedWith = java.util.concurrent.ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Fingerprints as of the last browser notification, keyed by source path.
@@ -246,11 +272,39 @@ final class Compile {
     private final Map<String, String> compiledAgainst = new java.util.concurrent.ConcurrentHashMap<>();
 
     Compile(Launch.Project project) {
+        this(project, null);
+    }
+
+    /**
+     * Carries what each surviving module was compiled against over from the
+     * baseline it replaces.
+     * <p>
+     * The event that rebuilds this instance - a changed module set - is itself
+     * a classpath change: a reactor sibling is in the loop only while the
+     * application depends on it, so dropping that dependency drops the module
+     * too. Seeding the new baseline from the project as it now stands would
+     * declare that move already compiled, and the apply would restart the
+     * application against a classpath its own sources no longer compile against
+     * - the removed type surfacing as a {@code
+     * ClassNotFoundException} on the next page load rather than as a diagnostic
+     * from the apply that caused it. Only the classpath baseline is carried;
+     * the per-file stamps deliberately start afresh, as they describe a
+     * different build.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     */
+    Compile(Launch.Project project, Compile previous) {
         this.modules = List.copyOf(project.modules());
         this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
-            compiledAgainst.put(module.artifactId(),
-                    Launch.membership(project.compileClasspath(module)));
+            String carried = previous == null ? null
+                    : previous.compiledAgainst.get(module.artifactId());
+            compiledAgainst.put(module.artifactId(), carried != null ? carried
+                    : Launch.membership(project.compileClasspath(module)));
         }
     }
 
@@ -696,7 +750,7 @@ final class Compile {
                 removed.add(artifact);
             }
             String nestedPrefix = fileName.toString().substring(0,
-                    fileName.toString().length() - ".class".length()) + "$";
+                    fileName.toString().length() - CLASS_SUFFIX.length()) + "$";
             for (Path nested : nestedClasses(directory, nestedPrefix)) {
                 if (Files.deleteIfExists(nested)) {
                     removed.add(nested);
@@ -719,7 +773,7 @@ final class Compile {
             return entries.filter(path -> {
                 Path name = path.getFileName();
                 return name != null && name.toString().startsWith(prefix)
-                        && name.toString().endsWith(".class");
+                        && name.toString().endsWith(CLASS_SUFFIX);
             }).toList();
         } catch (IOException e) {
             return List.of();
@@ -759,7 +813,7 @@ final class Compile {
                 continue;
             }
             walk(module, module.sourceDir(),
-                    path -> path.toString().endsWith(".java"),
+                    path -> path.toString().endsWith(JAVA_SUFFIX),
                     (owner, file, stamp) -> forced.add(file));
         }
         forced.sort(Comparator.naturalOrder());
@@ -777,6 +831,37 @@ final class Compile {
         }).map(Reactor.Module::name).toList();
     }
 
+    /**
+     * Which of these classes the running application never had.
+     * <p>
+     * Asked per class rather than per source, which is the only way to get it
+     * right: a second top-level class or a nested one, added to a file the
+     * application has always had, is a class the application has never had. And
+     * answered from the snapshot taken when the application was launched, which
+     * is the only thing that stays true - an apply rewrites the class files it
+     * swaps, so anything read off the classpath afterwards says the
+     * application's own beans are strangers to it.
+     * <p>
+     * A class compiled by an earlier apply is therefore still unknown, and
+     * rightly: the application has had it on the classpath since, but component
+     * scanning ran before it existed and no apply re-runs that. Only the
+     * restart does, and that re-seeds this.
+     *
+     * @param binaryNames
+     *            the classes this apply compiled
+     * @return those of them the application never had, sorted
+     */
+    List<String> classesUnknownToTheApp(List<String> binaryNames) {
+        return binaryNames.stream().filter(name -> !launchedWith.contains(name))
+                .sorted(Comparator.naturalOrder()).toList();
+    }
+
+    private static String binaryNameOf(Reactor.Module module, Path classFile) {
+        String relative = module.classesDir().relativize(classFile).toString();
+        return relative.substring(0, relative.length() - CLASS_SUFFIX.length())
+                .replace(File.separatorChar, '.');
+    }
+
     /** Records that these sources are now live in the running JVM. */
     void markSourcesApplied(List<Path> sources) {
         for (Path source : sources) {
@@ -790,17 +875,33 @@ final class Compile {
      * there.
      */
     void seedFromDisk() {
-        seedFromDisk(Long.MAX_VALUE);
+        seedFromDisk(Long.MAX_VALUE, Long.MAX_VALUE);
     }
 
     /**
+     * @param startedAtMillis
+     *            when the running application was launched, which bounds which
+     *            sources it can have read
      * @param frontendCutoffMillis
      *            how new a frontend file may be and still count as live; see
      *            {@link #seedFrontend(long)}
      */
-    void seedFromDisk(long frontendCutoffMillis) {
+    void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
+        seedClasses();
         applied.clear();
-        forEachSource((module, source, stamp) -> applied.put(source, stamp));
+        forEachSource((module, source, stamp) -> {
+            // Only what the application could have read. A source written
+            // after it was launched is not one it started with, whenever this
+            // baseline happens to be taken - and it can be taken late: the
+            // compile leg is built lazily, and a registration is handled a
+            // moment after the command that waited for it returned. Both are
+            // windows a developer's next keystroke fits into, and a baseline
+            // that walks "whatever is on disk now" claims those edits as the
+            // application's own.
+            if (stamp.modified() <= startedAtMillis) {
+                applied.put(source, stamp);
+            }
+        });
         seedResources();
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and
@@ -810,10 +911,27 @@ final class Compile {
         seedFrontend(frontendCutoffMillis);
     }
 
+    /**
+     * The classpath as the application was launched with it, by binary name.
+     * <p>
+     * One walk per application start, which is where a walk of the output
+     * directories belongs: every other answer about it is a comparison against
+     * this.
+     */
+    private void seedClasses() {
+        launchedWith.clear();
+        for (Reactor.Module module : modules) {
+            walk(module, module.classesDir(),
+                    path -> path.toString().endsWith(CLASS_SUFFIX),
+                    (owner, file, stamp) -> launchedWith
+                            .add(binaryNameOf(owner, file)));
+        }
+    }
+
     private void forEachSource(Visitor action) {
         for (Reactor.Module module : modules) {
             walk(module, module.sourceDir(),
-                    path -> path.toString().endsWith(".java"), action);
+                    path -> path.toString().endsWith(JAVA_SUFFIX), action);
         }
     }
 
@@ -1032,10 +1150,12 @@ final class Compile {
             Iterable<? extends JavaFileObject> units = base
                     .getJavaFileObjectsFromFiles(
                             sources.stream().map(Path::toFile).toList());
-            List<String> options = new ArrayList<>(
-                    List.of("-classpath", project.compileClasspath(module),
-                            "-d", module.classesDir().toString(), "-proc:none",
-                            "-encoding", "UTF-8", "-nowarn"));
+            // -parameters and -g: on in a normal build, off in javac. See
+            // README, "Known limits".
+            List<String> options = new ArrayList<>(List.of("-classpath",
+                    project.compileClasspath(module), "-d",
+                    module.classesDir().toString(), "-proc:none", "-encoding",
+                    "UTF-8", "-nowarn", "-parameters", "-g"));
             // Without it javac emits at the daemon's own level, which the
             // application's JVM may be too old to load - every redefine would
             // then fail with UnsupportedClassVersionError rather than a

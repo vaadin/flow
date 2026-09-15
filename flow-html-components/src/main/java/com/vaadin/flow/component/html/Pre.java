@@ -25,7 +25,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;pre&gt;</code> element.
+ * <p>
+ * Preformatted text. Whitespace and line breaks are shown as written.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/pre">MDN:
+ *      &lt;pre&gt;</a>
  * @author Vaadin Ltd
  * @since 2.1
  */
