@@ -196,7 +196,7 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     @Override
     public File frontendDirectory() {
         return resolveProjectDirectory(config.frontendDirectory(),
-                "vaadin.build.frontedDirectory");
+                "vaadin.build.frontendDirectory");
     }
 
     @Override

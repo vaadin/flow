@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
@@ -145,6 +146,9 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
 
         context.destroy(contextual);
         assertEquals(1, destroyedBeans.size());
+        assertNull(context.get(contextual),
+                "a destroyed bean has to be gone from the context too, not "
+                        + "just destroyed");
     }
 
     @Test

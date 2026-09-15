@@ -48,7 +48,7 @@ class TypeInspectorTest {
         Indexer indexer = new Indexer();
         for (Class<?> type : List.of(Signatures.class, Payload.class,
                 Nested.class, Bound.class, BoundSubclass.class, List.class,
-                Map.class, String.class)) {
+                Map.class, String.class, Object.class)) {
             indexer.indexClass(type);
         }
         index = indexer.complete();
@@ -87,11 +87,13 @@ class TypeInspectorTest {
     }
 
     @Test
-    void collectTypes_unboundedWildcard_namesNothingToRegister() {
-        // An unbounded wildcard has neither bound to follow, and the raw
-        // container of a top-level parameterized type is not collected either
-        // - it is a JDK collection, which a native image needs no hint for.
-        assertEquals(Set.of(), typesOf("unbounded"));
+    void collectTypes_unboundedWildcard_reachesOnlyItsObjectBound() {
+        // Jandex models a bare ? as "? extends Object", so the bound that is
+        // followed is Object - nothing that names an application type.
+        Set<String> types = typesOf("unbounded");
+
+        assertEquals(Set.of(Object.class.getName()), types);
+        assertFalse(types.contains(Payload.class.getName()));
     }
 
     @Test

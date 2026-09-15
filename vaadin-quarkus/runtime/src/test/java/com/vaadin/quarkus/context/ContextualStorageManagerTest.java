@@ -39,27 +39,6 @@ class ContextualStorageManagerTest {
         TestManager() {
             super(false);
         }
-
-        @Override
-        protected ContextualStorage getContextualStorage(String key,
-                boolean createIfNotExist) {
-            return super.getContextualStorage(key, createIfNotExist);
-        }
-
-        @Override
-        protected void relocate(String from, String to) {
-            super.relocate(from, to);
-        }
-
-        @Override
-        protected void destroy(String key) {
-            super.destroy(key);
-        }
-
-        @Override
-        protected Set<String> getKeySet() {
-            return super.getKeySet();
-        }
     }
 
     private TestManager manager;

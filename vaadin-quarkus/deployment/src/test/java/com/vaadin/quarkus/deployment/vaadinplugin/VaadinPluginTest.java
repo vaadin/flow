@@ -387,7 +387,40 @@ class VaadinPluginTest {
     }
 
     @Test
+    void clean_taskSucceeds_removesNothingAndDoesNotFail() throws Exception {
+        VaadinPlugin pluginWithCleanTask = pluginWithCleanTask(projectDir);
+
+        // Nothing was ever generated, so there is nothing to remove; the
+        // point is that the ordinary path completes.
+        assertDoesNotThrow(pluginWithCleanTask::clean);
+    }
+
+    @Test
     void clean_taskFails_logsRatherThanPropagating() throws Exception {
+        Path npmFolder = Files.createDirectory(projectDir.resolve("ui"));
+        VaadinPlugin pluginWithCleanTask = pluginWithCleanTask(npmFolder);
+
+        // The task lists the npm folder when it runs, and listFiles() answers
+        // null for anything that is not a directory, so replacing the folder
+        // with a file after the task was built makes execute() fail.
+        Files.delete(npmFolder);
+        Files.writeString(npmFolder, "");
+
+        // clean() runs as a Quarkus build closeable, which cannot fail the
+        // build and logs what escapes at debug level only, so anything thrown
+        // out of here would go unnoticed.
+        assertDoesNotThrow(pluginWithCleanTask::clean);
+    }
+
+    /**
+     * Creates a plugin that has a clean frontend files task, rooted at the
+     * given npm folder.
+     *
+     * @param npmFolder
+     *            the npm folder the task should clean.
+     * @return the plugin to exercise.
+     */
+    private VaadinPlugin pluginWithCleanTask(Path npmFolder) throws Exception {
         VaadinBuildTimeConfig config = mock(VaadinBuildTimeConfig.class);
         when(config.generatedResourceOutputDirectory())
                 .thenReturn(new File(Constants.VAADIN_SERVLET_RESOURCES));
@@ -395,13 +428,8 @@ class VaadinPluginTest {
         when(config.frontendDirectory())
                 .thenReturn(new File("src/main/frontend"));
         when(config.generatedTsFolder()).thenReturn(Optional.empty());
-        when(config.npmFolder()).thenReturn(Optional.empty());
+        when(config.npmFolder()).thenReturn(Optional.of(npmFolder.toFile()));
 
-        VaadinPlugin pluginWithCleanTask = VaadinPlugin.of(config, model,
-                buildDir.toPath());
-
-        // Nothing was ever generated, so the task has nothing to remove; what
-        // matters is that whatever it does, it does not escape.
-        assertDoesNotThrow(pluginWithCleanTask::clean);
+        return VaadinPlugin.of(config, model, buildDir.toPath());
     }
 }

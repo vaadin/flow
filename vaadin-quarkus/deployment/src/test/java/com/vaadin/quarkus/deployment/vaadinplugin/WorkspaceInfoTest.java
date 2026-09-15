@@ -152,4 +152,33 @@ class WorkspaceInfoTest {
                                 List.of(SourceDir.of(resources, classes))))
                 .build();
     }
+
+    @Test
+    void load_documentWrittenBeforeSourceDirsWereAlwaysWritten_readsIt()
+            throws Exception {
+        // An older build wrote null for a module without main sources. Such a
+        // file can still be sitting in a work directory, and has to load
+        // rather than fail on the missing lists.
+        WorkspaceInfo.save(module(projectDir.resolve("src/main/java"),
+                projectDir.resolve("src/main/resources"),
+                projectDir.resolve("target/classes")), workDir);
+        Path projectInfoFile;
+        try (var files = Files.list(workDir)) {
+            projectInfoFile = files.findFirst().orElseThrow();
+        }
+        Files.writeString(projectInfoFile, """
+                {"groupId":"com.example","artifactId":"legacy","version":"1.0",\
+                "moduleDir":"%s","buildDir":"%s",\
+                "sourceDirs":null,"resourceDirs":null}""".formatted(
+                projectDir.toFile().getAbsolutePath().replace("\\", "\\\\"),
+                projectDir.resolve("target").toFile().getAbsolutePath()
+                        .replace("\\", "\\\\")));
+
+        WorkspaceModule loaded = WorkspaceInfo.load(workDir);
+
+        assertNotNull(loaded);
+        assertEquals("legacy", loaded.getId().getArtifactId());
+        assertTrue(loaded.getMainSources().getSourceDirs().isEmpty());
+        assertTrue(loaded.getMainSources().getResourceDirs().isEmpty());
+    }
 }

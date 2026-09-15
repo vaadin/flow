@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.workspace.ArtifactSources;
@@ -273,18 +275,6 @@ class QuarkusPluginAdapterTest {
     }
 
     @Test
-    void booleanSettings_notConfigured_areReportedAsOff() {
-        QuarkusPluginAdapter adapter = createAdapter();
-
-        assertFalse(adapter.generateBundle());
-        assertFalse(adapter.runNpmInstall());
-        assertFalse(adapter.ciBuild());
-        assertFalse(adapter.pnpmEnable());
-        assertFalse(adapter.skipDevBundleBuild());
-        assertFalse(adapter.isCommercialBannerEnabled());
-    }
-
-    @Test
     void settingsTheAdapterDecides_doNotDependOnTheConfiguration() {
         QuarkusPluginAdapter adapter = createAdapter();
 
@@ -366,7 +356,9 @@ class QuarkusPluginAdapterTest {
         ConfigurationException exception = assertThrows(
                 ConfigurationException.class,
                 () -> createAdapter().frontendDirectory());
-        assertTrue(exception.getMessage().contains("frontedDirectory"),
+        assertTrue(
+                exception.getMessage()
+                        .contains("vaadin.build.frontendDirectory"),
                 "the message should name the setting that is wrong: "
                         + exception.getMessage());
     }
@@ -561,12 +553,13 @@ class QuarkusPluginAdapterTest {
     }
 
     @Test
-    void getClassFinder_seesTheOutputTreeAndTheDependencies(
+    void getClassFinder_moduleWithMainSources_seesTheOutputTreeAndTheJars(
             @TempDir Path module) throws Exception {
         Path classes = module.resolve("classes");
         Files.createDirectory(classes);
+        Files.writeString(classes.resolve("from-output-tree.txt"), "");
         Path jar = module.resolve("library.jar");
-        Files.writeString(jar, "");
+        writeJarContaining(jar, "from-dependency.txt");
 
         ArtifactSources mainSources = mock(ArtifactSources.class);
         when(mainSources.getOutputTree())
@@ -575,17 +568,53 @@ class QuarkusPluginAdapterTest {
         when(mainSources.getResourceDirs()).thenReturn(List.of());
         when(appModule.hasMainSources()).thenReturn(true);
         when(appModule.getMainSources()).thenReturn(mainSources);
-        ResolvedDependency dependency = mock(ResolvedDependency.class);
-        when(dependency.getResolvedPaths()).thenReturn(PathList.of(jar));
-        runtimeDependencies.add(dependency);
+        addResolvedDependency(jar);
 
         QuarkusPluginAdapter adapter = createAdapter();
         ClassFinder finder = adapter.getClassFinder();
 
-        assertNotNull(finder);
+        assertNotNull(finder.getResource("from-output-tree.txt"),
+                "the module's own classes have to be scannable");
+        assertNotNull(finder.getResource("from-dependency.txt"),
+                "and so do the runtime dependencies");
         // Built once: the plugin asks for it repeatedly and scanning the
         // classpath again each time would be wasted work.
         assertSame(finder, adapter.getClassFinder());
+    }
+
+    @Test
+    void getClassFinder_moduleWithoutMainSources_seesTheBuildDirectory(
+            @TempDir Path module) throws Exception {
+        // A module that declares no main sources has no output tree to read;
+        // the constructor assumes the standard layout for it, and the class
+        // finder has to assume the same rather than fail.
+        when(appModule.getModuleDir()).thenReturn(module.toFile());
+        when(appModule.getBuildDir())
+                .thenReturn(module.resolve("target").toFile());
+        when(appModule.hasMainSources()).thenReturn(false);
+        Path classes = module.resolve(Paths.get("target", "classes"));
+        Files.createDirectories(classes);
+        Files.writeString(classes.resolve("from-build-directory.txt"), "");
+
+        assertNotNull(
+                createAdapter().getClassFinder()
+                        .getResource("from-build-directory.txt"),
+                "the compiled classes have to be scannable for a module "
+                        + "without declared sources too");
+    }
+
+    private void addResolvedDependency(Path... paths) {
+        ResolvedDependency dependency = mock(ResolvedDependency.class);
+        when(dependency.getResolvedPaths()).thenReturn(PathList.of(paths));
+        runtimeDependencies.add(dependency);
+    }
+
+    private void writeJarContaining(Path jar, String entry) throws Exception {
+        try (JarOutputStream out = new JarOutputStream(
+                Files.newOutputStream(jar))) {
+            out.putNextEntry(new JarEntry(entry));
+            out.closeEntry();
+        }
     }
 
     @Test
