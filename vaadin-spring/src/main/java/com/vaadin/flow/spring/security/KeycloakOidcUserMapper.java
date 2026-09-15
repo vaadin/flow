@@ -109,7 +109,7 @@ public class KeycloakOidcUserMapper
      * Creates a mapper that prefixes roles with {@code ROLE_}.
      */
     public KeycloakOidcUserMapper() {
-        this((String) null);
+        this(() -> null, KeycloakOidcUserMapper::createDecoder);
     }
 
     /**
@@ -125,13 +125,15 @@ public class KeycloakOidcUserMapper
 
     /**
      * Creates a mapper that looks up the role prefix when it maps a user, for a
-     * caller that only knows the prefix after the security filter chain has
-     * been configured.
+     * caller that only knows the prefix once the security filter chain has been
+     * configured.
+     *
+     * @param rolePrefix
+     *            supplies the prefix to add to a Keycloak role name, may supply
+     *            {@code null} to use {@code ROLE_}
      */
-    static KeycloakOidcUserMapper withRolePrefixSupplier(
-            Supplier<String> rolePrefix) {
-        return new KeycloakOidcUserMapper(rolePrefix,
-                KeycloakOidcUserMapper::createDecoder);
+    KeycloakOidcUserMapper(Supplier<String> rolePrefix) {
+        this(rolePrefix, KeycloakOidcUserMapper::createDecoder);
     }
 
     KeycloakOidcUserMapper(Supplier<String> rolePrefix,
@@ -182,10 +184,17 @@ public class KeycloakOidcUserMapper
      */
     private Optional<Jwt> decodeAccessToken(ClientRegistration registration,
             String tokenValue) {
+        var decoder = decoders.computeIfAbsent(registration.getRegistrationId(),
+                id -> decoderFactory.createDecoder(registration));
+        if (decoder == null) {
+            LOGGER.debug(
+                    "Client registration '{}' has no JWK set URI, so its access "
+                            + "token cannot be decoded and no Keycloak roles "
+                            + "are mapped for it",
+                    registration.getRegistrationId());
+            return Optional.empty();
+        }
         try {
-            var decoder = decoders.computeIfAbsent(
-                    registration.getRegistrationId(),
-                    id -> decoderFactory.createDecoder(registration));
             return Optional.of(decoder.decode(tokenValue));
         } catch (JwtException e) {
             LOGGER.debug(
@@ -223,12 +232,22 @@ public class KeycloakOidcUserMapper
                 : Collections.emptyMap();
     }
 
+    /**
+     * Creates a decoder for the access tokens of the given client registration,
+     * or {@code null} when the registration has no JWK set URI to verify them
+     * against.
+     */
     private static JwtDecoder createDecoder(ClientRegistration registration) {
         var providerDetails = registration.getProviderDetails();
-        var decoder = NimbusJwtDecoder
-                .withJwkSetUri(providerDetails.getJwkSetUri()).build();
-        decoder.setJwtValidator(JwtValidators
-                .createDefaultWithIssuer(providerDetails.getIssuerUri()));
+        var jwkSetUri = providerDetails.getJwkSetUri();
+        if (!StringUtils.hasText(jwkSetUri)) {
+            return null;
+        }
+        var issuerUri = providerDetails.getIssuerUri();
+        var decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        decoder.setJwtValidator(StringUtils.hasText(issuerUri)
+                ? JwtValidators.createDefaultWithIssuer(issuerUri)
+                : JwtValidators.createDefault());
         return decoder;
     }
 }

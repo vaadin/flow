@@ -175,6 +175,18 @@ class KeycloakOidcUserMapperTest {
     }
 
     @Test
+    void convert_registrationWithoutJwkSetUri_mappedWithoutRoles() {
+        // A registration configured with explicit endpoints has no JWK set URI
+        // and no issuer URI, which the default decoder must not choke on
+        mapper = new KeycloakOidcUserMapper();
+
+        var authorities = authorities();
+
+        assertThat(authorities).noneMatch(a -> a.startsWith("ROLE_"));
+        assertThat(authorities).contains("SCOPE_openid");
+    }
+
+    @Test
     void convert_decoderCreatedOncePerClientRegistration() {
         mapper.convert(userSource);
         mapper.convert(userSource);

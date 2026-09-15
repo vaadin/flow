@@ -208,22 +208,6 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void keycloakRoleMapping_sharedOidcUserService_isReused() throws Exception {
-        var sharedService = new OidcUserService();
-        http.setSharedObject(OidcUserService.class, sharedService);
-
-        http.with(configurer,
-                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
-                        .keycloakRoleMapping())
-                .build();
-
-        assertThat(http.getSharedObject(OidcUserService.class))
-                .isSameAs(sharedService);
-        assertThat(getOidcUserConverter(sharedService))
-                .isInstanceOf(KeycloakOidcUserMapper.class);
-    }
-
-    @Test
     void keycloakRoleMapping_rolePrefixOfChain_isUsedForRoles()
             throws Exception {
         var rolePrefixHolder = new VaadinRolePrefixHolder(null);

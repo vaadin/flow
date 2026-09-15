@@ -332,11 +332,10 @@ public final class VaadinSecurityConfigurer
      * what exactly is mapped.
      * <p>
      * Works only together with {@link #oauth2LoginPage(String)} and its
-     * overloads, and replaces the {@code OidcUserService} that this security
-     * filter chain uses to load the authenticated user. An application that
-     * needs to customize that service can share its own instance with
-     * {@code HttpSecurity.setSharedObject(OidcUserService.class, service)},
-     * which is then used instead of a new one.
+     * overloads, and sets the {@code OidcUserService} that this security filter
+     * chain uses to load the authenticated user. An application that has its
+     * own {@code OidcUserService} should leave this off and install the mapper
+     * on that service instead, as {@link KeycloakOidcUserMapper} shows.
      *
      * @return the current configurer instance for method chaining
      * @see KeycloakOidcUserMapper
@@ -590,10 +589,9 @@ public final class VaadinSecurityConfigurer
                     // this, so the prefix is resolved when a user is mapped
                     var rolePrefixHolder = getVaadinRolePrefixHolder();
                     KeycloakRoleMapping.apply(configurer, getBuilder(),
-                            () -> rolePrefixHolder != null
-                                    && rolePrefixHolder.isSet()
-                                            ? rolePrefixHolder.getRolePrefix()
-                                            : null);
+                            rolePrefixHolder != null
+                                    ? rolePrefixHolder::getRolePrefix
+                                    : () -> null);
                 }
             });
         } else if (keycloakRoleMapping) {

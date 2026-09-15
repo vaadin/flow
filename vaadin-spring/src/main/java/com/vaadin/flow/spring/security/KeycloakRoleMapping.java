@@ -22,17 +22,20 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.cli
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 
 /**
- * Installs {@link KeycloakOidcUserMapper} into the {@link OidcUserService} of a
- * security filter chain.
+ * Makes an OAuth2 login use an {@link OidcUserService} that maps Keycloak roles
+ * with {@link KeycloakOidcUserMapper}.
  * <p>
  * This lives apart from {@link VaadinSecurityConfigurer} on purpose. The
  * {@code spring-security-oauth2-client} dependency that {@link OidcUserService}
- * comes from is optional, and a class is verified as a whole when it is loaded,
- * so a reference to a type of that dependency in
- * {@code VaadinSecurityConfigurer} would break every application that
- * configures Vaadin security without it. Keeping the reference here means the
- * class is only loaded by an application that asks for Keycloak role mapping,
- * which needs the dependency anyway.
+ * comes from is optional, and passing an {@code OidcUserService} to a parameter
+ * of type {@code OAuth2UserService} makes the verifier load the latter to check
+ * assignability. Doing that from {@code VaadinSecurityConfigurer} would break
+ * every application that configures Vaadin security without the dependency,
+ * because a class is verified as a whole when it is loaded. Keeping it here
+ * means the class is only loaded by an application that asks for Keycloak role
+ * mapping, which has the dependency anyway.
+ *
+ * @see VaadinSecurityConfigurer#keycloakRoleMapping()
  */
 final class KeycloakRoleMapping {
 
@@ -41,29 +44,24 @@ final class KeycloakRoleMapping {
     }
 
     /**
-     * Makes the given OAuth2 login use an {@link OidcUserService} that maps
-     * Keycloak roles.
+     * Sets an {@link OidcUserService} that maps Keycloak roles on the given
+     * OAuth2 login, and shares it so that it can be inspected or replaced.
      *
      * @param loginConfigurer
      *            the OAuth2 login configurer to customize
      * @param http
-     *            the security builder to take a shared {@link OidcUserService}
-     *            from, and to share the configured one with
+     *            the security builder to share the service with
      * @param rolePrefix
      *            supplies the role prefix to use, resolved when a user is
      *            mapped
      */
     static void apply(OAuth2LoginConfigurer<HttpSecurity> loginConfigurer,
             HttpSecurity http, Supplier<String> rolePrefix) {
-        var oidcUserService = http.getSharedObject(OidcUserService.class);
-        if (oidcUserService == null) {
-            oidcUserService = new OidcUserService();
-        }
-        oidcUserService.setOidcUserConverter(
-                KeycloakOidcUserMapper.withRolePrefixSupplier(rolePrefix));
+        var oidcUserService = new OidcUserService();
+        oidcUserService
+                .setOidcUserConverter(new KeycloakOidcUserMapper(rolePrefix));
         http.setSharedObject(OidcUserService.class, oidcUserService);
-        var userService = oidcUserService;
         loginConfigurer.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                .oidcUserService(userService));
+                .oidcUserService(oidcUserService));
     }
 }
