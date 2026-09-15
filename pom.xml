@@ -134,7 +134,7 @@
     <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-    <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
+    <maven.exec.plugin.version>3.6.4</maven.exec.plugin.version>
     <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
          repository metadata when modules install in parallel (-T). -->
     <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
