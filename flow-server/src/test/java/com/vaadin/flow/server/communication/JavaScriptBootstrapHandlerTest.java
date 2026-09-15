@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -60,6 +61,10 @@ class JavaScriptBootstrapHandlerTest {
 
     @Push
     static public class PushAppShell implements AppShellConfigurator {
+    }
+
+    @Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
+    static public class AutomaticPushAppShell implements AppShellConfigurator {
     }
 
     @BeforeEach
@@ -225,6 +230,35 @@ class JavaScriptBootstrapHandlerTest {
         // Using regex, because version depends on the build
         assertTrue(json.get("pushScript").asString().matches(
                 "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
+    void uiInitListener_shouldOverridePushConfigFromAppShellAnnotation()
+            throws Exception {
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(AutomaticPushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        mocks.getService().addUIInitListener(event -> {
+            PushConfiguration push = event.getUI().getPushConfiguration();
+            // The app shell annotation must already have been applied when
+            // the listener runs, so that it can be inspected and overridden
+            assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+            assertEquals(Transport.WEBSOCKET_XHR, push.getTransport());
+
+            push.setPushMode(PushMode.MANUAL);
+            push.setTransport(Transport.LONG_POLLING);
+        });
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
+        jsInitHandler.handleRequest(session, request, response);
+
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.MANUAL, push.getPushMode());
+        assertEquals(Transport.LONG_POLLING, push.getTransport());
     }
 
     @Test

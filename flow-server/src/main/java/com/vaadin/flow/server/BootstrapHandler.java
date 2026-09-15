@@ -1374,6 +1374,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
+        // Let the handler contribute its own push defaults while they can
+        // still be overridden by a UIInitListener
+        modifyPushConfiguration(context, pushConfiguration);
+
         // Parse browser details from request parameters and store in UI
         extractAndStoreBrowserDetails(request, ui);
 
@@ -1449,6 +1453,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Function<VaadinRequest, String> contextPathCallback) {
         return new BootstrapContext(request, response,
                 ui.getInternals().getSession(), ui, contextPathCallback);
+    }
+
+    /**
+     * Applies handler specific push defaults on top of the configuration
+     * resolved from the deployment configuration and the {@link Push} page
+     * configuration annotation.
+     * <p>
+     * Called while the UI is being created, before it is initialized and the
+     * {@link com.vaadin.flow.server.UIInitEvent UIInitEvent} is fired, so that
+     * programmatic configuration done in a
+     * {@link com.vaadin.flow.server.UIInitListener UIInitListener} takes
+     * precedence over the declarative one.
+     * <p>
+     * Does nothing by default.
+     *
+     * @param context
+     *            the bootstrap context of the UI being created
+     * @param pushConfiguration
+     *            the push configuration of the UI being created
+     */
+    protected void modifyPushConfiguration(BootstrapContext context,
+            PushConfiguration pushConfiguration) {
+        // NO-OP by default
     }
 
     protected void setupPushConnectionFactory(
