@@ -62,7 +62,12 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
 
     private static final long ELEMENT_TIMEOUT_SECONDS = 15;
 
-    private static final long OFFLINE_RECOVERY_TIMEOUT_SECONDS = 90;
+    /**
+     * How many times to load the page again while the Flow client is showing
+     * its offline stub. Together with {@link #ELEMENT_TIMEOUT_SECONDS} this is
+     * the budget for the application to start answering.
+     */
+    private static final int OFFLINE_RECOVERY_RELOADS = 5;
 
     @ArquillianResource
     protected URL deploymentUrl;
@@ -147,17 +152,17 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
      * reloading, since the stub means the view never rendered.
      */
     private WebElement awaitElement(By by) {
-        long deadline = System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(OFFLINE_RECOVERY_TIMEOUT_SECONDS);
-        while (true) {
+        long start = System.currentTimeMillis();
+        for (int reloads = 0;; reloads++) {
             try {
-                waitUntil(ExpectedConditions.presenceOfElementLocated(by),
+                return waitUntil(
+                        ExpectedConditions.presenceOfElementLocated(by),
                         ELEMENT_TIMEOUT_SECONDS);
-                return findElement(by);
             } catch (TimeoutException timeout) {
                 boolean offlineStub = !findElements(OFFLINE_STUB).isEmpty();
-                if (!offlineStub || System.currentTimeMillis() >= deadline) {
-                    throw new AssertionError(describeMissing(by, offlineStub),
+                if (!offlineStub || reloads == OFFLINE_RECOVERY_RELOADS) {
+                    throw new AssertionError(describeMissing(by, offlineStub,
+                            System.currentTimeMillis() - start, reloads),
                             timeout);
                 }
                 getDriver().navigate().refresh();
@@ -171,10 +176,16 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
      * browser console along. Neither is visible in the test output otherwise,
      * which leaves a bare "no such element" as the only evidence.
      */
-    private String describeMissing(By by, boolean offlineStub) {
+    private String describeMissing(By by, boolean offlineStub,
+            long elapsedMillis, int reloads) {
         StringBuilder message = new StringBuilder(
-                String.format("%s did not appear within %d seconds.", by,
-                        ELEMENT_TIMEOUT_SECONDS));
+                String.format("%s did not appear within %d seconds", by,
+                        TimeUnit.MILLISECONDS.toSeconds(elapsedMillis)));
+        if (reloads > 0) {
+            message.append(String
+                    .format(", over %d further load(s) of the page", reloads));
+        }
+        message.append('.');
         if (offlineStub) {
             message.append(" The Flow client is showing its offline stub,"
                     + " so the UI initialization request did not return the"
