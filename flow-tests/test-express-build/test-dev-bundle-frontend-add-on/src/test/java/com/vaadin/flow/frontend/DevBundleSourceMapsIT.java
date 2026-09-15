@@ -85,17 +85,19 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
     @Test
     public void usageStatisticsCommentIsRewrittenInTheBundle()
             throws IOException {
-        File chunk = getBundleChunkOf("vaadin-dev-mode:start");
-        String contents = read(chunk);
-
+        boolean rewritten = false;
+        for (File chunk : getBundleFiles(".js")) {
+            String contents = read(chunk);
+            Assert.assertFalse(
+                    chunk.getName() + " should no longer have the original "
+                            + "usage statistics comment",
+                    contents.contains("/** vaadin-dev-mode:start"));
+            rewritten |= contents.contains("/*! vaadin-dev-mode:start");
+        }
         Assert.assertTrue(
-                chunk.getName() + " should have the usage statistics comment "
-                        + "rewritten so that a minifier keeps it",
-                contents.contains("/*! vaadin-dev-mode:start"));
-        Assert.assertFalse(
-                chunk.getName() + " should no longer have the original "
-                        + "usage statistics comment",
-                contents.contains("/** vaadin-dev-mode:start"));
+                "A chunk of the dev bundle should have the usage statistics "
+                        + "comment rewritten so that a minifier keeps it",
+                rewritten);
     }
 
     private void assertHasSource(List<String> sources, String source) {
@@ -103,20 +105,6 @@ public class DevBundleSourceMapsIT extends ChromeBrowserTest {
                 "A sourcemap of the dev bundle should refer to " + source
                         + ", only found " + sources,
                 sources.stream().anyMatch(name -> name.endsWith(source)));
-    }
-
-    /**
-     * Returns the chunk of the dev bundle that contains the given marker.
-     */
-    private File getBundleChunkOf(String marker) throws IOException {
-        List<File> chunks = getBundleFiles(".js");
-        for (File chunk : chunks) {
-            if (read(chunk).contains(marker)) {
-                return chunk;
-            }
-        }
-        throw new AssertionError("No chunk of the dev bundle contains '"
-                + marker + "', looked at " + chunks);
     }
 
     /**
