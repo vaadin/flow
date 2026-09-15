@@ -29,6 +29,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.JsImports;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
@@ -46,6 +47,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <li>{@link Component} (encoded as a reference to the root element)
  * <li>{@link JsFunction} (encoded as a JS function literal that closes over its
  * captured parameters on the client)
+ * <li>{@link JsImports} (encoded as a reference to the values a class imports
+ * from JS modules)
  * </ul>
  *
  * <p>
@@ -81,6 +84,8 @@ public class JacksonCodec {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (value instanceof JsFunction) {
             return encodeJsFunction((JsFunction) value);
+        } else if (value instanceof JsImports) {
+            return encodeJsImports((JsImports) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             // Native JSON types - no wrapping needed
             return encodeWithoutTypeInfo(value);
@@ -119,6 +124,15 @@ public class JacksonCodec {
         }
         payload.set("args", args);
         obj.set("@v-fn", payload);
+        return obj;
+    }
+
+    private static JsonNode encodeJsImports(JsImports value) {
+        ObjectNode obj = JacksonUtils.getMapper().createObjectNode();
+        // The chunk id rather than the class name, both to avoid revealing Java
+        // class names to the browser and because it is the key the generated
+        // chunk registers the imported values under
+        obj.put("@v-imports", value.getChunkId());
         return obj;
     }
 

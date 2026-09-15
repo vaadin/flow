@@ -50,12 +50,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * <p>
  * External JavaScript dependencies (e.g. "http://example.com/some.js") are
  * added in the same way as {@link Page#addJavaScript(String)} and the result is
- * just adding a classic {@code javscript} element to the page. Other paths used
- * in the {@link JavaScript#value()} method are considered as relative to
- * {@code frontend} directory and they are added to the page as a JavaScript
- * module (a {@code javscript} element with {@code type="module"}). In this case
- * a {@link JavaScript} annotation behaves exactly as a {@link JsModule}
- * annotation.
+ * just adding a classic {@code script} element to the page. Other paths used in
+ * the {@link JavaScript#value()} method are considered as relative to
+ * {@code frontend} directory and they are bundled and added to the page as a
+ * JavaScript module (a {@code script} element with {@code type="module"}). In
+ * this case a {@link JavaScript} annotation behaves exactly as a
+ * {@link JsModule} annotation.
+ * <p>
+ * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
+ * file is then always loaded at runtime as a {@code script} element with
+ * {@code type="module"}, even when the value is a bare relative path, which is
+ * resolved against the servlet context root. Use it for hand-authored or
+ * CDN-hosted ES modules that should not go through Vite; for build-time bundled
+ * ES modules use {@link JsModule} instead.
  * <p>
  * It's not possible to execute a function defined in JavaScript module via
  *
@@ -75,6 +82,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 1.0
  * @see Page#addJavaScript(String)
+ * @see Page#addJavaScript(String, LoadMode, Type)
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -83,6 +91,32 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @Documented
 @Repeatable(JavaScript.Container.class)
 public @interface JavaScript {
+
+    /**
+     * The kind of {@code <script>} tag to render for the dependency.
+     */
+    enum Type {
+        /**
+         * Render a classic {@code <script>} tag. Functions declared in the
+         * loaded file become available in the global scope.
+         */
+        SCRIPT,
+        /**
+         * Render a {@code <script type="module">} tag. The loaded file is
+         * treated as an ES module: functions and variables declared in it are
+         * private to the module unless explicitly exported. The file is loaded
+         * at runtime and is not bundled, even when the URL is a bare relative
+         * path. Use this for hand-authored or CDN-hosted modules that should
+         * not go through Vite. For build-time bundled ES modules use
+         * {@link JsModule} instead.
+         * <p>
+         * {@link LoadMode#EAGER} and {@link LoadMode#LAZY} are supported;
+         * {@link LoadMode#INLINE} is not, as the browser cannot be given the
+         * contents of a module without also losing the module's identity. Use
+         * {@link #SCRIPT} if the contents must be inlined into the page.
+         */
+        MODULE
+    }
 
     /**
      * JavaScript file URL to load before using the annotated {@link Component}
@@ -99,10 +133,27 @@ public @interface JavaScript {
      * frontend directory. Such URLs are not bundled but included into the page
      * as standalone scripts in the same way as it's done by
      * {@link Page#addJavaScript(String)}.
+     * <p>
+     * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
+     * runtime regardless of whether it has a URL prefix; bare relative paths
+     * are normalized to {@code context://<value>} and served as static
+     * resources by the servlet container.
      *
      * @return a JavaScript file URL
      */
     String value();
+
+    /**
+     * The kind of {@code <script>} tag to use when loading the file. Defaults
+     * to {@link Type#SCRIPT} (a classic {@code <script>} element). Set to
+     * {@link Type#MODULE} to render a {@code <script type="module">} element
+     * instead, e.g. for hand-authored or CDN-hosted ES modules that should not
+     * go through Vite. For build-time bundled ES modules use {@link JsModule}
+     * instead.
+     *
+     * @return the kind of script tag to render
+     */
+    Type type() default Type.SCRIPT;
 
     /**
      * Defines if the JavaScript should be loaded only when running in
@@ -120,6 +171,10 @@ public @interface JavaScript {
     /**
      * Determines the dependency load mode. Refer to {@link LoadMode} for the
      * details.
+     * <p>
+     * {@link LoadMode#INLINE} cannot be combined with {@link Type#MODULE}; such
+     * a combination is rejected with an {@link IllegalArgumentException} when
+     * the dependency is added to the page.
      *
      * @return load mode for the dependency
      */

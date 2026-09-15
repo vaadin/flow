@@ -142,6 +142,18 @@ public class ClientJsonCodec {
                         json.toJson());
             }
 
+            // Check for @v-imports format
+            JsonValue importsValue = jsonObject.get("@v-imports");
+            if (importsValue != null) {
+                if (importsValue.getType() != JsonType.STRING) {
+                    throw new IllegalArgumentException(
+                            "@v-imports value must be a string, got "
+                                    + importsValue.getType() + " in "
+                                    + json.toJson());
+                }
+                return getJsImports(importsValue.asString(), json.toJson());
+            }
+
             // Check for unknown @v- types
             for (String key : jsonObject.keys()) {
                 if (key.startsWith("@v-")) {
@@ -165,6 +177,34 @@ public class ClientJsonCodec {
           var args = Array.prototype.slice.call(arguments);
           serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
         });
+    }-*/;
+
+    /**
+     * Looks up the values a class imports from JS modules, published by the
+     * chunk generated for that class.
+     * <p>
+     * The server requests that chunk as a dynamic import dependency before
+     * sending an expression that uses the imports, and the client loads all
+     * dependencies of a response before running its JavaScript invocations, so
+     * a missing entry means the chunk was never generated for the key.
+     */
+    private static Object getJsImports(String chunkId, String originalJson) {
+        Object imports = lookupJsImports(chunkId);
+        if (imports == null) {
+            throw new IllegalArgumentException(
+                    "No JS module imports are registered for '" + chunkId
+                            + "' in " + originalJson
+                            + ". The chunk publishing them was not part of the bundle.");
+        }
+        return imports;
+    }
+
+    private static native Object lookupJsImports(String chunkId)
+    /*-{
+        var flow = $wnd.Vaadin && $wnd.Vaadin.Flow;
+        var registry = flow && flow.imports;
+        var value = registry ? registry[chunkId] : null;
+        return value === undefined ? null : value;
     }-*/;
 
     private static Object decodeJsFunction(StateTree tree, JsonObject fnObject,

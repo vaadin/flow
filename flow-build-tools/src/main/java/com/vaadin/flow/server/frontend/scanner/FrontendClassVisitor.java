@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -55,6 +57,8 @@ final class FrontendClassVisitor extends ClassVisitor {
     static final String ID = "id";
     static final String INCLUDE = "include";
     static final String THEME_FOR = "themeFor";
+    static final String IMPORTS = "imports";
+    static final String IMPORT_ALL = "importAll";
 
     private final MethodVisitor methodVisitor;
     private final AnnotationVisitor annotationVisitor;
@@ -64,17 +68,48 @@ final class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor jScriptVisitor;
     private ClassInfo classInfo;
 
+    /**
+     * Visitor for the {@code @JsModule} and {@code @JavaScript} annotations.
+     * <p>
+     * The two annotations share most of their attributes but not all of them:
+     * {@code type} only exists on {@code @JavaScript} while {@code imports} and
+     * {@code importAll} only exist on {@code @JsModule}. Rather than relying on
+     * the attribute names never colliding, each instance is told which
+     * annotation it reads and ignores attributes that the other one owns.
+     */
     private static final class JSAnnotationVisitor
             extends RepeatedAnnotationVisitor {
 
         boolean currentDevOnly = false;
         private String currentModule;
+        private boolean currentTypeIsModule = false;
+        private final List<String> currentImports = new ArrayList<>();
+        private boolean currentImportAll = false;
 
+        private final ClassInfo classInfo;
+        private final boolean jsModule;
         private LinkedHashSet<String> target;
         private LinkedHashSet<String> targetDevelopmentOnly;
 
-        public JSAnnotationVisitor(LinkedHashSet<String> target,
+        /**
+         * Collects the string elements of the {@code imports} array attribute.
+         * A dedicated visitor is needed because array elements are reported
+         * with a {@code null} attribute name.
+         */
+        private final AnnotationVisitor importsVisitor = new RepeatedAnnotationVisitor() {
+            @Override
+            public void visit(String name, Object value) {
+                if (value != null) {
+                    currentImports.add(value.toString());
+                }
+            }
+        };
+
+        public JSAnnotationVisitor(ClassInfo classInfo, boolean jsModule,
+                LinkedHashSet<String> target,
                 LinkedHashSet<String> targetDevelopmentOnly) {
+            this.classInfo = classInfo;
+            this.jsModule = jsModule;
             this.target = target;
             this.targetDevelopmentOnly = targetDevelopmentOnly;
         }
@@ -88,6 +123,24 @@ final class FrontendClassVisitor extends ClassVisitor {
                 }
             } else if (name.equals("value")) {
                 currentModule = value.toString();
+            } else if (jsModule && name.equals(IMPORT_ALL)) {
+                currentImportAll = Boolean.TRUE.equals(value);
+            }
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String name) {
+            if (jsModule && IMPORTS.equals(name)) {
+                return importsVisitor;
+            }
+            return super.visitArray(name);
+        }
+
+        @Override
+        public void visitEnum(String name, String descriptor, String value) {
+            // The "type" attribute only exists on @JavaScript
+            if (!jsModule && "type".equals(name) && "MODULE".equals(value)) {
+                currentTypeIsModule = true;
             }
         }
 
@@ -96,14 +149,30 @@ final class FrontendClassVisitor extends ClassVisitor {
             super.visitEnd();
             if (currentModule != null) {
                 // This visitor is called also for the $Container annotation
-                if (currentDevOnly) {
-                    targetDevelopmentOnly.add(currentModule);
-                } else {
-                    target.add(currentModule);
+                if (currentImportAll || !currentImports.isEmpty()) {
+                    // Values imported by name are published in the client-side
+                    // imports registry by a dedicated chunk instead of being
+                    // imported for their side effects only.
+                    classInfo.jsImports.add(new JsImportsData(
+                            classInfo.className, currentModule,
+                            new ArrayList<>(currentImports), currentImportAll,
+                            currentDevOnly));
+                } else if (!currentTypeIsModule) {
+                    // type=MODULE values are loaded at runtime as <script
+                    // type="module"> by UIInternals; they must not enter the
+                    // bundle.
+                    if (currentDevOnly) {
+                        targetDevelopmentOnly.add(currentModule);
+                    } else {
+                        target.add(currentModule);
+                    }
                 }
             }
             currentModule = null;
             currentDevOnly = false;
+            currentTypeIsModule = false;
+            currentImportAll = false;
+            currentImports.clear();
         }
 
     }
@@ -225,11 +294,11 @@ final class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for @JsModule annotations
-        jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
-                classInfo.modulesDevelopmentOnly);
+        jsModuleVisitor = new JSAnnotationVisitor(classInfo, true,
+                classInfo.modules, classInfo.modulesDevelopmentOnly);
         // Visitor for @JavaScript annotations
-        jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
-                classInfo.scriptsDevelopmentOnly);
+        jScriptVisitor = new JSAnnotationVisitor(classInfo, false,
+                classInfo.scripts, classInfo.scriptsDevelopmentOnly);
         // Visitor all other annotations
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override
