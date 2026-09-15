@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+# The upstream settings file mirrors external:* to the Google Maven Central
+# mirror (quarkusio/quarkus-ecosystem-ci#226), which would swallow requests
+# for the vaadin-prereleases repository. Exclude it from the mirror.
+if grep -q '<mirrorOf>external:\*</mirrorOf>' .github/quarkus-ecosystem-maven-settings.xml; then
+  sed -i 's|<mirrorOf>external:\*</mirrorOf>|<mirrorOf>external:*,!vaadin-prereleases</mirrorOf>|' \
+    .github/quarkus-ecosystem-maven-settings.xml
+fi
+
+# update the versions
+mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -ntp versions:set-property -Dproperty=quarkus.version -DnewVersion=${QUARKUS_VERSION} -DgenerateBackupPoms=false
+
+# run the tests
+mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -e -V -DskipTests -DskipITs -ntp -Drequire.home.node=true clean install
+mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -e -V -ntp -Drequire.home.node=true -Dcom.vaadin.testbench.Parameters.maxAttempts=2 verify
