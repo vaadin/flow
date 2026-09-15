@@ -57,6 +57,9 @@ class KeycloakOidcUserMapperTest {
 
     private static final String ISSUER_URI = "http://localhost:8080/realms/test";
 
+    private static final String JWK_SET_URI = ISSUER_URI
+            + "/protocol/openid-connect/certs";
+
     @Mock
     private OidcUserSource userSource;
 
@@ -176,8 +179,22 @@ class KeycloakOidcUserMapperTest {
 
     @Test
     void convert_registrationWithoutJwkSetUri_mappedWithoutRoles() {
-        // A registration configured with explicit endpoints has no JWK set URI
-        // and no issuer URI, which the default decoder must not choke on
+        // There is nothing to verify the access token against, so it is left
+        // alone rather than failing the login
+        mapper = new KeycloakOidcUserMapper();
+
+        var authorities = authorities();
+
+        assertThat(authorities).noneMatch(a -> a.startsWith("ROLE_"));
+        assertThat(authorities).contains("SCOPE_openid");
+    }
+
+    @Test
+    void convert_registrationWithoutIssuerUri_mappedWithoutRoles() {
+        // A registration set up with explicit endpoints has no issuer URI, and
+        // building the default validator with a null issuer must not fail the
+        // login
+        when(providerDetails.getJwkSetUri()).thenReturn(JWK_SET_URI);
         mapper = new KeycloakOidcUserMapper();
 
         var authorities = authorities();

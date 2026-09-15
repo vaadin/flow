@@ -103,7 +103,11 @@ public class KeycloakOidcUserMapper
 
     private final JwtDecoderFactory<ClientRegistration> decoderFactory;
 
-    private final Map<String, JwtDecoder> decoders = new ConcurrentHashMap<>();
+    /**
+     * Decoders by registration id, empty for a registration that has no
+     * decoder, so that one is not built again on every login.
+     */
+    private final Map<String, Optional<JwtDecoder>> decoders = new ConcurrentHashMap<>();
 
     /**
      * Creates a mapper that prefixes roles with {@code ROLE_}.
@@ -185,8 +189,9 @@ public class KeycloakOidcUserMapper
     private Optional<Jwt> decodeAccessToken(ClientRegistration registration,
             String tokenValue) {
         var decoder = decoders.computeIfAbsent(registration.getRegistrationId(),
-                id -> decoderFactory.createDecoder(registration));
-        if (decoder == null) {
+                id -> Optional.ofNullable(
+                        decoderFactory.createDecoder(registration)));
+        if (decoder.isEmpty()) {
             LOGGER.debug(
                     "Client registration '{}' has no JWK set URI, so its access "
                             + "token cannot be decoded and no Keycloak roles "
@@ -195,7 +200,7 @@ public class KeycloakOidcUserMapper
             return Optional.empty();
         }
         try {
-            return Optional.of(decoder.decode(tokenValue));
+            return Optional.of(decoder.get().decode(tokenValue));
         } catch (JwtException e) {
             LOGGER.debug(
                     "The access token of client registration '{}' could not be "
