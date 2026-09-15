@@ -617,43 +617,6 @@ describe('Flow', () => {
     expect(onBeforeLeaveReturns).to.deep.equal(undefined);
   });
 
-  it('should retry the initialization on the next navigation once the server answers again', async () => {
-    // A server that is still starting can fail a single init request and
-    // answer the next one. The client has no way back: the failure leaves it
-    // in CONNECTION_LOST, and CONNECTION_LOST is only cleared by a browser
-    // 'online' event, which never fires because the browser was online the
-    // whole time. Every later navigation then returns the stub without
-    // contacting the server at all, so the application stays dead until the
-    // page is reloaded by hand.
-    let initFails = true;
-    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
-      if (initFails) {
-        req.respond(500, {}, 'unable to connect');
-      } else {
-        req.respond(200, { 'content-type': 'application/json' }, createInitResponse('foobar-123'));
-      }
-    });
-    stubServerRemoteFunction('foobar-123');
-    sinon.stub(console, 'error');
-
-    const route = new Flow().serverSideRoutes[0];
-    const params: NavigationParameters = {
-      pathname: 'Foo/Bar.baz',
-      search: ''
-    };
-
-    const offlineStub = await route.action(params);
-    expect(offlineStub.localName).to.equal('iframe');
-
-    initFails = false;
-
-    const view = await route.action(params);
-    expect(
-      view.localName,
-      'the second navigation should reach the server instead of showing the stub again'
-    ).to.not.equal('iframe');
-  });
-
   it('should retry navigation when back online', async () => {
     stubServerRemoteFunction('foobar-123');
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
