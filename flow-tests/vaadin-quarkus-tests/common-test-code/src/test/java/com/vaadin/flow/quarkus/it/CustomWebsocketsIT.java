@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.quarkus.it;
 
+import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -22,11 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
-import jakarta.websocket.ClientEndpoint;
-import jakarta.websocket.ContainerProvider;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.vaadin.sample.websockets.DependencyAnnotatedWS;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.quarkus.it.uievents;
 
+import jakarta.enterprise.event.Observes;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
-
-import jakarta.enterprise.event.Observes;
 
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;

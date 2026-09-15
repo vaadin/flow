@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.quarkus.it;
 
-import java.io.IOException;
-
 import jakarta.inject.Inject;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -24,6 +22,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
+
+import java.io.IOException;
 
 @WebFilter(urlPatterns = "/*", asyncSupported = true)
 public class CounterFilter implements jakarta.servlet.Filter {

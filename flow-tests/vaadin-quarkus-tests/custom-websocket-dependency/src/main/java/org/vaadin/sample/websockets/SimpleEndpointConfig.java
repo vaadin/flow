@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package org.vaadin.sample.websockets;
 
-import java.util.Collections;
-import java.util.Set;
-
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.server.ServerApplicationConfig;
 import jakarta.websocket.server.ServerEndpointConfig;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class SimpleEndpointConfig implements ServerApplicationConfig {
     @Override

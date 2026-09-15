@@ -1,4 +1,3 @@
-
 /*
    CSS styling examples for the Vaadin app.
    This is the style entrypoint for the theme and together with css in ./components/ included
@@ -8,6 +7,6 @@
 
 /* Example: CSS class name to center align the content . */
 .centered-content {
-    margin: 0 auto;
-    max-width: 250px;
+  margin: 0 auto;
+  max-width: 250px;
 }

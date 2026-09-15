@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.quarkus.it.pushdispatch;
 
-import java.util.concurrent.TimeUnit;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import java.util.concurrent.TimeUnit;
 
 @Path("/api/slow")
 public class SlowGreetingResource {
