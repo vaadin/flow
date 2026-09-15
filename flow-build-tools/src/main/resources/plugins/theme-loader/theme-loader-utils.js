@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, globSync } from 'fs';
 import { resolve, basename, join } from 'path';
+import MagicString from 'magic-string';
 
 // Collect groups [url(] ['|"]optional './|../', other '../' segments optional, file part and end of url
 // The additional dot segments could be URL referencing assets in nested imported CSS
@@ -52,8 +53,20 @@ function getThemeProperties(themeFolder) {
   return JSON.parse(themePropertyFileAsString);
 }
 
+/**
+ * Rewrites the urls of an application theme css file so that they point to the
+ * location the referenced files are served from.
+ *
+ * @param source the contents of the css file
+ * @param handledResourceFolder the folder the css file is in
+ * @param themeFolder the folder of the application theme
+ * @param logger the logger the rewritten urls are reported to
+ * @param options the theme options, the devMode flag selects the target folder
+ * @returns the rewritten css together with a sourcemap for it, or null when
+ * there is no url to rewrite
+ */
 function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options) {
-  source = source.replace(
+  const magicString = new MagicString(source).replace(
     urlMatcher,
     function (match, url, quoteMark, replace, additionalDotSegments, fileUrl, endString) {
       let absolutePath = resolve(handledResourceFolder, replace, additionalDotSegments || '', fileUrl);
@@ -92,7 +105,14 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
       return match;
     }
   );
-  return source;
+
+  // Handing back css without a sourcemap breaks the chain the caller keeps for
+  // the file, so report having done nothing when there is nothing to rewrite,
+  // and hand back a map of the rewriting when there is.
+  if (!magicString.hasChanged()) {
+    return null;
+  }
+  return { code: magicString.toString(), map: magicString.generateMap({ hires: true }) };
 }
 
 export { rewriteCssUrls };

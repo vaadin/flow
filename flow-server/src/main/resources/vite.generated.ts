@@ -426,6 +426,9 @@ function themePlugin(opts: { devMode: boolean }): PluginOption {
       }
       const resourceThemeFolder = bareId.startsWith(themeFolder) ? themeFolder : themeOptions.themeResourceFolder;
       const [themeName] =  bareId.substring(resourceThemeFolder.length + 1).split('/');
+      // Null for a file with no url to rewrite, and the rewritten css together
+      // with a sourcemap for it otherwise, so that the sourcemap chain of the
+      // css file stays intact
       return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(resourceThemeFolder, themeName), console, opts);
     }
   };
