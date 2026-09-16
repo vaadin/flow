@@ -34,7 +34,21 @@ public enum Transport {
     /**
      * HTTP long polling.
      */
-    LONG_POLLING("long-polling");
+    LONG_POLLING("long-polling"),
+    /**
+     * Server-sent events for server-to-client messages, XHR for
+     * client-to-server messages.
+     * <p>
+     * The connection is unidirectional at the transport level: the browser's
+     * {@code EventSource} API streams messages from the server, while
+     * client-to-server messages are sent as separate XHR requests.
+     * <p>
+     * This is an experimental transport and using it requires the
+     * {@code com.vaadin.experimental.ssePushTransport} feature flag to be
+     * enabled. Selecting it while the feature flag is disabled throws a
+     * {@code DisabledFeatureException}.
+     */
+    SERVER_SENT_EVENTS("sse");
 
     private String identifier;
 
