@@ -32,6 +32,31 @@ import com.vaadin.flow.signals.Signal;
 public interface ThemeList extends Set<String>, Serializable {
 
     /**
+     * Adds the given theme name.
+     * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * cannot contain spaces. For backwards compatibility a space separated
+     * value is still accepted here and adds each theme name in it, but it logs
+     * a warning and may stop being supported in a future version, so add one
+     * theme name per call, or use
+     * {@link com.vaadin.flow.component.HasTheme#addThemeNames(String...)}.
+     * <p>
+     * No other operation interprets a value that way:
+     * {@link #contains(Object)}, {@link #remove(Object)},
+     * {@link #addAll(Collection)} and the {@code bind} methods all treat the
+     * value they are given as a single theme name, so
+     * {@code remove("badge success")} does not undo
+     * {@code add("badge success")}.
+     *
+     * @param themeName
+     *            the theme name to add, not {@code null} or blank
+     * @return {@code true} if the theme list was modified, {@code false} if all
+     *         the given theme names were already present
+     */
+    @Override
+    boolean add(String themeName);
+
+    /**
      * Sets or removes the given theme name, based on the {@code set} parameter.
      *
      * @param themeName
