@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import tools.jackson.databind.node.ObjectNode;
-
-import com.vaadin.flow.dom.Element;
-
 /**
  * Represents a component that can gain and lose focus.
  *
@@ -134,34 +130,7 @@ public interface Focusable<T extends Component>
      * @since 25.0
      */
     default void focus(FocusOption... options) {
-        Element element = getElement();
-        ObjectNode json = FocusOption.buildOptions(options);
-
-        if (json == null) {
-            // No options, call focus() without arguments
-            element.executeJs("""
-                    setTimeout(() => {
-                        try {
-                           this._nextFocusIsFromClient = false;
-                           this.focus();
-                        } finally {
-                           this._nextFocusIsFromClient = true;
-                        }
-                    }, 0)
-                    """);
-        } else {
-            // Call focus with options object passed as parameter
-            element.executeJs("""
-                    setTimeout(() => {
-                        try {
-                           this._nextFocusIsFromClient = false;
-                           this.focus($0);
-                        } finally {
-                           this._nextFocusIsFromClient = true;
-                        }
-                    }, 0)
-                    """, json);
-        }
+        getElement().executeJs(new FocusCommand(options));
     }
 
     // for binary compatibility with the previous Vaadin versions
@@ -190,16 +159,7 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().executeJs("""
-                setTimeout(() => {
-                    try {
-                        this._nextBlurIsFromClient = false;
-                        this.blur();
-                    } finally {
-                       this._nextBlurIsFromClient = true;
-                    }
-                }, 0)
-                """);
+        getElement().executeJs(new BlurCommand());
     }
 
     /**

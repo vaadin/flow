@@ -1850,8 +1850,8 @@ public class Element extends Node<Element> {
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
 
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return scheduleJavaScriptInvocation(null, "return $0." + functionName
+                + "(" + paramPlaceholderString + ")", jsParameters);
     }
 
     /**
@@ -1924,6 +1924,36 @@ public class Element extends Node<Element> {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        return scheduleExecuteJs(null, expression, parameters);
+    }
+
+    /**
+     * Asynchronously runs the JavaScript of the given command in the browser in
+     * the context of this element, exactly as
+     * {@link #executeJs(String, Object...)} runs the command's
+     * {@link JsCommand#getExpression() expression} with its
+     * {@link JsCommand#getParameters() parameters}.
+     * <p>
+     * What the command adds is server-side: it stays with the invocation in the
+     * pending JavaScript queue of the UI, so that a driver of the client side
+     * that can not run JavaScript can recognize the invocation by the type of
+     * its command instead of by the text of the generated expression. See
+     * {@link JsCommand}.
+     *
+     * @param command
+     *            the command to run, not <code>null</code>
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    public PendingJavaScriptResult executeJs(JsCommand command) {
+        Objects.requireNonNull(command, "Command cannot be null");
+        return scheduleExecuteJs(command, command.getExpression(),
+                command.getParameters().toArray());
+    }
+
+    private PendingJavaScriptResult scheduleExecuteJs(
+            @Nullable JsCommand command, String expression,
+            Object[] parameters) {
 
         // Add "this" as the last parameter
         Object[] wrappedParameters;
@@ -1939,7 +1969,7 @@ public class Element extends Node<Element> {
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
+        return scheduleJavaScriptInvocation(command, wrappedExpression,
                 wrappedParameters);
     }
 
@@ -2005,11 +2035,12 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Object[] parameters) {
+            @Nullable JsCommand command, String expression,
+            Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(command,
+                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

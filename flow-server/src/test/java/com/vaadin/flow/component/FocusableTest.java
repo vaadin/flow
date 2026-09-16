@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsCommand;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -265,5 +268,72 @@ class FocusableTest {
                 .getParameters();
         assertEquals(1, params.size(),
                 "Should have exactly 1 wrapped parameter (no user-provided parameters)");
+    }
+
+    @Test
+    void focus_invocationCarriesFocusCommandWithTheOptions() {
+        ui.add(component);
+        component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED);
+
+        assertEquals(
+                new FocusCommand(FocusVisible.VISIBLE, PreventScroll.ENABLED),
+                dumpSingleCommand(),
+                "focus() should be identifiable by its command, options included");
+    }
+
+    @Test
+    void focusWithoutOptions_invocationCarriesFocusCommandWithNoOptions() {
+        ui.add(component);
+        component.focus();
+
+        assertEquals(new FocusCommand(), dumpSingleCommand());
+    }
+
+    @Test
+    void blur_invocationCarriesBlurCommand() {
+        ui.add(component);
+        component.blur();
+
+        assertEquals(new BlurCommand(), dumpSingleCommand());
+    }
+
+    @Test
+    void pendingInvocations_dispatchedByCommandType_plainJavaScriptLeftIntact() {
+        ui.add(component);
+        component.focus(PreventScroll.ENABLED);
+        component.getElement().executeJs("this.scrollTop = 0");
+        component.blur();
+
+        // What a driver of the client side that cannot run JavaScript does:
+        // take the queue once, in order, and act on what it recognizes
+        List<String> log = new ArrayList<>();
+        List<String> unhandledJs = new ArrayList<>();
+        for (PendingJavaScriptInvocation pending : ui
+                .dumpPendingJsInvocations()) {
+            Element target = Element.get(pending.getOwner());
+            switch (pending.getInvocation().getCommand()) {
+            case FocusCommand focus ->
+                log.add("focus " + target.getTag() + " " + focus.options());
+            case BlurCommand blur -> log.add("blur " + target.getTag());
+            case null, default -> {
+                log.add("unhandled");
+                unhandledJs.add(pending.getInvocation().getExpression());
+            }
+            }
+        }
+
+        assertEquals(List.of("focus div [ENABLED]", "unhandled", "blur div"),
+                log, "invocations should be dispatched by type, in order");
+        assertEquals(1, unhandledJs.size(),
+                "the application JavaScript should be left for the driver to report");
+        assertTrue(unhandledJs.get(0).contains("this.scrollTop = 0"),
+                "the unhandled invocation should be the application JavaScript");
+    }
+
+    private JsCommand dumpSingleCommand() {
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertEquals(1, invocations.size());
+        return invocations.get(0).getInvocation().getCommand();
     }
 }

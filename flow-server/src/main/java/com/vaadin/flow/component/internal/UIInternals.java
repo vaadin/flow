@@ -62,6 +62,7 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.JsCommand;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
@@ -127,6 +128,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Object> parameters = new ArrayList<>();
+        private final @Nullable JsCommand command;
 
         /**
          * Creates a new invocation.
@@ -138,6 +140,23 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
+            this((JsCommand) null, expression, parameters);
+        }
+
+        /**
+         * Creates a new invocation for the given command, whose expression and
+         * parameters the caller has already resolved.
+         *
+         * @param command
+         *            the command that this invocation performs, or
+         *            <code>null</code> if the invocation is plain JavaScript
+         * @param expression
+         *            the expression to invoke
+         * @param parameters
+         *            a list of parameters to use when invoking the script
+         */
+        public JavaScriptInvocation(@Nullable JsCommand command,
+                String expression, Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -151,6 +170,7 @@ public class UIInternals implements Serializable {
 
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
+            this.command = command;
         }
 
         /**
@@ -169,6 +189,17 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * Gets the command that this invocation performs, for a caller that
+         * acts on the invocation instead of running its JavaScript.
+         *
+         * @return the command, or <code>null</code> if the invocation is plain
+         *         JavaScript with no command describing it
+         */
+        public @Nullable JsCommand getCommand() {
+            return command;
         }
     }
 

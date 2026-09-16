@@ -2663,6 +2663,41 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void executeJsWithCommand_sameInvocationAsTheStringForm() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(new TestCommand("foo"));
+        element.executeJs("this.method($0)", "foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pendingJs.size());
+        JavaScriptInvocation fromCommand = pendingJs.get(0).getInvocation();
+        JavaScriptInvocation fromString = pendingJs.get(1).getInvocation();
+
+        assertInvocationEquals(fromString, fromCommand);
+        assertEquals(new TestCommand("foo"), fromCommand.getCommand(),
+                "the command should travel with the invocation");
+        assertNull(fromString.getCommand(),
+                "plain executeJs should have no command");
+    }
+
+    private record TestCommand(String value) implements JsCommand {
+        @Override
+        public String getExpression() {
+            return "this.method($0)";
+        }
+
+        @Override
+        public List<Object> getParameters() {
+            return List.of(value);
+        }
+    }
+
+    @Test
     void addJsInitializer_nullExpression_throws() {
         Element element = ElementFactory.createDiv();
         assertThrows(NullPointerException.class,
