@@ -235,29 +235,32 @@ board, not to a person: we do not assign work, we make it possible to take, and
 knowing what to do next never requires asking someone. The person who takes it
 becomes its lead (§3); before that, an issue has no owner and needs none.
 
-**Status is written, not spoken.** Everyone posts their update in the team
-channel before the daily, prompted by a bot. Updates are nearly always trivial,
-and trivia is what used to eat our meetings.
+**Half an hour before, a bot asks for updates in the team channel.** You either
+write yours there — which is where an update with no question in it belongs — or
+you claim a slot: *here is my PR, I will show it*. By the time the daily starts
+there is a plan, and nobody improvises.
 
-**The daily — 60 minutes, the whole team.** It opens with a round table that is
-dynamic: anyone with something that needs a reaction takes a turn — a PR that
-needs eyes, a research question they are stuck on, a new issue worth explaining
-before it comes back. Some days that is everybody, some days nobody. Then we walk
-the digest from the top. Some days nothing has arrived and it takes five minutes;
-some days thirty issues have, and then we talk through the top of the list while
-the rest is confirmed in bulk. The hour is fixed; what fills it is not.
+**The daily — 60 minutes, the whole team, slots of up to ten minutes.** A slot is
+somebody sharing a screen and showing something that can collect comments: their
+own PR, explained; a PR they are reviewing and want other eyes on; a demo of what
+they built, run against a use case rather than described. A slot can also be a
+question that needs the room — something raised in the channel, on the forum, in
+an issue, in a contribution from outside. What a slot is not is a report on the
+week; that was written half an hour ago. The hour is for technical discussion and
+decisions, and when fewer slots are claimed the daily ends early.
 
-**The digest is what makes that possible.** AI writes it shortly before the
-daily, and it is a list of decisions rather than a news feed:
+**The digest is the backbone of the plan.** AI writes it while the bot is asking,
+and it is a list of decisions rather than a news feed:
 
 - **blockers** first, even when the fix is five minutes — somebody is stopped;
 - **the review queue** in one line: how long it is, how old the oldest is. When
   it is long, the daily spends itself on reviews rather than on new issues;
 - **needs judgement** — what AI could not settle on its own, ordered by how much
   judgement it takes: disagreement in the thread, public API, no precedent in the
-  code, wide blast radius, or AI's own confidence being low;
-- **routine** — verdicts to confirm in bulk, and everything else to read on your
-  own, never aloud.
+  code, wide blast radius, or AI's own confidence being low. Anything contested
+  becomes a slot, or goes to the design session;
+- **routine** — proposed verdicts nobody objected to, confirmed in one go, and
+  everything else to read on your own, never aloud.
 
 It also routes: a PR that touches the area of an earlier one says so, with the
 name of whoever reviewed that one. That is how work someone has already touched
@@ -290,11 +293,10 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 - **No unprepared meeting.** Everyone arrives having read the digest or the
   pre-read; the lead arrives with an agenda — one question per item, each with a
   recommendation. A meeting without one is moved, not endured.
-- **Only what someone can act on gets said out loud.** A PR: explain in a few
-  sentences what it does, so whoever reviews it starts warm. A new issue: explain
-  the problem, so the team recognises it when it comes back. Research: ask the
-  question you are stuck on. Everything else is written down already — when
-  nothing is required of the room, the room stops listening.
+- **A slot has to be able to collect comments.** If nothing about the thing
+  could change as a result of showing it, it belongs in the channel. Showing
+  beats telling: a running demo, an open diff, the failing test — when nothing is
+  required of the room, the room stops listening.
 - **Design and implementation in one pass.** The same session settles the design
   *and* the approach, so AI goes straight from it to a finished PR. Splitting
   across two sessions is the exception, for genuinely new ground.
