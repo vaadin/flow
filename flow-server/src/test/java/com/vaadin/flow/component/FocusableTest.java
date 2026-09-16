@@ -25,7 +25,6 @@ import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.JsCommand;
 import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.tests.util.MockUI;
 
@@ -277,7 +276,7 @@ class FocusableTest {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
 
-        JsInvokerCall call = (JsInvokerCall) dumpSingleCommand();
+        JsInvokerCall call = dumpSingleCall();
         assertEquals(FocusJs.class, call.invokerType());
         assertEquals("focus", call.methodName());
         assertEquals("{\"preventScroll\":true}",
@@ -291,7 +290,7 @@ class FocusableTest {
         component.focus();
 
         assertEquals(new JsInvokerCall(FocusJs.class, "focus", List.of()),
-                dumpSingleCommand());
+                dumpSingleCall());
     }
 
     @Test
@@ -300,7 +299,7 @@ class FocusableTest {
         component.blur();
 
         assertEquals(new JsInvokerCall(FocusJs.class, "blur", List.of()),
-                dumpSingleCommand());
+                dumpSingleCall());
     }
 
     @Test
@@ -317,9 +316,8 @@ class FocusableTest {
         List<String> unhandledJs = new ArrayList<>();
         for (PendingJavaScriptInvocation pending : ui
                 .dumpPendingJsInvocations()) {
-            JsCommand command = pending.getInvocation().getCommand();
-            if (command instanceof JsInvokerCall call
-                    && call.invokerType() == FocusJs.class) {
+            JsInvokerCall call = pending.getInvocation().getInvokerCall();
+            if (call != null && call.invokerType() == FocusJs.class) {
                 call.invokeOn(new FocusSimulation(
                         Element.get(pending.getOwner()), log));
             } else {
@@ -339,11 +337,11 @@ class FocusableTest {
                 "the unhandled invocation should be the application JavaScript");
     }
 
-    private JsCommand dumpSingleCommand() {
+    private JsInvokerCall dumpSingleCall() {
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
         assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getCommand();
+        return invocations.get(0).getInvocation().getInvokerCall();
     }
 
     /**

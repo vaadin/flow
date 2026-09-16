@@ -215,6 +215,13 @@ public class FrontendUtils {
     public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
 
     /**
+     * File name of the generated file that registers the JavaScript of the
+     * {@code @JsInvoker} interfaces on the class path, so that the client can
+     * run a server-initiated call without compiling an expression.
+     */
+    public static final String JS_INVOKERS_FILE_NAME = "vaadin-js-invokers.js";
+
+    /**
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";

@@ -69,6 +69,90 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 }
 
 describe('ExecuteJavaScriptProcessor', () => {
+  describe('js invoker calls', () => {
+    const INVOKER = 'com.acme.GreeterJs';
+
+    type InvokerFunction = (this: unknown, ...args: unknown[]) => unknown;
+
+    type InvokerWindow = Window & {
+      Vaadin?: { Flow?: { jsInvokers?: Record<string, Record<string, InvokerFunction>> } };
+    };
+
+    // Registers a function the way the generated bundle does.
+    function registerInvoker(method: string, fn: InvokerFunction): void {
+      const vaadin = (window as InvokerWindow).Vaadin ?? {};
+      (window as InvokerWindow).Vaadin = vaadin;
+      vaadin.Flow = vaadin.Flow ?? {};
+      vaadin.Flow.jsInvokers = vaadin.Flow.jsInvokers ?? {};
+      vaadin.Flow.jsInvokers[INVOKER] = { ...vaadin.Flow.jsInvokers[INVOKER], [method]: fn };
+    }
+
+    function processor(): ExecuteJavaScriptProcessor {
+      return new ExecuteJavaScriptProcessor(
+        testRegistry({
+          StateTree: { getNode: () => null },
+          ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false }
+        })
+      );
+    }
+
+    afterEach(() => {
+      delete (window as InvokerWindow).Vaadin?.Flow?.jsInvokers?.[INVOKER];
+    });
+
+    it('runs the function from the bundle against the element', () => {
+      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      registerInvoker('showGreeting/1', function (this: unknown, ...args: unknown[]) {
+        calls.push({ thisArg: this, args });
+      });
+      const element = { tagName: 'div' };
+
+      processor().execute([['Hello', element, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(element);
+      expect(calls[0].args).to.eql(['Hello']);
+    });
+
+    it('passes the return value to the success channel', async () => {
+      registerInvoker('readValue/0', () => 'answer');
+      const resolved: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      processor().execute([
+        [
+          element,
+          (value: unknown) => resolved.push(value),
+          () => {},
+          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
+        ]
+      ]);
+      // Settled in microtasks: a macrotask wait would also pick up the
+      // asynchronous rethrow that the expression cases leave behind.
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(resolved).to.eql(['answer']);
+    });
+
+    it('reports a function that is not in the bundle to the error channel', () => {
+      const errors: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      processor().execute([
+        [
+          element,
+          () => {},
+          (error: unknown) => errors.push(error),
+          { invoker: INVOKER, method: 'missing/0', arguments: 0, returns: true }
+        ]
+      ]);
+
+      expect(errors).to.have.lengthOf(1);
+      expect(String(errors[0])).to.contain(INVOKER);
+    });
+  });
+
   describe('execute', () => {
     it('passes the parameters and code of each invocation on', () => {
       // Ported from execute_parametersAndCodeAreValidAndNoNodeParameters.

@@ -2663,38 +2663,40 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithCommand_sameInvocationAsTheStringForm() {
+    void getJsInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        element.executeJs(new TestCommand("foo"));
-        element.executeJs("this.method($0)", "foo");
+        element.getJsInvoker(TestJs.class).method("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        assertEquals(2, pendingJs.size());
-        JavaScriptInvocation fromCommand = pendingJs.get(0).getInvocation();
-        JavaScriptInvocation fromString = pendingJs.get(1).getInvocation();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
 
-        assertInvocationEquals(fromString, fromCommand);
-        assertEquals(new TestCommand("foo"), fromCommand.getCommand(),
-                "the command should travel with the invocation");
-        assertNull(fromString.getCommand(),
-                "plain executeJs should have no command");
+        assertEquals("this.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", element), invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsInvokerCall(TestJs.class, "method", List.of("foo")),
+                invocation.getInvokerCall());
     }
 
-    private record TestCommand(String value) implements JsCommand {
-        @Override
-        public String getExpression() {
-            return "this.method($0)";
-        }
+    @Test
+    void getJsInvoker_interfaceWithoutAnnotation_throws() {
+        Element element = ElementFactory.createDiv();
 
-        @Override
-        public List<Object> getParameters() {
-            return List.of(value);
-        }
+        assertThrows(IllegalArgumentException.class,
+                () -> element.getJsInvoker(Serializable.class),
+                "an interface the build does not collect should be rejected");
+    }
+
+    @JsInvoker
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
     }
 
     @Test

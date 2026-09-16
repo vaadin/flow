@@ -1927,44 +1927,21 @@ public class Element extends Node<Element> {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        return scheduleExecuteJs(null, expression, parameters);
-    }
-
-    /**
-     * Asynchronously runs the JavaScript of the given command in the browser in
-     * the context of this element, exactly as
-     * {@link #executeJs(String, Object...)} runs the command's
-     * {@link JsCommand#getExpression() expression} with its
-     * {@link JsCommand#getParameters() parameters}.
-     * <p>
-     * What the command adds is server-side: it stays with the invocation in the
-     * pending JavaScript queue of the UI, so that a driver of the client side
-     * that can not run JavaScript can recognize the invocation by the type of
-     * its command instead of by the text of the generated expression. See
-     * {@link JsCommand}.
-     *
-     * @param command
-     *            the command to run, not <code>null</code>
-     * @return a pending result that can be used to get a value returned from
-     *         the expression
-     */
-    public PendingJavaScriptResult executeJs(JsCommand command) {
-        Objects.requireNonNull(command, "Command cannot be null");
-        return scheduleExecuteJs(command, command.getExpression(),
-                command.getParameters().toArray());
+        return scheduleExecuteJs(expression, parameters);
     }
 
     /**
      * Gets an invoker for the JavaScript expressions that the given interface
      * declares, bound to this element.
      * <p>
-     * Each method of the interface is annotated with the {@link JsExpression}
-     * it runs. Calling a method schedules that expression the way
-     * {@link #executeJs(String, Object...)} would, with the method arguments as
+     * The interface is annotated with {@link JsInvoker} and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}. Calling a
+     * method runs that JavaScript in the browser with the method arguments as
      * its parameters and this element as <code>this</code>:
      *
      * <pre>
-     * public interface GreeterJs {
+     * &#64;JsInvoker
+     * public interface GreeterJs extends Serializable {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
      * }
@@ -1972,10 +1949,16 @@ public class Element extends Node<Element> {
      * element.getJsInvoker(GreeterJs.class).showGreeting("Hello");
      * </pre>
      *
-     * The expression is a constant of the interface rather than a string built
-     * at the call site, and the scheduled invocation carries the call as a
-     * {@link JsInvokerCall} so that a driver of the client side can recognize
-     * it, or run it on its own implementation of the same interface.
+     * Unlike {@link #executeJs(String, Object...)}, nothing about the
+     * JavaScript is decided at the call site: the build collects the
+     * declarations of every invoker interface into the bundle, and the client
+     * runs the collected function after looking it up by interface and method.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>.
+     * <p>
+     * The scheduled invocation carries the call as a {@link JsInvokerCall}, so
+     * a driver of the client side that can not run JavaScript can recognize it,
+     * or run it on its own implementation of the same interface.
      * <p>
      * A method returns either <code>void</code> or
      * {@link PendingJavaScriptResult}.
@@ -1992,6 +1975,11 @@ public class Element extends Node<Element> {
         if (!invokerType.isInterface()) {
             throw new IllegalArgumentException(
                     invokerType.getName() + " is not an interface");
+        }
+        if (!invokerType.isAnnotationPresent(JsInvoker.class)) {
+            throw new IllegalArgumentException(invokerType.getName()
+                    + " is not annotated with @JsInvoker, so the build does not"
+                    + " collect its JavaScript into the bundle");
         }
         return (T) Proxy.newProxyInstance(invokerType.getClassLoader(),
                 new Class<?>[] { invokerType },
@@ -2014,8 +2002,8 @@ public class Element extends Node<Element> {
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
             PendingJavaScriptResult result = element
-                    .executeJs(new JsInvokerCall(invokerType, method.getName(),
-                            arguments));
+                    .scheduleInvokerCall(new JsInvokerCall(invokerType,
+                            method.getName(), arguments));
             if (method.getReturnType() == void.class) {
                 return null;
             }
@@ -2029,26 +2017,37 @@ public class Element extends Node<Element> {
         }
     }
 
-    private PendingJavaScriptResult scheduleExecuteJs(
-            @Nullable JsCommand command, String expression,
+    private PendingJavaScriptResult scheduleExecuteJs(String expression,
             Object[] parameters) {
-
-        // Add "this" as the last parameter
-        Object[] wrappedParameters;
-        if (parameters.length == 0) {
-            wrappedParameters = new Object[] { this };
-        } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
-            wrappedParameters[parameters.length] = this;
-        }
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(command, wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(null, wrappedExpression,
+                withElementAsLastParameter(parameters));
+    }
+
+    /**
+     * Schedules a call made through a JS invoker. The parameters are the
+     * arguments of the call followed by this element, which the client applies
+     * the generated function to, so there is no expression to wrap: the
+     * function that the build generated is already the equivalent of the
+     * wrapping that {@link #scheduleExecuteJs(String, Object[])} does around an
+     * expression.
+     */
+    private PendingJavaScriptResult scheduleInvokerCall(JsInvokerCall call) {
+        return scheduleJavaScriptInvocation(call, call.getExpression(),
+                withElementAsLastParameter(call.arguments().toArray()));
+    }
+
+    private Object[] withElementAsLastParameter(Object[] parameters) {
+        if (parameters.length == 0) {
+            return new Object[] { this };
+        }
+        Object[] withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        withElement[parameters.length] = this;
+        return withElement;
     }
 
     /**
@@ -2113,11 +2112,11 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCommand command, String expression,
+            @Nullable JsInvokerCall invokerCall, String expression,
             Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(command,
+        JavaScriptInvocation invocation = new JavaScriptInvocation(invokerCall,
                 expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(

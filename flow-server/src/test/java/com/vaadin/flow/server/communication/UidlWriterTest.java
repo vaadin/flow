@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,9 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsExpression;
+import com.vaadin.flow.dom.JsInvoker;
+import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
@@ -199,6 +203,39 @@ class UidlWriterTest {
                         JacksonUtils.createNode("console.log($0, $1)")));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
+    }
+
+    @Test
+    void encodeExecuteJavaScript_invokerCall_sendsTheTargetInsteadOfTheScript() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        invocation)));
+
+        ObjectNode target = JacksonUtils.createObjectNode();
+        target.put("invoker", TestJs.class.getName());
+        target.put("method", "method/1");
+        target.put("arguments", 1);
+        ArrayNode expectedJson = JacksonUtils.createArray(
+                JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                        // Null since element is not attached
+                        JacksonUtils.nullNode(), target));
+
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "an invoker call should carry its target, and no JavaScript: "
+                        + json);
+    }
+
+    @JsInvoker
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
     }
 
     @Test

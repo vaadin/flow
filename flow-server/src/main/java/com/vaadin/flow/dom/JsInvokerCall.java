@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -25,11 +26,12 @@ import java.util.Objects;
  * A call made through {@link Element#getJsInvoker(Class)}: which invoker
  * interface, which method of it, and the arguments that were passed.
  * <p>
- * This is the {@link JsCommand} that the invoker schedules, so the call is what
- * a driver of the client side sees in the pending JavaScript queue. It can
- * dispatch on the interface and the method name, or hand the call to an
- * implementation of the same interface with {@link #invokeOn(Object)} and let
- * Java do the dispatching:
+ * The call is what the client receives — the interface, the method and the
+ * arguments, never the JavaScript itself, which the client looks up in the
+ * bundle. It is also what a driver of the client side that can not run
+ * JavaScript sees in the pending invocation queue. Such a driver can dispatch
+ * on the interface and the method, or hand the call to an implementation of the
+ * same interface with {@link #invokeOn(Object)} and let Java dispatch it:
  *
  * <pre>
  * if (call.invokerType() == FocusJs.class) {
@@ -45,7 +47,7 @@ import java.util.Objects;
  *            the arguments of the call, in declaration order
  */
 public record JsInvokerCall(Class<?> invokerType, String methodName,
-        List<Object> arguments) implements JsCommand {
+        List<Object> arguments) implements Serializable {
 
     /**
      * Creates a call of the given method of the given invoker interface.
@@ -63,7 +65,51 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
         arguments = List.copyOf(arguments);
     }
 
-    @Override
+    /**
+     * Gets the identifier of the invoker interface, which is the key the
+     * generated bundle registers its functions under.
+     *
+     * @return the invoker identifier, not <code>null</code>
+     */
+    public String getInvokerId() {
+        return invokerType.getName();
+    }
+
+    /**
+     * Gets the identifier of the called method within its invoker, which is the
+     * method name and the number of arguments, so that overloads stay apart.
+     *
+     * @return the method identifier, not <code>null</code>
+     */
+    public String getMethodId() {
+        return methodId(methodName, arguments.size());
+    }
+
+    /**
+     * Gets the identifier of a method with the given name and number of
+     * arguments.
+     *
+     * @param methodName
+     *            the method name, not <code>null</code>
+     * @param argumentCount
+     *            the number of arguments
+     * @return the method identifier, not <code>null</code>
+     */
+    public static String methodId(String methodName, int argumentCount) {
+        return methodName + "/" + argumentCount;
+    }
+
+    /**
+     * Gets the JavaScript that this call runs in a browser, as declared by
+     * {@link JsExpression} on the called method.
+     * <p>
+     * The expression is not sent to the client, which runs the function that
+     * the build generated from the same declaration. It is available here for
+     * the server side, for instance for a test that asserts what a browser
+     * would run.
+     *
+     * @return the JavaScript expression, not <code>null</code>
+     */
     public String getExpression() {
         JsExpression annotation = resolveMethod()
                 .getAnnotation(JsExpression.class);
@@ -73,11 +119,6 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
                             + " is not annotated with @JsExpression");
         }
         return annotation.value();
-    }
-
-    @Override
-    public List<Object> getParameters() {
-        return arguments;
     }
 
     /**

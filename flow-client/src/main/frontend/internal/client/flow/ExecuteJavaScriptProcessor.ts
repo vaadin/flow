@@ -67,6 +67,37 @@ interface ContextCallbacks {
 }
 
 /**
+ * What a JS invoker invocation ends with instead of an expression: the invoker
+ * interface and the method to look up in the bundle, how many of the leading
+ * parameters are the arguments of the call, and whether the two parameters
+ * after the element are the channels for the return value.
+ */
+export interface JsInvokerTarget {
+  invoker: string;
+  method: string;
+  arguments: number;
+  returns?: boolean;
+}
+
+type JsInvokerFunction = (this: unknown, ...args: unknown[]) => unknown;
+
+type ReturnChannel = (value: unknown) => void;
+
+/**
+ * Looks up the function that the build generated for an invoker method. The
+ * registry is populated by the generated bundle, so the function is ordinary
+ * bundled code and nothing has to be compiled from a string here.
+ */
+function findInvokerFunction(invoker: string, method: string): JsInvokerFunction | undefined {
+  const registry = (
+    window as unknown as {
+      Vaadin?: { Flow?: { jsInvokers?: Record<string, Record<string, JsInvokerFunction>> } };
+    }
+  ).Vaadin?.Flow?.jsInvokers;
+  return registry?.[invoker]?.[method];
+}
+
+/**
  * Processes the result of `Page.executeJs` on the client. `Page` is a
  * flow-server class, outside this port, so the reference stays a code span.
  */
@@ -124,7 +155,15 @@ export class ExecuteJavaScriptProcessor {
       }
     }
 
-    parameterNamesAndCode.push(invocation[invocation.length - 1] as string);
+    const target = invocation[invocation.length - 1];
+    if (typeof target === 'object' && target !== null) {
+      // A JS invoker call: the bundle has the function, the server sent only
+      // which one to run.
+      this.invokeFromBundle(target as JsInvokerTarget, parameters);
+      return;
+    }
+
+    parameterNamesAndCode.push(target as string);
     this.invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
@@ -194,6 +233,50 @@ export class ExecuteJavaScriptProcessor {
       disposeInitializer
     });
     invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
+  }
+
+  /**
+   * Executes a call made through a JS invoker: looks the function up in the
+   * registry that the generated bundle populates and applies it to the element,
+   * with the arguments of the call. Nothing is compiled from a string, which is
+   * what makes this path work under a content security policy that does not
+   * allow `unsafe-eval`.
+   *
+   * Protected instead of private for testing purposes, as `invoke` is.
+   *
+   * @param target - the invoker interface and method to run
+   * @param parameters - the decoded parameters: the arguments of the call, the
+   *          element to apply the function to, and the return value channels
+   *          when the target declares them
+   */
+  protected invokeFromBundle(target: JsInvokerTarget, parameters: unknown[]): void {
+    const argumentCount = target.arguments;
+    const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
+    const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
+
+    const fn = findInvokerFunction(target.invoker, target.method);
+    if (fn === undefined) {
+      const message = `No JavaScript in the bundle for ${target.invoker}.${target.method}. The invoker interface is annotated with @JsInvoker, but the build did not collect it.`;
+      Console.error(message);
+      onError?.(message);
+      return;
+    }
+
+    // The element the invoker was obtained from is the parameter after the
+    // arguments, and it is what the function runs against.
+    const thisArg = parameters.length > argumentCount ? parameters[argumentCount] : undefined;
+    try {
+      const result = fn.apply(thisArg, parameters.slice(0, argumentCount));
+      if (onSuccess !== undefined) {
+        Promise.resolve(result).then(onSuccess, (error: unknown) => onError?.(`${error}`));
+      }
+    } catch (exception) {
+      Console.reportStacktrace(exception);
+      Console.error(
+        `Exception is thrown while running ${target.invoker}.${target.method}. Stacktrace will be dumped separately.`
+      );
+      onError?.(`${exception}`);
+    }
   }
 }
 

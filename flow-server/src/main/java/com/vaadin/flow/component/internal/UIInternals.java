@@ -62,7 +62,7 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.JsCommand;
+import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
@@ -128,7 +128,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Object> parameters = new ArrayList<>();
-        private final @Nullable JsCommand command;
+        private final @Nullable JsInvokerCall invokerCall;
 
         /**
          * Creates a new invocation.
@@ -140,22 +140,22 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
-            this((JsCommand) null, expression, parameters);
+            this((JsInvokerCall) null, expression, parameters);
         }
 
         /**
-         * Creates a new invocation for the given command, whose expression and
-         * parameters the caller has already resolved.
+         * Creates a new invocation for the given invoker call, whose expression
+         * and parameters the caller has already resolved.
          *
-         * @param command
-         *            the command that this invocation performs, or
+         * @param invokerCall
+         *            the call that this invocation performs, or
          *            <code>null</code> if the invocation is plain JavaScript
          * @param expression
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
          */
-        public JavaScriptInvocation(@Nullable JsCommand command,
+        public JavaScriptInvocation(@Nullable JsInvokerCall invokerCall,
                 String expression, Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
@@ -170,7 +170,7 @@ public class UIInternals implements Serializable {
 
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
-            this.command = command;
+            this.invokerCall = invokerCall;
         }
 
         /**
@@ -192,14 +192,17 @@ public class UIInternals implements Serializable {
         }
 
         /**
-         * Gets the command that this invocation performs, for a caller that
-         * acts on the invocation instead of running its JavaScript.
+         * Gets the invoker call that this invocation performs, for a caller
+         * that acts on the invocation instead of running its JavaScript — the
+         * client, which looks up the generated function rather than compiling
+         * the expression, and a driver of the client side that recognizes the
+         * call.
          *
-         * @return the command, or <code>null</code> if the invocation is plain
-         *         JavaScript with no command describing it
+         * @return the call, or <code>null</code> if the invocation is plain
+         *         JavaScript scheduled with an expression
          */
-        public @Nullable JsCommand getCommand() {
-            return command;
+        public @Nullable JsInvokerCall getInvokerCall() {
+            return invokerCall;
         }
     }
 

@@ -278,6 +278,16 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
+        if (jsInvokersChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-js-invokers", null);
+            return true;
+        }
+        // js invoker file hash has already been checked
+        // removing it from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
+                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME);
+
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-missing-frontend-import", null);
@@ -989,6 +999,39 @@ public final class BundleValidationUtil {
                         "Detected changed content for commercial banner file");
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the JavaScript that the {@code @JsInvoker} interfaces of
+     * the application declare differs from what the bundle was built with.
+     * <p>
+     * The functions are generated into the bundle, so a declaration that
+     * changed, an invoker that was added and a bundle built before invokers
+     * existed all mean that the bundle no longer contains what a call would
+     * look up, which shows up at runtime as a call that cannot be run.
+     */
+    private static boolean jsInvokersChanged(Options options,
+            JsonNode statsJson) {
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        String jsInvokersPath = FrontendUtils.GENERATED
+                + FrontendUtils.JS_INVOKERS_FILE_NAME;
+        String content = new TaskGenerateJsInvokers(options).getFileContent();
+
+        if (!frontendHashes.has(jsInvokersPath)) {
+            getLogger().info(
+                    "Detected a bundle that was built without the JavaScript of the invoker interfaces");
+            return true;
+        }
+
+        List<String> faultyContent = new ArrayList<>();
+        compareFrontendHashes(frontendHashes, faultyContent, jsInvokersPath,
+                content);
+        if (!faultyContent.isEmpty()) {
+            getLogger().info(
+                    "Detected changed JavaScript declared by the invoker interfaces");
+            return true;
         }
         return false;
     }

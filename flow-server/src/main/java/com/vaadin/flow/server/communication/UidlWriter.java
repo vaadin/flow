@@ -43,6 +43,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -330,6 +331,11 @@ public class UidlWriter implements Serializable {
 
     private static ArrayNode encodeExecuteJavaScript(
             PendingJavaScriptInvocation invocation) {
+        JsInvokerCall invokerCall = invocation.getInvocation().getInvokerCall();
+        if (invokerCall != null) {
+            return encodeInvokerCall(invocation, invokerCall);
+        }
+
         List<Object> parametersList = invocation.getInvocation()
                 .getParameters();
 
@@ -376,6 +382,48 @@ public class UidlWriter implements Serializable {
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
                         Stream.of(JacksonUtils.createNode(expression)))
                 .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Encodes a call made through a JS invoker as
+     * <code>[argument1, ..., element, successChannel, errorChannel, target]</code>,
+     * where the trailing target object names the invoker interface and the
+     * method instead of carrying JavaScript. The client runs the function that
+     * the build generated from the declaration of that method, so no expression
+     * is sent and nothing is compiled in the browser.
+     * <p>
+     * The target tells the client how to read the parameters: the first
+     * <code>arguments</code> of them are the arguments of the call, the next
+     * one is the element to apply the function to, and the two after that are
+     * the return value channels when <code>returns</code> is set.
+     */
+    private static ArrayNode encodeInvokerCall(
+            PendingJavaScriptInvocation invocation, JsInvokerCall call) {
+        Stream<Object> parameters = invocation.getInvocation().getParameters()
+                .stream();
+
+        ObjectNode target = JacksonUtils.createObjectNode();
+        target.put(JsonConstants.UIDL_KEY_INVOKER, call.getInvokerId());
+        target.put(JsonConstants.UIDL_KEY_INVOKER_METHOD, call.getMethodId());
+        target.put(JsonConstants.UIDL_KEY_INVOKER_ARGUMENTS,
+                call.arguments().size());
+
+        if (invocation.isSubscribed()) {
+            StateNode owner = invocation.getOwner();
+            List<ReturnChannelRegistration> channels = new ArrayList<>();
+
+            ReturnChannelRegistration successChannel = createReturnValueChannel(
+                    owner, channels, invocation::complete);
+            ReturnChannelRegistration errorChannel = createReturnValueChannel(
+                    owner, channels, invocation::completeExceptionally);
+
+            parameters = Stream.concat(parameters,
+                    Stream.of(successChannel, errorChannel));
+            target.put(JsonConstants.UIDL_KEY_INVOKER_RETURNS, true);
+        }
+
+        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                Stream.of(target)).collect(JacksonUtils.asArray());
     }
 
     /**

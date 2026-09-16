@@ -21,6 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsExpression;
+import com.vaadin.flow.dom.JsInvoker;
 
 /**
  * The client-side operations behind {@link Focusable}, as an invoker interface
@@ -34,6 +35,7 @@ import com.vaadin.flow.dom.JsExpression;
  * An invoker interface extends {@link Serializable}, like everything else a
  * component can hold on to.
  */
+@JsInvoker
 public interface FocusJs extends Serializable {
 
     /**
