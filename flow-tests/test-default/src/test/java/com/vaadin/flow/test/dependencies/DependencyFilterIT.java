@@ -43,8 +43,7 @@ public class DependencyFilterIT extends AbstractDefaultIT {
                 "eager.js should be in the page");
 
         Assertions.assertTrue(
-                testMessages
-                        .contains(DependenciesLoadingBaseView.DOM_CHANGE_TEXT),
+                testMessages.contains(DependencyFilterView.DOM_CHANGE_TEXT),
                 "Attach a message via JS should be on the page");
 
         // The non-existing stylesheet is replaced by filtered.css, which makes

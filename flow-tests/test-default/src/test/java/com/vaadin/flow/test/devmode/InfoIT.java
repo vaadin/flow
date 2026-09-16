@@ -32,14 +32,26 @@ public class InfoIT extends AbstractDefaultIT {
     @BrowserTest
     public void nonProductionModeServlet() {
         open();
-        Assertions.assertEquals("false", getInfoValue("Production mode"));
+
+        List<String> texts = getInfoTexts();
+
+        Assertions.assertEquals("false",
+                getInfoValue(texts, "Production mode"));
+        // The values are grouped under section headers
+        Assertions.assertTrue(texts.contains("Deployment configuration"),
+                "The deployment configuration section header is missing: "
+                        + texts);
     }
 
-    private String getInfoValue(String string) {
-        String prefix = string + ": ";
-        List<WebElement> divs = findElement(By.className("infoContainer"))
-                .findElements(By.tagName("div"));
-        Optional<String> infoText = divs.stream().map(WebElement::getText)
+    private List<String> getInfoTexts() {
+        return findElement(By.className("infoContainer"))
+                .findElements(By.tagName("div")).stream()
+                .map(WebElement::getText).toList();
+    }
+
+    private String getInfoValue(List<String> texts, String name) {
+        String prefix = name + ": ";
+        Optional<String> infoText = texts.stream()
                 .filter(text -> text.startsWith(prefix)).findFirst();
 
         return infoText.get().replace(prefix, "");

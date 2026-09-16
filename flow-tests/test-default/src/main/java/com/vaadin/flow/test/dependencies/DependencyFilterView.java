@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.test.dependencies;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
@@ -23,12 +24,21 @@ import com.vaadin.flow.router.Route;
 @Route("dependency-filter")
 @JavaScript("./eager.js")
 @StyleSheet("./non-existing.css")
-public class DependencyFilterView extends DependenciesLoadingBaseView {
+public class DependencyFilterView extends Div {
+
+    static final String DOM_CHANGE_TEXT = "I appear after inline and eager dependencies and before lazy";
 
     public DependencyFilterView() {
         Div filtered = new Div();
         filtered.setText("filtered");
         filtered.setId("filtered-css");
         add(filtered);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        // See eager.js for attachTestDiv code
+        attachEvent.getUI().getPage().executeJs("window.attachTestDiv($0)",
+                DOM_CHANGE_TEXT);
     }
 }
