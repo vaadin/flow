@@ -508,15 +508,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Options options, FrontendTools tools, List<String> toolCommand,
             Logger logger) {
         Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
-        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
-                && !options.isEnablePnpm()
-                && tools.npmSupportsMinReleaseAge(toolCommand);
         if (configuredDays != null && configuredDays == 0) {
             // Vaadin adds no restriction of its own, but an age the package
             // manager is configured with still applies to the install
             return new MinimumFrontendPackageAge(
                     getPackageManagerConfiguredMinimumReleaseAge(options, tools,
-                            toolCommand, npmSupportsMinReleaseAge)
+                            toolCommand)
                             .filter(TaskRunNpmInstall::blocksSomeVersion)
                             .isPresent(),
                     Optional.empty());
@@ -526,7 +523,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             days = configuredDays;
         } else {
             Optional<String> packageManagerValue = getPackageManagerConfiguredMinimumReleaseAge(
-                    options, tools, toolCommand, npmSupportsMinReleaseAge);
+                    options, tools, toolCommand);
             if (packageManagerValue.isPresent()) {
                 logger.info(
                         "Keeping the minimum frontend package age configured for {} "
@@ -540,6 +537,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
             days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
         }
+        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(toolCommand);
         return new MinimumFrontendPackageAge(true,
                 Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
                         npmSupportsMinReleaseAge)));
@@ -732,8 +732,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * therefore not taken into account.
      */
     private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
-            Options options, FrontendTools tools, List<String> toolCommand,
-            boolean npmSupportsMinReleaseAge) {
+            Options options, FrontendTools tools, List<String> toolCommand) {
         File npmFolder = options.getNpmFolder();
         if (options.isEnableBun()) {
             return Optional.empty();
@@ -744,13 +743,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return tools.getConfiguredSetting(toolCommand, npmFolder,
                     "minimumReleaseAge", "minimum-release-age");
         }
-        if (npmSupportsMinReleaseAge) {
-            return tools.getConfiguredSetting(toolCommand, npmFolder,
-                    "min-release-age");
-        }
-        // Older npm has no min-release-age setting, but the --before argument
-        // used as a fallback does have a configuration counterpart
-        return tools.getConfiguredSetting(toolCommand, npmFolder, "before");
+        // npm resolves min-release-age into the before setting it shares the
+        // implementation with, and up to npm 11.13 it drops the key itself
+        // while doing so, reporting an age the project configured as unset.
+        // Reading before as well covers those versions, npm older than 11.10
+        // where the setting does not exist at all and the --before argument is
+        // used as a fallback, and a project configuring before directly; the
+        // two settings are mutually exclusive for npm, so a Vaadin argument
+        // would override whichever of them is configured.
+        return tools.getConfiguredSetting(toolCommand, npmFolder,
+                "min-release-age", "before");
     }
 
     /**
