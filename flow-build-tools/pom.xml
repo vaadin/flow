@@ -47,9 +47,11 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- pnpm-workspace.yaml editing. The node API is used directly, rather
+         than a databind layer, to keep user comments and layout intact. -->
     <dependency>
-      <groupId>tools.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
+      <groupId>org.snakeyaml</groupId>
+      <artifactId>snakeyaml-engine</artifactId>
     </dependency>
 
     <!-- Test dependencies -->
