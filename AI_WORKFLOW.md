@@ -214,17 +214,17 @@ the scope agreed on day 2 is what the team can do *including* the incoming, and
 when the incoming starts eating the project, it shows up in the daily instead of
 in a missed date.
 
-**The PM sees a working walkthrough weekly** — to confirm we are solving the
-right problem, not to accept or reject the work.
+**The PM sees a working walkthrough weekly** — the scenario demo, run, as it
+stands that week. It confirms we are solving the right problem; it is not an
+acceptance gate.
 
 **Done is an entrance, not a reminder.** Demos, docs and DX tests get dropped
 because they are tracked apart from the code and postponed one day at a time. So
-they move to the front: the usage, the documentation paragraph and what the demo
-will show exist *before* implementation starts, where they are still a page and
-not a branch. Engineers reach for the code first and product asks how it will be
-used first; putting the answer at the entrance settles that argument once instead
-of at the end of every use case. A use case with merged code and no docs is still
-not done, and the board still shows it that way — but by then it is a formality.
+they move to the front: the scenario is running before we build anything, and the
+usage and the documentation paragraph are written before implementation starts,
+while they are still a page and not a branch. Engineers reach for the code first
+and product asks how it will be used first — putting the answer at the entrance
+settles that argument once, instead of at the end of every use case.
 
 ---
 
@@ -307,12 +307,11 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
   loud what the problem is. Most disagreements about *how* are unnoticed
   disagreements about *what*.
 - **No unprepared meeting.** Everyone arrives having read the digest or the
-  pre-read; the lead arrives with an agenda — one question per item, each with a
-  recommendation. A meeting without one is moved, not endured.
-- **A slot has to be able to collect comments.** If nothing about the thing
-  could change as a result of showing it, it belongs in the channel. Showing
-  beats telling: a running demo, an open diff, the failing test — when nothing is
-  required of the room, the room stops listening.
+  pre-read, and the lead arrives with the questions that need deciding (§3). A
+  meeting without that is moved, not endured.
+- **Showing beats telling.** A running demo, an open diff, the failing test. If
+  nothing could change as a result of showing it, it belongs in the channel —
+  when nothing is required of the room, the room stops listening.
 - **Design and implementation in one pass.** The same session settles the design
   *and* the approach, so AI goes straight from it to a finished PR. Splitting
   across two sessions is the exception, for genuinely new ground.
@@ -417,15 +416,14 @@ than one defensible answer — a design question in a bug's clothes. The tell is
 quick: if a reviewer could disagree with the *expected value in the test* rather
 than with the implementation, you have design on your hands.
 
-For everything that does come here, a topic is opened on **how it will be
-used** — the snippet, the documentation paragraph, the demo — and the API is
-derived from that in the room. Product asks how it will be used and demonstrated
-before deciding whether the code should exist at all, and that question is
-cheapest to answer here, where the answer is a paragraph rather than a branch.
+For everything that does come here, the topic is opened on **how it will be
+used** (§7) and the API is derived from that in the room — the question product
+asks before deciding whether the code should exist is cheapest to answer here,
+where the answer is a paragraph rather than a branch.
 
-The brief grows into the **design note** in the same file, so every revision is a diff with a one-line "what changed and why",
-and the current version is the file rather than the newest comment. The note is
-what the team argues about; the probe is exhibit A, not the proposal.
+The brief grows into the **design note** in the same file, so every revision is a
+diff with a one-line "what changed and why". The note is what the team argues
+about; the probe is exhibit A, not the proposal.
 *"Rework it: use an event instead of a callback, and define what happens on
 detach."* Every conclusion lands back in the note. **Right problem, wrong
 shape** is a first-class outcome: the probe is discarded and the next revision
@@ -460,7 +458,7 @@ detach, concurrency, serialization, back-compat? What is the blast radius?
 Comment in the PR and AI revises; reviewers do not push fixes themselves, because
 asking keeps the rule harvestable. AI then carries the PR to the gate on its own,
 sweeping unresolved comments and red checks until everything is green, and waits
-there — the approval is not its to give. Anything with design content is decided
+there: outside the fast lane (§8) the approval is not its to give. Anything with design content is decided
 in the design session by the people who agreed the design; small and routine
 changes async. Bouncing back to Stage 3 is a success, not a failure.
 
@@ -502,10 +500,9 @@ with the alternatives to accepting it, including solving it outside Flow; a
 sketch of the API and what it touches; and, kept separate, what AI verified
 versus what it assumed.
 
-**The probe PR** — the problem in one paragraph; what the probe demonstrates;
-what it does *not* settle; and the condition that would make this shape wrong. It
-carries the calling code too — what a user would write, compiling against a stub
-— because that is the cheapest way to see how the thing will be used.
+**The probe PR** — the problem in one paragraph; what it demonstrates, including
+the calling code a user would write, compiling against a stub; what it does *not*
+settle; and the condition that would make this shape wrong.
 
 **The design note** — the brief, one revision later, and it opens with the use,
 not the API: the code someone writes in their own application, the paragraph of
@@ -557,11 +554,11 @@ and it stays out of the areas listed above. What it must state is the invariant
 it preserved — behaviour unchanged, only the call sites moved — how it was
 preserved, and how that was proved. **Every place where the mechanical rule had
 to be broken is listed, and a single exception takes the PR out of the lane** to
-a reviewer; a long list means the change was never routine. Merging stays a
-person's act: the approval is what stops these PRs from waiting in a queue they
-have nothing to gain from. The judgement here is about the class of change, taken
-once — and what keeps it honest is the weekly read below and the fact that a
-revert is one command.
+a reviewer; a long list means the change was never routine. The approval is what
+keeps these PRs out of a queue they have nothing to gain from — merging is still
+somebody's act. The judgement is about the class of change, taken once, and what
+keeps it honest is the weekly read below and the fact that a revert is one
+command.
 
 Plus **one random PR per week, read in full.** This is our calibration: it tells
 us whether the descriptions we trust match the code. A mismatch is a process
