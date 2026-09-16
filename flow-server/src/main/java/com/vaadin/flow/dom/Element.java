@@ -1562,9 +1562,14 @@ public class Element extends Node<Element> {
      * iterates the theme names present when {@link Set#iterator()} was called.
      * <p>
      * Since the {@code theme} attribute value is space separated, a theme name
-     * added to the set cannot contain spaces. Use
-     * {@link #setAttribute(String, String)} to set a space separated value in
-     * one go.
+     * cannot contain spaces. {@link Set#add(Object)} still accepts a space
+     * separated value for backwards compatibility, adding each theme name in it
+     * and logging a warning, but all the other operations treat the value they
+     * are given as a single theme name, so for example
+     * {@code contains("badge success")} is {@code false}. Use
+     * {@link com.vaadin.flow.component.HasTheme#addThemeNames(String...)} or
+     * {@link #setAttribute(String, String)} to set several theme names in one
+     * go.
      * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a

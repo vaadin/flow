@@ -24,8 +24,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.Element;
@@ -44,7 +47,10 @@ import com.vaadin.flow.signals.Signal;
  * theme names.
  * <p>
  * Since the attribute value is space separated, a theme name cannot contain
- * spaces, and adding such a name is rejected.
+ * spaces. {@link #add(String)} still accepts a space separated value for
+ * backwards compatibility, adding each theme name in it and logging a warning,
+ * but every other operation treats the value it is given as a single theme
+ * name.
  * <p>
  * The iterator returned by {@link #iterator()} is the one exception to the live
  * view: it iterates the theme names present when it was created.
@@ -57,6 +63,17 @@ import com.vaadin.flow.signals.Signal;
 public class ThemeListImpl implements ThemeList, Serializable {
     public static final String THEME_ATTRIBUTE_NAME = "theme";
     private static final String THEME_NAMES_DELIMITER = " ";
+
+    /**
+     * Space separated values that {@link #add(String)} has already warned
+     * about, so that adding the same value again, for example while rendering
+     * each item of a list, does not repeat the warning. Bounded so that
+     * generated values cannot make this grow without limit; once the bound is
+     * reached the warning is simply not logged again.
+     */
+    private static final Set<String> warnedValues = ConcurrentHashMap
+            .newKeySet();
+    private static final int WARNED_VALUES_LIMIT = 100;
 
     /**
      * Iterator over the theme names present when the iterator was created.
@@ -230,10 +247,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean add(String themeName) {
-        validate(themeName);
-        throwIfBound(themeName);
+        List<String> names = splitSpaceSeparatedValue(themeName);
+        names.forEach(this::throwIfBound);
         Set<String> themes = readThemesFromAttribute();
-        boolean changed = themes.add(themeName);
+        boolean changed = themes.addAll(names);
         if (changed) {
             updateThemeAttribute(themes);
         }
@@ -363,6 +380,38 @@ public class ThemeListImpl implements ThemeList, Serializable {
      * @param themeName
      *            the theme name to validate
      */
+    /**
+     * Splits the value given to {@link #add(String)} into the theme names to
+     * add. A value that contains spaces holds several theme names, which is
+     * accepted for backwards compatibility since the {@code theme} attribute
+     * itself is space separated, but logged as a warning because no other
+     * operation of this collection interprets a value that way.
+     *
+     * @param themeName
+     *            the theme name, or space separated theme names, to add
+     * @return the theme names to add, never empty
+     */
+    private static List<String> splitSpaceSeparatedValue(String themeName) {
+        if (themeName == null) {
+            throw new IllegalArgumentException("Theme name cannot be null");
+        }
+        String trimmed = themeName.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("Theme name cannot be empty");
+        }
+        if (trimmed.indexOf(' ') == -1) {
+            return List.of(trimmed);
+        }
+        List<String> names = List.of(trimmed.split(" +"));
+        if (warnedValues.size() < WARNED_VALUES_LIMIT
+                && warnedValues.add(themeName)) {
+            LoggerFactory.getLogger(ThemeListImpl.class).warn(
+                    "Theme name '{}' contains spaces and was added as the separate theme names {}. Add the theme names one by one, use HasTheme.addThemeNames(String...), or use Element.setAttribute(\"theme\", ...) to set a space separated value. Note that only add() splits such a value: contains(), remove() and the other operations treat it as a single theme name.",
+                    themeName, names);
+        }
+        return names;
+    }
+
     private void validate(String themeName) {
         if (themeName == null) {
             throw new IllegalArgumentException("Theme name cannot be null");
