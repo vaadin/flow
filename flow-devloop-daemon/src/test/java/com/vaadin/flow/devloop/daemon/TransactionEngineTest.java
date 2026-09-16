@@ -395,6 +395,55 @@ class TransactionEngineTest {
                 .replaceAll("\\s+", " ").strip());
     }
 
+    @Test
+    void render_reportsThePushAndTheRedefineWhenOneChangeSetCarriedBoth() {
+        // The resource leg runs first and the Java leg decides the outcome, so
+        // a mixed change-set used to print the redefine alone - leaving a
+        // stylesheet that reached the open page and one no page received
+        // looking exactly the same from the output.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.resources = 1;
+        tx.pushDetail = "pushed 1 stylesheet(s) in place";
+        tx.hotswapDetail = "redefineClasses(1); onHotswap completed=true";
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hot-reload",
+                "", System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        // In the order the legs ran, and the push's own words unchanged: the
+        // frontend-only apply says exactly this about the same edit.
+        assertEquals("hmr: 1 resource(s) copied, pushed 1 stylesheet(s)"
+                + " in place", lines.get(1));
+        assertEquals("hot-reload: redefineClasses(1); onHotswap completed=true",
+                lines.get(2));
+        // Both halves are in --json too; one field each, for the same reason.
+        assertTrue(tx.json().contains(
+                "\"actionsTaken\":\"redefineClasses(1); onHotswap completed=true\""),
+                () -> "the redefine should be in the JSON: " + tx.json());
+        assertTrue(
+                tx.json().contains(
+                        "\"resourcePush\":\"pushed 1 stylesheet(s) in place\""),
+                () -> "the push should be in the JSON: " + tx.json());
+    }
+
+    @Test
+    void render_claimsNoFrontendWorkForAChangeSetThatWasOnlyJava() {
+        // The counts the legs set are what the line is guarded on, so a Java
+        // edit on its own cannot grow an "hmr:" line describing nothing.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.hotswapDetail = "redefineClasses(1); onHotswap completed=true";
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hot-reload",
+                "", System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        assertEquals(2, lines.size(), () -> "unexpected lines: " + lines);
+        assertEquals("hot-reload: redefineClasses(1); onHotswap completed=true",
+                lines.get(1));
+    }
+
     private static TransactionEngine.Transaction frontendChange() {
         TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
         tx.frontendFiles = 1;
