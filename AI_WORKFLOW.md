@@ -180,6 +180,20 @@ out with the open questions written down and an opinion ready for the scope
 meeting. Nobody arrives at day 2 to be informed. In unfamiliar ground this takes
 longer than two days — what matters is the output, not the number.
 
+**The scenario is built before the product is.** Alongside the briefs, the team
+writes each candidate use case as a working demo in
+[vaadin/use-cases](https://github.com/vaadin/use-cases), where every feature has
+its own small application — and writes it *without* the thing we are about to
+build: prototypes, workarounds, hand-written glue, whatever makes the scenario
+run. The code is disposable; seeing what the user is trying to do, before we have
+an opinion about how to support it, is not.
+
+It also hands us the measure we otherwise argue about. When the feature exists,
+the same demo is rewritten on top of it, and what disappears — the glue, the
+workaround, the twenty lines that became two — is exactly what we built. A
+scenario that reads no better with the feature than without it is a use case we
+should not have taken.
+
 **Day 2 — the scope meeting.** The team agrees the **Use Case List**: what we
 will support, and what we identified and deliberately will **not**, one line of
 why each. The second list carries as much weight as the first — it makes
@@ -495,7 +509,8 @@ carries the calling code too — what a user would write, compiling against a st
 
 **The design note** — the brief, one revision later, and it opens with the use,
 not the API: the code someone writes in their own application, the paragraph of
-documentation as it will read, and what a demo would show. Only then the problem
+documentation as it will read, and the demo — usually the scenario already
+running in the use-cases application, rewritten on top of this. Only then the problem
 in the user's terms, goals and non-goals, the design and its contracts, behaviour
 at the edges, how we intend to build it, and the alternatives we rejected with
 the reason for each. The signatures follow from the usage; when they are written
