@@ -11,13 +11,13 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
+  // Each module boots a Quarkus application of its own rather than a servlet
+  // container, and the native leg needs GraalVM, so these run in the
+  // quarkus-tests job in validation.yml and in quarkus-native.yml
+  'flow-tests/vaadin-quarkus-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -276,7 +276,10 @@ function getTestFiles(folder, pattern) {
  * remove excluded elements from array
  */
 function grep(array, exclude) {
-  return array.filter(item => !exclude.includes(item));
+  // Entries match a module or any module under it, so excluding a directory
+  // with sub-modules takes one line rather than one per sub-module.
+  return array.filter(item => !exclude.some(
+    excluded => item === excluded || item.startsWith(excluded + "/")));
 }
 
 function sumWeights(items, slowMap) {

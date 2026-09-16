@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+# The upstream settings file mirrors external:* to the Google Maven Central
+# mirror (quarkusio/quarkus-ecosystem-ci#226), which would swallow requests
+# for the vaadin-prereleases repository. Exclude it from the mirror.
+if grep -q '<mirrorOf>external:\*</mirrorOf>' .github/quarkus-ecosystem-maven-settings.xml; then
+  sed -i 's|<mirrorOf>external:\*</mirrorOf>|<mirrorOf>external:*,!vaadin-prereleases</mirrorOf>|' \
+    .github/quarkus-ecosystem-maven-settings.xml
+fi
+
+MVN="mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -ntp -e -V -Drequire.home.node=true"
+
+# Update the Quarkus version. -N because quarkus.version is declared in the
+# root POM, and the extension and the test modules both resolve it from there.
+$MVN -N versions:set-property -Dproperty=quarkus.version -DnewVersion=${QUARKUS_VERSION} -DgenerateBackupPoms=false
+
+# Build the framework the extension is built on. Only what the Quarkus modules
+# need is of interest here, but they need most of it, so this is the same
+# install the validation workflow runs - without the Gradle plugin, which has
+# nothing to do with Quarkus and costs minutes.
+$MVN -DskipTests -DskipITs install -pl '!flow-plugins/flow-gradle-plugin'
+
+# The extension itself, and then the integration tests. Rooting the second
+# reactor at the suite keeps -am, which the fixture modules need, from
+# rebuilding the whole framework again.
+$MVN -pl vaadin-quarkus/runtime,vaadin-quarkus/deployment verify
+$MVN -f flow-tests/vaadin-quarkus-tests/pom.xml -am \
+  -pl production,development,embedded-plugin,push-dispatch-it,codestarts \
+  -Dcom.vaadin.testbench.Parameters.maxAttempts=2 verify
