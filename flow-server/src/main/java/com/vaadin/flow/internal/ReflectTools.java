@@ -94,6 +94,73 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Locates the field with the given name declared by the given class or by
+     * one of its superclasses, {@link Object} excluded.
+     * <p>
+     * Only classes are searched, not interfaces, and the first matching field
+     * found when walking up the hierarchy is returned. The field is made
+     * accessible, so that also a private field declared by a superclass can be
+     * read and written.
+     *
+     * @param cls
+     *            the class to start the lookup from
+     * @param fieldName
+     *            the name of the field
+     * @return an optional containing the field, or an empty optional if no
+     *         class in the hierarchy declares a field with that name
+     */
+    public static Optional<Field> findDeclaredField(Class<?> cls,
+            String fieldName) {
+        for (Class<?> current = cls; current != null
+                && current != Object.class; current = current.getSuperclass()) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return Optional.of(field);
+            } catch (NoSuchFieldException e) { // NOSONAR
+                // declared further up the hierarchy, if at all
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Locates the method with the given name and parameter types declared by
+     * the given class or by one of its superclasses, {@link Object} excluded.
+     * <p>
+     * Only classes are searched, not interfaces, and the first matching method
+     * found when walking up the hierarchy is returned. The method is made
+     * accessible, so that also a private method declared by a superclass can be
+     * invoked. Unlike {@link #findMethod(Class, String, Class...)}, not finding
+     * a method is not an error.
+     *
+     * @param cls
+     *            the class to start the lookup from
+     * @param methodName
+     *            the name of the method
+     * @param parameterTypes
+     *            the parameter types of the method
+     * @return an optional containing the method, or an empty optional if no
+     *         class in the hierarchy declares a method with that name and those
+     *         parameter types
+     */
+    public static Optional<Method> findDeclaredMethod(Class<?> cls,
+            String methodName, Class<?>... parameterTypes) {
+        for (Class<?> current = cls; current != null
+                && current != Object.class; current = current.getSuperclass()) {
+            try {
+                Method method = current.getDeclaredMethod(methodName,
+                        parameterTypes);
+                method.setAccessible(true);
+                return Optional.of(method);
+            } catch (NoSuchMethodException e) { // NOSONAR
+                // declared further up the hierarchy, if at all
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns the value of the java field.
      * <p>
      * Uses getter if present, otherwise tries to access even private fields
