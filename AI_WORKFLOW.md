@@ -255,7 +255,7 @@ becomes its lead (§3); before that, an issue has no owner and needs none.
 flowchart LR
     T["needs triage"] --> D["needs design"] --> R["ready to go"]
     R --> P["in progress"] --> V["on review"] --> Z["done"]
-    T -. "nothing to design" .-> R
+    T -. nothing to design .-> R
 ```
 
 **Half an hour before, a bot asks for updates in the team channel.** You either
@@ -342,8 +342,8 @@ flowchart TD
         F["PM walkthrough · the scenario, run"]
         G["one random PR, read in full"]
     end
-    C -- "design content" --> D
-    D -- "design agreed" --> C
+    C -- design content --> D
+    D -- design agreed --> C
 ```
 
 | Step | Target | Limit |
@@ -610,10 +610,10 @@ them is the suite.
 flowchart LR
     C["the week's review comments"] --> P["harvest PR · one batch<br/>a rule, a block, or a check"]
     P --> E{"eval suite"}
-    E -- "pass rate holds" --> S["what steers AI changes"]
-    E -- "pass rate drops" --> P
+    E -- pass rate holds --> S["what steers AI changes"]
+    E -- pass rate drops --> P
     S --> C
-    I["a process incident"] -- "adds a permanent task" --> E
+    I["a process incident"] -- adds a permanent task --> E
 ```
 
 - **A few dozen real tasks**, taken from issues we have already closed: the issue
