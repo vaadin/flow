@@ -448,7 +448,7 @@
             <!-- liberty-maven-plugin:install-feature goal installs new features but does not update
                          server.xml file. localConnector-1.0 needs to be present in server.xml for Arquillian -->
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <goals>
