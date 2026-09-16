@@ -50,7 +50,8 @@ import com.vaadin.flow.signals.Signal;
  * spaces. {@link #add(String)} still accepts a space separated value for
  * backwards compatibility, adding each theme name in it and logging a warning,
  * but every other operation treats the value it is given as a single theme
- * name.
+ * name, so {@code remove("badge success")} does not undo
+ * {@code add("badge success")}.
  * <p>
  * The iterator returned by {@link #iterator()} is the one exception to the live
  * view: it iterates the theme names present when it was created.
@@ -245,6 +246,12 @@ public class ThemeListImpl implements ThemeList, Serializable {
         return new ThemeListIterator();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A space separated value is split into the individual theme names, which
+     * are all added, and logs a warning. See {@link ThemeList#add(String)}.
+     */
     @Override
     public boolean add(String themeName) {
         List<String> names = splitSpaceSeparatedValue(themeName);
@@ -399,7 +406,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
         if (warnedValues.size() < WARNED_VALUES_LIMIT
                 && warnedValues.add(themeName)) {
             LoggerFactory.getLogger(ThemeListImpl.class).warn(
-                    "Theme name '{}' contains spaces and was added as the separate theme names {}. Add the theme names one by one, use HasTheme.addThemeNames(String...), or use Element.setAttribute(\"theme\", ...) to set a space separated value. Note that only add() splits such a value: contains(), remove() and the other operations treat it as a single theme name.",
+                    "Theme name '{}' contains spaces and was added as the separate theme names {}. Add one theme name per add() call, use HasTheme.addThemeNames(String...), or use Element.setAttribute(\"theme\", ...) to set a space separated value. Only add() splits such a value, so contains(), remove() and the other operations will not match it, and support for it may be removed in a future version.",
                     themeName, names);
         }
         return names;
