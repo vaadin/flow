@@ -47,6 +47,15 @@ public enum Transport {
      * {@code com.vaadin.experimental.ssePushTransport} feature flag to be
      * enabled. Selecting it while the feature flag is disabled throws a
      * {@code DisabledFeatureException}.
+     * <p>
+     * The event stream is an ordinary HTTP response that stays open, so over
+     * HTTP/1.1 every open tab holds one of the connections a browser allows per
+     * origin, six of them in Chrome. With that many tabs of the same
+     * application open, the next one fails to load at all rather than merely
+     * losing push. Serving the application over HTTP/2, where requests share a
+     * single connection, lifts the limit. {@link #WEBSOCKET} and
+     * {@link #WEBSOCKET_XHR} are unaffected, because browsers pool WebSocket
+     * connections separately.
      */
     SERVER_SENT_EVENTS("sse");
 
