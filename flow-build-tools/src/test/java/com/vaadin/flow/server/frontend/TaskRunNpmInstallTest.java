@@ -848,9 +848,10 @@ class TaskRunNpmInstallTest {
                 Mockito.eq("before")))
                 .thenReturn(Optional.of("2026-06-08T08:04:31.925Z"));
 
-        // No argument is passed, so npm applies its own configuration
-        assertFalse(resolveMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder), tools).isPresent());
+        // No argument is passed, so npm applies its own configuration, and a
+        // date blocks a version too new even though it is not a day count
+        assertMinimumFrontendPackageAge(new MockOptions(npmFolder), tools, true,
+                null);
     }
 
     @Test
