@@ -251,6 +251,13 @@ board, not to a person: we do not assign work, we make it possible to take, and
 knowing what to do next never requires asking someone. The person who takes it
 becomes its lead (§3); before that, an issue has no owner and needs none.
 
+```mermaid
+flowchart LR
+    T["needs triage"] --> D["needs design"] --> R["ready to go"]
+    R --> P["in progress"] --> V["on review"] --> Z["done"]
+    T -. "nothing to design" .-> R
+```
+
 **Half an hour before, a bot asks for updates in the team channel.** You either
 write yours there — which is where an update with no question in it belongs — or
 you claim a slot: *here is my PR, I will show it*. By the time the daily starts
@@ -322,6 +329,22 @@ skip their home team's ceremonies — two rhythms is what makes 100% impossible.
 - **Two or three issues per person, then stop adding.** Running more agents at
   once is nearly free; reading what they produce is not. The limit is the person
   steering, not the machine.
+
+```mermaid
+flowchart TD
+    subgraph day [Every day]
+        A["30 min before · the bot asks in the channel<br/>write your update, or claim a slot"] --> B["AI writes the digest<br/>blockers · review queue · needs judgement · routine"]
+        B --> C["the daily · 60 minutes<br/>slots of ten · then the digest from the top"]
+    end
+    subgraph week [Every week]
+        D["design session · 2 × 45 min<br/>material a day ahead · an assigned opener"]
+        E["harvest PR · conventions in one batch<br/>checked by the eval suite"]
+        F["PM walkthrough · the scenario, run"]
+        G["one random PR, read in full"]
+    end
+    C -- "design content" --> D
+    D -- "design agreed" --> C
+```
 
 | Step | Target | Limit |
 | --- | --- | --- |
@@ -582,6 +605,16 @@ ten ordinary ones worse, and we find out a month later, by accident.
 
 So **what steers AI is tested like code.** The tests are called evals; the set of
 them is the suite.
+
+```mermaid
+flowchart LR
+    C["the week's review comments"] --> P["harvest PR · one batch<br/>a rule, a block, or a check"]
+    P --> E{"eval suite"}
+    E -- "pass rate holds" --> S["what steers AI changes"]
+    E -- "pass rate drops" --> P
+    S --> C
+    I["a process incident"] -- "adds a permanent task" --> E
+```
 
 - **A few dozen real tasks**, taken from issues we have already closed: the issue
   as it arrived, and what a good answer looks like — tests pass, the convention
