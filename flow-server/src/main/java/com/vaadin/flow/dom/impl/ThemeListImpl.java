@@ -374,13 +374,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     /**
-     * Checks that the given theme name can be stored as a single entry of the
-     * space separated {@code theme} attribute.
-     *
-     * @param themeName
-     *            the theme name to validate
-     */
-    /**
      * Splits the value given to {@link #add(String)} into the theme names to
      * add. A value that contains spaces holds several theme names, which is
      * accepted for backwards compatibility since the {@code theme} attribute
@@ -412,6 +405,15 @@ public class ThemeListImpl implements ThemeList, Serializable {
         return names;
     }
 
+    /**
+     * Checks that the given theme name can be stored as a single entry of the
+     * space separated {@code theme} attribute. Used by every operation except
+     * {@link #add(String)}, which accepts a space separated value and splits it
+     * with {@link #splitSpaceSeparatedValue(String)} instead.
+     *
+     * @param themeName
+     *            the theme name to validate
+     */
     private void validate(String themeName) {
         if (themeName == null) {
             throw new IllegalArgumentException("Theme name cannot be null");
