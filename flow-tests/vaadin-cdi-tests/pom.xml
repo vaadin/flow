@@ -15,7 +15,7 @@
     <surefire.groups/>
     <surefire.excludedGroups>com.vaadin.cdi.itest.SlowTests</surefire.excludedGroups>
     <apache-tomcat.version>11.0.25</apache-tomcat.version>
-    <apache-tomee.version>10.1.0</apache-tomee.version>
+    <apache-tomee.version>10.2.0</apache-tomee.version>
     <wildfly.version>41.0.1.Final</wildfly.version>
     <openliberty.version>25.0.0.6</openliberty.version>
     <openliberty.template>jakartaee10</openliberty.template>
