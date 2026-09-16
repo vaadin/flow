@@ -109,6 +109,9 @@ public class ReflectTools implements Serializable {
      * @return an optional containing the field, or an empty optional if no
      *         class in the hierarchy declares a field with that name
      */
+    // S3011: reaching also private members is the point of the lookup, the
+    // callers read and write internal state of Vaadin's own classes
+    @SuppressWarnings("java:S3011")
     public static Optional<Field> findDeclaredField(Class<?> cls,
             String fieldName) {
         for (Class<?> current = cls; current != null
@@ -144,6 +147,9 @@ public class ReflectTools implements Serializable {
      *         class in the hierarchy declares a method with that name and those
      *         parameter types
      */
+    // S3011: reaching also private members is the point of the lookup, the
+    // callers invoke internal methods of Vaadin's own classes
+    @SuppressWarnings("java:S3011")
     public static Optional<Method> findDeclaredMethod(Class<?> cls,
             String methodName, Class<?>... parameterTypes) {
         for (Class<?> current = cls; current != null

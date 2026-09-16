@@ -624,6 +624,8 @@ class ReflectToolsTest {
                 .isEmpty());
     }
 
+    // S1068 and S1144: the members are looked up and used reflectively
+    @SuppressWarnings({ "java:S1068", "java:S1144" })
     private static class FieldsAndMethodsSuperclass {
         private final String superField = "super";
         private final String shadowed = "superShadowed";
@@ -633,6 +635,7 @@ class ReflectToolsTest {
         }
     }
 
+    @SuppressWarnings("java:S1068")
     private static class FieldsAndMethodsSubclass
             extends FieldsAndMethodsSuperclass {
         private final String subField = "sub";
