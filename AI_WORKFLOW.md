@@ -262,8 +262,10 @@ own PR, explained; a PR they are reviewing and want other eyes on; a demo of wha
 they built, run against a use case rather than described. A slot can also be a
 question that needs the room — something raised in the channel, on the forum, in
 an issue, in a contribution from outside. What a slot is not is a report on the
-week; that was written half an hour ago. The hour is for technical discussion and
-decisions, and when fewer slots are claimed the daily ends early.
+week; that was written half an hour ago. Between and around the slots we work the
+digest **from the top**: the contested and the urgent first, and whatever is left
+trivial never gets air time. The hour is for technical discussion and decisions,
+and when fewer slots are claimed the daily ends early.
 
 **The digest is the backbone of the plan.** AI writes it while the bot is asking,
 and it is a list of decisions rather than a news feed:
@@ -271,10 +273,12 @@ and it is a list of decisions rather than a news feed:
 - **blockers** first, even when the fix is five minutes — somebody is stopped;
 - **the review queue** in one line: how long it is, how old the oldest is. When
   it is long, the daily spends itself on reviews rather than on new issues;
-- **needs judgement** — what AI could not settle on its own, ordered by how much
-  judgement it takes: disagreement in the thread, public API, no precedent in the
-  code, wide blast radius, or AI's own confidence being low. Anything contested
-  becomes a slot, or goes to the design session;
+- **needs judgement** — new issues and new PRs alike, what AI could not settle on
+  its own, ordered by how much judgement it takes: disagreement in the thread,
+  public API, no precedent in the code, wide blast radius, or AI's own confidence
+  being low. Urgency lifts an item over a merely interesting one: a release
+  blocker, a regression already out there, somebody waiting on us. Anything
+  contested becomes a slot, or goes to the design session;
 - **routine** — proposed verdicts nobody objected to, confirmed in one go, and
   everything else to read on your own, never aloud.
 
