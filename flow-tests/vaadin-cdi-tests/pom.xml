@@ -355,6 +355,44 @@
       <build>
         <plugins>
           <plugin>
+            <!-- Bound to the phase before the unpack below rather than to the
+                 same one: executions sharing a phase run in plugin declaration
+                 order, and a plugin a profile adds runs ahead of one the module
+                 declares for every phase, so same-phase would delete what the
+                 unpack had just written.
+
+                 Every version now unpacks over the same path, so a target
+                 directory left by an earlier run has to go before the next one
+                 fills it: otherwise a 7.x distribution lands on top of the 6.x
+                 files it does not replace, and the server starts from a mix of
+                 the two. The unpack below is forced (overWrite) for the same
+                 reason - the plugin remembers what it unpacked in a marker file
+                 keyed by the coordinates alone, so with the directory gone and
+                 the marker kept it would skip the work and leave nothing behind
+                 for Arquillian to start. Re-unpacking costs a few seconds per
+                 run and is what keeps the install pristine. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>remove-previous-payara</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>test-compile</phase>
+                <configuration>
+                  <!-- The parent turns Ant errors into warnings; here a failed
+                       delete is what the unpack would then build a mixed
+                       install on, so fail instead. -->
+                  <failOnError>true</failOnError>
+                  <target>
+                    <delete dir="${project.build.directory}/payara"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <version>${maven-dependency-plugin.version}</version>
@@ -372,8 +410,26 @@
                       <artifactId>payara</artifactId>
                       <version>6.2025.6</version>
                       <type>zip</type>
-                      <overWrite>false</overWrite>
+                      <overWrite>true</overWrite>
                       <outputDirectory>target</outputDirectory>
+                      <!-- The distribution unpacks into a directory named
+                           after its major version - payara6 for 6.x, payara7
+                           for 7.x - which payara.home below would otherwise
+                           have to repeat, so a major upgrade of the zip alone
+                           leaves Arquillian pointed at a directory that does
+                           not exist ("... is not a valid GlassFish
+                           installation"). Rename the root entry to a plain
+                           "payara" while unpacking so the path holds for any
+                           version. The wildfly and tomcat profiles get this
+                           for free: their distributions carry the full version
+                           in the directory name, so their home paths
+                           interpolate the same property the artifact does. -->
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^payara[0-9]+</pattern>
+                          <replacement>payara</replacement>
+                        </fileMapper>
+                      </fileMappers>
                     </artifactItem>
                   </artifactItems>
                 </configuration>
@@ -388,7 +444,7 @@
               <excludedGroups>${surefire.excludedGroups}</excludedGroups>
               <groups>${surefire.groups}</groups>
               <systemPropertyVariables>
-                <payara.home>${project.build.directory}/payara6</payara.home>
+                <payara.home>${project.build.directory}/payara</payara.home>
                 <arquillian.launch>payara</arquillian.launch>
                 <vaadin.bowerMode>true</vaadin.bowerMode>
               </systemPropertyVariables>
