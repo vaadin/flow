@@ -168,7 +168,9 @@ public class LocationChangeEvent extends EventObject {
      * {@link HasErrorParameter#setErrorParameter(BeforeEnterEvent, ErrorParameter)}.
      * The router has already read the status code by the time the
      * after-navigation events are fired, so a value set from an
-     * {@link AfterNavigationEvent} is ignored and logs a warning.
+     * {@link AfterNavigationEvent} never reaches the client. It is still
+     * returned by {@link #getStatusCode()}, and setting it that late logs a
+     * warning.
      *
      * @param statusCode
      *            the http status code
@@ -177,7 +179,7 @@ public class LocationChangeEvent extends EventObject {
         if (navigationCommitted) {
             LoggerFactory.getLogger(LocationChangeEvent.class).warn(
                     """
-                            Ignoring setStatusCode({}) for location '{}': the navigation has already been committed and the status code {} has been used. \
+                            setStatusCode({}) for location '{}' has no effect on the response: the navigation has already been committed and status code {} has been returned to the client. \
                             Set the status code from HasErrorParameter.setErrorParameter(..), or reroute with BeforeEvent.rerouteToError(..) from a BeforeEnterObserver.""",
                     statusCode, location.getPath(), this.statusCode);
         }
@@ -202,10 +204,11 @@ public class LocationChangeEvent extends EventObject {
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
      * <p>
-     * This method has no effect: the router does not read the reroute target of
-     * a {@code LocationChangeEvent}, and the only event handing one out,
-     * {@link AfterNavigationEvent}, fires when the navigation can no longer be
-     * changed. Calling it logs a warning.
+     * This method has no effect on the navigation: the router does not read the
+     * reroute target of a {@code LocationChangeEvent}, and the only event
+     * handing one out, {@link AfterNavigationEvent}, fires when the navigation
+     * can no longer be changed. The target is still returned by
+     * {@link #getRerouteTarget()}, and setting it logs a warning.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -220,7 +223,7 @@ public class LocationChangeEvent extends EventObject {
         if (rerouteTarget != null) {
             LoggerFactory.getLogger(LocationChangeEvent.class).warn(
                     """
-                            Ignoring rerouteTo({}) for location '{}': LocationChangeEvent cannot reroute a navigation. \
+                            rerouteTo({}) for location '{}' has no effect: LocationChangeEvent cannot reroute a navigation, and the target is never read. \
                             Reroute from a BeforeEnterObserver or BeforeLeaveObserver using BeforeEvent.rerouteTo(..) or forwardTo(..) instead.""",
                     rerouteTarget.getClass().getName(), location.getPath());
         }
@@ -231,7 +234,8 @@ public class LocationChangeEvent extends EventObject {
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
      * <p>
-     * This method has no effect, see {@link #rerouteTo(NavigationHandler)}.
+     * This method has no effect on the navigation, see
+     * {@link #rerouteTo(NavigationHandler)}.
      *
      * @param rerouteTargetState
      *            the target navigation state of the rerouting, not {@code null}

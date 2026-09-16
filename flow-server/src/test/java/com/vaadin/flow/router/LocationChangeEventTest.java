@@ -28,6 +28,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.HttpStatusCode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -71,31 +73,37 @@ class LocationChangeEventTest {
     }
 
     @Test
-    void setStatusCode_afterNavigationEventFired_warnsThatValueIsIgnored() {
+    void setStatusCode_afterNavigationEventFired_warnsThatValueHasNoEffect() {
         new AfterNavigationEvent(event);
 
         event.setStatusCode(HttpStatusCode.FORBIDDEN.getCode());
 
         verify(logger).warn(
-                contains("Ignoring setStatusCode({}) for location '{}'"),
+                contains("setStatusCode({}) for location '{}' has no effect"),
                 eq(HttpStatusCode.FORBIDDEN.getCode()), eq("secret"),
                 eq(HttpStatusCode.OK.getCode()));
+        // the value is kept for the getter, it just never reaches the client
+        assertEquals(HttpStatusCode.FORBIDDEN.getCode(), event.getStatusCode());
     }
 
     @Test
-    void rerouteTo_warnsThatRerouteIsIgnored() {
+    void rerouteTo_warnsThatRerouteHasNoEffect() {
         NavigationHandler target = mock(NavigationHandler.class);
 
         event.rerouteTo(target);
 
-        verify(logger).warn(contains("Ignoring rerouteTo({})"),
+        verify(logger).warn(
+                contains("rerouteTo({}) for location '{}' has no effect"),
                 eq(target.getClass().getName()), eq("secret"));
+        // the target is kept for the getter, the router never reads it
+        assertSame(target, event.getRerouteTarget().orElseThrow());
     }
 
     @Test
     void rerouteTo_clearedWithNull_notLogged() {
         event.rerouteTo((NavigationHandler) null);
 
+        assertTrue(event.getRerouteTarget().isEmpty());
         verifyNoInteractions(logger);
     }
 }
