@@ -2693,6 +2693,61 @@ class ElementTest extends AbstractNodeTest {
                 "an interface the build does not collect should be rejected");
     }
 
+    @Test
+    void getJsInvoker_notAnInterface_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.getJsInvoker(ElementTest.class),
+                "only an interface can declare invoker methods");
+    }
+
+    @Test
+    void getJsInvoker_methodReturningAResult_schedulesAndReturnsIt() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        ResultJs invoker = element.getJsInvoker(ResultJs.class);
+        assertNotNull(invoker.toString(),
+                "the invoker should answer the methods of Object");
+
+        PendingJavaScriptResult result = invoker.readValue();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertNotNull(result,
+                "a method declaring a result should return the pending result");
+        assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+    }
+
+    @Test
+    void getJsInvoker_methodWithAnotherReturnType_throwsAndSchedulesNothing() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        assertThrows(IllegalStateException.class,
+                () -> element.getJsInvoker(UnsupportedJs.class).readValue());
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertTrue(
+                ui.getInternals().dumpPendingJavaScriptInvocations().isEmpty(),
+                "a method the invoker can not answer should not run in the browser either");
+    }
+
+    @JsInvoker
+    interface ResultJs extends Serializable {
+        @JsExpression("return this.value;")
+        PendingJavaScriptResult readValue();
+    }
+
+    @JsInvoker
+    interface UnsupportedJs extends Serializable {
+        @JsExpression("return this.value;")
+        String readValue();
+    }
+
     @JsInvoker
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")

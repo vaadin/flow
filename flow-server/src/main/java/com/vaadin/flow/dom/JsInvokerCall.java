@@ -131,6 +131,9 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
      *            <code>null</code>
      * @return the value returned by the implementation, or <code>null</code>
      *         for a void method
+     * @throws IllegalArgumentException
+     *             if the implementation does not implement
+     *             {@link #invokerType()}
      */
     public Object invokeOn(Object implementation) {
         if (!invokerType.isInstance(implementation)) {
@@ -141,8 +144,16 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
         try {
             return resolveMethod().invoke(implementation, arguments.toArray());
         } catch (IllegalAccessException | InvocationTargetException e) {
+            Throwable cause = e instanceof InvocationTargetException
+                    ? e.getCause()
+                    : e;
+            // What the implementation threw is what the caller wants to see
+            if (cause instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
             throw new IllegalStateException(
-                    "Could not run " + methodName + " on " + implementation, e);
+                    "Could not run " + methodName + " on " + implementation,
+                    cause);
         }
     }
 

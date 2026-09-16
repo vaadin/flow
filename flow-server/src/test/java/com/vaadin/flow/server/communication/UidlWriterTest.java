@@ -232,6 +232,32 @@ class UidlWriterTest {
                         + json);
     }
 
+    @Test
+    void encodeExecuteJavaScript_subscribedInvokerCall_addsTheReturnChannels() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                element.getNode(), invocation);
+        pending.then(value -> {
+        });
+
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending));
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(5, encoded.size(),
+                "the argument and the element should be followed by the two channels and the target: "
+                        + encoded);
+        ObjectNode target = (ObjectNode) encoded.get(4);
+        assertTrue(target.get("returns").asBoolean(),
+                "the target should tell the client that the call is subscribed to");
+        assertEquals(1, target.get("arguments").asInt());
+    }
+
     @JsInvoker
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")

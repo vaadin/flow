@@ -1074,6 +1074,23 @@ class BundleValidationTest {
 
     @ParameterizedTest
     @MethodSource("modes")
+    void bundleWithoutJsInvokerJavaScript_bundleRebuild(Mode mode) {
+        setupMode(mode);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).remove(
+                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+
+        assertTrue(needsBuild,
+                "a bundle built before the invoker JavaScript existed should be rebuilt");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
     void jsInvokerJavaScriptChanged_bundleRebuild(Mode mode) {
         setupMode(mode);
 

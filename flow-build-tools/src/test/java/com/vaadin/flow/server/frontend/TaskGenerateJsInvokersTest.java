@@ -32,6 +32,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskGenerateJsInvokersTest {
@@ -45,6 +46,11 @@ class TaskGenerateJsInvokersTest {
         void showGreeting();
     }
 
+    @JsInvoker
+    public interface NothingJs extends Serializable {
+        void notDeclared();
+    }
+
     @TempDir
     File temporaryFolder;
 
@@ -56,8 +62,9 @@ class TaskGenerateJsInvokersTest {
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();
         Options options = new Options(Mockito.mock(Lookup.class),
-                new DefaultClassFinder(Set.of(GreeterJs.class)), null)
-                .withFrontendDirectory(frontendFolder);
+                new DefaultClassFinder(
+                        Set.of(GreeterJs.class, NothingJs.class)),
+                null).withFrontendDirectory(frontendFolder);
         task = new TaskGenerateJsInvokers(options);
     }
 
@@ -81,6 +88,17 @@ class TaskGenerateJsInvokersTest {
                         + content);
         assertTrue(content.contains("\"showGreeting/0\": async function () {"),
                 "the no-argument overload should be generated too: " + content);
+    }
+
+    @Test
+    void invokerWithoutDeclaredJavaScript_isNotRegistered()
+            throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertFalse(content.contains(NothingJs.class.getName()),
+                "an interface that declares no JavaScript has nothing to register: "
+                        + content);
     }
 
     @Test

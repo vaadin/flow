@@ -1999,21 +1999,22 @@ public class Element extends Node<Element> {
             if (method.getDeclaringClass() == Object.class) {
                 return method.invoke(this, args);
             }
+            Class<?> returnType = method.getReturnType();
+            boolean returnsResult = returnType
+                    .isAssignableFrom(PendingJavaScriptResult.class);
+            // Checked before scheduling, so that a method the invoker can not
+            // answer does not run in the browser either
+            if (returnType != void.class && !returnsResult) {
+                throw new IllegalStateException("Method " + method.getName()
+                        + " of " + invokerType.getName()
+                        + " must return void or PendingJavaScriptResult");
+            }
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
             PendingJavaScriptResult result = element
                     .scheduleInvokerCall(new JsInvokerCall(invokerType,
                             method.getName(), arguments));
-            if (method.getReturnType() == void.class) {
-                return null;
-            }
-            if (method.getReturnType()
-                    .isAssignableFrom(PendingJavaScriptResult.class)) {
-                return result;
-            }
-            throw new IllegalStateException("Method " + method.getName()
-                    + " of " + invokerType.getName()
-                    + " must return void or PendingJavaScriptResult");
+            return returnsResult ? result : null;
         }
     }
 
