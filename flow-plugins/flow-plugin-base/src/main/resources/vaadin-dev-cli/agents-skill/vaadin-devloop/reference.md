@@ -32,6 +32,9 @@ dev server: [vite] Internal server error: Transform failed with 1 error: | [PARS
                                                               ← what and where, without opening the log
 ```
 
+A change-set that mixes Java with a stylesheet prints **both** lines, `hmr:` then
+`hot-reload:`, in the order the legs ran. Only the `hmr:` line answers for the stylesheet.
+
 A `no changes (... pom.xml changed; nothing to recompile or restart)` line is a *positive*
 answer, not a shrug: the pom edit was noticed, Maven re-resolved, and neither any module's
 compile classpath nor the app's runtime classpath moved — so the running app is already what the
@@ -60,7 +63,8 @@ logged since the last apply, which is where a failure that only appears when som
 the app turns up.
 
 `--json` gives `outcome`, `classification`, `changeSet`, `diagnostics[]`
-(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`.
+(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`, and a field
+per leg: `actionsTaken` for the redefine, `resourcePush` for the push.
 
 ## Which edits need a page reload
 
