@@ -87,6 +87,12 @@ final class TransactionEngine {
         volatile boolean superseded;
         volatile int duplicates;
         volatile String hotswapDetail = "";
+        /**
+         * What the resource push reported. Kept apart from
+         * {@link #hotswapDetail}: the redefine runs after the push, so one
+         * shared field would report only the later leg.
+         */
+        volatile String pushDetail = "";
         volatile String escalation = "";
         volatile int resources;
         /** Classpath copies removed because their source is gone. */
@@ -178,6 +184,7 @@ final class TransactionEngine {
                     + ",\"classes\":" + Json.strings(classes)
                     + ",\"diagnostics\":" + Json.array(diag)
                     + ",\"actionsTaken\":\"" + Json.escape(hotswapDetail)
+                    + "\",\"resourcePush\":\"" + Json.escape(pushDetail)
                     + "\",\"escalation\":"
                     + (escalation.isEmpty() ? "null"
                             : "\"" + Json.escape(escalation) + "\"")
@@ -273,13 +280,18 @@ final class TransactionEngine {
         if (current != null) {
             log.line("module set changed; re-seeding the change baseline");
         }
-        Compile fresh = new Compile(project);
+        // The outgoing baseline is handed over so the classpath each module
+        // was compiled against survives the hand-off: a module set changes
+        // only because the application gained or lost a reactor dependency,
+        // and that is the very move the compile leg has to see.
+        Compile fresh = new Compile(project, current);
         // A baseline built while the app is already running must not swallow a
         // frontend edit made since it started - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the
         // bug the frontend leg exists to fix. With no app running there is
         // nothing to be newer than: starting it re-seeds through onConnector.
-        fresh.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE));
+        long started = app.startedAtMillis().orElse(Long.MAX_VALUE);
+        fresh.seedFromDisk(started, started);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -687,7 +699,14 @@ final class TransactionEngine {
                     Map<String, String> fields = Connector.fields(reply.get());
                     tx.duplicates = parseInt(fields.get("dupes"));
                     if ("OK".equals(fields.get("status"))) {
-                        Optional<String> blocker = blockedReason(fields);
+                        // Per class rather than per source: a class added to a
+                        // file the application has always had is still a class
+                        // it has never had. Answered from the snapshot taken
+                        // when the application was launched, so it does not
+                        // matter that this apply has already written to the
+                        // classpath by now.
+                        Optional<String> blocker = blockedReason(fields,
+                                compile.classesUnknownToTheApp(tx.classes));
                         if (blocker.isEmpty()) {
                             // What the JVM accepted, the app still has to run.
                             blocker = loggedFailure(tx, log);
@@ -750,7 +769,7 @@ final class TransactionEngine {
             app.stop();
             AppProcess.Startup startup;
             try {
-                startup = app.start(log);
+                startup = app.start(log, "apply");
             } catch (java.io.IOException e) {
                 tx.runtimeMs = (System.nanoTime() - runtimeStart) / 1_000_000;
                 return finish(tx, Outcome.FAILED, "restart: " + e.getMessage(),
@@ -1194,7 +1213,7 @@ final class TransactionEngine {
             }
             Map<String, String> fields = Connector.fields(reply.get());
             int pushed = parseInt(fields.get("pushed"));
-            tx.hotswapDetail = pushed > 0
+            tx.pushDetail = pushed > 0
                     ? "pushed " + pushed + " stylesheet(s) in place"
                     : "true".equals(fields.get("browserReload"))
                             ? "browser reload requested"
@@ -1244,16 +1263,44 @@ final class TransactionEngine {
 
     void onConnector(Connector connector) {
         this.connector = connector;
-        Compile current = compile;
-        if (connector != null && current != null) {
-            // An app that has just registered is running exactly what is on
-            // disk,
-            // so that becomes the new "already live" baseline. Before the first
-            // apply there is no compile leg yet, and none is needed: the first
-            // one
-            // built seeds itself.
-            current.seedFromDisk();
+        if (connector == null) {
+            return;
         }
+        Compile current = compile;
+        if (current == null) {
+            // Built here rather than left to the first apply, which is what
+            // this baseline used to wait for. "What the application started
+            // with" is only true of the disk at this moment: a compile leg
+            // built at the first apply instead seeds itself from a disk that
+            // has moved on, and a source added in between is then recorded as
+            // one the application has always had. Reported as a new
+            // @Component that hot-reloaded, and - when something else had
+            // already compiled it - as no change at all.
+            //
+            // Only from a classpath that is already resolved: this is the
+            // registration connection being answered, and it must not wait on
+            // Maven. A project that is mid-resolve leaves the baseline to the
+            // first apply, exactly as before.
+            //
+            // Seeded by compileFor as it is built, and deliberately not seeded
+            // again below: that seed carries the startup cutoff which keeps a
+            // frontend file edited while the application was starting visible
+            // to the first apply, and a second pass with no cutoff would
+            // declare it live and answer "no changes" over it.
+            if (launch != null) {
+                launch.projectIfResolved().ifPresent(
+                        project -> compileFor(project, launch.log()));
+            }
+            return;
+        }
+        // An app that has just registered is running exactly what is on disk -
+        // for the frontend, which a restart re-reads whole, so the cutoff
+        // there is open. Not for the Java side: this is handled a moment after
+        // the command that waited for the registration returned, and a source
+        // written in that moment is not something the application started
+        // with.
+        current.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE),
+                Long.MAX_VALUE);
     }
 
     /**
@@ -1514,11 +1561,19 @@ final class TransactionEngine {
     }
 
     /**
-     * Cases where the JVM accepts the redefine but the change still is not
-     * live. Both were measured in P0.5, and both would otherwise be reported as
+     * Cases where the JVM accepts the redefine - or has nothing to redefine -
+     * and the change still is not live. Each would otherwise be reported as
      * {@code Stable} on an app that is stale or, worse, broken.
+     *
+     * @param fields
+     *            the connector's reply, parsed
+     * @param unknownClasses
+     *            the binary names of the change-set's classes the running
+     *            application never had; see
+     *            {@link Compile#classesUnknownToTheApp}
      */
-    private Optional<String> blockedReason(Map<String, String> fields) {
+    static Optional<String> blockedReason(Map<String, String> fields,
+            List<String> unknownClasses) {
         String entities = fields.getOrDefault("entities", "-");
         if (!"-".equals(entities)) {
             return Optional.of("entity mapping cannot hot reload (" + entities
@@ -1536,6 +1591,26 @@ final class TransactionEngine {
             return Optional.of("frontend imports changed (" + frontend
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
+        }
+        // A bean the running application has never seen. Component scanning is
+        // a startup act, and HotswapAgent's Spring plugin - which would rescan
+        // - is disabled for stability (see Launch), so no mechanism short of a
+        // restart turns a new @Component into a bean definition. Without this
+        // the apply reports Stable and the view that injects the new bean
+        // fails with a NoSuchBeanDefinitionException that names Spring rather
+        // than the restart nobody was told to do.
+        //
+        // The app answers which of the change-set's classes carry a stereotype
+        // and the inventory answers which of them the app never had, because
+        // neither can answer both: a class the app has loaded may still be one
+        // it acquired seconds ago from HotswapAgent's watcher, and the daemon
+        // cannot read an annotation off a JVM it is not in.
+        String newBeans = unknownIn(fields.getOrDefault("stereotypes", "-"),
+                unknownClasses);
+        if (!newBeans.isEmpty()) {
+            return Optional.of("new Spring bean (" + newBeans
+                    + "): component scanning ran at startup, so the running"
+                    + " context has no definition for it");
         }
         // A method body inside a bean is fine: the proxy delegates to the
         // target
@@ -1569,6 +1644,35 @@ final class TransactionEngine {
                     + "): the live proxy was generated from the old shape");
         }
         return Optional.empty();
+    }
+
+    /**
+     * The classes in one of the connector's {@code |}-separated lists that the
+     * running application never had, named as a reader would name them.
+     * <p>
+     * Matched on binary names, which is why the connector reports that field
+     * under them: two classes in different packages can share a simple name,
+     * and one of them answering for the other is either a restart nobody needed
+     * or a bean nobody was told about. Only the message shortens them again.
+     *
+     * @param reported
+     *            the field value, or {@code -} for none
+     * @param unknownClasses
+     *            the binary names the application never had
+     * @return the matching classes by simple name, or empty for none
+     */
+    private static String unknownIn(String reported,
+            List<String> unknownClasses) {
+        if ("-".equals(reported) || unknownClasses.isEmpty()) {
+            return "";
+        }
+        List<String> matches = new ArrayList<>();
+        for (String name : reported.split("\\|")) {
+            if (unknownClasses.contains(name)) {
+                matches.add(name.substring(name.lastIndexOf('.') + 1));
+            }
+        }
+        return String.join("|", matches);
     }
 
     private static int parseInt(String value) {
@@ -1698,8 +1802,8 @@ final class TransactionEngine {
                     + " resource(s) removed from the classpath");
         }
         if ((tx.resources > 0 || tx.resourcesRemoved > 0)
-                && !tx.hotswapDetail.isEmpty()) {
-            clauses.add(tx.hotswapDetail);
+                && !tx.pushDetail.isEmpty()) {
+            clauses.add(tx.pushDetail);
         }
         if (tx.themeFiles > 0) {
             clauses.add(tx.themeFiles + " theme file(s) pushed in place");
@@ -1716,9 +1820,19 @@ final class TransactionEngine {
                     + " frontend file(s) served live, browser reloaded");
         }
         if (clauses.isEmpty()) {
-            return tx.resources + " resource(s) copied, " + tx.hotswapDetail;
+            return tx.resources + " resource(s) copied, " + tx.pushDetail;
         }
         return String.join(", ", clauses);
+    }
+
+    /**
+     * Whether this change-set had a frontend half at all. Read from the counts
+     * the legs set as they succeeded, never from the change-set, so no line can
+     * name work that was not done.
+     */
+    private static boolean hasFrontendHalf(Transaction tx) {
+        return tx.resources > 0 || tx.resourcesRemoved > 0 || tx.themeFiles > 0
+                || tx.servedLive > 0 || "vite".equals(tx.frontendMode);
     }
 
     /**
@@ -1782,6 +1896,12 @@ final class TransactionEngine {
                 lines.add("hmr: " + hmrDetail(tx));
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
+                // A mixed change-set pushed its frontend half first, and
+                // without this line "pushed" and "no browser connected" look
+                // the same. In the order the legs ran.
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
                 lines.add("hot-reload: " + tx.hotswapDetail
                         + (tx.duplicates > 0 ? "; " + tx.duplicates
                                 + " duplicate class copy/copies also redefined"

@@ -240,8 +240,12 @@ dropped during discovery and never ranked, and a project declaring 17 is still r
 release, because compiling a 17-target project at 21 would let code through the dev
 loop that Maven then rejects.
 
-Candidates are every directory under `~/.jdks` plus `JAVA_HOME` and `JDK_HOME`, and
-each one's version and vendor are read from its own `release` file
+Candidates are every directory under `~/.jdks` and under `~/.vaadin/jdk`, plus
+`JAVA_HOME` and `JDK_HOME`. The second of those is where the Vaadin plugins for
+IntelliJ IDEA, VS Code and Eclipse install the JetBrains Runtime they offer to
+download, so a developer who took that offer already has the JVM this loop wants —
+without it the whole session would run on a stock JDK with a JBR sitting on disk. Each
+candidate's version and vendor are read from its own `release` file
 (`IMPLEMENTOR="JetBrains s.r.o."` is what makes it a JBR) rather than guessed from its
 directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
 the requirement wins; failing that, the closest JDK, and the log says what that cost.
@@ -418,6 +422,29 @@ its answer rather than claiming success.
   old one. This includes Spring Data repositories, which are bare interfaces with
   no annotation to spot them by, so the connector keys on the loaded proxy
   instead.
+- **A bean or an entity the application has never seen must restart too.**
+  Component scanning runs once, at startup, over the classes that existed then,
+  and HA's Spring plugins that would rescan are disabled (below) — so a class
+  that is only now being given `@Component`, `@Service`, `@Repository`,
+  `@Controller`, `@RestController`, `@ControllerAdvice`,
+  `@RestControllerAdvice` or `@Configuration` gets no bean definition, and the
+  first injection point fails with `NoSuchBeanDefinitionException` naming
+  Spring rather than the loop. A brand-new `@Entity` is in exactly the same
+  position against a metamodel and a schema fixed at startup. It is the one
+  escalation with no redefine behind it: the class was never loaded, so there
+  is nothing to swap and every signal read off a loaded class is empty. It
+  takes both sides to say so, and deliberately: `REDEFINE` answers which of
+  the change-set's classes carry a stereotype (`stereotypes=`, read out of the
+  compiled bytes — the same reading `@Entity` already needed), and the
+  daemon's own inventory answers which of them the running application never
+  had. **Asking the app whether it has loaded the class does not work**:
+  HotswapAgent watches the output directory on its own schedule and defines a
+  new class when it sees one, so that answer flips between applies — and a
+  defined class is still not a bean definition. The inventory is re-seeded
+  from disk at every registration, so it does not flip. A stereotype composed
+  through a project's own meta-annotation is the known gap: only the custom
+  annotation is in the class's constant pool, so that one is still a restart
+  to ask for by hand.
 - **Hot-swap coverage differs sharply between stock HotSpot and a JBR.** Only a
   JBR gets `-XX:+AllowEnhancedClassRedefinition`; on stock HotSpot a structural
   change is simply rejected and escalates. A project needing a Java version no
@@ -470,6 +497,22 @@ its answer rather than claiming success.
   restart then works from bytecode a normal Maven build would never have
   produced. Such a project needs `mvn compile` rather than `apply`; honouring
   the module's `proc` and `annotationProcessorPaths` configuration is not
+  implemented.
+- **The compiler plugin's configuration is not read**, except for the release
+  level (see above). The option list is fixed — `--release`, `-encoding UTF-8`,
+  `-nowarn`, `-proc:none`, `-parameters`, `-g` — so `<compilerArgs>`,
+  `--enable-preview` and `-Werror` are not honoured. `-parameters` and `-g` are
+  passed unconditionally rather than looked up: a normal build has both on (the
+  plugin defaults `<debug>` to true, `spring-boot-starter-parent` sets
+  `<parameters>true</parameters>`), and both live in a parent outside the
+  checkout that the pom reader cannot see. Without `-parameters` a recompiled
+  Spring Data repository throws "for queries with named parameters you need to
+  provide names for method parameters", from code nobody edited.
+- **`target/classes` is shared with Maven, and the daemon writes into it last.**
+  A class newer than its source makes `mvn compile` a no-op, so after a session
+  `mvn verify` tests whatever the in-loop compile did differently — no
+  annotation processing, no project compiler arguments. `mvn clean` is the
+  recovery; compiling into an output directory of the daemon's own is not
   implemented.
 - **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
   (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and

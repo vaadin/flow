@@ -318,6 +318,41 @@ final class Launch {
     }
 
     /**
+     * The resolved project if a sound one is already in hand, and never a
+     * resolution.
+     * <p>
+     * For callers on a path that must not block: {@link #project()} runs Maven
+     * when the stamp has moved, which is seconds, and the registration
+     * connection is being answered on the thread that would wait for it.
+     * <p>
+     * The fallback does not count. A resolution that wrote a current stamp and
+     * then failed to be read back leaves the application module alone standing
+     * in for the project, and a caller that builds on that builds on the wrong
+     * module set - which the next apply then reports as "module set changed"
+     * with no pom edit behind it. Such a caller is better off waiting for the
+     * apply that can resolve properly.
+     *
+     * @return the current project, or empty if resolving - or resolving again -
+     *         is what it would take to have a sound one
+     */
+    Optional<Project> projectIfResolved() {
+        Project current = project;
+        return current != null && !classpathUnusable && stampIsCurrent()
+                ? Optional.of(current)
+                : Optional.empty();
+    }
+
+    /**
+     * The daemon's own sink, for a caller that has nobody else to report to.
+     * <p>
+     * Work triggered by an application registering has no client waiting on it,
+     * and what it has to say belongs in {@code daemon.log} rather than nowhere.
+     */
+    Log log() {
+        return log;
+    }
+
+    /**
      * Set when {@link #project()} last had to fall back; empty when it is
      * sound.
      */
@@ -976,8 +1011,22 @@ final class Launch {
         return found;
     }
 
-    /** The full command line, in the order a human would want to read it. */
-    List<String> command(int daemonPort, String token) throws IOException {
+    /**
+     * The full command line, in the order a human would want to read it.
+     *
+     * @param daemonPort
+     *            the port the daemon listens on
+     * @param token
+     *            the handshake token the app registers with
+     * @param launchKind
+     *            why the app is being launched - {@code start}, {@code restart}
+     *            or {@code apply}. The three produce a JVM that is otherwise
+     *            identical, so the app can only tell them apart if the daemon
+     *            says which it is.
+     * @return the command line, ready for a {@link ProcessBuilder}
+     */
+    List<String> command(int daemonPort, String token, String launchKind)
+            throws IOException {
         Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
@@ -1044,6 +1093,10 @@ final class Launch {
                         .add("-D" + name + "=" + System.getProperty(name)));
         cmd.add("-Dvaadin.devloop.daemonPort=" + daemonPort);
         cmd.add("-Dvaadin.devloop.token=" + token);
+        // Why this JVM exists, for the usage statistics the app reports. Only
+        // the daemon knows: a restart and an escalated apply are both just "a
+        // new process with the same three properties" from inside the app.
+        cmd.add("-Dvaadin.devloop.launch=" + launchKind);
         // Where the connector reads the bytes of a class it is asked to
         // redefine.
         // A list, in classpath order, because a change can land in any in-loop
@@ -1109,7 +1162,7 @@ final class Launch {
      */
     private static final Set<String> LOOP_OWNED = Set.of(
             "spring.devtools.restart.enabled", "vaadin.launch-browser",
-            "vaadin.devloop.classes");
+            "vaadin.devloop.classes", "vaadin.devloop.launch");
 
     /** Minimal sink so provisioning progress reaches the client that asked. */
     interface Log {

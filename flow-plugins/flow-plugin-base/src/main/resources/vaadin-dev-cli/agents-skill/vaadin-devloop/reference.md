@@ -32,6 +32,9 @@ dev server: [vite] Internal server error: Transform failed with 1 error: | [PARS
                                                               ← what and where, without opening the log
 ```
 
+A change-set that mixes Java with a stylesheet prints **both** lines, `hmr:` then
+`hot-reload:`, in the order the legs ran. Only the `hmr:` line answers for the stylesheet.
+
 A `no changes (... pom.xml changed; nothing to recompile or restart)` line is a *positive*
 answer, not a shrug: the pom edit was noticed, Maven re-resolved, and neither any module's
 compile classpath nor the app's runtime classpath moved — so the running app is already what the
@@ -60,7 +63,8 @@ logged since the last apply, which is where a failure that only appears when som
 the app turns up.
 
 `--json` gives `outcome`, `classification`, `changeSet`, `diagnostics[]`
-(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`.
+(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`, and a field
+per leg: `actionsTaken` for the redefine, `resourcePush` for the push.
 
 ## Which edits need a page reload
 
@@ -69,7 +73,8 @@ the app turns up.
 | CSS/icons under `META-INF/resources/` | updates in place, **no reload** |
 | Java in a **component/view** class (method bodies, string literals, most view code) | updates in place, **no reload** |
 | Java in a **plain class** (formatter, mapper, helper) called from a renderer | live immediately, but already-rendered output keeps its old values — `apply` says so and tells you to interact with the view or reload |
-| Structural Java (new fields/beans, new repository methods, changed routes or annotations) | restart → **reload the page** |
+| Structural Java — a new field, a new method, a new inner class — in an ordinary class | on a **JetBrains Runtime** enhanced class redefinition takes it like a method body: hot-swapped in place, **no reload**. On a stock JDK the JVM rejects the redefine, so `apply` **restarts** and names the reason |
+| Structural Java in a Spring bean, a Spring Data repository or any other proxied type | the live proxy was generated from the old shape, so `apply` **restarts** whatever the JVM → **reload the page** |
 | A JPA entity's mapping, or adding `@Entity` to a class | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
 | A deleted `src/main/resources/` file | the copy under `target/classes` is removed too, or the app would go on serving it; a public one then **reloads the page**, a startup one **restarts** |
@@ -138,7 +143,10 @@ test can cover.
   starter does).
 - Hot-swap coverage depends on the JVM: only a JetBrains Runtime gets enhanced class
   redefinition, so on a stock JDK more edits escalate to a restart. Nothing is wrong when they
-  do — the restart is the honest answer.
+  do — the restart is the honest answer. `target/devloop/daemon.log` names the JVM that was
+  chosen and what it cost; runtimes are looked for under `~/.jdks` and `~/.vaadin/jdk` (where
+  the Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse install one), then `JAVA_HOME` and
+  `JDK_HOME`, and `-Dvaadin.dev.javaHome=<dir>` names one directly.
 
 ## Environment
 
