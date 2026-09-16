@@ -59,6 +59,12 @@
       <artifactId>vaadin-dev-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Static test resources (/test-files/**) used by the dependency tests -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-resources</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- React adapter (ReactAdapterComponent) for React-in-Flow views -->
     <dependency>
       <groupId>com.vaadin</groupId>
