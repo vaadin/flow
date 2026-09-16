@@ -8,6 +8,9 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
+  // Deploys to a real application server, so it needs one of the container
+  // profiles and has its own job in validation.yml
+  'flow-tests/vaadin-cdi-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',

@@ -16,8 +16,12 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,7 +68,7 @@ class LaunchTest {
 
     @Test
     void forwardedToApp_holdsBackWhatTheLoopItselfSets() {
-        // These three are put on the app's command line with the value the loop
+        // These four are put on the app's command line with the value the loop
         // requires. The forwarding runs after them and a later -D wins, so a
         // forwarded copy does not merely duplicate - it overrides. For
         // devtools that would put Spring's own restart back in the ring
@@ -72,6 +76,10 @@ class LaunchTest {
         assertFalse(Launch.forwardedToApp("spring.devtools.restart.enabled"));
         assertFalse(Launch.forwardedToApp("vaadin.launch-browser"));
         assertFalse(Launch.forwardedToApp("vaadin.devloop.classes"));
+        // And without this one, a developer who happened to set
+        // VAADIN_DEV_DAEMON_OPTS="-Dvaadin.devloop.launch=apply" would have
+        // every launch reported as an escalated apply.
+        assertFalse(Launch.forwardedToApp("vaadin.devloop.launch"));
     }
 
     @Test
@@ -85,5 +93,28 @@ class LaunchTest {
 
     private static String classpath(String... entries) {
         return String.join(File.pathSeparator, entries);
+    }
+
+    @Test
+    void projectIfResolved_isEmptyUntilOneHasBeenResolved(@TempDir Path repo)
+            throws IOException {
+        // The baseline an application's registration builds is taken from this,
+        // on the thread answering that registration - so "nothing resolved
+        // yet" has to be an answer it can give rather than a Maven run it
+        // sets off. A caller that gets nothing here leaves the baseline to the
+        // first apply, which is where resolving belongs.
+        Files.createDirectories(
+                repo.resolve("src").resolve("main").resolve("java"));
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        Launch launch = new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
+
+        assertTrue(launch.projectIfResolved().isEmpty());
     }
 }
