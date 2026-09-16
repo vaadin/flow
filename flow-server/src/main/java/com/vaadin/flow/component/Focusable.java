@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import tools.jackson.databind.node.ObjectNode;
+
 /**
  * Represents a component that can gain and lose focus.
  *
@@ -130,7 +132,13 @@ public interface Focusable<T extends Component>
      * @since 25.0
      */
     default void focus(FocusOption... options) {
-        getElement().executeJs(new FocusCommand(options));
+        FocusJs focusJs = getElement().getJsInvoker(FocusJs.class);
+        ObjectNode json = FocusOption.buildOptions(options);
+        if (json == null) {
+            focusJs.focus();
+        } else {
+            focusJs.focus(json);
+        }
     }
 
     // for binary compatibility with the previous Vaadin versions
@@ -159,7 +167,7 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().executeJs(new BlurCommand());
+        getElement().getJsInvoker(FocusJs.class).blur();
     }
 
     /**

@@ -19,12 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsCommand;
+import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -271,59 +273,66 @@ class FocusableTest {
     }
 
     @Test
-    void focus_invocationCarriesFocusCommandWithTheOptions() {
+    void focus_invocationCarriesTheInvokerCallWithTheOptions() {
         ui.add(component);
-        component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED);
+        component.focus(PreventScroll.ENABLED);
 
-        assertEquals(
-                new FocusCommand(FocusVisible.VISIBLE, PreventScroll.ENABLED),
-                dumpSingleCommand(),
-                "focus() should be identifiable by its command, options included");
+        JsInvokerCall call = (JsInvokerCall) dumpSingleCommand();
+        assertEquals(FocusJs.class, call.invokerType());
+        assertEquals("focus", call.methodName());
+        assertEquals("{\"preventScroll\":true}",
+                call.arguments().get(0).toString(),
+                "the options reach the driver as the JSON the browser gets");
     }
 
     @Test
-    void focusWithoutOptions_invocationCarriesFocusCommandWithNoOptions() {
+    void focusWithoutOptions_invocationCarriesTheNoArgumentCall() {
         ui.add(component);
         component.focus();
 
-        assertEquals(new FocusCommand(), dumpSingleCommand());
+        assertEquals(new JsInvokerCall(FocusJs.class, "focus", List.of()),
+                dumpSingleCommand());
     }
 
     @Test
-    void blur_invocationCarriesBlurCommand() {
+    void blur_invocationCarriesTheBlurCall() {
         ui.add(component);
         component.blur();
 
-        assertEquals(new BlurCommand(), dumpSingleCommand());
+        assertEquals(new JsInvokerCall(FocusJs.class, "blur", List.of()),
+                dumpSingleCommand());
     }
 
     @Test
-    void pendingInvocations_dispatchedByCommandType_plainJavaScriptLeftIntact() {
+    void pendingInvocations_runOnAnImplementationOfTheInvoker_plainJavaScriptLeftIntact() {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
         component.getElement().executeJs("this.scrollTop = 0");
         component.blur();
 
         // What a driver of the client side that cannot run JavaScript does:
-        // take the queue once, in order, and act on what it recognizes
+        // take the queue once, in order, and let Java dispatch the calls it
+        // recognizes onto its own implementation of the invoker interface
         List<String> log = new ArrayList<>();
         List<String> unhandledJs = new ArrayList<>();
         for (PendingJavaScriptInvocation pending : ui
                 .dumpPendingJsInvocations()) {
-            Element target = Element.get(pending.getOwner());
-            switch (pending.getInvocation().getCommand()) {
-            case FocusCommand focus ->
-                log.add("focus " + target.getTag() + " " + focus.options());
-            case BlurCommand blur -> log.add("blur " + target.getTag());
-            case null, default -> {
+            JsCommand command = pending.getInvocation().getCommand();
+            if (command instanceof JsInvokerCall call
+                    && call.invokerType() == FocusJs.class) {
+                call.invokeOn(new FocusSimulation(
+                        Element.get(pending.getOwner()), log));
+            } else {
                 log.add("unhandled");
                 unhandledJs.add(pending.getInvocation().getExpression());
             }
-            }
         }
 
-        assertEquals(List.of("focus div [ENABLED]", "unhandled", "blur div"),
-                log, "invocations should be dispatched by type, in order");
+        assertEquals(
+                List.of("focus div {\"preventScroll\":true}", "unhandled",
+                        "blur div"),
+                log,
+                "calls should be dispatched onto the implementation, in order");
         assertEquals(1, unhandledJs.size(),
                 "the application JavaScript should be left for the driver to report");
         assertTrue(unhandledJs.get(0).contains("this.scrollTop = 0"),
@@ -335,5 +344,28 @@ class FocusableTest {
                 .dumpPendingJsInvocations();
         assertEquals(1, invocations.size());
         return invocations.get(0).getInvocation().getCommand();
+    }
+
+    /**
+     * What a browserless driver would register for {@link FocusJs}: the
+     * server-side effect of the operations, with no JavaScript involved.
+     */
+    private record FocusSimulation(Element target,
+            List<String> log) implements FocusJs {
+
+        @Override
+        public void focus() {
+            log.add("focus " + target.getTag());
+        }
+
+        @Override
+        public void focus(ObjectNode options) {
+            log.add("focus " + target.getTag() + " " + options);
+        }
+
+        @Override
+        public void blur() {
+            log.add("blur " + target.getTag());
+        }
     }
 }

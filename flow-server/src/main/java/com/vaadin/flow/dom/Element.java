@@ -16,6 +16,9 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -1949,6 +1952,81 @@ public class Element extends Node<Element> {
         Objects.requireNonNull(command, "Command cannot be null");
         return scheduleExecuteJs(command, command.getExpression(),
                 command.getParameters().toArray());
+    }
+
+    /**
+     * Gets an invoker for the JavaScript expressions that the given interface
+     * declares, bound to this element.
+     * <p>
+     * Each method of the interface is annotated with the {@link JsExpression}
+     * it runs. Calling a method schedules that expression the way
+     * {@link #executeJs(String, Object...)} would, with the method arguments as
+     * its parameters and this element as <code>this</code>:
+     *
+     * <pre>
+     * public interface GreeterJs {
+     *     &#64;JsExpression("window.alert($0)")
+     *     void showGreeting(String greeting);
+     * }
+     *
+     * element.getJsInvoker(GreeterJs.class).showGreeting("Hello");
+     * </pre>
+     *
+     * The expression is a constant of the interface rather than a string built
+     * at the call site, and the scheduled invocation carries the call as a
+     * {@link JsInvokerCall} so that a driver of the client side can recognize
+     * it, or run it on its own implementation of the same interface.
+     * <p>
+     * A method returns either <code>void</code> or
+     * {@link PendingJavaScriptResult}.
+     *
+     * @param <T>
+     *            the invoker interface type
+     * @param invokerType
+     *            the invoker interface, not <code>null</code>
+     * @return an invoker bound to this element, not <code>null</code>
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getJsInvoker(Class<T> invokerType) {
+        Objects.requireNonNull(invokerType, "Invoker type cannot be null");
+        if (!invokerType.isInterface()) {
+            throw new IllegalArgumentException(
+                    invokerType.getName() + " is not an interface");
+        }
+        return (T) Proxy.newProxyInstance(invokerType.getClassLoader(),
+                new Class<?>[] { invokerType },
+                new JsInvokerHandler(this, invokerType));
+    }
+
+    /**
+     * Turns a call on a JS invoker interface into a scheduled invocation that
+     * carries the call.
+     */
+    private record JsInvokerHandler(Element element,
+            Class<?> invokerType) implements InvocationHandler, Serializable {
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            if (method.getDeclaringClass() == Object.class) {
+                return method.invoke(this, args);
+            }
+            List<Object> arguments = args == null ? List.of()
+                    : Arrays.asList(args);
+            PendingJavaScriptResult result = element
+                    .executeJs(new JsInvokerCall(invokerType, method.getName(),
+                            arguments));
+            if (method.getReturnType() == void.class) {
+                return null;
+            }
+            if (method.getReturnType()
+                    .isAssignableFrom(PendingJavaScriptResult.class)) {
+                return result;
+            }
+            throw new IllegalStateException("Method " + method.getName()
+                    + " of " + invokerType.getName()
+                    + " must return void or PendingJavaScriptResult");
+        }
     }
 
     private PendingJavaScriptResult scheduleExecuteJs(
