@@ -374,6 +374,24 @@
                       <type>zip</type>
                       <overWrite>false</overWrite>
                       <outputDirectory>target</outputDirectory>
+                      <!-- The distribution unpacks into a directory named
+                           after its major version - payara6 for 6.x, payara7
+                           for 7.x - which payara.home below would otherwise
+                           have to repeat, so a major upgrade of the zip alone
+                           leaves Arquillian pointed at a directory that does
+                           not exist ("... is not a valid GlassFish
+                           installation"). Rename the root entry to a plain
+                           "payara" while unpacking so the path holds for any
+                           version. The wildfly and tomcat profiles get this
+                           for free: their distributions carry the full version
+                           in the directory name, so their home paths
+                           interpolate the same property the artifact does. -->
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^payara[0-9]+</pattern>
+                          <replacement>payara</replacement>
+                        </fileMapper>
+                      </fileMappers>
                     </artifactItem>
                   </artifactItems>
                 </configuration>
@@ -388,7 +406,7 @@
               <excludedGroups>${surefire.excludedGroups}</excludedGroups>
               <groups>${surefire.groups}</groups>
               <systemPropertyVariables>
-                <payara.home>${project.build.directory}/payara6</payara.home>
+                <payara.home>${project.build.directory}/payara</payara.home>
                 <arquillian.launch>payara</arquillian.launch>
                 <vaadin.bowerMode>true</vaadin.bowerMode>
               </systemPropertyVariables>
