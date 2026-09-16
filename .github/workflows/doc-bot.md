@@ -5,7 +5,26 @@ description: >
   documentation pull request in vaadin/docs for the change.
 
 on:
-  pull_request:
+  # `pull_request_target`, not `pull_request`, because of the trigger below:
+  # this workflow runs at the one moment the head branch no longer exists.
+  # GitHub deletes it on merge, and for a `pull_request` trigger gh-aw always
+  # emits a "Checkout PR branch" step that fetches that branch, so every single
+  # run failed it and wrote an expected-failure warning into its summary. gh-aw
+  # suppresses that step for `pull_request_target` — its ADR-46771 names this
+  # exact case — which is the whole reason for the switch.
+  #
+  # The usual `pull_request_target` hazard, untrusted fork code running with
+  # secrets in reach, does not apply here: the checkout below pins the
+  # workspace to the merge commit, which is already on `main`, and nothing in
+  # this workflow builds or runs the project. `gh aw compile` warns about the
+  # combination anyway, because it matches on the shape rather than on the ref.
+  #
+  # Two conditions the compiler injects for `pull_request` go away with it: a
+  # same-repository guard and a stacked-pull-request guard. Losing the first is
+  # the point rather than a side effect — a `pull_request` run from a fork is
+  # given no secrets, so the bot could never have documented an outside
+  # contribution, and every one of those merges went silently undocumented.
+  pull_request_target:
     # Run once, when a pull request is merged: `closed` is the only action
     # that fires, and `merged == true` in the `if:` below tells a merge from an
     # abandoned pull request. By then the change has been reviewed and
@@ -107,7 +126,13 @@ concurrency:
 # documentation pull request is open, and costs nothing: it is the ref this
 # checkout already pulls.
 checkout:
+  # Pinned to the merge commit instead of left to default to it. `github.sha`
+  # happens to be that commit for a merged pull request, so the tree was
+  # already the right one, but pinning is what makes it true by construction:
+  # the agent reads exactly what landed on `main`, whatever the event payload
+  # or a future compiler change would otherwise hand it.
   - fetch-depth: 1
+    ref: ${{ github.event.pull_request.merge_commit_sha }}
   - repository: vaadin/docs
     path: docs-repo
     ref: main
@@ -148,20 +173,20 @@ safe-outputs:
     target-repo: "vaadin/docs"
     github-token: ${{ secrets.VAADIN_BOT_TOKEN }}
   add-comment:
-    # One standing comment per pull request: a re-run supersedes its
-    # predecessor instead of stacking a second note onto the conversation.
+    # One standing comment per pull request, written by every run whatever it
+    # decided. Whoever merged the pull request should not have to open a run
+    # log to find out whether the change was documented, so "nothing to
+    # document, because …" is a comment now rather than a `noop` recorded out
+    # of sight. A re-run supersedes its predecessor instead of stacking a
+    # second note onto the conversation.
     hide-older-comments: true
-  # Lets the agent record "nothing to document, because …" in the run log
-  # without putting anything on the pull request.
-  noop:
-    report-as-issue: false
 ---
 
 # Documentation Bot
 
 You analyze a pull request in `${{ env.SOURCE_REPO }}` and, when it changes something a reader would need to know about, you open a matching documentation pull request in `vaadin/docs`.
 
-You run **once, when a pull request is merged into `main`**. The change you are looking at is therefore already reviewed and final. Many of your runs still end in Phase 2 or Phase 4 with nothing to do, and that is the expected outcome, not a failure.
+You run **once, when a pull request is merged into `main`**. The change you are looking at is therefore already reviewed and final. Many of your runs still end in Phase 2 or Phase 4 with nothing to document, and that is the expected outcome, not a failure. You report it in the Phase 6 comment like any other outcome: every run ends with exactly one comment on the source pull request.
 
 ## Environment
 
@@ -191,7 +216,7 @@ If it does, find the pull request in `vaadin/docs` whose head branch is that nam
 | No branch, or a branch with no pull request | **Create** one (Phase 5a). |
 | An **open** pull request | **Update** it — commit onto its branch (Phase 5b). |
 | A **merged** pull request | Create a new one (Phase 5a) on branch `doc-bot/vaadin-flow/${{ env.PR_NUMBER }}-<first 7 characters of the head commit>`, covering only what changed since the merged one. |
-| A **closed, unmerged** pull request | Someone rejected the documentation for this change. Record a `noop` saying so and stop. Do not reopen it and do not open another. |
+| A **closed, unmerged** pull request | Someone rejected the documentation for this change. Say so in the Phase 6 comment and stop. Do not reopen it and do not open another. |
 
 ## Phase 1: Analyze the Pull Request
 
@@ -217,7 +242,7 @@ Classify each meaningful change into one or more of these categories:
 
 If **all** changes are `INTERNAL_ONLY`, `TEST_ONLY`, or `BUILD_ONLY`:
 
-- If no documentation pull request exists yet, record a `noop` naming the reason and stop. Do not comment on the source pull request — a note on a merged pull request saying nothing happened is noise.
+- If no documentation pull request exists yet, go straight to Phase 6. The comment you write there names the categories the change fell into and why none of them reaches a reader of the documentation, and it is the whole output of the run.
 - If one exists, the change that justified it may have been reverted. Continue to Phase 3; Phase 4 decides whether the documentation still matches the pull request.
 
 ## Phase 3: Plan the Documentation Changes
@@ -254,7 +279,7 @@ Documentation is **AsciiDoc** (`.adoc`) with YAML front matter. Do not read file
    - Never remove existing documentation without clear justification from the source pull request.
    - When updating, revise in place rather than appending a second description of the same API, and drop documentation an earlier run wrote for something the pull request no longer does. A dropped commit has to drop its documentation with it.
 
-3. **Decide whether anything actually changed.** Run `git -C docs-repo status --porcelain`. If it is empty, the documentation already describes the current state of the pull request — this change turned out to be one no reader would see. Record a `noop` saying so and stop. This is what keeps the bot quiet.
+3. **Decide whether anything actually changed.** Run `git -C docs-repo status --porcelain`. If it is empty, the documentation already describes the current state of the pull request — this change turned out to be one no reader would see. Say so in the Phase 6 comment and stop; do not open or push to a documentation pull request that carries no change.
 
 4. **Commit** on that branch:
 
@@ -301,7 +326,9 @@ Do not re-assign the pull request and do not rewrite its description; the review
 
 ## Phase 6: Comment on the Source PR
 
-Add one comment with the `add-comment` safe-output. A later run replaces it, so describe the current state rather than what this run did:
+**Every run ends here**, the ones that wrote no documentation included. Add exactly one comment with the `add-comment` safe-output. Recording a `noop` instead is not an option: the tool exists, but a run whose only trace is the run log leaves whoever merged the pull request guessing. A later run replaces it, so describe the state the pull request is in now rather than what this run did, and use the shape that matches how the run ended.
+
+Documentation was written, in Phase 5a or Phase 5b:
 
 > **Documentation Bot:** Draft documentation pull request for this change: vaadin/docs#\<NUMBER\>
 >
@@ -311,4 +338,16 @@ Add one comment with the `add-comment` safe-output. A later run replaces it, so 
 >
 > It was written from the state of this pull request as you see it now. Please review it and mark it ready for review.
 
-Do not comment when you recorded a `noop`.
+Nothing to document — Phase 2 found only internal, test, or build changes, or Phase 4 found the documentation already current:
+
+> **Documentation Bot:** No documentation needed for this change.
+>
+> <One or two sentences: what the change was, in terms of the Phase 1 categories, and why a reader of the documentation would not need to know about it.>
+>
+> Nothing was opened in vaadin/docs. If you disagree, the change has to be documented by hand there.
+
+Documentation for this change was rejected earlier — Phase 0 found a closed, unmerged documentation pull request:
+
+> **Documentation Bot:** Documentation for this change was proposed in vaadin/docs#\<NUMBER\> and closed without merging, so this run wrote nothing and opened nothing.
+>
+> If it should be documented after all, do it by hand in vaadin/docs.
