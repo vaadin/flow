@@ -301,6 +301,13 @@ public class FeatureFlags implements Serializable {
 
     /**
      * Enables or disables the given feature.
+     * <p>
+     * This writes
+     * <code>src/main/resources/vaadin-featureflags.properties</code> in the
+     * project. The change is not limited to the current process, so a call
+     * from a test edits the repository. For a single run or a test, set the
+     * <code>vaadin.experimental.&lt;id&gt;</code> system property instead;
+     * that does not create or edit the file.
      *
      * @param featureId
      *            the feature id
