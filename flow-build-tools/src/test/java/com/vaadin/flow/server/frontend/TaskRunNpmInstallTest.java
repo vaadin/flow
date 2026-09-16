@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -832,6 +834,37 @@ class TaskRunNpmInstallTest {
         // No argument is passed, so npm applies its own configuration
         assertFalse(resolveMinimumFrontendPackageAgeArgument(
                 new MockOptions(npmFolder), tools).isPresent());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmReportsNpmrcValueAsBefore_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm 11.10 to 11.13 turn a configured min-release-age into the date
+        // of the before setting and report min-release-age as unset, while
+        // still applying the configured age to an install
+        answerConfiguredSetting(tools,
+                Map.of("before", "2026-06-08T08:04:31.925Z"));
+
+        // No argument is passed, so npm applies its own configuration
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), tools).isPresent());
+    }
+
+    /**
+     * Makes the mocked tools resolve a configuration setting from the given
+     * configuration, answering with the first of the queried keys that has a
+     * value, whichever keys are asked for.
+     */
+    private void answerConfiguredSetting(FrontendTools tools,
+            Map<String, String> configuration) {
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.any(String[].class)))
+                .thenAnswer(query -> Stream.of(query.getArguments()).skip(2)
+                        .flatMap(argument -> argument instanceof Object[] keys
+                                ? Stream.of(keys)
+                                : Stream.of(argument))
+                        .map(String::valueOf).map(configuration::get)
+                        .filter(Objects::nonNull).findFirst());
     }
 
     @Test
