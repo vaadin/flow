@@ -203,12 +203,14 @@ in a missed date.
 **The PM sees a working walkthrough weekly** — to confirm we are solving the
 right problem, not to accept or reject the work.
 
-**Done does the reminding.** Demos, docs and DX tests get dropped because they
-are tracked apart from the code and postponed one day at a time. So they belong
-to the use case's definition of done — a use case with merged code and no docs is
-*not done*, and the board shows it that way. Nobody chases work that cannot be
-marked complete without it, and the lead's job is the part structure cannot do
-(§3): whether we are building the right thing in the right order.
+**Done is an entrance, not a reminder.** Demos, docs and DX tests get dropped
+because they are tracked apart from the code and postponed one day at a time. So
+they move to the front: the usage, the documentation paragraph and what the demo
+will show exist *before* implementation starts, where they are still a page and
+not a branch. Engineers reach for the code first and product asks how it will be
+used first; putting the answer at the entrance settles that argument once instead
+of at the end of every use case. A use case with merged code and no docs is still
+not done, and the board still shows it that way — but by then it is a formality.
 
 ---
 
@@ -401,8 +403,13 @@ than one defensible answer — a design question in a bug's clothes. The tell is
 quick: if a reviewer could disagree with the *expected value in the test* rather
 than with the implementation, you have design on your hands.
 
-For everything that does come here, the brief grows into the **design note** in
-the same file, so every revision is a diff with a one-line "what changed and why",
+For everything that does come here, a topic is opened on **how it will be
+used** — the snippet, the documentation paragraph, the demo — and the API is
+derived from that in the room. Product asks how it will be used and demonstrated
+before deciding whether the code should exist at all, and that question is
+cheapest to answer here, where the answer is a paragraph rather than a branch.
+
+The brief grows into the **design note** in the same file, so every revision is a diff with a one-line "what changed and why",
 and the current version is the file rather than the newest comment. The note is
 what the team argues about; the probe is exhibit A, not the proposal.
 *"Rework it: use an event instead of a callback, and define what happens on
@@ -415,6 +422,10 @@ first (if they expose a design problem, **go back to Stage 3** rather than bend
 the tests), green CI, a description reviewable without the diff, and a line on
 **which parts of the probe survived the decision** — code that is there because
 it was there on day one is the failure mode of starting early.
+
+**Documentation travels in the same PR.** A change that alters what a user
+writes is not ready for review without the documentation change in it — not as an
+item on a checklist afterwards, but as a condition of being reviewed at all.
 
 **A deviation from the note is corrected in the note, in the same commit**, so a
 change of plan arrives as a diff anyone can see rather than a paragraph at the
@@ -477,13 +488,18 @@ with the alternatives to accepting it, including solving it outside Flow; a
 sketch of the API and what it touches; and, kept separate, what AI verified
 versus what it assumed.
 
-**The probe PR** — the problem in one paragraph; what the probe demonstrates; what
-it does *not* settle; and the condition that would make this shape wrong.
+**The probe PR** — the problem in one paragraph; what the probe demonstrates;
+what it does *not* settle; and the condition that would make this shape wrong. It
+carries the calling code too — what a user would write, compiling against a stub
+— because that is the cheapest way to see how the thing will be used.
 
-**The design note** — the brief, one revision later: the problem in the user's
-terms, goals and non-goals, the design and its contracts, behaviour at the edges,
-how we intend to build it, and the alternatives we rejected with the reason for
-each. That last part is the point of the document.
+**The design note** — the brief, one revision later, and it opens with the use,
+not the API: the code someone writes in their own application, the paragraph of
+documentation as it will read, and what a demo would show. Only then the problem
+in the user's terms, goals and non-goals, the design and its contracts, behaviour
+at the edges, how we intend to build it, and the alternatives we rejected with
+the reason for each. The signatures follow from the usage; when they are written
+first, the usage ends up explaining the signatures.
 
 **The PR description** — enough to review without opening the diff: what and why,
 the design it was built against, which piece does what, what survived from the
@@ -578,6 +594,8 @@ is what tells us a rule did what we hoped rather than making us feel organised.
   discussion.
 - **A PR must be reviewable without the diff.** If it is not, the description is
   the defect.
+- **If you cannot write the sentence that explains it to a user, it is too early
+  to implement it.** Bugfixes excepted: there the failing test is the sentence.
 - **A human always decides** — three times per issue (§2), and never fewer. An
   automatic approval (§8) is a decision we took once about a class of change, not
   one AI took. Never approve what you do not understand, and own the merge
