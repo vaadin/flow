@@ -811,15 +811,17 @@ class TaskRunNpmInstallTest {
         assertMinimumFrontendPackageAge(options, tools, false, null);
     }
 
-    private void assertMinimumFrontendPackageAge(Options options,
+    private MockLogger assertMinimumFrontendPackageAge(Options options,
             FrontendTools tools, boolean applies, String argument) {
+        MockLogger logger = new MockLogger();
         TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
                 .resolveMinimumFrontendPackageAge(options, tools,
                         List.of(TaskRunNpmInstall.getToolName(options)),
-                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
+                        logger);
 
         assertEquals(applies, minimumAge.applies());
         assertEquals(Optional.ofNullable(argument), minimumAge.argument());
+        return logger;
     }
 
     @Test
@@ -830,8 +832,12 @@ class TaskRunNpmInstallTest {
                 Mockito.eq("before"))).thenReturn(Optional.of("7"));
 
         // No argument is passed, so npm applies its own configuration
-        assertFalse(resolveMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder), tools).isPresent());
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder), tools, true, null);
+
+        // the value npm reports is a number of days
+        assertTrue(logger.getLogs().contains("configured for npm (7 days)"),
+                logger.getLogs());
     }
 
     @Test
@@ -850,8 +856,13 @@ class TaskRunNpmInstallTest {
 
         // No argument is passed, so npm applies its own configuration, and a
         // date blocks a version too new even though it is not a day count
-        assertMinimumFrontendPackageAge(new MockOptions(npmFolder), tools, true,
-                null);
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder), tools, true, null);
+
+        // a date is reported as a date instead of as a number of days
+        assertTrue(logger.getLogs().contains(
+                "(no versions released after 2026-06-08T08:04:31.925Z)"),
+                logger.getLogs());
     }
 
     @Test
@@ -889,9 +900,14 @@ class TaskRunNpmInstallTest {
                 .thenReturn(Optional.of("4320"));
 
         // No argument is passed, so pnpm applies its own configuration
-        assertFalse(resolveMinimumFrontendPackageAgeArgument(
-                new MockOptions(npmFolder).withEnablePnpm(true), tools)
-                .isPresent());
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder).withEnablePnpm(true), tools, true,
+                null);
+
+        // the value pnpm reports is a number of minutes
+        assertTrue(
+                logger.getLogs().contains("configured for pnpm (4320 minutes)"),
+                logger.getLogs());
     }
 
     @Test

@@ -529,7 +529,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "Keeping the minimum frontend package age configured for {} "
                                 + "({}) instead of applying the Vaadin default. Set the "
                                 + "'{}' parameter to override it.",
-                        getToolName(options), packageManagerValue.get(),
+                        getToolName(options),
+                        describeConfiguredMinimumReleaseAge(options,
+                                packageManagerValue.get()),
                         InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
                 return new MinimumFrontendPackageAge(
                         blocksSomeVersion(packageManagerValue.get()),
@@ -573,6 +575,26 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return Double.parseDouble(packageManagerValue.trim()) != 0;
         } catch (NumberFormatException e) { // NOSONAR
             return true;
+        }
+    }
+
+    /**
+     * Spells out a minimum release age the package manager resolved for itself,
+     * as the unit of the value depends on the package manager and the setting
+     * it comes from: days for npm, minutes for pnpm, and a date for the
+     * {@code before} setting npm resolves {@code min-release-age} into.
+     */
+    private static String describeConfiguredMinimumReleaseAge(Options options,
+            String packageManagerValue) {
+        String value = packageManagerValue.trim();
+        if (options.isEnablePnpm()) {
+            return value + " minutes";
+        }
+        try {
+            Double.parseDouble(value);
+            return value + " days";
+        } catch (NumberFormatException e) { // NOSONAR
+            return "no versions released after " + value;
         }
     }
 
@@ -730,6 +752,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * "https://github.com/oven-sh/bun/issues/7140">oven-sh/bun#7140</a>). The
      * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
      * therefore not taken into account.
+     *
+     * @return the value as the package manager reports it, which is a number of
+     *         days for npm, a number of minutes for pnpm and a date for the
+     *         {@code before} setting npm resolves {@code min-release-age} into.
+     *         It is never converted into days, only checked for whether it
+     *         blocks a version at all ({@link #blocksSomeVersion(String)}) and
+     *         reported to the build
+     *         ({@link #describeConfiguredMinimumReleaseAge(Options, String)}),
+     *         as the package manager is the one applying it.
      */
     private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
             Options options, FrontendTools tools, List<String> toolCommand) {
