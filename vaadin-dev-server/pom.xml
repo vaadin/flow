@@ -42,7 +42,7 @@
                     <artifactId>commons-io</artifactId>
                 </exclusion>
             </exclusions>
-            <version>8.5.0.4</version>
+            <version>8.5.0.5</version>
         </dependency>
 
         <dependency>
