@@ -347,6 +347,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
                         npmExecutable, minimumAge.applies(), logger));
 
+        postinstallCommand.addAll(resolvePostinstallArguments(options));
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
 
@@ -354,6 +355,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             logger.debug(
                     commandToString(options.getNpmFolder().getAbsolutePath(),
                             npmInstallCommand));
+            logger.debug(
+                    commandToString(options.getNpmFolder().getAbsolutePath(),
+                            postinstallCommand));
         }
 
         String toolName = getToolName(options);
@@ -447,8 +451,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 postinstallProcess = runNpmCommand(postinstallCommand,
                         packageFolder);
                 logger.debug("Output of postinstall `{}`:", postinstallPackage);
-                consumeProcessOutput(postinstallProcess, logger::debug);
-                postinstallProcess.waitFor();
+                StringBuilder output = new StringBuilder();
+                consumeProcessOutput(postinstallProcess, line -> {
+                    logger.debug(line);
+                    output.append(line).append(System.lineSeparator());
+                });
+                int exitCode = postinstallProcess.waitFor();
+                if (exitCode != 0) {
+                    throw new ExecutionFailedException(
+                            "The postinstall script of '" + postinstallPackage
+                                    + "' exited with status " + exitCode + ":"
+                                    + System.lineSeparator() + output);
+                }
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
                     // Restore interrupted state
@@ -692,6 +706,34 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return excludeArguments("--min-release-age-exclude=",
                 tools.getConfiguredSettingValues(toolCommand,
                         options.getNpmFolder(), "min-release-age-exclude"));
+    }
+
+    /**
+     * Resolves the arguments that the command running a {@code postinstall}
+     * script needs on top of the ones the package manager is called with
+     * anyway.
+     * <p>
+     * Before pnpm runs a script it checks that {@code node_modules} is up to
+     * date, and that check starts an install of its own. The install right
+     * above has just made that pointless, and the one pnpm starts is not the
+     * same one: it is not passed the arguments that exempt the packages Vaadin
+     * publishes from the minimum release age, and it does not skip the
+     * lifecycle scripts of the dependencies. Whenever it fails, for that or any
+     * other reason, the script itself is never run, so the check is turned off.
+     * <p>
+     * npm and bun run a script without checking anything, and bun rejects an
+     * argument it is not expecting, so nothing is passed for them.
+     *
+     * @param options
+     *            current build options
+     * @return the arguments to pass before {@code run}, empty when the package
+     *         manager needs none
+     */
+    static List<String> resolvePostinstallArguments(Options options) {
+        if (!options.isEnablePnpm()) {
+            return List.of();
+        }
+        return List.of("--config.verify-deps-before-run=false");
     }
 
     /**
