@@ -123,12 +123,11 @@ public class FrontendTools {
 
     /**
      * Minimum Node.js version for auto-installed versions in ~/.vaadin, which
-     * is the first release of the supported Node.js line.
+     * is the same minimum that a global installation has to meet.
      *
      * @since 25.0
      */
-    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
-            SUPPORTED_NODE_MAJOR_VERSION, 0, 0);
+    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = SUPPORTED_NODE_VERSION;
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
