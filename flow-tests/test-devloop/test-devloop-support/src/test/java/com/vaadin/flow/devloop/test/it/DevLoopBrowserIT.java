@@ -163,8 +163,10 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
         Assertions.assertEquals("Task List", text("#title"));
         String reloadMarker = markPage();
 
-        patch.replace(STYLESHEET, "row-gap: 12px;", "row-gap: 41px;");
-        patch.replace(VIEW, "\"Task List\"", "\"Tasks, mixed\"");
+        patch.replace(AbstractDevLoopIT.STYLESHEET, "row-gap: 12px;",
+                "row-gap: 41px;");
+        patch.replace(AbstractDevLoopIT.VIEW, "\"Task List\"",
+                "\"Tasks, mixed\"");
         cli.run("apply").assertExitCode(0)
                 .assertOutputContains(
                         "hmr: 1 resource(s) copied, pushed 1 stylesheet(s)"
