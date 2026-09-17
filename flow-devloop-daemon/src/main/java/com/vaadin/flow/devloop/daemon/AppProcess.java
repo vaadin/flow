@@ -257,29 +257,31 @@ final class AppProcess {
                 return Startup.ok(state == State.STARTING ? "already starting"
                         : "already running");
             }
-            List<String> command = launch.command(Daemon.currentPort(),
-                    Daemon.currentToken(), launchKind);
+            AppRuntime runtime = launch.runtime();
+            AppRuntime.Invocation invocation = launch.invocation(
+                    Daemon.currentPort(), Daemon.currentToken(), launchKind,
+                    log);
+            List<String> command = invocation.command();
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
 
             markStarting();
 
-            log.line("launching " + command.get(0));
-            // The launch line is worth showing - nine flags that all have to be
-            // right
-            // - but the auth token must not be echoed to stdout or into a log.
-            String flags = command
-                    .subList(1, Math.max(1, command.indexOf("-cp"))).stream()
-                    .map(flag -> flag.startsWith("-Dvaadin.devloop.token=")
-                            ? "-Dvaadin.devloop.token=<redacted>"
-                            : flag)
-                    .collect(java.util.stream.Collectors.joining(" "));
-            log.line("flags: " + flags);
+            log.line("launching " + runtime.name() + ": " + command.get(0));
+            // The launch line is worth showing - a dozen flags that all have to
+            // be right - but the auth token must not be echoed to stdout or
+            // into a log.
+            log.line("flags: " + redacted(command));
+            invocation.environment().forEach(
+                    (name, value) -> log.line(name + "=" + redact(value)));
 
-            Process started = new ProcessBuilder(viaArgFile(command))
+            ProcessBuilder builder = new ProcessBuilder(
+                    invocation.argFile() ? viaArgFile(command) : command)
                     .directory(root.toFile()).redirectErrorStream(true)
-                    .redirectOutput(ProcessBuilder.Redirect.to(appLog.toFile()))
-                    .start();
+                    .redirectOutput(
+                            ProcessBuilder.Redirect.to(appLog.toFile()));
+            builder.environment().putAll(invocation.environment());
+            Process started = builder.start();
             Run current = beginRun(started, appLog);
             log.line("app pid " + started.pid() + ", log " + appLog);
 
@@ -301,7 +303,7 @@ final class AppProcess {
 
             while (true) {
                 serving = serving
-                        || watching.drain().stream().anyMatch(AppLog::serving);
+                        || watching.drain().stream().anyMatch(runtime::serving);
                 if (up && (serving || System.nanoTime() >= settleBy)) {
                     state = State.RUNNING;
                     return Startup.ok(serving ? "running"
@@ -352,6 +354,29 @@ final class AppProcess {
         }
     }
 
+    /**
+     * The command as it may be shown.
+     * <p>
+     * Stops at {@code -cp} where there is one: the classpath is tens of
+     * kilobytes and the flags before it are what a reader is checking. A
+     * command with no classpath on it - a build plugin invocation - is short
+     * enough to show whole, and showing it whole is what lets a developer
+     * reproduce the launch by hand.
+     */
+    private static String redacted(List<String> command) {
+        int classpath = command.indexOf("-cp");
+        return command.subList(1, classpath < 0 ? command.size() : classpath)
+                .stream().map(AppProcess::redact)
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
+
+    /** The auth token must never reach stdout or a log file. */
+    private static String redact(String value) {
+        return value.startsWith("-Dvaadin.devloop.token=")
+                ? "-Dvaadin.devloop.token=<redacted>"
+                : value;
+    }
+
     String stop() {
         lifecycle.lock();
         try {
@@ -363,20 +388,58 @@ final class AppProcess {
             // The flag belongs to this run, so a later start cannot clear it
             // before this process's exit callback has read it.
             current.stopExpected.set(true);
-            Process victim = current.process;
-            victim.destroy();
-            try {
-                if (!victim.waitFor(10, TimeUnit.SECONDS)) {
-                    victim.destroyForcibly();
-                    victim.waitFor(10, TimeUnit.SECONDS);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            kill(current.process);
             state = State.STOPPED;
             return "stopped";
         } finally {
             lifecycle.unlock();
+        }
+    }
+
+    /**
+     * Ends a launch, descendants first.
+     * <p>
+     * The descendants are the point. Under a build-plugin runtime the process
+     * the daemon owns is the build tool's launcher, and on Windows that is a
+     * batch file whose JVM is a child of its own - so destroying the launcher
+     * alone leaves the application running and holding its port, and the next
+     * start then fails on a port clash caused by the stop that was supposed to
+     * have freed it. Measured, not theorised: the first run of the Jetty
+     * fixture left exactly that behind.
+     * <p>
+     * Politely first and forcibly after ten seconds, the same bargain as
+     * before, and the whole tree each time.
+     */
+    private void kill(Process victim) {
+        // Snapshotted before anything dies: a dead process has no descendants
+        // to enumerate, so asking afterwards is how the orphan gets missed.
+        List<ProcessHandle> tree = victim.descendants().toList();
+        victim.destroy();
+        tree.forEach(ProcessHandle::destroy);
+        try {
+            if (!victim.waitFor(10, TimeUnit.SECONDS)) {
+                victim.destroyForcibly();
+                victim.waitFor(10, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        // The launcher exits without taking the JVM it spawned with it, and
+        // that JVM is the one holding the port the next start needs.
+        tree.stream().filter(ProcessHandle::isAlive)
+                .forEach(ProcessHandle::destroyForcibly);
+        tree.forEach(AppProcess::awaitExit);
+    }
+
+    /** Bounded, because a stop must not be able to hang the daemon. */
+    private static void awaitExit(ProcessHandle handle) {
+        try {
+            handle.onExit().get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (java.util.concurrent.ExecutionException
+                | java.util.concurrent.TimeoutException e) {
+            // Already gone, or beyond reach; either way the stop is over.
         }
     }
 
@@ -406,17 +469,8 @@ final class AppProcess {
         // unexpectedly with code 1", which says nothing about never having
         // registered.
         current.stopExpected.set(true);
-        Process victim = current.process;
-        if (victim.isAlive()) {
-            victim.destroy();
-            try {
-                if (!victim.waitFor(10, TimeUnit.SECONDS)) {
-                    victim.destroyForcibly();
-                    victim.waitFor(10, TimeUnit.SECONDS);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        if (current.process.isAlive()) {
+            kill(current.process);
         }
         // Same state the exit callback will settle on, so what a caller sees
         // does not depend on which of the two got there first.
@@ -528,8 +582,8 @@ final class AppProcess {
      */
     Optional<Run> onRegistered(String reportedMode, OptionalLong pid) {
         Run current = run;
-        if (current == null || (pid.isPresent()
-                && pid.getAsLong() != current.process.pid())) {
+        if (current == null
+                || (pid.isPresent() && !belongsTo(current, pid.getAsLong()))) {
             return Optional.empty();
         }
         this.mode = reportedMode;
@@ -537,6 +591,38 @@ final class AppProcess {
         this.state = State.RUNNING;
         current.registrationLatch.countDown();
         return Optional.of(current);
+    }
+
+    /**
+     * Whether a registering JVM is the launch this daemon is reporting on.
+     * <p>
+     * Not simply "is it the process we started". Under a build-plugin runtime
+     * the daemon starts the build tool's launcher, and whether the application
+     * JVM ends up being that same process is a platform detail: the POSIX
+     * {@code mvn} script {@code exec}s the JVM and so keeps its pid, while
+     * {@code mvn.cmd} on Windows is a batch file that spawns one. Without this
+     * the application registers perfectly and is turned away as somebody
+     * else's, which reads as "the app did not register" over an app that is
+     * serving.
+     * <p>
+     * Descendant rather than "any pid", because the check is still what stops a
+     * predecessor winding down after a restart from speaking for the app that
+     * replaced it.
+     */
+    private boolean belongsTo(Run current, long pid) {
+        long owned = current.process.pid();
+        if (pid == owned) {
+            return true;
+        }
+        Optional<ProcessHandle> ancestor = ProcessHandle.of(pid)
+                .flatMap(ProcessHandle::parent);
+        while (ancestor.isPresent()) {
+            if (ancestor.get().pid() == owned) {
+                return true;
+            }
+            ancestor = ancestor.get().parent();
+        }
+        return false;
     }
 
     /**

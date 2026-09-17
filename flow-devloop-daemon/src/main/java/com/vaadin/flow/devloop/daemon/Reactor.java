@@ -137,6 +137,7 @@ final class Reactor {
             return Files.isDirectory(sourceDir)
                     || Files.isDirectory(resourceDir);
         }
+
     }
 
     /**
@@ -361,6 +362,126 @@ final class Reactor {
     }
 
     /**
+     * A build plugin as a pom declares it: enough to invoke one of its goals,
+     * and enough to see configuration that would fight the dev loop.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @param version
+     *            the declared version, interpolated; empty when the pom leaves
+     *            it to Maven, and also when it names a property this reactor
+     *            cannot resolve - one declared in a parent outside the checkout
+     *            - in which case Maven resolves the version from the project's
+     *            own build section, as it would for any other invocation
+     * @param configuration
+     *            the simple {@code <configuration>} values declared for it,
+     *            wherever in the pom they are declared
+     */
+    record PluginConfig(String groupId, String artifactId, String version,
+            Map<String, String> configuration) {
+
+        /** How a goal of this plugin is named on a command line. */
+        String coordinates() {
+            return groupId + ":" + artifactId
+                    + (version.isBlank() ? "" : ":" + version);
+        }
+
+        /**
+         * A configured value, or empty when the pom leaves it at the default.
+         */
+        Optional<String> configured(String name) {
+            String value = configuration.get(name);
+            return value == null || value.isBlank() ? Optional.empty()
+                    : Optional.of(value);
+        }
+    }
+
+    /**
+     * The application module's packaging, {@code jar} when its pom names none.
+     * <p>
+     * {@code war} is what says the application is deployed into a servlet
+     * container rather than started by a main class, which is the first thing
+     * {@link AppRuntime} has to know.
+     *
+     * @return the packaging
+     */
+    String packaging() {
+        return Pom.read(app.dir().resolve("pom.xml")).packaging();
+    }
+
+    /**
+     * A plugin as this project declares it, looked for in the application's own
+     * pom and then at the reactor root.
+     * <p>
+     * Both, because a multi-module project normally declares a plugin's version
+     * once at the top and configures it in the module that uses it - and
+     * {@code <pluginManagement>} counts as a declaration for the same reason.
+     * Values are interpolated against the root's properties overlaid with the
+     * module's, which is what makes {@code ${jetty.version}} resolve.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @return the declaration, or empty when this project declares no such
+     *         plugin
+     */
+    Optional<PluginConfig> plugin(String groupId, String artifactId) {
+        Optional<PluginConfig> fromApp = pluginIn(app.dir(), groupId,
+                artifactId);
+        return fromApp.isPresent() ? fromApp
+                : pluginIn(root, groupId, artifactId);
+    }
+
+    private Optional<PluginConfig> pluginIn(Path moduleDir, String groupId,
+            String artifactId) {
+        Pom pom = Pom.read(moduleDir.resolve("pom.xml"));
+        List<PluginConfig> matches = pom.plugins().stream()
+                .filter(plugin -> artifactId.equals(plugin.artifactId())
+                        && groupId.equals(plugin.groupId()))
+                .toList();
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+        Map<String, String> properties = new LinkedHashMap<>(
+                Pom.read(root.resolve("pom.xml")).properties());
+        properties.putAll(pom.properties());
+        return Optional.of(resolve(merge(matches), properties));
+    }
+
+    /**
+     * One declaration out of several in the same pom. A plugin is routinely
+     * declared twice - its version in {@code <pluginManagement>} and its
+     * configuration in {@code <plugins>} - so the version is the first one
+     * anything names and the configuration is every block, in document order,
+     * later winning.
+     */
+    private static PluginConfig merge(List<PluginConfig> declarations) {
+        String version = declarations.stream().map(PluginConfig::version)
+                .filter(value -> !value.isBlank()).findFirst().orElse("");
+        Map<String, String> configuration = new LinkedHashMap<>();
+        declarations.forEach(declaration -> configuration
+                .putAll(declaration.configuration()));
+        PluginConfig first = declarations.get(0);
+        return new PluginConfig(first.groupId(), first.artifactId(), version,
+                configuration);
+    }
+
+    private static PluginConfig resolve(PluginConfig declared,
+            Map<String, String> properties) {
+        Map<String, String> configuration = new LinkedHashMap<>();
+        declared.configuration().forEach((key, value) -> {
+            String resolved = interpolate(value, properties);
+            configuration.put(key, resolved == null ? value : resolved);
+        });
+        String version = interpolate(declared.version(), properties);
+        return new PluginConfig(declared.groupId(), declared.artifactId(),
+                version == null ? "" : version, configuration);
+    }
+
+    /**
      * The Java release this project is built for, when a pom says so.
      * <p>
      * The application module first and the reactor root second, because a
@@ -395,7 +516,7 @@ final class Reactor {
      */
     private record Pom(String artifactId, String packaging,
             List<String> modules, Map<String, String> properties,
-            String compilerRelease) {
+            String compilerRelease, List<PluginConfig> plugins) {
 
         /**
          * The Java release this pom declares, still uninterpolated, or
@@ -455,11 +576,12 @@ final class Reactor {
                 String packaging = childText(project, "packaging");
                 return new Pom(artifactId == null ? "" : artifactId,
                         packaging == null ? "jar" : packaging, modules,
-                        properties, compilerRelease(document));
+                        properties, compilerRelease(document),
+                        plugins(document));
             } catch (Exception e) {
                 // An unreadable pom is not a reason to refuse to serve the app:
                 // it yields no modules, which degrades to single-module mode.
-                return new Pom("", "jar", List.of(), Map.of(), null);
+                return new Pom("", "jar", List.of(), Map.of(), null, List.of());
             }
         }
 
@@ -489,6 +611,50 @@ final class Reactor {
                 }
             }
             return null;
+        }
+
+        /**
+         * Every {@code <plugin>} the document declares, still uninterpolated.
+         * <p>
+         * {@code <pluginManagement>} and profiles included, for the same reason
+         * {@code <modules>} is read that way: a JDK-only reader cannot evaluate
+         * profile activation, and a superset is harmless here - the caller asks
+         * for one plugin by coordinates.
+         */
+        private static List<PluginConfig> plugins(Document document) {
+            List<PluginConfig> found = new ArrayList<>();
+            for (Element plugin : elementsNamed(document, "plugin")) {
+                String artifactId = childText(plugin, "artifactId");
+                if (artifactId == null || artifactId.isBlank()) {
+                    continue;
+                }
+                String groupId = childText(plugin, "groupId");
+                String version = childText(plugin, "version");
+                Map<String, String> configuration = new LinkedHashMap<>();
+                // Every <configuration> under this plugin, its executions'
+                // included: configuration that will fight the dev loop counts
+                // wherever it is declared.
+                for (Element configured : descendantsNamed(plugin,
+                        "configuration")) {
+                    for (Element value : children(configured, null)) {
+                        configuration.put(value.getTagName(), text(value));
+                    }
+                }
+                found.add(new PluginConfig(groupId == null ? "" : groupId,
+                        artifactId, version == null ? "" : version,
+                        configuration));
+            }
+            return found;
+        }
+
+        private static List<Element> descendantsNamed(Element parent,
+                String name) {
+            List<Element> found = new ArrayList<>();
+            NodeList nodes = parent.getElementsByTagName(name);
+            for (int i = 0; i < nodes.getLength(); i++) {
+                found.add((Element) nodes.item(i));
+            }
+            return found;
         }
 
         private static List<Element> elementsNamed(Document document,

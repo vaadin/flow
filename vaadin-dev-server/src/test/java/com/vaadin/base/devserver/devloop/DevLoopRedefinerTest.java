@@ -159,6 +159,13 @@ class DevLoopRedefinerTest {
     static class NothingDeclared {
     }
 
+    /**
+     * A view over a component supertype that carries imports of its own, which
+     * is every real Vaadin view: {@code MainView extends VerticalLayout}.
+     */
+    static class ViewOverAnImportingSupertype extends SomeView {
+    }
+
     @Test
     void frontendDependencies_seesTheThemeOnAnAppShellThatIsNoComponent() {
         // @Theme belongs on the AppShellConfigurator, which is never a
@@ -186,14 +193,60 @@ class DevLoopRedefinerTest {
 
     @Test
     void frontendDependencies_readsAComponentAndAnswersEmptyForNeither() {
-        // The Component path goes through AnnotationReader, so an import
-        // inherited from a supertype or picked up through @Uses still counts
-        // the way the build counts it.
         assertTrue(DevLoopRedefiner.frontendDependencies(SomeView.class)
                 .contains("js:./view.js"));
         // And a class that declares none is not a change to any.
         assertEquals("",
                 DevLoopRedefiner.frontendDependencies(NothingDeclared.class));
+    }
+
+    @Test
+    void ownedBy_acceptsTheApplicationAndItsChildrenOnly() {
+        // The shape that matters: under a build-plugin runtime the build runs
+        // in the application's JVM, so the Vaadin Maven plugin's scanning
+        // loader holds a second copy of every class it scanned. Redefining
+        // that copy serves nobody and gives HotswapAgent one more class loader
+        // to fail a transform in.
+        ClassLoader application = new java.net.URLClassLoader(
+                new java.net.URL[0], null);
+        ClassLoader childOfApplication = new java.net.URLClassLoader(
+                new java.net.URL[0], application);
+        ClassLoader buildPluginScanner = new java.net.URLClassLoader(
+                new java.net.URL[0], null);
+
+        assertTrue(DevLoopRedefiner.ownedBy(application, application));
+        // A framework may load application code in a child loader.
+        assertTrue(DevLoopRedefiner.ownedBy(childOfApplication, application));
+        assertFalse(DevLoopRedefiner.ownedBy(buildPluginScanner, application));
+        // A parent that merely happens to see the same jar is not the
+        // application either.
+        assertFalse(DevLoopRedefiner.ownedBy(null, application), "boot loader");
+    }
+
+    @Test
+    void frontendDependencies_ignoresWhatASupertypeDeclares() {
+        // The regression behind "a TextField label edit escalated to a
+        // restart". Every one of these annotations is @Inherited, so a view
+        // extending VerticalLayout inherits its component supertypes' whole
+        // import closure - and reading that closure means reading
+        // Class.annotationData, which is thrown away and rebuilt whenever
+        // classRedefinedCount moves. Comparing it across a redefine therefore
+        // compared two rebuilds of a library's annotations rather than the
+        // edited class's own.
+        //
+        // Nothing an edit to this class can do will change what its supertype
+        // declares, so the supertype has no business being in the comparison.
+        assertEquals("", DevLoopRedefiner
+                .frontendDependencies(ViewOverAnImportingSupertype.class));
+    }
+
+    @Test
+    void frontendDependencies_countsADeclaredImportExactlyOnce() {
+        // @Inherited already surfaces a supertype's annotation on the subclass,
+        // so walking the supertypes as well counted the same import twice.
+        String imports = DevLoopRedefiner.frontendDependencies(SomeView.class);
+
+        assertEquals("js:./view.js", imports);
     }
 
     @Test
