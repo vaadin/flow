@@ -17,6 +17,7 @@ package com.vaadin.flow.test.dependencies;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -36,7 +37,8 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         open();
         // Parent of component stylesheet makes all text red
         // Extending class makes it blue
-        assertEquals(BLUE, findElement(By.id("component")).getCssValue("color"),
+        Assertions.assertEquals(BLUE,
+                findElement(By.id("component")).getCssValue("color"),
                 "Expected child style was not applied.");
     }
 
@@ -49,7 +51,7 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         int index = messages.indexOf("Messagehandler initialized in module 1");
         assertTrue(index >= 0, "Js Module is not found on the page");
 
-        assertEquals("Messagehandler initialized in module 2",
+        Assertions.assertEquals("Messagehandler initialized in module 2",
                 messages.get(index + 1));
     }
 
@@ -62,7 +64,7 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         int index = messages.indexOf("script1 is loaded");
         assertTrue(index >= 0, "Js Module is not found on the page");
 
-        assertEquals("script2 is loaded", messages.get(index + 1));
+        Assertions.assertEquals("script2 is loaded", messages.get(index + 1));
     }
 
     private List<String> getMessages() {

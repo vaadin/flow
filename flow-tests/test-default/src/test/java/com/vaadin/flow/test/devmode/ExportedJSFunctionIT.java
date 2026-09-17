@@ -17,6 +17,7 @@ package com.vaadin.flow.test.devmode;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -35,14 +36,16 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
     public void versionInfoAvailableInDevelopmentMode() {
         open();
         WebElement version = findElement(By.id("version"));
-        assertEquals("version: " + Version.getFullVersion(), version.getText());
+        Assertions.assertEquals("version: " + Version.getFullVersion(),
+                version.getText());
     }
 
     @BrowserTest
     public void productionModeFalseInDevelopmentMode() {
         open();
         WebElement productionMode = findElement(By.id("productionMode"));
-        assertEquals("Production mode: false", productionMode.getText());
+        Assertions.assertEquals("Production mode: false",
+                productionMode.getText());
     }
 
     @BrowserTest
@@ -52,9 +55,9 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
         TestBenchElement counter = $(TestBenchElement.class).id("pollCounter");
         TestBenchElement pollTrigger = $(TestBenchElement.class).id("poll");
 
-        assertEquals("No polls", counter.getText());
+        Assertions.assertEquals("No polls", counter.getText());
         pollTrigger.click();
-        assertEquals("Poll called 1 times", counter.getText());
+        Assertions.assertEquals("Poll called 1 times", counter.getText());
     }
 
     @BrowserTest
@@ -63,7 +66,7 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
         $(TestBenchElement.class).id("poll").click();
         List<Long> profilingData = getProfilingData();
 
-        assertEquals(5, profilingData.size());
+        Assertions.assertEquals(5, profilingData.size());
         // Time rendering the poll response can be 0ms
         assertTrue(profilingData.get(0) >= 0);
         for (int i = 1; i < 5; i++) {

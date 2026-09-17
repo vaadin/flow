@@ -17,6 +17,7 @@ package com.vaadin.flow.test.dependencies;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -48,7 +49,7 @@ public class DependencyFilterIT extends AbstractDefaultIT {
 
         // The non-existing stylesheet is replaced by filtered.css, which makes
         // the text green
-        assertEquals("rgba(0, 128, 0, 1)",
+        Assertions.assertEquals("rgba(0, 128, 0, 1)",
                 findElement(By.id("filtered-css")).getCssValue("color"));
     }
 }

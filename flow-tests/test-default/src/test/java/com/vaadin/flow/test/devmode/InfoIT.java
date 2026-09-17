@@ -17,6 +17,7 @@ package com.vaadin.flow.test.devmode;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -35,7 +36,8 @@ public class InfoIT extends AbstractDefaultIT {
 
         List<String> texts = getInfoTexts();
 
-        assertEquals("false", getInfoValue(texts, "Production mode"));
+        Assertions.assertEquals("false",
+                getInfoValue(texts, "Production mode"));
         // The values are grouped under section headers
         assertTrue(texts.contains("Deployment configuration"),
                 "The deployment configuration section header is missing: "

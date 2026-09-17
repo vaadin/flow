@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.test.dependencies;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
@@ -31,11 +32,13 @@ public class DependencyIT extends AbstractDefaultIT {
     public void styleInjection() {
         open();
         // Initial stylesheet makes all text red
-        assertEquals(RED, findElement(By.id("hello")).getCssValue("color"));
+        Assertions.assertEquals(RED,
+                findElement(By.id("hello")).getCssValue("color"));
 
         // Inject stylesheet which makes text blue
         findElement(By.id("loadBlue")).click();
-        assertEquals(BLUE, findElement(By.id("hello")).getCssValue("color"));
+        Assertions.assertEquals(BLUE,
+                findElement(By.id("hello")).getCssValue("color"));
     }
 
     @BrowserTest
@@ -45,7 +48,8 @@ public class DependencyIT extends AbstractDefaultIT {
         clickElementWithJs(findElement(By.tagName("body")));
         String addedBodyText = findElement(By.cssSelector(".body-click-added"))
                 .getText();
-        assertEquals("Click on body, reported by JavaScript click handler",
+        Assertions.assertEquals(
+                "Click on body, reported by JavaScript click handler",
                 addedBodyText);
 
         // Inject scripts
@@ -53,7 +57,7 @@ public class DependencyIT extends AbstractDefaultIT {
         waitForElementPresent(By.id("read-global-var-text"));
         String addedJsText = findElement(By.id("read-global-var-text"))
                 .getText();
-        assertEquals(
+        Assertions.assertEquals(
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
     }
