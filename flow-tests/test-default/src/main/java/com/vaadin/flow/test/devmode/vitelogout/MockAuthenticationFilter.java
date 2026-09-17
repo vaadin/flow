@@ -35,13 +35,15 @@ import java.security.Principal;
  * Intercepts login POST requests, sets an authenticated session attribute, and
  * wraps subsequent requests with a principal when authenticated.
  * <p>
- * It has to cover the whole application, not only the views below, because the
- * behavior under test needs the Vite websocket to be opened under an
- * authenticated session, and that handshake goes to {@code /VAADIN}. Requests
- * of sessions that never logged in are passed through untouched, and no session
- * is created for them.
+ * What marks the session as authenticated for the rest of the test is the
+ * session attribute set here: the Vite websocket endpoint reads it from the
+ * HTTP session of the handshake, and the session listener reads it when the
+ * session ends. The filter therefore only needs the routes of the test and
+ * stays out of the requests of the other tests of the module. Requests of
+ * sessions that never logged in are passed through untouched, and no session is
+ * created for them.
  */
-@WebFilter(urlPatterns = { "/*" })
+@WebFilter(urlPatterns = { "/vite-logout/*" })
 public class MockAuthenticationFilter implements Filter {
 
     public static final String AUTHENTICATED_ATTR = "mock.authenticated";
