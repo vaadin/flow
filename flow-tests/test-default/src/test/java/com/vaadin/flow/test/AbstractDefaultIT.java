@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.function.Supplier;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -67,6 +68,44 @@ public abstract class AbstractDefaultIT extends BrowserTestBase
         // sandbox (no unprivileged user namespaces) and have a small /dev/shm.
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
         return new ChromeDriver(options);
+    }
+
+    /**
+     * Asserts that two values are equal, like
+     * {@link Assertions#assertEquals(Object, Object)} does.
+     * <p>
+     * The tests call the JUnit assertions unqualified, through a static import,
+     * as the conventions require. That alone does not work for
+     * {@code assertEquals}: TestBench's base class declares
+     * {@code assertEquals(WebElement, WebElement)}, and an inherited method
+     * shadows every static import of the same name. Inheriting the two JUnit
+     * signatures the tests use keeps those call sites unqualified as well.
+     *
+     * @param expected
+     *            the expected value
+     * @param actual
+     *            the value to check against <code>expected</code>
+     */
+    protected static void assertEquals(Object expected, Object actual) {
+        Assertions.assertEquals(expected, actual);
+    }
+
+    /**
+     * Asserts that two values are equal, like
+     * {@link Assertions#assertEquals(Object, Object, String)} does. See
+     * {@link #assertEquals(Object, Object)} for why this is inherited instead
+     * of statically imported.
+     *
+     * @param expected
+     *            the expected value
+     * @param actual
+     *            the value to check against <code>expected</code>
+     * @param message
+     *            the message to show when the values differ
+     */
+    protected static void assertEquals(Object expected, Object actual,
+            String message) {
+        Assertions.assertEquals(expected, actual, message);
     }
 
     /**

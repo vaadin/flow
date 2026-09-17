@@ -18,8 +18,6 @@ package com.vaadin.flow.test.devmode;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
-import org.junit.jupiter.api.Assertions;
-
 import com.vaadin.flow.component.html.testbench.NativeLabelElement;
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
@@ -57,7 +55,7 @@ public class UrlValidationIT extends AbstractDefaultIT {
         HttpURLConnection connection = (HttpURLConnection) URI
                 .create(getRootURL() + pathToResource).toURL().openConnection();
         connection.setRequestMethod("GET");
-        Assertions.assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
                 connection.getResponseCode(),
                 "HTTP 400 Bad request expected for urls with directory change");
     }

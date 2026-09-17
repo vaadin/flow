@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.test.devmode.vitelogout;
 
-import org.junit.jupiter.api.Assertions;
-
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration test for issue #20819: Vite page reload should not cancel
@@ -61,7 +61,7 @@ public class ViteLogoutRedirectIT extends AbstractDefaultIT {
                 .isDisplayed());
 
         // Verify we're on the correct URL
-        Assertions.assertTrue(
+        assertTrue(
                 getDriver().getCurrentUrl()
                         .contains("/" + SessionEndedView.ROUTE),
                 "Should be on SessionEndedView page");

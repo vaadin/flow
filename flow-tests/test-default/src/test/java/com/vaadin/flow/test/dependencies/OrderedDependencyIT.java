@@ -17,13 +17,14 @@ package com.vaadin.flow.test.dependencies;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(OrderedDependencyView.class)
 public class OrderedDependencyIT extends AbstractDefaultIT {
@@ -35,8 +36,7 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         open();
         // Parent of component stylesheet makes all text red
         // Extending class makes it blue
-        Assertions.assertEquals(BLUE,
-                findElement(By.id("component")).getCssValue("color"),
+        assertEquals(BLUE, findElement(By.id("component")).getCssValue("color"),
                 "Expected child style was not applied.");
     }
 
@@ -47,9 +47,9 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         List<String> messages = getMessages();
 
         int index = messages.indexOf("Messagehandler initialized in module 1");
-        Assertions.assertTrue(index >= 0, "Js Module is not found on the page");
+        assertTrue(index >= 0, "Js Module is not found on the page");
 
-        Assertions.assertEquals("Messagehandler initialized in module 2",
+        assertEquals("Messagehandler initialized in module 2",
                 messages.get(index + 1));
     }
 
@@ -60,9 +60,9 @@ public class OrderedDependencyIT extends AbstractDefaultIT {
         List<String> messages = getMessages();
 
         int index = messages.indexOf("script1 is loaded");
-        Assertions.assertTrue(index >= 0, "Js Module is not found on the page");
+        assertTrue(index >= 0, "Js Module is not found on the page");
 
-        Assertions.assertEquals("script2 is loaded", messages.get(index + 1));
+        assertEquals("script2 is loaded", messages.get(index + 1));
     }
 
     private List<String> getMessages() {

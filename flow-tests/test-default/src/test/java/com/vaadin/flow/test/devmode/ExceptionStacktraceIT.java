@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.test.devmode;
 
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(ExceptionStacktraceView.class)
 public class ExceptionStacktraceIT extends AbstractDefaultIT {
@@ -35,7 +37,7 @@ public class ExceptionStacktraceIT extends AbstractDefaultIT {
                         || element.getDomAttribute("class").isEmpty())
                 .findFirst().orElseThrow();
 
-        Assertions.assertFalse(
+        assertFalse(
                 findElements(By.cssSelector("body > div > div")).stream()
                         .anyMatch(div -> div.getText().toUpperCase()
                                 .contains("SLF4J")),
@@ -47,10 +49,10 @@ public class ExceptionStacktraceIT extends AbstractDefaultIT {
         // instantiator throws when the view cannot be created (a Spring
         // BeanCreationException in this module, since views are beans) and the
         // cause thrown by the view constructor.
-        Assertions.assertTrue(stacktrace.contains("BeanCreationException"),
+        assertTrue(stacktrace.contains("BeanCreationException"),
                 "There is no top level exception in the stacktrace: "
                         + stacktrace);
-        Assertions.assertTrue(
+        assertTrue(
                 stacktrace.contains(
                         "Caused by: java.lang.RuntimeException: Error here!"),
                 "There is no exception cause in the stacktrace: " + stacktrace);

@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -65,7 +64,7 @@ public class StreamResourceIT extends AbstractDefaultIT {
     private void assertDownloadedContent(String downloadId, String filename)
             throws IOException {
         WebElement link = findElement(By.id(downloadId));
-        Assertions.assertEquals("", link.getDomAttribute("router-ignore"),
+        assertEquals("", link.getDomAttribute("router-ignore"),
                 "Anchor element should have router-ignore attribute");
         String url = link.getDomProperty("href");
 
@@ -73,11 +72,11 @@ public class StreamResourceIT extends AbstractDefaultIT {
                 .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
 
         try (InputStream stream = download(url)) {
-            Assertions.assertEquals("foo", String.join("",
+            assertEquals("foo", String.join("",
                     IOUtils.readLines(stream, StandardCharsets.UTF_8)));
         }
 
-        Assertions.assertEquals(filename, FilenameUtils.getName(url));
+        assertEquals(filename, FilenameUtils.getName(url));
     }
 
     /*

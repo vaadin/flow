@@ -17,13 +17,14 @@ package com.vaadin.flow.test.devmode;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(InfoView.class)
 public class InfoIT extends AbstractDefaultIT {
@@ -34,10 +35,9 @@ public class InfoIT extends AbstractDefaultIT {
 
         List<String> texts = getInfoTexts();
 
-        Assertions.assertEquals("false",
-                getInfoValue(texts, "Production mode"));
+        assertEquals("false", getInfoValue(texts, "Production mode"));
         // The values are grouped under section headers
-        Assertions.assertTrue(texts.contains("Deployment configuration"),
+        assertTrue(texts.contains("Deployment configuration"),
                 "The deployment configuration section header is missing: "
                         + texts);
     }

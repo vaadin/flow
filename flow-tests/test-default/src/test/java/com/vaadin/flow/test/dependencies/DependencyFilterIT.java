@@ -17,13 +17,14 @@ package com.vaadin.flow.test.dependencies;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(DependencyFilterView.class)
 public class DependencyFilterIT extends AbstractDefaultIT {
@@ -39,16 +40,15 @@ public class DependencyFilterIT extends AbstractDefaultIT {
                 By.className("dependenciesTest")).stream()
                 .map(WebElement::getText).toList();
 
-        Assertions.assertTrue(testMessages.contains("eager.js"),
+        assertTrue(testMessages.contains("eager.js"),
                 "eager.js should be in the page");
 
-        Assertions.assertTrue(
-                testMessages.contains(DependencyFilterView.DOM_CHANGE_TEXT),
+        assertTrue(testMessages.contains(DependencyFilterView.DOM_CHANGE_TEXT),
                 "Attach a message via JS should be on the page");
 
         // The non-existing stylesheet is replaced by filtered.css, which makes
         // the text green
-        Assertions.assertEquals("rgba(0, 128, 0, 1)",
+        assertEquals("rgba(0, 128, 0, 1)",
                 findElement(By.id("filtered-css")).getCssValue("color"));
     }
 }

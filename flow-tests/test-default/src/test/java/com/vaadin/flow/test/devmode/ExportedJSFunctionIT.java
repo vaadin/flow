@@ -17,7 +17,6 @@ package com.vaadin.flow.test.devmode;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -27,6 +26,8 @@ import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @TestFor(ExportedJSFunctionView.class)
 public class ExportedJSFunctionIT extends AbstractDefaultIT {
 
@@ -34,16 +35,14 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
     public void versionInfoAvailableInDevelopmentMode() {
         open();
         WebElement version = findElement(By.id("version"));
-        Assertions.assertEquals("version: " + Version.getFullVersion(),
-                version.getText());
+        assertEquals("version: " + Version.getFullVersion(), version.getText());
     }
 
     @BrowserTest
     public void productionModeFalseInDevelopmentMode() {
         open();
         WebElement productionMode = findElement(By.id("productionMode"));
-        Assertions.assertEquals("Production mode: false",
-                productionMode.getText());
+        assertEquals("Production mode: false", productionMode.getText());
     }
 
     @BrowserTest
@@ -53,9 +52,9 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
         TestBenchElement counter = $(TestBenchElement.class).id("pollCounter");
         TestBenchElement pollTrigger = $(TestBenchElement.class).id("poll");
 
-        Assertions.assertEquals("No polls", counter.getText());
+        assertEquals("No polls", counter.getText());
         pollTrigger.click();
-        Assertions.assertEquals("Poll called 1 times", counter.getText());
+        assertEquals("Poll called 1 times", counter.getText());
     }
 
     @BrowserTest
@@ -64,11 +63,11 @@ public class ExportedJSFunctionIT extends AbstractDefaultIT {
         $(TestBenchElement.class).id("poll").click();
         List<Long> profilingData = getProfilingData();
 
-        Assertions.assertEquals(5, profilingData.size());
+        assertEquals(5, profilingData.size());
         // Time rendering the poll response can be 0ms
-        Assertions.assertTrue(profilingData.get(0) >= 0);
+        assertTrue(profilingData.get(0) >= 0);
         for (int i = 1; i < 5; i++) {
-            Assertions.assertTrue(profilingData.get(i) > 0);
+            assertTrue(profilingData.get(i) > 0);
         }
     }
 
