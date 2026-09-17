@@ -57,7 +57,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -235,14 +234,23 @@ final class DevLoopRedefiner {
         // Collected in the same pass, because the one walk over every loaded
         // class is the expensive part and a proxy is never a requested class.
         List<Class<?>> proxies = new ArrayList<>();
+        Map<String, List<Class<?>>> foreign = new HashMap<>();
         for (Class<?> candidate : inst.getAllLoadedClasses()) {
             if (requested.contains(candidate.getName())) {
-                loaded.computeIfAbsent(candidate.getName(),
-                        key -> new ArrayList<>()).add(candidate);
+                (ownedByApplication(candidate) ? loaded : foreign)
+                        .computeIfAbsent(candidate.getName(),
+                                key -> new ArrayList<>())
+                        .add(candidate);
             } else if (isProxy(candidate)) {
                 proxies.add(candidate);
             }
         }
+        // Only where the application has no copy of its own. A layout that
+        // loads the connector and the application apart would otherwise
+        // redefine nothing at all, and merging unconditionally would put
+        // every foreign copy straight back, which is what this filter is for.
+        foreign.forEach(
+                (name, copies) -> loaded.computeIfAbsent(name, key -> copies));
 
         Inspection inspected = inspect(requested, loaded, classesDirs);
         if (inspected.error() != null) {
@@ -260,13 +268,22 @@ final class DevLoopRedefiner {
         // be named afterwards. On a stock JVM such a change is simply
         // rejected, but an enhanced-redefinition JVM accepts it - and that is
         // exactly when a Spring bean's live proxy stops matching the class.
-        Map<String, String> before = new HashMap<>();
-        Map<String, String> frontendBefore = new HashMap<>();
+        // Keyed by the Class itself rather than by its binary name, because a
+        // name is not unique in a running application: the same class can be
+        // loaded by more than one class loader, and then a name-keyed "before"
+        // holds the first copy's answer while the loop below asks the second
+        // copy for its "after". Measured under the build-plugin runtime, where
+        // the Vaadin Maven plugin keeps its own copy of the application's
+        // classes in its scanning class loader inside the very JVM the
+        // application runs in: one copy reported the supertype's frontend
+        // imports and the other reported none, so an ordinary method-body edit
+        // came out as "frontend imports changed" and escalated to a restart.
+        Map<Class<?>, String> before = new HashMap<>();
+        Map<Class<?>, String> frontendBefore = new HashMap<>();
         for (ClassDefinition definition : definitions) {
-            before.putIfAbsent(definition.getDefinitionClass().getName(),
+            before.putIfAbsent(definition.getDefinitionClass(),
                     members(definition.getDefinitionClass()));
-            frontendBefore.putIfAbsent(
-                    definition.getDefinitionClass().getName(),
+            frontendBefore.putIfAbsent(definition.getDefinitionClass(),
                     frontendDependencies(definition.getDefinitionClass()));
         }
 
@@ -288,11 +305,11 @@ final class DevLoopRedefiner {
         Set<String> frontend = new LinkedHashSet<>();
         for (ClassDefinition definition : definitions) {
             Class<?> type = definition.getDefinitionClass();
-            String previous = before.get(type.getName());
+            String previous = before.get(type);
             if (previous != null && !previous.equals(members(type))) {
                 structural.add(simple(type.getName()));
             }
-            String previousFrontend = frontendBefore.get(type.getName());
+            String previousFrontend = frontendBefore.get(type);
             if (previousFrontend != null
                     && !previousFrontend.equals(frontendDependencies(type))) {
                 frontend.add(simple(type.getName()));
@@ -1322,7 +1339,7 @@ final class DevLoopRedefiner {
     }
 
     /**
-     * The frontend imports a class declares, as one comparable string.
+     * The frontend imports a class <em>declares</em>, as one comparable string.
      * <p>
      * These annotations are read by the build, not at runtime: {@code JsModule}
      * and friends end up in {@code generated-flow-imports.js}, which
@@ -1333,49 +1350,41 @@ final class DevLoopRedefiner {
      * escalates to a restart on this, and the restart regenerates the imports
      * and rebuilds the bundle.
      * <p>
-     * Read through {@link AnnotationReader} rather than off the class directly,
-     * so an import inherited from a superclass or picked up through
-     * {@code @Uses} counts the same way the build counts it. Reflection is
-     * re-read after a redefine - {@code Class} discards its cached annotation
-     * data when {@code classRedefinedCount} moves - so calling this before and
-     * after is a real comparison.
+     * <b>Declared only, and that is the whole point.</b> This value exists to
+     * be compared against the same class's own previous value across a
+     * redefine, and the only thing such an edit can move is what the class
+     * declares itself: an inherited {@code @JsModule} belongs to a library
+     * supertype that was not recompiled and cannot have changed.
+     * <p>
+     * Reading the inherited closure instead was measured to escalate an
+     * ordinary method-body edit - changing a label in a view whose supertype
+     * declares imports, which is every real Vaadin view - to a restart. Two
+     * things made it fragile, and both go away here. All of these annotations
+     * are {@code @Inherited}, so a supertype's annotation is already reported
+     * on the subclass and {@code AnnotationReader}'s own superclass walk then
+     * counted it a second time. And the closure is resolved through the class
+     * loader, so two copies of one class in two loaders do not have to agree
+     * about it - which is exactly what the comparison ran into.
      * <p>
      * {@code @StyleSheet} is deliberately absent: those are live already, added
      * and removed by {@code StyleSheetHotswapper} without a rebuild, and
      * restarting for one would be a regression.
      */
-    // Package-private so the non-Component reads can be asserted directly.
+    // Package-private so the reads can be asserted directly.
     static String frontendDependencies(Class<?> type) {
         List<String> imports = new ArrayList<>();
-        if (Component.class.isAssignableFrom(type)) {
-            @SuppressWarnings("unchecked")
-            Class<? extends Component> componentType = (Class<? extends Component>) type;
-            AnnotationReader.getJsModuleAnnotations(componentType).forEach(
-                    annotation -> imports.add("js:" + annotation.value()));
-            AnnotationReader.getJavaScriptAnnotations(componentType).forEach(
-                    annotation -> imports.add("script:" + annotation.value()));
-            AnnotationReader.getCssImportAnnotations(componentType).forEach(
-                    annotation -> imports.add("css:" + annotation.value() + ":"
-                            + annotation.id() + ":" + annotation.themeFor()));
-        } else {
-            // Straight off the class, because AnnotationReader only accepts a
-            // Component - and none of these annotations is Component-only. The
-            // build scans every class it reaches from an entry point, so a
-            // JsModule on a service init listener ends up in
-            // generated-flow-imports.js exactly like one on a view.
-            for (JsModule annotation : type
-                    .getAnnotationsByType(JsModule.class)) {
-                imports.add("js:" + annotation.value());
-            }
-            for (JavaScript annotation : type
-                    .getAnnotationsByType(JavaScript.class)) {
-                imports.add("script:" + annotation.value());
-            }
-            for (CssImport annotation : type
-                    .getAnnotationsByType(CssImport.class)) {
-                imports.add("css:" + annotation.value() + ":" + annotation.id()
-                        + ":" + annotation.themeFor());
-            }
+        for (JsModule annotation : type
+                .getDeclaredAnnotationsByType(JsModule.class)) {
+            imports.add("js:" + annotation.value());
+        }
+        for (JavaScript annotation : type
+                .getDeclaredAnnotationsByType(JavaScript.class)) {
+            imports.add("script:" + annotation.value());
+        }
+        for (CssImport annotation : type
+                .getDeclaredAnnotationsByType(CssImport.class)) {
+            imports.add("css:" + annotation.value() + ":" + annotation.id()
+                    + ":" + annotation.themeFor());
         }
         // The JavaScript a JavaScript definition declares is generated into
         // the bundle by the build, exactly like the imports above, so an
@@ -1394,17 +1403,16 @@ final class DevLoopRedefiner {
                 }
             }
         }
-        // These two are read off the class whatever it is. @Theme in particular
-        // has to sit on the AppShellConfigurator, which is never a Component -
-        // so reading it only from Components meant a theme could be added,
-        // changed or removed, redefine cleanly, and be reported Stable over a
-        // bundle that has no imports for it.
         for (NpmPackage npmPackage : type
-                .getAnnotationsByType(NpmPackage.class)) {
+                .getDeclaredAnnotationsByType(NpmPackage.class)) {
             imports.add(
                     "npm:" + npmPackage.value() + "@" + npmPackage.version());
         }
-        Theme theme = type.getAnnotation(Theme.class);
+        // @Theme in particular has to sit on the AppShellConfigurator, which is
+        // never a Component - so reading it only from Components meant a theme
+        // could be added, changed or removed, redefine cleanly, and be reported
+        // Stable over a bundle that has no imports for it.
+        Theme theme = type.getDeclaredAnnotation(Theme.class);
         if (theme != null) {
             // Variant and theme class alongside the name: all three are read
             // while the application starts, so a change to any of them is the
@@ -1414,6 +1422,59 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * Whether a loaded class is the application's own copy.
+     * <p>
+     * A binary name is not unique in a running JVM, and under a build-plugin
+     * runtime it is routinely not: the build runs in the same JVM as the
+     * application, and the Vaadin Maven plugin scans the project through a
+     * class loader of its own, so a second copy of every scanned class is
+     * loaded and never used to serve anything. Redefining it is work for nobody
+     * - and each copy is one more class for HotswapAgent to transform in one
+     * more class loader, which is where the transform failures that escalate an
+     * apply have come from.
+     * <p>
+     * The application's loader is the one that loaded this connector: the
+     * connector travels with the application, in {@code WEB-INF/lib} for a WAR
+     * and on the class path for a main-class launch, so it is the application's
+     * by construction. Descendants count too, because a framework is entitled
+     * to load application code in a child loader; anything else - a build
+     * plugin's scanning loader, a parent that merely happens to see the same
+     * jar - does not.
+     *
+     * @param candidate
+     *            a loaded class
+     * @return {@code true} if it belongs to the application
+     */
+    static boolean ownedByApplication(Class<?> candidate) {
+        return ownedBy(candidate.getClassLoader(),
+                DevLoopRedefiner.class.getClassLoader());
+    }
+
+    /**
+     * Whether {@code loader} is {@code owner} or descends from it.
+     *
+     * @param loader
+     *            the class loader a copy was loaded by
+     * @param owner
+     *            the application's own class loader
+     * @return {@code true} if the copy is the application's
+     */
+    static boolean ownedBy(ClassLoader loader, ClassLoader owner) {
+        if (owner == null) {
+            // The connector itself is on the boot class path, which no real
+            // deployment does; claiming nothing is the application's would
+            // redefine nothing at all.
+            return true;
+        }
+        for (ClassLoader walk = loader; walk != null; walk = walk.getParent()) {
+            if (walk == owner) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String simple(String binaryName) {

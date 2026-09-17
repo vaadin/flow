@@ -205,6 +205,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -216,6 +217,47 @@ properties files, where the rest of the team can see it (see
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+## How the application is started
+
+`AppRuntime` decides which of two shapes this project is.
+
+**An entry point** — a Spring Boot class, or any `public static void main` — is
+launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
+
+**A WAR** has no entry point, and its servlet container is a build plugin rather
+than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
+asks it to:
+
+```
+MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -DdisabledPlugins>
+JAVA_HOME=<the JDK Jvm chose>
+  mvnw -B -ntp -nsu [-f <root>/pom.xml -pl :<app> -am] -Dmaven.test.skip=true
+       [compile] <plugin>:<version>:run -Djetty.deployMode=EMBED -Djetty.scan=0
+       <-D settings the application reads>
+```
+
+Four parts are load-bearing. `EMBED` (the plugin's default) runs the server in
+the build's JVM, so the application is still a **direct child** of the daemon -
+a fork would lose its exit code and orphan it. `MAVEN_OPTS` and `JAVA_HOME` are
+the only way in, because the plugin's own `jvmArgs` applies to a fork only.
+`-pl :app -am compile` is what makes a sibling module resolve to its
+`target/classes` rather than an installed jar. And `-Dmaven.test.skip=true`
+keeps the goal's forked `test-compile` from building tests the loop has no use
+for.
+
+The `-D` settings split in two: JVM flags can only be given to a starting JVM,
+so they go in the environment, while settings the application reads go on the
+Maven command line, where each is its own argument and a value with a space in
+it survives. `disabledPlugins` is the exception - HotswapAgent reads it in
+`premain`, before Maven sets anything - so it has to be a real JVM flag.
+
+Which runtime a project gets, in order: `-Dvaadin.dev.runtime`; an entry point
+the build *names* (a jar manifest `Start-Class`, or `@SpringBootApplication`);
+a server plugin from `ServerPlugin.KNOWN`; then any `public static void main`.
+The order matters both ways - a Spring Boot app can be packaged as a WAR, and a
+WAR can carry an unrelated main method. Another container later is an entry in
+that table.
 
 ## Which JVM runs the app
 
@@ -514,13 +556,73 @@ its answer rather than claiming success.
   annotation processing, no project compiler arguments. `mvn clean` is the
   recovery; compiling into an output directory of the daemon's own is not
   implemented.
-- **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
-  (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
-  fires a competing full page reload; the Spring ones were measured to lose the
-  Spring Data repository bean under repeated redefinitions, after which the app
-  throws while the redefine still reported success. The property name is
-  `disabledPlugins`, plural and unprefixed — a wrong name is accepted silently
-  and disables nothing.
+- **A pom's `<scan>` or `<deployMode>` would beat the dev loop, so the daemon
+  rewrites them.** Maven gives a `<configuration>` value precedence over the
+  user property the same parameter exposes, so `-Djetty.scan=0` does nothing to
+  a project that writes `<scan>2</scan>`, which a generated WAR starter does.
+  Measured, the plugin then redeployed the webapp underneath an `apply` that had
+  already reported a clean hot swap. Requiring every project to write
+  `<scan>0</scan>` is a requirement on humans and agents that a tool should not
+  need, so the daemon puts its own jar on `maven.ext.class.path` and
+  `DevLoopBuildExtension` edits the effective model in memory before any mojo
+  runs. Nothing is written to the project, and the override is announced in the
+  application's log. The one case it cannot cover is a daemon running from an
+  exploded build directory, where there is no jar to point Maven at; there it
+  falls back to warning.
+- **The build's class loaders are in the application's JVM under a build-plugin
+  runtime.** The Vaadin Maven plugin scans through a loader of its own, so a
+  second copy of every scanned class is live in the same JVM. HotswapAgent is
+  told to leave that loader alone (`MavenGoalRuntime.extraJvmFlags`) because it
+  cannot instrument classes in a loader that cannot see it, and the connector
+  compares a class to its own previous state by `Class` identity rather than by
+  name - keyed by name, one copy's "before" met the other's "after" and a
+  method-body edit came out as `frontend imports changed`. The duplicates are
+  still redefined, which is what `N duplicate class copy/copies also redefined`
+  reports.
+- **A restart under a build-plugin runtime costs a Maven invocation**, seconds
+  rather than a fraction, on the path a stock JDK takes most often. Partly paid
+  back because the daemon has already compiled into `target/classes`.
+- **`MAVEN_OPTS` cannot carry a path with a space.** Maven's launcher expands it
+  unquoted, so the shell splits it. That reaches the agents;
+  `MavenGoalRuntime.unsplittable` names the offending flag at launch rather than
+  leaving a JVM that will not start.
+- **The daemon does not own the classpath under a build-plugin runtime.** The
+  webapp loader is the plugin's to assemble, so `Launch.assemble`'s removal of a
+  superseded jar does not apply; a sibling module resolves to `target/classes`
+  only because of `-pl :app -am compile`.
+- **`src/main/webapp` is not in the change-set.** A container serves it off disk
+  so an edit there is already live, but `apply` neither mentions it nor reloads
+  the page, and a `WEB-INF/web.xml` edit needs a `restart` asked for by hand. A
+  modern Vaadin WAR keeps static files under `META-INF/resources`, which is
+  tracked normally.
+- **HotswapAgent's `Vaadin`, `Spring`, `SpringBoot` and `Jetty` plugins are
+  disabled**, and nothing else. The Vaadin one targets an older package and
+  fires a competing full page reload; the Spring ones were measured to lose
+  the Spring Data repository bean under repeated redefinitions, after which
+  the app throws while the redefine still reported success. `Jetty` is belt and
+  braces: its hooks name `org.eclipse.jetty.webapp` and `org.mortbay` classes
+  and its tested versions
+  stop at 9.1, while Jetty 12 moved the webapp to `org.eclipse.jetty.ee10.webapp`
+  and `org.eclipse.jetty.ee11.webapp` and deleted `FileResource` and
+  `ResourceCollection`, so it can match nothing at either EE level (measured on
+  ee10) - it stays off so that ee-aware hooks upstream could not hand the loop a
+  competing file watcher by surprise.
+  **Disabling has to reach the right class loader.** HotswapAgent asks the
+  `PluginConfiguration` of the class's *own* loader, built from a
+  `hotswap-agent.properties` found on it - so `-DdisabledPlugins` never reached a
+  webapp loader inside a build plugin's realm, and the Vaadin plugin went on
+  transforming `VaadinService`. `MavenGoalRuntime` therefore also writes the list
+  into the app's `target/classes`, and with it an `extraClasspath` naming the
+  HotswapAgent jar. HotswapAgent copies its plugin classes into the application
+  loader and leaves the rest of itself to that loader's parent chain, which
+  inside a build plugin's realm never reaches the system class path - so the
+  Proxy plugin's CGLIB recorder failed on `AgentLogger` on every redefine.
+  With the jar on the loader's own class path every plugin works there, Proxy
+  included. Honouring the setting needs `java.base/java.net` and
+  `java.base/jdk.internal.loader` opened, which the runtime adds; without the
+  second HotswapAgent gives up at debug level only. The name is
+  `disabledPlugins`, plural and unprefixed; a wrong one is accepted silently and
+  disables nothing.
 
 ## Tests
 

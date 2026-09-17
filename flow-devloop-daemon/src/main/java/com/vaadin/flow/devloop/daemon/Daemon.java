@@ -400,6 +400,7 @@ public final class Daemon {
         if (app.state() == AppProcess.State.RUNNING) {
             sb.append("  owner=daemon  registered=").append(app.isRegistered());
         }
+        runtimeName().ifPresent(name -> sb.append("  runtime=").append(name));
         List<String> lines = new java.util.ArrayList<>();
         lines.add(sb.toString());
         modulesLine().ifPresent(lines::add);
@@ -528,6 +529,25 @@ public final class Daemon {
      * has resolved it, which is itself the answer to "why did my edit not
      * count?".
      */
+    /**
+     * How this project's application is started, for {@code status}.
+     * <p>
+     * Worth a word because it is a decision the daemon made about the
+     * developer's project rather than something they configured: a WAR run
+     * through its own build plugin and a Spring Boot jar launched directly look
+     * identical from outside, and when the daemon has guessed wrong this line
+     * is the only place that says so. Empty when the project looks like neither
+     * shape - {@code start} is where that is worth a full explanation, not
+     * here.
+     */
+    private Optional<String> runtimeName() {
+        try {
+            return Optional.of(launch.runtime().name());
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
     private String modulesJson() {
         List<String> loop = launch.resolved()
                 .map(project -> moduleNames(project.modules()))

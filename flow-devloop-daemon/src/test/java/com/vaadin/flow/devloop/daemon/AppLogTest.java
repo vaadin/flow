@@ -159,6 +159,38 @@ class AppLogTest {
     }
 
     @Test
+    void watch_mavenEpilogue_isNotCountedAsErrorsOfItsOwn() throws IOException {
+        // Under a build-plugin runtime the application log opens with a build
+        // log, and Maven signs off every failure with several ERROR-level lines
+        // that carry no diagnosis. Counted, one failed build would read as five
+        // errors and the count would stop meaning anything.
+        Path log = log("");
+        AppLog.Watch watch = new AppLog.Watch(log);
+
+        append(log, "[ERROR] Failed to execute goal on project app: "
+                + "Compilation failure\n"
+                + "[ERROR] /src/Foo.java:[7,15] cannot find symbol\n"
+                + "[ERROR] \n" + "[ERROR] -> [Help 1]\n"
+                + "[ERROR] To see the full stack trace of the errors, "
+                + "re-run Maven with the -e switch.\n"
+                + "[ERROR] Re-run Maven using the -X switch to enable full "
+                + "debug logging.\n");
+
+        // The goal failure and the diagnostic it carries; nothing else.
+        assertEquals(2, watch.errors().size(), watch.errors().toString());
+    }
+
+    @Test
+    void buildEpilogue_leavesRealDiagnosticsAlone() {
+        assertTrue(AppLog.buildEpilogue("[ERROR] -> [Help 1]"));
+        assertTrue(AppLog.buildEpilogue("[ERROR] "));
+        assertFalse(AppLog.buildEpilogue(
+                "[ERROR] /src/Foo.java:[7,15] cannot find symbol"));
+        // Not Maven's at all, so not its epilogue either.
+        assertFalse(AppLog.buildEpilogue("ERROR c.e.Foo - could not send"));
+    }
+
+    @Test
     void watch_viteCompileError_isFoundDespiteBeingLoggedAtInfo()
             throws IOException {
         Path log = log("INFO up\n");
