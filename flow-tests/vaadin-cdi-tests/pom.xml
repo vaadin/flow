@@ -473,7 +473,7 @@
           <plugin>
             <groupId>io.openliberty.tools</groupId>
             <artifactId>liberty-maven-plugin</artifactId>
-            <version>3.11.4</version>
+            <version>3.12.3</version>
             <executions>
               <execution>
                 <id>create-server</id>
