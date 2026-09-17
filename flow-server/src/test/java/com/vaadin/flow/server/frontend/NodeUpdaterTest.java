@@ -169,6 +169,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/preset-react");
+        expectedDependencies.add("@babel/types");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
@@ -240,7 +241,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.2", packageJson
+        Assert.assertEquals("11.1.0", packageJson
                 .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
     }
 

@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -50,6 +52,30 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
         return super.getTestPath().replace("/view", "");
+    }
+
+    @Before
+    @Override
+    public void checkIfServerAvailable() {
+        // Make sure the server is not still restarting. Redeploying takes
+        // longer than the ten seconds the single argument waitUntil allows.
+        AtomicReference<RuntimeException> lastFailure = new AtomicReference<>();
+        try {
+            waitUntil(driver -> {
+                try {
+                    super.checkIfServerAvailable();
+                    return true;
+                } catch (RuntimeException e) {
+                    lastFailure.set(e);
+                    return false;
+                }
+            }, 60);
+        } catch (TimeoutException e) {
+            // Report why the server was unreachable, not just that waiting
+            // for it timed out.
+            RuntimeException failure = lastFailure.get();
+            throw failure == null ? e : failure;
+        }
     }
 
     @After
