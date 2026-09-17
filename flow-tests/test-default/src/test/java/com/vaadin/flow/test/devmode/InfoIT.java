@@ -16,7 +16,6 @@
 package com.vaadin.flow.test.devmode;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
@@ -51,9 +50,9 @@ public class InfoIT extends AbstractDefaultIT {
 
     private String getInfoValue(List<String> texts, String name) {
         String prefix = name + ": ";
-        Optional<String> infoText = texts.stream()
-                .filter(text -> text.startsWith(prefix)).findFirst();
-
-        return infoText.get().replace(prefix, "");
+        return texts.stream().filter(text -> text.startsWith(prefix))
+                .findFirst().map(text -> text.substring(prefix.length()))
+                .orElseThrow(() -> new AssertionError(
+                        "No info row starts with '" + prefix + "': " + texts));
     }
 }

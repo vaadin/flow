@@ -31,6 +31,11 @@ import com.vaadin.base.devserver.viteproxy.ViteSessionTracker;
  * <p>
  * Implements both ServletContextListener (to initialize the ViteSessionTracker)
  * and HttpSessionListener (to notify tracker when sessions are destroyed).
+ * <p>
+ * The listener is registered for the whole module, so it only closes the
+ * websocket of a session that logged in through
+ * {@link MockAuthenticationFilter} — which is what a container does as well,
+ * and keeps the other tests of the module out of it.
  */
 @WebListener
 public class CloseViteWebsocketOnSessionExpiration
@@ -47,7 +52,8 @@ public class CloseViteWebsocketOnSessionExpiration
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        if (tracker != null) {
+        if (tracker != null && Boolean.TRUE.equals(se.getSession()
+                .getAttribute(MockAuthenticationFilter.AUTHENTICATED_ATTR))) {
             // Simulate Tomcat behavior
             // Close code 1008 is VIOLATED_POLICY per WebSocket RFC
             tracker.close(se.getSession().getId(), 1008,

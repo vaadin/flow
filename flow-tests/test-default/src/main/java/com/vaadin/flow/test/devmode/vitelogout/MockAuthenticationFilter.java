@@ -34,8 +34,14 @@ import java.security.Principal;
  * <p>
  * Intercepts login POST requests, sets an authenticated session attribute, and
  * wraps subsequent requests with a principal when authenticated.
+ * <p>
+ * It has to cover the whole application, not only the views below, because the
+ * behavior under test needs the Vite websocket to be opened under an
+ * authenticated session, and that handshake goes to {@code /VAADIN}. Requests
+ * of sessions that never logged in are passed through untouched, and no session
+ * is created for them.
  */
-@WebFilter(urlPatterns = { "/vite-logout/*" })
+@WebFilter(urlPatterns = { "/*" })
 public class MockAuthenticationFilter implements Filter {
 
     public static final String AUTHENTICATED_ATTR = "mock.authenticated";
@@ -45,19 +51,20 @@ public class MockAuthenticationFilter implements Filter {
             FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        HttpSession session = httpRequest.getSession();
         String path = httpRequest.getRequestURI();
 
         // On POST to login route, mark as authenticated and redirect
         if (path.endsWith(LoginView.ROUTE)
                 && "POST".equals(httpRequest.getMethod())) {
-            session.setAttribute(AUTHENTICATED_ATTR, true);
+            httpRequest.getSession().setAttribute(AUTHENTICATED_ATTR, true);
             httpResponse.sendRedirect("/" + LogoutTestView.ROUTE);
             return;
         }
 
         // If authenticated, wrap request with principal
-        if (Boolean.TRUE.equals(session.getAttribute(AUTHENTICATED_ATTR))) {
+        HttpSession session = httpRequest.getSession(false);
+        if (session != null && Boolean.TRUE
+                .equals(session.getAttribute(AUTHENTICATED_ATTR))) {
             chain.doFilter(new AuthenticatedRequestWrapper(httpRequest),
                     response);
         } else {

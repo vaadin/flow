@@ -159,7 +159,7 @@ encoded-context module).
 
 | Module | Setting pinned | Deployment | Base package | Holds (setting-relevant tests only) |
 |---|---|---|---|---|
-| **test-default** | React, dev hotdeploy, root context, default Lumo, npm | Spring Boot, JUnit 6 | `com.vaadin.flow.test` | bulk of test-root-context (~250); **test-dev-mode** *(merged — `devmode`, `dependencies` and `components` packages)*; **test-react-router** *(merged — React *is* default, so react routing is default routing)*; **test-react-adapter** (add `flow-react` dep); Spring DI/scope ITs (test-default is Spring Boot); generic ITs scattered elsewhere |
+| **test-default** | React, dev hotdeploy, root context, default Lumo, npm | Spring Boot, JUnit 6 | `com.vaadin.flow.test` | bulk of test-root-context (~250); **test-dev-mode** *(merged — `devmode`, `dependencies` and `components` packages)*; **test-react-router** *(merged — React is the default engine, so react routing is default routing)*; **test-react-adapter** (add `flow-react` dep); Spring DI/scope ITs (test-default is Spring Boot); generic ITs scattered elsewhere |
 | **test-plain-servlet** | plain `VaadinServlet` / custom servlet service (no Spring Boot) | plain Jetty | `…test.servlet` | test-servlet, test-custom-route-registry, test-client-queue, `SyncError*` & custom-servlet ITs |
 | **test-production** | `productionMode=true` | build-frontend | `…test.production` | prod-only ITs (e.g. RouteNotFoundProdMode), prod-bundle, **test-misc** (it runs `build-frontend`, so every IT there is a production IT) |
 | **test-vaadin-router** | `reactEnable=false` (legacy client router) | as default | `…test.vaadinrouter` | test-vaadin-router, test-ccdm |
