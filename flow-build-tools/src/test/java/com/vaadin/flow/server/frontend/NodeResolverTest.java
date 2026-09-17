@@ -122,7 +122,7 @@ class NodeResolverTest {
     }
 
     @Test
-    void globalNode_longTermSupportVersionsInRangeAreAccepted() {
+    void globalNode_versionsInTheSupportedRangeAreAccepted() {
         NodeResolver resolver = resolver(VERSION);
 
         assertTrue(
@@ -131,12 +131,12 @@ class NodeResolverTest {
                 "The minimum supported version should be accepted");
         assertTrue(
                 resolver.isSupportedGlobalVersion(new FrontendVersion(
-                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 0, 0)),
-                "The maximum supported major version should be accepted");
+                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0)),
+                "A later release of the maximum supported major version should be accepted");
     }
 
     @Test
-    void globalNode_versionsOutsideRangeAndNonLtsLinesAreRejected() {
+    void globalNode_versionsOutsideTheSupportedRangeAreRejected() {
         NodeResolver resolver = resolver(VERSION);
         int minimumMajor = FrontendTools.SUPPORTED_NODE_VERSION
                 .getMajorVersion();
@@ -144,16 +144,12 @@ class NodeResolverTest {
 
         assertFalse(
                 resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(minimumMajor - 2, 0, 0)),
+                        new FrontendVersion(minimumMajor - 1, 99, 0)),
                 "A version older than the minimum should be rejected");
         assertFalse(
                 resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(maximumMajor + 2, 0, 0)),
+                        new FrontendVersion(maximumMajor + 1, 0, 0)),
                 "A version newer than the maximum major version should be rejected");
-        assertFalse(
-                resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(maximumMajor - 1, 9, 0)),
-                "An odd major version is not a long-term support line and should be rejected even when it is in between the minimum and the maximum");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

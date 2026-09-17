@@ -180,15 +180,9 @@ class NodeResolver implements java.io.Serializable {
 
     /**
      * Checks that a globally installed Node.js is one that Flow is tested
-     * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION}, at most
-     * {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION} and on a long-term
-     * support line.
-     * <p>
-     * Node.js gives an even major version to every line that becomes long-term
-     * support, and an odd one to the lines that stop getting updates a few
-     * months after they come out. Only the long-term support lines are tested
-     * against, so an odd major version in between the minimum and the maximum
-     * is not accepted either.
+     * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
+     * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
+     * long-term support line Flow is built on.
      *
      * @param version
      *            the version of the globally installed Node.js
@@ -212,13 +206,6 @@ class NodeResolver implements java.io.Serializable {
                     version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
                     alternativeDir);
-            return false;
-        }
-
-        if (version.getMajorVersion() % 2 != 0) {
-            getLogger().info(
-                    "The globally installed Node.js version {}.x is not a long-term support release and is not tested against. Using Node.js from {}.",
-                    version.getMajorVersion(), alternativeDir);
             return false;
         }
 
