@@ -30,8 +30,8 @@ import java.util.Locale;
  * classes reach the application through a webapp class loader the build plugin
  * assembles rather than through a classpath the daemon handed over.
  * <p>
- * {@code DevLoopMultiModuleIT} rewrites {@link #format(LocalDate)} and
- * reverts it afterwards.
+ * {@code DevLoopMultiModuleIT} rewrites {@link #format(LocalDate)} and reverts
+ * it afterwards.
  */
 public final class DueDateFormatter {
 
