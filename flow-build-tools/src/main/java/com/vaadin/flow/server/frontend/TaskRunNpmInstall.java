@@ -355,6 +355,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             logger.debug(
                     commandToString(options.getNpmFolder().getAbsolutePath(),
                             npmInstallCommand));
+            logger.debug(
+                    commandToString(options.getNpmFolder().getAbsolutePath(),
+                            postinstallCommand));
         }
 
         String toolName = getToolName(options);
