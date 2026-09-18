@@ -16,11 +16,15 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,7 +51,7 @@ class AppRuntimeTest {
 
     @Test
     void warWithJettyPlugin_runsThroughTheBuild() throws IOException {
-        Path app = warModule("app", "12.1.13", "");
+        Path app = warModule("app", "12.1.13");
 
         AppRuntime runtime = runtimeOf(app);
 
@@ -65,8 +69,7 @@ class AppRuntimeTest {
      */
     @Test
     void ee11IsRecognisedToo() throws IOException {
-        Path app = module("app", "war", plugin("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13", ""));
+        Path app = ee11Module("app", "12.1.13");
 
         assertEquals("jetty-ee11", runtimeOf(app).name());
     }
@@ -74,8 +77,7 @@ class AppRuntimeTest {
     @Test
     void ee11DrivesTheSameGoalAndReadsTheSameReadinessLine()
             throws IOException {
-        Path app = module("app", "war", plugin("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13", ""));
+        Path app = ee11Module("app", "12.1.13");
         AppRuntime runtime = runtimeOf(app);
 
         // Jetty abbreviates the logger name, so the line carries
@@ -88,27 +90,6 @@ class AppRuntimeTest {
     }
 
     /**
-     * A version the reactor cannot interpolate - {@code ${jetty.version}}
-     * declared in a parent outside the checkout - leaves the goal unpinned, and
-     * that is the right answer rather than a guess: Maven then resolves the
-     * version from the project's own build section exactly as it would for any
-     * other invocation. Observed doing precisely that when this fixture ran
-     * under ee11 from its own reactor root.
-     */
-    @Test
-    void anUnresolvableVersionLeavesTheGoalForMavenToPin() throws IOException {
-        Path app = module("app", "war", plugin("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "${jetty.version}", ""));
-
-        Reactor.PluginConfig declared = Reactor.discover(app, log)
-                .plugin("org.eclipse.jetty.ee11", "jetty-ee11-maven-plugin")
-                .orElseThrow();
-
-        assertEquals("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
-                declared.coordinates());
-    }
-
-    /**
      * The case the whole ordering exists for: a Spring Boot application may be
      * packaged as a WAR and may even declare a servlet-container plugin, and
      * launching it through that plugin rather than through its own main class
@@ -116,7 +97,7 @@ class AppRuntimeTest {
      */
     @Test
     void springBootWarStaysOnItsMainClass() throws IOException {
-        Path app = warModule("app", "12.1.13", "");
+        Path app = warModule("app", "12.1.13");
         packagedJarNaming(app, "com.example.Application");
 
         assertEquals(MainClassRuntime.NAME, runtimeOf(app).name());
@@ -128,7 +109,7 @@ class AppRuntimeTest {
      */
     @Test
     void strayMainMethodDoesNotBeatTheServerPlugin() throws IOException {
-        Path app = warModule("app", "12.1.13", "");
+        Path app = warModule("app", "12.1.13");
         // A real main method on the output, so that MainClass.discover would
         // find one. The build has still named nothing, and what the developer
         // deploys is the WAR.
@@ -159,32 +140,14 @@ class AppRuntimeTest {
         assertTrue(thrown.getMessage().contains("-Dvaadin.dev.runtime"));
     }
 
-    @Test
-    void pluginVersionIsInterpolatedFromProperties() throws IOException {
-        Path app = module("app", "war",
-                "<properties><jetty.version>12.1.13</jetty.version>"
-                        + "</properties>"
-                        + plugin("org.eclipse.jetty.ee10",
-                                "jetty-ee10-maven-plugin", "${jetty.version}",
-                                ""));
-
-        Reactor reactor = Reactor.discover(app, log);
-        Reactor.PluginConfig declared = reactor
-                .plugin("org.eclipse.jetty.ee10", "jetty-ee10-maven-plugin")
-                .orElseThrow();
-
-        assertEquals("org.eclipse.jetty.ee10:jetty-ee10-maven-plugin:12.1.13",
-                declared.coordinates());
-    }
-
     /**
      * A pom that pins these wins over the command line, so the developer has to
      * be told rather than left to wonder why the app keeps redeploying itself.
      */
     @Test
     void pinnedScanAndDeployModeAreWarnedAbout() throws IOException {
-        Path app = warModule("app", "12.1.13", "<configuration><scan>2</scan>"
-                + "<deployMode>FORK</deployMode></configuration>");
+        Path app = warModule("app", "12.1.13",
+                Map.of("scan", "2", "deployMode", "FORK"));
 
         List<String> warnings = runtimeOf(app).warnings();
 
@@ -202,15 +165,14 @@ class AppRuntimeTest {
 
     @Test
     void scanAlreadyOff_isNotWarnedAbout() throws IOException {
-        Path app = warModule("app", "12.1.13",
-                "<configuration><scan>0</scan></configuration>");
+        Path app = warModule("app", "12.1.13", Map.of("scan", "0"));
 
         assertEquals(List.of(), runtimeOf(app).warnings());
     }
 
     @Test
     void jettyReportsItIsServing_andWhichPort() throws IOException {
-        AppRuntime runtime = runtimeOf(warModule("app", "12.1.13", ""));
+        AppRuntime runtime = runtimeOf(warModule("app", "12.1.13"));
         String line = "[INFO] Started ServerConnector@6e1567f1"
                 + "{HTTP/1.1, (http/1.1)}{0.0.0.0:8899}";
 
@@ -224,7 +186,7 @@ class AppRuntimeTest {
      */
     @Test
     void jettyStartingUpIsNotYetServing() throws IOException {
-        AppRuntime runtime = runtimeOf(warModule("app", "12.1.13", ""));
+        AppRuntime runtime = runtimeOf(warModule("app", "12.1.13"));
 
         assertFalse(runtime.serving(
                 "[INFO] jetty-ee10-maven-plugin:12.1.13:run @ project-base"));
@@ -247,13 +209,93 @@ class AppRuntimeTest {
     }
 
     /**
+     * A pom edit is what moves the answer, and until the next resolve the model
+     * describes the project as it was. Believing it then would start the
+     * application the way a pom that no longer exists asked for.
+     */
+    @Test
+    void aModelOlderThanThePomIsNotBelieved() throws IOException {
+        Path app = warModule("app", "12.1.13");
+        Path pom = app.resolve("pom.xml");
+        Files.setLastModifiedTime(pom,
+                FileTime.fromMillis(Files
+                        .getLastModifiedTime(app.resolve(EffectiveModel.FILE))
+                        .toMillis() + 2000));
+
+        IOException thrown = assertThrows(IOException.class,
+                () -> runtimeOf(app));
+
+        assertTrue(thrown.getMessage().contains("cannot tell how to start"),
+                thrown.getMessage());
+    }
+
+    /**
+     * The model lists what the build runs, so a module with no server plugin in
+     * it has none - whatever the pom declares in a {@code <pluginManagement>}
+     * or in a profile that never ran.
+     */
+    @Test
+    void aModelWithoutAServerPluginMeansThereIsNone() throws IOException {
+        Path app = module("app", "war",
+                "<build><pluginManagement><plugins>"
+                        + pluginElement("org.eclipse.jetty.ee10",
+                                "jetty-ee10-maven-plugin", "12.1.13", "")
+                        + "</plugins></pluginManagement></build>");
+        writeModel(app, "org.apache.maven.plugins:maven-compiler-plugin:3.13.0",
+                Map.of());
+
+        IOException thrown = assertThrows(IOException.class,
+                () -> runtimeOf(app));
+
+        assertTrue(thrown.getMessage().contains("cannot tell how to start"),
+                thrown.getMessage());
+    }
+
+    /**
+     * {@code -Dvaadin.dev.runtime} names the plugin to run, and the build is
+     * still what says whether it runs one: forcing a runtime the project does
+     * not build with would otherwise fail inside Maven, with a message about a
+     * goal rather than about the project.
+     */
+    @Test
+    void aForcedRuntimeTheBuildDoesNotRunIsRefused() throws IOException {
+        Path app = warModule("app", "12.1.13");
+
+        System.setProperty("vaadin.dev.runtime", "jetty-ee11");
+        try {
+            IOException thrown = assertThrows(IOException.class,
+                    () -> runtimeOf(app));
+            assertTrue(thrown.getMessage().contains("jetty-ee11-maven-plugin"),
+                    thrown.getMessage());
+        } finally {
+            System.clearProperty("vaadin.dev.runtime");
+        }
+    }
+
+    /** One module's model, as the build extension leaves it. */
+    private void writeModel(Path app, String coordinates,
+            Map<String, String> configuration) throws IOException {
+        Properties model = new Properties();
+        model.setProperty("packaging", "war");
+        model.setProperty("plugins", "1");
+        model.setProperty("plugin.0", coordinates);
+        configuration.forEach(
+                (name, value) -> model.setProperty("plugin.0." + name, value));
+        Path file = app.resolve(EffectiveModel.FILE);
+        Files.createDirectories(file.getParent());
+        try (Writer writer = Files.newBufferedWriter(file)) {
+            model.store(writer, "test fixture");
+        }
+    }
+
+    /**
      * Deciding costs a scan of the module's output, and the answer is quoted in
      * the log, so it is worth keeping - as long as it is dropped when the thing
      * it was read out of is.
      */
     @Test
     void theRuntimeIsDecidedOncePerReactor() throws IOException {
-        Launch launch = launchFor(warModule("app", "12.1.13", ""));
+        Launch launch = launchFor(warModule("app", "12.1.13"));
 
         AppRuntime first = launch.runtime();
 
@@ -269,13 +311,14 @@ class AppRuntimeTest {
      */
     @Test
     void aPomEditReDecidesHowTheApplicationStarts() throws IOException {
-        Path app = warModule("app", "12.1.13", "");
+        Path app = warModule("app", "12.1.13");
         Launch launch = launchFor(app);
         assertEquals("jetty-ee10", launch.runtime().name());
 
-        // The same module, now declaring the plugin at the other EE level.
-        module("app", "war", plugin("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13", ""));
+        // The same module, as a build of its edited pom would leave it.
+        writeModel(app,
+                "org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:12.1.13",
+                Map.of());
         launch.rereadReactor(log);
 
         assertEquals("jetty-ee11", launch.runtime().name());
@@ -287,11 +330,11 @@ class AppRuntimeTest {
     @Test
     void aPomEditThatRemovesTheServerPluginIsReportedRatherThanCached()
             throws IOException {
-        Path app = warModule("app", "12.1.13", "");
+        Path app = warModule("app", "12.1.13");
         Launch launch = launchFor(app);
         assertEquals("jetty-ee10", launch.runtime().name());
 
-        module("app", "war", "");
+        Files.delete(app.resolve(EffectiveModel.FILE));
         launch.rereadReactor(log);
 
         IOException thrown = assertThrows(IOException.class, launch::runtime);
@@ -328,18 +371,46 @@ class AppRuntimeTest {
     /**
      * An application module packaged as a WAR, with the Jetty 12 ee10 plugin.
      */
-    private Path warModule(String name, String version, String configuration)
-            throws IOException {
-        return module(name, "war", plugin("org.eclipse.jetty.ee10",
-                "jetty-ee10-maven-plugin", version, configuration));
+    private Path warModule(String name, String version) throws IOException {
+        return warModule(name, version, Map.of());
+    }
+
+    /**
+     * A WAR module, with the model a build of it would have left behind: the
+     * pom is where its packaging comes from, and the model is where everything
+     * about the server plugin does.
+     */
+    private Path warModule(String name, String version,
+            Map<String, String> configuration) throws IOException {
+        Path app = module(name, "war", "");
+        writeModel(app,
+                "org.eclipse.jetty.ee10:jetty-ee10-maven-plugin:" + version,
+                configuration);
+        return app;
+    }
+
+    /** The same at the other Jakarta EE level. */
+    private Path ee11Module(String name, String version) throws IOException {
+        Path app = module(name, "war", "");
+        writeModel(app,
+                "org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:" + version,
+                Map.of());
+        return app;
     }
 
     private static String plugin(String groupId, String artifactId,
             String version, String configuration) {
-        return "<build><plugins><plugin>" + "<groupId>" + groupId
-                + "</groupId><artifactId>" + artifactId
-                + "</artifactId><version>" + version + "</version>"
-                + configuration + "</plugin></plugins></build>";
+        return "<build><plugins>"
+                + pluginElement(groupId, artifactId, version, configuration)
+                + "</plugins></build>";
+    }
+
+    /** One {@code <plugin>}, for a pom that puts it somewhere of its own. */
+    private static String pluginElement(String groupId, String artifactId,
+            String version, String configuration) {
+        return "<plugin>" + "<groupId>" + groupId + "</groupId><artifactId>"
+                + artifactId + "</artifactId><version>" + version + "</version>"
+                + configuration + "</plugin>";
     }
 
     private Path module(String relative, String packaging, String extra)

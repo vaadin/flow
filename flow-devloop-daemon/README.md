@@ -127,7 +127,19 @@ and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
-`<module>/target/devloop/cp.txt`.
+`<module>/target/devloop/cp.txt` and `model.properties`.
+
+**`model.properties` is how the daemon knows what starts the application**,
+written by `DevLoopBuildExtension` as each resolve reads the projects and read
+back by `EffectiveModel`. Whether a profile is active, and what a module
+inherits from a parent outside the checkout, are Maven's to decide and cannot
+be worked out from the poms — so they are not guessed at: the extension writes
+down the effective `<build><plugins>`, the packaging and the active profiles,
+and that is the only source `Reactor.plugin` reads. A `<pluginManagement>`
+version is absent from it by construction, and so is a plugin from a profile
+that did not run. It is believed only while it is newer than the poms it was
+built from, and `compose` resolves before it asks, so the answer is always
+there by the time anything is launched.
 
 The HotswapAgent jar is *not* here: it is cached per machine under
 `~/.vaadin/devloop/`, pinned by version and verified against a SHA-256, so one
@@ -455,7 +467,8 @@ a Maven invocation — seconds rather than a fraction, partly paid back because
 the daemon has already compiled into `target/classes`. Three things follow.
 
 **A pom's `<scan>` or `<deployMode>` would beat the dev loop, so the daemon
-rewrites them.** A `<configuration>` value wins over the user property the same
+rewrites them** — the same extension that records the effective model, in its
+other job. A `<configuration>` value wins over the user property the same
 parameter exposes, so `-Djetty.scan=0` does nothing to the `<scan>2</scan>` a
 generated WAR starter writes, and the plugin was measured redeploying the
 webapp underneath an `apply` that had reported a clean hot swap. The daemon

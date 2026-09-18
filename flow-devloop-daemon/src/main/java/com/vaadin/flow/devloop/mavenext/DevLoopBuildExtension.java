@@ -15,9 +15,19 @@
  */
 package com.vaadin.flow.devloop.mavenext;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
@@ -61,6 +71,18 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      */
     public static final String FORCE_PROPERTY = "vaadin.devloop.ext.force";
 
+    /**
+     * Where each module's effective model is left, under its own build
+     * directory.
+     * <p>
+     * The daemon reads poms with the JDK's XML parser and no Maven at all,
+     * which settles most questions but not the two Maven alone can answer:
+     * which profiles are active, and what a module inherits from a parent
+     * outside the checkout. Both are already decided by the time this runs, so
+     * writing them down costs nothing and saves the daemon from guessing.
+     */
+    public static final String MODEL_FILE = "devloop/model.properties";
+
     /*
      * System.out is the only sink this module may use: the enforcer rule in its
      * pom bans every logging framework, so that the daemon jar can be put on
@@ -73,11 +95,111 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         // Never fatal. An extension that throws fails the whole build, and the
         // application not starting at all would be a far worse outcome than a
         // rescanner competing with apply - which the daemon warns about anyway.
+        // Recorded before anything is overridden, so the file describes the
+        // project as Maven resolved it rather than as the dev loop bent it.
+        try {
+            session.getProjects().forEach(DevLoopBuildExtension::writeModel);
+        } catch (RuntimeException | LinkageError e) {
+            System.out.println("[vaadin-dev] could not record the effective "
+                    + "model: " + e);
+        }
         try {
             reconfigure(session);
         } catch (RuntimeException | LinkageError e) {
             System.out.println("[vaadin-dev] could not override the server "
                     + "plugin's configuration: " + e);
+        }
+    }
+
+    /**
+     * Writes one module's effective model where the daemon looks for it.
+     * <p>
+     * Written in {@code afterProjectsRead}, which is before the first mojo
+     * runs: a build that then fails to compile still leaves a current answer,
+     * and the answer is what the daemon needs in order to decide how to launch
+     * the application at all.
+     * <p>
+     * A {@link Properties} file rather than a format of its own, because the
+     * daemon may use nothing but the JDK to read it and a configuration value
+     * is the developer's own text - it can hold anything, newlines included,
+     * and {@code Properties} is what escapes it correctly at both ends.
+     *
+     * @param project
+     *            the module, as Maven resolved it
+     */
+    static void writeModel(MavenProject project) {
+        Path file = Path.of(project.getBuild().getDirectory())
+                .resolve(MODEL_FILE);
+        try {
+            Files.createDirectories(file.getParent());
+            try (Writer writer = Files.newBufferedWriter(file)) {
+                modelOf(project).store(writer,
+                        "Written by the Vaadin dev loop: " + project.getId()
+                                + " as this build resolved it. Regenerated on "
+                                + "every resolve, and read by nothing else.");
+            }
+        } catch (IOException | RuntimeException e) {
+            // Never fatal, for the same reason the override above is not: the
+            // daemon falls back to reading the poms itself.
+            System.out.println("[vaadin-dev] could not write " + file + ": "
+                    + e.getMessage());
+        }
+    }
+
+    /**
+     * The effective model, reduced to what the daemon asks Maven about.
+     * <p>
+     * {@code getBuildPlugins} is the whole point of going through Maven: it is
+     * the plugins this build really runs, with the active profiles applied and
+     * inheritance resolved through parents the daemon cannot even see. A
+     * {@code <pluginManagement>} entry is not in it, which is the distinction
+     * the daemon could not draw on its own.
+     *
+     * @param project
+     *            the module, as Maven resolved it
+     * @return the properties to store
+     */
+    static Properties modelOf(MavenProject project) {
+        Properties values = new Properties();
+        values.setProperty("artifactId",
+                String.valueOf(project.getArtifactId()));
+        values.setProperty("packaging", String.valueOf(project.getPackaging()));
+        List<String> profiles = new ArrayList<>();
+        for (Profile profile : project.getActiveProfiles()) {
+            profiles.add(profile.getId());
+        }
+        values.setProperty("profiles", String.join(",", profiles));
+        List<Plugin> plugins = project.getBuildPlugins();
+        values.setProperty("plugins", String.valueOf(plugins.size()));
+        for (int index = 0; index < plugins.size(); index++) {
+            Plugin plugin = plugins.get(index);
+            String key = "plugin." + index;
+            values.setProperty(key, plugin.getGroupId() + ":"
+                    + plugin.getArtifactId() + ":"
+                    + (plugin.getVersion() == null ? "" : plugin.getVersion()));
+            // The plugin's own configuration first and its executions' after
+            // it, later winning: configuration that would fight the dev loop
+            // counts wherever it is declared, exactly as when the daemon reads
+            // the pom itself.
+            configurationOf(plugin.getConfiguration(), key, values);
+            for (PluginExecution execution : plugin.getExecutions()) {
+                configurationOf(execution.getConfiguration(), key, values);
+            }
+        }
+        return values;
+    }
+
+    /** The simple children of one {@code <configuration>}, if there is one. */
+    private static void configurationOf(Object configuration, String key,
+            Properties values) {
+        if (!(configuration instanceof Xpp3Dom dom)) {
+            return;
+        }
+        for (Xpp3Dom child : dom.getChildren()) {
+            if (child.getValue() != null) {
+                values.setProperty(key + "." + child.getName(),
+                        child.getValue().trim());
+            }
         }
     }
 
