@@ -101,10 +101,14 @@
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
-        <!-- Failsafe 3.6.0 picks up integration tests that 3.5.3 left alone,
-             which makes a module deploy its own server in an integration test
-             shard that has not built its web applications, and that server then
-             holds the test port for the modules after it. -->
+        <!-- The 3.5 line. Failsafe 3.6.0 picks up integration tests that
+             3.5 leaves alone, so a module deploys its own server in an
+             integration test shard that has not built its web applications,
+             and that server then holds the test port for the modules after
+             it. This branch ran 3.5.2; 3.5.3 is what the other 24.x branches
+             in this update run and what their validation runs are green with,
+             so the whole set stays comparable. main pairs Surefire 3.6.0 with
+             Failsafe 3.5.6, which this can follow once the shards are green. -->
         <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
