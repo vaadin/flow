@@ -260,9 +260,18 @@ export class ExecuteJavaScriptProcessor {
     // argument as `this`. Say so instead of running the call.
     const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
     if (parameters.length !== expectedCount) {
-      Console.error(
-        `Expected ${expectedCount} parameters for ${target.invoker}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`
-      );
+      const message = `Expected ${expectedCount} parameters for ${target.invoker}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
+      Console.error(message);
+      // The server appends the two channels after everything else, or neither
+      // of them, so the error channel is the last parameter even when the
+      // count in front of it does not add up. Report through it, or the
+      // pending result of the call is never completed on the server.
+      if (target.returns === true) {
+        const lastParameter = parameters[parameters.length - 1];
+        if (typeof lastParameter === 'function') {
+          (lastParameter as ReturnChannel)(message);
+        }
+      }
       return;
     }
 

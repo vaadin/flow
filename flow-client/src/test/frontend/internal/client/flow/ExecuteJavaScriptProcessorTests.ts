@@ -148,6 +148,43 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(calls).to.equal(0);
     });
 
+    it('reports a mismatch to the error channel of a call that returns a value', () => {
+      let calls = 0;
+      registerInvoker('readValue/0', () => {
+        calls += 1;
+        return 'answer';
+      });
+      const errors: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      // Subscribed to, but one channel short of what the target declares.
+      processor().execute([
+        [
+          element,
+          (error: unknown) => errors.push(error),
+          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
+        ]
+      ]);
+
+      expect(calls).to.equal(0);
+      // Reported rather than left hanging: the pending result on the server
+      // would otherwise never complete.
+      expect(errors).to.have.lengthOf(1);
+    });
+
+    it('does not run a call that carries more parameters than the target declares', () => {
+      let calls = 0;
+      registerInvoker('showGreeting/1', () => {
+        calls += 1;
+      });
+
+      processor().execute([
+        ['Hello', 'unexpected', { tagName: 'div' }, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]
+      ]);
+
+      expect(calls).to.equal(0);
+    });
+
     it('reports a function that is not in the bundle to the error channel', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
