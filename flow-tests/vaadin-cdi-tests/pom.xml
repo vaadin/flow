@@ -14,7 +14,7 @@
   <properties>
     <surefire.groups/>
     <surefire.excludedGroups>com.vaadin.cdi.itest.SlowTests</surefire.excludedGroups>
-    <apache-tomcat.version>11.0.25</apache-tomcat.version>
+    <apache-tomcat.version>11.0.26</apache-tomcat.version>
     <apache-tomee.version>10.2.0</apache-tomee.version>
     <wildfly.version>41.0.1.Final</wildfly.version>
     <openliberty.version>25.0.0.6</openliberty.version>
@@ -463,7 +463,7 @@
         <dependency>
           <groupId>io.openliberty.arquillian</groupId>
           <artifactId>arquillian-liberty-managed-jakarta-junit</artifactId>
-          <version>2.1.4</version>
+          <version>3.0.0</version>
           <type>pom</type>
           <scope>test</scope>
         </dependency>
@@ -473,7 +473,7 @@
           <plugin>
             <groupId>io.openliberty.tools</groupId>
             <artifactId>liberty-maven-plugin</artifactId>
-            <version>3.11.4</version>
+            <version>3.12.3</version>
             <executions>
               <execution>
                 <id>create-server</id>

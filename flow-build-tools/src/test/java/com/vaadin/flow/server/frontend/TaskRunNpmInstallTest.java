@@ -504,6 +504,33 @@ class TaskRunNpmInstallTest {
                 "Postinstall for 'foo' was not run");
     }
 
+    // https://github.com/vaadin/flow/issues/21662
+    @Test
+    void runNpmInstall_postInstallFails_buildFailsWithTheScriptOutput()
+            throws IOException {
+        setupPostinstallPackages();
+
+        File nodeModules = options.getNodeModulesFolder();
+        File fooPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-foo"),
+                "package.json");
+        Files.writeString(fooPackageJson.toPath(),
+                new String(getClass()
+                        .getResourceAsStream(
+                                "fake-package-with-failing-postinstall.json")
+                        .readAllBytes(), StandardCharsets.UTF_8));
+
+        task = createTask(List.of("foo"));
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        assertTrue(
+                exception.getMessage().contains("'foo'") && exception
+                        .getMessage().contains("failing on purpose"),
+                "the failure should name the package and report what the "
+                        + "script printed, was: " + exception.getMessage());
+    }
+
     @Test
     void shouldRunNpmInstallWhenFolderChanges() throws Exception {
         setupPostinstallPackages();
@@ -1141,6 +1168,25 @@ class TaskRunNpmInstallTest {
         assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
                 resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
                         new MockLogger()));
+    }
+
+    @Test
+    void postinstallArguments_pnpm_doesNotVerifyTheDependencies() {
+        // the install pnpm would start to check node_modules repeats the one
+        // Vaadin just ran, without the exclusions and without --ignore-scripts
+        assertEquals(List.of("--config.verify-deps-before-run=false"),
+                TaskRunNpmInstall.resolvePostinstallArguments(
+                        new MockOptions(npmFolder).withEnablePnpm(true)));
+    }
+
+    @Test
+    void postinstallArguments_npmAndBun_needNone() {
+        // neither checks anything before running a script, and bun rejects an
+        // argument it is not expecting
+        assertEquals(List.of(), TaskRunNpmInstall
+                .resolvePostinstallArguments(new MockOptions(npmFolder)));
+        assertEquals(List.of(), TaskRunNpmInstall.resolvePostinstallArguments(
+                new MockOptions(npmFolder).withEnableBun(true)));
     }
 
     private void assertWarnsAboutTheFirstDay(MockLogger logger) {
