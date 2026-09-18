@@ -40,6 +40,7 @@ import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -164,6 +165,19 @@ class DevLoopRedefinerTest {
      * is every real Vaadin view: {@code MainView extends VerticalLayout}.
      */
     static class ViewOverAnImportingSupertype extends SomeView {
+    }
+
+    /** An interface carrying imports, which is not @Inherited at all. */
+    @JsModule("./mixin.js")
+    interface ImportingMixin {
+    }
+
+    /** The same view after {@code implements ImportingMixin} was added. */
+    static class ViewWithTheMixin extends SomeView implements ImportingMixin {
+    }
+
+    /** And after its base class was swapped for the annotated one. */
+    static class ViewOverAnotherBase extends SomeView {
     }
 
     @Test
@@ -388,6 +402,61 @@ class DevLoopRedefinerTest {
     }
 
     @Test
+    void hierarchy_changesWhenAnInterfaceIsAdded() {
+        // The gap declared-only reading leaves: these annotations are
+        // @Inherited across classes and not across interfaces at all, so a view
+        // that starts implementing an annotated mixin needs an import the
+        // generated imports file does not have - while declaring exactly what
+        // it declared before.
+        assertEquals(
+                DevLoopRedefiner.frontendDependencies(
+                        ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.frontendDependencies(ViewWithTheMixin.class));
+
+        assertNotEquals(
+                DevLoopRedefiner.hierarchy(ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class));
+        assertTrue(
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class)
+                        .contains(ImportingMixin.class.getName()),
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class));
+    }
+
+    @Test
+    void hierarchy_changesWhenTheBaseClassIsSwapped() {
+        assertNotEquals(DevLoopRedefiner.hierarchy(NothingDeclared.class),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+        assertTrue(
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class)
+                        .contains("extends:" + SomeView.class.getName()),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+    }
+
+    @Test
+    void hierarchy_isTheSameForAClassThatOnlyChangedItsBodies() {
+        // What an ordinary edit looks like: same class, read twice. Names are
+        // plain strings, so this holds across a redefine as well - which is the
+        // reason for reading names rather than the supertypes' annotations.
+        assertEquals(DevLoopRedefiner.hierarchy(SomeView.class),
+                DevLoopRedefiner.hierarchy(SomeView.class));
+        // Two classes with the same supertype and no interfaces are the same
+        // shape, so neither is a change to the other.
+        assertEquals(
+                DevLoopRedefiner.hierarchy(ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+    }
+
+    @Test
+    void hierarchy_namesTheInterfacesInAStableOrder() {
+        // The compiler reports them in the order they were written, and moving
+        // one along the clause is not a change to what the class is.
+        assertEquals(
+                "extends:" + Object.class.getName() + ";implements:"
+                        + AppShellConfigurator.class.getName(),
+                DevLoopRedefiner.hierarchy(ThemedAppShell.class));
+    }
+
+    @Test
     void reply_carriesEveryFieldTheDaemonReadsAVerdictFrom() {
         // The daemon splits this line on whitespace and reads by name, so a
         // renamed or dropped field is a silently different answer rather than
@@ -398,17 +467,17 @@ class DevLoopRedefinerTest {
                 Set.of("TaskListView"), null);
         DevLoopRedefiner.Applied applied = new DevLoopRedefiner.Applied(
                 Set.of("TaskService"), Set.of("TaskRepository"),
-                Set.of("TaskListView"), true, false, 4, 7);
+                Set.of("TaskListView"), Set.of("TaskEditor"), true, false, 4,
+                7);
 
         // hotswapAgent is read off this JVM, which has no agent on its
         // classpath.
-        assertEquals(
-                "OK redefined=0 notLoaded=1 dupes=1 completed=true"
-                        + " pageReload=false entities=Order beans=TaskService"
-                        + " proxied=TaskRepository structural=TaskService"
-                        + " ui=TaskListView frontendImports=TaskListView"
-                        + " hotswapAgent=false redefineMs=4 hotswapMs=7"
-                        + " stereotypes=com.example.NewBean",
+        assertEquals("OK redefined=0 notLoaded=1 dupes=1 completed=true"
+                + " pageReload=false entities=Order beans=TaskService"
+                + " proxied=TaskRepository structural=TaskService"
+                + " ui=TaskListView frontendImports=TaskListView"
+                + " hotswapAgent=false redefineMs=4 hotswapMs=7"
+                + " stereotypes=com.example.NewBean" + " hierarchy=TaskEditor",
                 DevLoopRedefiner.reply(inspected, applied));
     }
 
