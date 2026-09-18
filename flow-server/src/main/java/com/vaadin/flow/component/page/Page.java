@@ -319,7 +319,6 @@ public class Page implements Serializable {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
-    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Gets an invoker for the JavaScript that the given interface declares, for
      * this page.
@@ -373,15 +372,25 @@ public class Page implements Serializable {
      * function to.
      */
     private PendingJavaScriptResult scheduleInvokerCall(JsInvokerCall call) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
-                call.getExpression(), call.arguments().toArray());
+        return schedule(new JavaScriptInvocation(call, call.getExpression(),
+                call.arguments().toArray()));
+    }
 
+    /**
+     * Queues an invocation for the client, owned by the root node of the state
+     * tree, which is what makes it an invocation of this page rather than of
+     * anything in it.
+     */
+    private PendingJavaScriptResult schedule(JavaScriptInvocation invocation) {
         PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
                 ui.getInternals().getStateTree().getRootNode(), invocation);
+
         ui.getInternals().addJavaScriptInvocation(execution);
+
         return execution;
     }
 
+    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
@@ -429,15 +438,7 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        return schedule(new JavaScriptInvocation(expression, parameters));
     }
 
     /**
