@@ -77,6 +77,26 @@ class DevLoopApplyIT extends AbstractDevLoopIT {
     }
 
     @Test
+    void addingAnInterface_escalatesAlthoughNothingDeclaredChanged() {
+        // The class declares exactly what it declared before - same members,
+        // same annotations - so every signal the connector compares comes out
+        // identical, and an enhanced-redefinition JVM accepts the new
+        // hierarchy. What an interface can bring with it is the frontend
+        // annotations it carries: @JsModule and friends are @Inherited across
+        // classes and live on interfaces too, and they are read into
+        // generated-flow-imports.js at startup. Reported hot-reload, the page
+        // would run against a bundle with no chunk for the new import.
+        patch.replace(SERVICE, "public class TaskService {",
+                "public class TaskService implements java.io.Serializable {");
+
+        VaadinDevCli.Outcome outcome = cli
+                .run("apply", "--no-restart", "--json").assertExitCode(0);
+
+        outcome.assertOutputContains("class hierarchy changed (TaskService)");
+        outcome.assertOutputDoesNotContain("\"classification\":\"hot-reload\"");
+    }
+
+    @Test
     void compileError_failsWithADiagnosticAndKeepsTheAppRunning() {
         patch.replace(VIEW, "return \"Task List\";", "return nope();");
 

@@ -280,11 +280,14 @@ final class DevLoopRedefiner {
         // came out as "frontend imports changed" and escalated to a restart.
         Map<Class<?>, String> before = new HashMap<>();
         Map<Class<?>, String> frontendBefore = new HashMap<>();
+        Map<Class<?>, String> hierarchyBefore = new HashMap<>();
         for (ClassDefinition definition : definitions) {
             before.putIfAbsent(definition.getDefinitionClass(),
                     members(definition.getDefinitionClass()));
             frontendBefore.putIfAbsent(definition.getDefinitionClass(),
                     frontendDependencies(definition.getDefinitionClass()));
+            hierarchyBefore.putIfAbsent(definition.getDefinitionClass(),
+                    hierarchy(definition.getDefinitionClass()));
         }
 
         long redefineStart = System.nanoTime();
@@ -303,6 +306,7 @@ final class DevLoopRedefiner {
         Set<String> structural = new LinkedHashSet<>();
         Set<String> proxied = new LinkedHashSet<>();
         Set<String> frontend = new LinkedHashSet<>();
+        Set<String> hierarchy = new LinkedHashSet<>();
         for (ClassDefinition definition : definitions) {
             Class<?> type = definition.getDefinitionClass();
             String previous = before.get(type);
@@ -313,6 +317,11 @@ final class DevLoopRedefiner {
             if (previousFrontend != null
                     && !previousFrontend.equals(frontendDependencies(type))) {
                 frontend.add(simple(type.getName()));
+            }
+            String previousHierarchy = hierarchyBefore.get(type);
+            if (previousHierarchy != null
+                    && !previousHierarchy.equals(hierarchy(type))) {
+                hierarchy.add(simple(type.getName()));
             }
             for (Class<?> proxy : proxies) {
                 if (type.isAssignableFrom(proxy)) {
@@ -336,7 +345,7 @@ final class DevLoopRedefiner {
         DevLoopStatistics.changeApplied();
 
         return reply(inspected, new Applied(structural, proxied, frontend,
-                completed, pageReload, redefineMs, hotswapMs));
+                hierarchy, completed, pageReload, redefineMs, hotswapMs));
     }
 
     /**
@@ -348,6 +357,8 @@ final class DevLoopRedefiner {
      *            redefined types a live proxy was generated from
      * @param frontend
      *            redefined types whose build-time imports changed
+     * @param hierarchy
+     *            redefined types that now extend or implement something else
      * @param completed
      *            whether Flow's refresh ran to the end
      * @param pageReload
@@ -358,8 +369,8 @@ final class DevLoopRedefiner {
      *            how long {@code onHotswap} took
      */
     record Applied(Set<String> structural, Set<String> proxied,
-            Set<String> frontend, boolean completed, boolean pageReload,
-            long redefineMs, long hotswapMs) {
+            Set<String> frontend, Set<String> hierarchy, boolean completed,
+            boolean pageReload, long redefineMs, long hotswapMs) {
     }
 
     /**
@@ -392,7 +403,8 @@ final class DevLoopRedefiner {
                 + " hotswapMs=" + applied.hotswapMs()
                 // Last rather than in among the others, so adding it left every
                 // field a daemon already reads exactly where it was.
-                + " stereotypes=" + join(inspected.stereotypes());
+                + " stereotypes=" + join(inspected.stereotypes())
+                + " hierarchy=" + join(applied.hierarchy());
     }
 
     /**
@@ -1352,9 +1364,12 @@ final class DevLoopRedefiner {
      * <p>
      * <b>Declared only, and that is the whole point.</b> This value exists to
      * be compared against the same class's own previous value across a
-     * redefine, and the only thing such an edit can move is what the class
-     * declares itself: an inherited {@code @JsModule} belongs to a library
-     * supertype that was not recompiled and cannot have changed.
+     * redefine, and an inherited {@code @JsModule} belongs to a supertype that
+     * this edit did not recompile. A supertype the project does recompile is in
+     * the same change set and answers for itself, and an edit that changes
+     * <em>which</em> supertype or interface the class has is what
+     * {@link #hierarchy} is for - so nothing is lost by not reading the
+     * inherited closure here.
      * <p>
      * Reading the inherited closure instead was measured to escalate an
      * ordinary method-body edit - changing a label in a view whose supertype
@@ -1422,6 +1437,55 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * The supertypes a class names, as one comparable string.
+     * <p>
+     * {@link #frontendDependencies} reads what a class declares itself, which
+     * leaves one kind of edit invisible: changing the {@code extends} or
+     * {@code implements} clause. {@code @JsModule} and friends are
+     * {@code @Inherited} across classes, and an interface can carry them as
+     * well, so a class that starts implementing an annotated mixin - or swaps a
+     * plain base class for an annotated one - needs imports that
+     * {@code generated-flow-imports.js} does not have, while declaring exactly
+     * what it declared before. An enhanced-redefinition JVM accepts such a
+     * change, so nothing else would catch it either: the apply would report
+     * Stable over a bundle the page cannot load its new import from.
+     * <p>
+     * Names rather than the annotations those supertypes declare, deliberately.
+     * Reading a supertype's annotations means reading the inherited closure
+     * again, which is what escalated ordinary method-body edits before - see
+     * {@link #frontendDependencies}. A name is a plain string: it is stable
+     * across a redefine, it compares two reads of one class rather than two
+     * class loaders' copies of a library, and it cannot be read twice. The
+     * price is that a hierarchy change with no frontend imports in it restarts
+     * too, which is a rare edit and a safe answer to it.
+     * <p>
+     * Only what the class itself names. A supertype that changed its own
+     * hierarchy was recompiled, so it is in the same change set and reports it
+     * under its own name.
+     *
+     * @param type
+     *            the class to fingerprint
+     * @return the supertype and interfaces it names
+     */
+    // Package-private so the reads can be asserted directly.
+    static String hierarchy(Class<?> type) {
+        List<String> names = new ArrayList<>();
+        Class<?> supertype = type.getSuperclass();
+        names.add("extends:"
+                + (supertype == null ? "none" : supertype.getName()));
+        List<String> interfaces = new ArrayList<>();
+        for (Class<?> implemented : type.getInterfaces()) {
+            interfaces.add("implements:" + implemented.getName());
+        }
+        // Sorted because the order the compiler reports them in is the order
+        // they were written in, and moving one along the clause is not a
+        // change to what the class is.
+        java.util.Collections.sort(interfaces);
+        names.addAll(interfaces);
+        return String.join(";", names);
     }
 
     /**
