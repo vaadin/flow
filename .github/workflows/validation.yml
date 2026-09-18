@@ -459,7 +459,17 @@ jobs:
           pkill -KILL java || true
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
-        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-cdi-${{ matrix.profile }}.tgz -T -
+        # The container's own log is collected too: a deployment error says
+        # "please see server.log for more details", and without it the reason
+        # the container refused an archive, or failed to answer a request, is
+        # gone once the runner is recycled. Payara, WildFly and Liberty keep
+        # it under logs/ or log/, Tomcat and TomEE add catalina.out.
+        run: |
+          find . -name surefire-reports -o -name failsafe-reports \
+            -o -name error-screenshots -o -name "mvn-*.out" \
+            -o -path "*/logs/*.log" -o -path "*/log/*.log" \
+            -o -name "catalina.out" \
+            | tar -czf tests-report-cdi-${{ matrix.profile }}.tgz -T -
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         with:
