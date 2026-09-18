@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.mavenext;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -72,7 +73,7 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
     public static final String FORCE_PROPERTY = "vaadin.devloop.ext.force";
 
     /**
-     * Where each module's effective model is left, under its own build
+     * Where each module's effective model is left, relative to the module's own
      * directory.
      * <p>
      * The daemon reads poms with the JDK's XML parser and no Maven at all,
@@ -80,8 +81,17 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      * which profiles are active, and what a module inherits from a parent
      * outside the checkout. Both are already decided by the time this runs, so
      * writing them down costs nothing and saves the daemon from guessing.
+     * <p>
+     * Relative to the module and not to {@code ${project.build.directory}},
+     * deliberately: the reader is the daemon, which has no Maven to ask where
+     * that directory points, so a project that moves it -
+     * {@code <build><directory>build</directory></build>} - would have the two
+     * ends looking at different paths and the model would read as simply
+     * missing. {@code target/devloop/} is where the daemon keeps everything
+     * else it writes per module, and it is the same path on the reading side;
+     * see {@code EffectiveModel#FILE}.
      */
-    public static final String MODEL_FILE = "devloop/model.properties";
+    public static final String MODEL_FILE = "target/devloop/model.properties";
 
     /*
      * System.out is the only sink this module may use: the enforcer rule in its
@@ -128,8 +138,14 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      *            the module, as Maven resolved it
      */
     static void writeModel(MavenProject project) {
-        Path file = Path.of(project.getBuild().getDirectory())
-                .resolve(MODEL_FILE);
+        File basedir = project.getBasedir();
+        if (basedir == null) {
+            // A model assembled in memory rather than read from a pom: there is
+            // no module directory to be relative to, and no daemon watching one
+            // either.
+            return;
+        }
+        Path file = basedir.toPath().resolve(MODEL_FILE);
         try {
             Files.createDirectories(file.getParent());
             try (Writer writer = Files.newBufferedWriter(file)) {

@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DevLoopBuildExtensionTest {
 
     @TempDir
-    private Path target;
+    private Path module;
 
     @Test
     void theBuildPluginsAreWrittenWithTheirCoordinates() {
@@ -114,25 +115,67 @@ class DevLoopBuildExtensionTest {
     }
 
     @Test
-    void theFileLandsUnderTheModulesBuildDirectory() throws IOException {
-        MavenProject project = project(jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13"));
+    void theFileLandsWhereTheDaemonLooksForIt() throws IOException {
+        MavenProject project = project(module.resolve("target"),
+                jetty("org.eclipse.jetty.ee11", "jetty-ee11-maven-plugin",
+                        "12.1.13"));
 
         DevLoopBuildExtension.writeModel(project);
 
-        Path file = target.resolve(DevLoopBuildExtension.MODEL_FILE);
+        assertEquals("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:12.1.13",
+                writtenModel().getProperty("plugin.0"));
+    }
+
+    /**
+     * The reader is the daemon, which resolves this path against the module and
+     * has no Maven to ask where the build directory was moved to. A project
+     * that moves it must still be found, so the file does not move with it.
+     */
+    @Test
+    void aMovedBuildDirectoryDoesNotMoveTheFile() throws IOException {
+        MavenProject project = project(module.resolve("build"),
+                jetty("org.eclipse.jetty.ee11", "jetty-ee11-maven-plugin",
+                        "12.1.13"));
+
+        DevLoopBuildExtension.writeModel(project);
+
+        assertEquals("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:12.1.13",
+                writtenModel().getProperty("plugin.0"));
+        assertFalse(Files.exists(module.resolve("build")),
+                "nothing belongs under the configured build directory");
+    }
+
+    /**
+     * A model assembled in memory has no module directory to be relative to,
+     * and no daemon watching one either: writing it anywhere would be a guess.
+     */
+    @Test
+    void aProjectWithNoModuleDirectoryWritesNothing() {
+        MavenProject project = project(module.resolve("target"));
+        project.setFile(null);
+
+        DevLoopBuildExtension.writeModel(project);
+
+        assertFalse(Files.exists(module.resolve("target")));
+    }
+
+    private Properties writtenModel() throws IOException {
+        Path file = module.resolve(DevLoopBuildExtension.MODEL_FILE);
         assertTrue(Files.isRegularFile(file), file.toString());
         Properties written = new Properties();
         try (Reader reader = Files.newBufferedReader(file)) {
             written.load(reader);
         }
-        assertEquals("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:12.1.13",
-                written.getProperty("plugin.0"));
+        return written;
     }
 
     private MavenProject project(Plugin... plugins) {
+        return project(module.resolve("target"), plugins);
+    }
+
+    private MavenProject project(Path buildDirectory, Plugin... plugins) {
         Build build = new Build();
-        build.setDirectory(target.toString());
+        build.setDirectory(buildDirectory.toString());
         for (Plugin plugin : plugins) {
             build.addPlugin(plugin);
         }
@@ -142,7 +185,10 @@ class DevLoopBuildExtensionTest {
         model.setVersion("1.0");
         model.setPackaging("war");
         model.setBuild(build);
-        return new MavenProject(model);
+        MavenProject project = new MavenProject(model);
+        // What gives the project its basedir, exactly as reading a pom does.
+        project.setFile(module.resolve("pom.xml").toFile());
+        return project;
     }
 
     private static Plugin jetty(String groupId, String artifactId,
