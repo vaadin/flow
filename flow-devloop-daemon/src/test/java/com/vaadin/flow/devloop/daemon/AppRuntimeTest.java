@@ -131,8 +131,12 @@ class AppRuntimeTest {
         // A real main method on the output, so that MainClass.discover would
         // find one. The build has still named nothing, and what the developer
         // deploys is the WAR.
-        compileInto(app, "package tools;\n" + "public class Importer {\n"
-                + "  public static void main(String[] args) { }\n" + "}\n");
+        compileInto(app, """
+                package tools;
+                public class Importer {
+                  public static void main(String[] args) { }
+                }
+                """);
         assertEquals(Optional.of("tools.Importer"),
                 MainClass.discover(moduleOf(app), log));
         assertTrue(MainClass.namedByBuild(moduleOf(app)).isEmpty());

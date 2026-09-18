@@ -282,8 +282,9 @@ final class AppLog {
         // The "-> [Help 1]" tail comes off first, exactly as
         // Launch.failureReason takes it off: a line that is nothing but that
         // tail is pure decoration, while a real failure wearing it is not.
-        String message = text.substring("[ERROR]".length()).strip()
-                .replaceAll("\\s*->\\s*\\[Help \\d+\\]$", "").strip();
+        String message = Launch.HELP_TAIL
+                .matcher(text.substring("[ERROR]".length()).strip())
+                .replaceAll("").strip();
         return message.isEmpty() || Launch.BOILERPLATE.matcher(message).find();
     }
 

@@ -431,7 +431,14 @@ final class AppProcess {
         tree.forEach(AppProcess::awaitExit);
     }
 
-    /** Bounded, because a stop must not be able to hang the daemon. */
+    /**
+     * Bounded, because a stop must not be able to hang the daemon.
+     * <p>
+     * {@code System.out} is this daemon's log - it has no logging framework and
+     * the enforcer rule in its pom is what keeps it that way - so java:S106 is
+     * suppressed rather than answered.
+     */
+    @SuppressWarnings("java:S106")
     private static void awaitExit(ProcessHandle handle) {
         try {
             handle.onExit().get(10, TimeUnit.SECONDS);
@@ -439,7 +446,11 @@ final class AppProcess {
             Thread.currentThread().interrupt();
         } catch (java.util.concurrent.ExecutionException
                 | java.util.concurrent.TimeoutException e) {
-            // Already gone, or beyond reach; either way the stop is over.
+            // Already gone, or beyond reach; either way the stop is over,
+            // so this is a line in the log rather than a failure - but an
+            // unreported exit is how an orphaned JVM starts, so it is said.
+            System.out.println(
+                    "pid " + handle.pid() + " did not report its exit: " + e);
         }
     }
 

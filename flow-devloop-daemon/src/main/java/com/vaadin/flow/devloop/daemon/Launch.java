@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -60,6 +62,22 @@ final class Launch {
      * {@link MavenGoalRuntime#writeHotswapAgentProperties}.
      */
     static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty";
+
+    /** Maven's epilogue, which says nothing about why a build failed. */
+    static final Pattern BOILERPLATE = Pattern
+            .compile("^(To see the full stack trace|Re-run Maven|"
+                    + "For more information about the errors|"
+                    + "After correcting the problems|\\[Help \\d+\\]|mvn <args>)");
+
+    /**
+     * The {@code -> [Help 1]} tail Maven hangs on an error line, which is
+     * decoration rather than part of the message.
+     * <p>
+     * Possessive throughout: nothing here has to backtrack, and without that a
+     * long run of whitespace makes the scan quadratic.
+     */
+    static final Pattern HELP_TAIL = Pattern
+            .compile("\\s*+->\\s*+\\[Help \\d++\\]$");
 
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
@@ -128,7 +146,7 @@ final class Launch {
      * Decided once, because nothing that decides it can change while a daemon
      * is up, and re-deciding would repeat its line on every restart.
      */
-    private volatile AppRuntime runtime;
+    private final AtomicReference<AppRuntime> runtime = new AtomicReference<>();
 
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
@@ -423,8 +441,7 @@ final class Launch {
     }
 
     private static List<String> split(String classpath) {
-        return List.of(classpath
-                .split(java.util.regex.Pattern.quote(File.pathSeparator)));
+        return List.of(classpath.split(Pattern.quote(File.pathSeparator)));
     }
 
     /** A jar or a module output directory, as a developer would name it. */
@@ -492,8 +509,7 @@ final class Launch {
     private static List<String> entriesOf(Path file) throws IOException {
         String raw = Files.readString(file).trim();
         return raw.isEmpty() ? List.of()
-                : List.of(raw.split(
-                        java.util.regex.Pattern.quote(File.pathSeparator)));
+                : List.of(raw.split(Pattern.quote(File.pathSeparator)));
     }
 
     /**
@@ -985,8 +1001,8 @@ final class Launch {
                 .map(line -> line.substring("[ERROR]".length()).strip())
                 .filter(line -> !line.isEmpty())
                 .filter(line -> !BOILERPLATE.matcher(line).find())
-                .map(line -> line.replaceAll("\\s*->\\s*\\[Help \\d+\\]$", ""))
-                .limit(3).toList();
+                .map(line -> HELP_TAIL.matcher(line).replaceAll("")).limit(3)
+                .toList();
         if (errors.isEmpty()) {
             return lastLines(output, 10);
         }
@@ -994,11 +1010,6 @@ final class Launch {
         return reason.length() <= 400 ? reason
                 : reason.substring(0, 397) + "...";
     }
-
-    static final java.util.regex.Pattern BOILERPLATE = java.util.regex.Pattern
-            .compile("^(To see the full stack trace|Re-run Maven|"
-                    + "For more information about the errors|"
-                    + "After correcting the problems|\\[Help \\d+\\]|mvn <args>)");
 
     private static String lastLines(String output, int count) {
         List<String> lines = output.strip().lines().toList();
@@ -1015,10 +1026,10 @@ final class Launch {
      *             if the project looks like neither shape of application
      */
     AppRuntime runtime() throws IOException {
-        AppRuntime current = runtime;
+        AppRuntime current = runtime.get();
         if (current == null) {
             current = AppRuntime.of(this, log);
-            runtime = current;
+            runtime.set(current);
         }
         return current;
     }
@@ -1164,10 +1175,10 @@ final class Launch {
         List<String> properties = new ArrayList<>();
         properties.add("-Dspring.devtools.restart.enabled=false");
         properties.add("-Dvaadin.launch-browser=false");
-        System.getProperties().stringPropertyNames().stream()
+        properties.addAll(System.getProperties().stringPropertyNames().stream()
                 .filter(Launch::forwardedToApp).sorted()
-                .forEach(name -> properties
-                        .add("-D" + name + "=" + System.getProperty(name)));
+                .map(name -> "-D" + name + "=" + System.getProperty(name))
+                .toList());
         properties.add("-Dvaadin.devloop.daemonPort=" + daemonPort);
         properties.add("-Dvaadin.devloop.token=" + token);
         // Why this JVM exists, for the usage statistics the app reports. Only

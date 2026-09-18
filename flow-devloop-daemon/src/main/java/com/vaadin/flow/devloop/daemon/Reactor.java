@@ -149,6 +149,9 @@ final class Reactor {
     /** How many module names {@link #describe()} spells out before counting. */
     private static final int NAMES_SHOWN = 8;
 
+    /** The pom element read for a module's own name and for a plugin's. */
+    private static final String ARTIFACT_ID = "artifactId";
+
     private final Path root;
     private final Module app;
     private final List<Module> candidates;
@@ -385,7 +388,7 @@ final class Reactor {
         /** How a goal of this plugin is named on a command line. */
         String coordinates() {
             return groupId + ":" + artifactId
-                    + (version.isBlank() ? "" : ":" + version);
+                    + (version.isBlank() ? "" : (":" + version));
         }
 
         /**
@@ -572,7 +575,7 @@ final class Reactor {
                         properties.put(property.getTagName(), text(property));
                     }
                 }
-                String artifactId = childText(project, "artifactId");
+                String artifactId = childText(project, ARTIFACT_ID);
                 String packaging = childText(project, "packaging");
                 return new Pom(artifactId == null ? "" : artifactId,
                         packaging == null ? "jar" : packaging, modules,
@@ -597,7 +600,7 @@ final class Reactor {
         private static String compilerRelease(Document document) {
             for (Element plugin : elementsNamed(document, "plugin")) {
                 if (!"maven-compiler-plugin"
-                        .equals(childText(plugin, "artifactId"))) {
+                        .equals(childText(plugin, ARTIFACT_ID))) {
                     continue;
                 }
                 for (Element configuration : children(plugin,
@@ -624,7 +627,7 @@ final class Reactor {
         private static List<PluginConfig> plugins(Document document) {
             List<PluginConfig> found = new ArrayList<>();
             for (Element plugin : elementsNamed(document, "plugin")) {
-                String artifactId = childText(plugin, "artifactId");
+                String artifactId = childText(plugin, ARTIFACT_ID);
                 if (artifactId == null || artifactId.isBlank()) {
                     continue;
                 }

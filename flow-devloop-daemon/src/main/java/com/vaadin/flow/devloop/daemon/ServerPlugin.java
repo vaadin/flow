@@ -54,6 +54,26 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         Pattern serving) {
 
     /**
+     * Where a Jetty connector announces the port it bound.
+     * <p>
+     * A real line reads {@code Started oejs.ServerConnector@34ab4818} followed
+     * by the protocol group and then the host and port one:
+     * {@code AbstractConnector} logs "Started {}" and
+     * {@code AbstractNetworkConnector}'s toString ends in that second group.
+     * Both groups are matched rather than skipped over with a greedy
+     * {@code .*}, which is what keeps the scan free of backtracking - the class
+     * name is one run up to its {@code @}, and a lookbehind asserts what that
+     * run ends with.
+     */
+    private static final Pattern JETTY_SERVING = Pattern
+            .compile("Started\\s++[^\\s{@]*+(?<=Connector)@[^\\s{]*+"
+                    + "\\{[^{}]*+\\}\\{[^{}:]*+:(\\d++)\\}");
+
+    /** Every server the dev loop can drive through the project's own build. */
+    static final List<ServerPlugin> KNOWN = List.of(jetty("ee10"),
+            jetty("ee11"));
+
+    /**
      * A configuration value the dev loop needs to hold but cannot set.
      * <p>
      * This exists because of a Maven rule with real teeth: a
@@ -100,18 +120,8 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
                                         + "schedule of its own, competing with "
                                         + "every apply",
                                 "set <scan>0</scan>")),
-                // "Started ServerConnector@6e1567f1{HTTP/1.1, (http/1.1)}
-                // {0.0.0.0:8080}": AbstractConnector logs "Started {}" and
-                // AbstractNetworkConnector's toString ends in "{host:port}".
-                // The greedy .* is what reaches that last group rather than
-                // stopping at the protocol one before it.
-                Pattern.compile(
-                        "Started\\s+\\S*Connector@.*\\{[^{}:]*:(\\d+)\\}"));
+                JETTY_SERVING);
     }
-
-    /** Every server the dev loop can drive through the project's own build. */
-    static final List<ServerPlugin> KNOWN = List.of(jetty("ee10"),
-            jetty("ee11"));
 
     /**
      * The configuration the dev loop needs, as {@code element=value} pairs for
@@ -126,7 +136,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     String forcedConfiguration() {
         StringBuilder forced = new StringBuilder();
         for (Competing value : competing) {
-            if (forced.length() > 0) {
+            if (!forced.isEmpty()) {
                 forced.append(';');
             }
             forced.append(value.element()).append('=')

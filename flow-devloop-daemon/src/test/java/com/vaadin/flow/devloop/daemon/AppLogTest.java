@@ -167,14 +167,17 @@ class AppLogTest {
         Path log = log("");
         AppLog.Watch watch = new AppLog.Watch(log);
 
-        append(log, "[ERROR] Failed to execute goal on project app: "
-                + "Compilation failure\n"
-                + "[ERROR] /src/Foo.java:[7,15] cannot find symbol\n"
-                + "[ERROR] \n" + "[ERROR] -> [Help 1]\n"
-                + "[ERROR] To see the full stack trace of the errors, "
-                + "re-run Maven with the -e switch.\n"
-                + "[ERROR] Re-run Maven using the -X switch to enable full "
-                + "debug logging.\n");
+        append(log,
+                """
+                        [ERROR] Failed to execute goal on project app: Compilation failure
+                        [ERROR] /src/Foo.java:[7,15] cannot find symbol
+                        [ERROR]\s
+                        [ERROR] -> [Help 1]
+                        [ERROR] To see the full stack trace of the errors, re-run Maven \
+                        with the -e switch.
+                        [ERROR] Re-run Maven using the -X switch to enable full debug \
+                        logging.
+                        """);
 
         // The goal failure and the diagnostic it carries; nothing else.
         assertEquals(2, watch.errors().size(), watch.errors().toString());

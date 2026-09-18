@@ -134,10 +134,6 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
-  // Both dev-loop fixtures are pinned to the same slice as the one the
-  // "Compile Shared modules" step in validation.yml pre-builds their sibling
-  // libraries for: the IT jobs run -pl without -am, and a fixture's library is
-  // inside the it-test-modules profile, so nothing else installs it.
   'flow-tests/test-devloop/test-devloop-spring/devloop-shared': { pos: 7 },
   'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
