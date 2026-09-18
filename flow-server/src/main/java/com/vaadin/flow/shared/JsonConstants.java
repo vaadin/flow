@@ -191,6 +191,13 @@ public class JsonConstants implements Serializable {
     public static final String UIDL_KEY_INVOKER_RETURNS = "returns";
 
     /**
+     * Key that marks a JS invoker invocation whose parameter after the
+     * arguments is the element to apply the function to. An invocation without
+     * it runs the function with no <code>this</code>.
+     */
+    public static final String UIDL_KEY_INVOKER_ELEMENT = "element";
+
+    /**
      * Key used to hold the feature id when synchronizing node values.
      */
     public static final String RPC_FEATURE = "feature";

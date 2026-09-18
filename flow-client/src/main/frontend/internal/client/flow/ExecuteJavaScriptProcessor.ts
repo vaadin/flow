@@ -76,6 +76,7 @@ export interface JsInvokerTarget {
   invoker: string;
   method: string;
   arguments: number;
+  element?: boolean;
   returns?: boolean;
 }
 
@@ -246,19 +247,20 @@ export class ExecuteJavaScriptProcessor {
    *
    * @param target - the invoker interface and method to run
    * @param parameters - the decoded parameters: the arguments of the call, the
-   *          element to apply the function to, and the return value channels
-   *          when the target declares them
+   *          element to apply the function to when the target has one, and the
+   *          return value channels when the target declares them
    */
   protected invokeFromBundle(target: JsInvokerTarget, parameters: unknown[]): void {
     const argumentCount = target.arguments;
+    const hasElement = target.element === true;
 
     // The parameters are the arguments of the call, then the element to apply
-    // the function to, then the two return value channels when the target
-    // declares them. Nothing else may be in there, so a count that does not
-    // add up means the invocation was not built by the server this client
-    // talks to, and reading the element out of it by index would bind an
-    // argument as `this`. Say so instead of running the call.
-    const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
+    // the function to when the target has one, then the two return value
+    // channels when the target declares them. Nothing else may be in there, so
+    // a count that does not add up means the invocation was not built by the
+    // server this client talks to, and reading the element out of it by index
+    // would bind an argument as `this`. Say so instead of running the call.
+    const expectedCount = argumentCount + (hasElement ? 1 : 0) + (target.returns === true ? 2 : 0);
     if (parameters.length !== expectedCount) {
       const message = `Expected ${expectedCount} parameters for ${target.invoker}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
       Console.error(message);
@@ -275,8 +277,9 @@ export class ExecuteJavaScriptProcessor {
       return;
     }
 
-    const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
-    const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
+    const channelIndex = argumentCount + (hasElement ? 1 : 0);
+    const onSuccess = target.returns === true ? (parameters[channelIndex] as ReturnChannel) : undefined;
+    const onError = target.returns === true ? (parameters[channelIndex + 1] as ReturnChannel) : undefined;
 
     const fn = findInvokerFunction(target.invoker, target.method);
     if (fn === undefined) {
@@ -287,8 +290,10 @@ export class ExecuteJavaScriptProcessor {
     }
 
     // The element the invoker was obtained from is the parameter after the
-    // arguments, and it is what the function runs against.
-    const thisArg = parameters[argumentCount];
+    // arguments, and it is what the function runs against. A page invoker has
+    // no element, and its JavaScript works on globals rather than on a
+    // `this`.
+    const thisArg = hasElement ? parameters[argumentCount] : undefined;
     try {
       const result = fn.apply(thisArg, parameters.slice(0, argumentCount));
       if (onSuccess !== undefined) {
