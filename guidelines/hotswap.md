@@ -71,8 +71,10 @@ just updated — so the task must not rescan the classpath to find out.
 ## Write through `writeIfChanged`
 
 Generated files are written with
-`AbstractFileGeneratorFallibleCommand.writeIfChanged`, which delegates to
-`FileIOUtils.writeIfChanged`. It does two things that matter here:
+`AbstractFileGeneratorFallibleCommand.writeIfChanged`, which delegates to the
+run's shared `GeneratedFilesSupport` — recording the file as generated on the
+way — and from there to `FileIOUtils.writeIfChanged`. It does two things that
+matter here:
 
 - It compares the new content against what is on disk and returns without
   touching the file when they match, so an unnecessary rewrite does not trigger
@@ -83,9 +85,13 @@ Generated files are written with
 
 So never write a generated file with `Files.writeString` or a hand-rolled
 writer — that loses both properties. And still gate the call on a cheap check
-of whether the relevant state actually changed: `RouteRegistryHotswapper`
-collects the registry's layouts before and after applying the class changes and
-only calls `writeLayouts` when that set differs.
+of whether the change could affect the file at all. `RouteRegistryHotswapper`
+takes the union of the registry's layouts from before and after it applies the
+class changes, then calls `writeLayouts` only when one of the changed classes
+is in that union — that is, when a changed class is a `@Layout` or has just
+stopped being one. Taking the union rather than either snapshot alone is what
+makes a removed annotation match. (It also skips the whole step unless React is
+enabled.)
 
 ## Getting the browser to pick it up
 
