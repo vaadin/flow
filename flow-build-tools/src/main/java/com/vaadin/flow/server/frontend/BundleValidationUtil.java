@@ -1020,16 +1020,13 @@ public final class BundleValidationUtil {
         String content = new TaskGenerateJsInvokers(options).getFileContent();
 
         if (!frontendHashes.has(jsInvokersPath)) {
-            // A bundle built before invoker interfaces existed carries none of
-            // their JavaScript. It is not rebuilt for that: an application
-            // that runs on a precompiled bundle has deliberately no frontend
-            // build, and one that does build its frontend generates the file
-            // as part of the build. What it means is that a call made through
-            // an invoker finds nothing to run until the bundle is built again,
-            // which the client reports per call, so say it once here as well.
+            // Every build that knows about invoker interfaces records what it
+            // generated for them, so a bundle without that is one built before
+            // they existed: it carries none of their JavaScript, and a call
+            // made through an invoker would find nothing to run.
             getLogger().info(
-                    "The bundle in use was built without the JavaScript declared by @JsInvoker interfaces. Calls made through an invoker will not run until the frontend is built again.");
-            return false;
+                    "Detected a bundle that was built without the JavaScript declared by the invoker interfaces");
+            return true;
         }
 
         List<String> faultyContent = new ArrayList<>();

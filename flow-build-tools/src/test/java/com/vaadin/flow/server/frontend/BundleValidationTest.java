@@ -1074,7 +1074,7 @@ class BundleValidationTest {
 
     @ParameterizedTest
     @MethodSource("modes")
-    void bundleWithoutJsInvokerJavaScript_noBundleRebuild(Mode mode) {
+    void bundleWithoutJsInvokerJavaScript_bundleRebuild(Mode mode) {
         setupMode(mode);
 
         ObjectNode stats = getBasicStats();
@@ -1085,8 +1085,8 @@ class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
 
-        assertFalse(needsBuild,
-                "a bundle that predates invoker interfaces should keep being used, since an application running on a precompiled bundle has no frontend build to replace it with");
+        assertTrue(needsBuild,
+                "a bundle that carries none of the JavaScript the invoker interfaces declare would run an application that cannot make those calls");
     }
 
     @ParameterizedTest
