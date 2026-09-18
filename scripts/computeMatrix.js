@@ -17,7 +17,8 @@ const globalExclusions = [
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui',
+  'flow-tests/test-devloop/test-devloop-support'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -133,8 +134,10 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
-  'flow-tests/test-devloop/devloop-shared': { pos: 7 },
-  'flow-tests/test-devloop/devloop-app': { pos: 7, weight: 5 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },

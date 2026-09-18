@@ -117,6 +117,36 @@ With no browser at hand, `curl http://localhost:8080` only proves the app serves
 say so rather than reporting the UI as verified, and fall back to `./mvnw test` for the parts a
 test can cover.
 
+## WAR projects (a servlet container)
+
+A WAR has no main class, and the servlet container that runs it is a build plugin
+rather than a dependency — so the daemon starts it by running the project's own
+run goal (`jetty:run`) in the build's JVM. Everything above is unchanged: the same
+commands, the same exit codes, the same change-set rules. Once started,
+`status` names the runtime it chose, e.g. `runtime=jetty-ee10`.
+
+What is different is worth knowing:
+
+- **Nothing in the pom needs changing.** The plugin's rescanner (`<scan>`) and its
+  `<deployMode>` would both fight the loop — a rescanner redeploys the webapp
+  underneath an `apply` that has already succeeded, and a forked deploy mode makes
+  the app a grandchild of the daemon, losing its exit code. Maven gives a pom's
+  `<configuration>` precedence over the `-D` settings the daemon passes, so the
+  daemon overrides them through a build extension for its own run instead. You will
+  see a line like `[vaadin-dev] jetty-ee10-maven-plugin: using <scan>0</scan> for
+  this run (the pom says <scan>2</scan>)` in the app log. Your pom is not modified.
+- **A restart costs more**, because it is a Maven invocation rather than a bare
+  JVM launch. Edits that hot-swap are unaffected and still land in a second or
+  two; edits that escalate take longer than they would in a Spring Boot project.
+- **`src/main/webapp` is not tracked.** A servlet container serves it straight off
+  disk, so an edit there is already live — but `apply` will not mention it or
+  reload the page, and a `WEB-INF/web.xml` edit needs a `restart` you have to ask
+  for. Static files under `src/main/resources/META-INF/resources` are tracked
+  normally, and that is where a modern Vaadin WAR keeps them.
+- **There is no Spring**, so nothing has built a proxy from a class's old shape:
+  a structural edit is limited only by what the JVM itself accepts, which on a
+  JetBrains Runtime is most of them.
+
 ## When it goes wrong
 
 - `compiling → Failed` — diagnostics name file, line, column. Fix and re-apply.
@@ -138,6 +168,11 @@ test can cover.
   neither `setsid` nor `perl` exists; on Windows a runner whose job object closes over the
   command takes the daemon with it whichever launcher ran. Where it happens, `start` the app
   from a shell that stays open for as long as the loop is needed, and run `apply` from another.
+- `cannot tell how to start this application` - the daemon found no entry point (no
+  `Start-Class`, no `@SpringBootApplication`, no `public static void main`) and no server
+  plugin it knows in the pom. Build the module once so there is compiled output to look at,
+  or name the answer: `-Dvaadin.dev.mainClass=<class>` or
+  `-Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11>`.
 - `this project does not depend on the dev-loop daemon` — the application's `pom.xml` is
   missing `com.vaadin:vaadin-dev` (declare it `<optional>true</optional>`, as a generated
   starter does).
@@ -164,6 +199,7 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.idleSeconds=60, -Dvaadin.dev.reactorRoot=<dir>,
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
+                         -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11>,
                          -Dvaadin.dev.daemonJar=<path>.
                          Read ONLY when a daemon is spawned: a daemon that is already
                          running ignores it, so `shutdown` first when changing a value.
