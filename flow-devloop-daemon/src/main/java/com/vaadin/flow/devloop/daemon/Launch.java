@@ -143,10 +143,16 @@ final class Launch {
 
     /**
      * How this project's application is started; see {@link AppRuntime}.
-     * Decided once, because nothing that decides it can change while a daemon
-     * is up, and re-deciding would repeat its line on every restart.
+     * <p>
+     * Decided once per reactor rather than once per daemon. The poms are what
+     * decide it - the packaging, and which server plugin the application module
+     * declares - so a pom edit can move the answer: to another EE level, to
+     * another plugin version, or to no server plugin at all. Holding the
+     * decision and the reactor it was made from in one reference is what makes
+     * {@link #rereadReactor} enough to un-decide it, with no second place to
+     * remember.
      */
-    private final AtomicReference<AppRuntime> runtime = new AtomicReference<>();
+    private final AtomicReference<Decided> runtime = new AtomicReference<>();
 
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
@@ -319,7 +325,7 @@ final class Launch {
                 // module, and re-reading here is what puts a newly added pom
                 // into
                 // the stamp - otherwise it would never be watched at all.
-                reactor = Reactor.discover(root, tee);
+                rereadReactor(tee);
                 runMaven(tee);
                 writeStamp();
                 resolutions.incrementAndGet();
@@ -468,6 +474,23 @@ final class Launch {
         }
         return String.join(", ", names.subList(0, 3)) + " and "
                 + (names.size() - 3) + " more";
+    }
+
+    /**
+     * Re-reads the aggregation graph, and with it how the application starts.
+     * <p>
+     * The second half is the point: {@link #runtime()} holds its answer against
+     * the reactor it was read out of, so replacing the reactor is what makes
+     * the next launch ask again. A pom edit that changes the server plugin's
+     * version or EE level, or that turns a WAR into an application with an
+     * entry point of its own, would otherwise go on being started the way the
+     * poms read when the daemon came up.
+     *
+     * @param tee
+     *            where discovery reports what it found
+     */
+    void rereadReactor(Log tee) {
+        reactor = Reactor.discover(root, tee);
     }
 
     /** The aggregation graph as last read; refreshed whenever a pom changes. */
@@ -1026,12 +1049,24 @@ final class Launch {
      *             if the project looks like neither shape of application
      */
     AppRuntime runtime() throws IOException {
-        AppRuntime current = runtime.get();
-        if (current == null) {
-            current = AppRuntime.of(this, log);
+        Decided current = runtime.get();
+        Reactor against = reactor;
+        if (current == null || current.reactor() != against) {
+            current = new Decided(against, AppRuntime.of(this, log));
             runtime.set(current);
         }
-        return current;
+        return current.runtime();
+    }
+
+    /**
+     * A launch decision, and the reactor it was read out of.
+     *
+     * @param reactor
+     *            the aggregation graph the decision was made against
+     * @param runtime
+     *            what that graph said starts this application
+     */
+    private record Decided(Reactor reactor, AppRuntime runtime) {
     }
 
     /**
