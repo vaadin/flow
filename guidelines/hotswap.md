@@ -109,13 +109,18 @@ Use the weakest mechanism that works:
 Hilla endpoints are the second implementation of the same pattern and they do
 it differently, so do not read the `layouts.json` shape as the only option.
 
-Flow owns only the SPI here: `EndpointGeneratorTaskFactory`,
-`TaskGenerateOpenAPI` and `TaskGenerateEndpoint` in `flow-build-tools` are
-marker interfaces that `NodeTasks.addEndpointServicesTasks` resolves through
-`Lookup`. The implementation lives in the `hilla` repository, and generating
-the TypeScript is a pipeline, not a file write: scan the browser-callable
-classes into `openapi.json`, then run the Node generator CLI over that to emit
-the `.ts` clients into the frontend generated folder.
+Flow owns only the SPI here. `NodeTasks.addEndpointServicesTasks` returns
+immediately unless `FrontendBuildUtils.isHillaUsed(...)`, then resolves one
+interface through `Lookup`: `EndpointGeneratorTaskFactory`, which declares
+`createTaskGenerateOpenAPI(Options)` and `createTaskGenerateEndpoint(Options)`.
+Those hand back `TaskGenerateOpenAPI` and `TaskGenerateEndpoint` — the actual
+markers, `FallibleCommand` subinterfaces with no members of their own — and the
+endpoint task is only added when `options.getFrontendGeneratedFolder()` is set.
+
+The implementations live in the `hilla` repository, and generating the
+TypeScript is a pipeline, not a file write: scan the browser-callable classes
+into `openapi.json`, then run the Node generator CLI over that to emit the
+`.ts` clients into the frontend generated folder.
 
 `com.vaadin.hilla.Hotswapper` implements the same `VaadinHotswapper` interface,
 but there is no narrow "write this one file" step to expose, because finding
@@ -135,10 +140,15 @@ What carries over, and what to copy when a generator is shaped like this:
 - **The last mile is unchanged.** The generator writes into the frontend
   generated folder and Vite's watcher takes it from there — no `triggerUpdate`,
   no HMR event.
-- **`writeIfChanged` does not apply,** since Java is not writing the files.
-  A generator that owns its output needs its own equivalent — the Hilla
-  generator keeps a list of the files it emitted so it can clean up its own
-  stale output instead of leaving it behind.
+- **Only the write half of `writeIfChanged` falls away,** because Java is not
+  writing the files. Do not reimplement the rest: `writeIfChanged` and the file
+  tracking are the same class, `GeneratedFilesSupport`, and every command gets
+  the run's instance through `FallibleCommand.setGeneratedFileSupport`.
+  `track(File)` exists exactly for output a task did not write itself, and
+  `TaskRemoveOldFrontendGeneratedFiles` deletes whatever in the generated
+  folder was not tracked. So a task wrapping an external generator should
+  `track()` the files that generator emitted rather than keep a private list of
+  them.
 
 ## When rewriting a file cannot work
 
