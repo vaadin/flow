@@ -489,6 +489,76 @@ class DevLoopRedefinerTest {
     }
 
     @Test
+    void hierarchyOf_readsTheSameAnswerOutOfTheBytes() throws IOException {
+        // The two halves have to agree exactly, or every apply would look like
+        // a hierarchy change and restart. Asserted over the shapes a class file
+        // spells differently from reflection: an interface, whose super_class
+        // is java/lang/Object in the file and null through reflection, and a
+        // nested class, which is its own class file.
+        for (Class<?> type : List.of(NothingDeclared.class, SomeView.class,
+                ViewWithTheMixin.class, ThemedAppShell.class,
+                ImportingMixin.class, Object.class)) {
+            assertEquals(DevLoopRedefiner.hierarchy(type),
+                    DevLoopRedefiner.hierarchyOf(bytesOf(type)),
+                    type.getName());
+        }
+    }
+
+    @Test
+    void hierarchyOf_answersNothingForWhatItCannotRead() {
+        // Not a failure: the reading after the redefine is still there, and
+        // every other check in the inspection is unaffected.
+        assertNull(DevLoopRedefiner.hierarchyOf(new byte[] { 1, 2, 3 }));
+        assertNull(DevLoopRedefiner.hierarchyOf(new byte[0]));
+    }
+
+    @Test
+    void inspect_refusesToRedefineAClassThatChangedItsHierarchy()
+            throws IOException {
+        // The edit, simulated the only way a unit test can: the bytes on the
+        // classpath belong to a class that implements the mixin, and the loaded
+        // class does not. Nothing is redefined - an enhanced-redefinition JVM
+        // has been seen to die on exactly this - and the daemon restarts, which
+        // is what regenerates the imports.
+        String name = ViewWithTheMixin.class.getName();
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name),
+                Map.of(name, List.of(ViewOverAnImportingSupertype.class)),
+                List.of(testClasses()));
+
+        // Named as a reader would name it, nested type and all.
+        String reported = "DevLoopRedefinerTest$ViewWithTheMixin";
+        assertEquals("ERR kind=hierarchy-changed class=" + reported
+                + " message=class hierarchy changed (" + reported + "): a new"
+                + " supertype or interface brings imports that are read at"
+                + " startup (dev bundle rebuild)", inspected.error());
+    }
+
+    @Test
+    void inspect_redefinesAClassWhoseHierarchyIsUnchanged() {
+        // The guard against restarting every apply: same class on both sides,
+        // which is what an ordinary edit looks like to this check.
+        String name = SomeView.class.getName();
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name), Map.of(name, List.of(SomeView.class)),
+                List.of(testClasses()));
+
+        assertNull(inspected.error());
+        assertEquals(1, inspected.definitions().size());
+    }
+
+    private static byte[] bytesOf(Class<?> type) throws IOException {
+        // Through the class itself, so a type in a named module - java.lang
+        // here - answers as readily as one on the class path.
+        try (InputStream in = type.getResourceAsStream(
+                "/" + type.getName().replace('.', '/') + ".class")) {
+            return in.readAllBytes();
+        }
+    }
+
+    @Test
     void reply_carriesEveryFieldTheDaemonReadsAVerdictFrom() {
         // The daemon splits this line on whitespace and reads by name, so a
         // renamed or dropped field is a silently different answer rather than
