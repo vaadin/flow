@@ -394,10 +394,8 @@ public class UidlWriter implements Serializable {
      * <p>
      * The target tells the client how to read the parameters: the first
      * <code>arguments</code> of them are the arguments of the call, the next
-     * one is the element to apply the function to when <code>element</code> is
-     * set, and the two after that are the return value channels when
-     * <code>returns</code> is set. Without <code>element</code> the function
-     * runs with no <code>this</code>, which is what a page invoker does.
+     * one is the element to apply the function to, and the two after that are
+     * the return value channels when <code>returns</code> is set.
      */
     private static ArrayNode encodeInvokerCall(
             PendingJavaScriptInvocation invocation, JsInvokerCall call) {
@@ -409,12 +407,6 @@ public class UidlWriter implements Serializable {
         target.put(JsonConstants.UIDL_KEY_INVOKER_METHOD, call.getMethodId());
         target.put(JsonConstants.UIDL_KEY_INVOKER_ARGUMENTS,
                 call.arguments().size());
-        // An element invoker appends the element it is bound to after the
-        // arguments, and a page invoker has nothing to append
-        if (invocation.getInvocation().getParameters().size() > call.arguments()
-                .size()) {
-            target.put(JsonConstants.UIDL_KEY_INVOKER_ELEMENT, true);
-        }
 
         if (invocation.isSubscribed()) {
             StateNode owner = invocation.getOwner();

@@ -16,6 +16,9 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +70,6 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.js.JsInvokerCall;
-import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
@@ -1975,8 +1977,53 @@ public class Element extends Node<Element> {
      *            the invoker interface, not <code>null</code>
      * @return an invoker bound to this element, not <code>null</code>
      */
+    @SuppressWarnings("unchecked")
     public <T> T getJsInvoker(Class<T> invokerType) {
-        return JsInvokers.create(invokerType, this::scheduleInvokerCall);
+        Objects.requireNonNull(invokerType, "Invoker type cannot be null");
+        if (!invokerType.isInterface()) {
+            throw new IllegalArgumentException(
+                    invokerType.getName() + " is not an interface");
+        }
+        if (!invokerType.isAnnotationPresent(JsInvoker.class)) {
+            throw new IllegalArgumentException(invokerType.getName()
+                    + " is not annotated with @JsInvoker, so the build does not"
+                    + " collect its JavaScript into the bundle");
+        }
+        return (T) Proxy.newProxyInstance(invokerType.getClassLoader(),
+                new Class<?>[] { invokerType },
+                new JsInvokerHandler(this, invokerType));
+    }
+
+    /**
+     * Turns a call on a JS invoker interface into a scheduled invocation that
+     * carries the call.
+     */
+    private record JsInvokerHandler(Element element,
+            Class<?> invokerType) implements InvocationHandler, Serializable {
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            if (method.getDeclaringClass() == Object.class) {
+                return method.invoke(this, args);
+            }
+            Class<?> returnType = method.getReturnType();
+            boolean returnsResult = returnType
+                    .isAssignableFrom(PendingJavaScriptResult.class);
+            // Checked before scheduling, so that a method the invoker can not
+            // answer does not run in the browser either
+            if (returnType != void.class && !returnsResult) {
+                throw new IllegalStateException("Method " + method.getName()
+                        + " of " + invokerType.getName()
+                        + " must return void or PendingJavaScriptResult");
+            }
+            List<Object> arguments = args == null ? List.of()
+                    : Arrays.asList(args);
+            PendingJavaScriptResult result = element
+                    .scheduleInvokerCall(new JsInvokerCall(invokerType,
+                            method.getName(), arguments));
+            return returnsResult ? result : null;
+        }
     }
 
     private PendingJavaScriptResult scheduleExecuteJs(String expression,

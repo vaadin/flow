@@ -107,9 +107,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       });
       const element = { tagName: 'div' };
 
-      processor().execute([
-        ['Hello', element, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }]
-      ]);
+      processor().execute([['Hello', element, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -126,7 +124,7 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           (value: unknown) => resolved.push(value),
           () => {},
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, element: true, returns: true }
+          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
         ]
       ]);
       // Settled in microtasks: a macrotask wait would also pick up the
@@ -145,7 +143,7 @@ describe('ExecuteJavaScriptProcessor', () => {
 
       // One argument declared, but no element to apply the function to: the
       // invocation and this client disagree about the signature.
-      processor().execute([['Hello', { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }]]);
+      processor().execute([['Hello', { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
 
       expect(calls).to.equal(0);
     });
@@ -164,7 +162,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         [
           element,
           (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, element: true, returns: true }
+          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
         ]
       ]);
 
@@ -181,39 +179,10 @@ describe('ExecuteJavaScriptProcessor', () => {
       });
 
       processor().execute([
-        [
-          'Hello',
-          'unexpected',
-          { tagName: 'div' },
-          { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }
-        ]
+        ['Hello', 'unexpected', { tagName: 'div' }, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]
       ]);
 
       expect(calls).to.equal(0);
-    });
-
-    it('runs a call with no element without a this, and answers its channel', async () => {
-      // What a page invoker sends: the arguments, then the channels, and no
-      // element to apply the function to.
-      const thisArgs: unknown[] = [];
-      registerInvoker('readValue/0', function (this: unknown) {
-        thisArgs.push(this);
-        return 'answer';
-      });
-      const resolved: unknown[] = [];
-
-      processor().execute([
-        [
-          (value: unknown) => resolved.push(value),
-          () => {},
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
-        ]
-      ]);
-      await Promise.resolve();
-      await Promise.resolve();
-
-      expect(thisArgs).to.eql([undefined]);
-      expect(resolved).to.eql(['answer']);
     });
 
     it('reports a function that is not in the bundle to the error channel', () => {
@@ -225,7 +194,7 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           () => {},
           (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'missing/0', arguments: 0, element: true, returns: true }
+          { invoker: INVOKER, method: 'missing/0', arguments: 0, returns: true }
         ]
       ]);
 
