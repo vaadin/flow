@@ -33,6 +33,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -72,10 +73,9 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return;
         }
 
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(event.getVaadinService().getContext());
-        File generatedFile = generatedInvokersFile(configuration);
-        String generated = readGeneratedInvokers(generatedFile);
+        VaadinService service = event.getVaadinService();
+        File generatedFile = generatedInvokersFile(service);
+        String generated = readGeneratedInvokers(service);
 
         List<Class<?>> stale = invokers.stream()
                 .filter(invoker -> !isInBundle(invoker, generated)).toList();
@@ -83,8 +83,7 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return;
         }
 
-        String applied = hotApply(configuration, generatedFile, generated,
-                invokers);
+        String applied = hotApply(service, generatedFile, generated, invokers);
         // What the file holds now is what a browser can run, so anything the
         // rendering did not cover is still a change nobody can apply
         List<String> unresolved = stale.stream()
@@ -111,16 +110,17 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
      * @return the content the file holds afterwards, which is the content it
      *         held already when nothing could be written
      */
-    private static String hotApply(ApplicationConfiguration configuration,
-            File generatedFile, String generated,
-            List<Class<?>> changedInvokers) {
+    private static String hotApply(VaadinService service, File generatedFile,
+            String generated, List<Class<?>> changedInvokers) {
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(service.getContext());
         if (generatedFile == null || configuration == null || configuration
                 .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
             return generated;
         }
         try {
-            String content = TaskGenerateJsInvokers
-                    .fileContent(invokersToRender(generated, changedInvokers));
+            String content = TaskGenerateJsInvokers.renderFileContent(
+                    invokersToRender(generated, changedInvokers));
             if (content.equals(generated)) {
                 return generated;
             }
@@ -150,7 +150,7 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
         changedInvokers
                 .forEach(invoker -> byName.put(invoker.getName(), invoker));
         ClassLoader classLoader = changedInvokers.get(0).getClassLoader();
-        for (String name : TaskGenerateJsInvokers.invokerNames(generated)) {
+        for (String name : TaskGenerateJsInvokers.readInvokerNames(generated)) {
             if (byName.containsKey(name)) {
                 continue;
             }
@@ -188,7 +188,8 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             // Nothing carries the declarations, so nothing matches them
             return false;
         }
-        List<String> declared = TaskGenerateJsInvokers.invokerLines(invoker);
+        List<String> declared = TaskGenerateJsInvokers
+                .renderInvokerLines(invoker);
         if (declared.isEmpty()) {
             // Declares no JavaScript, so there is nothing to carry
             return true;
@@ -197,13 +198,9 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                 .contains(String.join(System.lineSeparator(), declared));
     }
 
-    private static File generatedInvokersFile(
-            ApplicationConfiguration configuration) {
-        if (configuration == null) {
-            return null;
-        }
+    private static File generatedInvokersFile(VaadinService service) {
         File frontendFolder = FrontendUtils
-                .getProjectFrontendDir(configuration);
+                .getProjectFrontendDir(service.getDeploymentConfiguration());
         if (frontendFolder == null) {
             return null;
         }
@@ -212,15 +209,11 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                 FrontendUtils.JS_INVOKERS_FILE_NAME);
     }
 
-    private static String readGeneratedInvokers(File generatedFile) {
-        if (generatedFile == null || !generatedFile.exists()) {
-            return null;
-        }
+    private static String readGeneratedInvokers(VaadinService service) {
         try {
-            return Files.readString(generatedFile.toPath(),
-                    StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            getLogger().debug("Could not read {}", generatedFile, e);
+            return FrontendUtils.getJsInvokersContent(service);
+        } catch (IOException | RuntimeException e) {
+            getLogger().debug("Could not read the generated invokers", e);
             return null;
         }
     }

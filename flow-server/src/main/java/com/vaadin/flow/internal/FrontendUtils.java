@@ -575,6 +575,27 @@ public class FrontendUtils {
         return getFileContent(service, WEB_COMPONENT_HTML);
     }
 
+    /**
+     * Gets the content of the generated
+     * <code>frontend/generated/{@value #JS_INVOKERS_FILE_NAME}</code> file,
+     * which registers the JavaScript that the {@code @JsInvoker} interfaces of
+     * the application declare, and is therefore what a browser can run of it.
+     * <p>
+     * Read the same way as the other generated files: from the dev server while
+     * it is running, from the project otherwise, and from the class path in
+     * production.
+     *
+     * @param service
+     *            the Vaadin service
+     * @return the content of the file, or <code>null</code> if there is none
+     * @throws IOException
+     *             on error when reading the file
+     */
+    public static String getJsInvokersContent(VaadinService service)
+            throws IOException {
+        return getFileContent(service, GENERATED + JS_INVOKERS_FILE_NAME);
+    }
+
     private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();

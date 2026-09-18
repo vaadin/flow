@@ -59,7 +59,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() {
-        return fileContent(
+        return renderFileContent(
                 options.getClassFinder().getAnnotatedClasses(JsInvoker.class));
     }
 
@@ -75,7 +75,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      *            the invoker interfaces to render, not <code>null</code>
      * @return the content of the generated file
      */
-    public static String fileContent(Collection<Class<?>> invokers) {
+    public static String renderFileContent(Collection<Class<?>> invokers) {
         List<String> lines = new ArrayList<>();
         lines.add("// @ts-nocheck");
         lines.add("window.Vaadin = window.Vaadin || {};");
@@ -84,7 +84,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
                 "window.Vaadin.Flow.jsInvokers = window.Vaadin.Flow.jsInvokers || {};");
 
         invokers.stream().sorted(Comparator.comparing(Class::getName))
-                .forEach(invoker -> lines.addAll(invokerLines(invoker)));
+                .forEach(invoker -> lines.addAll(renderInvokerLines(invoker)));
 
         // Writing this file again while the application runs replaces it in the
         // browser that has it: everything above only writes into the registry,
@@ -106,16 +106,17 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      * Reads back the names of the invoker interfaces a generated file
      * registers, which is what a browser that has the file can run.
      * <p>
-     * Exposed together with {@link #invokerLines(Class)} so that the format
-     * this class writes is also read here, and a caller which has to render the
-     * file again - the hotswap path - can keep the interfaces that are in it.
+     * Exposed together with {@link #renderInvokerLines(Class)} so that the
+     * format this class writes is also read here, and a caller which has to
+     * render the file again - the hotswap path - can keep the interfaces that
+     * are in it.
      *
      * @param fileContent
      *            the content of a generated file, or <code>null</code>
      * @return the interface names the file registers, in the order it registers
      *         them
      */
-    public static List<String> invokerNames(String fileContent) {
+    public static List<String> readInvokerNames(String fileContent) {
         List<String> names = new ArrayList<>();
         if (fileContent == null) {
             return names;
@@ -144,7 +145,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      * @return the lines this invoker contributes, empty if it declares no
      *         JavaScript
      */
-    public static List<String> invokerLines(Class<?> invoker) {
+    public static List<String> renderInvokerLines(Class<?> invoker) {
         List<String> lines = new ArrayList<>();
         List<Method> methods = new ArrayList<>();
         for (Method method : invoker.getMethods()) {

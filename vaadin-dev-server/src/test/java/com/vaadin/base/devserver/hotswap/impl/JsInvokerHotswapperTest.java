@@ -81,13 +81,16 @@ class JsInvokerHotswapperTest {
     @BeforeEach
     void setUp() {
         hotswapper = new TestHotswapper();
-        frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
 
-        service = new MockVaadinServletService(
-                new MockDeploymentConfiguration());
+        MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+        deploymentConfiguration.setProjectFolder(projectFolder);
+        service = new MockVaadinServletService(deploymentConfiguration);
+        // Resolved the way the production code resolves it, so a case writes
+        // the file where the hotswapper looks for it
+        frontendFolder = FrontendUtils
+                .getProjectFrontendDir(deploymentConfiguration);
+
         configuration = Mockito.mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(frontendFolder);
         // What a browser runs without the frontend dev server is a bundle,
         // which a case has to opt out of to get the file written again.
         Mockito.when(configuration.getMode())
@@ -128,7 +131,7 @@ class JsInvokerHotswapperTest {
 
     private String generatedFor(Class<?> invoker) {
         return String.join(System.lineSeparator(),
-                TaskGenerateJsInvokers.invokerLines(invoker));
+                TaskGenerateJsInvokers.renderInvokerLines(invoker));
     }
 
     private void classesChanged(Class<?>... classes) {
