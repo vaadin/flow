@@ -20,7 +20,7 @@
     <openliberty.version>25.0.0.6</openliberty.version>
     <openliberty.template>jakartaee10</openliberty.template>
     <openliberty.runtimeArtifactGroupId>io.openliberty</openliberty.runtimeArtifactGroupId>
-    <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
     <!-- Every test in this module deploys to a real application server, so
          there is nothing to run until one of the container profiles below is
          activated. Skipping by default keeps a plain `mvn verify` over

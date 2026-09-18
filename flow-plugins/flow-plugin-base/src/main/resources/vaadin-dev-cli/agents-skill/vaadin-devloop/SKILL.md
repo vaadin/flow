@@ -49,6 +49,11 @@ another application with `--app`, the version that counts is that application's.
    verdict and the project's own tests, so opening a browser to look at nothing buys no
    evidence and costs the run a browser launch.
 
+**Verification ends the cycle.** A change `apply` reports live and step 5 has verified is
+finished; where the project has tests or checks that cover it, their passing *is* that
+verification. Go back to step 3 for work that is left, or for evidence that contradicts you —
+never to improve on a result that already met the bar.
+
 ## Commands
 
 ```
