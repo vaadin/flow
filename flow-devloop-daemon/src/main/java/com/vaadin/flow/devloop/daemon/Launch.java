@@ -59,7 +59,7 @@ final class Launch {
      * ways: as a system property, which is what works when the application owns
      * the JVM, and as a {@code hotswap-agent.properties} on the application's
      * own classpath, which is what works when it does not. See
-     * {@link MavenGoalRuntime#writeHotswapAgentProperties}.
+     * {@code MavenGoalRuntime#writeHotswapAgentProperties}.
      */
     static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty";
 
@@ -735,6 +735,7 @@ final class Launch {
                     List.of("-f", reactor.root().resolve("pom.xml").toString(),
                             "-pl", ":" + reactor.app().artifactId(), "-am"));
         }
+        base.addAll(buildExtension());
         base.addAll(extraMavenArguments());
         base.addAll(List.of("compile", "dependency:build-classpath",
                 "-Dmdep.outputFile=" + CLASSPATH_FILE,
@@ -779,6 +780,30 @@ final class Launch {
      * That is the trade for a single-property knob, and every argument this is
      * for is a flag.
      */
+    /**
+     * Loads this daemon's own jar into the build as a Maven extension.
+     * <p>
+     * It is already on the run invocation, where
+     * {@link com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension} rewrites
+     * the server plugin's configuration. On the resolve it earns its place
+     * differently: the extension writes out the model Maven built - the active
+     * profiles applied, every parent resolved, {@code <pluginManagement>} kept
+     * apart from what the build runs - and that is the answer the pom reader
+     * here can only approximate. The resolve runs on every pom change anyway,
+     * so this costs nothing but the property.
+     * <p>
+     * Empty for a daemon running from an exploded build directory, which has no
+     * jar to point Maven at - the same daemon that has no javaagent either, and
+     * is warned about on that far larger count.
+     *
+     * @return the argument, or nothing when there is no jar
+     */
+    private List<String> buildExtension() {
+        return agentJar().filter(Files::isRegularFile)
+                .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
+                .orElseGet(List::of);
+    }
+
     static List<String> extraMavenArguments() {
         String configured = System.getProperty("vaadin.dev.mavenArgs");
         if (configured == null || configured.isBlank()) {
@@ -1051,22 +1076,33 @@ final class Launch {
     AppRuntime runtime() throws IOException {
         Decided current = runtime.get();
         Reactor against = reactor;
-        if (current == null || current.reactor() != against) {
-            current = new Decided(against, AppRuntime.of(this, log));
+        long resolution = resolutions.get();
+        if (current == null || current.reactor() != against
+                || current.resolution() != resolution) {
+            current = new Decided(against, resolution,
+                    AppRuntime.of(this, log));
             runtime.set(current);
         }
         return current.runtime();
     }
 
     /**
-     * A launch decision, and the reactor it was read out of.
+     * A launch decision, and what it was read out of.
+     * <p>
+     * The resolution counts as much as the reactor does: before the first one,
+     * the decision comes from reading the poms, and afterwards from the model
+     * Maven itself wrote (see {@link EffectiveModel}). A {@code status} asked
+     * before anything was built must not be what pins the answer.
      *
      * @param reactor
      *            the aggregation graph the decision was made against
+     * @param resolution
+     *            how many times Maven had run when it was made
      * @param runtime
-     *            what that graph said starts this application
+     *            what that said starts this application
      */
-    private record Decided(Reactor reactor, AppRuntime runtime) {
+    private record Decided(Reactor reactor, long resolution,
+            AppRuntime runtime) {
     }
 
     /**

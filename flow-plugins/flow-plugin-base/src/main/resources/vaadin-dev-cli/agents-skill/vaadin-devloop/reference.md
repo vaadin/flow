@@ -122,8 +122,8 @@ test can cover.
 A WAR has no main class, and the servlet container that runs it is a build plugin
 rather than a dependency — so the daemon starts it by running the project's own
 run goal (`jetty:run`) in the build's JVM. Everything above is unchanged: the same
-commands, the same exit codes, the same change-set rules. `status` names the
-runtime it chose, e.g. `runtime=jetty-ee10`.
+commands, the same exit codes, the same change-set rules. Once started,
+`status` names the runtime it chose, e.g. `runtime=jetty-ee10`.
 
 What is different is worth knowing:
 

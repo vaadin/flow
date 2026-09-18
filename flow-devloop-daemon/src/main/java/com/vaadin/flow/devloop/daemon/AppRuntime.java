@@ -185,7 +185,7 @@ interface AppRuntime {
             Optional<Reactor.PluginConfig> declared = reactor
                     .plugin(plugin.groupId(), plugin.artifactId());
             if (declared.isPresent()) {
-                log.line("runtime: " + plugin.name() + " (the pom declares "
+                log.line("runtime: " + plugin.name() + " (the build runs "
                         + plugin.artifactId() + ", packaging "
                         + reactor.packaging() + ")");
                 return Optional.of(new MavenGoalRuntime(launch, plugin,
@@ -221,7 +221,7 @@ interface AppRuntime {
             Reactor.PluginConfig declared = launch.reactor()
                     .plugin(plugin.groupId(), plugin.artifactId())
                     .orElseThrow(() -> new IOException("vaadin.dev.runtime="
-                            + name + " but this project declares no "
+                            + name + " but this build does not run "
                             + plugin.artifactId()));
             return new MavenGoalRuntime(launch, plugin, declared, log);
         }
