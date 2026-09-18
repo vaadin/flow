@@ -20,10 +20,15 @@ jobs:
     steps:
       - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
       - name: Check secrets
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
         run: |
+          if [ "$IS_FORK" = "true" ]; then
+            echo "ℹ️ A pull request from a fork cannot read **TB_LICENSE**, so the test jobs will fail on the license check. A **${{github.repository}}** team member has to re-run them from a branch in this repository." \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
           [ -z "$TB_LICENSE" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
@@ -104,8 +109,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Unit Test
@@ -174,8 +180,9 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
