@@ -46,7 +46,17 @@ import java.util.Properties;
  */
 final class EffectiveModel {
 
-    /** Where the extension leaves it, relative to the module directory. */
+    /**
+     * Where the extension leaves it, relative to the module directory.
+     * <p>
+     * A fixed path rather than the module's configured build directory, which
+     * Maven alone knows: a project that moves it would otherwise be written in
+     * one place and read in another, and the model would look missing to a
+     * daemon that has no way to ask. The same literal is
+     * {@code DevLoopBuildExtension#MODEL_FILE} on the writing side, and it is
+     * where the rest of the daemon's per-module files live - see
+     * {@link Launch#workDir}.
+     */
     static final String FILE = "target/devloop/model.properties";
 
     private final Properties values;

@@ -139,7 +139,10 @@ and that is the only source `Reactor.plugin` reads. A `<pluginManagement>`
 version is absent from it by construction, and so is a plugin from a profile
 that did not run. It is believed only while it is newer than the poms it was
 built from, and `compose` resolves before it asks, so the answer is always
-there by the time anything is launched.
+there by the time anything is launched. Its path is relative to the module and
+never to `${project.build.directory}`: the daemon has no Maven to ask where a
+project moved that to, so a moved build directory would leave the file written
+in one place and looked for in another.
 
 The HotswapAgent jar is *not* here: it is cached per machine under
 `~/.vaadin/devloop/`, pinned by version and verified against a SHA-256, so one

@@ -25,6 +25,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -97,6 +99,18 @@ class EffectiveModelTest {
     @Test
     void noFileIsNoAnswer() {
         assertTrue(model().isEmpty());
+    }
+
+    /**
+     * The one thing the whole file rests on: the extension writes where this
+     * reads. Both ends spell the path out as a literal - the daemon may not
+     * load a class compiled against Maven's API - so nothing but this keeps
+     * them from drifting apart, and drifting apart would read as "no model"
+     * rather than as any kind of failure.
+     */
+    @Test
+    void theExtensionWritesWhereThisReads() {
+        assertEquals(DevLoopBuildExtension.MODEL_FILE, EffectiveModel.FILE);
     }
 
     /**
