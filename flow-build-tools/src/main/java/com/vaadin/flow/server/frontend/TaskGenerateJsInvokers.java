@@ -149,7 +149,10 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         List<Method> methods = new ArrayList<>();
         for (Method method : invoker.getMethods()) {
-            if (method.isAnnotationPresent(JsExpression.class)) {
+            // A default method runs in Java, so it has nothing in the bundle
+            // even if it carries the annotation
+            if (method.isAnnotationPresent(JsExpression.class)
+                    && !method.isDefault()) {
                 methods.add(method);
             }
         }

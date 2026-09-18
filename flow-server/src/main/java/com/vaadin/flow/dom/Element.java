@@ -1971,13 +1971,23 @@ public class Element extends Node<Element> {
      * or run it on its own implementation of the same interface.
      * <p>
      * A method returns either <code>void</code> or
-     * {@link PendingJavaScriptResult}.
+     * {@link PendingJavaScriptResult}. A <code>default</code> method declares
+     * no JavaScript and runs in Java instead, so an interface can compose calls
+     * of its own methods; an interface that has one has to be public, since
+     * running it is an ordinary Java call. A <code>static</code> method is left
+     * alone for the same reason.
+     * <p>
+     * The interface is checked when the invoker is handed out, so one that can
+     * not work says so here rather than at the first call.
      *
      * @param <T>
      *            the invoker interface type
      * @param invokerType
      *            the invoker interface, not <code>null</code>
      * @return an invoker bound to this element, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsInvoker}, or has a method the invoker can not answer
      */
     @SuppressWarnings("unchecked")
     public <T> T getJsInvoker(Class<T> invokerType) {
@@ -2010,9 +2020,18 @@ public class Element extends Node<Element> {
     private static void checkInvokerMethods(Class<?> invokerType) {
         List<String> undeclared = new ArrayList<>();
         List<String> unanswerable = new ArrayList<>();
+        List<String> inJava = new ArrayList<>();
         for (Method method : invokerType.getMethods()) {
-            if (method.isDefault()
-                    || Modifier.isStatic(method.getModifiers())) {
+            if (Modifier.isStatic(method.getModifiers())) {
+                continue;
+            }
+            if (method.isDefault()) {
+                if (method.isAnnotationPresent(JsExpression.class)) {
+                    // Declaring JavaScript and running in Java at the same
+                    // time: only one of them can happen, so neither is assumed
+                    undeclared.add(method.getName());
+                }
+                inJava.add(method.getName());
                 continue;
             }
             if (!method.isAnnotationPresent(JsExpression.class)) {
@@ -2026,16 +2045,27 @@ public class Element extends Node<Element> {
         }
         if (!undeclared.isEmpty()) {
             throw new IllegalArgumentException(invokerType.getName()
-                    + " declares no JavaScript for "
+                    + " declares no JavaScript to run for "
                     + String.join(", ", undeclared)
                     + ". Annotate the methods with @JsExpression, or make them"
-                    + " default methods if they are meant to run in Java");
+                    + " default methods, without the annotation, if they are"
+                    + " meant to run in Java");
         }
         if (!unanswerable.isEmpty()) {
             throw new IllegalArgumentException(invokerType.getName() + " has "
                     + String.join(", ", unanswerable)
                     + " returning something the invoker can not answer with."
                     + " A method returns void or PendingJavaScriptResult");
+        }
+        if (!inJava.isEmpty()
+                && !Modifier.isPublic(invokerType.getModifiers())) {
+            // Running a default method is an ordinary Java call, made from
+            // here, so the interface has to be reachable from here
+            throw new IllegalArgumentException(invokerType.getName() + " has "
+                    + String.join(", ", inJava)
+                    + " running in Java, which an interface that is not public"
+                    + " can not do. Make the interface public, or declare the"
+                    + " JavaScript of those methods with @JsExpression");
         }
     }
 
@@ -2055,7 +2085,15 @@ public class Element extends Node<Element> {
             if (method.isDefault()) {
                 // Runs in Java, and what it calls of the interface comes back
                 // here
-                return InvocationHandler.invokeDefault(proxy, method, args);
+                try {
+                    return InvocationHandler.invokeDefault(proxy, method, args);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Cannot run "
+                            + method.getName() + " of " + invokerType.getName()
+                            + " in Java. Make the interface public, or declare"
+                            + " the JavaScript of the method with"
+                            + " @JsExpression", e);
+                }
             }
             boolean returnsResult = method.getReturnType()
                     .isAssignableFrom(PendingJavaScriptResult.class);

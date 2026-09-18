@@ -2728,9 +2728,14 @@ class ElementTest extends AbstractNodeTest {
     void getJsInvoker_methodWithAnotherReturnType_throws() {
         Element element = ElementFactory.createDiv();
 
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> element.getJsInvoker(UnsupportedJs.class),
                 "a method the invoker can not answer should be refused when the invoker is handed out");
+
+        assertTrue(exception.getMessage().contains("readValue"),
+                "the message should name the method: "
+                        + exception.getMessage());
     }
 
     @Test
@@ -2744,6 +2749,41 @@ class ElementTest extends AbstractNodeTest {
         assertTrue(exception.getMessage().contains("undeclared"),
                 "the message should name the method that declares nothing: "
                         + exception.getMessage());
+    }
+
+    @Test
+    void getJsInvoker_defaultAndStaticMethods_areNotDeclarations() {
+        Element element = ElementFactory.createDiv();
+
+        ComposingJs invoker = element.getJsInvoker(ComposingJs.class);
+
+        // A static method belongs to the interface, not to the invoker, and a
+        // default method answers with whatever Java answers with
+        assertEquals("ComposingJs", ComposingJs.name());
+        assertEquals("composing", invoker.describe(),
+                "a default method is not bound by what a declared one may return");
+    }
+
+    @Test
+    void getJsInvoker_defaultMethodOnANonPublicInterface_throws() {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.getJsInvoker(NotPublicJs.class));
+
+        assertTrue(exception.getMessage().contains("public"),
+                "the message should say what stops the method from running: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void getJsInvoker_defaultMethodDeclaringJavaScript_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.getJsInvoker(ContradictoryJs.class),
+                "a method can run in Java or in the browser, not both");
     }
 
     @Test
@@ -2782,13 +2822,39 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @JsInvoker
-    interface ComposingJs extends Serializable {
+    public interface ComposingJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);
 
         default void twice(String value) {
             method(value);
             method(value);
+        }
+
+        default String describe() {
+            return "composing";
+        }
+
+        static String name() {
+            return "ComposingJs";
+        }
+    }
+
+    @JsInvoker
+    interface NotPublicJs extends Serializable {
+        @JsExpression("this.method()")
+        void method();
+
+        default void twice() {
+            method();
+            method();
+        }
+    }
+
+    @JsInvoker
+    interface ContradictoryJs extends Serializable {
+        @JsExpression("this.method()")
+        default void method() {
         }
     }
 
