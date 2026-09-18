@@ -61,7 +61,14 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      */
     public static final String FORCE_PROPERTY = "vaadin.devloop.ext.force";
 
+    /*
+     * System.out is the only sink this module may use: the enforcer rule in its
+     * pom bans every logging framework, so that the daemon jar can be put on
+     * maven.ext.class.path - and on Maven's own stdout is where a line about
+     * the build belongs anyway. Hence java:S106 here and below.
+     */
     @Override
+    @SuppressWarnings("java:S106")
     public void afterProjectsRead(MavenSession session) {
         // Never fatal. An extension that throws fails the whole build, and the
         // application not starting at all would be a far worse outcome than a
@@ -99,6 +106,7 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         }
     }
 
+    @SuppressWarnings("java:S106")
     private void apply(MavenProject project, Plugin plugin, String force) {
         Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
         if (configuration == null) {
@@ -125,8 +133,8 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
                         + ": using <" + element + ">" + value + "</" + element
                         + "> for this run (the pom says "
                         + (child.getValue() == null ? "nothing"
-                                : "<" + element + ">" + child.getValue() + "</"
-                                        + element + ">")
+                                : ("<" + element + ">" + child.getValue() + "</"
+                                        + element + ">"))
                         + ") in " + project.getArtifactId());
             }
             child.setValue(value);

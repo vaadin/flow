@@ -169,7 +169,15 @@ interface AppRuntime {
                 + "-Dvaadin.dev.runtime");
     }
 
-    /** The runtime a project declares a known build plugin for, if any. */
+    /**
+     * The runtime a project declares a known build plugin for, if any.
+     *
+     * @param launch
+     *            the launch the runtime will be composed from
+     * @param log
+     *            where the choice is announced
+     * @return the runtime, or empty when the pom declares no known plugin
+     */
     private static Optional<AppRuntime> serverRuntime(Launch launch,
             Launch.Log log) {
         Reactor reactor = launch.reactor();
@@ -187,7 +195,20 @@ interface AppRuntime {
         return Optional.empty();
     }
 
-    /** {@code -Dvaadin.dev.runtime}, which overrides every heuristic above. */
+    /**
+     * {@code -Dvaadin.dev.runtime}, which overrides every heuristic above.
+     *
+     * @param launch
+     *            the launch the runtime will be composed from
+     * @param log
+     *            where the choice is announced
+     * @param name
+     *            the runtime asked for by name
+     * @return the runtime that name asks for
+     * @throws IOException
+     *             if no runtime goes by that name, or the project declares no
+     *             plugin for the one that does
+     */
     private static AppRuntime forced(Launch launch, Launch.Log log, String name)
             throws IOException {
         if (MainClassRuntime.NAME.equals(name)) {
@@ -208,6 +229,12 @@ interface AppRuntime {
                 + " is not a runtime this daemon knows; try " + names());
     }
 
+    /**
+     * Every runtime name this daemon answers to, for a message that has to
+     * offer the alternatives.
+     *
+     * @return the names, comma-separated
+     */
     private static String names() {
         List<String> known = new ArrayList<>();
         known.add(MainClassRuntime.NAME);
