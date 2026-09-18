@@ -27,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -243,6 +244,63 @@ class AppRuntimeTest {
 
         assertEquals(1, warnings.size(), warnings.toString());
         assertTrue(warnings.get(0).contains("First Last"));
+    }
+
+    /**
+     * Deciding costs a scan of the module's output, and the answer is quoted in
+     * the log, so it is worth keeping - as long as it is dropped when the thing
+     * it was read out of is.
+     */
+    @Test
+    void theRuntimeIsDecidedOncePerReactor() throws IOException {
+        Launch launch = launchFor(warModule("app", "12.1.13", ""));
+
+        AppRuntime first = launch.runtime();
+
+        assertSame(first, launch.runtime());
+    }
+
+    /**
+     * A pom edit can move the answer - to another EE level, to another plugin
+     * version, or to an application with an entry point of its own - and the
+     * daemon outlives the edit. Before this, the launch decision was made once
+     * and the application went on being started the way the poms read when the
+     * daemon came up.
+     */
+    @Test
+    void aPomEditReDecidesHowTheApplicationStarts() throws IOException {
+        Path app = warModule("app", "12.1.13", "");
+        Launch launch = launchFor(app);
+        assertEquals("jetty-ee10", launch.runtime().name());
+
+        // The same module, now declaring the plugin at the other EE level.
+        module("app", "war", plugin("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13", ""));
+        launch.rereadReactor(log);
+
+        assertEquals("jetty-ee11", launch.runtime().name());
+    }
+
+    /**
+     * A pom edit that drops the plugin leaves nothing to start the app with.
+     */
+    @Test
+    void aPomEditThatRemovesTheServerPluginIsReportedRatherThanCached()
+            throws IOException {
+        Path app = warModule("app", "12.1.13", "");
+        Launch launch = launchFor(app);
+        assertEquals("jetty-ee10", launch.runtime().name());
+
+        module("app", "war", "");
+        launch.rereadReactor(log);
+
+        IOException thrown = assertThrows(IOException.class, launch::runtime);
+        assertTrue(thrown.getMessage().contains("cannot tell how to start"),
+                thrown.getMessage());
+    }
+
+    private Launch launchFor(Path app) {
+        return new Launch(Reactor.discover(app, log), log);
     }
 
     /** One source, compiled into the module's own output directory. */
