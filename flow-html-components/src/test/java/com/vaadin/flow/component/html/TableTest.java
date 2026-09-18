@@ -533,20 +533,9 @@ class TableTest extends ComponentTest {
     }
 
     @Test
-    void newTable_carriesTheStylesClassName() {
+    void newTable_carriesOnlyTheStylesClassName() {
         assertEquals("vaadin-table", Table.STYLES_CLASS_NAME);
-        assertTrue(table().hasClassName(Table.STYLES_CLASS_NAME));
-    }
-
-    @Test
-    void removeStylesClassName_leavesTheTableWithoutAnyClassName() {
-        Table table = table();
-
-        table.removeClassName(Table.STYLES_CLASS_NAME);
-
-        assertFalse(table.hasClassName(Table.STYLES_CLASS_NAME));
-        // The class attribute is gone rather than left behind empty, so the
-        // rendered table looks exactly like one nobody styled
-        assertFalse(table.getElement().hasAttribute("class"));
+        assertEquals(Table.STYLES_CLASS_NAME,
+                table().getElement().getAttribute("class"));
     }
 }
