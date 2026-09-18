@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.dom;
+package com.vaadin.flow.js;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,22 +22,27 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks an interface whose methods declare the JavaScript they run with
- * {@link JsExpression}, to be called through
- * {@link Element#getJsInvoker(Class)}.
+ * The JavaScript that a method of a JS invoker interface runs, as a constant
+ * expression.
  * <p>
- * The annotation is what makes the interface findable during the build: every
- * annotated interface is collected into the generated bundle as a function per
- * method, so the JavaScript an application can invoke from the server is known
- * before it runs and the client never has to build a function from a string.
- * That is what keeps a server-initiated call compatible with a content security
- * policy that does not allow <code>unsafe-eval</code>.
+ * The annotated method is called through {@link Element#getJsInvoker(Class)}.
+ * Its arguments are the parameters of the expression, referenced positionally
+ * as <code>$0</code>, <code>$1</code>, &hellip;, and the element the invoker
+ * was obtained from is <code>this</code> — the same contract as
+ * {@link Element#executeJs(String, Object...)}, except that the expression is a
+ * constant of the interface instead of a string built at the call site.
  *
- * @see JsExpression
  * @see Element#getJsInvoker(Class)
  */
 @Documented
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JsInvoker {
+public @interface JsExpression {
+
+    /**
+     * The JavaScript expression to run.
+     *
+     * @return the expression
+     */
+    String value();
 }

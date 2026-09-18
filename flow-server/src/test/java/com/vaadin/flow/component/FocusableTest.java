@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -25,11 +26,12 @@ import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.JsInvokerCall;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FocusableTest {
@@ -259,16 +261,16 @@ class FocusableTest {
                 .getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus()"),
-                "Should contain focus call without parameters");
-        assertFalse(expression.contains(".focus($0)"),
-                "Should not contain focus call with parameter");
+        assertTrue(expression.contains(".focus($0)"),
+                "Should contain focus call with the options parameter");
 
-        // Check the parameters
+        // Check the parameters: the options are null, which the browser makes
+        // the same as calling focus() with none
         List<Object> params = invocations.getFirst().getInvocation()
                 .getParameters();
-        assertEquals(1, params.size(),
-                "Should have exactly 1 wrapped parameter (no user-provided parameters)");
+        assertEquals(2, params.size(),
+                "Should have the options and the element the function runs on");
+        assertNull(params.getFirst(), "Should pass no options");
     }
 
     @Test
@@ -277,7 +279,7 @@ class FocusableTest {
         component.focus(PreventScroll.ENABLED);
 
         JsInvokerCall call = dumpSingleCall();
-        assertEquals(FocusJs.class, call.invokerType());
+        assertEquals(Focusable.FocusJs.class, call.invokerType());
         assertEquals("focus", call.methodName());
         assertEquals("{\"preventScroll\":true}",
                 call.arguments().get(0).toString(),
@@ -289,8 +291,11 @@ class FocusableTest {
         ui.add(component);
         component.focus();
 
-        assertEquals(new JsInvokerCall(FocusJs.class, "focus", List.of()),
-                dumpSingleCall());
+        assertEquals(
+                new JsInvokerCall(Focusable.FocusJs.class, "focus",
+                        Collections.singletonList(null)),
+                dumpSingleCall(),
+                "no options is the options of the browser, which is what it makes of none");
     }
 
     @Test
@@ -298,7 +303,8 @@ class FocusableTest {
         ui.add(component);
         component.blur();
 
-        assertEquals(new JsInvokerCall(FocusJs.class, "blur", List.of()),
+        assertEquals(
+                new JsInvokerCall(Focusable.FocusJs.class, "blur", List.of()),
                 dumpSingleCall());
     }
 
@@ -317,7 +323,7 @@ class FocusableTest {
         for (PendingJavaScriptInvocation pending : ui
                 .dumpPendingJsInvocations()) {
             JsInvokerCall call = pending.getInvocation().getInvokerCall();
-            if (call != null && call.invokerType() == FocusJs.class) {
+            if (call != null && call.invokerType() == Focusable.FocusJs.class) {
                 call.invokeOn(new FocusSimulation(
                         Element.get(pending.getOwner()), log));
             } else {
@@ -345,16 +351,11 @@ class FocusableTest {
     }
 
     /**
-     * What a browserless driver would register for {@link FocusJs}: the
-     * server-side effect of the operations, with no JavaScript involved.
+     * What a browserless driver would register for {@link Focusable.FocusJs}:
+     * the server-side effect of the operations, with no JavaScript involved.
      */
     private record FocusSimulation(Element target,
-            List<String> log) implements FocusJs {
-
-        @Override
-        public void focus() {
-            log.add("focus " + target.getTag());
-        }
+            List<String> log) implements Focusable.FocusJs {
 
         @Override
         public void focus(ObjectNode options) {

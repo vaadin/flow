@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.dom;
+package com.vaadin.flow.js;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,7 +46,8 @@ import java.util.Objects;
  * @param methodName
  *            the name of the called method
  * @param arguments
- *            the arguments of the call, in declaration order
+ *            the arguments of the call, in declaration order, any of which may
+ *            be <code>null</code>
  */
 public record JsInvokerCall(Class<?> invokerType, String methodName,
         List<Object> arguments) implements Serializable {
@@ -62,7 +65,9 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
     public JsInvokerCall {
         Objects.requireNonNull(invokerType, "Invoker type cannot be null");
         Objects.requireNonNull(methodName, "Method name cannot be null");
-        arguments = List.copyOf(arguments);
+        // Copied rather than List.copyOf, which rejects a null element: an
+        // argument may be null, and the client gets it as null
+        arguments = Collections.unmodifiableList(new ArrayList<>(arguments));
     }
 
     /**

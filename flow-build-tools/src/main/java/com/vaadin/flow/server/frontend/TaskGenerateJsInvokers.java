@@ -25,10 +25,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
-import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;

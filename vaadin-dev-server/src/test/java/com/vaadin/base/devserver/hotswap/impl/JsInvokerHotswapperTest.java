@@ -30,9 +30,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;

@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;

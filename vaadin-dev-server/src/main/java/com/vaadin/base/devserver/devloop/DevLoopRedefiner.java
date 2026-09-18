@@ -57,15 +57,15 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
-import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 

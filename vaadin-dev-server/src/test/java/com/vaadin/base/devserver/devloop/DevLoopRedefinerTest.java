@@ -37,8 +37,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

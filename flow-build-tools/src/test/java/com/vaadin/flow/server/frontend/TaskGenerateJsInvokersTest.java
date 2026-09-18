@@ -25,8 +25,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.dom.JsExpression;
-import com.vaadin.flow.dom.JsInvoker;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
