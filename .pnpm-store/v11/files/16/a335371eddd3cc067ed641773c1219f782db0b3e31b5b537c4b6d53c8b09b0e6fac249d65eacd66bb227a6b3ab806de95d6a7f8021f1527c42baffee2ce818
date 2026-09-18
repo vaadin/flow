@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ],
+      "ua-parser-js": [
+        "node_modules/@types/ua-parser-js",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "custom_typings/**/*.d.ts",
+    "src/**/*.ts"
+  ]
+}

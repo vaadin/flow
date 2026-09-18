@@ -1,0 +1,41 @@
+{
+  "name": "wct-browser-legacy",
+  "version": "1.0.2",
+  "description": "Client-side dependencies for web-component-tester tests installed via npm.",
+  "main": "browser.js",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "scripts": {
+    "test:integration": "cd test && npm run test:wct"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymer/web-component-tester.git"
+  },
+  "keywords": [
+    "browser",
+    "gulp",
+    "polymer",
+    "test",
+    "testing",
+    "web",
+    "web component"
+  ],
+  "bugs": {
+    "url": "https://github.com/polymer/web-component-tester/issues"
+  },
+  "homepage": "https://github.com/polymer/web-component-tester#readme",
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "@polymer/sinonjs": "^1.14.1",
+    "@polymer/test-fixture": "^3.0.0-pre.1",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "accessibility-developer-tools": "^2.12.0",
+    "async": "^1.5.2",
+    "chai": "^3.5.0",
+    "lodash": "^3.10.1",
+    "mocha": "^3.4.2",
+    "sinon": "^1.17.1",
+    "sinon-chai": "^2.10.0",
+    "stacky": "^1.3.1"
+  }
+}

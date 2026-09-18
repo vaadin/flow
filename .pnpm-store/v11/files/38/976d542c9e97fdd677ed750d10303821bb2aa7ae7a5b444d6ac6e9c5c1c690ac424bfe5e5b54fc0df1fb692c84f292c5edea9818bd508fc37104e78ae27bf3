@@ -1,0 +1,29 @@
+language: node_js
+node_js:
+  - "10"
+addons:
+  sauce_connect:
+    username: "wdjs"
+  jwt:
+    secure: "Rd/8FnJNEwa5GArBrMyH4pQwFY4m7uFoG9Napnk5geitFnlYvN7xolxPw4mwhYDjqk9RjRRfqJA1OZVFGg8wR+7pDIrriKeQKc+nws5n8aUlWbc++qitIx5gnM/InXZwPh7ALOfUYCZVmbWbpg7DLwP2qsjuCVgB50UuvSHG7ZI="
+env:
+  global:
+    - TIMEOUT=600000
+    - HTTP_RETRIES=3
+    - HTTP_RETRY_DELAY=60000
+    - DEBUG_CONNECTION=1
+    - CONCURRENCY=15
+    - VERBOSE=1
+    - SAUCE_CONNECT_VERSION='4.5.4'
+    - SAUCE_CONNECT_VERBOSE=1
+  matrix:
+    - CONFIG=unit
+    - CONFIG=multi
+    - CONFIG=chrome
+    - CONFIG=firefox
+    - CONFIG=explorer
+    # - CONFIG=iphone
+    # - CONFIG=ipad
+    # - CONFIG=android_phone
+script:
+  - npm run lint && npx gulp travis --config $CONFIG --sauce --nosc

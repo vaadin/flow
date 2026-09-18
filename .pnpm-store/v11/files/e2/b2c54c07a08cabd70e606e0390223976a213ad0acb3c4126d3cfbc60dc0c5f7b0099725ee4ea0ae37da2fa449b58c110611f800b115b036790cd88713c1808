@@ -1,0 +1,73 @@
+{
+  "name": "workbox-build",
+  "version": "7.4.1",
+  "description": "A module that integrates into your build process, helping you generate a manifest of local files that workbox-sw should precache.",
+  "keywords": [
+    "workbox",
+    "workboxjs",
+    "service worker",
+    "caching",
+    "fetch requests",
+    "offline",
+    "file manifest"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "Google's Web DevRel Team and Google's Aurora Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/googlechrome/workbox.git"
+  },
+  "bugs": "https://github.com/GoogleChrome/workbox/issues",
+  "homepage": "https://github.com/GoogleChrome/workbox",
+  "dependencies": {
+    "@apideck/better-ajv-errors": "^0.3.1",
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/runtime": "^7.11.2",
+    "@rollup/plugin-babel": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-replace": "^6.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@trickfilm400/rollup-plugin-off-main-thread": "^3.0.0-pre1",
+    "ajv": "^8.6.0",
+    "common-tags": "^1.8.0",
+    "eta": "^4.5.1",
+    "fast-json-stable-stringify": "^2.1.0",
+    "fs-extra": "^9.0.1",
+    "glob": "^11.0.1",
+    "pretty-bytes": "^5.3.0",
+    "rollup": "^4.53.3",
+    "source-map": "^0.8.0-beta.0",
+    "stringify-object": "^3.3.0",
+    "strip-comments": "^2.0.1",
+    "tempy": "^0.6.0",
+    "upath": "^1.2.0",
+    "workbox-background-sync": "7.4.1",
+    "workbox-broadcast-update": "7.4.1",
+    "workbox-cacheable-response": "7.4.1",
+    "workbox-core": "7.4.1",
+    "workbox-expiration": "7.4.1",
+    "workbox-google-analytics": "7.4.1",
+    "workbox-navigation-preload": "7.4.1",
+    "workbox-precaching": "7.4.1",
+    "workbox-range-requests": "7.4.1",
+    "workbox-recipes": "7.4.1",
+    "workbox-routing": "7.4.1",
+    "workbox-strategies": "7.4.1",
+    "workbox-streams": "7.4.1",
+    "workbox-sw": "7.4.1",
+    "workbox-window": "7.4.1"
+  },
+  "main": "build/index.js",
+  "workbox": {
+    "packageType": "node_ts"
+  },
+  "types": "build/index.d.ts",
+  "devDependencies": {
+    "@types/node": "^20.14.8"
+  },
+  "gitHead": "62b9d8ba8eb3c1a2ab8aac9d84c90cda7865d6a3"
+}

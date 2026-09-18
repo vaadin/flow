@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "6"
+  - "5"
+  - "4"
+sudo: false
+before_script:
+  - npm install
+script:
+  - npm test

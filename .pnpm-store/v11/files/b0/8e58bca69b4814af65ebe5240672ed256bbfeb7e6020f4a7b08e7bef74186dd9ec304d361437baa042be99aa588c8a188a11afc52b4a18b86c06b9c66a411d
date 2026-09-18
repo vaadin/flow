@@ -1,0 +1,37 @@
+{
+    "name": "@types/babel-traverse",
+    "version": "6.25.10",
+    "description": "TypeScript definitions for babel-traverse",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/babel-traverse",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Troy Gerwien",
+            "githubUsername": "yortus",
+            "url": "https://github.com/yortus"
+        },
+        {
+            "name": "Marvin Hagemeister",
+            "githubUsername": "marvinhagemeister",
+            "url": "https://github.com/marvinhagemeister"
+        },
+        {
+            "name": "Ryan Petrich",
+            "githubUsername": "rpetrich",
+            "url": "https://github.com/rpetrich"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/babel-traverse"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/babel-types": "*"
+    },
+    "typesPublisherContentHash": "2291068f484656041cb7f3b7fddd4c7c3e1768def1674c194568c3fcfaf1af08",
+    "typeScriptVersion": "4.5"
+}

@@ -1,0 +1,31 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "0.1.0",
+  "command": "npm",
+  "isShellCommand": true,
+  "showOutput": "always",
+  "suppressTaskName": true,
+  "tasks": [
+    {
+      "taskName": "test",
+      "args": ["run", "test:watch"],
+      "isTestCommand": true,
+      "problemMatcher": {
+        "fileLocation": ["relative", "${workspaceRoot}/src"],
+        "watchedTaskBeginsRegExp": "\\[npm\\] INFO Spawning\\.\\.\\.",
+        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)",
+        "pattern": [
+          {
+            "regexp": "^  (\\d+)\\) ((\\w+).*)",
+            "message": 2,
+            "file": 3,
+            "line": 1,
+            "column": 1
+          }
+        ]
+      },
+      "isWatching": true
+    }
+  ]
+}

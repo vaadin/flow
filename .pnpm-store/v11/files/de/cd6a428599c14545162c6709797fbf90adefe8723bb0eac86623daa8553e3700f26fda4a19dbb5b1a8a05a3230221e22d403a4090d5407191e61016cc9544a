@@ -1,0 +1,7 @@
+{
+  "name": "cleankill",
+  "dependencies": {},
+  "globalDependencies": {
+    "node": "registry:env/node#4.0.0+20160622202520"
+  }
+}

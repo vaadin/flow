@@ -1,0 +1,27 @@
+{
+    "authors": "Santi Albo <https://github.com/santialbo/>",
+    "definitionFilename": "index.d.ts",
+    "libraryDependencies": [],
+    "moduleDependencies": [
+        "express"
+    ],
+    "libraryMajorVersion": "0",
+    "libraryMinorVersion": "0",
+    "libraryName": "compression",
+    "typingsPackageName": "compression",
+    "projectName": "https://github.com/expressjs/compression",
+    "sourceRepoURL": "https://www.github.com/DefinitelyTyped/DefinitelyTyped",
+    "sourceBranch": "types-2.0",
+    "kind": "ProperModule",
+    "globals": [
+        "e"
+    ],
+    "declaredModules": [
+        "compression"
+    ],
+    "files": [
+        "index.d.ts"
+    ],
+    "hasPackageJson": false,
+    "contentHash": "b298f2ce171c21721943d88bd8e2dbfbec54772788db42b0e1d36225c1cb6e10"
+}

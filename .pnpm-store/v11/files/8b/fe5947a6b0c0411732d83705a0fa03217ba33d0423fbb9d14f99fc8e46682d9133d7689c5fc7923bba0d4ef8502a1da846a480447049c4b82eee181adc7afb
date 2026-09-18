@@ -1,0 +1,25 @@
+{
+    "name": "@types/cssbeautify",
+    "version": "0.3.5",
+    "description": "TypeScript definitions for cssbeautify",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/cssbeautify",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "rictic",
+            "githubUsername": "rictic",
+            "url": "https://github.com/rictic"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/cssbeautify"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "986c9966c21560c2eebc34d3f2f3ec59b42cdfd5094c637707683b19e3dd0226",
+    "typeScriptVersion": "4.5"
+}

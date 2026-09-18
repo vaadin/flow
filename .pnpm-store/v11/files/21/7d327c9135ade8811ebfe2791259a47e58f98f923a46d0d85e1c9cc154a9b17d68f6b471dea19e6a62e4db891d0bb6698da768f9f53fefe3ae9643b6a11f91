@@ -1,0 +1,28 @@
+{
+  "name": "@polymer/esm-amd-loader",
+  "version": "1.0.4",
+  "description": "Minimal AMD-style loader for replicating ES module behavior.",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
+  "main": "lib/esm-amd-loader.min.js",
+  "types": "lib/esm-amd-loader.d.ts",
+  "scripts": {
+    "build": "npm run clean && tsc && npm run minify && npm run lint",
+    "clean": "rm -rf lib/",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p . --format stylish",
+    "minify": "babel-minify lib/esm-amd-loader.js --outFile=lib/esm-amd-loader.min.js",
+    "get-size": "npm run build && cat lib/esm-amd-loader.min.js | gzip -9 > esm-amd-loader.min.js.gz && ls -a -l -h esm-amd-loader.min.js.gz && rm esm-amd-loader.min.js.gz",
+    "test:integration": "cd test/ && npm run test:wct",
+    "test": "npm run lint && npm run build && cd test/ && npm run test",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {
+    "babel-minify": "^0.4.0"
+  },
+  "dependencies": {}
+}

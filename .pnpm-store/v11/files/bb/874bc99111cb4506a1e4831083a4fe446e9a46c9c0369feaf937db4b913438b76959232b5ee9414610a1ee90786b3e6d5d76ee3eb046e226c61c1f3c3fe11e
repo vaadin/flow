@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script>
+    window.WCT = <%= JSON.stringify(clientOptions) %>;
+    window.__generatedByWct = true;
+  </script>
+  <% scripts.concat(extraScripts).forEach(function(href) { %>
+    <script src="<%= href %>"></script>
+  <% }); %>
+  <% modules.forEach(function(href) { %>
+    <script type="module" src="<%= href %>"></script>
+  <% }); %>
+</head>
+
+<body>
+  <script>
+    WCT.loadSuites(<%= JSON.stringify(suites) %>);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+{
+    "name": "@types/vinyl-fs",
+    "version": "2.4.12",
+    "description": "TypeScript definitions for vinyl-fs",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/vinyl-fs",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "vvakame",
+            "url": "https://github.com/vvakame",
+            "githubUsername": "vvakame"
+        },
+        {
+            "name": "remisery",
+            "url": "https://github.com/remisery",
+            "githubUsername": "remisery"
+        },
+        {
+            "name": "TeamworkGuy2",
+            "url": "https://github.com/TeamworkGuy2",
+            "githubUsername": "TeamworkGuy2"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/vinyl-fs"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/glob-stream": "*",
+        "@types/node": "*",
+        "@types/vinyl": "*"
+    },
+    "typesPublisherContentHash": "cd6f5abd07e92d900139c88023db12af89d7ca5344e8e7c393294bee72434778",
+    "typeScriptVersion": "3.6"
+}

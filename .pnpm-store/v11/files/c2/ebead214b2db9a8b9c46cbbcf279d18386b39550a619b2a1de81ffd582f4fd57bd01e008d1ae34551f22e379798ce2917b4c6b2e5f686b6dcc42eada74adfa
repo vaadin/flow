@@ -1,0 +1,29 @@
+{
+    "authors": "Shinnosuke Watanabe <https://github.com/shinnn>,",
+    "definitionFilename": "index.d.ts",
+    "libraryDependencies": [
+        "node"
+    ],
+    "moduleDependencies": [
+        "child_process"
+    ],
+    "libraryMajorVersion": "3",
+    "libraryMinorVersion": "0",
+    "libraryName": "opn 3.0.2",
+    "typingsPackageName": "opn",
+    "projectName": "https://github.com/sindresorhus/opn",
+    "sourceRepoURL": "https://www.github.com/DefinitelyTyped/DefinitelyTyped",
+    "sourceBranch": "types-2.0",
+    "kind": "ProperModule",
+    "globals": [
+        "opn"
+    ],
+    "declaredModules": [
+        "opn"
+    ],
+    "files": [
+        "index.d.ts"
+    ],
+    "hasPackageJson": false,
+    "contentHash": "9c7b729067f31b32b3b5b07695220e8e71a509b5c9183beea9da5a221e2c7b46"
+}

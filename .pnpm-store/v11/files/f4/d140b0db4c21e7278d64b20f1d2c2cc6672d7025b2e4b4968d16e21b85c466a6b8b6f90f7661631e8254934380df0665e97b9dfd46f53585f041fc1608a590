@@ -1,0 +1,18 @@
+{
+    "name": "@types/compression",
+    "version": "0.0.33",
+    "description": "TypeScript definitions for compression",
+    "license": "MIT",
+    "author": "Santi Albo <https://github.com/santialbo/>",
+    "main": "",
+    "repository": {
+        "type": "git",
+        "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/express": "*"
+    },
+    "typings": "index.d.ts",
+    "typesPublisherContentHash": "b298f2ce171c21721943d88bd8e2dbfbec54772788db42b0e1d36225c1cb6e10"
+}

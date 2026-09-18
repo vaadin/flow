@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "test:watch",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "promptOnClose": false,
+      "problemMatcher": {
+        "background": {
+          "activeOnStart": false,
+          "beginsPattern": "\\[npm\\] INFO Spawning\\.\\.\\.",
+          "endsPattern": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)"
+        },
+        "severity": "error",
+        "applyTo": "allDocuments",
+        "pattern": [
+          {
+            "regexp": "\\.*?at (.*?)\\((.*?):(\\d+):(\\d+)\\)",
+            "message": 1,
+            "file": 2,
+            "line": 3,
+            "column": 4
+          }
+        ]
+      }
+    }
+  ]
+}

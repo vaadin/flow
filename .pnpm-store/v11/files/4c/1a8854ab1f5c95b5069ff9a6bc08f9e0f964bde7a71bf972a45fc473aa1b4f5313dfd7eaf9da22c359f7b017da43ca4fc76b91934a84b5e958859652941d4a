@@ -1,0 +1,5 @@
+--ui tdd
+--colors
+--require source-map-support/register
+--timeout 5000
+lib/test/**/*_test.js

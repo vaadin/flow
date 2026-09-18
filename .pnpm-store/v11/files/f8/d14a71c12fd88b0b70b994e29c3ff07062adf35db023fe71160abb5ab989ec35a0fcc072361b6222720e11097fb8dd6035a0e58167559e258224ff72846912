@@ -1,0 +1,32 @@
+{
+  "name": "nanobench",
+  "version": "2.1.1",
+  "description": "Simple benchmarking tool with TAP-like output that is easy to parse",
+  "main": "index.js",
+  "dependencies": {
+    "browser-process-hrtime": "^0.1.2",
+    "chalk": "^1.1.3",
+    "mutexify": "^1.1.0",
+    "pretty-hrtime": "^1.0.2"
+  },
+  "devDependencies": {
+    "standard": "^8.5.0"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "bin": {
+    "nanobench": "./run.js",
+    "nanobench-compare": "./compare.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/nanobench.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/nanobench/issues"
+  },
+  "homepage": "https://github.com/mafintosh/nanobench"
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "browserName":  "microsoftedge",
+    "platform":     "Windows 10",
+    "version":      "15"
+  },
+  {
+    "browserName":  "microsoftedge",
+    "platform":     "Windows 10",
+    "version":      "17"
+  },
+  {
+    "browserName":  "internet explorer",
+    "platform":     "Windows 8.1",
+    "version":      "11"
+  },
+  {
+    "browserName":  "safari",
+    "platform":     "macos 10.13",
+    "version":      "11"
+  },
+  {
+    "browserName":  "safari",
+    "platform":     "OS X 10.12",
+    "version":      "10"
+  },
+  {
+    "browserName":  "safari",
+    "platform":     "OS X 10.11",
+    "version":      "9"
+  },
+  {
+    "browserName":  "chrome",
+    "platform":     "Linux",
+    "version":      "41"
+  }
+]

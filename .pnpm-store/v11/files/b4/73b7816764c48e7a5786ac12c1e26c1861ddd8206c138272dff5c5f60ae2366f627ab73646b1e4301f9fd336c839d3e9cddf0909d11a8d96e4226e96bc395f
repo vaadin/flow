@@ -1,0 +1,34 @@
+{
+  "name": "polymer-project-config",
+  "version": "4.0.3",
+  "description": "reads, validates, and shapes your polymer.json project configuration",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/project-config",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json && npm run lint",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p .",
+    "test": "npm run build && mocha \"test/**/*_test.js\"",
+    "test:unit": "mocha \"test/**/*_test.js\""
+  },
+  "dependencies": {
+    "@types/parse5": "^2.2.34",
+    "browser-capabilities": "^1.0.0",
+    "jsonschema": "^1.1.1",
+    "minimatch-all": "^1.1.0",
+    "plylog": "^1.0.0",
+    "winston": "^3.0.0"
+  },
+  "devDependencies": {
+    "polymer-analyzer": "^3.0.1",
+    "source-map-support": "^0.5.5"
+  },
+  "peerDependencies": {
+    "polymer-analyzer": "^3.0.1"
+  }
+}

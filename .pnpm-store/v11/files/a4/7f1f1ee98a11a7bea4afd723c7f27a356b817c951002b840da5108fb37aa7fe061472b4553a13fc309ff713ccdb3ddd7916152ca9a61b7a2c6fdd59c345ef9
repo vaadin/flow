@@ -1,0 +1,78 @@
+{
+  "author": "Andris Reinman <andris@kreata.ee>",
+  "contributors": [
+    {
+      "name": "Josef Fröhle",
+      "email": "github@josef-froehle.de",
+      "url": "https://www.josef-froehle.de/"
+    }
+  ],
+  "license": "MIT",
+  "name": "pem",
+  "description": "Create private keys and certificates with node.js and io.js",
+  "version": "1.14.8",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dexus/pem.git"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "type": "commonjs",
+  "scripts": {
+    "documentation": "yarn run docco && yarn run jsdoc",
+    "docco": "docco -l parallel -o docs/docco lib/helper.js lib/openssl.js lib/pem.js",
+    "jsdoc": "jsdoc -c jsdoc.json",
+    "build": "ncc build -m -s lib/pem.js -o dist",
+    "changelog": "auto-changelog -p --output HISTORY.md",
+    "coverage": "cross-env NODE_ENV=development nyc ./node_modules/.bin/_mocha --recursive --bail --inline-diffs --reporter spec --check-leaks --use_strict $(find . -type f -name '*.spec.js'  ! -path './nyc_output/*' ! -path './coverage/*' ! -path './node_modules/*')",
+    "lint": "eslint --fix --config=./.eslintrc.js lib/*.js *.md *.json lib/*.js test/*.js test/*.spec.js",
+    "test": "yarn run lint && yarn run coverage",
+    "test:opensslv3.0.1": "yarn run build > openssl_v3.0.1.log && yarn run test >> openssl_v3.0.1.log"
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "exclude": [
+      "**/*.spec.js",
+      "test/pem.helper.js"
+    ]
+  },
+  "dependencies": {
+    "es6-promisify": "^7.0.0",
+    "md5": "^2.3.0",
+    "os-tmpdir": "^1.0.2",
+    "which": "^2.0.2"
+  },
+  "devDependencies": {
+    "@deineagenturug/docdash": "0.4.2",
+    "@types/chai": "4.3.1",
+    "@types/dirty-chai": "2.0.2",
+    "@vercel/ncc": "0.33.4",
+    "auto-changelog": "2.4.0",
+    "chai": "4.3.6",
+    "cross-env": "7.0.3",
+    "dirty-chai": "2.0.1",
+    "docco": "0.9.1",
+    "eslint": "8.14.0",
+    "eslint-plugin-chai-friendly": "0.7.2",
+    "eslint-plugin-eslint-plugin": "4.1.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-json": "3.1.0",
+    "eslint-plugin-markdown": "2.2.1",
+    "eslint-plugin-mocha": "^10.1.0",
+    "eslint-plugin-n": "15.2.0",
+    "eslint-plugin-promise": "6.0.0",
+    "jsdoc": "3.6.10",
+    "marked": "4.0.14",
+    "mocha": "^10.2.0",
+    "nyc": "15.1.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

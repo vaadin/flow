@@ -1,0 +1,25 @@
+{
+  "name": "@polymer/sinonjs",
+  "version": "1.17.1",
+  "description": "SinonJS proxy repository for the BowerJS package manager",
+  "main": "sinon.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/sinon.js.git"
+  },
+  "keywords": [
+    "sinonjs"
+  ],
+  "author": "forked from https://github.com/blittle/sinon.js",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/sinon.js/issues"
+  },
+  "homepage": "https://github.com/Polymer/sinon.js#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}

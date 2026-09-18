@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/web-types",
+  "name": "@vaadin/horizontal-layout",
+  "version": "24.8.2",
+  "description-markup": "markdown",
+  "contributions": {
+    "html": {
+      "elements": [
+        {
+          "name": "vaadin-horizontal-layout",
+          "description": "`<vaadin-horizontal-layout>` provides a simple way to horizontally align your HTML elements.\n\n```\n<vaadin-horizontal-layout>\n  <div>Item 1</div>\n  <div>Item 2</div>\n</vaadin-horizontal-layout>\n```\n\n### Built-in Theme Variations\n\n`<vaadin-horizontal-layout>` supports the following theme variations:\n\nTheme variation | Description\n---|---\n`theme=\"margin\"` | Applies the default amount of CSS margin for the host element (specified by the theme)\n`theme=\"padding\"` | Applies the default amount of CSS padding for the host element (specified by the theme)\n`theme=\"spacing\"` | Applies the default amount of CSS margin between items (specified by the theme)\n`theme=\"wrap\"` | Items wrap to the next row when they exceed the layout width\n\n### Component's slots\n\nThe following slots are available to be set:\n\nSlot name          | Description\n-------------------|---------------\nno name            | Default slot\n`middle`           | Slot for the content placed in the middle\n`end`              | Slot for the content placed at the end",
+          "attributes": [
+            {
+              "name": "theme",
+              "description": "The theme variants to apply to the component.",
+              "value": {
+                "type": [
+                  "string",
+                  "null",
+                  "undefined"
+                ]
+              }
+            }
+          ],
+          "js": {
+            "properties": [],
+            "events": []
+          }
+        }
+      ]
+    }
+  }
+}

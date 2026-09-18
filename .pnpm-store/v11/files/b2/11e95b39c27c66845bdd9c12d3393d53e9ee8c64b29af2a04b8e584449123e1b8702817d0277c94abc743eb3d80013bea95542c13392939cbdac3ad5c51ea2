@@ -1,0 +1,45 @@
+{
+    "name": "@types/ua-parser-js",
+    "version": "0.7.39",
+    "description": "TypeScript definitions for ua-parser-js",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/ua-parser-js",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Viktor Miroshnikov",
+            "githubUsername": "superduper",
+            "url": "https://github.com/superduper"
+        },
+        {
+            "name": "Lucas Woo",
+            "githubUsername": "legendecas",
+            "url": "https://github.com/legendecas"
+        },
+        {
+            "name": "Pablo Rodríguez",
+            "githubUsername": "MeLlamoPablo",
+            "url": "https://github.com/MeLlamoPablo"
+        },
+        {
+            "name": "Piotr Błażejewicz",
+            "githubUsername": "peterblazejewicz",
+            "url": "https://github.com/peterblazejewicz"
+        },
+        {
+            "name": "BendingBender",
+            "githubUsername": "BendingBender",
+            "url": "https://github.com/BendingBender"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/ua-parser-js"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "7a863c09110e160d0f29a9aa97c2cba9d4c25c799174077b3298a741d7692c88",
+    "typeScriptVersion": "4.5"
+}

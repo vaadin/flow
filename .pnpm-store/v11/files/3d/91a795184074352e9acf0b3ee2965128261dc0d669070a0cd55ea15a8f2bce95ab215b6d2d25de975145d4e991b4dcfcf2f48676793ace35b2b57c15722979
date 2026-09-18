@@ -1,0 +1,25 @@
+{
+    "name": "@types/path-is-inside",
+    "version": "1.0.3",
+    "description": "TypeScript definitions for path-is-inside",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/path-is-inside",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Alexander Marks",
+            "githubUsername": "aomarks",
+            "url": "https://github.com/aomarks"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/path-is-inside"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "86c6b59bf9bcee4f5b6d591ea872ec2ecb75ece39c9b76e2d3583fc8991d70e7",
+    "typeScriptVersion": "4.5"
+}

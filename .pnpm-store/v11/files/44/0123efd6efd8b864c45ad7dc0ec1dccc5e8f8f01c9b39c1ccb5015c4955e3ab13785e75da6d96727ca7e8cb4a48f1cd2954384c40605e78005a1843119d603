@@ -1,0 +1,72 @@
+{
+  "name": "wct-sauce",
+  "version": "2.1.0",
+  "description": "WCT plugin that enables support for sauce browsers via Sauce Labs",
+  "keywords": [
+    "wct",
+    "web-component-tester",
+    "plugin"
+  ],
+  "homepage": "https://github.com/Polymer/wct-sauce",
+  "bugs": "https://github.com/Polymer/wct-sauce/issues",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polymer/wct-sauce.git"
+  },
+  "scripts": {
+    "format": "find scripts lib -name \"*.js\" | xargs clang-format --style=file -i",
+    "postinstall": "node scripts/postinstall.js",
+    "test": "mocha"
+  },
+  "main": "lib/plugin.js",
+  "wct-plugin": {
+    "cli-options": {
+      "browsers": {
+        "help": "Remote Sauce Labs browsers to run tests on, or 'default'.",
+        "full": "sauce",
+        "metavar": "NAME",
+        "abbr": "s",
+        "list": true
+      },
+      "username": {
+        "help": "Sauce Labs username.",
+        "full": "sauce-username"
+      },
+      "accessKey": {
+        "help": "Sauce Labs access key.",
+        "full": "sauce-access-key"
+      },
+      "tunnelId": {
+        "help": "Sauce Connect tunnel identifier.",
+        "full": "sauce-tunnel-id"
+      },
+      "buildNumber": {
+        "help": "The build number tested by this test for the sauce labs REST API.",
+        "full": "build-number"
+      },
+      "jobName": {
+        "help": "Job name for the sauce labs REST API.",
+        "full": "job-name"
+      },
+      "visibility": {
+        "help": "Set job visibility to 'public', 'public restricted', 'share', 'team' or 'private'",
+        "full": "visibility"
+      },
+      "port": {
+        "help": "Select an alternative port for Sauce Connect (default is 4445)",
+        "full": "port"
+      }
+    }
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "cleankill": "^2.0.0",
+    "lodash": "^4.17.10",
+    "request": "^2.85.0",
+    "sauce-connect-launcher": "^1.0.0",
+    "temp": "^0.8.1",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {}
+}

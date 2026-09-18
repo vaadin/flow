@@ -1,0 +1,92 @@
+{
+  "name": "wd",
+  "description": "WebDriver/Selenium 2 node.js client",
+  "keywords": [
+    "testing",
+    "automation",
+    "webdriver",
+    "webdriverjs",
+    "selenium"
+  ],
+  "version": "1.14.0",
+  "author": "Adam Christian <adam.christian@gmail.com>",
+  "contributors": [
+    "Ruben Daniels (https://github.com/javruben)",
+    "Peter Braden (https://github.com/peterbraden)",
+    "Seb Vincent (https://github.com/sebv)",
+    "Peter 'Pita' Martischka (https://github.com/Pita)",
+    "Jonathan Lipps (https://github.com/jlipps)",
+    "Phil Sarin (https://github.com/pdsarin)",
+    "Mathieu Sabourin (https://github.com/OniOni)",
+    "Bjorn Tipling (https://github.com/btipling)",
+    "Santiago Suarez Ordonez (https://github.com/santiycr)",
+    "Bernard Kobos (https://github.com/bernii)",
+    "Jason Carr (https://github.com/maudineormsby)",
+    "Matti Schneider <hi@mattischneider.fr> (https://github.com/MattiSG)",
+    "David Koller (https://github.com/appit-online)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/admc/wd.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/admc/wd/issues"
+  },
+  "engines": [
+    "node"
+  ],
+  "main": "./lib/main",
+  "bin": {
+    "wd": "./lib/bin.js"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "dependencies": {
+    "archiver": "^3.0.0",
+    "async": "^2.0.0",
+    "lodash": "^4.0.0",
+    "mkdirp": "^0.5.1",
+    "q": "^1.5.1",
+    "request": "2.88.0",
+    "vargs": "^0.1.0"
+  },
+  "devDependencies": {
+    "bdd-with-opts": "^1.1.1",
+    "chai": "^3.0.0",
+    "chai-as-promised": "^7.1.1",
+    "colors": "^1.3.3",
+    "dox": "^0.9.0",
+    "express": "^4.16.3",
+    "fancy-log": "^1.3.3",
+    "gulp": "^4.0.0",
+    "gulp-debug": "^4.0.0",
+    "gulp-eslint": "^5.0.0",
+    "gulp-if": "^2.0.2",
+    "gulp-mocha": "^6.0.0",
+    "hbs": "^4.0.0",
+    "http-proxy": "^1.15.1",
+    "imageinfo": "^1.0.4",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "mu2": "^0.5.21",
+    "nock": "^10.0.0",
+    "promise-simple": "^0.1.0",
+    "run-sequence": "^2.0.0",
+    "sauce-connect-launcher": "^1.2.4",
+    "spawn-mocha-parallel": "^1.3.1",
+    "sv-selenium": "^0.3.1",
+    "underscore.string": "^3.3.4",
+    "uuid": "^3.0.1",
+    "yargs": "^13.0.0"
+  },
+  "scripts": {
+    "test": "gulp test-unit",
+    "all_tests": "gulp test",
+    "install": "node scripts/build-browser-scripts",
+    "clean": "rm -rf node_modules && rm -f package-lock.json && npm install",
+    "lint": "gulp lint",
+    "lint:fix": "gulp lint --fix"
+  }
+}

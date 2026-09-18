@@ -1,0 +1,53 @@
+{
+  "env": {
+    "node": true,
+    "mocha": true,
+    "jest": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "plugins": [
+    "mocha"
+  ],
+  "globals": {},
+  "rules": {
+    "no-bitwise": 2,
+    "curly": 2,
+    "eqeqeq": 2,
+    "guard-for-in": 2,
+    "wrap-iife": [
+      2,
+      "any"
+    ],
+    "no-use-before-define": [
+      2,
+      {
+        "functions": false
+      }
+    ],
+    "new-cap": 2,
+    "no-caller": 2,
+    "no-new": 2,
+    "no-plusplus": 2,
+    "no-empty": 2,
+    "dot-notation": 0,
+    "no-undef": 2,
+    "no-unused-vars": 2,
+    "no-eq-null": 2,
+    "indent": [
+      2,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "quotes": [
+      2,
+      "double"
+    ],
+    "strict": 2,
+    "mocha/no-exclusive-tests": "error"
+  }
+}

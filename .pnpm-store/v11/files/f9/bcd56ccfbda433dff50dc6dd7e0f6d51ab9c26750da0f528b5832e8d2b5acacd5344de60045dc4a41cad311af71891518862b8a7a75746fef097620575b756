@@ -1,0 +1,27 @@
+{
+    "name": "@types/spdy",
+    "version": "3.4.9",
+    "description": "TypeScript definitions for spdy",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/spdy",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Anthony Trinh",
+            "githubUsername": "tony19",
+            "url": "https://github.com/tony19"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/spdy"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/node": "*"
+    },
+    "typesPublisherContentHash": "a1ad0893f028eda3654fc1ea24ae0f350d84965315f034e406b44affa937748a",
+    "typeScriptVersion": "4.5"
+}

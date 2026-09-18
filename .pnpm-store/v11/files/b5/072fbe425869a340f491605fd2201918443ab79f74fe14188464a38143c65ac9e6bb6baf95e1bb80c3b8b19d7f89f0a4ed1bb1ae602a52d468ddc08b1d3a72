@@ -1,0 +1,14 @@
+{
+  "root": "public",
+  "entrypoint": "foo.html",
+  "fragments": [
+    "bar.html"
+  ],
+  "extraDependencies": [
+    "baz.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ]
+}

@@ -1,0 +1,22 @@
+language: node_js
+sudo: 'false'
+dist: trusty
+node_js: '9'
+addons:
+  firefox: latest
+  chrome: stable
+script:
+  - xvfb-run polymer test --module-resolution=node --npm
+  - |-
+    >-
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test --module-resolution=node --npm -s 'default';
+    fi
+env:
+  global:
+    - secure: U9eM5fb0hFe+fSGxSYjdqePJDa8FXtrW73agG2tyq97DIRKgZt8S+BoVzINEqHcbd72K8ewseoJ3Gur962QnpNMN8Te5Iku+Lli7XYoNVHhUhiq4yl5sEfKkDd5cHLDJh43nRU9yy5f7SQ0G0pHV+hxbjlcphvqFjRaxhs2IQfI=
+    - secure: CLP3Fkt8gmCZUMiOuj0VGcRNMT1o4ae5y/LRJV4TJjLMD/58iXkPhVQ+AZDUBKcHPYdKvlv0IbPTc4K5m2XDznS9ucwmVUiZgvnUhLC83OyQ9j3ZjS/lSNkRqCK1o1vtMUx5x+p3IfgStAL988ODGA2OsZzvsnWqfmkjsxcFiyA=
+install: npm install -g polymer-cli
+cache:
+  directories:
+    - node_modules
+

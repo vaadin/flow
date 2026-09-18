@@ -1,0 +1,41 @@
+{
+  "name": "browserstack",
+  "title": "BrowserStack Client",
+  "description": "A client for working with the BrowserStack APIs.",
+  "version": "1.6.1",
+  "homepage": "https://github.com/scottgonzalez/node-browserstack",
+  "author": "Scott González <scott.gonzalez@gmail.com> (http://scottgonzalez.com)",
+  "contributors": [
+    "Simon Tarchichi <kartsims@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/scottgonzalez/node-browserstack.git"
+  },
+  "bugs": "https://github.com/scottgonzalez/node-browserstack/issues",
+  "license": "MIT",
+  "dependencies": {
+    "https-proxy-agent": "^2.2.1"
+  },
+  "devDependencies": {
+    "jscs": "2.8.0",
+    "jshint": "2.8.0",
+    "mocha": "2.4.5",
+    "should": "8.2.1"
+  },
+  "main": "lib/browserstack.js",
+  "scripts": {
+    "jscs": "jscs lib/* test/*",
+    "jscs-fix": "jscs lib/* test/* --fix",
+    "jshint": "jshint lib/* test/*",
+    "lint": "npm run jscs && npm run jshint",
+    "test": "npm run lint && mocha"
+  },
+  "keywords": [
+    "automation",
+    "browser",
+    "browserstack",
+    "screenshot",
+    "testing"
+  ]
+}

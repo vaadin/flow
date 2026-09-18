@@ -1,0 +1,27 @@
+{
+    "name": "@types/streamx",
+    "version": "2.9.5",
+    "description": "TypeScript definitions for streamx",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/streamx",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Martin Heidegger",
+            "githubUsername": "martinheidegger",
+            "url": "https://github.com/martinheidegger"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/streamx"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/node": "*"
+    },
+    "typesPublisherContentHash": "32e4e92389004f04ec6984ae3606579199be5bf069beadb3f7ba1a04516dd6ff",
+    "typeScriptVersion": "4.5"
+}

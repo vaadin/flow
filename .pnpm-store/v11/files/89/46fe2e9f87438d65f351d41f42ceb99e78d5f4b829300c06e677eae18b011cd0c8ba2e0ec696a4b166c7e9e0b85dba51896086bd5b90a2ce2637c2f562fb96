@@ -1,0 +1,39 @@
+{
+  "name": "lolex",
+  "description": "Fake JavaScript timers",
+  "version": "1.6.0",
+  "homepage": "http://github.com/sinonjs/lolex",
+  "author": "Christian Johansen",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/sinonjs/lolex.git"
+  },
+  "bugs": {
+    "mail": "christian@cjohansen.no",
+    "url": "http://github.com/sinonjs/lolex/issues"
+  },
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "lint": "eslint .",
+    "test-node": "mocha -R dot",
+    "test-headless": "mochify",
+    "test-cloud": "mochify --wd",
+    "test": "npm run lint && npm run test-node && npm run test-headless",
+    "bundle": "browserify -s lolex -o lolex.js src/lolex-src.js",
+    "prepublish": "npm run bundle"
+  },
+  "devDependencies": {
+    "browserify": "^14.1.0",
+    "eslint": "^3.16.1",
+    "eslint-config-sinon": "^1.0.0",
+    "eslint-plugin-mocha": "^4.8.0",
+    "mocha": "^3.2.0",
+    "mochify": "^3.0.0",
+    "referee": "^1.2.0",
+    "sinon": "^1.17.4"
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-sinon"
+  },
+  "main": "./src/lolex-src.js"
+}

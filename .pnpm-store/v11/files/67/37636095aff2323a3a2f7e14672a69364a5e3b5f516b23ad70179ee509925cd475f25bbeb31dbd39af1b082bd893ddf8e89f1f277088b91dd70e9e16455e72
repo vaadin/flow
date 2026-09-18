@@ -1,0 +1,73 @@
+{
+  "name": "launchpad",
+  "description": "You can launch browsers! From NodeJS! Local ones! Remote ones! Browserstack ones!",
+  "version": "0.7.5",
+  "homepage": "https://github.com/bitovi/launchpad",
+  "author": [
+    {
+      "name": "Eric Kryski",
+      "email": "e.kryski@gmail.com",
+      "web": "http://erickryski.com"
+    },
+    {
+      "name": "David Luecke",
+      "email": "daff@neyeon.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:bitovi/launchpad.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "main": "lib/index.js",
+  "engines": {
+    "node": ">= 4"
+  },
+  "scripts": {
+    "test": "xvfb-maybe grunt test --stack",
+    "publish": "git push origin && git push origin --tags",
+    "release:major": "npm version major && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:patch": "npm version patch && npm publish",
+    "release:pre": "npm version prerelease && npm publish"
+  },
+  "devDependencies": {
+    "decache": "^4.1.0",
+    "electron": "^4.0.0",
+    "expect.js": "^0.3.1",
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-release": "^0.14.0",
+    "grunt-simple-mocha": "^0.4.0",
+    "mocha": "^3.0.2",
+    "phantomjs-prebuilt": "^2.1.14",
+    "useragent": "^2.1.7",
+    "xvfb-maybe": "~0.2.1"
+  },
+  "dependencies": {
+    "async": "^2.0.1",
+    "browserstack": "^1.2.0",
+    "debug": "^2.2.0",
+    "mkdirp": "^0.5.1",
+    "plist": "^2.0.1",
+    "q": "^1.4.1",
+    "rimraf": "^3.0.0",
+    "underscore": "^1.8.3"
+  },
+  "keywords": [
+    "browsers",
+    "launcher",
+    "chrome",
+    "ie",
+    "firefox",
+    "opera",
+    "phantomjs",
+    "browserstack"
+  ]
+}

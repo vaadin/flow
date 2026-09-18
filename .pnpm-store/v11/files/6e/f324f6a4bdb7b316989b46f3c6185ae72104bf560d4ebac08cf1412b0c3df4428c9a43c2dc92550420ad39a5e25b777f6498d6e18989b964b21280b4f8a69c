@@ -1,0 +1,99 @@
+{
+  "name": "construct-style-sheets-polyfill",
+  "version": "3.1.0",
+  "description": "Constructible style sheets/adopted style sheets polyfill",
+  "main": "dist/adoptedStyleSheets.js",
+  "module": "dist/adoptedStyleSheets.js",
+  "types": "dist/adoptedStyleSheets.d.ts",
+  "files": [
+    "dist/adoptedStyleSheets.js",
+    "dist/adoptedStyleSheets.d.ts"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "test": "karma start",
+    "test:watch": "npm run test -- --watch",
+    "test:coverage": "npm run test -- --coverage",
+    "prerelease": "npm run test:coverage",
+    "release": "standard-version",
+    "postrelease": "git push --follow-tags origin master; npm publish",
+    "pretest": "rimraf .coverage",
+    "pretest:watch": "npm run pretest",
+    "pretest:coverage": "npm run pretest",
+    "size": "npm run build && size-limit",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calebdwilliams/construct-style-sheets.git"
+  },
+  "contributors": [
+    "Caleb D. Williams <caleb.d.williams@gmail.com>",
+    "Vlad Rindevich <rindevich.vs@gmail.com>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/calebdwilliams/construct-style-sheets/issues"
+  },
+  "homepage": "https://github.com/calebdwilliams/construct-style-sheets#readme",
+  "devDependencies": {
+    "@babel/core": "^7.15.5",
+    "@babel/plugin-transform-instanceof": "^7.14.5",
+    "@babel/preset-env": "^7.15.4",
+    "@babel/preset-typescript": "^7.15.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-typescript": "^8.2.5",
+    "@size-limit/preset-small-lib": "^5.0.3",
+    "@types/jasmine": "^3.9.0",
+    "babel-plugin-transform-async-to-promises": "^0.8.15",
+    "codecov": "^3.8.3",
+    "commitlint": "^13.1.0",
+    "core-js-pure": "^3.17.2",
+    "istanbul-lib-instrument": "^4.0.3",
+    "jasmine-core": "^3.9.0",
+    "karma": "^6.3.4",
+    "karma-babel-preprocessor": "^8.0.1",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-coverage": "^2.0.3",
+    "karma-coverage-istanbul-reporter": "^3.0.3",
+    "karma-detect-browsers": "^2.3.3",
+    "karma-edge-launcher": "^0.4.2",
+    "karma-firefox-launcher": "^2.1.1",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-jasmine": "^4.0.1",
+    "karma-rollup-preprocessor": "^7.0.7",
+    "karma-safarinative-launcher": "^1.1.0",
+    "merge-source-map": "^1.1.0",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.56.3",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-copy": "^3.4.0",
+    "simple-git-hooks": "^2.6.1",
+    "size-limit": "^5.0.3",
+    "standard-version": "^9.3.1",
+    "tslib": "^2.3.1",
+    "typescript": "4.3"
+  },
+  "keywords": [
+    "CSS",
+    "CSS in JS",
+    "constructible style sheets",
+    "constructable style sheets",
+    "shadow DOM",
+    "polyfill",
+    "web components",
+    "custom elements",
+    "CSSStyleSheet",
+    "stylesheet",
+    "polyfill",
+    "CSS modules"
+  ],
+  "simple-git-hooks": {
+    "commit-msg": "npx commitlint --edit $1"
+  },
+  "sideEffects": true
+}

@@ -1,0 +1,27 @@
+{
+    "name": "@types/babel-generator",
+    "version": "6.25.8",
+    "description": "TypeScript definitions for babel-generator",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/babel-generator",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Troy Gerwien",
+            "githubUsername": "yortus",
+            "url": "https://github.com/yortus"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/babel-generator"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/babel-types": "*"
+    },
+    "typesPublisherContentHash": "ea02683ce2c2c4d757cc71b3eb204f0ddf4f8faf1c7f868b031bc4e0b47db368",
+    "typeScriptVersion": "4.5"
+}

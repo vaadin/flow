@@ -1,0 +1,32 @@
+{
+    "authors": "Thomas Hickman <https://github.com/ThomasHickman>",
+    "definitionFilename": "index.d.ts",
+    "libraryDependencies": [
+        "bluebird",
+        "node"
+    ],
+    "moduleDependencies": [],
+    "libraryMajorVersion": "0",
+    "libraryMinorVersion": "0",
+    "libraryName": "mz",
+    "typingsPackageName": "mz",
+    "projectName": "https://github.com/normalize/mz",
+    "sourceRepoURL": "https://www.github.com/DefinitelyTyped/DefinitelyTyped",
+    "sourceBranch": "types-2.0",
+    "kind": "MultipleModules",
+    "globals": [],
+    "declaredModules": [
+        "mz/fs",
+        "mz/dns",
+        "mz/crypto",
+        "mz/child_process",
+        "mz/zlib",
+        "mz/readline",
+        "mz"
+    ],
+    "files": [
+        "index.d.ts"
+    ],
+    "hasPackageJson": false,
+    "contentHash": "920a02d995951cf484627bcb4c8abb9b5eaf2d8117cd8a8eabf0c6c2f8d64304"
+}

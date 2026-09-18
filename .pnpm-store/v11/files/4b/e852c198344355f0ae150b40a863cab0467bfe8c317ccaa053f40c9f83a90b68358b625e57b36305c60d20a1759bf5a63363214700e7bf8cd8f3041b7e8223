@@ -1,0 +1,59 @@
+{
+  "name": "@vaadin/text-field",
+  "version": "24.8.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "vaadin-text-field",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vaadin/web-components.git",
+    "directory": "packages/text-field"
+  },
+  "author": "Vaadin Ltd",
+  "homepage": "https://vaadin.com/components",
+  "bugs": {
+    "url": "https://github.com/vaadin/web-components/issues"
+  },
+  "main": "vaadin-text-field.js",
+  "module": "vaadin-text-field.js",
+  "type": "module",
+  "files": [
+    "src",
+    "theme",
+    "vaadin-*.d.ts",
+    "vaadin-*.js",
+    "web-types.json",
+    "web-types.lit.json"
+  ],
+  "keywords": [
+    "Vaadin",
+    "input",
+    "web-components",
+    "web-component"
+  ],
+  "dependencies": {
+    "@open-wc/dedupe-mixin": "^1.3.0",
+    "@polymer/polymer": "^3.0.0",
+    "@vaadin/a11y-base": "~24.8.2",
+    "@vaadin/component-base": "~24.8.2",
+    "@vaadin/field-base": "~24.8.2",
+    "@vaadin/input-container": "~24.8.2",
+    "@vaadin/vaadin-lumo-styles": "~24.8.2",
+    "@vaadin/vaadin-material-styles": "~24.8.2",
+    "@vaadin/vaadin-themable-mixin": "~24.8.2",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vaadin/chai-plugins": "~24.8.2",
+    "@vaadin/test-runner-commands": "~24.8.2",
+    "@vaadin/testing-helpers": "^1.1.0",
+    "sinon": "^18.0.0"
+  },
+  "web-types": [
+    "web-types.json",
+    "web-types.lit.json"
+  ],
+  "gitHead": "f9e319ae7172ab06b3e567684465e36487f50bc6"
+}

@@ -1,0 +1,24 @@
+{
+  "files": {
+    "test-fixture.html": {
+      "convertedUrl": "test-fixture.js",
+      "exports": {}
+    },
+    "test/handle-multiple-registrations.html": {
+      "convertedUrl": "test/handle-multiple-registrations.html",
+      "exports": {}
+    },
+    "test/test-fixture-symlink.html": {
+      "convertedUrl": "test/test-fixture-symlink.js",
+      "exports": {}
+    },
+    "test/index.html": {
+      "convertedUrl": "test/index.html",
+      "exports": {}
+    },
+    "test/test-fixture.html": {
+      "convertedUrl": "test/test-fixture.html",
+      "exports": {}
+    }
+  }
+}

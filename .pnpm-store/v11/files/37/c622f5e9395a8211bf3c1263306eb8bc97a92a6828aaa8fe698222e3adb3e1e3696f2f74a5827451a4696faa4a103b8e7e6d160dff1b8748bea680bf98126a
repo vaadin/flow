@@ -1,0 +1,47 @@
+{
+  "name": "@vaadin/vaadin-themable-mixin",
+  "version": "24.8.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "vaadin-themable-mixin",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vaadin/web-components.git",
+    "directory": "packages/vaadin-themable-mixin"
+  },
+  "author": "Vaadin Ltd",
+  "homepage": "https://vaadin.com/elements",
+  "bugs": {
+    "url": "https://github.com/vaadin/web-components/issues"
+  },
+  "main": "vaadin-themable-mixin.js",
+  "module": "vaadin-themable-mixin.js",
+  "type": "module",
+  "files": [
+    "src",
+    "*.d.ts",
+    "register-styles.js",
+    "vaadin-*.js"
+  ],
+  "keywords": [
+    "Vaadin",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "dependencies": {
+    "@open-wc/dedupe-mixin": "^1.3.0",
+    "lit": "^3.0.0",
+    "style-observer": "^0.0.8"
+  },
+  "devDependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "@vaadin/chai-plugins": "~24.8.2",
+    "@vaadin/test-runner-commands": "~24.8.2",
+    "@vaadin/testing-helpers": "^1.1.0",
+    "sinon": "^18.0.0"
+  },
+  "gitHead": "f9e319ae7172ab06b3e567684465e36487f50bc6"
+}

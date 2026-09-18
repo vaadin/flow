@@ -1,0 +1,37 @@
+{
+  "name": "workbox-recipes",
+  "version": "7.4.1",
+  "license": "MIT",
+  "author": "Google's Web DevRel Team and Google's Aurora Team",
+  "description": "A service worker helper library to manage common request and caching patterns",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/googlechrome/workbox.git"
+  },
+  "bugs": "https://github.com/googlechrome/workbox/issues",
+  "homepage": "https://github.com/GoogleChrome/workbox",
+  "keywords": [
+    "workbox",
+    "workboxjs",
+    "service worker",
+    "sw",
+    "router",
+    "routing"
+  ],
+  "workbox": {
+    "browserNamespace": "workbox.recipes",
+    "packageType": "sw"
+  },
+  "main": "index.js",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "dependencies": {
+    "workbox-cacheable-response": "7.4.1",
+    "workbox-core": "7.4.1",
+    "workbox-expiration": "7.4.1",
+    "workbox-precaching": "7.4.1",
+    "workbox-routing": "7.4.1",
+    "workbox-strategies": "7.4.1"
+  },
+  "gitHead": "62b9d8ba8eb3c1a2ab8aac9d84c90cda7865d6a3"
+}

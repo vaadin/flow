@@ -1,0 +1,25 @@
+{
+    "name": "@types/freeport",
+    "version": "1.0.24",
+    "description": "TypeScript definitions for freeport",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/freeport",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Arne Schubert",
+            "githubUsername": "atd-schubert",
+            "url": "https://github.com/atd-schubert"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/freeport"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "20611032467811bacd741f466d47e90c1f1c2426e091b00ec365d1acfa3231dd",
+    "typeScriptVersion": "4.5"
+}

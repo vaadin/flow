@@ -1,0 +1,83 @@
+{
+  "name": "sinon",
+  "description": "JavaScript test spies, stubs and mocks.",
+  "version": "2.4.1",
+  "homepage": "http://sinonjs.org/",
+  "author": "Christian Johansen",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/sinonjs/sinon.git"
+  },
+  "bugs": {
+    "mail": "christian@cjohansen.no",
+    "url": "http://github.com/sinonjs/sinon/issues"
+  },
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "test-node": "mocha --recursive -R dot test/",
+    "test-dev": "npm run test-node -- --watch -R min",
+    "test-headless": "mochify --recursive -R dot --grep WebWorker --invert test/",
+    "test-coverage": "mochify --recursive -R dot --grep WebWorker --invert --plugin [ mochify-istanbul --exclude '**/+(test|node_modules)/**/*' --report text --report lcovonly --dir ./coverage ] test/",
+    "test-cloud": "npm run test-headless -- --wd",
+    "test-webworker": "browserify --no-commondir --full-paths -p [ mocaccino -R spec --color ] test/webworker/webworker-support-assessment.js | phantomic --web-security false",
+    "test": "npm run test-node && npm run test-headless && npm run test-webworker",
+    "lint": "eslint .",
+    "precommit": "lint-staged",
+    "prepublish": "rimraf pkg && ./build.js",
+    "preversion": "./scripts/preversion.sh",
+    "postversion": "./scripts/postversion.sh",
+    "eslint-pre-commit": "./scripts/eslint-pre-commit"
+  },
+  "lint-staged": {
+    "*.js": "eslint"
+  },
+  "dependencies": {
+    "diff": "^3.1.0",
+    "formatio": "1.2.0",
+    "lolex": "^1.6.0",
+    "native-promise-only": "^0.8.1",
+    "path-to-regexp": "^1.7.0",
+    "samsam": "^1.1.3",
+    "text-encoding": "0.6.4",
+    "type-detect": "^4.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^14.0.0",
+    "eslint": "^3.1.1",
+    "eslint-config-sinon": "^1.0.0",
+    "eslint-plugin-mocha": "^4.2.0",
+    "husky": "^0.14.2",
+    "lint-staged": "^4.0.0",
+    "mocaccino": "^2.0.0",
+    "mocha": "^3.1.2",
+    "mochify": "^3.0.0",
+    "mochify-istanbul": "^2.4.1",
+    "phantomic": "^1.4.0",
+    "phantomjs-prebuilt": "^2.1.14",
+    "referee": "^1.2.0",
+    "rimraf": "^2.5.3"
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-sinon",
+    "globals": {
+      "ArrayBuffer": false,
+      "Map": false,
+      "Promise": false,
+      "Set": false,
+      "Symbol": false
+    }
+  },
+  "files": [
+    "lib",
+    "pkg",
+    "AUTHORS",
+    "CONTRIBUTING.md",
+    "Changelog.txt",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./lib/sinon.js",
+  "engines": {
+    "node": ">=0.1.103"
+  }
+}

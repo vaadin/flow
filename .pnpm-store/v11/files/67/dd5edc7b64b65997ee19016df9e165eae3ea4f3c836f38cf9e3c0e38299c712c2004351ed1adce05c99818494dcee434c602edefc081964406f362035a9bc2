@@ -1,0 +1,40 @@
+{
+  "name": "cancel-token",
+  "version": "0.1.1",
+  "description": "Implementation of https://github.com/littledan/proposal-cancelable-promises",
+  "main": "lib/cancel-token.js",
+  "typings": "lib/cancel-token.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && mocha lib/test",
+    "prepublish": "npm test",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rictic/cancel-token.git"
+  },
+  "keywords": [
+    "cancel-token",
+    "cancellation",
+    "cancelation"
+  ],
+  "author": "Peter Burns <rictic@google.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/rictic/cancel-token/issues"
+  },
+  "homepage": "https://github.com/rictic/cancel-token#readme",
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.33",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "tslint": "^4.1.0",
+    "typescript": "^2.1.4",
+    "watchy": "^0.6.6"
+  },
+  "dependencies": {
+    "@types/node": "^4.0.30"
+  }
+}

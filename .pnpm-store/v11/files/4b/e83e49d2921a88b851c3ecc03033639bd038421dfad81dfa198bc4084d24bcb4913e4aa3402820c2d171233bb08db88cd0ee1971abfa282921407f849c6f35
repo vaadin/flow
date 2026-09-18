@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ],
+      "ua-parser-js": [
+        "node_modules/@types/ua-parser-js",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "node_modules/polymer-build/custom_typings/**/*.ts",
+    "custom_typings/**/*.d.ts",
+    "src/**/*.ts"
+  ]
+}

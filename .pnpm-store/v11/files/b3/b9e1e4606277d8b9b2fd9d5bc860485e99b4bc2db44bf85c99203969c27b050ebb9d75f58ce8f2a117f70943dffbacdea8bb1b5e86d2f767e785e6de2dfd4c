@@ -1,0 +1,17 @@
+{
+    "name": "@types/is-windows",
+    "version": "0.2.0",
+    "description": "TypeScript definitions for is-windows",
+    "license": "MIT",
+    "author": "Mizunashi Mana <https://github.com/mizunashi-mana>",
+    "main": "",
+    "repository": {
+        "type": "git",
+        "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "peerDependencies": {},
+    "typesPublisherContentHash": "a4795d3d741a0354f8b005b74325d8dbf941e1e4b5bbaa395a9905d22b82dfb1",
+    "typeScriptVersion": "2.0"
+}

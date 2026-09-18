@@ -1,0 +1,12 @@
+# Remove after disabling appveyor, dummy to prevent red status
+
+# Install scripts. (runs after repo cloning)
+install:
+  - echo noop
+
+# Post-install test scripts.
+test_script:
+  - echo noop
+
+# Don't actually build.
+build: off

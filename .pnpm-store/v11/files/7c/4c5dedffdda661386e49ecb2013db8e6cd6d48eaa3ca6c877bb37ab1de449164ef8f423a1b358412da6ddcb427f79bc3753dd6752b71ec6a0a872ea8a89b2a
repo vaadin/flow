@@ -1,0 +1,42 @@
+{
+  "name": "shady-css-parser",
+  "version": "0.1.0",
+  "description": "A fast, small and flexible CSS parser.",
+  "main": "dist/shady-css.js",
+  "typings": "dist/shady-css.d.ts",
+  "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/chai-subset": "^1.3.0",
+    "@types/mocha": "^2.2.39",
+    "@types/node": "^8.0.13",
+    "chai": "^4.1.0",
+    "chai-subset": "^1.5.0",
+    "clang-format": "^1.0.53",
+    "mocha": "^3.0.0",
+    "source-map-support": "^0.4.15",
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.1",
+    "watchy": "^0.6.7"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc",
+    "test": "npm run build && mocha --require source-map-support/register dist/test/*.js",
+    "test:sloppy": "tsc || echo '' && mocha --require source-map-support/register dist/test/*.js",
+    "test:watch": "watchy -w src/ -- npm test --loglevel=silent",
+    "lint": "tslint -p ./",
+    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PolymerLabs/shady-css-parser.git"
+  },
+  "author": {
+    "name": "The Polymer Authors"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/PolymerLabs/shady-css-parser/issues"
+  },
+  "homepage": "https://github.com/PolymerLabs/shady-css-parser#readme"
+}

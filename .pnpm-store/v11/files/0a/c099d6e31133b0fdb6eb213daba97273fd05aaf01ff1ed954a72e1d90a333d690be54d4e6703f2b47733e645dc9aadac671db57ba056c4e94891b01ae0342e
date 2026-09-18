@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - '0.3.x'
+  pull_request:
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [8, 10, 12]
+        exclude:
+          - os: windows-latest
+            node: 8
+          - os: windows-latest
+            node: 10
+      max-parallel: 1
+      fail-fast: true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test
+        env:
+          SAUCE_USERNAME: sc-launcher-ci
+          SAUCE_ACCESS_KEY: 9f0d1fc0-df51-4863-9761-7879fa9ff844
+          VERBOSE_TESTS: '1'

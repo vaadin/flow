@@ -1,0 +1,22 @@
+{
+  "name": "indent",
+  "description": "Indents a string.",
+  "version": "0.0.2",
+  "author": "Toby Ho",
+  "devDependencies": {
+    "mocha": "^2.2.1"
+  },
+  "keywords": [
+    "string",
+    "indentation"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airportyh/indent.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}

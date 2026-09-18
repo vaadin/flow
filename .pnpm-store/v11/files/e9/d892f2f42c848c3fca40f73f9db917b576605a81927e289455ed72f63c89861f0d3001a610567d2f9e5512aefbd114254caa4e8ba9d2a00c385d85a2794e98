@@ -1,0 +1,37 @@
+{
+    "name": "@types/pem",
+    "version": "1.14.4",
+    "description": "TypeScript definitions for pem",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/pem",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Aurelia Fenderson-Peters",
+            "githubUsername": "PopeFelix",
+            "url": "https://github.com/PopeFelix"
+        },
+        {
+            "name": "Anthony Trinh",
+            "githubUsername": "tony19",
+            "url": "https://github.com/tony19"
+        },
+        {
+            "name": "Ruslan Arkhipau",
+            "githubUsername": "DethAriel",
+            "url": "https://github.com/DethAriel"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/pem"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/node": "*"
+    },
+    "typesPublisherContentHash": "c7b429589cd33b569a92bd2653b004fb681818533745dcfc526d85b6951498d7",
+    "typeScriptVersion": "4.5"
+}

@@ -1,0 +1,95 @@
+{
+  "name": "vite-plugin-checker",
+  "version": "0.14.5",
+  "description": "Vite plugin that runs TypeScript type checker on a separate process.",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "typescript"
+  ],
+  "homepage": "https://github.com/fi3ework/vite-plugin-checker",
+  "bugs": "https://github.com/fi3ework/vite-plugin-checker/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fi3ework/vite-plugin-checker.git"
+  },
+  "license": "MIT",
+  "author": "fi3ework <fi3ework@gmail.com>",
+  "type": "module",
+  "exports": {
+    ".": "./dist/main.js"
+  },
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "files": [
+    "dist",
+    "!dist/checkers/vueTsc/typescript-vue-tsc"
+  ],
+  "dependencies": {
+    "@babel/code-frame": "^7.29.0",
+    "chokidar": "^5.0.0",
+    "npm-run-path": "^6.0.0",
+    "picocolors": "^1.1.1",
+    "picomatch": "^4.0.4",
+    "proper-lockfile": "^4.1.2",
+    "tiny-invariant": "^1.3.3"
+  },
+  "devDependencies": {
+    "@types/picomatch": "^4.0.3",
+    "@types/proper-lockfile": "^4.1.4",
+    "@vue/language-core": "~3.3.0",
+    "meow": "^14.0.0",
+    "modern-tar": "^0.7.6",
+    "stylelint": "^17.0.0",
+    "tsdown": "^0.22.3",
+    "typescript": "^5.9.3",
+    "vue-tsc": "~3.3.0"
+  },
+  "peerDependencies": {
+    "@biomejs/biome": ">=2.4.12",
+    "eslint": ">=9.39.4",
+    "meow": "^13.2.0 || ^14.0.0",
+    "optionator": "^0.9.4",
+    "oxlint": ">=1",
+    "stylelint": ">=16.26.1",
+    "typescript": "*",
+    "vite": ">=5.4.21",
+    "vue-tsc": "~2.2.10 || ^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@biomejs/biome": {
+      "optional": true
+    },
+    "eslint": {
+      "optional": true
+    },
+    "meow": {
+      "optional": true
+    },
+    "optionator": {
+      "optional": true
+    },
+    "oxlint": {
+      "optional": true
+    },
+    "stylelint": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    },
+    "vue-tsc": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "tsdown && pnpm run build:runtime",
+    "build:runtime": "pnpm --filter @vite-plugin-checker/runtime run build",
+    "build:test": "tsdown --config tsdown.test.config.ts && pnpm run build:runtime",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "dev": "tsdown --watch"
+  }
+}
