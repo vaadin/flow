@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import com.vaadin.flow.dom.JsExpression;
@@ -45,6 +47,9 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
+
+    private static final Pattern INVOKER_KEY = Pattern
+            .compile("window\\.Vaadin\\.Flow\\.jsInvokers\\[\"([^\"]+)\"\\] =");
 
     private final Options options;
 
@@ -95,6 +100,34 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         lines.add("export {};");
 
         return String.join(System.lineSeparator(), lines);
+    }
+
+    /**
+     * Reads back the names of the invoker interfaces a generated file
+     * registers, which is what a browser that has the file can run.
+     * <p>
+     * Exposed together with {@link #invokerLines(Class)} so that the format
+     * this class writes is also read here, and a caller which has to render the
+     * file again - the hotswap path - can keep the interfaces that are in it.
+     *
+     * @param fileContent
+     *            the content of a generated file, or <code>null</code>
+     * @return the interface names the file registers, in the order it registers
+     *         them
+     */
+    public static List<String> invokerNames(String fileContent) {
+        List<String> names = new ArrayList<>();
+        if (fileContent == null) {
+            return names;
+        }
+        Matcher matcher = INVOKER_KEY.matcher(fileContent);
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            if (!names.contains(name)) {
+                names.add(name);
+            }
+        }
+        return names;
     }
 
     /**

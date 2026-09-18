@@ -19,22 +19,21 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.JsExpression;
 import com.vaadin.flow.dom.JsInvoker;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Mode;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -73,70 +72,95 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return;
         }
 
-        VaadinService service = event.getVaadinService();
         ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(service.getContext());
+                .get(event.getVaadinService().getContext());
         File generatedFile = generatedInvokersFile(configuration);
         String generated = readGeneratedInvokers(generatedFile);
 
-        List<String> stale = new ArrayList<>();
-        for (Class<?> invoker : invokers) {
-            if (!isInBundle(invoker, generated)) {
-                stale.add(invoker.getName());
-            }
-        }
+        List<Class<?>> stale = invokers.stream()
+                .filter(invoker -> !isInBundle(invoker, generated)).toList();
         if (stale.isEmpty()) {
             return;
         }
 
-        if (regenerate(service, configuration, generatedFile)) {
+        String applied = hotApply(configuration, generatedFile, generated,
+                invokers);
+        // What the file holds now is what a browser can run, so anything the
+        // rendering did not cover is still a change nobody can apply
+        List<String> unresolved = stale.stream()
+                .filter(invoker -> !isInBundle(invoker, applied))
+                .map(Class::getName).toList();
+        if (unresolved.isEmpty()) {
             getLogger().debug(
                     "Wrote the JavaScript declared by {} to {}, which the frontend dev server replaces in the browser",
-                    String.join(", ", stale), generatedFile);
+                    stale.stream().map(Class::getName).toList(), generatedFile);
         } else {
-            report(stale);
+            report(unresolved);
         }
     }
 
     /**
-     * Writes what every invoker interface declares to the generated file, so
-     * the frontend dev server can replace the module in the browser.
+     * Writes the generated file again from what the invoker interfaces declare,
+     * so the frontend dev server can replace the module in the browser.
      * <p>
      * Only with the dev server running: what a browser has without it is a
      * bundle, which this can not replace. The file is left alone when its
      * content would not change, so the dev server is not told about an update
      * that is not one.
      *
-     * @return whether the file now holds what the interfaces declare
+     * @return the content the file holds afterwards, which is the content it
+     *         held already when nothing could be written
      */
-    private static boolean regenerate(VaadinService service,
-            ApplicationConfiguration configuration, File generatedFile) {
+    private static String hotApply(ApplicationConfiguration configuration,
+            File generatedFile, String generated,
+            List<Class<?>> changedInvokers) {
         if (generatedFile == null || configuration == null || configuration
                 .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
-            return false;
-        }
-        Lookup lookup = service.getContext().getAttribute(Lookup.class);
-        ClassFinder classFinder = lookup == null ? null
-                : lookup.lookup(ClassFinder.class);
-        if (classFinder == null) {
-            return false;
+            return generated;
         }
         try {
-            String content = TaskGenerateJsInvokers.fileContent(
-                    classFinder.getAnnotatedClasses(JsInvoker.class));
-            if (generatedFile.exists()
-                    && content.equals(Files.readString(generatedFile.toPath(),
-                            StandardCharsets.UTF_8))) {
-                return true;
+            String content = TaskGenerateJsInvokers
+                    .fileContent(invokersToRender(generated, changedInvokers));
+            if (content.equals(generated)) {
+                return generated;
             }
             Files.createDirectories(generatedFile.toPath().getParent());
             Files.writeString(generatedFile.toPath(), content,
                     StandardCharsets.UTF_8);
-            return true;
+            return content;
         } catch (IOException | RuntimeException e) {
             getLogger().debug("Could not write {}", generatedFile, e);
-            return false;
+            return generated;
         }
+    }
+
+    /**
+     * The interfaces the file has to hold: the ones it holds already, since
+     * those are what the browser can run and none of them changed, plus the
+     * ones that just changed - which is also how an interface that was only now
+     * annotated gets in, without anything having scanned for it.
+     * <p>
+     * An interface the file holds and the application no longer has is left
+     * out, and one whose annotation was removed keeps its functions in the file
+     * with nothing calling them, until a build renders it again.
+     */
+    private static Collection<Class<?>> invokersToRender(String generated,
+            List<Class<?>> changedInvokers) {
+        Map<String, Class<?>> byName = new LinkedHashMap<>();
+        changedInvokers
+                .forEach(invoker -> byName.put(invoker.getName(), invoker));
+        ClassLoader classLoader = changedInvokers.get(0).getClassLoader();
+        for (String name : TaskGenerateJsInvokers.invokerNames(generated)) {
+            if (byName.containsKey(name)) {
+                continue;
+            }
+            try {
+                byName.put(name, Class.forName(name, false, classLoader));
+            } catch (ClassNotFoundException | LinkageError e) {
+                getLogger().debug("Could not load the invoker {}", name, e);
+            }
+        }
+        return byName.values();
     }
 
     /**

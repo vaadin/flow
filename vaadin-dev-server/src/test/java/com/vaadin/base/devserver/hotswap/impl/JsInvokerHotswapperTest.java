@@ -36,8 +36,6 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -51,6 +49,12 @@ class JsInvokerHotswapperTest {
     interface GreeterJs extends Serializable {
         @JsExpression("window.alert($0); this.focus()")
         void showGreeting(String greeting);
+    }
+
+    @JsInvoker
+    interface CounterJs extends Serializable {
+        @JsExpression("this.count = ($0 || 0) + 1")
+        void count(Integer from);
     }
 
     static class NotAnInvoker {
@@ -94,14 +98,12 @@ class JsInvokerHotswapperTest {
     }
 
     /**
-     * Puts the frontend dev server in play, with the given interfaces as the
-     * ones the application declares.
+     * Puts the frontend dev server in play, which is what can replace the
+     * generated file in a running browser.
      */
-    private void withFrontendDevServer(Class<?>... invokers) {
+    private void withFrontendDevServer() {
         Mockito.when(configuration.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
-        Mockito.when(service.getLookup().lookup(ClassFinder.class))
-                .thenReturn(new DefaultClassFinder(Set.of(invokers)));
     }
 
     private String readGeneratedInvokers() throws IOException {
@@ -186,7 +188,7 @@ class JsInvokerHotswapperTest {
             throws IOException {
         writeGeneratedInvokers(generatedFor(GreeterJs.class)
                 .replace("window.alert($0); this.focus()", "window.alert($0)"));
-        withFrontendDevServer(GreeterJs.class);
+        withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
 
@@ -204,12 +206,48 @@ class JsInvokerHotswapperTest {
     @Test
     void frontendDevServerRunningWithoutTheFile_fileWritten()
             throws IOException {
-        withFrontendDevServer(GreeterJs.class);
+        withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
 
         assertTrue(hotswapper.reported.isEmpty());
         assertTrue(readGeneratedInvokers().contains(GreeterJs.class.getName()));
+    }
+
+    @Test
+    void invokerTheFileNeverHeldOf_writtenBesideTheOnesItHolds()
+            throws IOException {
+        // What annotating an interface that the file was generated without
+        // looks like: nothing has scanned for it, and the interfaces the file
+        // does hold have to stay in it.
+        writeGeneratedInvokers(generatedFor(CounterJs.class));
+        withFrontendDevServer();
+
+        classesChanged(GreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                "the file can hold both, so there is nothing to report: "
+                        + hotswapper.reported);
+        String written = readGeneratedInvokers();
+        assertTrue(written.contains(GreeterJs.class.getName()),
+                "the interface that changed should be in the file: " + written);
+        assertTrue(written.contains(CounterJs.class.getName()),
+                "the interface the file held should still be in it: "
+                        + written);
+    }
+
+    @Test
+    void frontendDevServerRunningButFileNotWritable_reported()
+            throws IOException {
+        // A directory where the file belongs: nothing can be written, so the
+        // change is reported rather than passing as applied.
+        new File(FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_INVOKERS_FILE_NAME).mkdirs();
+        withFrontendDevServer();
+
+        classesChanged(GreeterJs.class);
+
+        assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported);
     }
 
     @Test
