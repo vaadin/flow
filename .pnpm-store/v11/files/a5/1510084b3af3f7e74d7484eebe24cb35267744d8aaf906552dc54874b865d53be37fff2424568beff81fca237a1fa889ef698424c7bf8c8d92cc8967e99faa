@@ -1,6 +1,0 @@
-{
-  "entrypoint": "foo.html",
-  "fragments": [
-    "this-line-should-not-have-a-comma.html",
-  ]
-}
