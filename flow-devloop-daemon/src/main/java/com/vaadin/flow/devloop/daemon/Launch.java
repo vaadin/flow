@@ -1068,6 +1068,13 @@ final class Launch {
     /**
      * How this project's application is started, decided once; see
      * {@link AppRuntime#of}.
+     * <p>
+     * Answered from what the last resolve left behind and never by resolving: a
+     * WAR is recognised by the plugin the model names, so before the first
+     * resolve there is nothing to recognise it by and this throws. A caller
+     * that has to have an answer composes first - {@link #invocation} resolves
+     * and then asks this - and {@code status} is the one caller that takes no
+     * answer for one.
      *
      * @return the runtime
      * @throws IOException

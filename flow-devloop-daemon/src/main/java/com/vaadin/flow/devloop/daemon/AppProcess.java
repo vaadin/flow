@@ -258,10 +258,16 @@ final class AppProcess {
                 return Startup.ok(state == State.STARTING ? "already starting"
                         : "already running");
             }
-            AppRuntime runtime = launch.runtime();
+            // Composing resolves, and the order matters: how a WAR starts is
+            // read out of the model Maven writes as it resolves, so asking
+            // first would decide the runtime against a project nothing has
+            // built - a fresh clone, or anything after a mvn clean - and fail
+            // with "cannot tell how to start this application". Asked after,
+            // the answer is the one composing already settled on.
             AppRuntime.Invocation invocation = launch.invocation(
                     Daemon.currentPort(), Daemon.currentToken(), launchKind,
                     log);
+            AppRuntime runtime = launch.runtime();
             List<String> command = invocation.command();
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
