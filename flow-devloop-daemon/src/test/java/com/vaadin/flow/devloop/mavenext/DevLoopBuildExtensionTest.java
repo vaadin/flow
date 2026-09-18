@@ -22,6 +22,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.DefaultMavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
@@ -157,6 +160,147 @@ class DevLoopBuildExtensionTest {
         DevLoopBuildExtension.writeModel(project);
 
         assertFalse(Files.exists(module.resolve("target")));
+    }
+
+    /**
+     * The override the whole extension exists for: the daemon names the plugin
+     * and what to force on it, and a value the project declared is replaced for
+     * this run. {@code -D} on a Maven command line is a user property, which is
+     * where it is read from.
+     */
+    @Test
+    void aUserPropertyForcesTheConfiguration() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        jetty.setConfiguration(configuration("scan", "2"));
+
+        afterProjectsRead(
+                userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
+                        "scan=0"),
+                new Properties(), project(jetty));
+
+        assertEquals("0", forced(jetty, "scan"));
+    }
+
+    /**
+     * Maven 3's CLI copies every {@code -D} into the system properties as well,
+     * and a daemon may equally have put the setting in Maven's own JVM. Both
+     * still work; only the order changed.
+     */
+    @Test
+    void aSystemPropertyStillForcesTheConfiguration() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        jetty.setConfiguration(configuration("scan", "2"));
+
+        afterProjectsRead(new Properties(),
+                userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
+                        "scan=0"),
+                project(jetty));
+
+        assertEquals("0", forced(jetty, "scan"));
+    }
+
+    /** An element the project never declared is added rather than skipped. */
+    @Test
+    void anUndeclaredElementIsAdded() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+
+        afterProjectsRead(
+                userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
+                        "scan=0;deployMode=EMBED"),
+                new Properties(), project(jetty));
+
+        assertEquals("0", forced(jetty, "scan"));
+        assertEquals("EMBED", forced(jetty, "deployMode"));
+    }
+
+    /**
+     * An execution's own configuration wins over the plugin's when that
+     * execution runs, so a value pinned there would survive the override.
+     */
+    @Test
+    void anExecutionsOwnValueIsRemoved() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        PluginExecution execution = new PluginExecution();
+        execution.setConfiguration(configuration("scan", "2"));
+        jetty.addExecution(execution);
+
+        afterProjectsRead(
+                userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
+                        "scan=0"),
+                new Properties(), project(jetty));
+
+        assertEquals("0", forced(jetty, "scan"));
+        assertNull(((Xpp3Dom) execution.getConfiguration()).getChild("scan"));
+    }
+
+    /** Only the plugin the daemon named is touched. */
+    @Test
+    void anotherPluginIsLeftAlone() {
+        Plugin compiler = jetty("org.apache.maven.plugins",
+                "maven-compiler-plugin", "3.13.0");
+        compiler.setConfiguration(configuration("scan", "2"));
+
+        afterProjectsRead(
+                userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
+                        "scan=0"),
+                new Properties(), project(compiler));
+
+        assertEquals("2", forced(compiler, "scan"));
+    }
+
+    /**
+     * A build the daemon is not driving is an ordinary build: it must come out
+     * exactly as the project wrote it.
+     */
+    @Test
+    void withoutThePropertiesNothingIsForced() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        jetty.setConfiguration(configuration("scan", "2"));
+
+        afterProjectsRead(new Properties(), new Properties(), project(jetty));
+
+        assertEquals("2", forced(jetty, "scan"));
+    }
+
+    /** Coordinates that name no artifact are not a plugin to look for. */
+    @Test
+    void coordinatesWithoutAnArtifactForceNothing() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        jetty.setConfiguration(configuration("scan", "2"));
+
+        afterProjectsRead(userProperties("jetty-ee11-maven-plugin", "scan=0"),
+                new Properties(), project(jetty));
+
+        assertEquals("2", forced(jetty, "scan"));
+    }
+
+    private void afterProjectsRead(Properties user, Properties system,
+            MavenProject project) {
+        DefaultMavenExecutionRequest request = new DefaultMavenExecutionRequest();
+        request.setUserProperties(user);
+        request.setSystemProperties(system);
+        MavenSession session = new MavenSession(null, request,
+                new DefaultMavenExecutionResult(), List.of(project));
+        new DevLoopBuildExtension().afterProjectsRead(session);
+    }
+
+    private static Properties userProperties(String coordinates, String force) {
+        Properties properties = new Properties();
+        properties.setProperty(DevLoopBuildExtension.PLUGIN_PROPERTY,
+                coordinates);
+        properties.setProperty(DevLoopBuildExtension.FORCE_PROPERTY, force);
+        return properties;
+    }
+
+    private static String forced(Plugin plugin, String element) {
+        Xpp3Dom child = ((Xpp3Dom) plugin.getConfiguration()).getChild(element);
+        return child == null ? null : child.getValue();
     }
 
     private Properties writtenModel() throws IOException {

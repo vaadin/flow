@@ -219,11 +219,35 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         }
     }
 
+    /**
+     * One of the two settings above, as the daemon passed it.
+     * <p>
+     * A {@code -D} on a Maven command line is a <em>user</em> property. It also
+     * turns up among the system properties, but only through a
+     * {@code System.setProperty} that Maven 3's CLI documents as deprecated and
+     * that Maven 4 does not do - so reading the system properties alone would
+     * one day leave the override silently undone, with the project's own
+     * {@code <scan>} surviving and the rescanner redeploying underneath an
+     * apply that had already reported a hot swap. The user properties are
+     * therefore the answer, and the system properties stay as the fallback for
+     * a Maven that was given the setting in its JVM rather than on its command
+     * line.
+     *
+     * @param session
+     *            the build in progress
+     * @param name
+     *            the property to read
+     * @return its value, or {@code null} when this build was not given one
+     */
+    private static String property(MavenSession session, String name) {
+        String value = session.getUserProperties().getProperty(name);
+        return value != null ? value
+                : session.getSystemProperties().getProperty(name);
+    }
+
     private void reconfigure(MavenSession session) {
-        String coordinates = session.getSystemProperties()
-                .getProperty(PLUGIN_PROPERTY);
-        String force = session.getSystemProperties()
-                .getProperty(FORCE_PROPERTY);
+        String coordinates = property(session, PLUGIN_PROPERTY);
+        String force = property(session, FORCE_PROPERTY);
         if (coordinates == null || force == null || coordinates.isBlank()
                 || force.isBlank()) {
             return;
