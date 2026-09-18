@@ -101,7 +101,11 @@
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.6.0</maven.failsafe.plugin.version>
+        <!-- Failsafe 3.6.0 picks up integration tests that 3.5.3 left alone,
+             which makes a module deploy its own server in an integration test
+             shard that has not built its web applications, and that server then
+             holds the test port for the modules after it. -->
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
