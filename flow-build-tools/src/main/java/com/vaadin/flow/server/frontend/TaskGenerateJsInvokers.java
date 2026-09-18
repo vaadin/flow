@@ -62,7 +62,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
 
         options.getClassFinder().getAnnotatedClasses(JsInvoker.class).stream()
                 .sorted(Comparator.comparing(Class::getName))
-                .forEach(invoker -> appendInvoker(lines, invoker));
+                .forEach(invoker -> lines.addAll(invokerLines(invoker)));
 
         // See https://github.com/vaadin/flow/issues/14184
         lines.add("export {};");
@@ -70,7 +70,22 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         return String.join(System.lineSeparator(), lines);
     }
 
-    private static void appendInvoker(List<String> lines, Class<?> invoker) {
+    /**
+     * Renders what one invoker interface contributes to the generated file: the
+     * registration of its interface name, and one function per method that
+     * declares JavaScript, keyed by method name and argument count.
+     * <p>
+     * Exposed so that a caller which has to tell whether a bundle carries what
+     * an interface declares - the hotswap path, which compares the two - reads
+     * the same rendering the build wrote, instead of matching parts of it.
+     *
+     * @param invoker
+     *            the invoker interface to render, not <code>null</code>
+     * @return the lines this invoker contributes, empty if it declares no
+     *         JavaScript
+     */
+    public static List<String> invokerLines(Class<?> invoker) {
+        List<String> lines = new ArrayList<>();
         List<Method> methods = new ArrayList<>();
         for (Method method : invoker.getMethods()) {
             if (method.isAnnotationPresent(JsExpression.class)) {
@@ -78,7 +93,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
             }
         }
         if (methods.isEmpty()) {
-            return;
+            return lines;
         }
         methods.sort(Comparator.comparing(TaskGenerateJsInvokers::methodId));
 
@@ -100,6 +115,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
             lines.add("  },");
         }
         lines.add("});");
+        return lines;
     }
 
     private static String methodId(Method method) {

@@ -17,8 +17,6 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -31,35 +29,33 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.dom.JsExpression;
 import com.vaadin.flow.dom.JsInvoker;
-import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Reports a {@link JsInvoker} interface whose JavaScript the frontend bundle no
- * longer carries.
+ * Reports a {@link JsInvoker} interface whose JavaScript the frontend bundle
+ * does not carry.
  * <p>
  * The JavaScript an invoker method declares with {@link JsExpression} is
  * collected into the bundle when the frontend is built. Redefining the
  * interface therefore does not change what the browser can run: a call made
  * after the change either runs the JavaScript the bundle was built with, or
- * finds no function at all when the redefinition added or renamed a method. The
+ * finds no function at all when the redefinition renamed or added a method. The
  * dev loop escalates to a restart for this, but a class redefined straight from
- * an IDE reaches the application without it, and there is nothing this
- * hotswapper could apply in the browser instead - only a frontend build
+ * an IDE reaches the application without going through it, and there is nothing
+ * a hotswapper could apply in the browser instead - only a frontend build
  * produces the new function. So it says what happened, and what to do about it.
  * <p>
- * What the browser can run is what the generated file holds, so that file is
- * what the declarations are compared against, and an interface whose JavaScript
- * is already in there passes silently.
+ * The comparison is against the generated file the bundle was built from, which
+ * is what the browser can run, and it uses the same rendering the build wrote,
+ * so the interface name, the method names, their argument counts and the
+ * declared JavaScript all have to match for an interface to pass silently.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class JsInvokerHotswapper implements VaadinHotswapper, Serializable {
-
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(JsInvokerHotswapper.class);
+public class JsInvokerHotswapper implements VaadinHotswapper {
 
     @Override
     public void onClassesChange(HotswapClassEvent event) {
@@ -77,40 +73,43 @@ public class JsInvokerHotswapper implements VaadinHotswapper, Serializable {
                 stale.add(invoker.getName());
             }
         }
-        if (stale.isEmpty()) {
-            return;
+        if (!stale.isEmpty()) {
+            report(stale);
         }
-
-        LOGGER.warn(
-                "The JavaScript declared by {} is not the JavaScript the frontend bundle carries. "
-                        + "It is collected into the bundle when the frontend is built, so calls made through the invoker keep running the previous version, or fail to find a function at all, until the application is restarted.",
-                String.join(", ", stale));
     }
 
     /**
-     * Whether everything the invoker declares can be found in the generated
-     * file. A method that was removed is not reported: the function stays in
-     * the bundle with nothing calling it.
+     * Says that the bundle does not carry what the given interfaces declare.
+     * <p>
+     * Package-private so that what a change is reported for can be asserted.
+     *
+     * @param invokerNames
+     *            the names of the invoker interfaces to report, never empty
      */
-    // Package-private so the comparison can be asserted directly.
-    static boolean isInBundle(Class<?> invoker, String generated) {
+    void report(List<String> invokerNames) {
+        getLogger().warn(
+                "The JavaScript declared by {} is not the JavaScript the frontend bundle carries. "
+                        + "It is collected into the bundle when the frontend is built, so a call made through the invoker keeps running the previous version, or finds no function at all, until the application is restarted.",
+                String.join(", ", invokerNames));
+    }
+
+    /**
+     * Whether the generated file carries what the invoker declares, compared as
+     * the build renders it. A method that was removed does not show up as a
+     * difference: its function stays in the bundle with nothing calling it.
+     */
+    private static boolean isInBundle(Class<?> invoker, String generated) {
         if (generated == null) {
-            // Nothing to compare against, so anything declared may be missing
+            // Nothing carries the declarations, so nothing matches them
             return false;
         }
-        for (Method method : invoker.getMethods()) {
-            JsExpression expression = method.getAnnotation(JsExpression.class);
-            if (expression == null) {
-                continue;
-            }
-            String methodId = JsInvokerCall.methodId(method.getName(),
-                    method.getParameterCount());
-            if (!generated.contains("\"" + methodId + "\"")
-                    || !generated.contains(expression.value())) {
-                return false;
-            }
+        List<String> declared = TaskGenerateJsInvokers.invokerLines(invoker);
+        if (declared.isEmpty()) {
+            // Declares no JavaScript, so there is nothing to carry
+            return true;
         }
-        return true;
+        return generated
+                .contains(String.join(System.lineSeparator(), declared));
     }
 
     private static String readGeneratedInvokers(VaadinService service) {
@@ -125,7 +124,7 @@ public class JsInvokerHotswapper implements VaadinHotswapper, Serializable {
             return null;
         }
         File generated = new File(
-                new File(frontendFolder, FrontendUtils.GENERATED),
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_INVOKERS_FILE_NAME);
         if (!generated.exists()) {
             return null;
@@ -133,8 +132,12 @@ public class JsInvokerHotswapper implements VaadinHotswapper, Serializable {
         try {
             return Files.readString(generated.toPath(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            LOGGER.debug("Could not read {}", generated, e);
+            getLogger().debug("Could not read {}", generated, e);
             return null;
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JsInvokerHotswapper.class);
     }
 }
