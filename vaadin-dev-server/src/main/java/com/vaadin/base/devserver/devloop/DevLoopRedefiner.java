@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -456,6 +457,7 @@ final class DevLoopRedefiner {
         Set<String> beans = new LinkedHashSet<>();
         Set<String> stereotypes = new LinkedHashSet<>();
         Set<String> uiClasses = new LinkedHashSet<>();
+        Set<String> hierarchyChanged = new LinkedHashSet<>();
 
         for (String name : requested) {
             List<Class<?>> targets = loaded.getOrDefault(name, List.of());
@@ -509,9 +511,30 @@ final class DevLoopRedefiner {
             if (declaresSpringBean(bytes)) {
                 stereotypes.add(name);
             }
+            // What the class will extend and implement, against what it does
+            // now. A redefine cannot make this live - the imports a new
+            // supertype brings are read at startup - and an
+            // enhanced-redefinition JVM has been seen to die on one, so this is
+            // decided here rather than reported afterwards; see hierarchyOf.
+            String declared = targets.isEmpty() ? null : hierarchyOf(bytes);
+            if (declared != null
+                    && !declared.equals(hierarchy(targets.get(0)))) {
+                hierarchyChanged.add(simple(name));
+            }
             for (Class<?> target : targets) {
                 definitions.add(new ClassDefinition(target, bytes));
             }
+        }
+        if (!hierarchyChanged.isEmpty()) {
+            // Nothing is redefined: the daemon restarts for this, and the
+            // restart is what regenerates the imports and rebuilds the bundle.
+            return new Inspection(definitions, notLoaded, duplicates, entities,
+                    beans, stereotypes, uiClasses,
+                    "ERR kind=hierarchy-changed class=" + join(hierarchyChanged)
+                            + MESSAGE + "class hierarchy changed ("
+                            + join(hierarchyChanged)
+                            + "): a new supertype or interface brings imports"
+                            + " that are read at startup (dev bundle rebuild)");
         }
         return new Inspection(definitions, notLoaded, duplicates, entities,
                 beans, stereotypes, uiClasses, null);
@@ -1433,6 +1456,10 @@ final class DevLoopRedefiner {
      * change, so nothing else would catch it either: the apply would report
      * Stable over a bundle the page cannot load its new import from.
      * <p>
+     * Read after the redefine, as the net under {@link #hierarchyOf}, which
+     * decides the same question from the bytes before anything is redefined.
+     * This one still answers for a class file that parser could not read.
+     * <p>
      * Names rather than the annotations those supertypes declare, deliberately.
      * Reading a supertype's annotations means reading the inherited closure
      * again, which is what escalated ordinary method-body edits before - see
@@ -1466,6 +1493,122 @@ final class DevLoopRedefiner {
         java.util.Collections.sort(interfaces);
         names.addAll(interfaces);
         return String.join(";", names);
+    }
+
+    /**
+     * The same fingerprint, read out of the bytes the JVM is about to be given.
+     * <p>
+     * This is the half that matters, and it is deliberately asked before
+     * anything is redefined. A hierarchy change is not a change a redefine can
+     * make live - the imports a new supertype brings are read into
+     * {@code generated-flow-imports.js} at startup - so the redefine is pure
+     * cost, and on an enhanced-redefinition JVM it is not free: handing one a
+     * class whose supertype moved has been observed to take the application JVM
+     * down inside the heap walk that follows it ({@code DcevmSharedGC} on JBR
+     * 25.0.2, {@code EXCEPTION_ACCESS_VIOLATION}). Deciding from the bytes
+     * costs nothing, restarts the application either way, and never asks the
+     * JVM to do it.
+     * <p>
+     * The bytes rather than the class afterwards, for the reason
+     * {@link #declaresEntity} gives as well: after a redefine the reflective
+     * view is rebuilt by HotswapAgent's cache clearing, which is not ordered
+     * against this reply, so reading it makes the answer depend on another
+     * thread's timing. The bytes say the same thing on every JVM and are
+     * already in hand.
+     * <p>
+     * Only the class file's own header is read - the constant pool, then
+     * {@code super_class} and {@code interfaces} - and anything unreadable
+     * answers {@code null} rather than a guess, which leaves
+     * {@link #hierarchy}'s reading after the redefine as the net.
+     *
+     * @param bytes
+     *            a class file
+     * @return its supertype and interfaces in {@link #hierarchy}'s format, or
+     *         {@code null} when the file cannot be read
+     */
+    // Package-private so the reads can be asserted directly.
+    static String hierarchyOf(byte[] bytes) {
+        try {
+            ByteBuffer file = ByteBuffer.wrap(bytes);
+            if (file.getInt() != 0xCAFEBABE) {
+                return null;
+            }
+            file.getInt(); // minor and major version
+            String[] utf8 = new String[Short.toUnsignedInt(file.getShort())];
+            int[] classNameIndex = new int[utf8.length];
+            readConstantPool(file, utf8, classNameIndex);
+            boolean isInterface = (file.getShort() & 0x0200) != 0;
+            file.getShort(); // this_class, which is this class by definition
+            List<String> names = new ArrayList<>();
+            // An interface's super_class is java/lang/Object in the class file
+            // and null through reflection; "none" is what both sides say.
+            String supertype = classNameAt(file.getShort(), utf8,
+                    classNameIndex);
+            names.add("extends:"
+                    + (isInterface || supertype == null ? "none" : supertype));
+            List<String> interfaces = new ArrayList<>();
+            int count = Short.toUnsignedInt(file.getShort());
+            for (int index = 0; index < count; index++) {
+                String implemented = classNameAt(file.getShort(), utf8,
+                        classNameIndex);
+                if (implemented == null) {
+                    return null;
+                }
+                interfaces.add("implements:" + implemented);
+            }
+            java.util.Collections.sort(interfaces);
+            names.addAll(interfaces);
+            return String.join(";", names);
+        } catch (RuntimeException e) {
+            // A class file this cannot read is not a failure: the reading after
+            // the redefine still answers, and every other check is unaffected.
+            return null;
+        }
+    }
+
+    /**
+     * Walks the constant pool, keeping only what naming a supertype needs: the
+     * UTF-8 entries and, for each {@code CONSTANT_Class}, the entry its name is
+     * in.
+     */
+    private static void readConstantPool(ByteBuffer file, String[] utf8,
+            int[] classNameIndex) {
+        for (int index = 1; index < utf8.length; index++) {
+            int tag = Byte.toUnsignedInt(file.get());
+            switch (tag) {
+            case 1 -> { // Utf8
+                byte[] text = new byte[Short.toUnsignedInt(file.getShort())];
+                file.get(text);
+                utf8[index] = new String(text, StandardCharsets.UTF_8);
+            }
+            case 7, 8, 16, 19, 20 -> // Class, String, MethodType, Module,
+                                     // Package: one index each
+                classNameIndex[index] = Short.toUnsignedInt(file.getShort());
+            case 15 -> { // MethodHandle: a kind and an index
+                file.get();
+                file.getShort();
+            }
+            case 5, 6 -> { // Long and Double take two pool slots
+                file.getLong();
+                index++;
+            }
+            case 3, 4, 9, 10, 11, 12, 17, 18 -> file.getInt();
+            default -> throw new IllegalStateException(
+                    "unknown constant pool tag " + tag);
+            }
+        }
+    }
+
+    /** One {@code CONSTANT_Class} entry as a binary name. */
+    private static String classNameAt(short entry, String[] utf8,
+            int[] classNameIndex) {
+        int index = Short.toUnsignedInt(entry);
+        if (index == 0 || index >= classNameIndex.length) {
+            // super_class is 0 for java.lang.Object alone, which has none.
+            return null;
+        }
+        String internal = utf8[classNameIndex[index]];
+        return internal == null ? null : internal.replace('/', '.');
     }
 
     /**
