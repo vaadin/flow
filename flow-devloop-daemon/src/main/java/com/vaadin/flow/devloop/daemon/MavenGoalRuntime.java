@@ -108,7 +108,8 @@ final class MavenGoalRuntime implements AppRuntime {
         writeHotswapAgentProperties(project);
 
         Map<String, String> environment = new LinkedHashMap<>();
-        environment.put("MAVEN_OPTS", String.join(" ", jvmFlags));
+        environment.put("MAVEN_OPTS",
+                mavenOpts(System.getenv("MAVEN_OPTS"), jvmFlags));
         // The application JVM is Maven's JVM, so this is the only way the
         // JetBrains Runtime that Jvm chose is the one the application runs on -
         // and with it, enhanced class redefinition.
@@ -296,6 +297,44 @@ final class MavenGoalRuntime implements AppRuntime {
                 // was once concluded not to work at all.
                 "--add-opens", "java.base/java.net=ALL-UNNAMED", "--add-opens",
                 "java.base/jdk.internal.loader=ALL-UNNAMED");
+    }
+
+    /**
+     * {@code MAVEN_OPTS} for the run: what the developer's environment already
+     * says, and then the loop's own flags.
+     * <p>
+     * Replacing the inherited value would be a silent change to how this
+     * project builds. {@code MAVEN_OPTS} is where a developer puts the heap the
+     * build needs, the proxy or trust store it goes through, and any flag their
+     * own toolchain requires - and a run started through the dev loop is still
+     * that project's build, so dropping them would make the loop fail where a
+     * plain {@code mvn} run works, for reasons nothing in the log would
+     * explain.
+     * <p>
+     * The loop's flags go last, because the JVM lets the later of two
+     * conflicting flags win: a heap size in the environment is honoured, while
+     * the agent, the opens and the redefinition switch cannot be turned off by
+     * an inherited value. {@code -javaagent} is additive, so nothing here
+     * displaces an agent the developer asked for.
+     * <p>
+     * Not checked by {@link #unsplittable}: a space in the inherited value
+     * breaks it exactly as it breaks a plain {@code mvn} run, which is the
+     * developer's own arrangement and not something this loop introduced.
+     *
+     * @param inherited
+     *            {@code MAVEN_OPTS} as the daemon's environment has it, which
+     *            may be {@code null} or blank
+     * @param jvmFlags
+     *            the flags the loop needs the application JVM to start with
+     * @return the value to launch with
+     */
+    static String mavenOpts(String inherited, List<String> jvmFlags) {
+        String needed = String.join(" ", jvmFlags);
+        if (inherited == null || inherited.isBlank()) {
+            return needed;
+        }
+        return needed.isEmpty() ? inherited.strip()
+                : inherited.strip() + " " + needed;
     }
 
     /**
