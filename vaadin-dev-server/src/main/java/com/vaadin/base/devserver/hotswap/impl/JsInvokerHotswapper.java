@@ -75,7 +75,7 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
 
         VaadinService service = event.getVaadinService();
         File generatedFile = generatedInvokersFile(service);
-        String generated = readGeneratedInvokers(service);
+        String generated = readGeneratedInvokers(generatedFile);
 
         List<Class<?>> stale = invokers.stream()
                 .filter(invoker -> !isInBundle(invoker, generated)).toList();
@@ -209,11 +209,22 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                 FrontendUtils.JS_INVOKERS_FILE_NAME);
     }
 
-    private static String readGeneratedInvokers(VaadinService service) {
+    /**
+     * Reads the generated file from the frontend folder, which is the file the
+     * dev server reads and this class writes, so what is compared and what is
+     * written are the same bytes. Fetching it from the dev server instead would
+     * answer with the module as it transforms it, which is not what a
+     * declaration renders to.
+     */
+    private static String readGeneratedInvokers(File generatedFile) {
+        if (generatedFile == null || !generatedFile.exists()) {
+            return null;
+        }
         try {
-            return FrontendUtils.getJsInvokersContent(service);
-        } catch (IOException | RuntimeException e) {
-            getLogger().debug("Could not read the generated invokers", e);
+            return Files.readString(generatedFile.toPath(),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            getLogger().debug("Could not read {}", generatedFile, e);
             return null;
         }
     }
