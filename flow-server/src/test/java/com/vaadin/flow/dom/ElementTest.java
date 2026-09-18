@@ -2725,18 +2725,43 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_methodWithAnotherReturnType_throwsAndSchedulesNothing() {
+    void getJsInvoker_methodWithAnotherReturnType_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.getJsInvoker(UnsupportedJs.class),
+                "a method the invoker can not answer should be refused when the invoker is handed out");
+    }
+
+    @Test
+    void getJsInvoker_methodWithoutDeclaredJavaScript_throws() {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.getJsInvoker(UndeclaredJs.class));
+
+        assertTrue(exception.getMessage().contains("undeclared"),
+                "the message should name the method that declares nothing: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void getJsInvoker_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        assertThrows(IllegalStateException.class,
-                () -> element.getJsInvoker(UnsupportedJs.class).readValue());
+        element.getJsInvoker(ComposingJs.class).twice("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertTrue(
-                ui.getInternals().dumpPendingJavaScriptInvocations().isEmpty(),
-                "a method the invoker can not answer should not run in the browser either");
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pendingJs.size(),
+                "a default method runs in Java, and what it calls of the interface is scheduled");
+        assertEquals(
+                new JsInvokerCall(ComposingJs.class, "method", List.of("foo")),
+                pendingJs.get(0).getInvocation().getInvokerCall());
     }
 
     @JsInvoker
@@ -2749,6 +2774,22 @@ class ElementTest extends AbstractNodeTest {
     interface UnsupportedJs extends Serializable {
         @JsExpression("return this.value;")
         String readValue();
+    }
+
+    @JsInvoker
+    interface UndeclaredJs extends Serializable {
+        void undeclared();
+    }
+
+    @JsInvoker
+    interface ComposingJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
+
+        default void twice(String value) {
+            method(value);
+            method(value);
+        }
     }
 
     @JsInvoker

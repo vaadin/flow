@@ -18,7 +18,9 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -1989,9 +1991,52 @@ public class Element extends Node<Element> {
                     + " is not annotated with @JsInvoker, so the build does not"
                     + " collect its JavaScript into the bundle");
         }
+        checkInvokerMethods(invokerType);
         return (T) Proxy.newProxyInstance(invokerType.getClassLoader(),
                 new Class<?>[] { invokerType },
                 new JsInvokerHandler(this, invokerType));
+    }
+
+    /**
+     * Checks the methods of an invoker interface: each one that the invoker has
+     * to answer declares the JavaScript it runs, and returns either nothing or
+     * the pending result of running it. Checked here rather than when a method
+     * is called, so an interface that can not work says so when it is handed
+     * out.
+     * <p>
+     * A default method is not checked: it runs in Java, and composing calls of
+     * the interface is what it is for. Neither is a static one.
+     */
+    private static void checkInvokerMethods(Class<?> invokerType) {
+        List<String> undeclared = new ArrayList<>();
+        List<String> unanswerable = new ArrayList<>();
+        for (Method method : invokerType.getMethods()) {
+            if (method.isDefault()
+                    || Modifier.isStatic(method.getModifiers())) {
+                continue;
+            }
+            if (!method.isAnnotationPresent(JsExpression.class)) {
+                undeclared.add(method.getName());
+            }
+            Class<?> returnType = method.getReturnType();
+            if (returnType != void.class && !returnType
+                    .isAssignableFrom(PendingJavaScriptResult.class)) {
+                unanswerable.add(method.getName());
+            }
+        }
+        if (!undeclared.isEmpty()) {
+            throw new IllegalArgumentException(invokerType.getName()
+                    + " declares no JavaScript for "
+                    + String.join(", ", undeclared)
+                    + ". Annotate the methods with @JsExpression, or make them"
+                    + " default methods if they are meant to run in Java");
+        }
+        if (!unanswerable.isEmpty()) {
+            throw new IllegalArgumentException(invokerType.getName() + " has "
+                    + String.join(", ", unanswerable)
+                    + " returning something the invoker can not answer with."
+                    + " A method returns void or PendingJavaScriptResult");
+        }
     }
 
     /**
@@ -2007,16 +2052,13 @@ public class Element extends Node<Element> {
             if (method.getDeclaringClass() == Object.class) {
                 return method.invoke(this, args);
             }
-            Class<?> returnType = method.getReturnType();
-            boolean returnsResult = returnType
-                    .isAssignableFrom(PendingJavaScriptResult.class);
-            // Checked before scheduling, so that a method the invoker can not
-            // answer does not run in the browser either
-            if (returnType != void.class && !returnsResult) {
-                throw new IllegalStateException("Method " + method.getName()
-                        + " of " + invokerType.getName()
-                        + " must return void or PendingJavaScriptResult");
+            if (method.isDefault()) {
+                // Runs in Java, and what it calls of the interface comes back
+                // here
+                return InvocationHandler.invokeDefault(proxy, method, args);
             }
+            boolean returnsResult = method.getReturnType()
+                    .isAssignableFrom(PendingJavaScriptResult.class);
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
             PendingJavaScriptResult result = element
