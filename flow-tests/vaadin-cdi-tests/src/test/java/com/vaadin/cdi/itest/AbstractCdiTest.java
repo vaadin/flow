@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -108,25 +109,36 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
      * filter chain, so it needs the archive deployed and CDI running, and it
      * creates neither a session nor a UI.
      */
-    private void waitForDeployment() throws InterruptedException {
-        long deadline = System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(DEPLOYMENT_TIMEOUT_SECONDS);
-        Exception lastFailure;
-        do {
-            try {
-                // Parsed, not just read: a container that is up but has not
-                // installed the application yet answers the request with an
-                // error page rather than refusing it.
-                Integer.parseInt(slurp("?getCount=" + DEPLOYMENT_PROBE).trim());
-                return;
-            } catch (IOException | RuntimeException failure) {
-                lastFailure = failure;
-            }
-            Thread.sleep(500);
-        } while (System.currentTimeMillis() < deadline);
-        throw new AssertionError(String.format(
-                "The deployment at %s did not answer within %d seconds.",
-                getRootURL(), DEPLOYMENT_TIMEOUT_SECONDS), lastFailure);
+    private void waitForDeployment() {
+        AtomicReference<Exception> lastFailure = new AtomicReference<>();
+        try {
+            waitUntil(driver -> deploymentAnswers(lastFailure),
+                    DEPLOYMENT_TIMEOUT_SECONDS);
+        } catch (TimeoutException timeout) {
+            throw new AssertionError(String.format(
+                    "The deployment at %s did not answer within %d seconds."
+                            + " Last attempt failed with: %s",
+                    getRootURL(), DEPLOYMENT_TIMEOUT_SECONDS,
+                    lastFailure.get()), timeout);
+        }
+    }
+
+    /**
+     * Asks the counter filter for a count and tells whether the deployment
+     * answered, recording the reason it did not.
+     * <p>
+     * The answer is parsed rather than only read, because a container that is
+     * up but has not installed the application yet answers the request with an
+     * error page instead of refusing it.
+     */
+    private boolean deploymentAnswers(AtomicReference<Exception> lastFailure) {
+        try {
+            Integer.parseInt(slurp("?getCount=" + DEPLOYMENT_PROBE).trim());
+            return true;
+        } catch (IOException | RuntimeException failure) {
+            lastFailure.set(failure);
+            return false;
+        }
     }
 
     protected void click(String elementId) {
