@@ -40,6 +40,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -315,6 +319,77 @@ public class Page implements Serializable {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
+    /**
+     * Gets an invoker for the JavaScript that the given interface declares, for
+     * this page.
+     * <p>
+     * The interface is annotated with {@link JsInvoker} and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}. Calling a
+     * method runs that JavaScript in the browser with the method arguments as
+     * its parameters:
+     *
+     * <pre>
+     * &#64;JsInvoker
+     * public interface ClipboardJs extends Serializable {
+     *     &#64;JsExpression("return navigator.clipboard.readText()")
+     *     PendingJavaScriptResult readText();
+     * }
+     *
+     * page.getJsInvoker(ClipboardJs.class).readText().then(String.class,
+     *         text -&gt; ...);
+     * </pre>
+     *
+     * Unlike {@link #executeJs(String, Object...)}, nothing about the
+     * JavaScript is decided at the call site: the build collects the
+     * declarations of every invoker interface into the bundle, and the client
+     * runs the collected function after looking it up by interface and method.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>.
+     * <p>
+     * A method of a page invoker runs without a <code>this</code>, so its
+     * JavaScript works on globals - which is what page-level JavaScript does
+     * anyway. Use {@link Element#getJsInvoker(Class)} for JavaScript that acts
+     * on an element.
+     * <p>
+     * A method returns either <code>void</code> or
+     * {@link PendingJavaScriptResult}.
+     *
+     * @param <T>
+     *            the invoker interface type
+     * @param invokerType
+     *            the invoker interface, not <code>null</code>
+     * @return an invoker for this page, not <code>null</code>
+     */
+    public <T> T getJsInvoker(Class<T> invokerType) {
+        return JsInvokers.create(invokerType, this::scheduleInvokerCall);
+    }
+
+    /**
+     * Schedules a call made through a page invoker, the way
+     * {@link #executeJs(String, Object...)} schedules an expression, so the two
+     * reach the client in the order they were made. The parameters are the
+     * arguments of the call and nothing else: there is no element to apply the
+     * function to.
+     */
+    private PendingJavaScriptResult scheduleInvokerCall(JsInvokerCall call) {
+        return schedule(new JavaScriptInvocation(call, call.getExpression(),
+                call.arguments().toArray()));
+    }
+
+    /**
+     * Queues an invocation for the client, owned by the root node of the state
+     * tree, which is what makes it an invocation of this page rather than of
+     * anything in it.
+     */
+    private PendingJavaScriptResult schedule(JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
+                ui.getInternals().getStateTree().getRootNode(), invocation);
+
+        ui.getInternals().addJavaScriptInvocation(execution);
+
+        return execution;
+    }
+
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
@@ -363,15 +438,7 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        return schedule(new JavaScriptInvocation(expression, parameters));
     }
 
     /**

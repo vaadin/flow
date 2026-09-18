@@ -222,6 +222,7 @@ class UidlWriterTest {
         target.put("invoker", TestJs.class.getName());
         target.put("method", "method/1");
         target.put("arguments", 1);
+        target.put("element", true);
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
                         // Null since element is not attached
@@ -256,6 +257,55 @@ class UidlWriterTest {
         assertTrue(target.get("returns").asBoolean(),
                 "the target should tell the client that the call is subscribed to");
         assertEquals(1, target.get("arguments").asInt());
+    }
+
+    @Test
+    void encodeExecuteJavaScript_invokerCallWithoutAnElement_targetSaysSo() {
+        Element element = ElementFactory.createDiv();
+
+        // What a page invoker schedules: the arguments and nothing else, since
+        // there is no element to apply the function to
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo");
+
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        invocation)));
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(2, encoded.size(),
+                "the argument should be followed by the target alone: "
+                        + encoded);
+        assertFalse(((ObjectNode) encoded.get(1)).has("element"),
+                "without an element the function runs with no this");
+    }
+
+    @Test
+    void encodeExecuteJavaScript_subscribedInvokerCallWithoutAnElement_channelsFollowTheArguments() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo");
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                element.getNode(), invocation);
+        pending.then(value -> {
+        });
+
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending));
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(4, encoded.size(),
+                "the argument should be followed by the two channels and the target: "
+                        + encoded);
+        ObjectNode target = (ObjectNode) encoded.get(3);
+        assertTrue(target.get("returns").asBoolean());
+        assertFalse(target.has("element"),
+                "the channels follow the arguments when there is no element");
     }
 
     @JsInvoker

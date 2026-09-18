@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +33,13 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -44,6 +50,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -85,6 +92,55 @@ class PageTest {
 
     private BrowserWindowResizeListener listener = event -> {
     };
+
+    @JsInvoker
+    interface PageJs extends Serializable {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        @JsExpression("return navigator.clipboard.readText()")
+        PendingJavaScriptResult readText();
+    }
+
+    @Test
+    void getJsInvoker_methodReturningAResult_answersWithTheExecution() {
+        MockUI mockUI = new MockUI();
+
+        PendingJavaScriptResult result = mockUI.getPage()
+                .getJsInvoker(PageJs.class).readText();
+        List<String> values = new ArrayList<>();
+        result.then(String.class, values::add);
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertSame(result, invocations.get(0),
+                "the pending execution is what the method answers with");
+        assertTrue(invocations.get(0).isSubscribed(),
+                "the return value should be asked for from the client");
+
+        invocations.get(0).complete(JacksonUtils.createNode("text"));
+        assertEquals(List.of("text"), values);
+    }
+
+    @Test
+    void getJsInvoker_schedulesTheCallWithoutAnElement() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().getJsInvoker(PageJs.class).showGreeting("Hello");
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        JavaScriptInvocation invocation = invocations.get(0).getInvocation();
+
+        assertEquals(new JsInvokerCall(PageJs.class, "showGreeting",
+                List.of("Hello")), invocation.getInvokerCall());
+        assertEquals(List.of("Hello"), invocation.getParameters(),
+                "a page invoker has no element to apply the function to");
+        assertEquals("window.alert($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped");
+    }
 
     @Test
 
