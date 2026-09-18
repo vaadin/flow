@@ -282,6 +282,32 @@ class UidlWriterTest {
                 "without an element the function runs with no this");
     }
 
+    @Test
+    void encodeExecuteJavaScript_subscribedInvokerCallWithoutAnElement_channelsFollowTheArguments() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo");
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                element.getNode(), invocation);
+        pending.then(value -> {
+        });
+
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending));
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(4, encoded.size(),
+                "the argument should be followed by the two channels and the target: "
+                        + encoded);
+        ObjectNode target = (ObjectNode) encoded.get(3);
+        assertTrue(target.get("returns").asBoolean());
+        assertFalse(target.has("element"),
+                "the channels follow the arguments when there is no element");
+    }
+
     @JsInvoker
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")

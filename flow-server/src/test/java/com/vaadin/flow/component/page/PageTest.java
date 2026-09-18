@@ -50,6 +50,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -96,6 +97,30 @@ class PageTest {
     interface PageJs extends Serializable {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
+
+        @JsExpression("return navigator.clipboard.readText()")
+        PendingJavaScriptResult readText();
+    }
+
+    @Test
+    void getJsInvoker_methodReturningAResult_answersWithTheExecution() {
+        MockUI mockUI = new MockUI();
+
+        PendingJavaScriptResult result = mockUI.getPage()
+                .getJsInvoker(PageJs.class).readText();
+        List<String> values = new ArrayList<>();
+        result.then(String.class, values::add);
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertSame(result, invocations.get(0),
+                "the pending execution is what the method answers with");
+        assertTrue(invocations.get(0).isSubscribed(),
+                "the return value should be asked for from the client");
+
+        invocations.get(0).complete(JacksonUtils.createNode("text"));
+        assertEquals(List.of("text"), values);
     }
 
     @Test
