@@ -122,7 +122,7 @@
     <guava.version>33.7.1-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
-    <weld.version>6.0.3.Final</weld.version>
+    <weld.version>6.0.4.Final</weld.version>
     <weld.junit.version>5.0.1.Final</weld.junit.version>
 
     <!-- Plugins -->
@@ -137,11 +137,11 @@
     <maven.exec.plugin.version>3.6.4</maven.exec.plugin.version>
     <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
          repository metadata when modules install in parallel (-T). -->
-    <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
+    <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
     <testbench.version>25.3.0-rc1</testbench.version>
     <jetty.version>12.1.13</jetty.version>
-    <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
-    <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+    <properties-maven-plugin.version>1.3.1</properties-maven-plugin.version>
+    <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
     <maven.version>3.9.16</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <spotless.plugin.version>3.10.2</spotless.plugin.version>
@@ -243,7 +243,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.2</version>
+        <version>3.1.3</version>
       </dependency>
 
       <!-- Test dependencies -->

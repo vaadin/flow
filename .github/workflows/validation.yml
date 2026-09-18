@@ -29,6 +29,22 @@ env:
   _PR_NUMBER: ${{ github.event.number }}
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+  # Picked up by every mvn this workflow starts, including the ones the plugin
+  # integration tests fork, which is why it is set here rather than on the
+  # steps that download the most.
+  #
+  # Maven 3.9 resolves over maven-resolver's own HTTP transport, which reads
+  # aether.connector.* and ignores the maven.wagon.* equivalents the `Run ITs`
+  # step used to pass, so that step was not retrying anything and no other one
+  # asked to. Central answers a client it has blocked with 403, and the retry
+  # handler treats a status outside its retryable list as the final answer:
+  # that list defaults to 429,503, so a 403 failed the build on the first
+  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
+  # property was meant to set, against a resolver default of 300.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
     timeout-minutes: 30
@@ -258,7 +274,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
+          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
           : > "$LOG"
