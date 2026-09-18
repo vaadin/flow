@@ -245,7 +245,8 @@ final class AppProcess {
      * @param launchKind
      *            why the app is being launched - {@code start}, {@code restart}
      *            or {@code apply} - passed on to the app so it can report which
-     *            it was. See {@link Launch#command(int, String, String)}.
+     *            it was. See
+     *            {@link Launch#invocation(int, String, String, Launch.Log)}.
      * @return the outcome of the launch
      * @throws IOException
      *             if the command line cannot be built or the process started
