@@ -83,4 +83,19 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         Assert.assertEquals("This is the value set in other.js", value);
     }
 
+    @Test
+    public void explicitColorSchemeWinsOverBrowserPreference() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+
+        Assert.assertEquals(
+                "The light value of light-dark() should be used where the color scheme is light",
+                "rgba(255, 0, 0, 1)",
+                $("p").id(MainView.FORCED_LIGHT).getCssValue("color"));
+        Assert.assertEquals(
+                "The dark value of light-dark() should be used where the color scheme is dark",
+                "rgba(0, 255, 0, 1)",
+                $("p").id(MainView.FORCED_DARK).getCssValue("color"));
+    }
+
 }
