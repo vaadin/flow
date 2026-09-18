@@ -66,64 +66,30 @@ public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
 
     /**
-     * A stylesheet that makes a native <code>&lt;table&gt;</code> and the
-     * elements inside it look at home in an Aura application: a rounded surface
-     * with a tinted header and footer, Aura's spacing and colors, and its
-     * light/dark switch.
+     * The class name a <code>&lt;table&gt;</code> carries so that the theme
+     * styles it: cell padding, a header and footer told apart from the body,
+     * and a line between the rows, in the colors and spacing of the theme in
+     * use. Both the Aura and the Lumo theme ship these styles.
      * <p>
-     * It is opt-in, and loading it is the opt-in — after that every
-     * <code>&lt;table&gt;</code> on the page is styled:
+     * Every table adds the class name for itself. Remove it to keep the
+     * browser's own table styles instead:
      *
      * <pre>
-     * &#64;StyleSheet(Aura.STYLESHEET)
-     * &#64;StyleSheet(Table.AURA_STYLESHEET)
-     * public class Application implements AppShellConfigurator {
-     * }
+     * table.removeClassName(Table.STYLES_CLASS_NAME);
      * </pre>
      * <p>
-     * Every selector in it is wrapped in {@code :where()}, so all of it has
-     * zero specificity and a plain {@code table { ... }} rule in the
-     * application's own stylesheet wins over it. The values come from the
-     * shared {@code --vaadin-*} custom properties Aura defines on
-     * {@code :root}, each one reachable through a {@code --vaadin-table-*}
-     * property of its own, and individual tables pick a variant with the
-     * {@code theme} attribute, using the same names as the corresponding
-     * {@code <vaadin-grid>} variants:
+     * A styled table picks a variant with the {@code theme} attribute, using
+     * the same names as the corresponding {@code <vaadin-grid>} variants:
      *
      * <pre>
      * table.getElement().getThemeList().add("row-stripes");
      * </pre>
      *
-     * The variants are {@code row-stripes}, {@code column-borders},
-     * {@code no-row-borders} and {@code compact}.
+     * The variants are {@code row-stripes} and {@code column-borders}.
      *
-     * @see #LUMO_STYLESHEET
      * @since 25.4
      */
-    public static final String AURA_STYLESHEET = "aura/table.css";
-
-    /**
-     * The {@link #AURA_STYLESHEET} counterpart for a Lumo application: the same
-     * opt-in, the same {@code theme} variants and the same
-     * {@code --vaadin-table-*} properties, reading the {@code --lumo-*} tokens
-     * and matching what Lumo does to a {@code <vaadin-grid>} — a square box on
-     * {@code --lumo-base-color}, a lighter line between the rows than around
-     * the table, and a header told apart by type rather than by a background.
-     * <p>
-     * Load either this or {@link #AURA_STYLESHEET}, not both: they style the
-     * same elements, and the one that loads last would win.
-     *
-     * <pre>
-     * &#64;StyleSheet(Lumo.STYLESHEET)
-     * &#64;StyleSheet(Table.LUMO_STYLESHEET)
-     * public class Application implements AppShellConfigurator {
-     * }
-     * </pre>
-     *
-     * @see #AURA_STYLESHEET
-     * @since 25.4
-     */
-    public static final String LUMO_STYLESHEET = "lumo/table.css";
+    public static final String STYLES_CLASS_NAME = "vaadin-table";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
@@ -136,10 +102,11 @@ public class Table extends HtmlComponent
     private static final int RANK_FOOT = 4;
 
     /**
-     * Creates a new empty table.
+     * Creates a new empty table. The table carries {@link #STYLES_CLASS_NAME},
+     * which the theme styles; remove the class name to opt out of those styles.
      */
     public Table() {
-        super();
+        addClassName(STYLES_CLASS_NAME);
     }
 
     /**

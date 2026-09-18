@@ -19,19 +19,14 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.HandlerHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -537,25 +532,21 @@ class TableTest extends ComponentTest {
                 table.getChildren().toList());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { Table.AURA_STYLESHEET, Table.LUMO_STYLESHEET })
-    void themeStylesheet_isOnTheClasspathUnderAnAlwaysPermittedPath(
-            String stylesheet) {
-        assertNotNull(
-                Table.class.getClassLoader()
-                        .getResource("META-INF/resources/" + stylesheet),
-                stylesheet
-                        + " is not packaged in META-INF/resources, so @StyleSheet would 404 on it");
+    @Test
+    void newTable_carriesTheStylesClassName() {
+        assertEquals("vaadin-table", Table.STYLES_CLASS_NAME);
+        assertTrue(table().hasClassName(Table.STYLES_CLASS_NAME));
+    }
 
-        // A secured application renders its login view before the user is
-        // authenticated, so the stylesheet has to live under one of the paths
-        // Flow lets through without a security context
-        assertTrue(
-                Stream.of(HandlerHelper.getPublicResourcesRoot())
-                        .map(pattern -> pattern.replace("/**", "/"))
-                        .anyMatch(prefix -> ("/" + stylesheet)
-                                .startsWith(prefix)),
-                stylesheet
-                        + " is outside every always-permitted public resource root, so a secured application would not serve it on the login view");
+    @Test
+    void removeStylesClassName_leavesTheTableWithoutAnyClassName() {
+        Table table = table();
+
+        table.removeClassName(Table.STYLES_CLASS_NAME);
+
+        assertFalse(table.hasClassName(Table.STYLES_CLASS_NAME));
+        // The class attribute is gone rather than left behind empty, so the
+        // rendered table looks exactly like one nobody styled
+        assertFalse(table.getElement().hasAttribute("class"));
     }
 }
