@@ -41,6 +41,7 @@ driver
 bower_components
 node
 node_modules
+.pnpm-store
 /frontend
 */flow-*/frontend
 package-lock.json
@@ -99,6 +100,3 @@ vaadin-dev-server/src/main/resources/META-INF/metadata
 
 /flow-tests/**/frontend/routes.tsx
 flow-tests/**/src/main/bundles/*
-
-# pnpm store created by local builds
-.pnpm-store/
