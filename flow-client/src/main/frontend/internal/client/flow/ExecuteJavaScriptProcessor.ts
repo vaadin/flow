@@ -251,6 +251,21 @@ export class ExecuteJavaScriptProcessor {
    */
   protected invokeFromBundle(target: JsInvokerTarget, parameters: unknown[]): void {
     const argumentCount = target.arguments;
+
+    // The parameters are the arguments of the call, then the element to apply
+    // the function to, then the two return value channels when the target
+    // declares them. Nothing else may be in there, so a count that does not
+    // add up means the invocation was not built by the server this client
+    // talks to, and reading the element out of it by index would bind an
+    // argument as `this`. Say so instead of running the call.
+    const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
+    if (parameters.length !== expectedCount) {
+      Console.error(
+        `Expected ${expectedCount} parameters for ${target.invoker}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`
+      );
+      return;
+    }
+
     const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
     const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
 
@@ -264,7 +279,7 @@ export class ExecuteJavaScriptProcessor {
 
     // The element the invoker was obtained from is the parameter after the
     // arguments, and it is what the function runs against.
-    const thisArg = parameters.length > argumentCount ? parameters[argumentCount] : undefined;
+    const thisArg = parameters[argumentCount];
     try {
       const result = fn.apply(thisArg, parameters.slice(0, argumentCount));
       if (onSuccess !== undefined) {

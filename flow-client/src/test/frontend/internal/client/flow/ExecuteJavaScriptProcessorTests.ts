@@ -135,6 +135,19 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(resolved).to.eql(['answer']);
     });
 
+    it('does not run a call whose parameters do not match the target', () => {
+      let calls = 0;
+      registerInvoker('showGreeting/1', () => {
+        calls += 1;
+      });
+
+      // One argument declared, but no element to apply the function to: the
+      // invocation and this client disagree about the signature.
+      processor().execute([['Hello', { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
+
+      expect(calls).to.equal(0);
+    });
+
     it('reports a function that is not in the bundle to the error channel', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };

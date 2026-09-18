@@ -57,6 +57,9 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.dom.JsExpression;
+import com.vaadin.flow.dom.JsInvoker;
+import com.vaadin.flow.dom.JsInvokerCall;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -1372,6 +1375,24 @@ final class DevLoopRedefiner {
                     .getAnnotationsByType(CssImport.class)) {
                 imports.add("css:" + annotation.value() + ":" + annotation.id()
                         + ":" + annotation.themeFor());
+            }
+        }
+        // The JavaScript an invoker interface declares is generated into the
+        // bundle by the build, exactly like the imports above, so an edited
+        // expression or a method added or removed only reaches the browser
+        // through a restart that regenerates the file and rebuilds the bundle.
+        // The expression is part of the fingerprint, since a changed one keeps
+        // the same method and would otherwise go unnoticed.
+        if (type.isAnnotationPresent(JsInvoker.class)) {
+            for (Method method : type.getMethods()) {
+                JsExpression expression = method
+                        .getAnnotation(JsExpression.class);
+                if (expression != null) {
+                    imports.add("jsinvoker:"
+                            + JsInvokerCall.methodId(method.getName(),
+                                    method.getParameterCount())
+                            + ":" + expression.value());
+                }
             }
         }
         // These two are read off the class whatever it is. @Theme in particular
