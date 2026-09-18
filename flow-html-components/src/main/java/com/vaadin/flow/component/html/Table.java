@@ -67,9 +67,10 @@ public class Table extends HtmlComponent
 
     /**
      * The class name a <code>&lt;table&gt;</code> carries so that the theme
-     * styles it: cell padding, a header and footer told apart from the body,
-     * and a line between the rows, in the colors and spacing of the theme in
-     * use. Both the Aura and the Lumo theme ship these styles.
+     * styles it: a bordered box on the theme's background, cell padding, a
+     * header and footer told apart from the body, and a line between the rows,
+     * in the colors and spacing of the theme in use. Both the Aura and the Lumo
+     * theme ship these styles.
      * <p>
      * Every table adds the class name for itself. Remove it to keep the
      * browser's own table styles instead:
@@ -85,7 +86,8 @@ public class Table extends HtmlComponent
      * table.getElement().getThemeList().add("row-stripes");
      * </pre>
      *
-     * The variants are {@code row-stripes} and {@code column-borders}.
+     * The variants are {@code row-stripes}, {@code column-borders},
+     * {@code no-row-borders} and {@code compact}.
      *
      * @since 25.4
      */
