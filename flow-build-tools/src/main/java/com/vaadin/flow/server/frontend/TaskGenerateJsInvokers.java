@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -53,6 +54,23 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() {
+        return fileContent(
+                options.getClassFinder().getAnnotatedClasses(JsInvoker.class));
+    }
+
+    /**
+     * Renders the file that registers the JavaScript of the given invoker
+     * interfaces.
+     * <p>
+     * Exposed so that a caller which regenerates the file outside a build - the
+     * hotswap path, which writes it again when an interface changed while the
+     * application runs - produces exactly what a build would have written.
+     *
+     * @param invokers
+     *            the invoker interfaces to render, not <code>null</code>
+     * @return the content of the generated file
+     */
+    public static String fileContent(Collection<Class<?>> invokers) {
         List<String> lines = new ArrayList<>();
         lines.add("// @ts-nocheck");
         lines.add("window.Vaadin = window.Vaadin || {};");
@@ -60,9 +78,18 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         lines.add(
                 "window.Vaadin.Flow.jsInvokers = window.Vaadin.Flow.jsInvokers || {};");
 
-        options.getClassFinder().getAnnotatedClasses(JsInvoker.class).stream()
-                .sorted(Comparator.comparing(Class::getName))
+        invokers.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(invoker -> lines.addAll(invokerLines(invoker)));
+
+        // Writing this file again while the application runs replaces it in the
+        // browser that has it: everything above only writes into the registry,
+        // so the module can accept its own update and nothing else has to be
+        // reloaded for a changed declaration to take effect. The dev server
+        // drops the block from a production build, where import.meta.hot is
+        // not defined.
+        lines.add("if (import.meta.hot) {");
+        lines.add("  import.meta.hot.accept();");
+        lines.add("}");
 
         // See https://github.com/vaadin/flow/issues/14184
         lines.add("export {};");

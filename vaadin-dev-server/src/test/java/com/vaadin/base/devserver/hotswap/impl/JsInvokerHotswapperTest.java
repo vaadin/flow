@@ -34,7 +34,10 @@ import com.vaadin.flow.dom.JsExpression;
 import com.vaadin.flow.dom.JsInvoker;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -69,6 +72,7 @@ class JsInvokerHotswapperTest {
     private TestHotswapper hotswapper;
     private MockVaadinServletService service;
     private File frontendFolder;
+    private ApplicationConfiguration configuration;
 
     @BeforeEach
     void setUp() {
@@ -77,13 +81,37 @@ class JsInvokerHotswapperTest {
 
         service = new MockVaadinServletService(
                 new MockDeploymentConfiguration());
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        configuration = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(configuration.getFrontendFolder())
                 .thenReturn(frontendFolder);
+        // What a browser runs without the frontend dev server is a bundle,
+        // which a case has to opt out of to get the file written again.
+        Mockito.when(configuration.getMode())
+                .thenReturn(Mode.DEVELOPMENT_BUNDLE);
         Mockito.when(service.getLookup()
                 .lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> configuration);
+    }
+
+    /**
+     * Puts the frontend dev server in play, with the given interfaces as the
+     * ones the application declares.
+     */
+    private void withFrontendDevServer(Class<?>... invokers) {
+        Mockito.when(configuration.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
+        Mockito.when(service.getLookup().lookup(ClassFinder.class))
+                .thenReturn(new DefaultClassFinder(Set.of(invokers)));
+    }
+
+    private String readGeneratedInvokers() throws IOException {
+        return Files
+                .readString(
+                        new File(
+                                FrontendUtils.getFrontendGeneratedFolder(
+                                        frontendFolder),
+                                FrontendUtils.JS_INVOKERS_FILE_NAME).toPath(),
+                        StandardCharsets.UTF_8);
     }
 
     private void writeGeneratedInvokers(String content) throws IOException {
@@ -151,6 +179,37 @@ class JsInvokerHotswapperTest {
 
         assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported,
                 "without a generated file nothing carries the declarations");
+    }
+
+    @Test
+    void frontendDevServerRunning_fileWrittenAgainInsteadOfReported()
+            throws IOException {
+        writeGeneratedInvokers(generatedFor(GreeterJs.class)
+                .replace("window.alert($0); this.focus()", "window.alert($0)"));
+        withFrontendDevServer(GreeterJs.class);
+
+        classesChanged(GreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                "with the dev server the change is applied, not reported: "
+                        + hotswapper.reported);
+        assertTrue(
+                readGeneratedInvokers()
+                        .contains("window.alert($0); this.focus()"),
+                "the file should hold what the interface declares now");
+        assertTrue(readGeneratedInvokers().contains("import.meta.hot.accept()"),
+                "the file should accept its own update, so the dev server replaces just this module");
+    }
+
+    @Test
+    void frontendDevServerRunningWithoutTheFile_fileWritten()
+            throws IOException {
+        withFrontendDevServer(GreeterJs.class);
+
+        classesChanged(GreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty());
+        assertTrue(readGeneratedInvokers().contains(GreeterJs.class.getName()));
     }
 
     @Test

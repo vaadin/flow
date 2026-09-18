@@ -27,11 +27,14 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.JsExpression;
 import com.vaadin.flow.dom.JsInvoker;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -42,11 +45,15 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * collected into the bundle when the frontend is built. Redefining the
  * interface therefore does not change what the browser can run: a call made
  * after the change either runs the JavaScript the bundle was built with, or
- * finds no function at all when the redefinition renamed or added a method. The
- * dev loop escalates to a restart for this, but a class redefined straight from
- * an IDE reaches the application without going through it, and there is nothing
- * a hotswapper could apply in the browser instead - only a frontend build
- * produces the new function. So it says what happened, and what to do about it.
+ * finds no function at all when the redefinition renamed or added a method.
+ * <p>
+ * With the frontend dev server running, the file the functions are generated
+ * into is written again from what the interfaces now declare. The dev server
+ * replaces the module in every browser that has it, the file registers the new
+ * functions, and a call made afterwards runs them - no restart, and nothing is
+ * compiled from a string in the browser, since the dev server serves the file
+ * it just read. Without the dev server, a bundle is what the browser runs and
+ * only a build produces a new one, so the change is reported instead.
  * <p>
  * The comparison is against the generated file the bundle was built from, which
  * is what the browser can run, and it uses the same rendering the build wrote,
@@ -66,15 +73,69 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return;
         }
 
-        String generated = readGeneratedInvokers(event.getVaadinService());
+        VaadinService service = event.getVaadinService();
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(service.getContext());
+        File generatedFile = generatedInvokersFile(configuration);
+        String generated = readGeneratedInvokers(generatedFile);
+
         List<String> stale = new ArrayList<>();
         for (Class<?> invoker : invokers) {
             if (!isInBundle(invoker, generated)) {
                 stale.add(invoker.getName());
             }
         }
-        if (!stale.isEmpty()) {
+        if (stale.isEmpty()) {
+            return;
+        }
+
+        if (regenerate(service, configuration, generatedFile)) {
+            getLogger().debug(
+                    "Wrote the JavaScript declared by {} to {}, which the frontend dev server replaces in the browser",
+                    String.join(", ", stale), generatedFile);
+        } else {
             report(stale);
+        }
+    }
+
+    /**
+     * Writes what every invoker interface declares to the generated file, so
+     * the frontend dev server can replace the module in the browser.
+     * <p>
+     * Only with the dev server running: what a browser has without it is a
+     * bundle, which this can not replace. The file is left alone when its
+     * content would not change, so the dev server is not told about an update
+     * that is not one.
+     *
+     * @return whether the file now holds what the interfaces declare
+     */
+    private static boolean regenerate(VaadinService service,
+            ApplicationConfiguration configuration, File generatedFile) {
+        if (generatedFile == null || configuration == null || configuration
+                .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+            return false;
+        }
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        ClassFinder classFinder = lookup == null ? null
+                : lookup.lookup(ClassFinder.class);
+        if (classFinder == null) {
+            return false;
+        }
+        try {
+            String content = TaskGenerateJsInvokers.fileContent(
+                    classFinder.getAnnotatedClasses(JsInvoker.class));
+            if (generatedFile.exists()
+                    && content.equals(Files.readString(generatedFile.toPath(),
+                            StandardCharsets.UTF_8))) {
+                return true;
+            }
+            Files.createDirectories(generatedFile.toPath().getParent());
+            Files.writeString(generatedFile.toPath(), content,
+                    StandardCharsets.UTF_8);
+            return true;
+        } catch (IOException | RuntimeException e) {
+            getLogger().debug("Could not write {}", generatedFile, e);
+            return false;
         }
     }
 
@@ -112,9 +173,8 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                 .contains(String.join(System.lineSeparator(), declared));
     }
 
-    private static String readGeneratedInvokers(VaadinService service) {
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(service.getContext());
+    private static File generatedInvokersFile(
+            ApplicationConfiguration configuration) {
         if (configuration == null) {
             return null;
         }
@@ -123,16 +183,20 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
         if (frontendFolder == null) {
             return null;
         }
-        File generated = new File(
+        return new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_INVOKERS_FILE_NAME);
-        if (!generated.exists()) {
+    }
+
+    private static String readGeneratedInvokers(File generatedFile) {
+        if (generatedFile == null || !generatedFile.exists()) {
             return null;
         }
         try {
-            return Files.readString(generated.toPath(), StandardCharsets.UTF_8);
+            return Files.readString(generatedFile.toPath(),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
-            getLogger().debug("Could not read {}", generated, e);
+            getLogger().debug("Could not read {}", generatedFile, e);
             return null;
         }
     }
