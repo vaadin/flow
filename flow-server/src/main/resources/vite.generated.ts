@@ -144,7 +144,13 @@ const hasCommercialBanner = existsSync(commercialBannerComponent);
 const jsInvokersFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-invokers.js');
 const hasJsInvokers = existsSync(jsInvokersFile);
 
-const target = ['es2023'];
+// The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
+// versions current today, Firefox ESR, and Safari 17 in its latest minor
+// version. Vite uses this as the cssTarget as well, and an ES year would map to
+// browsers that are much older than these, which makes Lightning CSS rewrite
+// light-dark() into custom properties that only follow the operating system
+// preference.
+const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
