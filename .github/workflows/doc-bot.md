@@ -209,6 +209,7 @@ If it does, find the pull request in `vaadin/docs` whose head branch is that nam
 | State | What this run does |
 |---|---|
 | No branch, or a branch with no pull request | **Create** one (Phase 5a). |
+| An **open** pull request whose title starts with `[docs] ` | It was opened before this workflow started titling with the `docs: ` prefix, and the safe-output refuses to push to it. Record a `noop` saying so and stop. |
 | An **open** pull request | **Update** it — commit onto its branch (Phase 5b). |
 | A **merged** pull request | Create a new one (Phase 5a) on branch `doc-bot/vaadin-flow/${{ env.PR_NUMBER }}-<first 7 characters of the head commit>`, covering only what changed since the merged one. |
 | A **closed, unmerged** pull request | Someone rejected the documentation for this change. Record a `noop` saying so and stop. Do not reopen it and do not open another. |
@@ -217,7 +218,7 @@ If it does, find the pull request in `vaadin/docs` whose head branch is that nam
 
 Always analyze the **whole** pull request, never just the commits of its last push. A run can be cancelled by a manual re-trigger, so any increment is an unreliable unit of work — the full diff is the reliable one.
 
-1. **List the changed files first.** Fetch diffs only for the user-facing ones, at most 20, and skip any file with more than 500 lines changed — note those in the pull request body instead.
+1. **List the changed files first.** Fetch diffs only for the user-facing ones, at most 20, and skip any file with more than 500 lines changed — say in the pull request body which files you did not read.
 2. **Read the pull request metadata** — title, description, and top-level comments only. A description that says "no behavior change", "javadoc only", or "clarifies" is the author telling you the answer to Phase 2.
 3. **Classify from the hunks, not from the file list.** A `.java` file in the diff is not evidence that anything a reader can observe has changed: a hunk that only edits javadoc, a comment, a log message, or a test changes nothing about what the product does, however precisely it describes it.
 
@@ -230,7 +231,7 @@ Classify each meaningful change into one or more of these categories:
 | `BEHAVIOR_CHANGE` | Change in existing behavior visible to end-users or developers |
 | `DEPRECATION` | A public API or feature is deprecated |
 | `BREAKING_CHANGE` | A change that breaks backward compatibility |
-| `INTERNAL_ONLY` | Refactoring, internal implementation changes, javadoc, comments, log and exception messages — nothing a reader can observe changes |
+| `INTERNAL_ONLY` | Refactoring, internal implementation changes, javadoc and comments — nothing a reader can observe changes |
 | `TEST_ONLY` | Changes only to test files |
 | `BUILD_ONLY` | Changes only to build configuration, CI, dependencies |
 
@@ -261,7 +262,7 @@ Record the `noop` with the reason in one sentence, for example "javadoc-only cha
 
 ## Phase 3: Plan the Documentation Changes
 
-Flow changes almost always land in `docs-repo/articles/flow/`, component changes in `docs-repo/articles/components/`; `ls docs-repo/articles/` shows the rest (`hilla/`, `building-apps/`, `styling/`, `tools/`, `getting-started/`, `upgrading/`).
+Flow changes almost always land in `docs-repo/articles/flow/`, component changes in `docs-repo/articles/components/`; `ls docs-repo/articles/` shows the rest (`hilla/`, `building-apps/`, `styling/`, `tools/`, `getting-started/`). `articles/upgrading/` is not on that list and is never yours to edit: it is written once per release, by a human who knows which release it is.
 
 For each user-facing change from Phase 1:
 
@@ -271,7 +272,7 @@ For each user-facing change from Phase 1:
 
 Scope:
 
-- **5-8 files maximum**, so the pull request stays reviewable. When the source pull request changes more than ~50 files, cover the most significant public-API and feature changes and leave the rest as a checklist in the pull request body.
+- **5-8 files maximum**, so the pull request stays reviewable. When the source pull request changes more than ~50 files, cover the most significant public-API and feature changes and name the areas you left out in the pull request body — as a sentence saying what the documentation does not yet cover, not as a checklist of work for the reviewer.
 - **Never write a marker, a placeholder, or an open question into a documentation file** — no `TODO`, no "verify this", no bracketed note to the reviewer. What you commit has to be mergeable exactly as it stands, because a pull request that has to be hand-edited before it can be merged is worth less than no pull request. If one detail is uncertain, leave that detail out and write only what you know. If the change as a whole is uncertain, Phase 2 already told you the answer: record a `noop`. Never guess and never fabricate.
 
 ## Phase 4: Write the Documentation
@@ -337,7 +338,7 @@ Documentation for ${{ env.SOURCE_REPO }}#${{ env.PR_NUMBER }} by @${{ env.PR_AUT
 Auto-generated by the Documentation Bot — review before merging.
 ```
 
-Everything in the body is a description of the change, never a request: there is no "needs review" list, because nothing you commit is left for someone else to finish.
+Everything in the body describes the change, and nothing in it asks the reviewer for work: no "needs review" list, no checklist, no open question. Saying which part of a large source pull request the documentation does not cover is a fact about the change and belongs there; a list of boxes for someone else to tick does not.
 
 ## Phase 5b: Update the Existing Documentation PR
 
