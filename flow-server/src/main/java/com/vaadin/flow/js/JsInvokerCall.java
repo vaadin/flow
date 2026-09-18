@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.vaadin.flow.dom.Element;
+
 /**
  * A call made through {@link Element#getJsInvoker(Class)}: which invoker
  * interface, which method of it, and the arguments that were passed.

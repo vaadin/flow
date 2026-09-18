@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.Element;
+
 /**
  * Marks an interface whose methods declare the JavaScript they run with
  * {@link JsExpression}, to be called through

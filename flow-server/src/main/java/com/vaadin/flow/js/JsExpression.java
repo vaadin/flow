@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.Element;
+
 /**
  * The JavaScript that a method of a JS invoker interface runs, as a constant
  * expression.

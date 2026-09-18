@@ -16,6 +16,8 @@
 package com.vaadin.flow.js;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -64,7 +66,7 @@ class JsInvokerCallTest {
 
     private static JsInvokerCall call(String methodName, Object... arguments) {
         return new JsInvokerCall(GreeterJs.class, methodName,
-                List.of(arguments));
+                Arrays.asList(arguments));
     }
 
     @Test
@@ -101,6 +103,22 @@ class JsInvokerCallTest {
         call("showGreeting", "Hello").invokeOn(greeter);
 
         assertEquals(List.of("Hello"), greeter.greetings);
+    }
+
+    @Test
+    void nullArgument_keptAndPassedToTheImplementation() {
+        // What a method whose value is optional is called with - the focus
+        // options of a browser, for one - so it has to survive the call and
+        // reach the implementation as it was.
+        JsInvokerCall call = call("showGreeting", (Object) null);
+        Greeter greeter = new Greeter();
+
+        assertEquals(Collections.singletonList(null), call.arguments());
+        assertEquals("showGreeting/1", call.getMethodId());
+
+        call.invokeOn(greeter);
+
+        assertEquals(Collections.singletonList(null), greeter.greetings);
     }
 
     @Test
