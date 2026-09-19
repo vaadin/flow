@@ -1095,10 +1095,11 @@ class BundleValidationTest {
         setupMode(mode);
 
         ObjectNode stats = getBasicStats();
+        // Any hash the declarations do not produce: what the bundle was built
+        // with is whatever it was, and the point is that it is not this
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
                 FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME,
-                BundleValidationUtil
-                        .calculateHash("window.Vaadin.Flow.jsInvokers = {};"));
+                "not the hash of what the interfaces declare");
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
