@@ -139,7 +139,7 @@ public interface Focusable<T extends Component>
      * @since 25.0
      */
     default void focus(FocusOption... options) {
-        getElement().getJsInvoker(FocusJs.class)
+        getElement().executeJs(FocusJs.class)
                 .focus(FocusOption.buildOptions(options));
     }
 
@@ -169,7 +169,7 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().getJsInvoker(FocusJs.class).blur();
+        getElement().executeJs(FocusJs.class).blur();
     }
 
     /**
@@ -214,7 +214,7 @@ public interface Focusable<T extends Component>
 
     /**
      * The client-side operations behind {@link Focusable}, as an invoker
-     * interface for {@link Element#getJsInvoker(Class)}.
+     * interface for {@link Element#executeJs(Class)}.
      * <p>
      * Focus and blur are marked as server-initiated for the client, so that the
      * resulting event reports {@code isFromClient() == false}. A driver of the

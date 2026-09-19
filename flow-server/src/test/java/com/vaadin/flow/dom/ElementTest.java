@@ -2666,12 +2666,12 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+    void executeJsWithInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        element.getJsInvoker(TestJs.class).method("foo");
+        element.executeJs(TestJs.class).method("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
@@ -2688,30 +2688,30 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_interfaceWithoutAnnotation_throws() {
+    void executeJsWithInvoker_interfaceWithoutAnnotation_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
-                () -> element.getJsInvoker(Serializable.class),
+                () -> element.executeJs(Serializable.class),
                 "an interface the build does not collect should be rejected");
     }
 
     @Test
-    void getJsInvoker_notAnInterface_throws() {
+    void executeJsWithInvoker_notAnInterface_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
-                () -> element.getJsInvoker(ElementTest.class),
+                () -> element.executeJs(ElementTest.class),
                 "only an interface can declare invoker methods");
     }
 
     @Test
-    void getJsInvoker_methodReturningAResult_schedulesAndReturnsIt() {
+    void executeJsWithInvoker_methodReturningAResult_schedulesAndReturnsIt() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        ResultJs invoker = element.getJsInvoker(ResultJs.class);
+        ResultJs invoker = element.executeJs(ResultJs.class);
         assertNotNull(invoker.toString(),
                 "the invoker should answer the methods of Object");
 
@@ -2725,12 +2725,12 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_methodWithAnotherReturnType_throws() {
+    void executeJsWithInvoker_methodWithAnotherReturnType_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> element.getJsInvoker(UnsupportedJs.class),
+                () -> element.executeJs(UnsupportedJs.class),
                 "a method the invoker can not answer should be refused when the invoker is handed out");
 
         assertTrue(exception.getMessage().contains("readValue"),
@@ -2739,12 +2739,12 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_methodWithoutDeclaredJavaScript_throws() {
+    void executeJsWithInvoker_methodWithoutDeclaredJavaScript_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> element.getJsInvoker(UndeclaredJs.class));
+                () -> element.executeJs(UndeclaredJs.class));
 
         assertTrue(exception.getMessage().contains("undeclared"),
                 "the message should name the method that declares nothing: "
@@ -2752,10 +2752,10 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_defaultAndStaticMethods_areNotDeclarations() {
+    void executeJsWithInvoker_defaultAndStaticMethods_areNotDeclarations() {
         Element element = ElementFactory.createDiv();
 
-        ComposingJs invoker = element.getJsInvoker(ComposingJs.class);
+        ComposingJs invoker = element.executeJs(ComposingJs.class);
 
         // A static method belongs to the interface, not to the invoker, and a
         // default method answers with whatever Java answers with
@@ -2765,12 +2765,12 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_defaultMethodOnANonPublicInterface_throws() {
+    void executeJsWithInvoker_defaultMethodOnANonPublicInterface_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> element.getJsInvoker(NotPublicJs.class));
+                () -> element.executeJs(NotPublicJs.class));
 
         assertTrue(exception.getMessage().contains("public"),
                 "the message should say what stops the method from running: "
@@ -2778,21 +2778,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_defaultMethodDeclaringJavaScript_throws() {
+    void executeJsWithInvoker_defaultMethodDeclaringJavaScript_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
-                () -> element.getJsInvoker(ContradictoryJs.class),
+                () -> element.executeJs(ContradictoryJs.class),
                 "a method can run in Java or in the browser, not both");
     }
 
     @Test
-    void getJsInvoker_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
+    void executeJsWithInvoker_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        element.getJsInvoker(ComposingJs.class).twice("foo");
+        element.executeJs(ComposingJs.class).twice("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()

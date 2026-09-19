@@ -27,7 +27,7 @@ import java.util.Objects;
 import com.vaadin.flow.dom.Element;
 
 /**
- * A call made through {@link Element#getJsInvoker(Class)}: which invoker
+ * A call made through {@link Element#executeJs(Class)}: which invoker
  * interface, which method of it, and the arguments that were passed.
  * <p>
  * The call is what the client receives — the interface, the method and the

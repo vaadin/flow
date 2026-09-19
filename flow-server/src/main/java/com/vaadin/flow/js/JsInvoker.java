@@ -25,8 +25,7 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Marks an interface whose methods declare the JavaScript they run with
- * {@link JsExpression}, to be called through
- * {@link Element#getJsInvoker(Class)}.
+ * {@link JsExpression}, to be called through {@link Element#executeJs(Class)}.
  * <p>
  * The annotation is what makes the interface findable during the build: every
  * annotated interface is collected into the generated bundle as a function per
@@ -36,7 +35,7 @@ import com.vaadin.flow.dom.Element;
  * policy that does not allow <code>unsafe-eval</code>.
  *
  * @see JsExpression
- * @see Element#getJsInvoker(Class)
+ * @see Element#executeJs(Class)
  */
 @Documented
 @Target(ElementType.TYPE)

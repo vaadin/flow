@@ -1833,8 +1833,8 @@ public class Element extends Node<Element> {
      * <p>
      * The call is sent to the browser as an expression and compiled there,
      * which a content security policy without <code>unsafe-eval</code> does not
-     * allow. {@link #getJsInvoker(Class)} runs JavaScript that is declared in
-     * Java and collected into the bundle instead, and sends no expression.
+     * allow. {@link #executeJs(Class)} runs JavaScript that is declared in Java
+     * and collected into the bundle instead, and sends no expression.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1847,7 +1847,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
-     * @see #getJsInvoker(Class)
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1935,7 +1935,7 @@ public class Element extends Node<Element> {
      * <p>
      * The expression is sent to the browser and compiled there, which a content
      * security policy without <code>unsafe-eval</code> does not allow.
-     * {@link #getJsInvoker(Class)} runs JavaScript that is declared in Java and
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
      * collected into the bundle instead, and sends no expression.
      *
      * @param expression
@@ -1944,7 +1944,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
-     * @see #getJsInvoker(Class)
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
@@ -1953,13 +1953,15 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets an invoker for the JavaScript expressions that the given interface
-     * declares, bound to this element.
+     * Asynchronously runs the JavaScript that the given interface declares, in
+     * the browser in the context of this element.
      * <p>
-     * The interface is annotated with {@link JsInvoker} and each of its methods
-     * declares the JavaScript it runs with {@link JsExpression}. Calling a
-     * method runs that JavaScript in the browser with the method arguments as
-     * its parameters and this element as <code>this</code>:
+     * The version that takes an interface rather than an expression: the
+     * interface is annotated with {@link JsInvoker} and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}. This method
+     * answers with the interface, and calling a method of it runs that
+     * JavaScript with the method arguments as its parameters and this element
+     * as <code>this</code>:
      *
      * <pre>
      * &#64;JsInvoker
@@ -1968,7 +1970,7 @@ public class Element extends Node<Element> {
      *     void showGreeting(String greeting);
      * }
      *
-     * element.getJsInvoker(GreeterJs.class).showGreeting("Hello");
+     * element.executeJs(GreeterJs.class).showGreeting("Hello");
      * </pre>
      *
      * Unlike {@link #executeJs(String, Object...)}, nothing about the
@@ -1977,6 +1979,10 @@ public class Element extends Node<Element> {
      * runs the collected function after looking it up by interface and method.
      * No expression is sent and none is compiled in the browser, so the call
      * works under a content security policy without <code>unsafe-eval</code>.
+     * What the two versions have in common is when the JavaScript runs - after
+     * pending DOM updates, deferred while the element is detached or invisible
+     * - and that the result of a method that declares one can be read through
+     * {@link PendingJavaScriptResult}.
      * <p>
      * The scheduled invocation carries the call as a {@link JsInvokerCall}, so
      * a driver of the client side that can not run JavaScript can recognize it,
@@ -1996,13 +2002,14 @@ public class Element extends Node<Element> {
      *            the invoker interface type
      * @param invokerType
      *            the invoker interface, not <code>null</code>
-     * @return an invoker bound to this element, not <code>null</code>
+     * @return the interface, to call the declared JavaScript through, not
+     *         <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
      *             {@link JsInvoker}, or has a method the invoker can not answer
      */
     @SuppressWarnings("unchecked")
-    public <T> T getJsInvoker(Class<T> invokerType) {
+    public <T> T executeJs(Class<T> invokerType) {
         Objects.requireNonNull(invokerType, "Invoker type cannot be null");
         if (!invokerType.isInterface()) {
             throw new IllegalArgumentException(
