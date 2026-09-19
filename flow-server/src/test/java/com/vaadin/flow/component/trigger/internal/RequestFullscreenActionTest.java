@@ -74,7 +74,7 @@ class RequestFullscreenActionTest {
         // With callbacks: outer function is the observer wrapper; the inner
         // function is captured at $1 and contains the actual fullscreen call.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
@@ -117,7 +117,7 @@ class RequestFullscreenActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
