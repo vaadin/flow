@@ -1953,15 +1953,15 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Asynchronously runs the JavaScript that the given interface declares, in
-     * the browser in the context of this element.
+     * Answers with an implementation of the given interface, through which the
+     * JavaScript it declares is run asynchronously in the browser in the
+     * context of this element.
      * <p>
      * The version that takes an interface rather than an expression: the
      * interface is annotated with {@link JsInvoker} and each of its methods
-     * declares the JavaScript it runs with {@link JsExpression}. This method
-     * answers with the interface, and calling a method of it runs that
-     * JavaScript with the method arguments as its parameters and this element
-     * as <code>this</code>:
+     * declares the JavaScript it runs with {@link JsExpression}. Calling a
+     * method of the implementation runs that JavaScript with the method
+     * arguments as its parameters and this element as <code>this</code>:
      *
      * <pre>
      * &#64;JsInvoker
@@ -2002,8 +2002,8 @@ public class Element extends Node<Element> {
      *            the invoker interface type
      * @param invokerType
      *            the invoker interface, not <code>null</code>
-     * @return the interface, to call the declared JavaScript through, not
-     *         <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
      *             {@link JsInvoker}, or has a method the invoker can not answer
