@@ -1830,6 +1830,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The call is sent to the browser as an expression and compiled there,
+     * which a content security policy without <code>unsafe-eval</code> does not
+     * allow. {@link #getJsInvoker(Class)} runs JavaScript that is declared in
+     * Java and collected into the bundle instead, and sends no expression.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
