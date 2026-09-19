@@ -66,11 +66,14 @@ public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
 
     /**
-     * The class name a <code>&lt;table&gt;</code> carries so that the theme
-     * styles it: a bordered box on the theme's background, cell padding, a
-     * header and footer told apart from the body, and a line between the rows,
-     * in the colors and spacing of the theme in use. Both the Aura and the Lumo
-     * theme ship these styles.
+     * The class name that opts a native element into the styles the theme ships
+     * for it. On a <code>&lt;table&gt;</code> those are a bordered box on the
+     * theme's background, cell padding, a header and footer told apart from the
+     * body, and a line between the rows, in the colors and spacing of the theme
+     * in use. Both the Aura and the Lumo theme ship them.
+     * <p>
+     * The class name is not specific to a table: it is the one class the themes
+     * look for on any native element they style.
      * <p>
      * Every table adds the class name for itself. Remove it to keep the
      * browser's own table styles instead:
@@ -81,7 +84,7 @@ public class Table extends HtmlComponent
      *
      * @since 25.4
      */
-    public static final String STYLES_CLASS_NAME = "vaadin-table";
+    public static final String STYLES_CLASS_NAME = "vaadin-default";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
