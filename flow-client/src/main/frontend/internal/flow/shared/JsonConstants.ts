@@ -303,6 +303,26 @@ export const JsonConstants = {
   MAP_STATE_NODE_EVENT_DATA: ']',
 
   /**
+   * Key of the JavaScript expression in the settings that are sent to the
+   * client for one entry that is evaluated when an event occurs.
+   */
+  EVENT_SETTINGS_EXPRESSION: 'e',
+
+  /**
+   * Key of the debounce settings in the settings that are sent to the client
+   * for one entry that is evaluated when an event occurs.
+   */
+  EVENT_SETTINGS_DEBOUNCE: 'd',
+
+  /**
+   * Key of the number of captures in the settings that are sent to the client
+   * for one entry that is evaluated when an event occurs. Entries with
+   * captures are only evaluated for the capture values that are sent
+   * separately for each element.
+   */
+  EVENT_SETTINGS_CAPTURE_COUNT: 'c',
+
+  /**
    * RPC type value used for return channel messages.
    */
   RPC_TYPE_CHANNEL: 'channel',
