@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,7 +69,7 @@ public class StreamResourceIT extends ChromeBrowserTest {
         String url = link.getAttribute("href");
 
         getDriver().manage().timeouts()
-                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
+                .scriptTimeout(Duration.ofSeconds(15));
 
         try (InputStream stream = download(url)) {
             List<String> lines = IOUtils.readLines(stream,
