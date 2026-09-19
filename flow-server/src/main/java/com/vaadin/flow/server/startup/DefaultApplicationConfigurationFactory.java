@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 
 import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -185,6 +188,12 @@ public class DefaultApplicationConfigurationFactory
      * <p>
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
+     * <p>
+     * A candidate that cannot be used for the application that is being run is
+     * skipped, see {@link #getReasonToIgnore(String)}.
+     *
+     * @return the token file content, or {@code null} if no usable file was
+     *         found
      */
     private String getPossibleJarResource(VaadinContext context,
             List<URL> resources) throws IOException {
@@ -203,32 +212,90 @@ public class DefaultApplicationConfigurationFactory
         // If vite.generated.ts is inside 2 archives then we are running
         // from a jar, as the jar of flow-server is inside the jar of the
         // application
-        if (viteGenerated != null
-                && countArchiveLevels(viteGenerated.getPath()) >= 2) {
-            for (URL resource : resources) {
-                // As we now know that we are running from a jar we can accept a
-                // build info with a single jar in the path
-                if (countArchiveLevels(resource.getPath()) == 1) {
-                    return FrontendUtils.streamToString(resource.openStream());
-                }
+        boolean runningFromJar = viteGenerated != null
+                && countArchiveLevels(viteGenerated.getPath()) >= 2;
+
+        // As we now know that we are running from a jar, the file of the
+        // application is the one in the outermost archive, so look at the
+        // least nested ones first
+        List<URL> candidates = runningFromJar
+                ? resources.stream()
+                        .sorted(Comparator.comparingInt(
+                                url -> countArchiveLevels(url.getPath())))
+                        .toList()
+                : resources;
+
+        for (URL candidate : candidates) {
+            String content = FrontendUtils
+                    .streamToString(candidate.openStream());
+            String reasonToIgnore = getReasonToIgnore(content);
+            if (reasonToIgnore != null) {
+                getLogger().warn(
+                        "Ignoring the file '{}' found inside a jar, as {}.",
+                        candidate.getPath(), reasonToIgnore);
+                continue;
             }
+            // The file is only known to be the right one when it was
+            // picked by the rule for a packaged application
+            boolean confidentPick = runningFromJar
+                    && countArchiveLevels(candidate.getPath()) == 1;
+            if (candidates.size() > 1 && !confidentPick) {
+                String warningMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s' first match of '%s' possible (%s).%n"
+                                + "Please verify flow-build-info file content.",
+                        candidate.getPath(), resources.size(), resources);
+                getLogger().warn(warningMessage);
+            } else {
+                String debugMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s'",
+                        candidate.getPath());
+                getLogger().debug(debugMessage);
+            }
+            return content;
         }
-        URL firstResource = resources.get(0);
-        if (resources.size() > 1) {
-            String warningMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
-                            + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size(), resources);
-            getLogger().warn(warningMessage);
-        } else {
-            String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
-                    firstResource.getPath());
-            getLogger().debug(debugMessage);
+        return null;
+    }
+
+    /**
+     * Checks whether a token file found inside a jar can be used for the
+     * application that is being run.
+     * <p>
+     * A file from a production build carries no folders of the machine it was
+     * built on and is always used, as it is the file of a packaged application.
+     * A file from a development build is used only when the project it was
+     * written for is on this machine, which is the case when the application
+     * itself is packaged in development mode, but not when the file is packaged
+     * into a dependency built somewhere else.
+     *
+     * @param content
+     *            the token file content, not {@code null}
+     * @return the reason not to use the file, or {@code null} when it can be
+     *         used
+     */
+    private String getReasonToIgnore(String content) {
+        JsonNode buildInfo;
+        try {
+            buildInfo = JacksonUtils.readTree(content);
+        } catch (RuntimeException e) {
+            getLogger().debug("Unable to parse a token file from a jar", e);
+            return "it cannot be read as JSON";
         }
-        return FrontendUtils.streamToString(firstResource.openStream());
+        if (buildInfo.has(SERVLET_PARAMETER_PRODUCTION_MODE) && buildInfo
+                .get(SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue()) {
+            return null;
+        }
+        if (!buildInfo.has(NPM_TOKEN)) {
+            return "it is not from a production build and does not name the project it was written for";
+        }
+        String projectFolder = buildInfo.get(NPM_TOKEN).asString();
+        if (!new File(projectFolder).exists()) {
+            return String.format(
+                    "it is not from a production build and the project it was written for, '%s', is not on this machine, so it is packaged into a dependency by mistake",
+                    projectFolder);
+        }
+        return null;
     }
 
     /**
