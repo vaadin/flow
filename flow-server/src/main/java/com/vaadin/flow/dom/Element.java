@@ -16,6 +16,11 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +69,9 @@ import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
@@ -1822,6 +1830,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The call is sent to the browser as an expression and compiled there,
+     * which a content security policy without <code>unsafe-eval</code> does not
+     * allow. {@link #executeJs(Class)} runs JavaScript that is declared in Java
+     * and collected into the bundle instead, and sends no expression.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1834,6 +1847,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1855,8 +1869,8 @@ public class Element extends Node<Element> {
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
 
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return scheduleJavaScriptInvocation(null, "return $0." + functionName
+                + "(" + paramPlaceholderString + ")", jsParameters);
     }
 
     /**
@@ -1918,6 +1932,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow.
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1925,27 +1944,218 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        return scheduleExecuteJs(expression, parameters);
+    }
 
-        // Add "this" as the last parameter
-        Object[] wrappedParameters;
-        if (parameters.length == 0) {
-            wrappedParameters = new Object[] { this };
-        } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
-            wrappedParameters[parameters.length] = this;
+    /**
+     * Answers with an implementation of the given interface, through which the
+     * JavaScript it declares is run asynchronously in the browser in the
+     * context of this element.
+     * <p>
+     * The version that takes an interface rather than an expression: the
+     * interface is annotated with {@link JsInvoker} and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}. Calling a
+     * method of the implementation runs that JavaScript with the method
+     * arguments as its parameters and this element as <code>this</code>:
+     *
+     * <pre>
+     * &#64;JsInvoker
+     * public interface GreeterJs extends Serializable {
+     *     &#64;JsExpression("window.alert($0)")
+     *     void showGreeting(String greeting);
+     * }
+     *
+     * element.executeJs(GreeterJs.class).showGreeting("Hello");
+     * </pre>
+     *
+     * Unlike {@link #executeJs(String, Object...)}, nothing about the
+     * JavaScript is decided at the call site: the build collects the
+     * declarations of every invoker interface into the bundle, and the client
+     * runs the collected function after looking it up by interface and method.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>.
+     * What the two versions have in common is when the JavaScript runs - after
+     * pending DOM updates, deferred while the element is detached or invisible
+     * - and that the result of a method that declares one can be read through
+     * {@link PendingJavaScriptResult}.
+     * <p>
+     * The scheduled invocation carries the call as a {@link JsInvokerCall}, so
+     * a driver of the client side that can not run JavaScript can recognize it,
+     * or run it on its own implementation of the same interface.
+     * <p>
+     * A method returns either <code>void</code> or
+     * {@link PendingJavaScriptResult}. A <code>default</code> method declares
+     * no JavaScript and runs in Java instead, so an interface can compose calls
+     * of its own methods; an interface that has one has to be public, since
+     * running it is an ordinary Java call. A <code>static</code> method is left
+     * alone for the same reason.
+     * <p>
+     * The interface is checked when the invoker is handed out, so one that can
+     * not work says so here rather than at the first call.
+     *
+     * @param <T>
+     *            the invoker interface type
+     * @param invokerType
+     *            the invoker interface, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsInvoker}, or has a method the invoker can not answer
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T executeJs(Class<T> invokerType) {
+        Objects.requireNonNull(invokerType, "Invoker type cannot be null");
+        if (!invokerType.isInterface()) {
+            throw new IllegalArgumentException(
+                    invokerType.getName() + " is not an interface");
         }
+        if (!invokerType.isAnnotationPresent(JsInvoker.class)) {
+            throw new IllegalArgumentException(invokerType.getName()
+                    + " is not annotated with @JsInvoker, so the build does not"
+                    + " collect its JavaScript into the bundle");
+        }
+        checkInvokerMethods(invokerType);
+        return (T) Proxy.newProxyInstance(invokerType.getClassLoader(),
+                new Class<?>[] { invokerType },
+                new JsInvokerHandler(this, invokerType));
+    }
+
+    /**
+     * Checks the methods of an invoker interface: each one that the invoker has
+     * to answer declares the JavaScript it runs, and returns either nothing or
+     * the pending result of running it. Checked here rather than when a method
+     * is called, so an interface that can not work says so when it is handed
+     * out.
+     * <p>
+     * A default method is not checked: it runs in Java, and composing calls of
+     * the interface is what it is for. Neither is a static one.
+     */
+    private static void checkInvokerMethods(Class<?> invokerType) {
+        List<String> undeclared = new ArrayList<>();
+        List<String> unanswerable = new ArrayList<>();
+        List<String> inJava = new ArrayList<>();
+        for (Method method : invokerType.getMethods()) {
+            if (Modifier.isStatic(method.getModifiers())) {
+                continue;
+            }
+            if (method.isDefault()) {
+                if (method.isAnnotationPresent(JsExpression.class)) {
+                    // Declaring JavaScript and running in Java at the same
+                    // time: only one of them can happen, so neither is assumed
+                    undeclared.add(method.getName());
+                }
+                inJava.add(method.getName());
+                continue;
+            }
+            if (!method.isAnnotationPresent(JsExpression.class)) {
+                undeclared.add(method.getName());
+            }
+            Class<?> returnType = method.getReturnType();
+            if (returnType != void.class && !returnType
+                    .isAssignableFrom(PendingJavaScriptResult.class)) {
+                unanswerable.add(method.getName());
+            }
+        }
+        if (!undeclared.isEmpty()) {
+            throw new IllegalArgumentException(invokerType.getName()
+                    + " declares no JavaScript to run for "
+                    + String.join(", ", undeclared)
+                    + ". Annotate the methods with @JsExpression, or make them"
+                    + " default methods, without the annotation, if they are"
+                    + " meant to run in Java");
+        }
+        if (!unanswerable.isEmpty()) {
+            throw new IllegalArgumentException(invokerType.getName() + " has "
+                    + String.join(", ", unanswerable)
+                    + " returning something the invoker can not answer with."
+                    + " A method returns void or PendingJavaScriptResult");
+        }
+        if (!inJava.isEmpty()
+                && !Modifier.isPublic(invokerType.getModifiers())) {
+            // Running a default method is an ordinary Java call, made from
+            // here, so the interface has to be reachable from here
+            throw new IllegalArgumentException(invokerType.getName() + " has "
+                    + String.join(", ", inJava)
+                    + " running in Java, which an interface that is not public"
+                    + " can not do. Make the interface public, or declare the"
+                    + " JavaScript of those methods with @JsExpression");
+        }
+    }
+
+    /**
+     * Turns a call on a JS invoker interface into a scheduled invocation that
+     * carries the call.
+     */
+    private record JsInvokerHandler(Element element,
+            Class<?> invokerType) implements InvocationHandler, Serializable {
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            if (method.getDeclaringClass() == Object.class) {
+                return method.invoke(this, args);
+            }
+            if (method.isDefault()) {
+                // Runs in Java, and what it calls of the interface comes back
+                // here
+                try {
+                    return InvocationHandler.invokeDefault(proxy, method, args);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Cannot run "
+                            + method.getName() + " of " + invokerType.getName()
+                            + " in Java. Make the interface public, or declare"
+                            + " the JavaScript of the method with"
+                            + " @JsExpression", e);
+                }
+            }
+            boolean returnsResult = method.getReturnType()
+                    .isAssignableFrom(PendingJavaScriptResult.class);
+            List<Object> arguments = args == null ? List.of()
+                    : Arrays.asList(args);
+            PendingJavaScriptResult result = element
+                    .scheduleInvokerCall(new JsInvokerCall(invokerType,
+                            method.getName(), arguments));
+            return returnsResult ? result : null;
+        }
+    }
+
+    private PendingJavaScriptResult scheduleExecuteJs(String expression,
+            Object[] parameters) {
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(null, wrappedExpression,
+                withElementAsLastParameter(parameters));
+    }
+
+    /**
+     * Schedules a call made through a JS invoker. The parameters are the
+     * arguments of the call followed by this element, which the client applies
+     * the generated function to, so there is no expression to wrap: the
+     * function that the build generated is already the equivalent of the
+     * wrapping that {@link #scheduleExecuteJs(String, Object[])} does around an
+     * expression.
+     */
+    private PendingJavaScriptResult scheduleInvokerCall(JsInvokerCall call) {
+        return scheduleJavaScriptInvocation(call, call.getExpression(),
+                withElementAsLastParameter(call.arguments().toArray()));
+    }
+
+    private Object[] withElementAsLastParameter(Object[] parameters) {
+        if (parameters.length == 0) {
+            return new Object[] { this };
+        }
+        Object[] withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        withElement[parameters.length] = this;
+        return withElement;
     }
 
     /**
@@ -2010,11 +2220,12 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Object[] parameters) {
+            @Nullable JsInvokerCall invokerCall, String expression,
+            Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(invokerCall,
+                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

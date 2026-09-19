@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +51,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -199,6 +203,65 @@ class UidlWriterTest {
                         JacksonUtils.createNode("console.log($0, $1)")));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
+    }
+
+    @Test
+    void encodeExecuteJavaScript_invokerCall_sendsTheTargetInsteadOfTheScript() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        invocation)));
+
+        ObjectNode target = JacksonUtils.createObjectNode();
+        target.put("invoker", TestJs.class.getName());
+        target.put("method", "method/1");
+        target.put("arguments", 1);
+        ArrayNode expectedJson = JacksonUtils.createArray(
+                JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                        // Null since element is not attached
+                        JacksonUtils.nullNode(), target));
+
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "an invoker call should carry its target, and no JavaScript: "
+                        + json);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_subscribedInvokerCall_addsTheReturnChannels() {
+        Element element = ElementFactory.createDiv();
+
+        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
+                List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                element.getNode(), invocation);
+        pending.then(value -> {
+        });
+
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending));
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(5, encoded.size(),
+                "the argument and the element should be followed by the two channels and the target: "
+                        + encoded);
+        ObjectNode target = (ObjectNode) encoded.get(4);
+        assertTrue(target.get("returns").asBoolean(),
+                "the target should tell the client that the call is subscribed to");
+        assertEquals(1, target.get("arguments").asInt());
+    }
+
+    @JsInvoker
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
     }
 
     @Test

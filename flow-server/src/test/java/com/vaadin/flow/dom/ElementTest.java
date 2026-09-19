@@ -77,6 +77,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2660,6 +2663,205 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.property.other.method()", element);
+    }
+
+    @Test
+    void executeJsWithInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).method("foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals("this.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", element), invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsInvokerCall(TestJs.class, "method", List.of("foo")),
+                invocation.getInvokerCall());
+    }
+
+    @Test
+    void executeJsWithInvoker_interfaceWithoutAnnotation_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.executeJs(Serializable.class),
+                "an interface the build does not collect should be rejected");
+    }
+
+    @Test
+    void executeJsWithInvoker_notAnInterface_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.executeJs(ElementTest.class),
+                "only an interface can declare invoker methods");
+    }
+
+    @Test
+    void executeJsWithInvoker_methodReturningAResult_schedulesAndReturnsIt() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        ResultJs invoker = element.executeJs(ResultJs.class);
+        assertNotNull(invoker.toString(),
+                "the invoker should answer the methods of Object");
+
+        PendingJavaScriptResult result = invoker.readValue();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertNotNull(result,
+                "a method declaring a result should return the pending result");
+        assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+    }
+
+    @Test
+    void executeJsWithInvoker_methodWithAnotherReturnType_throws() {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.executeJs(UnsupportedJs.class),
+                "a method the invoker can not answer should be refused when the invoker is handed out");
+
+        assertTrue(exception.getMessage().contains("readValue"),
+                "the message should name the method: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void executeJsWithInvoker_methodWithoutDeclaredJavaScript_throws() {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.executeJs(UndeclaredJs.class));
+
+        assertTrue(exception.getMessage().contains("undeclared"),
+                "the message should name the method that declares nothing: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void executeJsWithInvoker_defaultAndStaticMethods_areNotDeclarations() {
+        Element element = ElementFactory.createDiv();
+
+        ComposingJs invoker = element.executeJs(ComposingJs.class);
+
+        // A static method belongs to the interface, not to the invoker, and a
+        // default method answers with whatever Java answers with
+        assertEquals("ComposingJs", ComposingJs.name());
+        assertEquals("composing", invoker.describe(),
+                "a default method is not bound by what a declared one may return");
+    }
+
+    @Test
+    void executeJsWithInvoker_defaultMethodOnANonPublicInterface_throws() {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.executeJs(NotPublicJs.class));
+
+        assertTrue(exception.getMessage().contains("public"),
+                "the message should say what stops the method from running: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void executeJsWithInvoker_defaultMethodDeclaringJavaScript_throws() {
+        Element element = ElementFactory.createDiv();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> element.executeJs(ContradictoryJs.class),
+                "a method can run in Java or in the browser, not both");
+    }
+
+    @Test
+    void executeJsWithInvoker_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(ComposingJs.class).twice("foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(2, pendingJs.size(),
+                "a default method runs in Java, and what it calls of the interface is scheduled");
+        assertEquals(
+                new JsInvokerCall(ComposingJs.class, "method", List.of("foo")),
+                pendingJs.get(0).getInvocation().getInvokerCall());
+    }
+
+    @JsInvoker
+    interface ResultJs extends Serializable {
+        @JsExpression("return this.value;")
+        PendingJavaScriptResult readValue();
+    }
+
+    @JsInvoker
+    interface UnsupportedJs extends Serializable {
+        @JsExpression("return this.value;")
+        String readValue();
+    }
+
+    @JsInvoker
+    interface UndeclaredJs extends Serializable {
+        void undeclared();
+    }
+
+    @JsInvoker
+    public interface ComposingJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
+
+        default void twice(String value) {
+            method(value);
+            method(value);
+        }
+
+        default String describe() {
+            return "composing";
+        }
+
+        static String name() {
+            return "ComposingJs";
+        }
+    }
+
+    @JsInvoker
+    interface NotPublicJs extends Serializable {
+        @JsExpression("this.method()")
+        void method();
+
+        default void twice() {
+            method();
+            method();
+        }
+    }
+
+    @JsInvoker
+    interface ContradictoryJs extends Serializable {
+        @JsExpression("this.method()")
+        default void method() {
+        }
+    }
+
+    @JsInvoker
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
     }
 
     @Test

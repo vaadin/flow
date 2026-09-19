@@ -203,6 +203,11 @@ class BundleValidationTest {
         frontendHashes.put("theme-util.js",
                 BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
+        // A bundle carries the JavaScript declared by the invoker interfaces
+        frontendHashes.put(
+                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME,
+                BundleValidationUtil.calculateHash(
+                        new TaskGenerateJsInvokers(options).getFileContent()));
         return stats;
     }
 
@@ -1065,6 +1070,43 @@ class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         assertFalse(needsBuild, "Jar fronted file content hash should match.");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void bundleWithoutJsInvokerJavaScript_bundleRebuild(Mode mode) {
+        setupMode(mode);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).remove(
+                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+
+        assertTrue(needsBuild,
+                "a bundle that carries none of the JavaScript the invoker interfaces declare would run an application that cannot make those calls");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void jsInvokerJavaScriptChanged_bundleRebuild(Mode mode) {
+        setupMode(mode);
+
+        ObjectNode stats = getBasicStats();
+        // Any hash the declarations do not produce: what the bundle was built
+        // with is whatever it was, and the point is that it is not this
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+
+        assertTrue(needsBuild,
+                "JavaScript declared by an invoker interface that the bundle was not built with should trigger a rebuild");
     }
 
     @ParameterizedTest
