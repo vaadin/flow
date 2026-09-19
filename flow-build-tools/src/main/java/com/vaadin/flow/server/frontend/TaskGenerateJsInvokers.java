@@ -17,15 +17,21 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsExpression;
@@ -105,33 +111,124 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Writes the file that registers the JavaScript of the given invoker
-     * interfaces, for a caller that has to write it again while the application
-     * runs rather than as part of a build.
+     * The invoker interfaces of the given ones whose JavaScript the generated
+     * file does not carry, which is the JavaScript a browser can run of them.
+     *
+     * @param options
+     *            where the file is, not <code>null</code>
+     * @param invokers
+     *            the invoker interfaces to look for, not <code>null</code>
+     * @return those the file does not carry, empty when it carries all of them
+     */
+    public static List<Class<?>> missingFromGeneratedFile(Options options,
+            Collection<Class<?>> invokers) {
+        String generated = readGeneratedFile(options);
+        return invokers.stream()
+                .filter(invoker -> !isInGeneratedFile(invoker, generated))
+                .toList();
+    }
+
+    /**
+     * Writes the generated file again so that it carries what the given invoker
+     * interfaces declare, for a caller that has to update it while the
+     * application runs rather than as part of a build.
+     * <p>
+     * The interfaces the file already registers are kept: they are what a
+     * browser that has the file can run, and the caller only knows about the
+     * ones it passes in. One the file registers and the application no longer
+     * has is dropped, and one whose annotation was removed keeps its functions
+     * with nothing calling them, until a build renders the file again.
      * <p>
      * Goes through the same write as {@link #execute()}, which leaves the file
      * alone when its content would not change and writes it atomically
-     * otherwise, so the dev server is not told about an update that is not one
+     * otherwise, so a dev server is not told about an update that is not one
      * and never reads a file that is half written.
      *
      * @param options
-     *            where the file belongs, not <code>null</code>
+     *            where the file is, not <code>null</code>
      * @param invokers
-     *            the invoker interfaces the file registers, not
-     *            <code>null</code>
-     * @return the content the file holds afterwards
+     *            the invoker interfaces to write it for, not <code>null</code>
+     *            and not empty
+     * @return those of them the file does not carry afterwards, empty when it
+     *         carries all of them
      */
-    public static String writeJsInvokers(Options options,
+    public static List<Class<?>> updateJsInvokers(Options options,
             Collection<Class<?>> invokers) {
+        String generated = readGeneratedFile(options);
+        String content = renderFileContent(withInvokersOf(generated, invokers));
+
         TaskGenerateJsInvokers task = new TaskGenerateJsInvokers(options);
-        String content = renderFileContent(invokers);
         try {
             task.writeIfChanged(task.getGeneratedFile(), content);
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Error writing " + task.getGeneratedFile(), e);
+            getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
+            return List.copyOf(invokers);
         }
-        return content;
+        return invokers.stream()
+                .filter(invoker -> !isInGeneratedFile(invoker, content))
+                .toList();
+    }
+
+    /**
+     * Whether the given content carries what the invoker declares, compared as
+     * this class renders it, so the interface name, the methods, their argument
+     * counts and the JavaScript all have to match. A method that was removed
+     * does not show up as a difference: its function stays in the file with
+     * nothing calling it.
+     */
+    private static boolean isInGeneratedFile(Class<?> invoker,
+            String generated) {
+        if (generated == null) {
+            return false;
+        }
+        List<String> declared = renderInvokerLines(invoker);
+        if (declared.isEmpty()) {
+            // Declares no JavaScript, so there is nothing to carry
+            return true;
+        }
+        return generated
+                .contains(String.join(System.lineSeparator(), declared));
+    }
+
+    /**
+     * The given interfaces, plus the ones the content registers that are not
+     * among them and can still be loaded.
+     */
+    private static Collection<Class<?>> withInvokersOf(String generated,
+            Collection<Class<?>> invokers) {
+        Map<String, Class<?>> byName = new LinkedHashMap<>();
+        invokers.forEach(invoker -> byName.put(invoker.getName(), invoker));
+        ClassLoader classLoader = invokers.iterator().next().getClassLoader();
+        for (String name : readInvokerNames(generated)) {
+            if (byName.containsKey(name)) {
+                continue;
+            }
+            try {
+                byName.put(name, Class.forName(name, false, classLoader));
+            } catch (ClassNotFoundException | LinkageError e) {
+                getLogger().debug("Could not load the invoker {}", name, e);
+            }
+        }
+        return byName.values();
+    }
+
+    private static String readGeneratedFile(Options options) {
+        File generatedFile = new TaskGenerateJsInvokers(options)
+                .getGeneratedFile();
+        if (!generatedFile.exists()) {
+            return null;
+        }
+        try {
+            return Files.readString(generatedFile.toPath(),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            getLogger().debug("Could not read {}", generatedFile, e);
+            return null;
+        }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(TaskGenerateJsInvokers.class);
     }
 
     /**

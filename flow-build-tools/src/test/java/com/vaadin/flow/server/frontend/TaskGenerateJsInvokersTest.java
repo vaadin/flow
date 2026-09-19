@@ -16,7 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -55,13 +59,14 @@ class TaskGenerateJsInvokersTest {
     File temporaryFolder;
 
     private TaskGenerateJsInvokers task;
+    private Options options;
     private File frontendFolder;
 
     @BeforeEach
     void setUp() {
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();
-        Options options = new Options(Mockito.mock(Lookup.class),
+        options = new Options(Mockito.mock(Lookup.class),
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
                 null).withFrontendDirectory(frontendFolder);
@@ -101,6 +106,30 @@ class TaskGenerateJsInvokersTest {
         assertFalse(content.contains(NothingJs.class.getName()),
                 "an interface that declares no JavaScript has nothing to register: "
                         + content);
+    }
+
+    @Test
+    void updateJsInvokers_dropsAnInvokerTheFileNamesAndNothingHas()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+        // What a file written by an older state of the application looks like:
+        // it names an interface that is no longer there to render
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_INVOKERS_FILE_NAME);
+        Files.writeString(generated.toPath(),
+                Files.readString(generated.toPath()).replace(
+                        NothingJs.class.getName(), "com.example.GoneJs"));
+
+        List<Class<?>> missing = TaskGenerateJsInvokers
+                .updateJsInvokers(options, List.of(GreeterJs.class));
+
+        assertTrue(missing.isEmpty(),
+                "the interface that was asked for should be in the file");
+        assertFalse(
+                Files.readString(generated.toPath())
+                        .contains("com.example.GoneJs"),
+                "a name the file holds that nothing answers to should be dropped");
     }
 
     @Test

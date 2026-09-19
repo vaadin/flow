@@ -15,14 +15,7 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,66 +70,42 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
         }
 
         VaadinService service = event.getVaadinService();
-        File generatedFile = generatedInvokersFile(service);
-        String generated = readGeneratedInvokers(generatedFile);
-
-        List<Class<?>> stale = invokers.stream()
-                .filter(invoker -> !isInBundle(invoker, generated)).toList();
+        Options options = buildOptions(service);
+        List<Class<?>> stale = TaskGenerateJsInvokers
+                .missingFromGeneratedFile(options, invokers);
         if (stale.isEmpty()) {
             return;
         }
 
-        String applied = hotApply(service, generatedFile, generated, invokers);
-        // What the file holds now is what a browser can run, so anything the
-        // rendering did not cover is still a change nobody can apply
-        List<String> unresolved = stale.stream()
-                .filter(invoker -> !isInBundle(invoker, applied))
-                .map(Class::getName).toList();
+        if (!canReplaceInTheBrowser(service)) {
+            // What a browser has without the dev server is a bundle, which
+            // only a build produces
+            report(names(stale));
+            return;
+        }
+
+        List<Class<?>> unresolved = TaskGenerateJsInvokers
+                .updateJsInvokers(options, invokers);
         if (unresolved.isEmpty()) {
             getLogger().debug(
-                    "Wrote the JavaScript declared by {} to {}, which the frontend dev server replaces in the browser",
-                    stale.stream().map(Class::getName).toList(), generatedFile);
+                    "Wrote the JavaScript declared by {}, which the frontend dev server replaces in the browser",
+                    names(stale));
         } else {
-            report(unresolved);
+            report(names(unresolved));
         }
     }
 
-    /**
-     * Writes the generated file again from what the invoker interfaces declare,
-     * so the frontend dev server can replace the module in the browser.
-     * <p>
-     * Only with the dev server running: what a browser has without it is a
-     * bundle, which this can not replace. The file is left alone when its
-     * content would not change, so the dev server is not told about an update
-     * that is not one.
-     *
-     * @return the content the file holds afterwards, which is the content it
-     *         held already when nothing could be written
-     */
-    private static String hotApply(VaadinService service, File generatedFile,
-            String generated, List<Class<?>> changedInvokers) {
+    private static boolean canReplaceInTheBrowser(VaadinService service) {
         ApplicationConfiguration configuration = ApplicationConfiguration
                 .get(service.getContext());
-        if (generatedFile == null || configuration == null || configuration
-                .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
-            return generated;
-        }
-        try {
-            // Written by the task that generates it during a build, with the
-            // interfaces it has to hold passed in: the changed classes are at
-            // hand here, so nothing has to scan the class path for them
-            return TaskGenerateJsInvokers.writeJsInvokers(buildOptions(service),
-                    invokersToRender(generated, changedInvokers));
-        } catch (RuntimeException e) {
-            getLogger().debug("Could not write {}", generatedFile, e);
-            return generated;
-        }
+        return configuration != null && configuration
+                .getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
     }
 
     /**
-     * The least an invoker file needs to be written: where the project is and
-     * where its frontend folder is. No class finder, since what the file has to
-     * hold is passed in rather than scanned for.
+     * The least the generated file needs to be read and written: where the
+     * project is and where its frontend folder is. No class finder, since what
+     * the file has to hold is passed in rather than scanned for.
      */
     private static Options buildOptions(VaadinService service) {
         AbstractConfiguration configuration = service
@@ -146,33 +115,8 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                         FrontendUtils.getProjectFrontendDir(configuration));
     }
 
-    /**
-     * The interfaces the file has to hold: the ones it holds already, since
-     * those are what the browser can run and none of them changed, plus the
-     * ones that just changed - which is also how an interface that was only now
-     * annotated gets in, without anything having scanned for it.
-     * <p>
-     * An interface the file holds and the application no longer has is left
-     * out, and one whose annotation was removed keeps its functions in the file
-     * with nothing calling them, until a build renders it again.
-     */
-    private static Collection<Class<?>> invokersToRender(String generated,
-            List<Class<?>> changedInvokers) {
-        Map<String, Class<?>> byName = new LinkedHashMap<>();
-        changedInvokers
-                .forEach(invoker -> byName.put(invoker.getName(), invoker));
-        ClassLoader classLoader = changedInvokers.get(0).getClassLoader();
-        for (String name : TaskGenerateJsInvokers.readInvokerNames(generated)) {
-            if (byName.containsKey(name)) {
-                continue;
-            }
-            try {
-                byName.put(name, Class.forName(name, false, classLoader));
-            } catch (ClassNotFoundException | LinkageError e) {
-                getLogger().debug("Could not load the invoker {}", name, e);
-            }
-        }
-        return byName.values();
+    private static List<String> names(List<Class<?>> invokers) {
+        return invokers.stream().map(Class::getName).toList();
     }
 
     /**
@@ -188,57 +132,6 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                 "The JavaScript declared by {} is not the JavaScript the frontend bundle carries. "
                         + "It is collected into the bundle when the frontend is built, so a call made through the invoker keeps running the previous version, or finds no function at all, until the application is restarted.",
                 String.join(", ", invokerNames));
-    }
-
-    /**
-     * Whether the generated file carries what the invoker declares, compared as
-     * the build renders it. A method that was removed does not show up as a
-     * difference: its function stays in the bundle with nothing calling it.
-     */
-    private static boolean isInBundle(Class<?> invoker, String generated) {
-        if (generated == null) {
-            // Nothing carries the declarations, so nothing matches them
-            return false;
-        }
-        List<String> declared = TaskGenerateJsInvokers
-                .renderInvokerLines(invoker);
-        if (declared.isEmpty()) {
-            // Declares no JavaScript, so there is nothing to carry
-            return true;
-        }
-        return generated
-                .contains(String.join(System.lineSeparator(), declared));
-    }
-
-    private static File generatedInvokersFile(VaadinService service) {
-        File frontendFolder = FrontendUtils
-                .getProjectFrontendDir(service.getDeploymentConfiguration());
-        if (frontendFolder == null) {
-            return null;
-        }
-        return new File(
-                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_INVOKERS_FILE_NAME);
-    }
-
-    /**
-     * Reads the generated file from the frontend folder, which is the file the
-     * dev server reads and this class writes, so what is compared and what is
-     * written are the same bytes. Fetching it from the dev server instead would
-     * answer with the module as it transforms it, which is not what a
-     * declaration renders to.
-     */
-    private static String readGeneratedInvokers(File generatedFile) {
-        if (generatedFile == null || !generatedFile.exists()) {
-            return null;
-        }
-        try {
-            return Files.readString(generatedFile.toPath(),
-                    StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            getLogger().debug("Could not read {}", generatedFile, e);
-            return null;
-        }
     }
 
     private static Logger getLogger() {
