@@ -56,6 +56,7 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -471,6 +472,143 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_nestsByRouteParent_notUrlPrefix() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeReports.class, TreeSales.class,
+                TreeSettings.class, TreeBilling.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Single conceptual root: Dashboard at "/".
+        assertEquals(1, tree.size());
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals("/", dashboard.route());
+
+        // Dashboard's children in @Menu order: Reports then Settings.
+        assertEquals(List.of("/reports", "/settings"),
+                routesOf(dashboard.children()));
+
+        // Reports -> Sales.
+        AvailableViewInfo reports = dashboard.children().get(0);
+        assertEquals(List.of("/reports/sales"), routesOf(reports.children()));
+
+        // The showcase: Billing lives at /billing but @RouteParent nests it
+        // under Settings - URL-prefix walking would have made it a root.
+        AvailableViewInfo settings = dashboard.children().get(1);
+        assertEquals(List.of("/billing"), routesOf(settings.children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_ancestorNotInMenu_attachesToNearestIncludedAncestor() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeHidden.class, TreeAudit.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // TreeHidden has no @Menu, so it is not an entry of its own and Audit
+        // skips it and attaches to Dashboard instead.
+        assertEquals(1, tree.size());
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals("/", dashboard.route());
+        assertEquals(List.of("/hidden/audit"), routesOf(dashboard.children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_noAncestorInMenu_viewIsRoot() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeHidden.class, TreeAudit.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Without Dashboard none of Audit's ancestors is in the menu.
+        assertEquals(List.of("/hidden/audit"), routesOf(tree));
+        assertNull(tree.get(0).children());
+    }
+
+    @Test
+    void collectMenuItemsTree_menuParent_overridesRouteHierarchy() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeSettings.class, TreeMoved.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // TreeMoved is a route child of Dashboard, but @Menu(parent) puts it
+        // under Settings in the menu.
+        AvailableViewInfo dashboard = tree.get(0);
+        assertEquals(List.of("/settings"), routesOf(dashboard.children()));
+        AvailableViewInfo settings = dashboard.children().get(0);
+        assertEquals(List.of("/moved"), routesOf(settings.children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_menuParentNotInMenu_attachesToItsNearestIncludedAncestor() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeHidden.class, TreeAttached.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // TreeAttached names TreeHidden as its menu parent, which has no @Menu
+        // of its own, so the walk continues to Hidden's parent Dashboard.
+        assertEquals(1, tree.size());
+        assertEquals(List.of("/attached"), routesOf(tree.get(0).children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_menuParentCycle_viewsAreRoots() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeCycleA.class, TreeCycleB.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Two views naming each other as menu parent: the cycle is broken at
+        // the entry that would close it, and no entry is dropped.
+        assertEquals(List.of("/cycle_b"), routesOf(tree));
+        assertEquals(List.of("/cycle_a"), routesOf(tree.get(0).children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_clientViews_areRootsWithoutChildren()
+            throws IOException {
+        Mockito.when(request.getUserPrincipal())
+                .thenReturn(Mockito.mock(Principal.class));
+        Mockito.when(request.isUserInRole(Mockito.anyString()))
+                .thenReturn(true);
+
+        File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
+                .toFile();
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // Client views have no server-side route hierarchy: /hilla/sub is a
+        // root of its own instead of a child of /hilla, and no client entry
+        // keeps the children it has in file-routes.json.
+        assertTrue(routesOf(tree).containsAll(List.of("/hilla", "/hilla/sub")),
+                "Both client views are expected as roots, got "
+                        + routesOf(tree));
+        tree.forEach(view -> assertNull(view.children(),
+                "Client view " + view.route() + " is not expected to have "
+                        + "children in the tree"));
+    }
+
+    private static List<String> routesOf(List<AvailableViewInfo> infos) {
+        return infos.stream().map(AvailableViewInfo::route).toList();
+    }
+
+    @Test
     void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
@@ -727,6 +865,81 @@ class MenuRegistryTest {
     @Route("param/varargs/:param*")
     @Menu
     public static class MyVarargsParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("")
+    @Menu(title = "Dashboard", order = 1)
+    public static class TreeDashboard extends Component {
+    }
+
+    @Tag("div")
+    @Route("reports")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Reports", order = 2)
+    public static class TreeReports extends Component {
+    }
+
+    @Tag("div")
+    @Route("reports/sales")
+    @RouteParent(TreeReports.class)
+    @Menu(title = "Sales")
+    public static class TreeSales extends Component {
+    }
+
+    @Tag("div")
+    @Route("settings")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Settings", order = 3)
+    public static class TreeSettings extends Component {
+    }
+
+    // URL /billing is NOT under /settings, but @RouteParent nests it there.
+    @Tag("div")
+    @Route("billing")
+    @RouteParent(TreeSettings.class)
+    @Menu(title = "Billing")
+    public static class TreeBilling extends Component {
+    }
+
+    // Route child of Dashboard, but nested under Settings in the menu.
+    @Tag("div")
+    @Route("moved")
+    @RouteParent(TreeDashboard.class)
+    @Menu(title = "Moved", parent = TreeSettings.class)
+    public static class TreeMoved extends Component {
+    }
+
+    @Tag("div")
+    @Route("attached")
+    @Menu(title = "Attached", parent = TreeHidden.class)
+    public static class TreeAttached extends Component {
+    }
+
+    @Tag("div")
+    @Route("cycle_a")
+    @Menu(title = "Cycle A", parent = TreeCycleB.class)
+    public static class TreeCycleA extends Component {
+    }
+
+    @Tag("div")
+    @Route("cycle_b")
+    @Menu(title = "Cycle B", parent = TreeCycleA.class)
+    public static class TreeCycleB extends Component {
+    }
+
+    // No @Menu: part of the route hierarchy but not of the menu.
+    @Tag("div")
+    @Route("hidden")
+    @RouteParent(TreeDashboard.class)
+    public static class TreeHidden extends Component {
+    }
+
+    @Tag("div")
+    @Route("hidden/audit")
+    @RouteParent(TreeHidden.class)
+    @Menu(title = "Audit")
+    public static class TreeAudit extends Component {
     }
 
     @Tag("div")
