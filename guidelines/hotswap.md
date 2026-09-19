@@ -71,10 +71,9 @@ just updated — so the task must not rescan the classpath to find out.
 ## Write through `writeIfChanged`
 
 Generated files are written with
-`AbstractFileGeneratorFallibleCommand.writeIfChanged`, which delegates to the
-run's shared `GeneratedFilesSupport` — recording the file as generated on the
-way — and from there to `FileIOUtils.writeIfChanged`. It does two things that
-matter here:
+`AbstractFileGeneratorFallibleCommand.writeIfChanged`, which delegates to
+`GeneratedFilesSupport.writeIfChanged` and from there to
+`FileIOUtils.writeIfChanged`. It does two things that matter here:
 
 - It compares the new content against what is on disk and returns without
   touching the file when they match, so an unnecessary rewrite does not trigger
@@ -82,6 +81,15 @@ matter here:
 - It writes atomically (temp file in the same directory, then move), so Vite's
   watcher never observes a truncated or momentarily missing file and then
   fails to resolve imports between generated files.
+
+The tracking half of `GeneratedFilesSupport` does not come along on this path.
+`NodeTasks.execute` is what hands every command one shared instance, and that
+instance is what `TaskWriteGeneratedFilesList` and
+`TaskRemoveOldFrontendGeneratedFiles` later read. A hotswapper calling a static
+entry point gets a task constructed on the spot, keeping the throwaway instance
+from its own field initializer, so the `track()` inside `writeIfChanged` goes
+nowhere. That is harmless — the startup run already tracked the file — but do
+not expect a hotswap write to register itself anywhere.
 
 So never write a generated file with `Files.writeString` or a hand-rolled
 writer — that loses both properties. And still gate the call on a cheap check
@@ -148,8 +156,9 @@ What carries over, and what to copy when a generator is shaped like this:
   no HMR event.
 - **Only the write half of `writeIfChanged` falls away,** because Java is not
   writing the files. Do not reimplement the rest: `writeIfChanged` and the file
-  tracking are the same class, `GeneratedFilesSupport`, and every command gets
-  the run's instance through `FallibleCommand.setGeneratedFileSupport`.
+  tracking are the same class, `GeneratedFilesSupport`, and every command in a
+  `NodeTasks` run gets the run's instance through
+  `FallibleCommand.setGeneratedFileSupport`.
   `track(File)` exists exactly for output a task did not write itself, and
   `TaskRemoveOldFrontendGeneratedFiles` deletes whatever in the generated
   folder was not tracked. So a task wrapping an external generator should
