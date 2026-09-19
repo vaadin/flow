@@ -33,6 +33,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvoker;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.Options;
@@ -124,8 +125,7 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             // Written by the task that generates it during a build, with the
             // interfaces it has to hold passed in: the changed classes are at
             // hand here, so nothing has to scan the class path for them
-            return TaskGenerateJsInvokers.writeJsInvokers(
-                    buildOptions(service, configuration),
+            return TaskGenerateJsInvokers.writeJsInvokers(buildOptions(service),
                     invokersToRender(generated, changedInvokers));
         } catch (RuntimeException e) {
             getLogger().debug("Could not write {}", generatedFile, e);
@@ -138,11 +138,12 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
      * where its frontend folder is. No class finder, since what the file has to
      * hold is passed in rather than scanned for.
      */
-    private static Options buildOptions(VaadinService service,
-            ApplicationConfiguration configuration) {
+    private static Options buildOptions(VaadinService service) {
+        AbstractConfiguration configuration = service
+                .getDeploymentConfiguration();
         return new Options(service.getContext().getAttribute(Lookup.class),
-                null, configuration.getProjectFolder())
-                .withFrontendDirectory(configuration.getFrontendFolder());
+                null, configuration.getProjectFolder()).withFrontendDirectory(
+                        FrontendUtils.getProjectFrontendDir(configuration));
     }
 
     /**

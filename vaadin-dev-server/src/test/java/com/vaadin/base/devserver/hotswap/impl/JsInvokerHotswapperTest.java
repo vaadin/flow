@@ -91,12 +91,6 @@ class JsInvokerHotswapperTest {
                 .getProjectFrontendDir(deploymentConfiguration);
 
         configuration = Mockito.mock(ApplicationConfiguration.class);
-        // Where the file is written is asked of the configuration, the same
-        // way a build asks for it
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(projectFolder);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(frontendFolder);
         // What a browser runs without the frontend dev server is a bundle,
         // which a case has to opt out of to get the file written again.
         Mockito.when(configuration.getMode())
