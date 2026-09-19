@@ -162,11 +162,14 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
             task.writeIfChanged(task.getGeneratedFile(), content);
         } catch (IOException e) {
             getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
-            return List.copyOf(invokers);
+            // The file is as it was, so only what it was already missing is
+            // missing now
+            return invokers.stream()
+                    .filter(invoker -> !isInGeneratedFile(invoker, generated))
+                    .toList();
         }
-        return invokers.stream()
-                .filter(invoker -> !isInGeneratedFile(invoker, content))
-                .toList();
+        // Everything asked for went into the content that was written
+        return List.of();
     }
 
     /**

@@ -36,8 +36,10 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class TaskGenerateJsInvokersTest {
 
@@ -48,6 +50,12 @@ class TaskGenerateJsInvokersTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    @JsInvoker
+    public interface CounterJs extends Serializable {
+        @JsExpression("this.count = ($0 || 0) + 1")
+        void count(Integer from);
     }
 
     @JsInvoker
@@ -130,6 +138,28 @@ class TaskGenerateJsInvokersTest {
                 Files.readString(generated.toPath())
                         .contains("com.example.GoneJs"),
                 "a name the file holds that nothing answers to should be dropped");
+    }
+
+    @Test
+    void updateJsInvokers_fileNotWritable_answersWithWhatItDoesNotCarry()
+            throws ExecutionFailedException {
+        // A file that carries one of the two interfaces, and a folder nothing
+        // can be written into
+        task.execute();
+        File generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(frontendFolder);
+        assumeTrue(generatedFolder.setWritable(false),
+                "the folder has to be made read only for this");
+
+        try {
+            List<Class<?>> missing = TaskGenerateJsInvokers.updateJsInvokers(
+                    options, List.of(GreeterJs.class, CounterJs.class));
+
+            assertEquals(List.of(CounterJs.class), missing,
+                    "the interface the file carries is not missing because the write failed");
+        } finally {
+            generatedFolder.setWritable(true);
+        }
     }
 
     @Test
