@@ -78,16 +78,6 @@ public class Table extends HtmlComponent
      * <pre>
      * table.removeClassName(Table.STYLES_CLASS_NAME);
      * </pre>
-     * <p>
-     * A styled table picks a variant with the {@code theme} attribute, using
-     * the same names as the corresponding {@code <vaadin-grid>} variants:
-     *
-     * <pre>
-     * table.getElement().getThemeList().add("row-stripes");
-     * </pre>
-     *
-     * The variants are {@code row-stripes}, {@code column-borders},
-     * {@code no-row-borders} and {@code compact}.
      *
      * @since 25.4
      */
