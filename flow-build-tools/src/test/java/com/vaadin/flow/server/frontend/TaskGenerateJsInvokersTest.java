@@ -39,7 +39,7 @@ class TaskGenerateJsInvokersTest {
 
     @JsInvoker
     public interface GreeterJs extends Serializable {
-        @JsExpression("window.alert($0)")
+        @JsExpression("window.alert({ text: $0, kind: 'greeting' })")
         void showGreeting(String greeting);
 
         @JsExpression("window.alert('Hello')")
@@ -83,8 +83,10 @@ class TaskGenerateJsInvokersTest {
                 content.contains("\"showGreeting/1\": async function ($0) {"),
                 "an overload should be keyed by name and argument count: "
                         + content);
-        assertTrue(content.contains("window.alert($0)"),
-                "the declared expression should be the body of the function: "
+        assertTrue(
+                content.contains(
+                        "window.alert({ text: $0, kind: 'greeting' })"),
+                "the declared expression should be the body of the function, as it was written: "
                         + content);
         assertTrue(content.contains("\"showGreeting/0\": async function () {"),
                 "the no-argument overload should be generated too: " + content);

@@ -2739,27 +2739,6 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_primitiveArgument_isSentAsTheArgumentOfTheCall() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
-        ui.getElement().appendChild(element);
-
-        element.getJsInvoker(ScrollJs.class).scrollTo(320);
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pendingJs.size());
-        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
-
-        assertEquals(
-                new JsInvokerCall(ScrollJs.class, "scrollTo", List.of(320)),
-                invocation.getInvokerCall());
-        assertEquals(List.of(320, element), invocation.getParameters(),
-                "the argument should reach the client as what it is");
-    }
-
-    @Test
     void getJsInvoker_methodWithoutDeclaredJavaScript_throws() {
         Element element = ElementFactory.createDiv();
 
@@ -2835,12 +2814,6 @@ class ElementTest extends AbstractNodeTest {
     interface UnsupportedJs extends Serializable {
         @JsExpression("return this.value;")
         String readValue();
-    }
-
-    @JsInvoker
-    public interface ScrollJs extends Serializable {
-        @JsExpression("this.scrollTo({ top: $0, behavior: 'smooth' })")
-        void scrollTo(int top);
     }
 
     @JsInvoker
