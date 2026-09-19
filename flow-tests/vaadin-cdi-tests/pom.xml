@@ -26,7 +26,7 @@
          activated. Skipping by default keeps a plain `mvn verify` over
          flow-tests from failing on a missing container. -->
     <cdi.container.tests.skip>true</cdi.container.tests.skip>
-    <arquillian.version>1.9.5.Final</arquillian.version>
+    <arquillian.version>1.10.2.Final</arquillian.version>
     <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
     <shrinkwrap.descriptors.version>2.0.0</shrinkwrap.descriptors.version>
   </properties>
