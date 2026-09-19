@@ -1,7 +1,16 @@
-# Hotswap
+# Hotswapping frontend files
 
 How development-mode hotswap keeps generated frontend files in sync with the
 Java classes they were generated from.
+
+This chapter is only about the frontend side. The purely server-side half of
+hotswap — updating route registries when a `@Route` changes, adding and
+removing `@StyleSheet` links, clearing caches, reloading translations — is
+handled by other `VaadinHotswapper` implementations in `vaadin-dev-server`
+(`RouteRegistryHotswapper`, `StyleSheetHotswapper`, `ReflectionCacheHotswapper`
+and friends) and is not covered here. Both halves plug into the same
+`VaadinHotswapper` interface, and a single hotswapper often does both, as
+`RouteRegistryHotswapper` does.
 
 ## The two halves of a generated file
 
@@ -173,10 +182,18 @@ browser would still load a stale bundle chunk: `@JsModule`, `@JavaScript`,
 and the client reaches them through a chunk keyed by class name. Updating the
 imports file alone leaves the chunk wrong, so the bundle has to be rebuilt.
 
+So nothing in the runtime hotswap path can fix such a change. What repairs it
+is an application restart, because the startup tasks then regenerate the
+imports and the bundle is rebuilt. In most projects today that restart is
+whatever the developer's setup already does — a manual restart, or the restart
+their hotswap agent triggers.
+
+The `vaadin-dev` dev loop, which is opt-in and only active when the daemon
+launched the application, detects the case instead of leaving it to be noticed:
 `DevLoopRedefiner.frontendDependencies(Class)` fingerprints exactly these
-annotations before and after a redefine, and the dev loop escalates to a
-restart when the fingerprint moves. If a new annotation joins that group, add
-it to the fingerprint instead of trying to hot-update the bundle.
+annotations before and after a redefine and escalates to a restart when the
+fingerprint moves. If a new annotation joins that group, add it to that
+fingerprint rather than trying to hot-update the bundle.
 
 ## Testing
 
