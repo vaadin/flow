@@ -1842,6 +1842,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @see #getJsInvoker(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1926,6 +1927,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow.
+     * {@link #getJsInvoker(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1933,6 +1939,7 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #getJsInvoker(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
