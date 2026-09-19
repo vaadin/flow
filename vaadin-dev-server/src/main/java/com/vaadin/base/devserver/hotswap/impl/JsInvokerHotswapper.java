@@ -29,11 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -119,19 +121,28 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return generated;
         }
         try {
-            String content = TaskGenerateJsInvokers.renderFileContent(
+            // Written by the task that generates it during a build, with the
+            // interfaces it has to hold passed in: the changed classes are at
+            // hand here, so nothing has to scan the class path for them
+            return TaskGenerateJsInvokers.writeJsInvokers(
+                    buildOptions(service, configuration),
                     invokersToRender(generated, changedInvokers));
-            if (content.equals(generated)) {
-                return generated;
-            }
-            Files.createDirectories(generatedFile.toPath().getParent());
-            Files.writeString(generatedFile.toPath(), content,
-                    StandardCharsets.UTF_8);
-            return content;
-        } catch (IOException | RuntimeException e) {
+        } catch (RuntimeException e) {
             getLogger().debug("Could not write {}", generatedFile, e);
             return generated;
         }
+    }
+
+    /**
+     * The least an invoker file needs to be written: where the project is and
+     * where its frontend folder is. No class finder, since what the file has to
+     * hold is passed in rather than scanned for.
+     */
+    private static Options buildOptions(VaadinService service,
+            ApplicationConfiguration configuration) {
+        return new Options(service.getContext().getAttribute(Lookup.class),
+                null, configuration.getProjectFolder())
+                .withFrontendDirectory(configuration.getFrontendFolder());
     }
 
     /**

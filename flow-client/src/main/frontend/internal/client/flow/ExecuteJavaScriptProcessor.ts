@@ -158,7 +158,10 @@ export class ExecuteJavaScriptProcessor {
     const target = invocation[invocation.length - 1];
     if (typeof target === 'object' && target !== null) {
       // A JS invoker call: the bundle has the function, the server sent only
-      // which one to run.
+      // which one to run. The node parameters are for the context object an
+      // expression runs against, whose `getNode` maps an element back to its
+      // state node; a declared function runs against the element itself and
+      // has no context, so there is nothing that could ask.
       this.invokeFromBundle(target as JsInvokerTarget, parameters);
       return;
     }

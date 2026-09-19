@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,6 +102,36 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         lines.add("export {};");
 
         return String.join(System.lineSeparator(), lines);
+    }
+
+    /**
+     * Writes the file that registers the JavaScript of the given invoker
+     * interfaces, for a caller that has to write it again while the application
+     * runs rather than as part of a build.
+     * <p>
+     * Goes through the same write as {@link #execute()}, which leaves the file
+     * alone when its content would not change and writes it atomically
+     * otherwise, so the dev server is not told about an update that is not one
+     * and never reads a file that is half written.
+     *
+     * @param options
+     *            where the file belongs, not <code>null</code>
+     * @param invokers
+     *            the invoker interfaces the file registers, not
+     *            <code>null</code>
+     * @return the content the file holds afterwards
+     */
+    public static String writeJsInvokers(Options options,
+            Collection<Class<?>> invokers) {
+        TaskGenerateJsInvokers task = new TaskGenerateJsInvokers(options);
+        String content = renderFileContent(invokers);
+        try {
+            task.writeIfChanged(task.getGeneratedFile(), content);
+        } catch (IOException e) {
+            throw new UncheckedIOException(
+                    "Error writing " + task.getGeneratedFile(), e);
+        }
+        return content;
     }
 
     /**
