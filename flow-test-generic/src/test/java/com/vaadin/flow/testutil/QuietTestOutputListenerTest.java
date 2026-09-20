@@ -116,24 +116,20 @@ class QuietTestOutputListenerTest {
     }
 
     @Test
-    void testCapturingOutputItself_captureNotStolen() {
+    void notEnabled_outputLeftAlone() {
+        System.clearProperty(QuietTestOutputListener.ENABLED_PROPERTY);
+        QuietTestOutputListener disabled = new QuietTestOutputListener();
         TestIdentifier test = testIdentifier();
-        ByteArrayOutputStream capturedByTest = new ByteArrayOutputStream();
+        PrintStream streamBefore = System.err;
 
-        listener.executionStarted(test);
-        PrintStream streamInstalledByListener = System.out;
-        System.setOut(
-                new PrintStream(capturedByTest, true, StandardCharsets.UTF_8));
-        System.out.println("printed by the code under test");
-        System.setOut(streamInstalledByListener);
-        listener.executionFinished(test, TestExecutionResult.successful());
+        disabled.executionStarted(test);
+        System.err.println("printed by a test");
+        disabled.executionFinished(test, TestExecutionResult.successful());
 
-        Assertions.assertTrue(
-                capturedByTest.toString(StandardCharsets.UTF_8)
-                        .contains("printed by the code under test"),
-                "a test installing its own stream should receive the output");
-        Assertions.assertEquals("", buildOutput(),
-                "nothing should leak to the build output");
+        Assertions.assertSame(streamBefore, System.err,
+                "the streams should be left alone when the capture is off");
+        Assertions.assertTrue(buildOutput().contains("printed by a test"),
+                "output should go to the build output when the capture is off");
     }
 
     @Test

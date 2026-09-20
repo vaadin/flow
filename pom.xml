@@ -438,6 +438,10 @@
                   <RestrictImports>
                     <reason>Use SLF4j for logging</reason>
                     <bannedImport>java.util.logging.**</bannedImport>
+                    <!-- Does not log, but has to initialize the
+                         java.util.logging handlers before tests start
+                         capturing System.err. -->
+                    <exclusion>com.vaadin.flow.testutil.QuietTestOutputListener</exclusion>
                   </RestrictImports>
                 </rules>
               </configuration>

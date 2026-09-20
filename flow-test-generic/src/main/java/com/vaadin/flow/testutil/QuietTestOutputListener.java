@@ -20,6 +20,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.logging.Logger;
 
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestExecutionResult.Status;
@@ -34,6 +35,10 @@ import org.junit.platform.launcher.TestPlan;
  * intentionally trigger logging, such as the ones covering error handling, thus
  * no longer flood the build output, while everything a failing test logged is
  * printed as usual.
+ * <p>
+ * Output logged through {@code java.util.logging} is not captured, since its
+ * handlers keep writing to the stream they were created with; configure the
+ * logger levels instead when such output is too noisy.
  * <p>
  * Registered automatically via ServiceLoader in
  * {@code META-INF/services/org.junit.platform.launcher.TestExecutionListener}
@@ -60,6 +65,19 @@ public class QuietTestOutputListener implements TestExecutionListener {
 
     private record CapturedOutput(String uniqueId, ByteArrayOutputStream buffer,
             PrintStream previousOut, PrintStream previousErr) {
+    }
+
+    @Override
+    public void testPlanExecutionStarted(TestPlan testPlan) {
+        if (enabled) {
+            // A java.util.logging handler keeps the System.err it was created
+            // with, and it is created when java.util.logging is first used.
+            // Set it up before the first capture replaces the stream, or
+            // everything logged through java.util.logging for the rest of the
+            // JVM, the output of failing tests included, would end up in a
+            // buffer that has already been thrown away.
+            Logger.getLogger("").getHandlers();
+        }
     }
 
     @Override
