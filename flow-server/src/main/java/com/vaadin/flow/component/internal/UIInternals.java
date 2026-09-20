@@ -77,7 +77,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
-import com.vaadin.flow.js.JsInvokerCall;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -129,7 +129,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Object> parameters = new ArrayList<>();
-        private final @Nullable JsInvokerCall invokerCall;
+        private final @Nullable JsCall jsCall;
 
         /**
          * Creates a new invocation.
@@ -141,14 +141,14 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
-            this((JsInvokerCall) null, expression, parameters);
+            this((JsCall) null, expression, parameters);
         }
 
         /**
-         * Creates a new invocation for the given invoker call, whose expression
-         * and parameters the caller has already resolved.
+         * Creates a new invocation for the given call, whose expression and
+         * parameters the caller has already resolved.
          *
-         * @param invokerCall
+         * @param jsCall
          *            the call that this invocation performs, or
          *            <code>null</code> if the invocation is plain JavaScript
          * @param expression
@@ -156,8 +156,8 @@ public class UIInternals implements Serializable {
          * @param parameters
          *            a list of parameters to use when invoking the script
          */
-        public JavaScriptInvocation(@Nullable JsInvokerCall invokerCall,
-                String expression, Object... parameters) {
+        public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
+                Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -171,7 +171,7 @@ public class UIInternals implements Serializable {
 
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
-            this.invokerCall = invokerCall;
+            this.jsCall = jsCall;
         }
 
         /**
@@ -193,17 +193,16 @@ public class UIInternals implements Serializable {
         }
 
         /**
-         * Gets the invoker call that this invocation performs, for a caller
-         * that acts on the invocation instead of running its JavaScript — the
-         * client, which looks up the generated function rather than compiling
-         * the expression, and a driver of the client side that recognizes the
-         * call.
+         * Gets the call that this invocation performs, for a caller that acts
+         * on the invocation instead of running its JavaScript — the client,
+         * which looks up the generated function rather than compiling the
+         * expression, and a driver of the client side that recognizes the call.
          *
          * @return the call, or <code>null</code> if the invocation is plain
          *         JavaScript scheduled with an expression
          */
-        public @Nullable JsInvokerCall getInvokerCall() {
-            return invokerCall;
+        public @Nullable JsCall getJsCall() {
+            return jsCall;
         }
     }
 

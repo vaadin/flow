@@ -278,15 +278,16 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
-        if (jsInvokersChanged(options, statsJson)) {
+        if (jsDefinitionsChanged(options, statsJson)) {
             UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-changed-js-invokers", null);
+                    "flow/rebundle-reason-changed-js-definitions", null);
             return true;
         }
-        // js invoker file hash has already been checked
+        // JavaScript definition file hash has already been checked
         // removing it from hashes map to prevent other unnecessary checks
-        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
-                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME);
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
@@ -1004,29 +1005,31 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the {@code @JsInvoker} interfaces of
-     * the application declare differs from what the bundle was built with.
+     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces
+     * of the application declare differs from what the bundle was built with.
      * <p>
      * The functions are generated into the bundle, so a declaration that
-     * changed, an invoker that was added and a bundle built before invokers
-     * existed all mean that the bundle no longer contains what a call would
-     * look up, which shows up at runtime as a call that cannot be run.
+     * changed, a definition that was added and a bundle built before any
+     * definition existed all mean that the bundle no longer contains what a
+     * call would look up, which shows up at runtime as a call that cannot be
+     * run.
      */
-    private static boolean jsInvokersChanged(Options options,
+    private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
         JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
-        String jsInvokersPath = FrontendUtils.GENERATED
-                + FrontendUtils.JS_INVOKERS_FILE_NAME;
-        String content = new TaskGenerateJsInvokers(options).getFileContent();
+        String jsDefinitionsPath = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        String content = new TaskGenerateJsDefinitions(options)
+                .getFileContent();
 
         List<String> faultyContent = new ArrayList<>();
-        compareFrontendHashes(frontendHashes, faultyContent, jsInvokersPath,
+        compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
                 content);
         if (!faultyContent.isEmpty()) {
             // Either the declarations changed, or the bundle was built before
             // they existed and carries none of their JavaScript
             getLogger().info(
-                    "Detected JavaScript declared by the invoker interfaces that the bundle does not carry");
+                    "Detected JavaScript declared by the JavaScript definitions that the bundle does not carry");
             return true;
         }
         return false;

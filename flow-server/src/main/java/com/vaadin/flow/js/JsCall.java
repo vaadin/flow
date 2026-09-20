@@ -27,7 +27,7 @@ import java.util.Objects;
 import com.vaadin.flow.dom.Element;
 
 /**
- * A call made through {@link Element#executeJs(Class)}: which invoker
+ * A call made through {@link Element#executeJs(Class)}: which definition
  * interface, which method of it, and the arguments that were passed.
  * <p>
  * The call is what the client receives — the interface, the method and the
@@ -38,34 +38,35 @@ import com.vaadin.flow.dom.Element;
  * same interface with {@link #invokeOn(Object)} and let Java dispatch it:
  *
  * <pre>
- * if (call.invokerType() == FocusJs.class) {
+ * if (call.definitionType() == FocusJs.class) {
  *     call.invokeOn(new FocusSimulation(Element.get(pending.getOwner())));
  * }
  * </pre>
  *
- * @param invokerType
- *            the invoker interface the call was made on
+ * @param definitionType
+ *            the JavaScript definition the call was made on
  * @param methodName
  *            the name of the called method
  * @param arguments
  *            the arguments of the call, in declaration order, any of which may
  *            be <code>null</code>
  */
-public record JsInvokerCall(Class<?> invokerType, String methodName,
+public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {
 
     /**
-     * Creates a call of the given method of the given invoker interface.
+     * Creates a call of the given method of the given JavaScript definition.
      *
-     * @param invokerType
-     *            the invoker interface, not <code>null</code>
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
      * @param methodName
      *            the name of the called method, not <code>null</code>
      * @param arguments
      *            the arguments of the call, not <code>null</code>
      */
-    public JsInvokerCall {
-        Objects.requireNonNull(invokerType, "Invoker type cannot be null");
+    public JsCall {
+        Objects.requireNonNull(definitionType,
+                "Definition type cannot be null");
         Objects.requireNonNull(methodName, "Method name cannot be null");
         // Copied rather than List.copyOf, which rejects a null element: an
         // argument may be null, and the client gets it as null
@@ -73,18 +74,19 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
     }
 
     /**
-     * Gets the identifier of the invoker interface, which is the key the
+     * Gets the identifier of the JavaScript definition, which is the key the
      * generated bundle registers its functions under.
      *
-     * @return the invoker identifier, not <code>null</code>
+     * @return the definition identifier, not <code>null</code>
      */
-    public String getInvokerId() {
-        return invokerType.getName();
+    public String getDefinitionId() {
+        return definitionType.getName();
     }
 
     /**
-     * Gets the identifier of the called method within its invoker, which is the
-     * method name and the number of arguments, so that overloads stay apart.
+     * Gets the identifier of the called method within its definition, which is
+     * the method name and the number of arguments, so that overloads stay
+     * apart.
      *
      * @return the method identifier, not <code>null</code>
      */
@@ -122,31 +124,31 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
                 .getAnnotation(JsExpression.class);
         if (annotation == null) {
             throw new IllegalStateException(
-                    "Method " + methodName + " of " + invokerType.getName()
+                    "Method " + methodName + " of " + definitionType.getName()
                             + " is not annotated with @JsExpression");
         }
         return annotation.value();
     }
 
     /**
-     * Runs this call on an implementation of the invoker interface, which is
-     * how a driver of the client side reproduces it without running the
+     * Runs this call on an implementation of the JavaScript definition, which
+     * is how a driver of the client side reproduces it without running the
      * JavaScript.
      *
      * @param implementation
-     *            an implementation of {@link #invokerType()}, not
+     *            an implementation of {@link #definitionType()}, not
      *            <code>null</code>
      * @return the value returned by the implementation, or <code>null</code>
      *         for a void method
      * @throws IllegalArgumentException
      *             if the implementation does not implement
-     *             {@link #invokerType()}
+     *             {@link #definitionType()}
      */
     public Object invokeOn(Object implementation) {
-        if (!invokerType.isInstance(implementation)) {
+        if (!definitionType.isInstance(implementation)) {
             throw new IllegalArgumentException(
                     implementation.getClass().getName() + " does not implement "
-                            + invokerType.getName());
+                            + definitionType.getName());
         }
         try {
             return resolveMethod().invoke(implementation, arguments.toArray());
@@ -170,14 +172,14 @@ public record JsInvokerCall(Class<?> invokerType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
-        List<Method> candidates = Arrays.stream(invokerType.getMethods())
+        List<Method> candidates = Arrays.stream(definitionType.getMethods())
                 .filter(method -> method.getName().equals(methodName)
                         && method.getParameterCount() == arguments.size())
                 .toList();
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
                     + methodName + " with " + arguments.size()
-                    + " parameters in " + invokerType.getName() + ", found "
+                    + " parameters in " + definitionType.getName() + ", found "
                     + candidates.size());
         }
         return candidates.get(0);

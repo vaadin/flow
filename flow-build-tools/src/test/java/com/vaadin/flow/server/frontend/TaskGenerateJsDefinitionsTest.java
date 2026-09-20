@@ -29,21 +29,21 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
-import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-class TaskGenerateJsInvokersTest {
+class TaskGenerateJsDefinitionsTest {
 
-    @JsInvoker
+    @JsDefinition
     public interface GreeterJs extends Serializable {
         @JsExpression("window.alert({ text: $0, kind: 'greeting' })")
         void showGreeting(String greeting);
@@ -52,13 +52,13 @@ class TaskGenerateJsInvokersTest {
         void showGreeting();
     }
 
-    @JsInvoker
+    @JsDefinition
     public interface CounterJs extends Serializable {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
     }
 
-    @JsInvoker
+    @JsDefinition
     public interface NothingJs extends Serializable {
         void notDeclared();
     }
@@ -66,7 +66,7 @@ class TaskGenerateJsInvokersTest {
     @TempDir
     File temporaryFolder;
 
-    private TaskGenerateJsInvokers task;
+    private TaskGenerateJsDefinitions task;
     private Options options;
     private File frontendFolder;
 
@@ -78,7 +78,7 @@ class TaskGenerateJsInvokersTest {
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
                 null).withFrontendDirectory(frontendFolder);
-        task = new TaskGenerateJsInvokers(options);
+        task = new TaskGenerateJsDefinitions(options);
     }
 
     @Test
@@ -88,9 +88,9 @@ class TaskGenerateJsInvokersTest {
         String content = task.getFileContent();
 
         assertTrue(
-                content.contains("window.Vaadin.Flow.jsInvokers[\""
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
                         + GreeterJs.class.getName() + "\"]"),
-                "the invoker should be registered under its class name: "
+                "the definition should be registered under its class name: "
                         + content);
         assertTrue(
                 content.contains("\"showGreeting/1\": async function ($0) {"),
@@ -106,7 +106,7 @@ class TaskGenerateJsInvokersTest {
     }
 
     @Test
-    void invokerWithoutDeclaredJavaScript_isNotRegistered()
+    void definitionWithoutDeclaredJavaScript_isNotRegistered()
             throws ExecutionFailedException {
         task.execute();
         String content = task.getFileContent();
@@ -117,20 +117,20 @@ class TaskGenerateJsInvokersTest {
     }
 
     @Test
-    void updateJsInvokers_dropsAnInvokerTheFileNamesAndNothingHas()
+    void updateJsDefinitions_dropsADefinitionTheFileNamesAndNothingHas()
             throws ExecutionFailedException, IOException {
         task.execute();
         // What a file written by an older state of the application looks like:
         // it names an interface that is no longer there to render
         File generated = new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_INVOKERS_FILE_NAME);
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
         Files.writeString(generated.toPath(),
                 Files.readString(generated.toPath()).replace(
                         NothingJs.class.getName(), "com.example.GoneJs"));
 
-        List<Class<?>> missing = TaskGenerateJsInvokers
-                .updateJsInvokers(options, List.of(GreeterJs.class));
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(GreeterJs.class));
 
         assertTrue(missing.isEmpty(),
                 "the interface that was asked for should be in the file");
@@ -141,7 +141,7 @@ class TaskGenerateJsInvokersTest {
     }
 
     @Test
-    void updateJsInvokers_fileNotWritable_answersWithWhatItDoesNotCarry()
+    void updateJsDefinitions_fileNotWritable_answersWithWhatItDoesNotCarry()
             throws ExecutionFailedException {
         // A file that carries one of the two interfaces, and a folder nothing
         // can be written into
@@ -152,8 +152,9 @@ class TaskGenerateJsInvokersTest {
                 "the folder has to be made read only for this");
 
         try {
-            List<Class<?>> missing = TaskGenerateJsInvokers.updateJsInvokers(
-                    options, List.of(GreeterJs.class, CounterJs.class));
+            List<Class<?>> missing = TaskGenerateJsDefinitions
+                    .updateJsDefinitions(options,
+                            List.of(GreeterJs.class, CounterJs.class));
 
             assertEquals(List.of(CounterJs.class), missing,
                     "the interface the file carries is not missing because the write failed");
@@ -163,12 +164,74 @@ class TaskGenerateJsInvokersTest {
     }
 
     @Test
+    void missingFromGeneratedFile_answersForWhatTheFileCarries()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        String carried = Files.readString(generated.toPath());
+
+        assertTrue(
+                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)).isEmpty(),
+                "the file was written from this interface");
+
+        // The JavaScript it declared before it was shortened: the browser
+        // would keep running the extra statement
+        Files.writeString(generated.toPath(),
+                carried.replace("window.alert({ text: $0, kind: 'greeting' })",
+                        "window.alert($0)"));
+        assertEquals(List.of(GreeterJs.class),
+                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)),
+                "another version of the declarations is not the declarations");
+
+        // What renaming or moving the interface leaves behind: the methods and
+        // the JavaScript are there, under the name of before
+        Files.writeString(generated.toPath(), carried
+                .replace(GreeterJs.class.getName(), "com.example.RenamedJs"));
+        assertEquals(List.of(GreeterJs.class),
+                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)),
+                "a call looks the interface up by name, so the name is part of carrying it");
+
+        Files.delete(generated.toPath());
+        assertEquals(List.of(GreeterJs.class), TaskGenerateJsDefinitions
+                .missingFromGeneratedFile(options, List.of(GreeterJs.class)),
+                "no file carries nothing");
+    }
+
+    @Test
+    void updateJsDefinitions_writesWhatIsAskedForBesideWhatTheFileHolds()
+            throws ExecutionFailedException, IOException {
+        // A file written before the other interface was annotated: nothing has
+        // scanned for it, and what the file holds has to stay in it
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(CounterJs.class.getName()),
+                "the interface that was asked for should be in the file: "
+                        + written);
+        assertTrue(written.contains(GreeterJs.class.getName()),
+                "the interface the file held should still be in it: "
+                        + written);
+    }
+
+    @Test
     void writesTheFileTheBootstrapImports() throws ExecutionFailedException {
         task.execute();
 
         assertTrue(
                 new File(new File(frontendFolder, GENERATED),
-                        JS_INVOKERS_FILE_NAME).exists(),
+                        JS_DEFINITIONS_FILE_NAME).exists(),
                 "the generated file should be where the bootstrap imports it from");
     }
 }

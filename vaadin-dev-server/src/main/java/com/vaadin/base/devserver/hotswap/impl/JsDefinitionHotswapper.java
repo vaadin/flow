@@ -24,20 +24,20 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.Options;
-import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
+import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Reports a {@link JsInvoker} interface whose JavaScript the frontend bundle
+ * Reports a {@link JsDefinition} interface whose JavaScript the frontend bundle
  * does not carry.
  * <p>
- * The JavaScript an invoker method declares with {@link JsExpression} is
+ * The JavaScript a definition method declares with {@link JsExpression} is
  * collected into the bundle when the frontend is built. Redefining the
  * interface therefore does not change what the browser can run: a call made
  * after the change either runs the JavaScript the bundle was built with, or
@@ -58,21 +58,21 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class JsInvokerHotswapper implements VaadinHotswapper {
+public class JsDefinitionHotswapper implements VaadinHotswapper {
 
     @Override
     public void onClassesChange(HotswapClassEvent event) {
-        List<Class<?>> invokers = event.getChangedClasses().stream()
-                .filter(type -> type.isAnnotationPresent(JsInvoker.class))
+        List<Class<?>> definitions = event.getChangedClasses().stream()
+                .filter(type -> type.isAnnotationPresent(JsDefinition.class))
                 .toList();
-        if (invokers.isEmpty()) {
+        if (definitions.isEmpty()) {
             return;
         }
 
         VaadinService service = event.getVaadinService();
         Options options = buildOptions(service);
-        List<Class<?>> stale = TaskGenerateJsInvokers
-                .missingFromGeneratedFile(options, invokers);
+        List<Class<?>> stale = TaskGenerateJsDefinitions
+                .missingFromGeneratedFile(options, definitions);
         if (stale.isEmpty()) {
             return;
         }
@@ -84,8 +84,8 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
             return;
         }
 
-        List<Class<?>> unresolved = TaskGenerateJsInvokers
-                .updateJsInvokers(options, invokers);
+        List<Class<?>> unresolved = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, definitions);
         if (unresolved.isEmpty()) {
             getLogger().debug(
                     "Wrote the JavaScript declared by {}, which the frontend dev server replaces in the browser",
@@ -115,8 +115,8 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
                         FrontendUtils.getProjectFrontendDir(configuration));
     }
 
-    private static List<String> names(List<Class<?>> invokers) {
-        return invokers.stream().map(Class::getName).toList();
+    private static List<String> names(List<Class<?>> definitions) {
+        return definitions.stream().map(Class::getName).toList();
     }
 
     /**
@@ -124,17 +124,17 @@ public class JsInvokerHotswapper implements VaadinHotswapper {
      * <p>
      * Package-private so that what a change is reported for can be asserted.
      *
-     * @param invokerNames
-     *            the names of the invoker interfaces to report, never empty
+     * @param definitionNames
+     *            the names of the JavaScript definitions to report, never empty
      */
-    void report(List<String> invokerNames) {
+    void report(List<String> definitionNames) {
         getLogger().warn(
                 "The JavaScript declared by {} is not the JavaScript the frontend bundle carries. "
-                        + "It is collected into the bundle when the frontend is built, so a call made through the invoker keeps running the previous version, or finds no function at all, until the application is restarted.",
-                String.join(", ", invokerNames));
+                        + "It is collected into the bundle when the frontend is built, so a call made through the definition keeps running the previous version, or finds no function at all, until the application is restarted.",
+                String.join(", ", definitionNames));
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(JsInvokerHotswapper.class);
+        return LoggerFactory.getLogger(JsDefinitionHotswapper.class);
     }
 }

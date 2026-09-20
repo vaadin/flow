@@ -69,22 +69,22 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 }
 
 describe('ExecuteJavaScriptProcessor', () => {
-  describe('js invoker calls', () => {
-    const INVOKER = 'com.acme.GreeterJs';
+  describe('JavaScript definition calls', () => {
+    const DEFINITION = 'com.acme.GreeterJs';
 
-    type InvokerFunction = (this: unknown, ...args: unknown[]) => unknown;
+    type DefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
-    type InvokerWindow = Window & {
-      Vaadin?: { Flow?: { jsInvokers?: Record<string, Record<string, InvokerFunction>> } };
+    type DefinitionWindow = Window & {
+      Vaadin?: { Flow?: { jsDefinitions?: Record<string, Record<string, DefinitionFunction>> } };
     };
 
     // Registers a function the way the generated bundle does.
-    function registerInvoker(method: string, fn: InvokerFunction): void {
-      const vaadin = (window as InvokerWindow).Vaadin ?? {};
-      (window as InvokerWindow).Vaadin = vaadin;
+    function registerDefinition(method: string, fn: DefinitionFunction): void {
+      const vaadin = (window as DefinitionWindow).Vaadin ?? {};
+      (window as DefinitionWindow).Vaadin = vaadin;
       vaadin.Flow = vaadin.Flow ?? {};
-      vaadin.Flow.jsInvokers = vaadin.Flow.jsInvokers ?? {};
-      vaadin.Flow.jsInvokers[INVOKER] = { ...vaadin.Flow.jsInvokers[INVOKER], [method]: fn };
+      vaadin.Flow.jsDefinitions = vaadin.Flow.jsDefinitions ?? {};
+      vaadin.Flow.jsDefinitions[DEFINITION] = { ...vaadin.Flow.jsDefinitions[DEFINITION], [method]: fn };
     }
 
     function processor(): ExecuteJavaScriptProcessor {
@@ -97,17 +97,17 @@ describe('ExecuteJavaScriptProcessor', () => {
     }
 
     afterEach(() => {
-      delete (window as InvokerWindow).Vaadin?.Flow?.jsInvokers?.[INVOKER];
+      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[DEFINITION];
     });
 
     it('runs the function from the bundle against the element', () => {
       const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
-      registerInvoker('showGreeting/1', function (this: unknown, ...args: unknown[]) {
+      registerDefinition('showGreeting/1', function (this: unknown, ...args: unknown[]) {
         calls.push({ thisArg: this, args });
       });
       const element = { tagName: 'div' };
 
-      processor().execute([['Hello', element, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
+      processor().execute([['Hello', element, { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -115,7 +115,7 @@ describe('ExecuteJavaScriptProcessor', () => {
     });
 
     it('passes the return value to the success channel', async () => {
-      registerInvoker('readValue/0', () => 'answer');
+      registerDefinition('readValue/0', () => 'answer');
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
@@ -124,7 +124,7 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           (value: unknown) => resolved.push(value),
           () => {},
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
+          { definition: DEFINITION, method: 'readValue/0', arguments: 0, returns: true }
         ]
       ]);
       // Settled in microtasks: a macrotask wait would also pick up the
@@ -137,20 +137,20 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('does not run a call whose parameters do not match the target', () => {
       let calls = 0;
-      registerInvoker('showGreeting/1', () => {
+      registerDefinition('showGreeting/1', () => {
         calls += 1;
       });
 
       // One argument declared, but no element to apply the function to: the
       // invocation and this client disagree about the signature.
-      processor().execute([['Hello', { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]]);
+      processor().execute([['Hello', { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]]);
 
       expect(calls).to.equal(0);
     });
 
     it('reports a mismatch to the error channel of a call that returns a value', () => {
       let calls = 0;
-      registerInvoker('readValue/0', () => {
+      registerDefinition('readValue/0', () => {
         calls += 1;
         return 'answer';
       });
@@ -162,7 +162,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         [
           element,
           (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
+          { definition: DEFINITION, method: 'readValue/0', arguments: 0, returns: true }
         ]
       ]);
 
@@ -174,12 +174,12 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('does not run a call that carries more parameters than the target declares', () => {
       let calls = 0;
-      registerInvoker('showGreeting/1', () => {
+      registerDefinition('showGreeting/1', () => {
         calls += 1;
       });
 
       processor().execute([
-        ['Hello', 'unexpected', { tagName: 'div' }, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1 }]
+        ['Hello', 'unexpected', { tagName: 'div' }, { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]
       ]);
 
       expect(calls).to.equal(0);
@@ -194,12 +194,12 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           () => {},
           (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'missing/0', arguments: 0, returns: true }
+          { definition: DEFINITION, method: 'missing/0', arguments: 0, returns: true }
         ]
       ]);
 
       expect(errors).to.have.lengthOf(1);
-      expect(String(errors[0])).to.contain(INVOKER);
+      expect(String(errors[0])).to.contain(DEFINITION);
     });
   });
 

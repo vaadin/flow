@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JsInvokerCallTest {
+class JsCallTest {
 
-    @JsInvoker
+    @JsDefinition
     interface GreeterJs extends Serializable {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
@@ -64,16 +64,16 @@ class JsInvokerCallTest {
         }
     }
 
-    private static JsInvokerCall call(String methodName, Object... arguments) {
-        return new JsInvokerCall(GreeterJs.class, methodName,
+    private static JsCall call(String methodName, Object... arguments) {
+        return new JsCall(GreeterJs.class, methodName,
                 Arrays.asList(arguments));
     }
 
     @Test
     void identifiers_nameTheInterfaceAndTheMethodWithItsArity() {
-        JsInvokerCall call = call("showGreeting", "Hello");
+        JsCall call = call("showGreeting", "Hello");
 
-        assertEquals(GreeterJs.class.getName(), call.getInvokerId());
+        assertEquals(GreeterJs.class.getName(), call.getDefinitionId());
         assertEquals("showGreeting/1", call.getMethodId());
     }
 
@@ -110,7 +110,7 @@ class JsInvokerCallTest {
         // What a method whose value is optional is called with - the focus
         // options of a browser, for one - so it has to survive the call and
         // reach the implementation as it was.
-        JsInvokerCall call = call("showGreeting", (Object) null);
+        JsCall call = call("showGreeting", (Object) null);
         Greeter greeter = new Greeter();
 
         assertEquals(Collections.singletonList(null), call.arguments());

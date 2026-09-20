@@ -30,12 +30,14 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
-import com.vaadin.flow.server.frontend.TaskGenerateJsInvokers;
+import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -43,30 +45,30 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JsInvokerHotswapperTest {
+class JsDefinitionHotswapperTest {
 
-    @JsInvoker
+    @JsDefinition
     interface GreeterJs extends Serializable {
         @JsExpression("window.alert($0); this.focus()")
         void showGreeting(String greeting);
     }
 
-    @JsInvoker
+    @JsDefinition
     interface CounterJs extends Serializable {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
     }
 
-    static class NotAnInvoker {
+    static class NotADefinition {
     }
 
     // Records what a change is reported for instead of logging it.
-    private static class TestHotswapper extends JsInvokerHotswapper {
+    private static class TestHotswapper extends JsDefinitionHotswapper {
         private final List<String> reported = new ArrayList<>();
 
         @Override
-        void report(List<String> invokerNames) {
-            reported.addAll(invokerNames);
+        void report(List<String> definitionNames) {
+            reported.addAll(definitionNames);
         }
     }
 
@@ -109,29 +111,39 @@ class JsInvokerHotswapperTest {
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
     }
 
-    private String readGeneratedInvokers() throws IOException {
-        return Files
-                .readString(
-                        new File(
-                                FrontendUtils.getFrontendGeneratedFolder(
-                                        frontendFolder),
-                                FrontendUtils.JS_INVOKERS_FILE_NAME).toPath(),
-                        StandardCharsets.UTF_8);
+    private String readGeneratedDefinitions() throws IOException {
+        return Files.readString(
+                new File(
+                        FrontendUtils
+                                .getFrontendGeneratedFolder(frontendFolder),
+                        FrontendUtils.JS_DEFINITIONS_FILE_NAME).toPath(),
+                StandardCharsets.UTF_8);
     }
 
-    private void writeGeneratedInvokers(String content) throws IOException {
+    private void writeGeneratedDefinitions(String content) throws IOException {
         File generated = FrontendUtils
                 .getFrontendGeneratedFolder(frontendFolder);
         generated.mkdirs();
         Files.writeString(
-                new File(generated, FrontendUtils.JS_INVOKERS_FILE_NAME)
+                new File(generated, FrontendUtils.JS_DEFINITIONS_FILE_NAME)
                         .toPath(),
                 content, StandardCharsets.UTF_8);
     }
 
-    private String generatedFor(Class<?> invoker) {
-        return String.join(System.lineSeparator(),
-                TaskGenerateJsInvokers.renderInvokerLines(invoker));
+    /**
+     * The file as a build writes it for the given interface, which is what a
+     * browser would be running.
+     */
+    private String generatedFor(Class<?> definition) throws IOException {
+        Options options = new Options(Mockito.mock(Lookup.class), null, null)
+                .withFrontendDirectory(frontendFolder);
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(definition));
+        String content = readGeneratedDefinitions();
+        Files.delete(new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME).toPath());
+        return content;
     }
 
     private void classesChanged(Class<?>... classes) {
@@ -140,56 +152,28 @@ class JsInvokerHotswapperTest {
     }
 
     @Test
-    void bundleCarriesTheDeclarations_nothingReported() throws IOException {
-        writeGeneratedInvokers(generatedFor(GreeterJs.class));
+    void fileCarriesTheDeclarations_nothingReported() throws IOException {
+        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
 
         classesChanged(GreeterJs.class);
 
         assertTrue(hotswapper.reported.isEmpty(),
-                "a bundle built from these declarations runs exactly them: "
+                "a browser running what the interface declares needs nothing said about it: "
                         + hotswapper.reported);
     }
 
     @Test
-    void bundleCarriesAnotherVersionOfTheDeclarations_reported()
-            throws IOException {
-        // The JavaScript the interface declared before it was shortened: the
-        // bundle would keep running the extra statement.
-        writeGeneratedInvokers(generatedFor(GreeterJs.class).replace(
-                "window.alert($0); this.focus()",
-                "window.alert($0); this.focus(); this.scrollTo(0, 0)"));
-
-        classesChanged(GreeterJs.class);
-
-        assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported);
-    }
-
-    @Test
-    void bundleCarriesTheDeclarationsUnderAnotherName_reported()
-            throws IOException {
-        // What renaming or moving the interface leaves behind: the methods and
-        // the JavaScript are in the bundle, but under the name of before, so a
-        // call looks up an invoker the bundle does not have.
-        writeGeneratedInvokers(generatedFor(GreeterJs.class)
-                .replace(GreeterJs.class.getName(), "com.example.RenamedJs"));
-
-        classesChanged(GreeterJs.class);
-
-        assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported);
-    }
-
-    @Test
-    void noGeneratedFile_reported() {
+    void fileDoesNotCarryTheDeclarations_reported() {
         classesChanged(GreeterJs.class);
 
         assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported,
-                "without a generated file nothing carries the declarations");
+                "without the dev server only a build can put them there, so say so");
     }
 
     @Test
-    void frontendDevServerRunning_fileWrittenAgainInsteadOfReported()
+    void frontendDevServerRunning_appliedInsteadOfReported()
             throws IOException {
-        writeGeneratedInvokers(generatedFor(GreeterJs.class)
+        writeGeneratedDefinitions(generatedFor(GreeterJs.class)
                 .replace("window.alert($0); this.focus()", "window.alert($0)"));
         withFrontendDevServer();
 
@@ -199,53 +183,17 @@ class JsInvokerHotswapperTest {
                 "with the dev server the change is applied, not reported: "
                         + hotswapper.reported);
         assertTrue(
-                readGeneratedInvokers()
+                readGeneratedDefinitions()
                         .contains("window.alert($0); this.focus()"),
-                "the file should hold what the interface declares now");
-        assertTrue(readGeneratedInvokers().contains("import.meta.hot.accept()"),
-                "the file should accept its own update, so the dev server replaces just this module");
+                "and what the browser reloads is what the interface declares now");
     }
 
     @Test
-    void frontendDevServerRunningWithoutTheFile_fileWritten()
-            throws IOException {
-        withFrontendDevServer();
-
-        classesChanged(GreeterJs.class);
-
-        assertTrue(hotswapper.reported.isEmpty());
-        assertTrue(readGeneratedInvokers().contains(GreeterJs.class.getName()));
-    }
-
-    @Test
-    void invokerTheFileNeverHeldOf_writtenBesideTheOnesItHolds()
-            throws IOException {
-        // What annotating an interface that the file was generated without
-        // looks like: nothing has scanned for it, and the interfaces the file
-        // does hold have to stay in it.
-        writeGeneratedInvokers(generatedFor(CounterJs.class));
-        withFrontendDevServer();
-
-        classesChanged(GreeterJs.class);
-
-        assertTrue(hotswapper.reported.isEmpty(),
-                "the file can hold both, so there is nothing to report: "
-                        + hotswapper.reported);
-        String written = readGeneratedInvokers();
-        assertTrue(written.contains(GreeterJs.class.getName()),
-                "the interface that changed should be in the file: " + written);
-        assertTrue(written.contains(CounterJs.class.getName()),
-                "the interface the file held should still be in it: "
-                        + written);
-    }
-
-    @Test
-    void frontendDevServerRunningButFileNotWritable_reported()
-            throws IOException {
-        // A directory where the file belongs: nothing can be written, so the
-        // change is reported rather than passing as applied.
+    void frontendDevServerRunningButNothingCanBeWritten_reported() {
+        // A directory where the file belongs: the change cannot be applied, so
+        // it is reported rather than passing as applied
         new File(FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_INVOKERS_FILE_NAME).mkdirs();
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME).mkdirs();
         withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
@@ -254,10 +202,10 @@ class JsInvokerHotswapperTest {
     }
 
     @Test
-    void noInvokerChanged_nothingReported() throws IOException {
-        writeGeneratedInvokers(generatedFor(GreeterJs.class));
+    void noDefinitionChanged_nothingReported() throws IOException {
+        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
 
-        classesChanged(NotAnInvoker.class);
+        classesChanged(NotADefinition.class);
 
         assertTrue(hotswapper.reported.isEmpty(),
                 "a class that declares no JavaScript is not a frontend change");

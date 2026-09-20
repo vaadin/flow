@@ -63,9 +63,9 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1377,19 +1377,20 @@ final class DevLoopRedefiner {
                         + ":" + annotation.themeFor());
             }
         }
-        // The JavaScript an invoker interface declares is generated into the
+        // The JavaScript a JavaScript definition declares is generated into
+        // the
         // bundle by the build, exactly like the imports above, so an edited
         // expression or a method added or removed only reaches the browser
         // through a restart that regenerates the file and rebuilds the bundle.
         // The expression is part of the fingerprint, since a changed one keeps
         // the same method and would otherwise go unnoticed.
-        if (type.isAnnotationPresent(JsInvoker.class)) {
+        if (type.isAnnotationPresent(JsDefinition.class)) {
             for (Method method : type.getMethods()) {
                 JsExpression expression = method
                         .getAnnotation(JsExpression.class);
                 if (expression != null) {
-                    imports.add("jsinvoker:"
-                            + JsInvokerCall.methodId(method.getName(),
+                    imports.add("jsdefinition:"
+                            + JsCall.methodId(method.getName(),
                                     method.getParameterCount())
                             + ":" + expression.value());
                 }

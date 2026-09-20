@@ -56,7 +56,7 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
-import com.vaadin.flow.js.JsInvokerCall;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
@@ -331,9 +331,9 @@ public class UidlWriter implements Serializable {
 
     private static ArrayNode encodeExecuteJavaScript(
             PendingJavaScriptInvocation invocation) {
-        JsInvokerCall invokerCall = invocation.getInvocation().getInvokerCall();
-        if (invokerCall != null) {
-            return encodeInvokerCall(invocation, invokerCall);
+        JsCall jsCall = invocation.getInvocation().getJsCall();
+        if (jsCall != null) {
+            return encodeJsCall(invocation, jsCall);
         }
 
         List<Object> parametersList = invocation.getInvocation()
@@ -385,9 +385,9 @@ public class UidlWriter implements Serializable {
     }
 
     /**
-     * Encodes a call made through a JS invoker as
+     * Encodes a call made through a JavaScript definition as
      * <code>[argument1, ..., element, successChannel, errorChannel, target]</code>,
-     * where the trailing target object names the invoker interface and the
+     * where the trailing target object names the JavaScript definition and the
      * method instead of carrying JavaScript. The client runs the function that
      * the build generated from the declaration of that method, so no expression
      * is sent and nothing is compiled in the browser.
@@ -397,15 +397,17 @@ public class UidlWriter implements Serializable {
      * one is the element to apply the function to, and the two after that are
      * the return value channels when <code>returns</code> is set.
      */
-    private static ArrayNode encodeInvokerCall(
-            PendingJavaScriptInvocation invocation, JsInvokerCall call) {
+    private static ArrayNode encodeJsCall(
+            PendingJavaScriptInvocation invocation, JsCall call) {
         Stream<Object> parameters = invocation.getInvocation().getParameters()
                 .stream();
 
         ObjectNode target = JacksonUtils.createObjectNode();
-        target.put(JsonConstants.UIDL_KEY_INVOKER, call.getInvokerId());
-        target.put(JsonConstants.UIDL_KEY_INVOKER_METHOD, call.getMethodId());
-        target.put(JsonConstants.UIDL_KEY_INVOKER_ARGUMENTS,
+        target.put(JsonConstants.UIDL_KEY_JS_DEFINITION,
+                call.getDefinitionId());
+        target.put(JsonConstants.UIDL_KEY_JS_DEFINITION_METHOD,
+                call.getMethodId());
+        target.put(JsonConstants.UIDL_KEY_JS_DEFINITION_ARGUMENTS,
                 call.arguments().size());
 
         if (invocation.isSubscribed()) {
@@ -419,7 +421,7 @@ public class UidlWriter implements Serializable {
 
             parameters = Stream.concat(parameters,
                     Stream.of(successChannel, errorChannel));
-            target.put(JsonConstants.UIDL_KEY_INVOKER_RETURNS, true);
+            target.put(JsonConstants.UIDL_KEY_JS_DEFINITION_RETURNS, true);
         }
 
         return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),

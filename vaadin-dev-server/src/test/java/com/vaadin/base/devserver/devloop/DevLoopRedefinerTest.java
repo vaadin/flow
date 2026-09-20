@@ -37,8 +37,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -163,13 +163,13 @@ class DevLoopRedefinerTest {
     static class NothingDeclared {
     }
 
-    @JsInvoker
+    @JsDefinition
     interface GreeterJs extends Serializable {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
     }
 
-    @JsInvoker
+    @JsDefinition
     interface EditedGreeterJs extends Serializable {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
@@ -192,13 +192,13 @@ class DevLoopRedefinerTest {
     }
 
     @Test
-    void frontendDependencies_seesTheJavaScriptAnInvokerDeclares() {
+    void frontendDependencies_seesTheJavaScriptADefinitionDeclares() {
         // The declared JavaScript is generated into the bundle by the build, so
         // a redefined interface leaves the browser running the JavaScript the
         // bundle was built with until a restart regenerates it.
         String imports = DevLoopRedefiner.frontendDependencies(GreeterJs.class);
 
-        assertTrue(imports.contains("jsinvoker:showGreeting/1"), imports);
+        assertTrue(imports.contains("jsdefinition:showGreeting/1"), imports);
         // An edited expression keeps the same method, so the expression itself
         // has to be part of the comparison.
         assertNotEquals(imports,

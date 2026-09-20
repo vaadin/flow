@@ -40,5 +40,5 @@ import com.vaadin.flow.dom.Element;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JsInvoker {
+public @interface JsDefinition {
 }

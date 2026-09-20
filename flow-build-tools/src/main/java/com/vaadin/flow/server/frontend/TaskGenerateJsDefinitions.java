@@ -34,16 +34,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
-import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 
 /**
- * Generates {@link FrontendUtils#JS_INVOKERS_FILE_NAME}, which registers the
- * JavaScript of every {@link JsInvoker} interface on the class path as an
+ * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
+ * JavaScript of every {@link JsDefinition} interface on the class path as an
  * ordinary function of the bundle.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
@@ -54,45 +54,46 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_INVOKERS_FILE_NAME;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
+public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
-    private static final Pattern INVOKER_KEY = Pattern
-            .compile("window\\.Vaadin\\.Flow\\.jsInvokers\\[\"([^\"]+)\"\\] =");
+    private static final Pattern DEFINITION_KEY = Pattern.compile(
+            "window\\.Vaadin\\.Flow\\.jsDefinitions\\[\"([^\"]+)\"\\] =");
 
     private final Options options;
 
-    TaskGenerateJsInvokers(Options options) {
+    TaskGenerateJsDefinitions(Options options) {
         this.options = options;
     }
 
     @Override
     protected String getFileContent() {
-        return renderFileContent(
-                options.getClassFinder().getAnnotatedClasses(JsInvoker.class));
+        return renderFileContent(options.getClassFinder()
+                .getAnnotatedClasses(JsDefinition.class));
     }
 
     /**
-     * Renders the file that registers the JavaScript of the given invoker
+     * Renders the file that registers the JavaScript of the given definition
      * interfaces.
      * <p>
-     * Exposed so that a caller which regenerates the file outside a build - the
-     * hotswap path, which writes it again when an interface changed while the
-     * application runs - produces exactly what a build would have written.
+     * Package private: what regenerating the file outside a build looks like is
+     * {@link #updateJsDefinitions(Options, Collection)}, which goes through
+     * this.
      *
-     * @param invokers
-     *            the invoker interfaces to render, not <code>null</code>
+     * @param definitions
+     *            the JavaScript definitions to render, not <code>null</code>
      * @return the content of the generated file
      */
-    public static String renderFileContent(Collection<Class<?>> invokers) {
+    static String renderFileContent(Collection<Class<?>> definitions) {
         List<String> lines = new ArrayList<>();
         lines.add("// @ts-nocheck");
         lines.add("window.Vaadin = window.Vaadin || {};");
         lines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
         lines.add(
-                "window.Vaadin.Flow.jsInvokers = window.Vaadin.Flow.jsInvokers || {};");
+                "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
 
-        invokers.stream().sorted(Comparator.comparing(Class::getName))
-                .forEach(invoker -> lines.addAll(renderInvokerLines(invoker)));
+        definitions.stream().sorted(Comparator.comparing(Class::getName))
+                .forEach(definition -> lines
+                        .addAll(renderDefinitionLines(definition)));
 
         // Writing this file again while the application runs replaces it in the
         // browser that has it: everything above only writes into the registry,
@@ -111,26 +112,27 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     /**
-     * The invoker interfaces of the given ones whose JavaScript the generated
-     * file does not carry, which is the JavaScript a browser can run of them.
+     * The JavaScript definitions of the given ones whose JavaScript the
+     * generated file does not carry, which is the JavaScript a browser can run
+     * of them.
      *
      * @param options
      *            where the file is, not <code>null</code>
-     * @param invokers
-     *            the invoker interfaces to look for, not <code>null</code>
+     * @param definitions
+     *            the JavaScript definitions to look for, not <code>null</code>
      * @return those the file does not carry, empty when it carries all of them
      */
     public static List<Class<?>> missingFromGeneratedFile(Options options,
-            Collection<Class<?>> invokers) {
+            Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        return invokers.stream()
-                .filter(invoker -> !isInGeneratedFile(invoker, generated))
+        return definitions.stream()
+                .filter(definition -> !isInGeneratedFile(definition, generated))
                 .toList();
     }
 
     /**
-     * Writes the generated file again so that it carries what the given invoker
-     * interfaces declare, for a caller that has to update it while the
+     * Writes the generated file again so that it carries what the given
+     * definitions declare, for a caller that has to update it while the
      * application runs rather than as part of a build.
      * <p>
      * The interfaces the file already registers are kept: they are what a
@@ -146,26 +148,27 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      *
      * @param options
      *            where the file is, not <code>null</code>
-     * @param invokers
-     *            the invoker interfaces to write it for, not <code>null</code>
-     *            and not empty
+     * @param definitions
+     *            the JavaScript definitions to write it for, not
+     *            <code>null</code> and not empty
      * @return those of them the file does not carry afterwards, empty when it
      *         carries all of them
      */
-    public static List<Class<?>> updateJsInvokers(Options options,
-            Collection<Class<?>> invokers) {
+    public static List<Class<?>> updateJsDefinitions(Options options,
+            Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        String content = renderFileContent(withInvokersOf(generated, invokers));
+        String content = renderFileContent(
+                withDefinitionsOf(generated, definitions));
 
-        TaskGenerateJsInvokers task = new TaskGenerateJsInvokers(options);
+        TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
             task.writeIfChanged(task.getGeneratedFile(), content);
         } catch (IOException e) {
             getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
             // The file is as it was, so only what it was already missing is
             // missing now
-            return invokers.stream()
-                    .filter(invoker -> !isInGeneratedFile(invoker, generated))
+            return definitions.stream().filter(
+                    definition -> !isInGeneratedFile(definition, generated))
                     .toList();
         }
         // Everything asked for went into the content that was written
@@ -173,18 +176,18 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Whether the given content carries what the invoker declares, compared as
-     * this class renders it, so the interface name, the methods, their argument
-     * counts and the JavaScript all have to match. A method that was removed
-     * does not show up as a difference: its function stays in the file with
-     * nothing calling it.
+     * Whether the given content carries what the definition declares, compared
+     * as this class renders it, so the interface name, the methods, their
+     * argument counts and the JavaScript all have to match. A method that was
+     * removed does not show up as a difference: its function stays in the file
+     * with nothing calling it.
      */
-    private static boolean isInGeneratedFile(Class<?> invoker,
+    private static boolean isInGeneratedFile(Class<?> definition,
             String generated) {
         if (generated == null) {
             return false;
         }
-        List<String> declared = renderInvokerLines(invoker);
+        List<String> declared = renderDefinitionLines(definition);
         if (declared.isEmpty()) {
             // Declares no JavaScript, so there is nothing to carry
             return true;
@@ -197,26 +200,28 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      * The given interfaces, plus the ones the content registers that are not
      * among them and can still be loaded.
      */
-    private static Collection<Class<?>> withInvokersOf(String generated,
-            Collection<Class<?>> invokers) {
+    private static Collection<Class<?>> withDefinitionsOf(String generated,
+            Collection<Class<?>> definitions) {
         Map<String, Class<?>> byName = new LinkedHashMap<>();
-        invokers.forEach(invoker -> byName.put(invoker.getName(), invoker));
-        ClassLoader classLoader = invokers.iterator().next().getClassLoader();
-        for (String name : readInvokerNames(generated)) {
+        definitions.forEach(
+                definition -> byName.put(definition.getName(), definition));
+        ClassLoader classLoader = definitions.iterator().next()
+                .getClassLoader();
+        for (String name : readDefinitionNames(generated)) {
             if (byName.containsKey(name)) {
                 continue;
             }
             try {
                 byName.put(name, Class.forName(name, false, classLoader));
             } catch (ClassNotFoundException | LinkageError e) {
-                getLogger().debug("Could not load the invoker {}", name, e);
+                getLogger().debug("Could not load the definition {}", name, e);
             }
         }
         return byName.values();
     }
 
     private static String readGeneratedFile(Options options) {
-        File generatedFile = new TaskGenerateJsInvokers(options)
+        File generatedFile = new TaskGenerateJsDefinitions(options)
                 .getGeneratedFile();
         if (!generatedFile.exists()) {
             return null;
@@ -231,14 +236,14 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(TaskGenerateJsInvokers.class);
+        return LoggerFactory.getLogger(TaskGenerateJsDefinitions.class);
     }
 
     /**
-     * Reads back the names of the invoker interfaces a generated file
+     * Reads back the names of the JavaScript definitions a generated file
      * registers, which is what a browser that has the file can run.
      * <p>
-     * Exposed together with {@link #renderInvokerLines(Class)} so that the
+     * Exposed together with {@link #renderDefinitionLines(Class)} so that the
      * format this class writes is also read here, and a caller which has to
      * render the file again - the hotswap path - can keep the interfaces that
      * are in it.
@@ -248,12 +253,12 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
      * @return the interface names the file registers, in the order it registers
      *         them
      */
-    public static List<String> readInvokerNames(String fileContent) {
+    public static List<String> readDefinitionNames(String fileContent) {
         List<String> names = new ArrayList<>();
         if (fileContent == null) {
             return names;
         }
-        Matcher matcher = INVOKER_KEY.matcher(fileContent);
+        Matcher matcher = DEFINITION_KEY.matcher(fileContent);
         while (matcher.find()) {
             String name = matcher.group(1);
             if (!names.contains(name)) {
@@ -264,23 +269,23 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Renders what one invoker interface contributes to the generated file: the
-     * registration of its interface name, and one function per method that
+     * Renders what one JavaScript definition contributes to the generated file:
+     * the registration of its interface name, and one function per method that
      * declares JavaScript, keyed by method name and argument count.
      * <p>
-     * Exposed so that a caller which has to tell whether a bundle carries what
-     * an interface declares - the hotswap path, which compares the two - reads
-     * the same rendering the build wrote, instead of matching parts of it.
+     * Package private: whether a file carries what an interface declares is
+     * answered by {@link #missingFromGeneratedFile(Options, Collection)}, which
+     * compares against this.
      *
-     * @param invoker
-     *            the invoker interface to render, not <code>null</code>
-     * @return the lines this invoker contributes, empty if it declares no
+     * @param definition
+     *            the JavaScript definition to render, not <code>null</code>
+     * @return the lines this definition contributes, empty if it declares no
      *         JavaScript
      */
-    public static List<String> renderInvokerLines(Class<?> invoker) {
+    static List<String> renderDefinitionLines(Class<?> definition) {
         List<String> lines = new ArrayList<>();
         List<Method> methods = new ArrayList<>();
-        for (Method method : invoker.getMethods()) {
+        for (Method method : definition.getMethods()) {
             // A default method runs in Java, so it has nothing in the bundle
             // even if it carries the annotation
             if (method.isAnnotationPresent(JsExpression.class)
@@ -291,15 +296,15 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
         if (methods.isEmpty()) {
             return lines;
         }
-        methods.sort(Comparator.comparing(TaskGenerateJsInvokers::methodId));
+        methods.sort(Comparator.comparing(TaskGenerateJsDefinitions::methodId));
 
         lines.add(String.format(
-                "window.Vaadin.Flow.jsInvokers[%s] = Object.assign(window.Vaadin.Flow.jsInvokers[%s] || {}, {",
-                quote(invoker.getName()), quote(invoker.getName())));
+                "window.Vaadin.Flow.jsDefinitions[%s] = Object.assign(window.Vaadin.Flow.jsDefinitions[%s] || {}, {",
+                quote(definition.getName()), quote(definition.getName())));
         for (Method method : methods) {
             // The parameters of the generated function are the arguments of the
             // call, referenced as $0, $1, ... by the declared expression, and
-            // the element the invoker was obtained from is its `this` - the
+            // the element the definition was obtained from is its `this` - the
             // same contract as an executeJs expression has.
             String parameters = IntStream.range(0, method.getParameterCount())
                     .mapToObj(index -> "$" + index)
@@ -315,8 +320,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     }
 
     private static String methodId(Method method) {
-        return JsInvokerCall.methodId(method.getName(),
-                method.getParameterCount());
+        return JsCall.methodId(method.getName(), method.getParameterCount());
     }
 
     private static String quote(String value) {
@@ -327,7 +331,7 @@ public class TaskGenerateJsInvokers extends AbstractTaskClientGenerator {
     protected File getGeneratedFile() {
         File frontendGeneratedDirectory = new File(
                 options.getFrontendDirectory(), GENERATED);
-        return new File(frontendGeneratedDirectory, JS_INVOKERS_FILE_NAME);
+        return new File(frontendGeneratedDirectory, JS_DEFINITIONS_FILE_NAME);
     }
 
     @Override

@@ -77,9 +77,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2666,7 +2666,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -2683,12 +2683,12 @@ class ElementTest extends AbstractNodeTest {
                 "the declared expression should not be wrapped, since the generated function is what runs");
         assertEquals(List.of("foo", element), invocation.getParameters(),
                 "the arguments should be followed by the element to apply the function to");
-        assertEquals(new JsInvokerCall(TestJs.class, "method", List.of("foo")),
-                invocation.getInvokerCall());
+        assertEquals(new JsCall(TestJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
     }
 
     @Test
-    void executeJsWithInvoker_interfaceWithoutAnnotation_throws() {
+    void executeJsWithDefinition_interfaceWithoutAnnotation_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
@@ -2697,25 +2697,25 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_notAnInterface_throws() {
+    void executeJsWithDefinition_notAnInterface_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
                 () -> element.executeJs(ElementTest.class),
-                "only an interface can declare invoker methods");
+                "only an interface can declare JavaScript methods");
     }
 
     @Test
-    void executeJsWithInvoker_methodReturningAResult_schedulesAndReturnsIt() {
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        ResultJs invoker = element.executeJs(ResultJs.class);
-        assertNotNull(invoker.toString(),
-                "the invoker should answer the methods of Object");
+        ResultJs resultJs = element.executeJs(ResultJs.class);
+        assertNotNull(resultJs.toString(),
+                "the implementation should answer the methods of Object");
 
-        PendingJavaScriptResult result = invoker.readValue();
+        PendingJavaScriptResult result = resultJs.readValue();
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertNotNull(result,
@@ -2725,13 +2725,13 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_methodWithAnotherReturnType_throws() {
+    void executeJsWithDefinition_methodWithAnotherReturnType_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> element.executeJs(UnsupportedJs.class),
-                "a method the invoker can not answer should be refused when the invoker is handed out");
+                "a method that can not be answered should be refused when the implementation is handed out");
 
         assertTrue(exception.getMessage().contains("readValue"),
                 "the message should name the method: "
@@ -2739,7 +2739,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_methodWithoutDeclaredJavaScript_throws() {
+    void executeJsWithDefinition_methodWithoutDeclaredJavaScript_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
@@ -2752,20 +2752,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_defaultAndStaticMethods_areNotDeclarations() {
+    void executeJsWithDefinition_defaultAndStaticMethods_areNotDeclarations() {
         Element element = ElementFactory.createDiv();
 
-        ComposingJs invoker = element.executeJs(ComposingJs.class);
+        ComposingJs composingJs = element.executeJs(ComposingJs.class);
 
-        // A static method belongs to the interface, not to the invoker, and a
-        // default method answers with whatever Java answers with
+        // A static method belongs to the interface, not to the
+        // implementation, a default method answers with whatever Java answers
+        // with
         assertEquals("ComposingJs", ComposingJs.name());
-        assertEquals("composing", invoker.describe(),
+        assertEquals("composing", composingJs.describe(),
                 "a default method is not bound by what a declared one may return");
     }
 
     @Test
-    void executeJsWithInvoker_defaultMethodOnANonPublicInterface_throws() {
+    void executeJsWithDefinition_defaultMethodOnANonPublicInterface_throws() {
         Element element = ElementFactory.createDiv();
 
         IllegalArgumentException exception = assertThrows(
@@ -2778,7 +2779,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_defaultMethodDeclaringJavaScript_throws() {
+    void executeJsWithDefinition_defaultMethodDeclaringJavaScript_throws() {
         Element element = ElementFactory.createDiv();
 
         assertThrows(IllegalArgumentException.class,
@@ -2787,7 +2788,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithInvoker_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
+    void executeJsWithDefinition_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -2799,29 +2800,28 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pendingJs.size(),
                 "a default method runs in Java, and what it calls of the interface is scheduled");
-        assertEquals(
-                new JsInvokerCall(ComposingJs.class, "method", List.of("foo")),
-                pendingJs.get(0).getInvocation().getInvokerCall());
+        assertEquals(new JsCall(ComposingJs.class, "method", List.of("foo")),
+                pendingJs.get(0).getInvocation().getJsCall());
     }
 
-    @JsInvoker
+    @JsDefinition
     interface ResultJs extends Serializable {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
     }
 
-    @JsInvoker
+    @JsDefinition
     interface UnsupportedJs extends Serializable {
         @JsExpression("return this.value;")
         String readValue();
     }
 
-    @JsInvoker
+    @JsDefinition
     interface UndeclaredJs extends Serializable {
         void undeclared();
     }
 
-    @JsInvoker
+    @JsDefinition
     public interface ComposingJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);
@@ -2840,7 +2840,7 @@ class ElementTest extends AbstractNodeTest {
         }
     }
 
-    @JsInvoker
+    @JsDefinition
     interface NotPublicJs extends Serializable {
         @JsExpression("this.method()")
         void method();
@@ -2851,14 +2851,14 @@ class ElementTest extends AbstractNodeTest {
         }
     }
 
-    @JsInvoker
+    @JsDefinition
     interface ContradictoryJs extends Serializable {
         @JsExpression("this.method()")
         default void method() {
         }
     }
 
-    @JsInvoker
+    @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);

@@ -51,9 +51,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -206,11 +206,10 @@ class UidlWriterTest {
     }
 
     @Test
-    void encodeExecuteJavaScript_invokerCall_sendsTheTargetInsteadOfTheScript() {
+    void encodeExecuteJavaScript_jsCall_sendsTheTargetInsteadOfTheScript() {
         Element element = ElementFactory.createDiv();
 
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
 
@@ -219,7 +218,7 @@ class UidlWriterTest {
                         invocation)));
 
         ObjectNode target = JacksonUtils.createObjectNode();
-        target.put("invoker", TestJs.class.getName());
+        target.put("definition", TestJs.class.getName());
         target.put("method", "method/1");
         target.put("arguments", 1);
         ArrayNode expectedJson = JacksonUtils.createArray(
@@ -228,16 +227,15 @@ class UidlWriterTest {
                         JacksonUtils.nullNode(), target));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
-                "an invoker call should carry its target, and no JavaScript: "
+                "a call of declared JavaScript should carry its target, and no JavaScript: "
                         + json);
     }
 
     @Test
-    void encodeExecuteJavaScript_subscribedInvokerCall_addsTheReturnChannels() {
+    void encodeExecuteJavaScript_subscribedDefinitionCall_addsTheReturnChannels() {
         Element element = ElementFactory.createDiv();
 
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
@@ -258,7 +256,7 @@ class UidlWriterTest {
         assertEquals(1, target.get("arguments").asInt());
     }
 
-    @JsInvoker
+    @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);

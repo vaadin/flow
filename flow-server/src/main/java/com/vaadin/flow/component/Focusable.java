@@ -21,8 +21,8 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -213,15 +213,15 @@ public interface Focusable<T extends Component>
     }
 
     /**
-     * The client-side operations behind {@link Focusable}, as an invoker
-     * interface for {@link Element#executeJs(Class)}.
+     * The client-side operations behind {@link Focusable}, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
      * <p>
      * Focus and blur are marked as server-initiated for the client, so that the
      * resulting event reports {@code isFromClient() == false}. A driver of the
      * client side that implements this interface instead of running the scripts
      * is responsible for the same.
      */
-    @JsInvoker
+    @JsDefinition
     interface FocusJs extends Serializable {
 
         /**

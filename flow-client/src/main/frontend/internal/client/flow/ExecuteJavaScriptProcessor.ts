@@ -67,34 +67,34 @@ interface ContextCallbacks {
 }
 
 /**
- * What a JS invoker invocation ends with instead of an expression: the invoker
- * interface and the method to look up in the bundle, how many of the leading
+ * What an invocation of declared JavaScript ends with instead of an expression:
+ * the definition interface and the method to look up in the bundle, how many of the leading
  * parameters are the arguments of the call, and whether the two parameters
  * after the element are the channels for the return value.
  */
-export interface JsInvokerTarget {
-  invoker: string;
+export interface JsDefinitionTarget {
+  definition: string;
   method: string;
   arguments: number;
   returns?: boolean;
 }
 
-type JsInvokerFunction = (this: unknown, ...args: unknown[]) => unknown;
+type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
 type ReturnChannel = (value: unknown) => void;
 
 /**
- * Looks up the function that the build generated for an invoker method. The
+ * Looks up the function that the build generated for a definition method. The
  * registry is populated by the generated bundle, so the function is ordinary
  * bundled code and nothing has to be compiled from a string here.
  */
-function findInvokerFunction(invoker: string, method: string): JsInvokerFunction | undefined {
+function findDeclaredFunction(definition: string, method: string): JsDefinitionFunction | undefined {
   const registry = (
     window as unknown as {
-      Vaadin?: { Flow?: { jsInvokers?: Record<string, Record<string, JsInvokerFunction>> } };
+      Vaadin?: { Flow?: { jsDefinitions?: Record<string, Record<string, JsDefinitionFunction>> } };
     }
-  ).Vaadin?.Flow?.jsInvokers;
-  return registry?.[invoker]?.[method];
+  ).Vaadin?.Flow?.jsDefinitions;
+  return registry?.[definition]?.[method];
 }
 
 /**
@@ -157,12 +157,12 @@ export class ExecuteJavaScriptProcessor {
 
     const target = invocation[invocation.length - 1];
     if (typeof target === 'object' && target !== null) {
-      // A JS invoker call: the bundle has the function, the server sent only
-      // which one to run. The node parameters are for the context object an
-      // expression runs against, whose `getNode` maps an element back to its
-      // state node; a declared function runs against the element itself and
-      // has no context, so there is nothing that could ask.
-      this.invokeFromBundle(target as JsInvokerTarget, parameters);
+      // A call of declared JavaScript: the bundle has the function, the
+      // server sent only which one to run. The node parameters are for the
+      // context object an expression runs against, whose `getNode` maps an
+      // element back to its state node; a declared function runs against the
+      // element itself and has no context, so there is nothing that could ask.
+      this.invokeFromBundle(target as JsDefinitionTarget, parameters);
       return;
     }
 
@@ -239,7 +239,7 @@ export class ExecuteJavaScriptProcessor {
   }
 
   /**
-   * Executes a call made through a JS invoker: looks the function up in the
+   * Executes a call made through a JavaScript definition: looks the function up in the
    * registry that the generated bundle populates and applies it to the element,
    * with the arguments of the call. Nothing is compiled from a string, which is
    * what makes this path work under a content security policy that does not
@@ -247,12 +247,12 @@ export class ExecuteJavaScriptProcessor {
    *
    * Protected instead of private for testing purposes, as `invoke` is.
    *
-   * @param target - the invoker interface and method to run
+   * @param target - the JavaScript definition and method to run
    * @param parameters - the decoded parameters: the arguments of the call, the
    *          element to apply the function to, and the return value channels
    *          when the target declares them
    */
-  protected invokeFromBundle(target: JsInvokerTarget, parameters: unknown[]): void {
+  protected invokeFromBundle(target: JsDefinitionTarget, parameters: unknown[]): void {
     const argumentCount = target.arguments;
 
     // The parameters are the arguments of the call, then the element to apply
@@ -263,7 +263,7 @@ export class ExecuteJavaScriptProcessor {
     // argument as `this`. Say so instead of running the call.
     const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
     if (parameters.length !== expectedCount) {
-      const message = `Expected ${expectedCount} parameters for ${target.invoker}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
+      const message = `Expected ${expectedCount} parameters for ${target.definition}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
       Console.error(message);
       // The server appends the two channels after everything else, or neither
       // of them, so the error channel is the last parameter even when the
@@ -281,15 +281,15 @@ export class ExecuteJavaScriptProcessor {
     const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
     const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
 
-    const fn = findInvokerFunction(target.invoker, target.method);
+    const fn = findDeclaredFunction(target.definition, target.method);
     if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${target.invoker}.${target.method}. The invoker interface is annotated with @JsInvoker, but the build did not collect it.`;
+      const message = `No JavaScript in the bundle for ${target.definition}.${target.method}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
       Console.error(message);
       onError?.(message);
       return;
     }
 
-    // The element the invoker was obtained from is the parameter after the
+    // The element the definition was obtained from is the parameter after the
     // arguments, and it is what the function runs against.
     const thisArg = parameters[argumentCount];
     try {
@@ -300,7 +300,7 @@ export class ExecuteJavaScriptProcessor {
     } catch (exception) {
       Console.reportStacktrace(exception);
       Console.error(
-        `Exception is thrown while running ${target.invoker}.${target.method}. Stacktrace will be dumped separately.`
+        `Exception is thrown while running ${target.definition}.${target.method}. Stacktrace will be dumped separately.`
       );
       onError?.(`${exception}`);
     }
