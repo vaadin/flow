@@ -189,6 +189,27 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
+    void frontendDevServerRunningAndFileUpToDate_fileLeftAlone()
+            throws IOException {
+        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        // A moment in the past, so that a write of the same content shows
+        generated.setLastModified(System.currentTimeMillis() - 60_000);
+        long untouched = generated.lastModified();
+        withFrontendDevServer();
+
+        classesChanged(GreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                "the browser is running what the interface declares: "
+                        + hotswapper.reported);
+        assertEquals(untouched, generated.lastModified(),
+                "a redefinition that changes no JavaScript should leave the file alone, or the dev server replaces the module in every browser for nothing");
+    }
+
+    @Test
     void frontendDevServerRunningButNothingCanBeWritten_reported() {
         // A directory where the file belongs: the change cannot be applied, so
         // it is reported rather than passing as applied
