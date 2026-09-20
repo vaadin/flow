@@ -31,7 +31,9 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -102,7 +104,8 @@ class DataCommunicatorAsyncTest {
     @BeforeEach
     void init() {
         MockitoAnnotations.initMocks(this);
-        ui = new MockUI();
+        ui = new MockUI(
+                new AlwaysLockedVaadinSession(new MockVaadinServletService()));
         element = new Element("div");
         ui.getElement().appendChild(element);
         lastClear = null;
