@@ -534,7 +534,7 @@ class TableTest extends ComponentTest {
 
     @Test
     void newTable_carriesOnlyTheStylesClassName() {
-        assertEquals("vaadin-themed", Table.STYLES_CLASS_NAME);
+        assertEquals("vaadin-themed-html", Table.STYLES_CLASS_NAME);
         assertEquals(Table.STYLES_CLASS_NAME,
                 table().getElement().getAttribute("class"));
     }
