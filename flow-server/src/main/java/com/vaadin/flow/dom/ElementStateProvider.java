@@ -85,6 +85,24 @@ public interface ElementStateProvider extends Serializable {
             Signal<String> signal);
 
     /**
+     * Binds the given signal to the presence of the given attribute. The
+     * attribute is set to an empty value while the signal value is {@code true}
+     * and removed while it is {@code false}.
+     *
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind, not <code>null</code>
+     * @return the created binding
+     * @since 25.4
+     */
+    SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal);
+
+    /**
      * Sets the given attribute to the given {@link StreamResource} value.
      *
      * @param node

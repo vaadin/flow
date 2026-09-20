@@ -40,6 +40,8 @@ class SerializedLocalSignalComponent extends Component {
 
         getElement().bindText(signal);
         getElement().bindAttribute("attr", signal);
+        getElement().bindAttributeBoolean("bool-attr",
+                signal.map(value -> value != null && !value.isEmpty()));
         getElement().bindProperty("prop", signal, null);
         getElement().bindEnabled(
                 signal.map(value -> value != null && !value.isEmpty()));

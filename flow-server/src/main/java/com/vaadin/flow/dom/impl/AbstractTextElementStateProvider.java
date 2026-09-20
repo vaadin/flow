@@ -70,6 +70,12 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
+    public SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getAttribute(StateNode node, String attribute) {
         return null;
     }

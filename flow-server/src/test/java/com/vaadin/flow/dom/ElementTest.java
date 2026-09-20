@@ -191,6 +191,7 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("bindEnabled");
         ignore.add("bindProperty");
         ignore.add("bindAttribute");
+        ignore.add("bindAttributeBoolean");
         ignore.add("bindText");
         ignore.add("bindVisible");
 
