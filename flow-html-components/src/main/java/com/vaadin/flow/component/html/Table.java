@@ -73,7 +73,8 @@ public class Table extends HtmlComponent
      * in use. Both the Aura and the Lumo theme ship them.
      * <p>
      * The class name is not specific to a table: it is the one class the themes
-     * look for on any native element they style.
+     * look for on any native element they style, and it works on an ancestor
+     * too, where it covers every native element inside it.
      * <p>
      * Every table adds the class name for itself. Remove it to keep the
      * browser's own table styles instead:
@@ -84,7 +85,7 @@ public class Table extends HtmlComponent
      *
      * @since 25.4
      */
-    public static final String STYLES_CLASS_NAME = "vaadin-default";
+    public static final String STYLES_CLASS_NAME = "vaadin-themed";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
