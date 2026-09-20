@@ -30,11 +30,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -110,18 +112,64 @@ class HtmlComponentSmokeTest {
 
     @Test
     void testAllHtmlComponents() throws IOException {
+        classesInComponentPackage()
+                .filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
+                .map(HtmlComponentSmokeTest::asHtmlComponentSubclass)
+                .forEach(HtmlComponentSmokeTest::smokeTestComponent);
+    }
+
+    @Test
+    void testNoDeprecatedForRemovalInterfaces() throws IOException {
+        List<String> offenders = new ArrayList<>();
+
+        classesInComponentPackage()
+                .filter(cls -> HtmlComponent.class.isAssignableFrom(cls))
+                // A component that is on its way out itself may keep using
+                // the rest of its family
+                .filter(cls -> !isDeprecatedForRemoval(cls))
+                .forEach(cls -> allInterfaces(cls).stream()
+                        .filter(HtmlComponentSmokeTest::isDeprecatedForRemoval)
+                        .forEach(type -> offenders.add(cls.getSimpleName()
+                                + " implements " + type.getName())));
+
+        assertEquals(List.of(), offenders,
+                "A component that is not deprecated must not implement an interface that is deprecated for removal");
+    }
+
+    private static Stream<Class<?>> classesInComponentPackage()
+            throws IOException {
         URL divClassLocationLocation = Div.class.getResource("Div.class");
         assertEquals(divClassLocationLocation.getProtocol(), "file");
 
         Path componentClassesLocation = new File(
                 divClassLocationLocation.getPath()).getParentFile().toPath();
 
-        Files.list(componentClassesLocation)
+        return Files.list(componentClassesLocation)
                 .filter(HtmlComponentSmokeTest::isClassFile)
-                .map(HtmlComponentSmokeTest::loadClass)
-                .filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
-                .map(HtmlComponentSmokeTest::asHtmlComponentSubclass)
-                .forEach(HtmlComponentSmokeTest::smokeTestComponent);
+                .map(HtmlComponentSmokeTest::loadClass);
+    }
+
+    private static Set<Class<?>> allInterfaces(Class<?> cls) {
+        Set<Class<?>> interfaces = new LinkedHashSet<>();
+        for (Class<?> current = cls; current != null; current = current
+                .getSuperclass()) {
+            collectInterfaces(current.getInterfaces(), interfaces);
+        }
+        return interfaces;
+    }
+
+    private static void collectInterfaces(Class<?>[] declared,
+            Set<Class<?>> collected) {
+        for (Class<?> type : declared) {
+            if (collected.add(type)) {
+                collectInterfaces(type.getInterfaces(), collected);
+            }
+        }
+    }
+
+    private static boolean isDeprecatedForRemoval(Class<?> cls) {
+        Deprecated deprecated = cls.getAnnotation(Deprecated.class);
+        return deprecated != null && deprecated.forRemoval();
     }
 
     private static void smokeTestComponent(
