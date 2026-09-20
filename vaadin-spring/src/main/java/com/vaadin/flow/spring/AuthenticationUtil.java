@@ -28,10 +28,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class AuthenticationUtil {
 
-    private AuthenticationUtil() {
-        // Only utility methods
-    }
-
     /**
      * Gets the authenticated user from the Spring SecurityContextHolder.
      *

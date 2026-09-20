@@ -18,10 +18,6 @@ package com.vaadin.flow.spring;
 /** Helpers related to Spring. */
 public class SpringUtil {
 
-    private SpringUtil() {
-        // Only utility methods
-    }
-
     /**
      * Checks if this is Spring Boot and not plain Spring.
      *
