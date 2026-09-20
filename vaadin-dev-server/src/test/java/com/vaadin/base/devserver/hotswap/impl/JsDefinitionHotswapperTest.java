@@ -111,39 +111,37 @@ class JsDefinitionHotswapperTest {
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
     }
 
+    private File generatedFile() {
+        return new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+    }
+
     private String readGeneratedDefinitions() throws IOException {
-        return Files.readString(
-                new File(
-                        FrontendUtils
-                                .getFrontendGeneratedFolder(frontendFolder),
-                        FrontendUtils.JS_DEFINITIONS_FILE_NAME).toPath(),
+        return Files.readString(generatedFile().toPath(),
                 StandardCharsets.UTF_8);
     }
 
-    private void writeGeneratedDefinitions(String content) throws IOException {
-        File generated = FrontendUtils
-                .getFrontendGeneratedFolder(frontendFolder);
-        generated.mkdirs();
-        Files.writeString(
-                new File(generated, FrontendUtils.JS_DEFINITIONS_FILE_NAME)
-                        .toPath(),
-                content, StandardCharsets.UTF_8);
-    }
-
     /**
-     * The file as a build writes it for the given interface, which is what a
-     * browser would be running.
+     * Writes the file as a build writes it for the given interface, where the
+     * hotswapper looks for it, which is what a browser would be running.
      */
-    private String generatedFor(Class<?> definition) throws IOException {
+    private void writeGeneratedDefinitionsFor(Class<?> definition) {
         Options options = new Options(Mockito.mock(Lookup.class), null, null)
                 .withFrontendDirectory(frontendFolder);
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(definition));
-        String content = readGeneratedDefinitions();
-        Files.delete(new File(
-                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_DEFINITIONS_FILE_NAME).toPath());
-        return content;
+    }
+
+    /**
+     * Edits the written file, to make it the older version of the declarations
+     * that a browser would still be running.
+     */
+    private void editGeneratedDefinitions(String declared, String previously)
+            throws IOException {
+        Files.writeString(generatedFile().toPath(),
+                readGeneratedDefinitions().replace(declared, previously),
+                StandardCharsets.UTF_8);
     }
 
     private void classesChanged(Class<?>... classes) {
@@ -152,8 +150,8 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
-    void fileCarriesTheDeclarations_nothingReported() throws IOException {
-        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
+    void fileCarriesTheDeclarations_nothingReported() {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
 
         classesChanged(GreeterJs.class);
 
@@ -173,8 +171,9 @@ class JsDefinitionHotswapperTest {
     @Test
     void frontendDevServerRunning_appliedInsteadOfReported()
             throws IOException {
-        writeGeneratedDefinitions(generatedFor(GreeterJs.class)
-                .replace("window.alert($0); this.focus()", "window.alert($0)"));
+        writeGeneratedDefinitionsFor(GreeterJs.class);
+        editGeneratedDefinitions("window.alert($0); this.focus()",
+                "window.alert($0)");
         withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
@@ -189,15 +188,11 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
-    void frontendDevServerRunningAndFileUpToDate_fileLeftAlone()
-            throws IOException {
-        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
-        File generated = new File(
-                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+    void frontendDevServerRunningAndFileUpToDate_fileLeftAlone() {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
         // A moment in the past, so that a write of the same content shows
-        generated.setLastModified(System.currentTimeMillis() - 60_000);
-        long untouched = generated.lastModified();
+        generatedFile().setLastModified(System.currentTimeMillis() - 60_000);
+        long untouched = generatedFile().lastModified();
         withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
@@ -205,7 +200,7 @@ class JsDefinitionHotswapperTest {
         assertTrue(hotswapper.reported.isEmpty(),
                 "the browser is running what the interface declares: "
                         + hotswapper.reported);
-        assertEquals(untouched, generated.lastModified(),
+        assertEquals(untouched, generatedFile().lastModified(),
                 "a redefinition that changes no JavaScript should leave the file alone, or the dev server replaces the module in every browser for nothing");
     }
 
@@ -213,8 +208,7 @@ class JsDefinitionHotswapperTest {
     void frontendDevServerRunningButNothingCanBeWritten_reported() {
         // A directory where the file belongs: the change cannot be applied, so
         // it is reported rather than passing as applied
-        new File(FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_DEFINITIONS_FILE_NAME).mkdirs();
+        generatedFile().mkdirs();
         withFrontendDevServer();
 
         classesChanged(GreeterJs.class);
