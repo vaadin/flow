@@ -35,12 +35,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasEnabled;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
@@ -110,18 +112,26 @@ class HtmlComponentSmokeTest {
 
     @Test
     void testAllHtmlComponents() throws IOException {
-        URL divClassLocationLocation = Div.class.getResource("Div.class");
-        assertEquals(divClassLocationLocation.getProtocol(), "file");
-
-        Path componentClassesLocation = new File(
-                divClassLocationLocation.getPath()).getParentFile().toPath();
-
-        Files.list(componentClassesLocation)
-                .filter(HtmlComponentSmokeTest::isClassFile)
-                .map(HtmlComponentSmokeTest::loadClass)
+        loadPackageClasses()
                 .filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
                 .map(HtmlComponentSmokeTest::asHtmlComponentSubclass)
                 .forEach(HtmlComponentSmokeTest::smokeTestComponent);
+    }
+
+    // HasOrderedComponents is deprecated for removal in 26 and no longer
+    // declares any API of its own, so nothing in this package should implement
+    // it. Delete this test together with the interface.
+    @SuppressWarnings("removal")
+    @Test
+    void noComponentDeclaresDeprecatedHasOrderedComponents()
+            throws IOException {
+        List<String> declaringTypes = loadPackageClasses()
+                .filter(cls -> Arrays.asList(cls.getInterfaces())
+                        .contains(HasOrderedComponents.class))
+                .map(Class::getSimpleName).sorted().toList();
+
+        assertEquals(List.of(), declaringTypes,
+                "The ordered children API lives in HasComponents; these types should not implement the deprecated HasOrderedComponents");
     }
 
     private static void smokeTestComponent(
@@ -423,6 +433,18 @@ class HtmlComponentSmokeTest {
         } else {
             return clazz.getDeclaredConstructor().newInstance();
         }
+    }
+
+    private static Stream<Class<?>> loadPackageClasses() throws IOException {
+        URL divClassLocation = Div.class.getResource("Div.class");
+        assertEquals("file", divClassLocation.getProtocol());
+
+        Path componentClassesLocation = new File(divClassLocation.getPath())
+                .getParentFile().toPath();
+
+        return Files.list(componentClassesLocation)
+                .filter(HtmlComponentSmokeTest::isClassFile)
+                .map(HtmlComponentSmokeTest::loadClass);
     }
 
     private static Class<?> loadClass(Path classFile) {
