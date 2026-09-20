@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -28,19 +26,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Range;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -244,94 +236,5 @@ class DataCommunicatorAsyncTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
         });
-    }
-
-    public static class MockUI extends UI {
-
-        public MockUI() {
-            this(findOrcreateSession());
-        }
-
-        public MockUI(VaadinSession session) {
-            getInternals().setSession(session);
-            setCurrent(this);
-        }
-
-        @Override
-        protected void init(VaadinRequest request) {
-            // Do nothing
-        }
-
-        private static VaadinSession findOrcreateSession() {
-            VaadinSession session = VaadinSession.getCurrent();
-            if (session == null) {
-                RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-                VaadinServletService service = new VaadinServletService() {
-                    @Override
-                    protected RouteRegistry getRouteRegistry() {
-                        return routeRegistry;
-                    }
-                };
-                session = new AlwaysLockedVaadinSession(service);
-                VaadinSession.setCurrent(session);
-            }
-            return session;
-        }
-    }
-
-    public static class AlwaysLockedVaadinSession extends MockVaadinSession {
-
-        public AlwaysLockedVaadinSession(VaadinService service) {
-            super(service);
-            lock();
-        }
-
-    }
-
-    public static class MockVaadinSession extends VaadinSession {
-        /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
-         */
-        private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
-
-        public MockVaadinSession(VaadinService service) {
-            super(service);
-        }
-
-        @Override
-        public void close() {
-            super.close();
-            closeCount++;
-        }
-
-        public int getCloseCount() {
-            return closeCount;
-        }
-
-        @Override
-        public Lock getLockInstance() {
-            return lock;
-        }
-
-        @Override
-        public void lock() {
-            super.lock();
-            referenceKeeper.set(this);
-        }
-
-        @Override
-        public void unlock() {
-            super.unlock();
-            referenceKeeper.remove();
-        }
-
-        private int closeCount;
-
-        private ReentrantLock lock = new ReentrantLock();
     }
 }
