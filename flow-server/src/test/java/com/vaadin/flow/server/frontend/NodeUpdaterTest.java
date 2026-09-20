@@ -172,6 +172,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@babel/types");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("@preact/signals-react-transform");
         expectedDependencies.add("magic-string");
 
