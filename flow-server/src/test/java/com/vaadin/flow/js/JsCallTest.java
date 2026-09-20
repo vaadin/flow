@@ -70,14 +70,6 @@ class JsCallTest {
     }
 
     @Test
-    void identifiers_nameTheInterfaceAndTheMethodWithItsArity() {
-        JsCall call = call("showGreeting", "Hello");
-
-        assertEquals(GreeterJs.class.getName(), call.getDefinitionId());
-        assertEquals("showGreeting/1", call.getMethodId());
-    }
-
-    @Test
     void getExpression_methodWithoutDeclaredJavaScript_throws() {
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
@@ -114,7 +106,6 @@ class JsCallTest {
         Greeter greeter = new Greeter();
 
         assertEquals(Collections.singletonList(null), call.arguments());
-        assertEquals("showGreeting/1", call.getMethodId());
 
         call.invokeOn(greeter);
 

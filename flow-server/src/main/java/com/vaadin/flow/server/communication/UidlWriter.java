@@ -404,9 +404,9 @@ public class UidlWriter implements Serializable {
 
         ObjectNode target = JacksonUtils.createObjectNode();
         target.put(JsonConstants.UIDL_KEY_JS_DEFINITION,
-                call.getDefinitionId());
+                call.definitionType().getName());
         target.put(JsonConstants.UIDL_KEY_JS_DEFINITION_METHOD,
-                call.getMethodId());
+                JsCall.methodId(call.methodName(), call.arguments().size()));
         target.put(JsonConstants.UIDL_KEY_JS_DEFINITION_ARGUMENTS,
                 call.arguments().size());
 

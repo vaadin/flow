@@ -19,12 +19,12 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * A call made through {@link Element#executeJs(Class)}: which definition
@@ -74,29 +74,10 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets the identifier of the JavaScript definition, which is the key the
-     * generated bundle registers its functions under.
-     *
-     * @return the definition identifier, not <code>null</code>
-     */
-    public String getDefinitionId() {
-        return definitionType.getName();
-    }
-
-    /**
-     * Gets the identifier of the called method within its definition, which is
-     * the method name and the number of arguments, so that overloads stay
-     * apart.
-     *
-     * @return the method identifier, not <code>null</code>
-     */
-    public String getMethodId() {
-        return methodId(methodName, arguments.size());
-    }
-
-    /**
      * Gets the identifier of a method with the given name and number of
-     * arguments.
+     * arguments, which is the key the generated bundle registers the function
+     * of that method under, within the interface it belongs to. The number of
+     * arguments is part of it so that overloads stay apart.
      *
      * @param methodName
      *            the method name, not <code>null</code>
@@ -172,10 +153,8 @@ public record JsCall(Class<?> definitionType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
-        List<Method> candidates = Arrays.stream(definitionType.getMethods())
-                .filter(method -> method.getName().equals(methodName)
-                        && method.getParameterCount() == arguments.size())
-                .toList();
+        List<Method> candidates = ReflectTools.getMethodsWithParameterCount(
+                definitionType, methodName, arguments.size());
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
                     + methodName + " with " + arguments.size()
