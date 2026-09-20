@@ -164,7 +164,7 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void missingFromGeneratedFile_answersForWhatTheFileCarries()
+    void findMissingFromGeneratedFile_answersForWhatTheFileCarries()
             throws ExecutionFailedException, IOException {
         task.execute();
         File generated = new File(
@@ -173,7 +173,7 @@ class TaskGenerateJsDefinitionsTest {
         String carried = Files.readString(generated.toPath());
 
         assertTrue(
-                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
                         List.of(GreeterJs.class)).isEmpty(),
                 "the file was written from this interface");
 
@@ -183,7 +183,7 @@ class TaskGenerateJsDefinitionsTest {
                 carried.replace("window.alert({ text: $0, kind: 'greeting' })",
                         "window.alert($0)"));
         assertEquals(List.of(GreeterJs.class),
-                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
                         List.of(GreeterJs.class)),
                 "another version of the declarations is not the declarations");
 
@@ -192,13 +192,14 @@ class TaskGenerateJsDefinitionsTest {
         Files.writeString(generated.toPath(), carried
                 .replace(GreeterJs.class.getName(), "com.example.RenamedJs"));
         assertEquals(List.of(GreeterJs.class),
-                TaskGenerateJsDefinitions.missingFromGeneratedFile(options,
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
                         List.of(GreeterJs.class)),
                 "a call looks the interface up by name, so the name is part of carrying it");
 
         Files.delete(generated.toPath());
-        assertEquals(List.of(GreeterJs.class), TaskGenerateJsDefinitions
-                .missingFromGeneratedFile(options, List.of(GreeterJs.class)),
+        assertEquals(List.of(GreeterJs.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)),
                 "no file carries nothing");
     }
 

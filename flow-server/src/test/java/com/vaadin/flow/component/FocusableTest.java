@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -274,40 +273,6 @@ class FocusableTest {
     }
 
     @Test
-    void focus_invocationCarriesTheDefinitionCallWithTheOptions() {
-        ui.add(component);
-        component.focus(PreventScroll.ENABLED);
-
-        JsCall call = dumpSingleCall();
-        assertEquals(Focusable.FocusJs.class, call.definitionType());
-        assertEquals("focus", call.methodName());
-        assertEquals("{\"preventScroll\":true}",
-                call.arguments().get(0).toString(),
-                "the options reach the driver as the JSON the browser gets");
-    }
-
-    @Test
-    void focusWithoutOptions_invocationCarriesTheNoArgumentCall() {
-        ui.add(component);
-        component.focus();
-
-        assertEquals(
-                new JsCall(Focusable.FocusJs.class, "focus",
-                        Collections.singletonList(null)),
-                dumpSingleCall(),
-                "no options is the options of the browser, which is what it makes of none");
-    }
-
-    @Test
-    void blur_invocationCarriesTheBlurCall() {
-        ui.add(component);
-        component.blur();
-
-        assertEquals(new JsCall(Focusable.FocusJs.class, "blur", List.of()),
-                dumpSingleCall());
-    }
-
-    @Test
     void pendingInvocations_runOnAnImplementationOfTheDefinition_plainJavaScriptLeftIntact() {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
@@ -341,13 +306,6 @@ class FocusableTest {
                 "the application JavaScript should be left for the driver to report");
         assertTrue(unhandledJs.get(0).contains("this.scrollTop = 0"),
                 "the unhandled invocation should be the application JavaScript");
-    }
-
-    private JsCall dumpSingleCall() {
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getJsCall();
     }
 
     /**

@@ -16,6 +16,7 @@
 package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,27 +72,23 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
         VaadinService service = event.getVaadinService();
         Options options = buildOptions(service);
-        List<Class<?>> stale = TaskGenerateJsDefinitions
-                .missingFromGeneratedFile(options, definitions);
-        if (stale.isEmpty()) {
-            return;
-        }
 
-        if (!canReplaceInTheBrowser(service)) {
-            // What a browser has without the dev server is a bundle, which
-            // only a build produces
-            report(names(stale));
-            return;
-        }
-
-        List<Class<?>> unresolved = TaskGenerateJsDefinitions
-                .updateJsDefinitions(options, definitions);
-        if (unresolved.isEmpty()) {
-            getLogger().debug(
-                    "Wrote the JavaScript declared by {}, which the frontend dev server replaces in the browser",
-                    names(stale));
+        List<Class<?>> missing;
+        if (canReplaceInTheBrowser(service)) {
+            // Writing the file again is what the browser runs afterwards, and
+            // the write leaves the file alone when nothing it holds changed,
+            // so what comes back is what could not be applied
+            missing = TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                    definitions);
         } else {
-            report(names(unresolved));
+            // What a browser has without the dev server is a bundle, which
+            // only a build produces, so a change can only be reported
+            missing = TaskGenerateJsDefinitions
+                    .findMissingFromGeneratedFile(options, definitions);
+        }
+
+        if (!missing.isEmpty()) {
+            warnAboutMissingDefinitions(missing);
         }
     }
 
@@ -115,23 +112,21 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
                         FrontendUtils.getProjectFrontendDir(configuration));
     }
 
-    private static List<String> names(List<Class<?>> definitions) {
-        return definitions.stream().map(Class::getName).toList();
-    }
-
     /**
-     * Says that the bundle does not carry what the given interfaces declare.
+     * Warns that the bundle does not carry what the given interfaces declare.
      * <p>
-     * Package-private so that what a change is reported for can be asserted.
+     * Package-private so that what a change is warned about can be asserted.
      *
-     * @param definitionNames
-     *            the names of the JavaScript definitions to report, never empty
+     * @param definitions
+     *            the JavaScript definitions the bundle does not carry, never
+     *            empty
      */
-    void report(List<String> definitionNames) {
+    void warnAboutMissingDefinitions(List<Class<?>> definitions) {
         getLogger().warn(
                 "The JavaScript declared by {} is not the JavaScript the frontend bundle carries. "
                         + "It is collected into the bundle when the frontend is built, so a call made through the definition keeps running the previous version, or finds no function at all, until the application is restarted.",
-                String.join(", ", definitionNames));
+                definitions.stream().map(Class::getName)
+                        .collect(Collectors.joining(", ")));
     }
 
     private static Logger getLogger() {

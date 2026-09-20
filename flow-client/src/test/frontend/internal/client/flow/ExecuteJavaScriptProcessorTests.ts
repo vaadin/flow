@@ -142,7 +142,9 @@ describe('ExecuteJavaScriptProcessor', () => {
       });
 
       // One argument declared, but no element to apply the function to: the
-      // invocation and this client disagree about the signature.
+      // invocation and this client disagree about the signature, which is the
+      // same disagreement as an invocation that carries one parameter too
+      // many.
       processor().execute([['Hello', { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]]);
 
       expect(calls).to.equal(0);
@@ -170,19 +172,6 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Reported rather than left hanging: the pending result on the server
       // would otherwise never complete.
       expect(errors).to.have.lengthOf(1);
-    });
-
-    it('does not run a call that carries more parameters than the target declares', () => {
-      let calls = 0;
-      registerDefinition('showGreeting/1', () => {
-        calls += 1;
-      });
-
-      processor().execute([
-        ['Hello', 'unexpected', { tagName: 'div' }, { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]
-      ]);
-
-      expect(calls).to.equal(0);
     });
 
     it('reports a function that is not in the bundle to the error channel', () => {

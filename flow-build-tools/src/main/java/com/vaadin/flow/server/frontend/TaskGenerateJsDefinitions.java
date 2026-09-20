@@ -122,7 +122,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            the JavaScript definitions to look for, not <code>null</code>
      * @return those the file does not carry, empty when it carries all of them
      */
-    public static List<Class<?>> missingFromGeneratedFile(Options options,
+    public static List<Class<?>> findMissingFromGeneratedFile(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
         return definitions.stream()
@@ -158,7 +158,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
         String content = renderFileContent(
-                withDefinitionsOf(generated, definitions));
+                mergeWithDefinitionsIn(generated, definitions));
 
         TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
@@ -200,7 +200,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * The given interfaces, plus the ones the content registers that are not
      * among them and can still be loaded.
      */
-    private static Collection<Class<?>> withDefinitionsOf(String generated,
+    private static Collection<Class<?>> mergeWithDefinitionsIn(String generated,
             Collection<Class<?>> definitions) {
         Map<String, Class<?>> byName = new LinkedHashMap<>();
         definitions.forEach(
@@ -271,8 +271,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * declares JavaScript, keyed by method name and argument count.
      * <p>
      * Package private: whether a file carries what an interface declares is
-     * answered by {@link #missingFromGeneratedFile(Options, Collection)}, which
-     * compares against this.
+     * answered by {@link #findMissingFromGeneratedFile(Options, Collection)},
+     * which compares against this.
      *
      * @param definition
      *            the JavaScript definition to render, not <code>null</code>

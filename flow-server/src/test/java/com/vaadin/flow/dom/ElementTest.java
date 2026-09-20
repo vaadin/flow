@@ -2752,20 +2752,6 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithDefinition_defaultAndStaticMethods_areNotDeclarations() {
-        Element element = ElementFactory.createDiv();
-
-        ComposingJs composingJs = element.executeJs(ComposingJs.class);
-
-        // A static method belongs to the interface, not to the
-        // implementation, a default method answers with whatever Java answers
-        // with
-        assertEquals("ComposingJs", ComposingJs.name());
-        assertEquals("composing", composingJs.describe(),
-                "a default method is not bound by what a declared one may return");
-    }
-
-    @Test
     void executeJsWithDefinition_defaultMethodOnANonPublicInterface_throws() {
         Element element = ElementFactory.createDiv();
 
@@ -2793,7 +2779,8 @@ class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        element.executeJs(ComposingJs.class).twice("foo");
+        ComposingJs composingJs = element.executeJs(ComposingJs.class);
+        composingJs.twice("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
@@ -2802,6 +2789,8 @@ class ElementTest extends AbstractNodeTest {
                 "a default method runs in Java, and what it calls of the interface is scheduled");
         assertEquals(new JsCall(ComposingJs.class, "method", List.of("foo")),
                 pendingJs.get(0).getInvocation().getJsCall());
+        assertEquals("composing", composingJs.describe(),
+                "a default method answers in Java, so it is not bound by what a declared one may return");
     }
 
     @JsDefinition
@@ -2835,6 +2824,8 @@ class ElementTest extends AbstractNodeTest {
             return "composing";
         }
 
+        // Declares no JavaScript and is not answered by the implementation,
+        // so handing one out has to leave it alone
         static String name() {
             return "ComposingJs";
         }

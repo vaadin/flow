@@ -62,13 +62,13 @@ class JsDefinitionHotswapperTest {
     static class NotADefinition {
     }
 
-    // Records what a change is reported for instead of logging it.
+    // Records what a change is warned about instead of logging it.
     private static class TestHotswapper extends JsDefinitionHotswapper {
         private final List<String> reported = new ArrayList<>();
 
         @Override
-        void report(List<String> definitionNames) {
-            reported.addAll(definitionNames);
+        void warnAboutMissingDefinitions(List<Class<?>> definitions) {
+            definitions.stream().map(Class::getName).forEach(reported::add);
         }
     }
 
@@ -202,9 +202,7 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
-    void noDefinitionChanged_nothingReported() throws IOException {
-        writeGeneratedDefinitions(generatedFor(GreeterJs.class));
-
+    void noDefinitionChanged_nothingReported() {
         classesChanged(NotADefinition.class);
 
         assertTrue(hotswapper.reported.isEmpty(),
