@@ -316,6 +316,30 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindAttributeBoolean_nullSignalValue_attributeAbsent() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        // a null value is treated the same as false
+        ValueSignal<Boolean> signal = new ValueSignal<>(null);
+
+        Element element = component.getElement();
+        element.bindAttributeBoolean("noborder", signal);
+
+        assertFalse(element.hasAttribute("noborder"));
+
+        signal.set(true);
+
+        assertTrue(element.hasAttribute("noborder"));
+
+        signal.set(null);
+
+        assertFalse(element.hasAttribute("noborder"));
+        assertFalse(element.getAttributeNames().anyMatch("noborder"::equals));
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
     void bindAttributeBoolean_onChange_receivesBooleanValues() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);

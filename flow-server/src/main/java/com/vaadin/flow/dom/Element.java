@@ -317,7 +317,7 @@ public class Element extends Node<Element> {
      * attribute. This is the signal counterpart of
      * {@link #setAttribute(String, boolean)}, meant for the boolean attributes
      * that web components and CSS attribute selectors interpret by presence
-     * alone.
+     * alone. A {@code null} signal value is treated the same as {@code false}.
      * <p>
      * The attribute is updated immediately with the current signal value when
      * the binding is created, and is kept synchronized with any subsequent
