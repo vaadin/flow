@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -42,6 +43,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.QuietTestOutputExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -188,6 +190,7 @@ class ErrorHandlerUtilTest {
     }
 
     @Test
+    @ExtendWith(QuietTestOutputExtension.class)
     void illegalArgumentException_doesNotExecuteErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));

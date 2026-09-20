@@ -26,14 +26,14 @@ import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 
 /**
  * Buffers everything a test method writes to {@code System.out} and
- * {@code System.err} and throws it away when the test passes. Tests that
- * intentionally trigger logging, such as the ones exercising
- * {@code DefaultErrorHandler}, thus no longer flood the build output, while a
- * failing test still prints everything it logged.
+ * {@code System.err} and throws it away when the test passes, so that tests
+ * which intentionally trigger logging do not flood the build output. A failing
+ * test still prints everything it logged.
  * <p>
- * Registered for all tests through
- * {@code META-INF/services/org.junit.jupiter.api.extension.Extension}, so no
- * test needs to opt in.
+ * Add {@code @ExtendWith(QuietTestOutputExtension.class)} to a test method that
+ * is expected to log, or to the test class when logging is expected throughout
+ * it. Tests that install a stream of their own, for example to assert on what
+ * was printed, keep their capture.
  */
 public class QuietTestOutputExtension implements InvocationInterceptor {
 
@@ -41,8 +41,8 @@ public class QuietTestOutputExtension implements InvocationInterceptor {
     private final PrintStream originalErr;
 
     public QuietTestOutputExtension() {
-        // JUnit instantiates the extension before any test has had a chance to
-        // replace the streams
+        // The streams in use when JUnit creates the extension, i.e. before the
+        // intercepted test method runs
         this(System.out, System.err);
     }
 
