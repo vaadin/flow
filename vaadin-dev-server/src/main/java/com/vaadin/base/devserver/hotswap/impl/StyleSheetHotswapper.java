@@ -101,6 +101,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     private final ConcurrentHashMap<String, Set<String>> appShellStylesheets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Set<String>> componentStylesheets = new ConcurrentHashMap<>();
 
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public StyleSheetHotswapper() {
+        // Default constructor
+    }
+
     @Override
     public void onInit(VaadinService vaadinService) {
         AppShellRegistry appShellRegistry = AppShellRegistry
