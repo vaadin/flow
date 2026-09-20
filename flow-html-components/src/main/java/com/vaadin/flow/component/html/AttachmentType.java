@@ -30,7 +30,9 @@ public enum AttachmentType {
     DOWNLOAD,
 
     /**
-     * The linked resource is opened by the browser, which is the default.
+     * The linked resource is opened by the browser, which is what happens when
+     * no {@code download} attribute is set. Note that the anchor API itself
+     * falls back to {@link #DOWNLOAD} when no attachment type is given.
      */
     INLINE
 }

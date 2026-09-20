@@ -301,7 +301,8 @@ public class BuildDevBundleMojo extends AbstractMojo
     /**
      * Runs the goal once the isolated class loader is in place.
      * <p>
-     * Called reflectively from {@link #execute()}, so it has to stay public.
+     * Called reflectively from {@link #execute()}, once that class loader is
+     * installed.
      *
      * @throws MojoFailureException
      *             if the bundle cannot be built
