@@ -32,7 +32,10 @@ import com.vaadin.flow.component.ComponentEvent;
 public abstract class AbstractDnDEvent<T extends Component>
         extends ComponentEvent<T> {
 
+    /** The x coordinate of the mouse pointer relative to the viewport. */
     private final int clientX;
+
+    /** The y coordinate of the mouse pointer relative to the viewport. */
     private final int clientY;
 
     /**
