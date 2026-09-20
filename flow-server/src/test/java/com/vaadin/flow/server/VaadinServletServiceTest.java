@@ -38,7 +38,6 @@ import java.util.jar.JarOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
@@ -46,7 +45,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.tests.util.QuietTestOutputExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -297,7 +295,6 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    @ExtendWith(QuietTestOutputExtension.class)
     void filtersAreCalledWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override

@@ -42,7 +42,6 @@ import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -73,7 +72,6 @@ import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import com.vaadin.tests.util.QuietTestOutputExtension;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -545,7 +543,6 @@ class VaadinServiceTest {
     }
 
     @Test
-    @ExtendWith(QuietTestOutputExtension.class)
     void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows() {
         VaadinService service = createService();
 

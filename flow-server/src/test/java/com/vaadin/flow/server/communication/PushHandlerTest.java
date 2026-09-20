@@ -30,7 +30,6 @@ import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -53,7 +52,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-import com.vaadin.tests.util.QuietTestOutputExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -75,7 +73,6 @@ class PushHandlerTest {
     private static final int AWAIT_SETTLE_MILLIS = 500;
 
     @Test
-    @ExtendWith(QuietTestOutputExtension.class)
     void onMessage_clientResentTheLastMessage_previousResponseIsSentAgain()
             throws Exception {
         AtomicReference<UI> currentUi = new AtomicReference<>();

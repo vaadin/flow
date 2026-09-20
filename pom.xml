@@ -181,6 +181,10 @@
          agent set at execution time is picked up. -->
     <jacoco.agent.argLine/>
 
+    <!-- Keep what passing unit tests print out of the build log, see
+         QuietTestOutputListener. Set to false to see everything again. -->
+    <vaadin.test.quietOutput>true</vaadin.test.quietOutput>
+
     <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
     <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
@@ -505,6 +509,7 @@
             <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
               <maven.home>${maven.home}</maven.home>
+              <vaadin.test.quietOutput>${vaadin.test.quietOutput}</vaadin.test.quietOutput>
             </systemPropertyVariables>
           </configuration>
         </plugin>

@@ -23,16 +23,12 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.tests.util.QuietTestOutputExtension;
-
-@ExtendWith(QuietTestOutputExtension.class)
 class DefaultErrorHandlerTest {
 
     MockedStatic<LoggerFactory> loggerFactory;
