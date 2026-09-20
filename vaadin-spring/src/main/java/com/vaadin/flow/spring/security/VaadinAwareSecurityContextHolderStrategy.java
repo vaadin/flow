@@ -54,6 +54,12 @@ public final class VaadinAwareSecurityContextHolderStrategy
 
     private static final ThreadLocal<SecurityContext> contextHolder = new ThreadLocal<>();
 
+    /**
+     * Creates the strategy.
+     */
+    public VaadinAwareSecurityContextHolderStrategy() {
+    }
+
     @Override
     public void clearContext() {
         contextHolder.remove();

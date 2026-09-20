@@ -79,7 +79,14 @@ public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
         ServletContextListener {
 
+    /** The manager that owns the dev mode handler, set during startup. */
     private DevModeHandlerManager devModeHandlerManager;
+
+    /**
+     * Creates the listener. The servlet container instantiates it.
+     */
+    public DevModeStartupListener() {
+    }
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context)

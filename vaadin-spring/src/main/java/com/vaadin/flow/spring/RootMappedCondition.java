@@ -43,7 +43,15 @@ import com.vaadin.flow.server.VaadinServlet;
  */
 public class RootMappedCondition implements Condition {
 
+    /** Name of the property that holds the Vaadin servlet url mapping. */
     public static final String URL_MAPPING_PROPERTY = "vaadin.urlMapping";
+
+    /**
+     * Creates the condition. Spring instantiates it when evaluating a
+     * {@code @Conditional} annotation.
+     */
+    public RootMappedCondition() {
+    }
 
     @Override
     public boolean matches(ConditionContext context,

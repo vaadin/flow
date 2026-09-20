@@ -59,7 +59,14 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
  */
 public class VaadinRouteScope extends AbstractScope {
 
+    /** Name the scope is registered under. */
     public static final String VAADIN_ROUTE_SCOPE_NAME = "vaadin-route";
+
+    /**
+     * Creates the scope. Spring instantiates it.
+     */
+    public VaadinRouteScope() {
+    }
 
     private static class RouteStoreWrapper implements Serializable {
 

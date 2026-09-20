@@ -34,6 +34,12 @@ import com.vaadin.flow.server.HandlerHelper;
  */
 public class UidlRedirectStrategy extends DefaultRedirectStrategy {
 
+    /**
+     * Creates the strategy.
+     */
+    public UidlRedirectStrategy() {
+    }
+
     @Override
     public void sendRedirect(HttpServletRequest request,
             HttpServletResponse response, String url) throws IOException {

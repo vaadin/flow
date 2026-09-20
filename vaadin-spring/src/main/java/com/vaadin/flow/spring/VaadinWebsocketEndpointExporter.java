@@ -29,6 +29,12 @@ import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
  */
 public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
 
+    /**
+     * Creates the exporter. Spring instantiates it.
+     */
+    public VaadinWebsocketEndpointExporter() {
+    }
+
     @Override
     protected void registerEndpoints() {
         super.registerEndpoints();

@@ -41,6 +41,25 @@ import org.jboss.forge.roaster.model.source.MethodSource;
  */
 public class ServerConverter {
 
+    /**
+     * Creates a server converter.
+     */
+    public ServerConverter() {
+    }
+
+    /**
+     * Converts a single {@code PolymerTemplate} based Java file to
+     * {@code LitTemplate} in place.
+     * <p>
+     * Files that do not extend {@code PolymerTemplate}, and files the
+     * conversion leaves unchanged, are left untouched.
+     *
+     * @param filePath
+     *            the file to convert
+     * @return {@code true} if the file was rewritten, {@code false} otherwise
+     * @throws IOException
+     *             if the file cannot be read or written
+     */
     public boolean convertFile(Path filePath) throws IOException {
         String source = readFile(filePath);
         if (!source.contains("PolymerTemplate")) {

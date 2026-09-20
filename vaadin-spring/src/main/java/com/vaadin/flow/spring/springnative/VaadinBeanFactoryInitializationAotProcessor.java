@@ -73,8 +73,23 @@ public class VaadinBeanFactoryInitializationAotProcessor
     private static final Logger logger = LoggerFactory
             .getLogger(VaadinBeanFactoryInitializationAotProcessor.class);
 
+    /**
+     * Creates the processor. Spring instantiates it.
+     */
+    public VaadinBeanFactoryInitializationAotProcessor() {
+    }
+
+    /**
+     * Marker bean registered so that the processor runs only once per bean
+     * factory.
+     */
     public static class Marker {
 
+        /**
+         * Creates the marker.
+         */
+        public Marker() {
+        }
     }
 
     @Override

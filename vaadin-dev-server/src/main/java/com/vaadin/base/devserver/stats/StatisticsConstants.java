@@ -25,8 +25,8 @@ package com.vaadin.base.devserver.stats;
  */
 public class StatisticsConstants {
 
-    /*
-     * Event tracking identifiers.
+    /**
+     * Event tracking identifier for a live reload.
      */
     public static final String EVENT_LIVE_RELOAD = "liveReload";
 

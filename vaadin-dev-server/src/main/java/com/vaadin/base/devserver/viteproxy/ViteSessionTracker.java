@@ -36,6 +36,12 @@ import com.vaadin.flow.shared.Registration;
 public class ViteSessionTracker {
 
     /**
+     * Creates the tracker.
+     */
+    public ViteSessionTracker() {
+    }
+
+    /**
      * Listener interface for HTTP session close events.
      */
     @FunctionalInterface

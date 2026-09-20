@@ -79,6 +79,12 @@ public class VaadinDefaultRequestCache implements RequestCache {
 
     private RequestMatcher ignoreRequestMatcher = null;
 
+    /**
+     * Creates the request cache. Spring instantiates it as a bean.
+     */
+    public VaadinDefaultRequestCache() {
+    }
+
     @Override
     public void saveRequest(HttpServletRequest request,
             HttpServletResponse response) {

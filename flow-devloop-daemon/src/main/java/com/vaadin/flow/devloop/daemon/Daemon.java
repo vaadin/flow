@@ -95,6 +95,15 @@ public final class Daemon {
         this.transactions = new TransactionEngine(launch, app);
     }
 
+    /**
+     * Starts the daemon for a project.
+     *
+     * @param args
+     *            the project root directory as the first argument; the current
+     *            working directory is used when no argument is given
+     * @throws Exception
+     *             if the daemon cannot be started
+     */
     public static void main(String[] args) throws Exception {
         Path root = Path.of(args.length > 0 ? args[0] : ".").toAbsolutePath()
                 .normalize();

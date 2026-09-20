@@ -29,4 +29,10 @@ import com.vaadin.flow.component.Tag;
 @Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.CAPTION)
 public class NativeTableCaption extends HtmlContainer {
+
+    /**
+     * Creates a new empty table caption component.
+     */
+    public NativeTableCaption() {
+    }
 }

@@ -76,6 +76,12 @@ public class AuthenticationContext {
     private VaadinRolePrefixHolder rolePrefixHolder;
 
     /**
+     * Creates the context. Spring instantiates it as a bean.
+     */
+    public AuthenticationContext() {
+    }
+
+    /**
      * Gets an {@link Optional} with an instance of the current user if it has
      * been authenticated, or empty if the user is not authenticated.
      *

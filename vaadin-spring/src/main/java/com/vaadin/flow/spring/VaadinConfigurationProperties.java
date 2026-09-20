@@ -35,6 +35,13 @@ import org.springframework.core.env.Environment;
 public class VaadinConfigurationProperties {
 
     /**
+     * Creates the properties holder. Spring Boot instantiates it and binds the
+     * {@code vaadin.*} properties to it.
+     */
+    public VaadinConfigurationProperties() {
+    }
+
+    /**
      * Gets the url mapping using the given environment.
      *
      * This is needed only when VaadinConfigurationProperties is not available
@@ -167,28 +174,38 @@ public class VaadinConfigurationProperties {
     private boolean devmodeCaching = true;
 
     /**
+     * Frontend related properties, bound from {@code vaadin.frontend.*}.
+     *
      * @since 24.0.5
      */
     public static class Frontend {
+
         /**
          * Whether a frontend development server (Vite) is used in development
          * mode or not.
          */
         private boolean hotdeploy = false;
 
-        /*
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Frontend() {
+        }
+
+        /**
          * Checks if frontend hotdeploy is enabled.
          *
-         * @return true if hotdeploy is enabled
+         * @return {@code true} if hotdeploy is enabled
          */
         public boolean isHotdeploy() {
             return hotdeploy;
         }
 
-        /*
+        /**
          * Enables/disables frontend hotdeploy mode.
          *
-         * @param hotdeploy true to enable, false to disable
+         * @param hotdeploy
+         *            {@code true} to enable, {@code false} to disable
          */
         public void setHotdeploy(boolean hotdeploy) {
             this.hotdeploy = hotdeploy;
@@ -196,11 +213,19 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * pnpm related properties, bound from {@code vaadin.pnpm.*}.
+     *
      * @since 14.0
      */
     public static class Pnpm {
 
         private boolean enable;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Pnpm() {
+        }
 
         /**
          * Returns if pnpm support is enabled.
@@ -226,11 +251,19 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Bun related properties, bound from {@code vaadin.bun.*}.
+     *
      * @since 24.4
      */
     public static class Bun {
 
         private boolean enable;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Bun() {
+        }
 
         /**
          * Returns if bun support is enabled.
@@ -256,11 +289,19 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * React related properties, bound from {@code vaadin.react.*}.
+     *
      * @since 24.4
      */
     public static class React {
 
         private boolean enable = true;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public React() {
+        }
 
         /**
          * Returns if react support is enabled.
@@ -286,9 +327,12 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Development mode properties, bound from {@code vaadin.devmode.*}.
+     *
      * @since 24.3
      */
     public static class Devmode {
+
         /**
          * A comma separated list of IP addresses, potentially with wildcards,
          * which can connect to the dev tools. If not specified, only localhost
@@ -304,11 +348,16 @@ public class VaadinConfigurationProperties {
         private String remoteAddressHeader;
 
         /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Devmode() {
+        }
+
+        /**
          * Gets the hosts allowed to connect to the dev mode server.
          *
          * @return the hosts allowed to connect to the dev mode server
          */
-
         public String getHostsAllowed() {
             return hostsAllowed;
         }

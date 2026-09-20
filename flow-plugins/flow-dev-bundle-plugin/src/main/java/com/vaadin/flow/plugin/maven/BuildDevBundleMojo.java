@@ -247,6 +247,12 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     private ClassFinder classFinder;
 
+    /**
+     * Creates the goal. Maven instantiates it and injects the parameters.
+     */
+    public BuildDevBundleMojo() {
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
@@ -291,6 +297,14 @@ public class BuildDevBundleMojo extends AbstractMojo
                 "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
     }
 
+    /**
+     * Runs the goal once the isolated class loader is in place.
+     * <p>
+     * Called reflectively from {@link #execute()}, so it has to stay public.
+     *
+     * @throws MojoFailureException
+     *             if the bundle cannot be built
+     */
     public void executeInternal() throws MojoFailureException {
         long start = System.nanoTime();
 

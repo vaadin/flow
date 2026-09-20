@@ -33,6 +33,12 @@ public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
     private static final String SPRING_DEVTOOLS_LIVERELOAD_PORT = "spring.devtools.livereload.port";
     private static final String SPRING_DEVTOOLS_LIVERELOAD_ENABLED = "spring.devtools.livereload.enabled";
 
+    /**
+     * Creates the post processor. Spring Boot instantiates it.
+     */
+    public SpringDevToolsPortHandler() {
+    }
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,
             SpringApplication application) {

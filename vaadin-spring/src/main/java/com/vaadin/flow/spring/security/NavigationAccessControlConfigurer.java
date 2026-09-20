@@ -87,6 +87,13 @@ public final class NavigationAccessControlConfigurer {
     private Predicate<NavigationAccessChecker> accessCheckersFilter;
 
     /**
+     * Creates a configurer with no checkers enabled. Use the {@code withXyz}
+     * methods to select the checkers to apply.
+     */
+    public NavigationAccessControlConfigurer() {
+    }
+
+    /**
      * Enables the
      * {@link com.vaadin.flow.server.auth.AnnotatedViewAccessChecker}.
      *

@@ -47,6 +47,12 @@ import com.vaadin.flow.server.Constants;
 public abstract class VaadinMVCWebAppInitializer
         implements WebApplicationInitializer {
 
+    /**
+     * Creates the initializer.
+     */
+    public VaadinMVCWebAppInitializer() {
+    }
+
     @Override
     public void onStartup(ServletContext servletContext)
             throws ServletException {

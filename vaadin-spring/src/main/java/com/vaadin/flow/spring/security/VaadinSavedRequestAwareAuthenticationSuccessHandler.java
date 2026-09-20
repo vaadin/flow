@@ -97,6 +97,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      */
     public static class RedirectStrategy extends DefaultRedirectStrategy {
 
+        /**
+         * Creates the redirect strategy.
+         */
+        public RedirectStrategy() {
+        }
+
         @Override
         public void sendRedirect(HttpServletRequest request,
                 HttpServletResponse response, String url) throws IOException {

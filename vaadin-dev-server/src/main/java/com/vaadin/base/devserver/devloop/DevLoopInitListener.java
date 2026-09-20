@@ -39,6 +39,12 @@ public class DevLoopInitListener implements VaadinServiceInitListener {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(DevLoopInitListener.class);
 
+    /**
+     * Creates the listener. It is found through the service loader.
+     */
+    public DevLoopInitListener() {
+    }
+
     @Override
     public void serviceInit(ServiceInitEvent event) {
         if (!DevLoopRegistration.isDaemonLaunched()) {

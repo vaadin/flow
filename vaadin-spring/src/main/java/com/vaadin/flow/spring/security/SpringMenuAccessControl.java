@@ -32,6 +32,12 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
  */
 public class SpringMenuAccessControl extends DefaultMenuAccessControl {
 
+    /**
+     * Creates the access control. Spring instantiates it as a bean.
+     */
+    public SpringMenuAccessControl() {
+    }
+
     @Override
     public boolean canAccessView(AvailableViewInfo viewInfo) {
         VaadinRequest request = VaadinRequest.getCurrent();

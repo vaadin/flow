@@ -35,7 +35,14 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class VaadinSessionScope extends AbstractScope {
 
+    /** Name the scope is registered under. */
     public static final String VAADIN_SESSION_SCOPE_NAME = "vaadin-session";
+
+    /**
+     * Creates the scope. Spring instantiates it.
+     */
+    public VaadinSessionScope() {
+    }
 
     private static class SessionBeanStore extends BeanStore {
 

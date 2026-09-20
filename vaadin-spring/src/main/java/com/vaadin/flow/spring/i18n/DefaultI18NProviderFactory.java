@@ -44,6 +44,12 @@ import com.vaadin.flow.i18n.I18NUtil;
 public class DefaultI18NProviderFactory implements Condition, Serializable {
 
     /**
+     * Creates the factory. Spring instantiates it.
+     */
+    public DefaultI18NProviderFactory() {
+    }
+
+    /**
      * Default location pattern to be used with {@link ResourcePatternResolver}.
      */
     public static final String DEFAULT_LOCATION_PATTERN = "classpath*:/vaadin-i18n/*.properties";

@@ -33,6 +33,13 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 public class BrowserLiveReloadAccessorImpl
         implements BrowserLiveReloadAccessor {
 
+    /**
+     * Creates the accessor. Flow instantiates it when building the
+     * {@code Lookup}.
+     */
+    public BrowserLiveReloadAccessorImpl() {
+    }
+
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
         if (ApplicationConfiguration.get(context).isProductionMode()) {

@@ -29,6 +29,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class AuthenticationUtil {
 
     /**
+     * Creates a new instance. The class only provides static helpers.
+     */
+    public AuthenticationUtil() {
+    }
+
+    /**
      * Gets the authenticated user from the Spring SecurityContextHolder.
      *
      * @return the authenticated user or {@code null}

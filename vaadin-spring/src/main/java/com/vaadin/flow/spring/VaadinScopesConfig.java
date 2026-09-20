@@ -34,6 +34,12 @@ import com.vaadin.flow.spring.scopes.VaadinUIScope;
 public class VaadinScopesConfig {
 
     /**
+     * Creates the configuration. Spring instantiates it.
+     */
+    public VaadinScopesConfig() {
+    }
+
+    /**
      * Creates a Vaadin session scope.
      *
      * @return the Vaadin session scope

@@ -19,6 +19,12 @@ package com.vaadin.flow.spring;
 public class SpringUtil {
 
     /**
+     * Creates a new instance. The class only provides static helpers.
+     */
+    public SpringUtil() {
+    }
+
+    /**
      * Checks if this is Spring Boot and not plain Spring.
      *
      * @return true if this is Spring Boot, false if it is Spring without Boot

@@ -48,6 +48,12 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
 public class VaadinApplicationConfiguration {
 
     /**
+     * Creates the configuration. Spring instantiates it.
+     */
+    public VaadinApplicationConfiguration() {
+    }
+
+    /**
      * Creates a default {@link ApplicationConfigurationFactory} bean in case
      * there is no developer provided bean.
      *
