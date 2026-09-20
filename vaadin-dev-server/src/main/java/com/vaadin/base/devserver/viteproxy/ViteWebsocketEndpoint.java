@@ -46,7 +46,10 @@ import com.vaadin.flow.shared.Registration;
  */
 public class ViteWebsocketEndpoint extends Endpoint {
 
-    /** Name the endpoint is registered under in the servlet context. */
+    /**
+     * Key the {@code ViteHandler} is stored under in the user properties of the
+     * endpoint configuration.
+     */
     public static final String VITE_HANDLER = "viteServer";
     static final String TRACKER_KEY = "viteSessionTracker";
     private static final String HTTP_SESSION_ID = "httpSessionId";

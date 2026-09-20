@@ -80,8 +80,9 @@ public class VaadinBeanFactoryInitializationAotProcessor
     }
 
     /**
-     * Marker bean registered so that the processor runs only once per bean
-     * factory.
+     * Bean definition registered once the {@code @Route} classes have been
+     * registered as beans, so that a later run over the same bean factory skips
+     * that step.
      */
     public static class Marker {
 
