@@ -1949,15 +1949,14 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Answers with an implementation of the given interface, through which the
-     * JavaScript it declares is run asynchronously in the browser in the
-     * context of this element.
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser in the context of this element, through an implementation of
+     * the interface that this method answers with: calling a method of the
+     * implementation runs the JavaScript that the method declares, with the
+     * arguments of the call as its parameters.
      * <p>
-     * The version that takes an interface rather than an expression: the
-     * interface is annotated with {@link JsDefinition} and each of its methods
-     * declares the JavaScript it runs with {@link JsExpression}. Calling a
-     * method of the implementation runs that JavaScript with the method
-     * arguments as its parameters and this element as <code>this</code>:
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
      * &#64;JsDefinition
@@ -1969,16 +1968,20 @@ public class Element extends Node<Element> {
      * element.executeJs(GreeterJs.class).showGreeting("Hello");
      * </pre>
      *
-     * Unlike {@link #executeJs(String, Object...)}, nothing about the
-     * JavaScript is decided at the call site: the build collects the
-     * declarations of every JavaScript definition into the bundle, and the
-     * client runs the collected function after looking it up by interface and
-     * method. No expression is sent and none is compiled in the browser, so the
-     * call works under a content security policy without
-     * <code>unsafe-eval</code>. What the two versions have in common is when
-     * the JavaScript runs - after pending DOM updates, deferred while the
-     * element is detached or invisible - and that the result of a method that
-     * declares one can be read through {@link PendingJavaScriptResult}.
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with this element available as <code>this</code> and
+     * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
+     * after pending DOM updates, and deferred while the element is not attached
+     * or not visible. A method that returns {@link PendingJavaScriptResult} can
+     * be used to retrieve the <code>return</code> value the same way.
+     * <p>
+     * What differs is that nothing about the JavaScript is decided at the call
+     * site: the build collects the declarations of every JavaScript definition
+     * into the bundle, and the client runs the collected function after looking
+     * it up by interface and method. No expression is sent and none is compiled
+     * in the browser, so the call works under a content security policy without
+     * <code>unsafe-eval</code>.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,
