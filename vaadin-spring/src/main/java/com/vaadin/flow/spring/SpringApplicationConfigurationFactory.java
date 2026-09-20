@@ -33,6 +33,13 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 public class SpringApplicationConfigurationFactory
         extends DefaultApplicationConfigurationFactory {
 
+    /**
+     * Creates the factory.
+     */
+    public SpringApplicationConfigurationFactory() {
+        // Default constructor
+    }
+
     @Override
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
             Map<String, String> properties) {

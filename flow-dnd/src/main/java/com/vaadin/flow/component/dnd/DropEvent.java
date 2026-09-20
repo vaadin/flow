@@ -36,10 +36,22 @@ import com.vaadin.flow.component.dnd.internal.DndUtil;
 @DomEvent("drop")
 public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
 
+    /** The effect allowed by the drag source. */
     private final EffectAllowed effectAllowed;
+
+    /** The drop effect set on the drop target, or {@code null} if not set. */
     private final String dropEffect;
+
+    /**
+     * The component the drag started from, or {@code null} if it was not a
+     * component in the same UI.
+     */
     private final Component dragSourceComponent;
+
+    /** The x coordinate of the mouse pointer relative to the drop target. */
     private final int offsetX;
+
+    /** The y coordinate of the mouse pointer relative to the drop target. */
     private final int offsetY;
 
     /**
