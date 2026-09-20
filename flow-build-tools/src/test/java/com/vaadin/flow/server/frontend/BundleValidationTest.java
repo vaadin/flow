@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -1075,18 +1076,31 @@ class BundleValidationTest {
         assertFalse(needsBuild, "Jar fronted file content hash should match.");
     }
 
+    static Stream<Arguments> modesAndBundleHashes() {
+        // What the stats say the bundle was built with: a hash the declarations
+        // do not produce, so it was built with another version of them, and no
+        // hash at all, as in a bundle built before any definition existed
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode,
+                        "not the hash of what the interfaces declare"),
+                Arguments.of(mode, null)));
+    }
+
     @ParameterizedTest
-    @MethodSource("modes")
-    void jsDefinitionJavaScriptChanged_bundleRebuild(Mode mode) {
+    @MethodSource("modesAndBundleHashes")
+    void jsDefinitionJavaScriptNotInTheBundle_bundleRebuild(Mode mode,
+            String bundleHash) {
         setupMode(mode);
 
         ObjectNode stats = getBasicStats();
-        // Any hash the declarations do not produce: what the bundle was built
-        // with is whatever it was, and the point is that it is not this
-        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED
-                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
-                "not the hash of what the interfaces declare");
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        String generatedFile = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        if (bundleHash == null) {
+            hashes.remove(generatedFile);
+        } else {
+            hashes.put(generatedFile, bundleHash);
+        }
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,

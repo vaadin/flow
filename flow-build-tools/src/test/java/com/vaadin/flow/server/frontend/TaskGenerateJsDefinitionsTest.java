@@ -226,6 +226,16 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void acceptsItsOwnUpdate() throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertTrue(content.contains("import.meta.hot.accept()"),
+                "the file should accept its own update, or writing it again while the application runs is ignored by the browser instead of replacing the module: "
+                        + content);
+    }
+
+    @Test
     void writesTheFileTheBootstrapImports() throws ExecutionFailedException {
         task.execute();
 

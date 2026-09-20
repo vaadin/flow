@@ -241,19 +241,16 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * Reads back the names of the JavaScript definitions a generated file
-     * registers, which is what a browser that has the file can run.
-     * <p>
-     * Exposed together with {@link #renderDefinitionLines(Class)} so that the
-     * format this class writes is also read here, and a caller which has to
-     * render the file again - the hotswap path - can keep the interfaces that
-     * are in it.
+     * registers, which is what a browser that has the file can run. Reading the
+     * format back here keeps it next to {@link #renderDefinitionLines(Class)},
+     * which writes it.
      *
      * @param fileContent
      *            the content of a generated file, or <code>null</code>
      * @return the interface names the file registers, in the order it registers
      *         them
      */
-    public static List<String> readDefinitionNames(String fileContent) {
+    private static List<String> readDefinitionNames(String fileContent) {
         List<String> names = new ArrayList<>();
         if (fileContent == null) {
             return names;
