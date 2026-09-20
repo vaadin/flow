@@ -72,6 +72,12 @@ public class FrontendTools {
 
     public static final String DEFAULT_PNPM_VERSION = "8.15.9";
 
+    /**
+     * The pnpm option that forces a flat, npm style node_modules layout, so
+     * that every transitive dependency is available at the project root.
+     */
+    static final String PNPM_HOISTED_OPTION = "--config.node-linker=hoisted";
+
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
 
@@ -595,7 +601,7 @@ public class FrontendTools {
         // which only controls the partial-hoist heuristic on top of the
         // default isolated layout and did not consistently expose every
         // transitive at the project root.
-        pnpmCommand.add("--config.node-linker=hoisted");
+        pnpmCommand.add(PNPM_HOISTED_OPTION);
         return pnpmCommand;
     }
 
