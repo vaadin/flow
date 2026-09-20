@@ -106,12 +106,6 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
-            String attribute, Signal<Boolean> signal) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void setAttribute(StateNode node, String attribute,
             AbstractStreamResource resource) {
         throw new UnsupportedOperationException();

@@ -88,6 +88,9 @@ public interface ElementStateProvider extends Serializable {
      * Binds the given signal to the presence of the given attribute. The
      * attribute is set to an empty value while the signal value is {@code true}
      * and removed while it is {@code false}.
+     * <p>
+     * The default implementation throws, so that only the providers that
+     * support attributes at all have to implement this.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
@@ -99,8 +102,10 @@ public interface ElementStateProvider extends Serializable {
      * @return the created binding
      * @since 25.4
      */
-    SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
-            String attribute, Signal<Boolean> signal);
+    default SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
