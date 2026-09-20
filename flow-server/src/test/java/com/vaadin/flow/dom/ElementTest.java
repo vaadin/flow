@@ -2688,165 +2688,26 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void executeJsWithDefinition_interfaceWithoutAnnotation_throws() {
-        Element element = ElementFactory.createDiv();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> element.executeJs(Serializable.class),
-                "an interface the build does not collect should be rejected");
-    }
-
-    @Test
-    void executeJsWithDefinition_notAnInterface_throws() {
-        Element element = ElementFactory.createDiv();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> element.executeJs(ElementTest.class),
-                "only an interface can declare JavaScript methods");
-    }
-
-    @Test
     void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        ResultJs resultJs = element.executeJs(ResultJs.class);
-        assertNotNull(resultJs.toString(),
-                "the implementation should answer the methods of Object");
-
-        PendingJavaScriptResult result = resultJs.readValue();
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertNotNull(result,
-                "a method declaring a result should return the pending result");
-        assertEquals(1,
-                ui.getInternals().dumpPendingJavaScriptInvocations().size());
-    }
-
-    @Test
-    void executeJsWithDefinition_methodWithAnotherReturnType_throws() {
-        Element element = ElementFactory.createDiv();
-
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> element.executeJs(UnsupportedJs.class),
-                "a method that can not be answered should be refused when the implementation is handed out");
-
-        assertTrue(exception.getMessage().contains("readValue"),
-                "the message should name the method: "
-                        + exception.getMessage());
-    }
-
-    @Test
-    void executeJsWithDefinition_methodWithoutDeclaredJavaScript_throws() {
-        Element element = ElementFactory.createDiv();
-
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> element.executeJs(UndeclaredJs.class));
-
-        assertTrue(exception.getMessage().contains("undeclared"),
-                "the message should name the method that declares nothing: "
-                        + exception.getMessage());
-    }
-
-    @Test
-    void executeJsWithDefinition_defaultMethodOnANonPublicInterface_throws() {
-        Element element = ElementFactory.createDiv();
-
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> element.executeJs(NotPublicJs.class));
-
-        assertTrue(exception.getMessage().contains("public"),
-                "the message should say what stops the method from running: "
-                        + exception.getMessage());
-    }
-
-    @Test
-    void executeJsWithDefinition_defaultMethodDeclaringJavaScript_throws() {
-        Element element = ElementFactory.createDiv();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> element.executeJs(ContradictoryJs.class),
-                "a method can run in Java or in the browser, not both");
-    }
-
-    @Test
-    void executeJsWithDefinition_defaultMethod_runsInJavaAndSchedulesWhatItCalls() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
-        ui.getElement().appendChild(element);
-
-        ComposingJs composingJs = element.executeJs(ComposingJs.class);
-        composingJs.twice("foo");
+        PendingJavaScriptResult result = element.executeJs(ResultJs.class)
+                .readValue();
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        assertEquals(2, pendingJs.size(),
-                "a default method runs in Java, and what it calls of the interface is scheduled");
-        assertEquals(new JsCall(ComposingJs.class, "method", List.of("foo")),
-                pendingJs.get(0).getInvocation().getJsCall());
-        assertEquals("composing", composingJs.describe(),
-                "a default method answers in Java, so it is not bound by what a declared one may return");
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the element scheduled");
     }
 
     @JsDefinition
     interface ResultJs extends Serializable {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
-    }
-
-    @JsDefinition
-    interface UnsupportedJs extends Serializable {
-        @JsExpression("return this.value;")
-        String readValue();
-    }
-
-    @JsDefinition
-    interface UndeclaredJs extends Serializable {
-        void undeclared();
-    }
-
-    @JsDefinition
-    public interface ComposingJs extends Serializable {
-        @JsExpression("this.method($0)")
-        void method(String value);
-
-        default void twice(String value) {
-            method(value);
-            method(value);
-        }
-
-        default String describe() {
-            return "composing";
-        }
-
-        // Declares no JavaScript and is not answered by the implementation,
-        // so handing one out has to leave it alone
-        static String name() {
-            return "ComposingJs";
-        }
-    }
-
-    @JsDefinition
-    interface NotPublicJs extends Serializable {
-        @JsExpression("this.method()")
-        void method();
-
-        default void twice() {
-            method();
-            method();
-        }
-    }
-
-    @JsDefinition
-    interface ContradictoryJs extends Serializable {
-        @JsExpression("this.method()")
-        default void method() {
-        }
     }
 
     @JsDefinition

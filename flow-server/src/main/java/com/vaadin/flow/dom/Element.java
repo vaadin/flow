@@ -16,11 +16,6 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +66,7 @@ import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -1988,12 +1984,11 @@ public class Element extends Node<Element> {
      * driver of the client side that can not run JavaScript can recognize it,
      * or run it on its own implementation of the same interface.
      * <p>
-     * A method returns either <code>void</code> or
-     * {@link PendingJavaScriptResult}. A <code>default</code> method declares
-     * no JavaScript and runs in Java instead, so an interface can compose calls
-     * of its own methods; an interface that has one has to be public, since
-     * running it is an ordinary Java call. A <code>static</code> method is left
-     * alone for the same reason.
+     * Every method of the interface declares JavaScript and returns either
+     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
+     * implemented in Java instead - a <code>default</code> or a
+     * <code>static</code> method - is not what such an interface is for, so the
+     * interface is refused rather than partly run in the browser.
      * <p>
      * The interface is checked when the implementation is handed out, so one
      * that can not work says so here rather than at the first call.
@@ -2009,124 +2004,8 @@ public class Element extends Node<Element> {
      *             {@link JsDefinition}, or has a method that can not be
      *             answered
      */
-    @SuppressWarnings("unchecked")
     public <T> T executeJs(Class<T> definitionType) {
-        Objects.requireNonNull(definitionType,
-                "Definition type cannot be null");
-        if (!definitionType.isInterface()) {
-            throw new IllegalArgumentException(
-                    definitionType.getName() + " is not an interface");
-        }
-        if (!definitionType.isAnnotationPresent(JsDefinition.class)) {
-            throw new IllegalArgumentException(definitionType.getName()
-                    + " is not annotated with @JsDefinition, so the build does not"
-                    + " collect its JavaScript into the bundle");
-        }
-        checkDefinitionMethods(definitionType);
-        return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
-                new Class<?>[] { definitionType },
-                new JsDefinitionHandler(this, definitionType));
-    }
-
-    /**
-     * Checks the methods of a JavaScript definition: each one that has to be
-     * answered declares the JavaScript it runs, and returns either nothing or
-     * the pending result of running it. Checked here rather than when a method
-     * is called, so an interface that can not work says so when it is handed
-     * out.
-     * <p>
-     * A default method is not checked: it runs in Java, and composing calls of
-     * the interface is what it is for. Neither is a static one.
-     */
-    private static void checkDefinitionMethods(Class<?> definitionType) {
-        List<String> undeclared = new ArrayList<>();
-        List<String> unanswerable = new ArrayList<>();
-        List<String> inJava = new ArrayList<>();
-        for (Method method : definitionType.getMethods()) {
-            if (Modifier.isStatic(method.getModifiers())) {
-                continue;
-            }
-            if (method.isDefault()) {
-                if (method.isAnnotationPresent(JsExpression.class)) {
-                    // Declaring JavaScript and running in Java at the same
-                    // time: only one of them can happen, so neither is assumed
-                    undeclared.add(method.getName());
-                }
-                inJava.add(method.getName());
-                continue;
-            }
-            if (!method.isAnnotationPresent(JsExpression.class)) {
-                undeclared.add(method.getName());
-            }
-            Class<?> returnType = method.getReturnType();
-            if (returnType != void.class && !returnType
-                    .isAssignableFrom(PendingJavaScriptResult.class)) {
-                unanswerable.add(method.getName());
-            }
-        }
-        if (!undeclared.isEmpty()) {
-            throw new IllegalArgumentException(definitionType.getName()
-                    + " declares no JavaScript to run for "
-                    + String.join(", ", undeclared)
-                    + ". Annotate the methods with @JsExpression, or make them"
-                    + " default methods, without the annotation, if they are"
-                    + " meant to run in Java");
-        }
-        if (!unanswerable.isEmpty()) {
-            throw new IllegalArgumentException(definitionType.getName()
-                    + " has " + String.join(", ", unanswerable)
-                    + " returning something that can not be answered with."
-                    + " A method returns void or PendingJavaScriptResult");
-        }
-        if (!inJava.isEmpty()
-                && !Modifier.isPublic(definitionType.getModifiers())) {
-            // Running a default method is an ordinary Java call, made from
-            // here, so the interface has to be reachable from here
-            throw new IllegalArgumentException(definitionType.getName()
-                    + " has " + String.join(", ", inJava)
-                    + " running in Java, which an interface that is not public"
-                    + " can not do. Make the interface public, or declare the"
-                    + " JavaScript of those methods with @JsExpression");
-        }
-    }
-
-    /**
-     * Turns a call on a JavaScript definition into a scheduled invocation that
-     * carries the call.
-     */
-    private record JsDefinitionHandler(Element element, Class<?> definitionType)
-            implements
-                InvocationHandler,
-                Serializable {
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args)
-                throws Throwable {
-            if (method.getDeclaringClass() == Object.class) {
-                return method.invoke(this, args);
-            }
-            if (method.isDefault()) {
-                // Runs in Java, and what it calls of the interface comes back
-                // here
-                try {
-                    return InvocationHandler.invokeDefault(proxy, method, args);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException("Cannot run "
-                            + method.getName() + " of "
-                            + definitionType.getName()
-                            + " in Java. Make the interface public, or declare"
-                            + " the JavaScript of the method with"
-                            + " @JsExpression", e);
-                }
-            }
-            boolean returnsResult = method.getReturnType()
-                    .isAssignableFrom(PendingJavaScriptResult.class);
-            List<Object> arguments = args == null ? List.of()
-                    : Arrays.asList(args);
-            PendingJavaScriptResult result = element.scheduleJsCall(
-                    new JsCall(definitionType, method.getName(), arguments));
-            return returnsResult ? result : null;
-        }
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
