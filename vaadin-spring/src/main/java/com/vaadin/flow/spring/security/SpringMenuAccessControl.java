@@ -36,6 +36,7 @@ public class SpringMenuAccessControl extends DefaultMenuAccessControl {
      * Creates the access control. Spring instantiates it as a bean.
      */
     public SpringMenuAccessControl() {
+        // Default constructor
     }
 
     @Override

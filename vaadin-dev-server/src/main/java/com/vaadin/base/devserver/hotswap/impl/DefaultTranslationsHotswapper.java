@@ -43,6 +43,7 @@ public class DefaultTranslationsHotswapper implements VaadinHotswapper {
      * Creates the hotswapper. It is found through the service loader.
      */
     public DefaultTranslationsHotswapper() {
+        // Default constructor
     }
 
     @Override

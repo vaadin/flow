@@ -74,6 +74,7 @@ public class VaadinServletConfiguration {
      * Creates the configuration. Spring instantiates it.
      */
     public VaadinServletConfiguration() {
+        // Default constructor
     }
 
     /**

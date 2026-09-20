@@ -50,6 +50,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
      * Creates the registrar. Spring instantiates it.
      */
     public VaadinHintsRegistrar() {
+        // Default constructor
     }
 
     @Override

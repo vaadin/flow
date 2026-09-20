@@ -38,6 +38,7 @@ public class UidlRedirectStrategy extends DefaultRedirectStrategy {
      * Creates the strategy.
      */
     public UidlRedirectStrategy() {
+        // Default constructor
     }
 
     @Override

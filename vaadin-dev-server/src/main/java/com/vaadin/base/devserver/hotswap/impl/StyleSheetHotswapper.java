@@ -106,6 +106,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
      * Creates the hotswapper. It is found through the service loader.
      */
     public StyleSheetHotswapper() {
+        // Default constructor
     }
 
     @Override

@@ -51,6 +51,7 @@ public class VaadinApplicationConfiguration {
      * Creates the configuration. Spring instantiates it.
      */
     public VaadinApplicationConfiguration() {
+        // Default constructor
     }
 
     /**

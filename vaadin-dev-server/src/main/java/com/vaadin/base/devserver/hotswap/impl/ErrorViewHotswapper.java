@@ -39,6 +39,7 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
      * Creates the hotswapper. It is found through the service loader.
      */
     public ErrorViewHotswapper() {
+        // Default constructor
     }
 
     @Override

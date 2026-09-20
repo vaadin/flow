@@ -42,6 +42,7 @@ public class VaadinSessionScope extends AbstractScope {
      * Creates the scope. Spring instantiates it.
      */
     public VaadinSessionScope() {
+        // Default constructor
     }
 
     private static class SessionBeanStore extends BeanStore {

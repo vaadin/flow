@@ -47,6 +47,7 @@ public class VaadinUIScope extends AbstractScope {
      * Creates the scope. Spring instantiates it.
      */
     public VaadinUIScope() {
+        // Default constructor
     }
 
     private static class UIStoreWrapper

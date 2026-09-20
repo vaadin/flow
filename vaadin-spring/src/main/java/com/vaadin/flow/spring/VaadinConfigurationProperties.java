@@ -39,6 +39,7 @@ public class VaadinConfigurationProperties {
      * {@code vaadin.*} properties to it.
      */
     public VaadinConfigurationProperties() {
+        // Default constructor
     }
 
     /**
@@ -190,6 +191,7 @@ public class VaadinConfigurationProperties {
          * Creates the properties holder. Spring Boot instantiates it.
          */
         public Frontend() {
+            // Default constructor
         }
 
         /**
@@ -225,6 +227,7 @@ public class VaadinConfigurationProperties {
          * Creates the properties holder. Spring Boot instantiates it.
          */
         public Pnpm() {
+            // Default constructor
         }
 
         /**
@@ -263,6 +266,7 @@ public class VaadinConfigurationProperties {
          * Creates the properties holder. Spring Boot instantiates it.
          */
         public Bun() {
+            // Default constructor
         }
 
         /**
@@ -301,6 +305,7 @@ public class VaadinConfigurationProperties {
          * Creates the properties holder. Spring Boot instantiates it.
          */
         public React() {
+            // Default constructor
         }
 
         /**
@@ -351,6 +356,7 @@ public class VaadinConfigurationProperties {
          * Creates the properties holder. Spring Boot instantiates it.
          */
         public Devmode() {
+            // Default constructor
         }
 
         /**

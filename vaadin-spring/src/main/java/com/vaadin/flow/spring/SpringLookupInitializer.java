@@ -54,6 +54,7 @@ public class SpringLookupInitializer extends LookupInitializer {
      * {@code Lookup}.
      */
     public SpringLookupInitializer() {
+        // Default constructor
     }
 
     private static interface BootstrapCallable {

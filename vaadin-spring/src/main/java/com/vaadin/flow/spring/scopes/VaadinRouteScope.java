@@ -62,12 +62,6 @@ public class VaadinRouteScope extends AbstractScope {
     /** Name the scope is registered under. */
     public static final String VAADIN_ROUTE_SCOPE_NAME = "vaadin-route";
 
-    /**
-     * Creates the scope. Spring instantiates it.
-     */
-    public VaadinRouteScope() {
-    }
-
     private static class RouteStoreWrapper implements Serializable {
 
         private final VaadinSession session;
@@ -417,6 +411,13 @@ public class VaadinRouteScope extends AbstractScope {
     }
 
     private ConfigurableListableBeanFactory beanFactory;
+
+    /**
+     * Creates the scope. Spring instantiates it.
+     */
+    public VaadinRouteScope() {
+        // Default constructor
+    }
 
     @Override
     public void postProcessBeanFactory(

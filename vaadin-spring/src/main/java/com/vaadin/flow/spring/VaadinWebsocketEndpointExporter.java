@@ -33,6 +33,7 @@ public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
      * Creates the exporter. Spring instantiates it.
      */
     public VaadinWebsocketEndpointExporter() {
+        // Default constructor
     }
 
     @Override

@@ -53,6 +53,7 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
      * Creates the hotswapper. It is found through the service loader.
      */
     public RouteRegistryHotswapper() {
+        // Default constructor
     }
 
     /**

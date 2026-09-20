@@ -37,6 +37,7 @@ public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
      * Creates the post processor. Spring Boot instantiates it.
      */
     public SpringDevToolsPortHandler() {
+        // Default constructor
     }
 
     @Override

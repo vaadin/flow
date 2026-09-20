@@ -43,6 +43,7 @@ public class DevLoopInitListener implements VaadinServiceInitListener {
      * Creates the listener. It is found through the service loader.
      */
     public DevLoopInitListener() {
+        // Default constructor
     }
 
     @Override

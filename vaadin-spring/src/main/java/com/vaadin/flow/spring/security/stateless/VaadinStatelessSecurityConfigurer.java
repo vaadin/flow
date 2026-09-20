@@ -102,6 +102,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Creates the configurer with the default settings.
      */
     public VaadinStatelessSecurityConfigurer() {
+        // Default constructor
     }
 
     /**

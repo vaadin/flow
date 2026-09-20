@@ -79,6 +79,7 @@ public class AuthenticationContext {
      * Creates the context. Spring instantiates it as a bean.
      */
     public AuthenticationContext() {
+        // Default constructor
     }
 
     /**

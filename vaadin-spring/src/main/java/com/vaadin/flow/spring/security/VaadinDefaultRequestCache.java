@@ -83,6 +83,7 @@ public class VaadinDefaultRequestCache implements RequestCache {
      * Creates the request cache. Spring instantiates it as a bean.
      */
     public VaadinDefaultRequestCache() {
+        // Default constructor
     }
 
     @Override

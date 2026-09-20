@@ -37,6 +37,7 @@ public class SpringApplicationConfigurationFactory
      * Creates the factory.
      */
     public SpringApplicationConfigurationFactory() {
+        // Default constructor
     }
 
     @Override

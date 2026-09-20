@@ -37,6 +37,7 @@ public class VaadinScopesConfig {
      * Creates the configuration. Spring instantiates it.
      */
     public VaadinScopesConfig() {
+        // Default constructor
     }
 
     /**

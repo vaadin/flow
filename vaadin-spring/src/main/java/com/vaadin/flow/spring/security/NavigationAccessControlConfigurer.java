@@ -91,6 +91,7 @@ public final class NavigationAccessControlConfigurer {
      * methods to select the checkers to apply.
      */
     public NavigationAccessControlConfigurer() {
+        // Default constructor
     }
 
     /**

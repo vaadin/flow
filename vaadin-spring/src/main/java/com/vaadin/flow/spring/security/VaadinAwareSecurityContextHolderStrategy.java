@@ -58,6 +58,7 @@ public final class VaadinAwareSecurityContextHolderStrategy
      * Creates the strategy.
      */
     public VaadinAwareSecurityContextHolderStrategy() {
+        // Default constructor
     }
 
     @Override

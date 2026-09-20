@@ -93,12 +93,6 @@ import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION
  */
 public class DevModeInitializer implements Serializable {
 
-    /**
-     * Creates the initializer.
-     */
-    public DevModeInitializer() {
-    }
-
     static class DevModeClassFinder extends DefaultClassFinder {
 
         private static final Set<String> APPLICABLE_CLASS_NAMES = Collections
@@ -169,6 +163,13 @@ public class DevModeInitializer implements Serializable {
             .compile("^(?:file:)?(.+)"
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
+
+    /**
+     * Creates the initializer.
+     */
+    public DevModeInitializer() {
+        // Default constructor
+    }
 
     /**
      * Initialize the devmode server if not in production mode or compatibility

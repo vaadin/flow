@@ -45,6 +45,7 @@ public class ServerConverter {
      * Creates a server converter.
      */
     public ServerConverter() {
+        // Default constructor
     }
 
     /**

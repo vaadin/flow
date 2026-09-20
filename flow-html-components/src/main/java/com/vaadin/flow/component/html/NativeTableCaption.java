@@ -34,5 +34,6 @@ public class NativeTableCaption extends HtmlContainer {
      * Creates a new empty table caption component.
      */
     public NativeTableCaption() {
+        // Default constructor
     }
 }

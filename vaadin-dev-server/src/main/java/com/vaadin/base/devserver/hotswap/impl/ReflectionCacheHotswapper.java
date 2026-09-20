@@ -37,6 +37,7 @@ public class ReflectionCacheHotswapper implements VaadinHotswapper {
      * Creates the hotswapper. It is found through the service loader.
      */
     public ReflectionCacheHotswapper() {
+        // Default constructor
     }
 
     @Override

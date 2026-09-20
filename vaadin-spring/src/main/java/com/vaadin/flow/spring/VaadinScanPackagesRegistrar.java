@@ -43,6 +43,7 @@ public class VaadinScanPackagesRegistrar
      * Creates the registrar. Spring instantiates it.
      */
     public VaadinScanPackagesRegistrar() {
+        // Default constructor
     }
 
     static class VaadinScanPackages {

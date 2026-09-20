@@ -61,6 +61,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
      * Creates the endpoint. The websocket container instantiates it.
      */
     public ViteWebsocketEndpoint() {
+        // Default constructor
     }
 
     /**
@@ -77,6 +78,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
          * Creates the configurator.
          */
         public HttpSessionConfigurator() {
+            // Default constructor
         }
 
         @Override

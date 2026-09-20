@@ -50,7 +50,8 @@ public abstract class VaadinMVCWebAppInitializer
     /**
      * Creates the initializer.
      */
-    public VaadinMVCWebAppInitializer() {
+    protected VaadinMVCWebAppInitializer() {
+        // Default constructor
     }
 
     @Override

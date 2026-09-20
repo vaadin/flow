@@ -86,6 +86,7 @@ public class DevModeStartupListener
      * Creates the listener. The servlet container instantiates it.
      */
     public DevModeStartupListener() {
+        // Default constructor
     }
 
     @Override

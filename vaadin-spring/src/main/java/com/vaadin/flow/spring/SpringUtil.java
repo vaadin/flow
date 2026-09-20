@@ -18,10 +18,8 @@ package com.vaadin.flow.spring;
 /** Helpers related to Spring. */
 public class SpringUtil {
 
-    /**
-     * Creates a new instance. The class only provides static helpers.
-     */
-    public SpringUtil() {
+    private SpringUtil() {
+        // Only utility methods
     }
 
     /**

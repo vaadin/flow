@@ -46,6 +46,7 @@ public class VaadinExpiredSessionStrategy
      * Creates the strategy.
      */
     public VaadinExpiredSessionStrategy() {
+        // Default constructor
     }
 
     @Override

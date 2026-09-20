@@ -77,6 +77,7 @@ public class ClientCallableAotProcessor
      * Creates the processor. Spring instantiates it.
      */
     public ClientCallableAotProcessor() {
+        // Default constructor
     }
 
     @Override

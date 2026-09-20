@@ -39,5 +39,6 @@ public class VaadinAwareSecurityContextHolderStrategyConfiguration {
      * Creates the configuration, which does nothing.
      */
     public VaadinAwareSecurityContextHolderStrategyConfiguration() {
+        // Default constructor
     }
 }

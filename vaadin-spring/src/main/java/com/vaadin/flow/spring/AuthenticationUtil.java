@@ -28,10 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class AuthenticationUtil {
 
-    /**
-     * Creates a new instance. The class only provides static helpers.
-     */
-    public AuthenticationUtil() {
+    private AuthenticationUtil() {
+        // Only utility methods
     }
 
     /**

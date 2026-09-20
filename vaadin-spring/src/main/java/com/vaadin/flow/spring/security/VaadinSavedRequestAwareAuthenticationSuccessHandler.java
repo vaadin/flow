@@ -101,6 +101,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
          * Creates the redirect strategy.
          */
         public RedirectStrategy() {
+            // Default constructor
         }
 
         @Override

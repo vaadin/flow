@@ -59,6 +59,7 @@ public class SpringBootAutoConfiguration {
      * Creates the auto configuration. Spring instantiates it.
      */
     public SpringBootAutoConfiguration() {
+        // Default constructor
     }
 
     @Bean

@@ -77,6 +77,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * Creates the processor. Spring instantiates it.
      */
     public VaadinBeanFactoryInitializationAotProcessor() {
+        // Default constructor
     }
 
     /**
@@ -90,6 +91,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
          * Creates the marker.
          */
         public Marker() {
+            // Default constructor
         }
     }
 

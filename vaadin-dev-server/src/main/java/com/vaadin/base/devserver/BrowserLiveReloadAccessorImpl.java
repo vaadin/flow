@@ -38,6 +38,7 @@ public class BrowserLiveReloadAccessorImpl
      * {@code Lookup}.
      */
     public BrowserLiveReloadAccessorImpl() {
+        // Default constructor
     }
 
     @Override

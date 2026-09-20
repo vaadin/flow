@@ -92,6 +92,7 @@ public class RequestUtil {
      * Creates the helper. Spring instantiates it as a bean.
      */
     public RequestUtil() {
+        // Default constructor
     }
 
     /**

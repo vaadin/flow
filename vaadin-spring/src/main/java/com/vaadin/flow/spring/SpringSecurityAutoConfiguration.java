@@ -82,6 +82,7 @@ public class SpringSecurityAutoConfiguration {
      * Creates the auto configuration. Spring instantiates it.
      */
     public SpringSecurityAutoConfiguration() {
+        // Default constructor
     }
 
     /**

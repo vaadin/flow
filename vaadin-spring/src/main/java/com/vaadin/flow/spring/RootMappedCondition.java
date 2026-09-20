@@ -51,6 +51,7 @@ public class RootMappedCondition implements Condition {
      * {@code @Conditional} annotation.
      */
     public RootMappedCondition() {
+        // Default constructor
     }
 
     @Override

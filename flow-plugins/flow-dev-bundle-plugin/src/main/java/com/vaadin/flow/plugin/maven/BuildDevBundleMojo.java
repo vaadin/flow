@@ -251,6 +251,7 @@ public class BuildDevBundleMojo extends AbstractMojo
      * Creates the goal. Maven instantiates it and injects the parameters.
      */
     public BuildDevBundleMojo() {
+        // Default constructor
     }
 
     @Override
