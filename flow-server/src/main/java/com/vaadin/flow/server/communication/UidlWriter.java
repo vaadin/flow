@@ -389,9 +389,11 @@ public class UidlWriter implements Serializable {
         }
 
         // [argument1, argument2, ..., what to run]
-        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                Stream.of(JacksonUtils.createNode(constantOf(
-                        JacksonUtils.createNode(expression), constantPool))))
+        return Stream
+                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                        Stream.of(
+                                constantOf(JacksonUtils.createNode(expression),
+                                        constantPool)))
                 .collect(JacksonUtils.asArray());
     }
 
@@ -405,9 +407,10 @@ public class UidlWriter implements Serializable {
      * the same on the wire, and the client reads what to run out of the pool
      * either way.
      */
-    private static String constantOf(JsonNode whatToRun,
+    private static JsonNode constantOf(JsonNode whatToRun,
             ConstantPool constantPool) {
-        return constantPool.getConstantId(new ConstantPoolKey(whatToRun));
+        return JacksonUtils.createNode(
+                constantPool.getConstantId(new ConstantPoolKey(whatToRun)));
     }
 
     /**
@@ -459,8 +462,7 @@ public class UidlWriter implements Serializable {
 
         return Stream
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(JacksonUtils
-                                .createNode(constantOf(target, constantPool))))
+                        Stream.of(constantOf(target, constantPool)))
                 .collect(JacksonUtils.asArray());
     }
 

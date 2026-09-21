@@ -287,7 +287,9 @@ export class ExecuteJavaScriptProcessor {
     // argument as `this`. Say so instead of running the call.
     const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
     if (parameters.length !== expectedCount) {
-      const message = `Expected ${expectedCount} parameters for ${nameOf(target)} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
+      const message = `Expected ${expectedCount} parameters for ${nameOf(target)} but the invocation carries ${
+        parameters.length
+      }. Reload the page to pick up the current signature.`;
       Console.error(message);
       // The server appends the two channels after everything else, or neither
       // of them, so the error channel is the last parameter even when the
@@ -307,7 +309,9 @@ export class ExecuteJavaScriptProcessor {
 
     const fn = findDeclaredFunction(target.function);
     if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${nameOf(target)}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+      const message = `No JavaScript in the bundle for ${nameOf(
+        target
+      )}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
       Console.error(message);
       onError?.(message);
       return;
@@ -323,9 +327,7 @@ export class ExecuteJavaScriptProcessor {
       }
     } catch (exception) {
       Console.reportStacktrace(exception);
-      Console.error(
-        `Exception is thrown while running ${nameOf(target)}. Stacktrace will be dumped separately.`
-      );
+      Console.error(`Exception is thrown while running ${nameOf(target)}. Stacktrace will be dumped separately.`);
       onError?.(`${exception}`);
     }
   }

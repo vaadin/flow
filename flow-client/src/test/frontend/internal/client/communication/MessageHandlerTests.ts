@@ -5,7 +5,12 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
-import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import {
+  MessageHandler,
+  parseJson,
+  whatInvocationRuns
+} from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../../main/frontend/internal/client/ResourceLoader';
 import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
@@ -514,6 +519,19 @@ describe('MessageHandler', () => {
         expect(profiling.length).to.be.at.least(3);
         profiling.forEach((value) => expect(value).to.be.finite);
         expect(profiling[0]).to.be.at.least(0);
+      });
+
+      it('reads what an invocation runs from this message or from the pool', () => {
+        // Which decides whether a forced reload during a resynchronization is
+        // seen, and the script of an invocation can come from either: the
+        // message that carries it, or the one that first sent it.
+        const pool = new ConstantPool();
+        pool.importFromJson({ earlier: 'window.location.reload();' });
+
+        expect(whatInvocationRuns([{}, 'now'], { now: 'history.back();' }, pool)).to.equal('history.back();');
+        expect(whatInvocationRuns([{}, 'earlier'], {}, pool)).to.equal('window.location.reload();');
+        expect(whatInvocationRuns([{}, 'neither'], {}, pool)).to.be.null;
+        expect(whatInvocationRuns([], {}, pool)).to.be.null;
       });
 
       it('keeps processing a message whose stylesheetRemovals is null', () => {

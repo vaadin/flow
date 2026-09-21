@@ -229,6 +229,35 @@ class UidlWriterTest {
     }
 
     @Test
+    void encodeExecuteJavaScript_sameScriptTwice_sentOnceAndNamedTwice() {
+        Element element = ElementFactory.createDiv();
+        ConstantPool constantPool = new ConstantPool();
+
+        ArrayNode first = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool, false);
+        constantPool.dumpConstants();
+        ArrayNode second = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool, false);
+
+        assertEquals(nameOfWhatRuns(first), nameOfWhatRuns(second),
+                "the same script should be named the same way");
+        assertFalse(constantPool.hasNewConstants(),
+                "and sent once, not with every invocation that runs it");
+    }
+
+    /**
+     * What the first invocation of the given list names as the thing it runs.
+     */
+    private static String nameOfWhatRuns(ArrayNode invocations) {
+        ArrayNode invocation = (ArrayNode) invocations.get(0);
+        return invocation.get(invocation.size() - 1).asString();
+    }
+
+    @Test
     void encodeExecuteJavaScript_jsCall_sendsTheTargetInsteadOfTheScript() {
         Element element = ElementFactory.createDiv();
 

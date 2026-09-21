@@ -25,6 +25,7 @@
 // EagerDependencyTracker, and the helpers above; everything else is a
 // Registry contract.
 
+import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
@@ -177,17 +178,6 @@ export class MessageHandler {
     }
   }
 
-  // What an invocation runs: a constant of this message, or one an earlier
-  // message put in the pool. The invocation itself only names it.
-  #whatRuns(invocation: unknown[], valueMap: ValueMap): unknown {
-    const name = invocation[invocation.length - 1];
-    if (typeof name !== 'string') {
-      return null;
-    }
-    const constants = (valueMap.constants ?? {}) as Record<string, unknown>;
-    return constants[name] ?? this.#registry.getConstantPool().get<unknown>(name);
-  }
-
   protected handleJSON(valueMap: ValueMap): void {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
@@ -199,7 +189,12 @@ export class MessageHandler {
       if (UIDL_KEY_EXECUTE in valueMap) {
         const commands = valueMap[UIDL_KEY_EXECUTE] as unknown[][];
         for (const command of commands) {
-          if (this.#whatRuns(command, valueMap) === 'window.location.reload();') {
+          const runs = whatInvocationRuns(
+            command,
+            (valueMap.constants ?? {}) as Record<string, unknown>,
+            this.#registry.getConstantPool()
+          );
+          if (runs === 'window.location.reload();') {
             Console.warn('Executing forced page reload while a resync request is ongoing.');
             window.location.reload();
             return;
@@ -668,6 +663,26 @@ export class MessageHandler {
  * @param jsonText - The JSON to parse
  * @returns A ValueMap created from the JSON
  */
+/**
+ * What an invocation runs, which the invocation names rather than carries.
+ *
+ * @param invocation - the invocation, whose last element is the name
+ * @param constants - the constants of the message carrying the invocation
+ * @param constantPool - what earlier messages put in the pool
+ * @returns what to run, or `null` when nothing is named
+ */
+export function whatInvocationRuns(
+  invocation: unknown[],
+  constants: Record<string, unknown>,
+  constantPool: ConstantPool
+): unknown {
+  const name = invocation[invocation.length - 1];
+  if (typeof name !== 'string') {
+    return null;
+  }
+  return constants[name] ?? constantPool.get<unknown>(name);
+}
+
 export function parseJson(jsonText: string | null): ValueMap | null {
   if (jsonText === null) {
     return null;

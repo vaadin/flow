@@ -142,7 +142,12 @@ describe('ExecuteJavaScriptProcessor', () => {
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
-      run([element, (value: unknown) => resolved.push(value), () => {}, { function: VALUE, arguments: 0, returns: true }]);
+      run([
+        element,
+        (value: unknown) => resolved.push(value),
+        () => {},
+        { function: VALUE, arguments: 0, returns: true }
+      ]);
       // Settled in microtasks: a macrotask wait would also pick up the
       // asynchronous rethrow that the expression cases leave behind.
       await Promise.resolve();
@@ -222,6 +227,18 @@ describe('ExecuteJavaScriptProcessor', () => {
 
       expect(processor.nodeParametersList[0].size).to.equal(0);
       expect(processor.nodeParametersList[1].size).to.equal(0);
+    });
+
+    it('runs nothing for an invocation whose constant is not there', () => {
+      // A message that named a constant of one that never arrived, or arrived
+      // out of order: running the name as a script is the one thing that must
+      // not happen.
+      const registry = treeRegistry();
+      const processor = new CollectingExecuteJavaScriptProcessor(registry);
+
+      processor.execute([['neverimported']]);
+
+      expect(processor.parameterNamesAndCodeList).to.have.length(0);
     });
 
     it('passes a node parameter as the element it is bound to', () => {
@@ -453,7 +470,9 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Beyond the Java suite.
       // getNode throws when the argument is not a state-node parameter; the
       // executed code sees that as a thrown ReferenceError.
-      runExpression('try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }');
+      runExpression(
+        'try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }'
+      );
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ReferenceError');
     });
 
