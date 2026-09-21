@@ -102,6 +102,10 @@ public final class JsDefinitionProxy {
                 continue;
             }
             if (!method.isAnnotationPresent(JsExpression.class)) {
+                // What it returns is beside the point until it declares
+                // something to return it from, and the first list that has
+                // anything in it is the one that is reported, so this changes
+                // what the lists hold rather than what is said
                 undeclared.add(method.getName());
                 continue;
             }
