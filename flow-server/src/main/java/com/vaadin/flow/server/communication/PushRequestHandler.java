@@ -32,6 +32,7 @@ import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.cpr.BroadcasterConfig;
+import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushConstants;
+import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Handles requests to open a push (bidirectional) communication channel between
@@ -65,6 +67,14 @@ import com.vaadin.flow.shared.communication.PushConstants;
  */
 public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {
+
+    /**
+     * Response header that asks a proxy not to buffer the response. NGINX
+     * honours it per response, which is what the server-sent events transport
+     * needs: with buffering left on, an NGINX terminating TLS holds the whole
+     * event stream and no push message reaches the browser.
+     */
+    private static final String ACCEL_BUFFERING_HEADER = "X-Accel-Buffering";
 
     private AtmosphereFramework atmosphere;
     private PushHandler pushHandler;
@@ -285,6 +295,7 @@ public class PushRequestHandler
                         "Atmosphere initialization failed. No push available.");
                 return true;
             }
+            disableProxyBufferingForServerSentEvents(request, response);
             try {
                 atmosphere.doCometSupport(
                         AtmosphereRequestImpl
@@ -301,6 +312,46 @@ public class PushRequestHandler
         }
 
         return true;
+    }
+
+    /**
+     * Marks a server-sent events push response as one a proxy must not buffer.
+     * <p>
+     * Must run before Atmosphere writes anything, because the header cannot be
+     * added once the response is committed. Other transports are left alone:
+     * they either complete each response, so a proxy flushes it anyway, or are
+     * not HTTP responses at all.
+     *
+     * @param request
+     *            the push request
+     * @param response
+     *            the response to mark
+     */
+    static void disableProxyBufferingForServerSentEvents(VaadinRequest request,
+            VaadinResponse response) {
+        if (isServerSentEventsRequest(request)) {
+            response.setHeader(ACCEL_BUFFERING_HEADER, "no");
+        }
+    }
+
+    /**
+     * Checks whether a push request opens a server-sent events connection.
+     * <p>
+     * The client passes the transport as a query parameter, but an Atmosphere
+     * client may send it as a header instead, so both are read.
+     *
+     * @param request
+     *            the push request
+     * @return {@code true} if the request uses the server-sent events transport
+     */
+    private static boolean isServerSentEventsRequest(VaadinRequest request) {
+        String transport = request
+                .getParameter(HeaderConfig.X_ATMOSPHERE_TRANSPORT);
+        if (transport == null) {
+            transport = request.getHeader(HeaderConfig.X_ATMOSPHERE_TRANSPORT);
+        }
+        return Transport.SERVER_SENT_EVENTS.getIdentifier()
+                .equalsIgnoreCase(transport);
     }
 
     /**
