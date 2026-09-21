@@ -50,11 +50,6 @@ client-side subscriptions) to a component's lifecycle by accepting a
 `Component owner` and registering a `DetachListener`. Expose an explicit,
 idempotent `stop()` for mid-view cancellation.
 
-Name a component that wraps an HTML element after the element itself, and add
-the `Native` prefix only when the plain name is taken or when it invites a
-mistake that goes unnoticed. Do not introduce further `Html…` names. See
-`guidelines/design.md`.
-
 Renaming an existing public class is a breaking change. Add the new class,
 deprecate the old one with a `@deprecated` pointer to the replacement, and
 remove it in the next major.
@@ -67,8 +62,11 @@ Declare a small interface that only one class uses as a nested type inside that
 class (`Focusable.FocusJs`) instead of adding a top-level file for it.
 
 A method that does not touch the state of the class it sits on belongs
-elsewhere. Check whether it is a static helper of another type before adding it
-to a central class like `Element`.
+elsewhere — do not add it to a central class like `Element` just because that
+is its first caller. Search for an existing utility before writing a helper,
+and when the helper is genuinely new, put it in the util class it belongs to
+(`ReflectTools`, `FrontendUtils`, …) instead of keeping it private where it is
+needed first.
 
 Keep the surface of an internal class to what its callers need — static helpers
 that only sibling classes and tests call are package private.
@@ -80,11 +78,6 @@ return types are supported. A method that forgot the annotation must fail where
 the implementation is handed out, with a message naming it, not later in the
 browser.
 
-Model an absent argument as a value of the one method instead of adding a
-method for the empty case. `focus(null)` keeps one declaration; `focus()`
-beside `focus(options)` doubles what has to be generated, wired and
-maintained.
-
 ## Naming
 
 Every method name contains a verb that says what the method does. `header(…)`,
@@ -95,6 +88,11 @@ happens. This holds for TypeScript as much as for Java.
 Name a type after what it is, not after what the machinery around it does. An
 interface whose methods declare JavaScript is a `JsDefinition`; `JsInvoker`
 names the caller, not the type the user writes.
+
+Name a component that wraps an HTML element after the element itself, and add
+the `Native` prefix only when the plain name is taken or when it invites a
+mistake that goes unnoticed. Do not introduce further `Html…` names. See
+`guidelines/design.md`.
 
 Do not expose two names for the same value — a record component `methodId()`
 with a `getMethodId()` beside it is one accessor too many.
@@ -152,6 +150,13 @@ calling it usually triggers a permission prompt.
 Update both sides in the same PR when a change touches the client-server
 protocol or a DOM event contract.
 
+In an interface whose methods declare JavaScript, cover the absent-argument
+case with a `null` argument of the one declaring method instead of a second
+declaration: every declaration is hashed, generated into the bundle and wired
+on its own, so `FocusJs.focus(null)` costs less than a second declaration for
+the case without options. This is about declaration interfaces — convenience
+overloads of ordinary Java API are welcome, see `guidelines/design.md`.
+
 Never send a Java class or method name to the browser. Key what the client
 looks up by a hash of the content it runs, and keep the readable identifier as
 a development-only debug string in the generated frontend file rather than in
@@ -207,11 +212,6 @@ on.
 Do not skip a build step whose output the application needs. A bundle built
 without the generated content is a broken application — do the work, or fail
 with a message that names what is missing.
-
-Search for an existing utility before writing a helper, and when the helper is
-genuinely new, add it to the util class it belongs to (`ReflectTools`,
-`FrontendUtils`, …) instead of keeping it private in the class that happens to
-need it first.
 
 Follow the existing implementation of an extension point you are adding to (a
 `VaadinHotswapper`, a `TaskGenerate…`), including one that is in review at the
