@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
  * acquiring the session lock is operating outside the supported usage of the
  * framework; behavior in that case is not guaranteed.
  *
- * @since 3.0
+ * @since 10.0
  */
 public class VaadinSessionScopedContext extends AbstractContext {
 
@@ -98,6 +98,8 @@ public class VaadinSessionScopedContext extends AbstractContext {
 
     /**
      * For internal use only.
+     * 
+     * @since 16.0.2
      */
     @ApplicationScoped
     public static class ContextualStorageManager {

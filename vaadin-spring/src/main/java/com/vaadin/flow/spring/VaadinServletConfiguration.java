@@ -133,6 +133,7 @@ public class VaadinServletConfiguration {
          * @param resourceHandlerMapping
          *            the mapping consulted for static resources before
          *            forwarding, or {@code null} to skip that check
+         * @since 24.8.1
          */
         public RootExcludeHandler(List<String> excludeUrls,
                 Controller vaadinForwardingController,

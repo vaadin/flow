@@ -28,6 +28,9 @@ import java.security.PrivilegedAction;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+/**
+ * @since 15.0
+ */
 @Typed()
 public abstract class ClassUtils {
     /**

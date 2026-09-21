@@ -30,6 +30,7 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -51,7 +52,7 @@ class AbstractLazyDataViewTest {
     private DataCommunicator<String> dataCommunicator;
     private AbstractLazyDataView<String> dataView;
     private Component component;
-    private DataCommunicatorTest.MockUI ui;
+    private MockUI ui;
     @Mock
     private ArrayUpdater arrayUpdater;
 
@@ -59,7 +60,7 @@ class AbstractLazyDataViewTest {
     void setup() {
         MockitoAnnotations.initMocks(this);
         component = new TestComponent();
-        ui = new DataCommunicatorTest.MockUI();
+        ui = new MockUI();
         ui.add(component);
 
         ArrayUpdater.Update update = new ArrayUpdater.Update() {

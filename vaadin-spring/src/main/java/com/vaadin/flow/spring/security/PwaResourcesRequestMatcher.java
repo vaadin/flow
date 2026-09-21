@@ -50,6 +50,8 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * The default manifest ({@link PwaConfiguration#DEFAULT_PATH}) and offline
  * ({@link PwaConfiguration#DEFAULT_OFFLINE_PATH}) paths are not considered,
  * since they are already part of {@link HandlerHelper#getPublicResources()}.
+ * 
+ * @since 25.2.9
  */
 public class PwaResourcesRequestMatcher implements RequestMatcher {
 

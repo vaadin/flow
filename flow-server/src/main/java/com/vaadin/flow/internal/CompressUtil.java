@@ -171,6 +171,7 @@ public class CompressUtil {
      * @return {@code true} if the file is found in the zip
      * @throws IOException
      *             if an I/O error occurs
+     * @since 25.3
      */
     public static boolean hasFileInZip(File zip, String filename)
             throws IOException {

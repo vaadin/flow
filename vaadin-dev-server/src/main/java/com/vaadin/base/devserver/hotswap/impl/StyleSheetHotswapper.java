@@ -87,8 +87,7 @@ import com.vaadin.flow.shared.ui.Dependency;
  */
 public class StyleSheetHotswapper implements VaadinHotswapper {
 
-    /** Logger of this hotswapper. */
-    public static final Logger LOGGER = LoggerFactory
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(StyleSheetHotswapper.class);
 
     /**
