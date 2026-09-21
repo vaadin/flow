@@ -150,8 +150,9 @@ calling it usually triggers a permission prompt.
 Update both sides in the same PR when a change touches the client-server
 protocol or a DOM event contract.
 
-Prefer one parameterized declaration over one declaration per case when every
-declaration has to be generated into the bundle and wired on its own.
+Prefer parameters over variants in anything the build generates for the
+client: one parameterized entry rather than one entry per case, since every
+entry is content the bundle carries and the client has to look up.
 
 Never send a server-side class or method name to the browser. Key what the
 client has to look up by a hash of the content it runs, so renaming changes
