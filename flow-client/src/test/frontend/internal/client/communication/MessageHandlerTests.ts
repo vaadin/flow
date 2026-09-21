@@ -539,6 +539,38 @@ describe('MessageHandler', () => {
         expect(resolveWhatRuns([], pool)).to.be.null;
       });
 
+      it('takes the constants of a message in once, however often it is read', () => {
+        // A message that arrives while a resynchronization is ongoing is
+        // queued and read again when it is handled.
+        const log: unknown[] = [];
+        const registry = testRegistry({
+          MessageSender: {
+            getResynchronizationState: () => ResynchronizationState.NOT_ACTIVE,
+            clearResynchronizationState: () => {},
+            setClientToServerMessageId: () => {}
+          },
+          ConstantPool: new ConstantPool(),
+          RequestResponseTracker: {
+            fireResponseHandlingStarted: () => {},
+            endRequest: () => {},
+            hasActiveRequest: () => true
+          },
+          LoadingIndicatorStateHandler: { stopLoading: () => {} },
+          ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
+          StateTree: { prepareForResync: () => {} },
+          ExecuteJavaScriptProcessor: { execute: (invocations: unknown) => log.push(invocations) }
+        });
+        const handler = new TestMessageHandler(registry);
+        const message = { syncId: 5, constants: { c: 'window.alert($0)' } };
+
+        // Out of order, so it is queued, and handled once the one before it
+        // arrives
+        handler.callHandleJSON(message);
+        handler.callHandleJSON({ syncId: 0 });
+
+        expect(registry.getConstantPool().get<string>('c')).to.equal('window.alert($0)');
+      });
+
       it('takes the constants of a message in before deciding what to do with it', () => {
         // What an invocation runs is read out of the pool, and a message that
         // arrives while a resynchronization is ongoing is only queued, so its
