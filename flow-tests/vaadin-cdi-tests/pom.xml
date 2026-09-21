@@ -408,7 +408,7 @@
                     <artifactItem>
                       <groupId>fish.payara.distributions</groupId>
                       <artifactId>payara</artifactId>
-                      <version>7.2026.8</version>
+                      <version>7.2026.9</version>
                       <type>zip</type>
                       <overWrite>true</overWrite>
                       <outputDirectory>target</outputDirectory>
