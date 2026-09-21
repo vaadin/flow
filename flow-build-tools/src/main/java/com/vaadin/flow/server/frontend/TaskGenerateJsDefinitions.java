@@ -23,11 +23,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -47,17 +43,29 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * ordinary function of the bundle.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
- * anything from a string: the server sends which interface and method to run,
- * and the function is already in the bundle, so the call survives a content
- * security policy that does not allow <code>unsafe-eval</code> and the
- * JavaScript an application can be made to run is known when it is built.
+ * anything from a string: the server sends the identifier of the function to
+ * run, which is a hash of the JavaScript, and the function is already in the
+ * bundle. The call survives a content security policy that does not allow
+ * <code>unsafe-eval</code>, the JavaScript an application can be made to run is
+ * known when it is built, and what declared it in Java stays there.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
-    private static final Pattern DEFINITION_KEY = Pattern.compile(
-            "window\\.Vaadin\\.Flow\\.jsDefinitions\\[\"([^\"]+)\"\\] =");
+    private static final List<String> HEADER = List.of("// @ts-nocheck",
+            "window.Vaadin = window.Vaadin || {};",
+            "window.Vaadin.Flow = window.Vaadin.Flow || {};",
+            "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
+
+    // Writing this file again while the application runs replaces it in the
+    // browser that has it: everything above only writes into the registry, so
+    // the module can accept its own update and nothing else has to be reloaded
+    // for a changed declaration to take effect. The dev server drops the block
+    // from a production build, where import.meta.hot is not defined.
+    // The export is for https://github.com/vaadin/flow/issues/14184
+    private static final List<String> FOOTER = List.of("if (import.meta.hot) {",
+            "  import.meta.hot.accept();", "}", "export {};");
 
     private final Options options;
 
@@ -84,30 +92,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * @return the content of the generated file
      */
     static String renderFileContent(Collection<Class<?>> definitions) {
-        List<String> lines = new ArrayList<>();
-        lines.add("// @ts-nocheck");
-        lines.add("window.Vaadin = window.Vaadin || {};");
-        lines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
-        lines.add(
-                "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
-
+        List<String> lines = new ArrayList<>(HEADER);
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition)));
-
-        // Writing this file again while the application runs replaces it in the
-        // browser that has it: everything above only writes into the registry,
-        // so the module can accept its own update and nothing else has to be
-        // reloaded for a changed declaration to take effect. The dev server
-        // drops the block from a production build, where import.meta.hot is
-        // not defined.
-        lines.add("if (import.meta.hot) {");
-        lines.add("  import.meta.hot.accept();");
-        lines.add("}");
-
-        // See https://github.com/vaadin/flow/issues/14184
-        lines.add("export {};");
-
+        lines.addAll(FOOTER);
         return String.join(System.lineSeparator(), lines);
     }
 
@@ -135,11 +124,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * definitions declare, for a caller that has to update it while the
      * application runs rather than as part of a build.
      * <p>
-     * The interfaces the file already registers are kept: they are what a
+     * What the file already holds is kept: a function it registers is what a
      * browser that has the file can run, and the caller only knows about the
-     * ones it passes in. One the file registers and the application no longer
-     * has is dropped, and one whose annotation was removed keeps its functions
-     * with nothing calling them, until a build renders the file again.
+     * definitions it passes in. A function nothing declares any longer stays in
+     * the file with nothing calling it, until a build renders the file again.
      * <p>
      * Goes through the same write as {@link #execute()}, which leaves the file
      * alone when its content would not change and writes it atomically
@@ -157,8 +145,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> updateJsDefinitions(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        String content = renderFileContent(
-                mergeWithDefinitionsIn(generated, definitions));
+        String content = withMissingEntries(generated, definitions);
 
         TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
@@ -177,10 +164,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * Whether the given content carries what the definition declares, compared
-     * as this class renders it, so the interface name, the methods, their
-     * argument counts and the JavaScript all have to match. A method that was
-     * removed does not show up as a difference: its function stays in the file
-     * with nothing calling it.
+     * as this class renders it, so the JavaScript of every method and the
+     * number of arguments it takes have to match. A method that was removed
+     * does not show up as a difference: its function stays in the file with
+     * nothing calling it.
      */
     private static boolean isInGeneratedFile(Class<?> definition,
             String generated) {
@@ -197,27 +184,29 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * The given interfaces, plus the ones the content registers that are not
-     * among them and can still be loaded.
+     * The given content with the entries of the given definitions that it does
+     * not hold yet put in front of what closes the file, or the whole file
+     * rendered when there is no content to add to.
      */
-    private static Collection<Class<?>> mergeWithDefinitionsIn(String generated,
+    private static String withMissingEntries(String generated,
             Collection<Class<?>> definitions) {
-        Map<String, Class<?>> byName = new LinkedHashMap<>();
-        definitions.forEach(
-                definition -> byName.put(definition.getName(), definition));
-        ClassLoader classLoader = definitions.iterator().next()
-                .getClassLoader();
-        for (String name : readDefinitionNames(generated)) {
-            if (byName.containsKey(name)) {
-                continue;
-            }
-            try {
-                byName.put(name, Class.forName(name, false, classLoader));
-            } catch (ClassNotFoundException | LinkageError e) {
-                getLogger().debug("Could not load the definition {}", name, e);
-            }
+        List<String> missing = definitions.stream()
+                .sorted(Comparator.comparing(Class::getName))
+                .filter(definition -> !isInGeneratedFile(definition, generated))
+                .flatMap(definition -> renderDefinitionLines(definition)
+                        .stream())
+                .toList();
+        String footer = String.join(System.lineSeparator(), FOOTER);
+        if (generated == null || !generated.contains(footer)) {
+            // Nothing to add to, or something else than this class wrote it
+            return renderFileContent(definitions);
         }
-        return byName.values();
+        if (missing.isEmpty()) {
+            return generated;
+        }
+        return generated.replace(footer,
+                String.join(System.lineSeparator(), missing)
+                        + System.lineSeparator() + footer);
     }
 
     private static String readGeneratedFile(Options options) {
@@ -240,35 +229,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Reads back the names of the JavaScript definitions a generated file
-     * registers, which is what a browser that has the file can run. Reading the
-     * format back here keeps it next to {@link #renderDefinitionLines(Class)},
-     * which writes it.
-     *
-     * @param fileContent
-     *            the content of a generated file, or <code>null</code>
-     * @return the interface names the file registers, in the order it registers
-     *         them
-     */
-    private static List<String> readDefinitionNames(String fileContent) {
-        List<String> names = new ArrayList<>();
-        if (fileContent == null) {
-            return names;
-        }
-        Matcher matcher = DEFINITION_KEY.matcher(fileContent);
-        while (matcher.find()) {
-            String name = matcher.group(1);
-            if (!names.contains(name)) {
-                names.add(name);
-            }
-        }
-        return names;
-    }
-
-    /**
      * Renders what one JavaScript definition contributes to the generated file:
-     * the registration of its interface name, and one function per method that
-     * declares JavaScript, keyed by method name and argument count.
+     * one function per method that declares JavaScript, registered under the
+     * identifier of that function, which is what the server sends. The name of
+     * the interface and of the method are not in it, so a browser is not told
+     * what declared the JavaScript it runs.
      * <p>
      * Package private: whether a file carries what an interface declares is
      * answered by {@link #findMissingFromGeneratedFile(Options, Collection)},
@@ -290,11 +255,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (methods.isEmpty()) {
             return lines;
         }
-        methods.sort(Comparator.comparing(TaskGenerateJsDefinitions::methodId));
+        methods.sort(
+                Comparator.comparing(TaskGenerateJsDefinitions::functionId));
 
-        lines.add(String.format(
-                "window.Vaadin.Flow.jsDefinitions[%s] = Object.assign(window.Vaadin.Flow.jsDefinitions[%s] || {}, {",
-                quote(definition.getName()), quote(definition.getName())));
         for (Method method : methods) {
             // The parameters of the generated function are the arguments of the
             // call, referenced as $0, $1, ... by the declared expression, and
@@ -304,17 +267,19 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     .mapToObj(index -> "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            lines.add(String.format("  %s: async function (%s) {",
-                    quote(methodId(method)), parameters));
+            lines.add(String.format(
+                    "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
+                    quote(functionId(method)), parameters));
             lines.add(method.getAnnotation(JsExpression.class).value());
-            lines.add("  },");
+            lines.add("};");
         }
-        lines.add("});");
         return lines;
     }
 
-    private static String methodId(Method method) {
-        return JsCall.methodId(method.getName(), method.getParameterCount());
+    private static String functionId(Method method) {
+        return JsCall.functionId(
+                method.getAnnotation(JsExpression.class).value(),
+                method.getParameterCount());
     }
 
     private static String quote(String value) {

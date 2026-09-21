@@ -54,8 +54,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * <p>
  * The comparison is against the generated file the bundle was built from, which
  * is what the browser can run, and it uses the same rendering the build wrote,
- * so the interface name, the method names, their argument counts and the
- * declared JavaScript all have to match for an interface to pass silently.
+ * so the declared JavaScript of every method and the number of arguments it
+ * takes have to match for an interface to pass silently.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

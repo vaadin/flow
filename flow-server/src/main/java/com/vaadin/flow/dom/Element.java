@@ -1979,9 +1979,10 @@ public class Element extends Node<Element> {
      * What differs is that nothing about the JavaScript is decided at the call
      * site: the build collects the declarations of every JavaScript definition
      * into the bundle, and the client runs the collected function after looking
-     * it up by interface and method. No expression is sent and none is compiled
-     * in the browser, so the call works under a content security policy without
-     * <code>unsafe-eval</code>.
+     * it up by an identifier of the JavaScript itself. No expression is sent
+     * and none is compiled in the browser, so the call works under a content
+     * security policy without <code>unsafe-eval</code>, and what declared the
+     * JavaScript in Java is not sent to a production browser either.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,

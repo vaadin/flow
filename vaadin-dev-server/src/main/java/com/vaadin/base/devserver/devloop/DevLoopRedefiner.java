@@ -1378,21 +1378,19 @@ final class DevLoopRedefiner {
             }
         }
         // The JavaScript a JavaScript definition declares is generated into
-        // the
-        // bundle by the build, exactly like the imports above, so an edited
-        // expression or a method added or removed only reaches the browser
-        // through a restart that regenerates the file and rebuilds the bundle.
-        // The expression is part of the fingerprint, since a changed one keeps
-        // the same method and would otherwise go unnoticed.
+        // the bundle by the build, exactly like the imports above, so an
+        // edited expression or a method added or removed only reaches the
+        // browser through a restart that regenerates the file and rebuilds the
+        // bundle. What identifies a function is what it runs, so that is what
+        // the fingerprint is made of: renaming a method changes nothing the
+        // browser has, and editing what it declares changes everything.
         if (type.isAnnotationPresent(JsDefinition.class)) {
             for (Method method : type.getMethods()) {
                 JsExpression expression = method
                         .getAnnotation(JsExpression.class);
                 if (expression != null) {
-                    imports.add("jsdefinition:"
-                            + JsCall.methodId(method.getName(),
-                                    method.getParameterCount())
-                            + ":" + expression.value());
+                    imports.add("jsdefinition:" + JsCall.functionId(
+                            expression.value(), method.getParameterCount()));
                 }
             }
         }

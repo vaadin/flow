@@ -18,6 +18,7 @@ package com.vaadin.flow.js;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,15 +26,17 @@ import java.util.Objects;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * A call made through {@link Element#executeJs(Class)}: which definition
  * interface, which method of it, and the arguments that were passed.
  * <p>
- * The call is what the client receives — the interface, the method and the
- * arguments, never the JavaScript itself, which the client looks up in the
- * bundle. It is also what a driver of the client side that can not run
- * JavaScript sees in the pending invocation queue. Such a driver can dispatch
+ * The call is what is scheduled, and what a driver of the client side that can
+ * not run JavaScript sees in the pending invocation queue. A browser is sent
+ * less than this: the identifier of the function to run and the arguments,
+ * never the JavaScript itself, which it looks up in the bundle, and never the
+ * interface or the method, which stay on the server. Such a driver can dispatch
  * on the interface and the method, or hand the call to an implementation of the
  * same interface with {@link #invokeOn(Object)} and let Java dispatch it:
  *
@@ -74,19 +77,38 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets the identifier of a method with the given name and number of
-     * arguments, which is the key the generated bundle registers the function
-     * of that method under, within the interface it belongs to. The number of
-     * arguments is part of it so that overloads stay apart.
+     * Gets the identifier of the function that runs the given JavaScript with
+     * the given number of arguments, which is the key the generated bundle
+     * registers that function under and the only thing the client is told about
+     * a call.
+     * <p>
+     * A hash of the JavaScript, so that the name of the Java that declared it
+     * stays on the server. The number of arguments is hashed with it, since it
+     * is what the parameters of the generated function are made of, and two
+     * methods that declare the same JavaScript for a different number of
+     * arguments are two functions.
      *
-     * @param methodName
-     *            the method name, not <code>null</code>
+     * @param expression
+     *            the declared JavaScript, not <code>null</code>
      * @param argumentCount
      *            the number of arguments
-     * @return the method identifier, not <code>null</code>
+     * @return the function identifier, not <code>null</code>
      */
-    public static String methodId(String methodName, int argumentCount) {
-        return methodName + "/" + argumentCount;
+    public static String functionId(String expression, int argumentCount) {
+        return StringUtil.getHash(argumentCount + ":" + expression,
+                StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Describes this call the way a developer wrote it, for a message about it
+     * that a hash would make unreadable.
+     *
+     * @return the interface, the method and the number of arguments, not
+     *         <code>null</code>
+     */
+    public String getDebugInfo() {
+        return definitionType.getName() + "." + methodName + "/"
+                + arguments.size();
     }
 
     /**

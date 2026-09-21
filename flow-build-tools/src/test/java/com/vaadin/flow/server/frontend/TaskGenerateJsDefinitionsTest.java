@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -43,9 +44,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class TaskGenerateJsDefinitionsTest {
 
+    private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
+
     @JsDefinition
     public interface GreeterJs extends Serializable {
-        @JsExpression("window.alert({ text: $0, kind: 'greeting' })")
+        @JsExpression(GREETING_EXPRESSION)
         void showGreeting(String greeting);
 
         @JsExpression("window.alert('Hello')")
@@ -89,20 +92,31 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(
                 content.contains("window.Vaadin.Flow.jsDefinitions[\""
-                        + GreeterJs.class.getName() + "\"]"),
-                "the definition should be registered under its class name: "
+                        + JsCall.functionId(GREETING_EXPRESSION, 1)
+                        + "\"] = async function ($0) {"),
+                "a function should be registered under the identifier of the JavaScript it runs: "
                         + content);
-        assertTrue(
-                content.contains("\"showGreeting/1\": async function ($0) {"),
-                "an overload should be keyed by name and argument count: "
-                        + content);
-        assertTrue(
-                content.contains(
-                        "window.alert({ text: $0, kind: 'greeting' })"),
+        assertTrue(content.contains(GREETING_EXPRESSION),
                 "the declared expression should be the body of the function, as it was written: "
                         + content);
-        assertTrue(content.contains("\"showGreeting/0\": async function () {"),
-                "the no-argument overload should be generated too: " + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId("window.alert('Hello')", 0)
+                        + "\"] = async function () {"),
+                "the overload that takes no arguments is another function: "
+                        + content);
+    }
+
+    @Test
+    void generatedFile_namesNothingOfTheJava() throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertFalse(content.contains(GreeterJs.class.getName()),
+                "a browser that loads the file should not be told what declared the JavaScript: "
+                        + content);
+        assertFalse(content.contains("showGreeting"),
+                "and not what the methods are called either: " + content);
     }
 
     @Test
@@ -111,33 +125,11 @@ class TaskGenerateJsDefinitionsTest {
         task.execute();
         String content = task.getFileContent();
 
-        assertFalse(content.contains(NothingJs.class.getName()),
-                "an interface that declares no JavaScript has nothing to register: "
+        assertEquals(2,
+                content.split("window.Vaadin.Flow.jsDefinitions\\[\"",
+                        -1).length - 1,
+                "only the two methods that declare JavaScript should be registered: "
                         + content);
-    }
-
-    @Test
-    void updateJsDefinitions_dropsADefinitionTheFileNamesAndNothingHas()
-            throws ExecutionFailedException, IOException {
-        task.execute();
-        // What a file written by an older state of the application looks like:
-        // it names an interface that is no longer there to render
-        File generated = new File(
-                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
-                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
-        Files.writeString(generated.toPath(),
-                Files.readString(generated.toPath()).replace(
-                        NothingJs.class.getName(), "com.example.GoneJs"));
-
-        List<Class<?>> missing = TaskGenerateJsDefinitions
-                .updateJsDefinitions(options, List.of(GreeterJs.class));
-
-        assertTrue(missing.isEmpty(),
-                "the interface that was asked for should be in the file");
-        assertFalse(
-                Files.readString(generated.toPath())
-                        .contains("com.example.GoneJs"),
-                "a name the file holds that nothing answers to should be dropped");
     }
 
     @Test
@@ -187,15 +179,7 @@ class TaskGenerateJsDefinitionsTest {
                         List.of(GreeterJs.class)),
                 "another version of the declarations is not the declarations");
 
-        // What renaming or moving the interface leaves behind: the methods and
-        // the JavaScript are there, under the name of before
-        Files.writeString(generated.toPath(), carried
-                .replace(GreeterJs.class.getName(), "com.example.RenamedJs"));
-        assertEquals(List.of(GreeterJs.class),
-                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
-                        List.of(GreeterJs.class)),
-                "a call looks the interface up by name, so the name is part of carrying it");
-
+        Files.writeString(generated.toPath(), carried);
         Files.delete(generated.toPath());
         assertEquals(List.of(GreeterJs.class),
                 TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
@@ -218,12 +202,17 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(missing.isEmpty());
         String written = Files.readString(generated.toPath());
-        assertTrue(written.contains(CounterJs.class.getName()),
+        assertTrue(
+                written.contains(
+                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
                 "the interface that was asked for should be in the file: "
                         + written);
-        assertTrue(written.contains(GreeterJs.class.getName()),
-                "the interface the file held should still be in it: "
-                        + written);
+        assertTrue(written.contains(JsCall.functionId(GREETING_EXPRESSION, 1)),
+                "what the file held should still be in it: " + written);
+        assertTrue(
+                written.indexOf("import.meta.hot") > written.indexOf(
+                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
+                "and what was added should be part of the module: " + written);
     }
 
     @Test

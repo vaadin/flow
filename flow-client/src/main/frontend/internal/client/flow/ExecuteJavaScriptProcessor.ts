@@ -68,15 +68,19 @@ interface ContextCallbacks {
 
 /**
  * What an invocation of declared JavaScript ends with instead of an expression:
- * the definition interface and the method to look up in the bundle, how many of the leading
- * parameters are the arguments of the call, and whether the two parameters
- * after the element are the channels for the return value.
+ * the function to look up in the bundle, how many of the leading parameters
+ * are the arguments of the call, and whether the two parameters after the
+ * element are the channels for the return value.
+ *
+ * The function is identified by a hash of the JavaScript it runs, so a message
+ * about a call has nothing to name it by. Outside production mode the server
+ * sends what a developer wrote as `debug`, which is only ever printed.
  */
 export interface JsDefinitionTarget {
-  definition: string;
-  method: string;
+  function: string;
   arguments: number;
   returns?: boolean;
+  debug?: string;
 }
 
 type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
@@ -84,17 +88,25 @@ type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 type ReturnChannel = (value: unknown) => void;
 
 /**
- * Looks up the function that the build generated for a definition method. The
+ * Looks up the function that the build generated for declared JavaScript. The
  * registry is populated by the generated bundle, so the function is ordinary
  * bundled code and nothing has to be compiled from a string here.
  */
-function findDeclaredFunction(definition: string, method: string): JsDefinitionFunction | undefined {
+function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefined {
   const registry = (
     window as unknown as {
-      Vaadin?: { Flow?: { jsDefinitions?: Record<string, Record<string, JsDefinitionFunction>> } };
+      Vaadin?: { Flow?: { jsDefinitions?: Record<string, JsDefinitionFunction> } };
     }
   ).Vaadin?.Flow?.jsDefinitions;
-  return registry?.[definition]?.[method];
+  return registry?.[functionId];
+}
+
+/**
+ * What to call the target in a message: what a developer wrote when the server
+ * sent it, and the identifier of the function otherwise.
+ */
+function nameOf(target: JsDefinitionTarget): string {
+  return target.debug ?? target.function;
 }
 
 /**
@@ -263,7 +275,7 @@ export class ExecuteJavaScriptProcessor {
     // argument as `this`. Say so instead of running the call.
     const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
     if (parameters.length !== expectedCount) {
-      const message = `Expected ${expectedCount} parameters for ${target.definition}.${target.method} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
+      const message = `Expected ${expectedCount} parameters for ${nameOf(target)} but the invocation carries ${parameters.length}. Reload the page to pick up the current signature.`;
       Console.error(message);
       // The server appends the two channels after everything else, or neither
       // of them, so the error channel is the last parameter even when the
@@ -281,9 +293,9 @@ export class ExecuteJavaScriptProcessor {
     const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
     const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
 
-    const fn = findDeclaredFunction(target.definition, target.method);
+    const fn = findDeclaredFunction(target.function);
     if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${target.definition}.${target.method}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+      const message = `No JavaScript in the bundle for ${nameOf(target)}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
       Console.error(message);
       onError?.(message);
       return;
@@ -300,7 +312,7 @@ export class ExecuteJavaScriptProcessor {
     } catch (exception) {
       Console.reportStacktrace(exception);
       Console.error(
-        `Exception is thrown while running ${target.definition}.${target.method}. Stacktrace will be dumped separately.`
+        `Exception is thrown while running ${nameOf(target)}. Stacktrace will be dumped separately.`
       );
       onError?.(`${exception}`);
     }

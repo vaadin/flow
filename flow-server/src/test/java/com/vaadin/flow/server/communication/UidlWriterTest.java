@@ -190,7 +190,7 @@ class UidlWriterTest {
                 .collect(Collectors.toList());
 
         ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(executeJavaScriptList);
+                .encodeExecuteJavaScriptList(executeJavaScriptList, false);
 
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(
@@ -213,13 +213,12 @@ class UidlWriterTest {
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
 
-        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
-                List.of(new PendingJavaScriptInvocation(element.getNode(),
-                        invocation)));
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                false);
 
         ObjectNode target = JacksonUtils.createObjectNode();
-        target.put("definition", TestJs.class.getName());
-        target.put("method", "method/1");
+        target.put("function", JsCall.functionId("this.method($0)", 1));
         target.put("arguments", 1);
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
@@ -229,6 +228,29 @@ class UidlWriterTest {
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
                 "a call of declared JavaScript should carry its target, and no JavaScript: "
                         + json);
+        assertFalse(json.toString().contains(TestJs.class.getName()),
+                "a production browser should not be told what declared the JavaScript: "
+                        + json);
+        assertFalse(json.toString().contains("method"),
+                "and not what the method is called either: " + json);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_jsCallOutsideProductionMode_addsWhatToCallIt() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                true);
+
+        assertEquals(TestJs.class.getName() + ".method/1",
+                ((ObjectNode) ((ArrayNode) json.get(0)).get(2)).get("debug")
+                        .asString(),
+                "a message about the call should be able to name it: " + json);
     }
 
     @Test
@@ -244,7 +266,7 @@ class UidlWriterTest {
         });
 
         ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(List.of(pending));
+                .encodeExecuteJavaScriptList(List.of(pending), false);
 
         ArrayNode encoded = (ArrayNode) json.get(0);
         assertEquals(5, encoded.size(),

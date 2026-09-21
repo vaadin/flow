@@ -70,21 +70,22 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 
 describe('ExecuteJavaScriptProcessor', () => {
   describe('JavaScript definition calls', () => {
-    const DEFINITION = 'com.acme.GreeterJs';
+    const GREETING = '4e6f2a';
+    const VALUE = '9c1b7d';
 
     type DefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
     type DefinitionWindow = Window & {
-      Vaadin?: { Flow?: { jsDefinitions?: Record<string, Record<string, DefinitionFunction>> } };
+      Vaadin?: { Flow?: { jsDefinitions?: Record<string, DefinitionFunction> } };
     };
 
     // Registers a function the way the generated bundle does.
-    function registerDefinition(method: string, fn: DefinitionFunction): void {
+    function registerDefinition(functionId: string, fn: DefinitionFunction): void {
       const vaadin = (window as DefinitionWindow).Vaadin ?? {};
       (window as DefinitionWindow).Vaadin = vaadin;
       vaadin.Flow = vaadin.Flow ?? {};
       vaadin.Flow.jsDefinitions = vaadin.Flow.jsDefinitions ?? {};
-      vaadin.Flow.jsDefinitions[DEFINITION] = { ...vaadin.Flow.jsDefinitions[DEFINITION], [method]: fn };
+      vaadin.Flow.jsDefinitions[functionId] = fn;
     }
 
     function processor(): ExecuteJavaScriptProcessor {
@@ -97,17 +98,18 @@ describe('ExecuteJavaScriptProcessor', () => {
     }
 
     afterEach(() => {
-      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[DEFINITION];
+      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[GREETING];
+      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[VALUE];
     });
 
     it('runs the function from the bundle against the element', () => {
       const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
-      registerDefinition('showGreeting/1', function (this: unknown, ...args: unknown[]) {
+      registerDefinition(GREETING, function (this: unknown, ...args: unknown[]) {
         calls.push({ thisArg: this, args });
       });
       const element = { tagName: 'div' };
 
-      processor().execute([['Hello', element, { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]]);
+      processor().execute([['Hello', element, { function: GREETING, arguments: 1 }]]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -115,7 +117,7 @@ describe('ExecuteJavaScriptProcessor', () => {
     });
 
     it('passes the return value to the success channel', async () => {
-      registerDefinition('readValue/0', () => 'answer');
+      registerDefinition(VALUE, () => 'answer');
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
@@ -124,7 +126,7 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           (value: unknown) => resolved.push(value),
           () => {},
-          { definition: DEFINITION, method: 'readValue/0', arguments: 0, returns: true }
+          { function: VALUE, arguments: 0, returns: true }
         ]
       ]);
       // Settled in microtasks: a macrotask wait would also pick up the
@@ -137,7 +139,7 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('does not run a call whose parameters do not match the target', () => {
       let calls = 0;
-      registerDefinition('showGreeting/1', () => {
+      registerDefinition(GREETING, () => {
         calls += 1;
       });
 
@@ -145,14 +147,14 @@ describe('ExecuteJavaScriptProcessor', () => {
       // invocation and this client disagree about the signature, which is the
       // same disagreement as an invocation that carries one parameter too
       // many.
-      processor().execute([['Hello', { definition: DEFINITION, method: 'showGreeting/1', arguments: 1 }]]);
+      processor().execute([['Hello', { function: GREETING, arguments: 1 }]]);
 
       expect(calls).to.equal(0);
     });
 
     it('reports a mismatch to the error channel of a call that returns a value', () => {
       let calls = 0;
-      registerDefinition('readValue/0', () => {
+      registerDefinition(VALUE, () => {
         calls += 1;
         return 'answer';
       });
@@ -164,7 +166,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         [
           element,
           (error: unknown) => errors.push(error),
-          { definition: DEFINITION, method: 'readValue/0', arguments: 0, returns: true }
+          { function: VALUE, arguments: 0, returns: true }
         ]
       ]);
 
@@ -183,12 +185,14 @@ describe('ExecuteJavaScriptProcessor', () => {
           element,
           () => {},
           (error: unknown) => errors.push(error),
-          { definition: DEFINITION, method: 'missing/0', arguments: 0, returns: true }
+          { function: 'notinthebundle', arguments: 0, returns: true, debug: 'com.acme.GreeterJs.readValue/0' }
         ]
       ]);
 
       expect(errors).to.have.lengthOf(1);
-      expect(String(errors[0])).to.contain(DEFINITION);
+      // What the server sends outside production mode, so that the message
+      // says more than a hash does
+      expect(String(errors[0])).to.contain('com.acme.GreeterJs.readValue/0');
     });
   });
 

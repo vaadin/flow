@@ -37,6 +37,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.theme.Theme;
@@ -198,9 +199,11 @@ class DevLoopRedefinerTest {
         // bundle was built with until a restart regenerates it.
         String imports = DevLoopRedefiner.frontendDependencies(GreeterJs.class);
 
-        assertTrue(imports.contains("jsdefinition:showGreeting/1"), imports);
-        // An edited expression keeps the same method, so the expression itself
-        // has to be part of the comparison.
+        assertTrue(imports.contains(
+                "jsdefinition:" + JsCall.functionId("window.alert($0)", 1)),
+                imports);
+        // What the browser has of a method is the function of what it
+        // declares, so an edited expression is a different one.
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
     }
