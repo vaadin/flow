@@ -151,6 +151,12 @@ class QuietTestOutputListenerTest {
         Assertions.assertTrue(buildOutput().contains("printed by a test"),
                 "output should go to the build output once the capture gave up, but was: "
                         + buildOutput());
+
+        // and stays given up for the rest of the run
+        listener.executionStarted(testIdentifier());
+
+        Assertions.assertSame(streamBeforeCapture, System.err,
+                "the capture should not start again once it gave up");
     }
 
     @Test

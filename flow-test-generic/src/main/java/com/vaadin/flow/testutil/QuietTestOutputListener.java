@@ -96,8 +96,10 @@ public class QuietTestOutputListener implements TestExecutionListener {
         }
     }
 
+    // The callbacks are synchronized so that the parallel detection below is
+    // not itself racy
     @Override
-    public void executionStarted(TestIdentifier testIdentifier) {
+    public synchronized void executionStarted(TestIdentifier testIdentifier) {
         if (!enabled || givenUp || !shouldCapture(testIdentifier)) {
             return;
         }
@@ -116,11 +118,8 @@ public class QuietTestOutputListener implements TestExecutionListener {
     }
 
     @Override
-    public void executionFinished(TestIdentifier testIdentifier,
+    public synchronized void executionFinished(TestIdentifier testIdentifier,
             TestExecutionResult testExecutionResult) {
-        if (givenUp) {
-            return;
-        }
         CapturedOutput capture = captured.peek();
         if (capture == null
                 || !capture.uniqueId().equals(testIdentifier.getUniqueId())) {
@@ -134,7 +133,7 @@ public class QuietTestOutputListener implements TestExecutionListener {
     }
 
     @Override
-    public void testPlanExecutionFinished(TestPlan testPlan) {
+    public synchronized void testPlanExecutionFinished(TestPlan testPlan) {
         // Nothing should be left, but make sure a test that ended in an
         // unexpected way does not leave the streams captured
         while (!captured.isEmpty()) {
