@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
  * acquiring the session lock is operating outside the supported usage of the
  * framework; behavior in that case is not guaranteed.
  *
- * @since 3.0
+ * @since 10.0
  */
 public class VaadinSessionScopedContext extends AbstractContext {
 
@@ -98,6 +98,8 @@ public class VaadinSessionScopedContext extends AbstractContext {
 
     /**
      * For internal use only.
+     * 
+     * @since 16.0.2
      */
     @ApplicationScoped
     public static class ContextualStorageManager {

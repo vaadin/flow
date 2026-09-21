@@ -740,6 +740,11 @@
             </path>
           </annotationProcessorPaths>
           <fork>true</fork>
+          <!-- Tests deliberately exercise APIs that are deprecated for
+               removal, so the removal lint only produces noise there. It
+               stays on for src/main, where using such an API is a real
+               finding. -->
+          <testCompilerArgument>-Xlint:-removal</testCompilerArgument>
         </configuration>
       </plugin>
 

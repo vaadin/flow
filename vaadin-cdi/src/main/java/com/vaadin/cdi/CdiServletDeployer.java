@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,6 +48,8 @@ import com.vaadin.flow.server.startup.ServletDeployer;
  * the default one.
  * <p>
  * The rest of this class is copied from {@link ServletDeployer}.
+ * 
+ * @since 10.0
  */
 @HandlesTypes(Route.class)
 public class CdiServletDeployer implements ServletContainerInitializer {

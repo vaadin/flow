@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,8 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -51,6 +49,7 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultSystemMessagesProvider;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesInfo;
@@ -376,19 +375,5 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
                 () -> initService(mockBm));
 
         verify(mockBm, times(1)).resolve(same(beans));
-    }
-
-    private static class MockVaadinSession extends VaadinSession {
-
-        ReentrantLock lock = new ReentrantLock();
-
-        public MockVaadinSession(VaadinService service) {
-            super(service);
-        }
-
-        @Override
-        public Lock getLockInstance() {
-            return lock;
-        }
     }
 }

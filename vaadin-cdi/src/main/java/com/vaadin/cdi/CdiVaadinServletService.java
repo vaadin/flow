@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,6 +78,7 @@ import static com.vaadin.cdi.BeanLookup.SERVICE;
  * </ul>
  *
  * @see CdiVaadinServlet
+ * @since 10.0
  */
 public class CdiVaadinServletService extends VaadinServletService {
 
@@ -167,6 +168,8 @@ public class CdiVaadinServletService extends VaadinServletService {
     /**
      * This class implements the actual instantiation and event brokering
      * functionality of {@link CdiVaadinServletService}.
+     * 
+     * @since 11.2
      */
     public static class CdiVaadinServiceDelegate implements Serializable {
 

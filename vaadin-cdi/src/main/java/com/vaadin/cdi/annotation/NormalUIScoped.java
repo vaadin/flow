@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,6 +41,8 @@ import java.lang.annotation.Target;
  * The sister annotation to this is the {@link UIScoped}. Both annotations
  * reference the same underlying scope, so it is possible to get both a proxy
  * and a direct reference to the same object by using different annotations.
+ * 
+ * @since 10.0
  */
 @NormalScope
 @Inherited

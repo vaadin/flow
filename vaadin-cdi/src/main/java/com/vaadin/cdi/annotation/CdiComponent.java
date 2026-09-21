@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,8 @@ import java.lang.annotation.Target;
  * If the explicit bean archive strategy is in use (via an empty beans.xml or
  * the one containing bean-discovery-mode="all"), CDI can manage and inject any
  * bean, except those annotated with @Vetoed.
+ * 
+ * @since 14.1
  */
 @Stereotype
 @Inherited

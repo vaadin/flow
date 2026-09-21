@@ -294,6 +294,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting a configured PWA
      *         resource, {@code false} otherwise
+     * @since 25.2.9
      */
     public boolean isPwaResource(HttpServletRequest request) {
         if (pwaResourcesRequestMatcher == null) {
