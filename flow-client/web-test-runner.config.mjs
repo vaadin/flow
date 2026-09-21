@@ -37,10 +37,11 @@ export default {
     </html>`,
   // Engine code logs through Console, which is only silent in production mode,
   // so the cases that drive it print hundreds of debug lines even when they
-  // pass. Keep the levels that mean something went wrong and drop the rest;
-  // set VAADIN_TEST_QUIET_OUTPUT=false to see everything again.
-  filterBrowserLogs: ({ type }) =>
-    process.env.VAADIN_TEST_QUIET_OUTPUT === 'false' || type === 'warn' || type === 'error',
+  // pass. Drop all but warnings and errors for a session that passed, and keep
+  // everything for one that did not, where the log is the diagnostic. Set
+  // VAADIN_TEST_QUIET_OUTPUT=false to see everything again.
+  filterBrowserLogs: ({ type }, session) =>
+    session?.passed !== true || process.env.VAADIN_TEST_QUIET_OUTPUT === 'false' || type === 'warn' || type === 'error',
   plugins: [
     {
       // Flow.ts loads the client through the bare `vaadin-flow-client`
