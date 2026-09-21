@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -415,7 +416,9 @@ final class AppProcess {
      * fixture left exactly that behind.
      * <p>
      * Politely first and forcibly after ten seconds, the same bargain as
-     * before, and the whole tree each time.
+     * before, and the whole tree each time - then the tree's exits are awaited
+     * together under a single deadline, so a slow stop cannot stack ten seconds
+     * per descendant.
      */
     private void kill(Process victim) {
         // Snapshotted before anything dies: a dead process has no descendants
@@ -435,29 +438,36 @@ final class AppProcess {
         // that JVM is the one holding the port the next start needs.
         tree.stream().filter(ProcessHandle::isAlive)
                 .forEach(ProcessHandle::destroyForcibly);
-        tree.forEach(AppProcess::awaitExit);
+        awaitAll(tree);
     }
 
     /**
-     * Bounded, because a stop must not be able to hang the daemon.
+     * Awaits the whole tree under a single deadline, because a stop must not be
+     * able to hang the daemon - and awaiting each descendant in turn would let a
+     * stalled tree of {@code k} of them serialise into {@code 10s * k} while the
+     * lifecycle lock is held. The handles have already been forcibly destroyed,
+     * so this only collects exits that are on their way, together.
      * <p>
      * {@code System.out} is this daemon's log - it has no logging framework and
      * the enforcer rule in its pom is what keeps it that way - so java:S106 is
      * suppressed rather than answered.
      */
     @SuppressWarnings("java:S106")
-    private static void awaitExit(ProcessHandle handle) {
+    private static void awaitAll(List<ProcessHandle> tree) {
+        CompletableFuture<?>[] exits = tree.stream().map(ProcessHandle::onExit)
+                .toArray(CompletableFuture[]::new);
         try {
-            handle.onExit().get(10, TimeUnit.SECONDS);
+            CompletableFuture.allOf(exits).get(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (java.util.concurrent.ExecutionException
                 | java.util.concurrent.TimeoutException e) {
-            // Already gone, or beyond reach; either way the stop is over,
-            // so this is a line in the log rather than a failure - but an
-            // unreported exit is how an orphaned JVM starts, so it is said.
-            System.out.println(
-                    "pid " + handle.pid() + " did not report its exit: " + e);
+            // The shared deadline passed with some exit unreported. An
+            // unreported exit is how an orphaned JVM starts, so the ones still
+            // alive are named rather than passed over in silence.
+            tree.stream().filter(ProcessHandle::isAlive)
+                    .forEach(handle -> System.out.println("pid " + handle.pid()
+                            + " did not report its exit before the stop deadline"));
         }
     }
 
