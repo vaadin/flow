@@ -28,6 +28,7 @@ import com.vaadin.cdi.util.AbstractContext;
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
  *
+ * @since 10.0
  */
 public class ContextWrapper implements AlterableContext {
 

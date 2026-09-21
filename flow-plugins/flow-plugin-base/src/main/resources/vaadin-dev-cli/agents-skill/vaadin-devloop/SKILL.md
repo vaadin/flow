@@ -49,6 +49,11 @@ another application with `--app`, the version that counts is that application's.
    verdict and the project's own tests, so opening a browser to look at nothing buys no
    evidence and costs the run a browser launch.
 
+**Verification ends the cycle.** A change `apply` reports live and step 5 has verified is
+finished; where the project has tests or checks that cover it, their passing *is* that
+verification. Go back to step 3 for work that is left, or for evidence that contradicts you —
+never to improve on a result that already met the bar.
+
 ## Commands
 
 ```
@@ -124,6 +129,7 @@ target/devloop/app.log, daemon.log          logs, under the target application
 | `hmr: N frontend file(s), applied by Vite (dev server up:…)` | Vite mode: the edit went live when you saved it |
 | `frontend → Failed` with `dev server: [vite] …` | Vite mode: Vite refused to compile the edit — exit `1`. Fix the file it names and re-apply; a restart cannot compile it either |
 | `hot-reload: redefineClasses(1); onHotswap completed=true` | Java hot-swapped, UI refreshed |
+| an `hmr:` line *and* a `hot-reload:` line | a mixed change-set; both halves are live, and `hmr:` answers for the stylesheet |
 | `→ live, but no Vaadin component was redefined` | bytes are live; interact with the view or reload to see it. **Do not re-apply** |
 | `compiling → runtime → restarting → Stable` | the app restarted — reload the page |
 | `restart: classpath changed (...)` | a pom edit moved the app's classpath |

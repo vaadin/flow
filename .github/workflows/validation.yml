@@ -29,6 +29,22 @@ env:
   _PR_NUMBER: ${{ github.event.number }}
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+  # Picked up by every mvn this workflow starts, including the ones the plugin
+  # integration tests fork, which is why it is set here rather than on the
+  # steps that download the most.
+  #
+  # Maven 3.9 resolves over maven-resolver's own HTTP transport, which reads
+  # aether.connector.* and ignores the maven.wagon.* equivalents the `Run ITs`
+  # step used to pass, so that step was not retrying anything and no other one
+  # asked to. Central answers a client it has blocked with 403, and the retry
+  # handler treats a status outside its retryable list as the final answer:
+  # that list defaults to 429,503, so a 403 failed the build on the first
+  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
+  # property was meant to set, against a resolver default of 300.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
     timeout-minutes: 30
@@ -51,7 +67,7 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -197,7 +213,7 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           version: '11.26.0'
@@ -258,7 +274,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
+          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
           : > "$LOG"
@@ -351,7 +367,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
@@ -443,7 +459,17 @@ jobs:
           pkill -KILL java || true
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
-        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-cdi-${{ matrix.profile }}.tgz -T -
+        # The container's own log is collected too: a deployment error says
+        # "please see server.log for more details", and without it the reason
+        # the container refused an archive, or failed to answer a request, is
+        # gone once the runner is recycled. Payara, WildFly and Liberty keep
+        # it under logs/ or log/, Tomcat and TomEE add catalina.out.
+        run: |
+          find . -name surefire-reports -o -name failsafe-reports \
+            -o -name error-screenshots -o -name "mvn-*.out" \
+            -o -path "*/logs/*.log" -o -path "*/log/*.log" \
+            -o -name "catalina.out" \
+            | tar -czf tests-report-cdi-${{ matrix.profile }}.tgz -T -
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         with:
@@ -523,7 +549,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -792,7 +818,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
       - name: Auto-merge PR
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
@@ -818,7 +844,7 @@ jobs:
       # ~/.npm those six installs dominate the job and exhaust its timeout.
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: '26.9.0'
           cache: npm
           cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK

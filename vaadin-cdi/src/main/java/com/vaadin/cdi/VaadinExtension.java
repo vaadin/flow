@@ -46,6 +46,8 @@ import com.vaadin.cdi.util.DependentProvider;
 
 /**
  * CDI Extension needed to register Vaadin scopes to the runtime.
+ * 
+ * @since 10.0
  */
 public class VaadinExtension implements Extension {
 

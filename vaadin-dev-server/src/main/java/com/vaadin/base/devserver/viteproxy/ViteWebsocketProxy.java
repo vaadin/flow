@@ -80,6 +80,11 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
                 });
     }
 
+    /**
+     * Gets the logger of this class.
+     *
+     * @return the logger to use
+     */
     protected static Logger getLogger() {
         return LoggerFactory.getLogger(ViteWebsocketProxy.class);
     }

@@ -14,20 +14,20 @@
   <properties>
     <surefire.groups/>
     <surefire.excludedGroups>com.vaadin.cdi.itest.SlowTests</surefire.excludedGroups>
-    <apache-tomcat.version>11.0.8</apache-tomcat.version>
-    <apache-tomee.version>10.1.0</apache-tomee.version>
-    <wildfly.version>40.0.1.Final</wildfly.version>
+    <apache-tomcat.version>11.0.26</apache-tomcat.version>
+    <apache-tomee.version>10.2.0</apache-tomee.version>
+    <wildfly.version>41.0.1.Final</wildfly.version>
     <openliberty.version>25.0.0.6</openliberty.version>
     <openliberty.template>jakartaee10</openliberty.template>
     <openliberty.runtimeArtifactGroupId>io.openliberty</openliberty.runtimeArtifactGroupId>
-    <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
     <!-- Every test in this module deploys to a real application server, so
          there is nothing to run until one of the container profiles below is
          activated. Skipping by default keeps a plain `mvn verify` over
          flow-tests from failing on a missing container. -->
     <cdi.container.tests.skip>true</cdi.container.tests.skip>
-    <arquillian.version>1.9.5.Final</arquillian.version>
-    <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+    <arquillian.version>1.10.2.Final</arquillian.version>
+    <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
     <shrinkwrap.descriptors.version>2.0.0</shrinkwrap.descriptors.version>
   </properties>
 
@@ -165,7 +165,7 @@
                 -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-help-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.5.2</version>
         <configuration>
           <output>${project.build.directory}/effective-pom.xml</output>
         </configuration>
@@ -355,6 +355,44 @@
       <build>
         <plugins>
           <plugin>
+            <!-- Bound to the phase before the unpack below rather than to the
+                 same one: executions sharing a phase run in plugin declaration
+                 order, and a plugin a profile adds runs ahead of one the module
+                 declares for every phase, so same-phase would delete what the
+                 unpack had just written.
+
+                 Every version now unpacks over the same path, so a target
+                 directory left by an earlier run has to go before the next one
+                 fills it: otherwise a 7.x distribution lands on top of the 6.x
+                 files it does not replace, and the server starts from a mix of
+                 the two. The unpack below is forced (overWrite) for the same
+                 reason - the plugin remembers what it unpacked in a marker file
+                 keyed by the coordinates alone, so with the directory gone and
+                 the marker kept it would skip the work and leave nothing behind
+                 for Arquillian to start. Re-unpacking costs a few seconds per
+                 run and is what keeps the install pristine. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>remove-previous-payara</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>test-compile</phase>
+                <configuration>
+                  <!-- The parent turns Ant errors into warnings; here a failed
+                       delete is what the unpack would then build a mixed
+                       install on, so fail instead. -->
+                  <failOnError>true</failOnError>
+                  <target>
+                    <delete dir="${project.build.directory}/payara"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <version>${maven-dependency-plugin.version}</version>
@@ -370,10 +408,28 @@
                     <artifactItem>
                       <groupId>fish.payara.distributions</groupId>
                       <artifactId>payara</artifactId>
-                      <version>6.2025.6</version>
+                      <version>7.2026.8</version>
                       <type>zip</type>
-                      <overWrite>false</overWrite>
+                      <overWrite>true</overWrite>
                       <outputDirectory>target</outputDirectory>
+                      <!-- The distribution unpacks into a directory named
+                           after its major version - payara6 for 6.x, payara7
+                           for 7.x - which payara.home below would otherwise
+                           have to repeat, so a major upgrade of the zip alone
+                           leaves Arquillian pointed at a directory that does
+                           not exist ("... is not a valid GlassFish
+                           installation"). Rename the root entry to a plain
+                           "payara" while unpacking so the path holds for any
+                           version. The wildfly and tomcat profiles get this
+                           for free: their distributions carry the full version
+                           in the directory name, so their home paths
+                           interpolate the same property the artifact does. -->
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^payara[0-9]+</pattern>
+                          <replacement>payara</replacement>
+                        </fileMapper>
+                      </fileMappers>
                     </artifactItem>
                   </artifactItems>
                 </configuration>
@@ -388,7 +444,7 @@
               <excludedGroups>${surefire.excludedGroups}</excludedGroups>
               <groups>${surefire.groups}</groups>
               <systemPropertyVariables>
-                <payara.home>${project.build.directory}/payara6</payara.home>
+                <payara.home>${project.build.directory}/payara</payara.home>
                 <arquillian.launch>payara</arquillian.launch>
                 <vaadin.bowerMode>true</vaadin.bowerMode>
               </systemPropertyVariables>
@@ -407,7 +463,7 @@
         <dependency>
           <groupId>io.openliberty.arquillian</groupId>
           <artifactId>arquillian-liberty-managed-jakarta-junit</artifactId>
-          <version>2.1.4</version>
+          <version>3.0.0</version>
           <type>pom</type>
           <scope>test</scope>
         </dependency>
@@ -417,7 +473,7 @@
           <plugin>
             <groupId>io.openliberty.tools</groupId>
             <artifactId>liberty-maven-plugin</artifactId>
-            <version>3.11.4</version>
+            <version>3.12.3</version>
             <executions>
               <execution>
                 <id>create-server</id>
@@ -448,7 +504,7 @@
             <!-- liberty-maven-plugin:install-feature goal installs new features but does not update
                          server.xml file. localConnector-1.0 needs to be present in server.xml for Arquillian -->
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <goals>
@@ -538,7 +594,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-resources-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.5.0</version>
             <executions>
               <execution>
                 <id>setup-tomcat-users</id>
