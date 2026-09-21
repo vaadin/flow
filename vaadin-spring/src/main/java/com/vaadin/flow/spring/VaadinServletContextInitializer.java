@@ -663,6 +663,7 @@ public class VaadinServletContextInitializer
      * @param superTypes
      *            the types a matching class extends or implements
      * @return the classes found, never {@code null}
+     * @since 24.5
      */
     protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
             List<Class<? extends Annotation>> annotations,

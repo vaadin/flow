@@ -196,6 +196,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
      * @param resource
      *            the connection of the browser to talk to
      * @return the interface for that browser
+     * @since 24.2.1
      */
     protected DevToolsInterface getDevToolsInterface(
             AtmosphereResource resource) {

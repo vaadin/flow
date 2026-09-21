@@ -36,6 +36,8 @@ public class UidlRedirectStrategy extends DefaultRedirectStrategy {
 
     /**
      * Creates the strategy.
+     * 
+     * @since 24.0
      */
     public UidlRedirectStrategy() {
         // Default constructor
