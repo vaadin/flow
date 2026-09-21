@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -199,13 +200,15 @@ class UidlWriterTest {
                 JacksonUtils.createArray(
                         // Null since element is not attached
                         JacksonUtils.nullNode(),
-                        JacksonUtils.createNode(
-                                nameOfWhatRuns("$0.focus()", constants))),
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                JacksonUtils.createNode("$0.focus()"),
+                                constants))),
                 JacksonUtils.createArray(
                         JacksonUtils.createNode("Lives remaining:"),
                         JacksonUtils.createNode(3),
                         JacksonUtils.createNode(nameOfWhatRuns(
-                                "console.log($0, $1)", constants))));
+                                JacksonUtils.createNode("console.log($0, $1)"),
+                                constants))));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
                 "an invocation should name what it runs among the constants of the message: "
@@ -213,17 +216,28 @@ class UidlWriterTest {
     }
 
     /**
-     * What names the given script, or the given function, among the given
-     * constants, which is what an invocation that runs it carries instead of
-     * the script or the function itself.
+     * What names the given constant among the given ones, which is what an
+     * invocation that runs it carries instead of the constant itself.
      */
-    private static String nameOfWhatRuns(String whatRuns,
+    private static String nameOfWhatRuns(JsonNode whatRuns,
             ObjectNode constants) {
         return JacksonUtils.getKeys(constants).stream()
-                .filter(key -> whatRuns.equals(constants.get(key).asString()))
+                .filter(key -> JacksonUtils.jsonEquals(whatRuns,
+                        constants.get(key)))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("The constants "
                         + constants + " should carry " + whatRuns));
+    }
+
+    /**
+     * The constant that names the function of the JavaScript declared for the
+     * given number of arguments, which is what a call of it runs.
+     */
+    private static ObjectNode functionConstant(String expression,
+            int argumentCount) {
+        ObjectNode constant = JacksonUtils.createObjectNode();
+        constant.put("f", JsCall.functionId(expression, argumentCount));
+        return constant;
     }
 
     @Test
@@ -269,12 +283,13 @@ class UidlWriterTest {
                 constantPool);
         ObjectNode constants = constantPool.dumpConstants();
 
-        String functionId = JsCall.functionId("this.method($0)", 1);
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
                         // Null since element is not attached
-                        JacksonUtils.nullNode(), JacksonUtils.createNode(
-                                nameOfWhatRuns(functionId, constants))));
+                        JacksonUtils.nullNode(),
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                functionConstant("this.method($0)", 1),
+                                constants))));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
                 "a call of declared JavaScript should name a function, the same way an expression names a script: "
@@ -305,7 +320,7 @@ class UidlWriterTest {
                 "the argument and the element should be followed by the two channels and the function to run: "
                         + encoded);
         assertEquals(
-                nameOfWhatRuns(JsCall.functionId("this.method($0)", 1),
+                nameOfWhatRuns(functionConstant("this.method($0)", 1),
                         constantPool.dumpConstants()),
                 encoded.get(4).asString(),
                 "and the function should be the same one as for a call that is not subscribed to: "

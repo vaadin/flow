@@ -48,6 +48,7 @@ import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // NodeFeatures.NodeFeatures.ELEMENT_DATA / NodeProperties
 
@@ -68,11 +69,14 @@ interface ContextCallbacks {
 
 type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
-// What the server sends instead of an expression: the identifier of a function
-// of the bundle, which is a hash of the JavaScript it runs. Anything else it
-// sends is an expression, and one of these is not valid JavaScript, so an
-// identifier that the bundle does not have is reported rather than run.
-const FUNCTION_ID = /^[0-9a-f]{64}$/u;
+/**
+ * What an invocation of declared JavaScript names instead of an expression:
+ * the function of the bundle to run, identified by a hash of the JavaScript it
+ * runs. An invocation that runs an expression names the expression itself, a
+ * string, so the two are told apart by what the constant is rather than by
+ * what it says.
+ */
+type JsFunctionConstant = Record<typeof JsonConstants.UIDL_KEY_JS_FUNCTION, string>;
 
 type ReturnChannel = (value: unknown) => void;
 
@@ -187,7 +191,9 @@ export class ExecuteJavaScriptProcessor {
     // What to run is a constant of the message, the same way for an
     // expression and for a call of declared JavaScript, so an expression the
     // server runs again costs a reference rather than its own text.
-    const whatToRun = this.#registry.getConstantPool().get<string | null>(invocation[invocation.length - 1] as string);
+    const whatToRun = this.#registry
+      .getConstantPool()
+      .get<string | JsFunctionConstant | null>(invocation[invocation.length - 1] as string);
     if (whatToRun === null) {
       Console.error(
         `No constant for the invocation ${JSON.stringify(invocation)}. Reload the page to pick up the current state.`
@@ -195,13 +201,13 @@ export class ExecuteJavaScriptProcessor {
       return;
     }
 
-    if (FUNCTION_ID.test(whatToRun)) {
+    if (typeof whatToRun === 'object') {
       // A call of declared JavaScript: the bundle has the function, the
       // server sent only which one to run. The node parameters are for the
       // context object an expression runs against, whose `getNode` maps an
       // element back to its state node; a declared function runs against the
       // element itself and has no context, so there is nothing that could ask.
-      this.invokeFromBundle(whatToRun, parameters);
+      this.invokeFromBundle(whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION], parameters);
       return;
     }
 

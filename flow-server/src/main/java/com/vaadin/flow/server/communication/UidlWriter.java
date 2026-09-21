@@ -412,9 +412,11 @@ public class UidlWriter implements Serializable {
      * Encodes a call made through a JavaScript definition as
      * <code>[argument1, ..., element, successChannel, errorChannel, function]</code>,
      * where the trailing constant names the function to run rather than
-     * carrying JavaScript. The name is a hash of the JavaScript the function
-     * runs, so no expression is sent, nothing is compiled in the browser, and
-     * what declared the JavaScript in Java stays on the server.
+     * carrying JavaScript. The constant is an object naming the function, which
+     * is what tells it apart from the constant of an invocation that runs an
+     * expression, a string. The function is named by a hash of the JavaScript
+     * it runs, so no expression is sent, nothing is compiled in the browser,
+     * and what declared the JavaScript in Java stays on the server.
      * <p>
      * The parameters are the arguments of the call, then the element to apply
      * the function to, and the two return value channels when the call is
@@ -441,14 +443,14 @@ public class UidlWriter implements Serializable {
                     Stream.of(successChannel, errorChannel));
         }
 
+        ObjectNode function = JacksonUtils.createObjectNode();
+        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION,
+                JsCall.functionId(invocation.getInvocation().getExpression(),
+                        call.arguments().size()));
+
         return Stream
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(constantOf(
-                                JacksonUtils.createNode(JsCall.functionId(
-                                        invocation.getInvocation()
-                                                .getExpression(),
-                                        call.arguments().size())),
-                                constantPool)))
+                        Stream.of(constantOf(function, constantPool)))
                 .collect(JacksonUtils.asArray());
     }
 
