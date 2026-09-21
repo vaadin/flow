@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,6 +41,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -391,6 +396,57 @@ public class Page implements Serializable {
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
+    }
+
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser, through an implementation of the interface that this method
+     * answers with: calling a method of the implementation runs the JavaScript
+     * that the method declares, with the arguments of the call as its
+     * parameters.
+     * <p>
+     * This is {@link Element#executeJs(Class)} for JavaScript that addresses
+     * the page rather than an element, and the contract is the same one: the
+     * interface is annotated with {@link JsDefinition}, each of its methods
+     * declares what it runs with {@link JsExpression}, and the build collects
+     * the declarations into the bundle so that the browser runs a function it
+     * already has instead of compiling what the server sent.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
+    }
+
+    /**
+     * Schedules a call made through a JavaScript definition. The client applies
+     * the function of the bundle to the parameter that follows the arguments of
+     * the call, which is the UI's own element here: JavaScript declared for the
+     * page addresses the window rather than an element, so what it is applied
+     * to only has to be something that is always there.
+     */
+    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
+        List<Object> parameters = new ArrayList<>(call.arguments());
+        parameters.add(ui.getElement());
+
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), parameters.toArray());
+
+        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
+                ui.getInternals().getStateTree().getRootNode(), invocation);
+
+        ui.getInternals().addJavaScriptInvocation(execution);
+
+        return execution;
     }
 
     /**

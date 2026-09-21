@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +48,8 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -69,8 +73,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaScriptBootstrapUITest {
 
-    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
-    private static final String REACT_PUSHSTATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
+    private final List<JsCall> historyCalls = new ArrayList<>();
 
     private MockServletServiceSessionSetup mocks;
     private UI ui;
@@ -473,10 +476,6 @@ class JavaScriptBootstrapUITest {
                 .createStateNode("foo-element");
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
-                .forClass(Object[].class);
-
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
 
@@ -485,22 +484,8 @@ class JavaScriptBootstrapUITest {
                     .thenReturn(false);
 
             ui.navigate("clean/1");
-            Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-            boolean reactEnabled = ui.getSession().getConfiguration()
-                    .isReactEnabled();
-
-            final Object[] execValues = execArg.getValue();
-            if (reactEnabled) {
-                assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-                assertEquals(1, execValues.length);
-                assertEquals("clean/1", execValues[0]);
-            } else {
-                assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-                assertEquals(2, execValues.length);
-                assertNull(execValues[0]);
-                assertEquals("clean/1", execValues[1]);
-            }
+            assertPushedLocation("clean/1");
         }
     }
 
@@ -531,31 +516,15 @@ class JavaScriptBootstrapUITest {
                 .getChild(0).getTag());
 
         ui = Mockito.spy(ui);
-        Page page = mockPage();
-
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
-                .forClass(Object[].class);
+        mockPage();
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
         // A server navigation happens
         assertEquals(Tag.SPAN,
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        boolean reactEnabled = ui.getSession().getConfiguration()
-                .isReactEnabled();
-
-        final Object[] execValues = execArg.getValue();
-        if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-        } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-        }
-        assertEquals(3, execValues.length);
-        assertNull(execValues[0]);
-        assertEquals("dirty", execValues[1]);
+        assertPushedLocation("dirty");
     }
 
     @Test
@@ -669,7 +638,34 @@ class JavaScriptBootstrapUITest {
         History history = new History(ui);
         Mockito.when(page.getHistory()).thenReturn(history);
 
+        // The history changes a location by calling the JavaScript that
+        // History.HistoryJs declares, which is recorded here rather than run
+        historyCalls.clear();
+        Mockito.when(page.executeJs(Mockito.<Class<Object>> any()))
+                .thenAnswer(invocation -> JsDefinitionProxy
+                        .create(invocation.getArgument(0), call -> {
+                            historyCalls.add(call);
+                            return null;
+                        }));
+
         return page;
+    }
+
+    /**
+     * Asserts that the router pushed the given location onto the browser's
+     * history, whichever of the two routers is in use.
+     */
+    private void assertPushedLocation(String location) {
+        assertEquals(1, historyCalls.size(),
+                "the router should have changed the location once, did: "
+                        + historyCalls);
+        JsCall pushState = historyCalls.get(0);
+        assertEquals(
+                ui.getSession().getConfiguration().isReactEnabled() ? "navigate"
+                        : "pushState",
+                pushState.methodName());
+        assertNull(pushState.arguments().get(0));
+        assertEquals(location, pushState.arguments().get(1));
     }
 
     private UIInternals mockUIInternals() {

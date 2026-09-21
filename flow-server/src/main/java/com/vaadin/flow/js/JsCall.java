@@ -100,6 +100,27 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
+     * Gets the identifier of the function that the named method of the given
+     * JavaScript definition runs, for a caller that recognizes a call rather
+     * than making one - the MPR fix-up, which picks the invocation of a
+     * location change out of a response by what it runs.
+     *
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @param methodName
+     *            the name of the declaring method, not <code>null</code>
+     * @param argumentCount
+     *            the number of arguments the method takes
+     * @return the function identifier, not <code>null</code>
+     */
+    public static String functionId(Class<?> definitionType, String methodName,
+            int argumentCount) {
+        return functionId(
+                expressionOf(definitionType, methodName, argumentCount),
+                argumentCount);
+    }
+
+    /**
      * Gets the JavaScript that this call runs in a browser, as declared by
      * {@link JsExpression} on the called method.
      * <p>
@@ -111,14 +132,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @return the JavaScript expression, not <code>null</code>
      */
     public String getExpression() {
-        JsExpression annotation = resolveMethod()
-                .getAnnotation(JsExpression.class);
-        if (annotation == null) {
-            throw new IllegalStateException(
-                    "Method " + methodName + " of " + definitionType.getName()
-                            + " is not annotated with @JsExpression");
-        }
-        return annotation.value();
+        return expressionOf(definitionType, methodName, arguments.size());
     }
 
     /**
@@ -163,14 +177,31 @@ public record JsCall(Class<?> definitionType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
+        return resolveMethod(definitionType, methodName, arguments.size());
+    }
+
+    private static Method resolveMethod(Class<?> definitionType,
+            String methodName, int argumentCount) {
         List<Method> candidates = ReflectTools.getMethodsWithParameterCount(
-                definitionType, methodName, arguments.size());
+                definitionType, methodName, argumentCount);
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
-                    + methodName + " with " + arguments.size()
-                    + " parameters in " + definitionType.getName() + ", found "
+                    + methodName + " with " + argumentCount + " parameters in "
+                    + definitionType.getName() + ", found "
                     + candidates.size());
         }
         return candidates.get(0);
+    }
+
+    private static String expressionOf(Class<?> definitionType,
+            String methodName, int argumentCount) {
+        JsExpression annotation = resolveMethod(definitionType, methodName,
+                argumentCount).getAnnotation(JsExpression.class);
+        if (annotation == null) {
+            throw new IllegalStateException(
+                    "Method " + methodName + " of " + definitionType.getName()
+                            + " is not annotated with @JsExpression");
+        }
+        return annotation.value();
     }
 }

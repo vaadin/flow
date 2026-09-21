@@ -31,8 +31,11 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -46,10 +49,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
 
@@ -288,10 +293,13 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(
-                "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
-                whatRuns(uidl, 1),
+        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+                functionOf(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
+                        + uidl);
+        assertEquals("http://localhost:9998/#!away",
+                ((ArrayNode) uidl.get("execute").get(1)).get(0).asString(),
+                "the corrected location should be the argument of the call: "
                         + uidl);
     }
 
@@ -310,10 +318,13 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(
-                "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
-                whatRuns(uidl, 1),
+        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushHash", 1),
+                functionOf(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
+                        + uidl);
+        assertEquals("!away",
+                ((ArrayNode) uidl.get("execute").get(1)).get(0).asString(),
+                "the corrected hash should be the argument of the call: "
                         + uidl);
     }
 
@@ -338,7 +349,7 @@ class UidlRequestHandlerTest {
         assertTrue(hasParameter(invocation, "http://localhost:9998/#!it's"),
                 "the corrected location should be a parameter of the push state, was: "
                         + invocation);
-        assertFalse(whatRuns(written, 1).contains("it's"),
+        assertFalse(whatRuns(written, 1).toString().contains("it's"),
                 "the corrected location should not be part of what the push state runs, was: "
                         + whatRuns(written, 1));
     }
@@ -386,7 +397,7 @@ class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         ObjectNode written = JacksonUtils.readTree(writer.toString());
-        assertEquals(applicationScript, whatRuns(written, index),
+        assertEquals(applicationScript, whatRuns(written, index).asString(),
                 "what the application scheduled should still be there: "
                         + written);
     }
@@ -429,8 +440,13 @@ class UidlRequestHandlerTest {
 
         handler.writeUidl(ui, writer, false);
 
-        String out = writer.toString();
-        assertFalse(out.contains("history.pushState"));
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(1, written.get("execute").size(),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
+        assertFalse(written.has("constants"),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
     }
 
     @Test
@@ -606,12 +622,23 @@ class UidlRequestHandlerTest {
 
     /**
      * What the invocation at the given index of the given response runs, which
-     * the invocation names among the constants of the response.
+     * the invocation names among the constants of the response: the expression
+     * for one that runs an expression, and the function of the bundle for one
+     * that runs declared JavaScript.
      */
-    private static String whatRuns(ObjectNode uidl, int index) {
+    private static JsonNode whatRuns(ObjectNode uidl, int index) {
         ArrayNode invocation = (ArrayNode) uidl.get("execute").get(index);
         String name = invocation.get(invocation.size() - 1).asString();
-        return uidl.get("constants").get(name).asString();
+        return uidl.get("constants").get(name);
+    }
+
+    /**
+     * The identifier of the function that the invocation at the given index of
+     * the given response runs.
+     */
+    private static String functionOf(ObjectNode uidl, int index) {
+        return whatRuns(uidl, index).get(JsonConstants.UIDL_KEY_JS_FUNCTION)
+                .asString();
     }
 
     /**
@@ -716,6 +743,18 @@ class UidlRequestHandlerTest {
         }
 
         ((ArrayNode) uidl.get("execute").get(2)).set(1, v7String);
+
+        // The push state the router scheduled, as UidlWriter sends it: the
+        // invocation names the constant of the function the build generated
+        // for History.HistoryJs.pushState, and that is what the fix-up
+        // corrects.
+        ObjectNode routerPushState = UidlWriter.functionConstant(
+                JsCall.functionId(HistoryJs.class, "pushState", 2));
+        String name = new ConstantPoolKey(routerPushState).getId();
+        ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
+        ((ObjectNode) uidl.get("constants")).remove("pushState");
+        ((ObjectNode) uidl.get("constants")).set(name, routerPushState);
+
         return uidl;
     }
 

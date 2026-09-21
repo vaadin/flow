@@ -23,6 +23,8 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -44,20 +46,20 @@ class HistoryTest {
 
     private class TestPage extends Page {
 
-        private String expression;
-
-        private Object[] parameters;
+        private JsCall call;
 
         public TestPage(UI ui) {
             super(ui);
         }
 
         @Override
-        public PendingJavaScriptResult executeJs(String expression,
-                Object... parameters) {
-            this.expression = expression;
-            this.parameters = parameters;
-            return null;
+        public <T> T executeJs(Class<T> definitionType) {
+            // The UI of this test has no session to schedule an invocation
+            // with, so the call is recorded rather than run
+            return JsDefinitionProxy.create(definitionType, recorded -> {
+                call = recorded;
+                return null;
+            });
         }
     }
 
@@ -68,12 +70,6 @@ class HistoryTest {
     private VaadinService service = Mockito.mock(VaadinService.class);
     private VaadinSession session = Mockito.mock(VaadinSession.class);
     private DeploymentConfiguration configuration;
-
-    private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
-    private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
-
-    private static final String PUSH_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
-    private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));";
 
     @BeforeEach
     void setup() {
@@ -92,23 +88,23 @@ class HistoryTest {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
         assertEquals("{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString(),
+                ((JsonNode) page.call.arguments().get(0)).toString(),
                 "push state not included");
-        assertEquals("context/view?param=4", page.parameters[1],
+        assertEquals("context/view?param=4", page.call.arguments().get(1),
                 "invalid location");
 
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
         assertEquals("{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString(),
+                ((JsonNode) page.call.arguments().get(0)).toString(),
                 "push state not included");
-        assertEquals("context/view/?param=4", page.parameters[1],
+        assertEquals("context/view/?param=4", page.call.arguments().get(1),
                 "invalid location");
     }
 
@@ -116,18 +112,18 @@ class HistoryTest {
     void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view#foobar", page.parameters[1],
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view#foobar", page.call.arguments().get(1),
                 "fragment not retained");
 
         history.pushState(null, "context/view/#foobar");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/#foobar", page.parameters[1],
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/#foobar", page.call.arguments().get(1),
                 "fragment not retained");
     }
 
@@ -135,47 +131,48 @@ class HistoryTest {
     void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        assertEquals(PUSH_STATE_JS, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("pushState", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
     }
 
     @Test // #11628
     void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        assertEquals(REPLACE_STATE_JS, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("replaceState", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        assertEquals(REPLACE_STATE_JS, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("replaceState", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
     }
 
     @Test // #11628
     void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
-        assertEquals(REPLACE_STATE_JS, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals(".", page.parameters[1], "location should be '.'");
+        assertEquals("replaceState", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals(".", page.call.arguments().get(1),
+                "location should be '.'");
     }
 
     @Test
@@ -184,23 +181,23 @@ class HistoryTest {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
         assertEquals("{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString(),
+                ((JsonNode) page.call.arguments().get(0)).toString(),
                 "push state not included");
-        assertEquals("context/view?param=4", page.parameters[1],
+        assertEquals("context/view?param=4", page.call.arguments().get(1),
                 "invalid location");
 
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
         assertEquals("{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString(),
+                ((JsonNode) page.call.arguments().get(0)).toString(),
                 "push state not included");
-        assertEquals("context/view/?param=4", page.parameters[1],
+        assertEquals("context/view/?param=4", page.call.arguments().get(1),
                 "invalid location");
     }
 
@@ -209,18 +206,18 @@ class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view#foobar");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view#foobar", page.parameters[1],
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view#foobar", page.call.arguments().get(1),
                 "fragment not retained");
 
         history.pushState(null, "context/view/#foobar");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/#foobar", page.parameters[1],
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/#foobar", page.call.arguments().get(1),
                 "fragment not retained");
     }
 
@@ -229,19 +226,19 @@ class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        assertEquals(PUSH_STATE_REACT, page.expression,
-                "push state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("navigate", page.call.methodName(),
+                "push state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
     }
 
     @Test // #11628
@@ -249,28 +246,29 @@ class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        assertEquals(REPLACE_STATE_REACT, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("navigateReplacing", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        assertEquals(REPLACE_STATE_REACT, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
-                "invalid location");
+        assertEquals("navigateReplacing", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals("context/view/?foo=bar#foobar",
+                page.call.arguments().get(1), "invalid location");
     }
 
     @Test // #11628
     void replaceState_locationEmpty_pushesPeriod_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "");
-        assertEquals(REPLACE_STATE_REACT, page.expression,
-                "replace state JS not included");
-        assertEquals(null, page.parameters[0]);
-        assertEquals(".", page.parameters[1], "location should be '.'");
+        assertEquals("navigateReplacing", page.call.methodName(),
+                "replace state not scheduled");
+        assertEquals(null, page.call.arguments().get(0));
+        assertEquals(".", page.call.arguments().get(1),
+                "location should be '.'");
     }
 }

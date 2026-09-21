@@ -19,9 +19,12 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -235,13 +238,11 @@ public class History implements Serializable {
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         if (ui.getSession().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
-            ui.getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+            ui.getPage().executeJs(HistoryJs.class).navigate(state,
+                    pathWithQueryParameters, callback);
         } else {
-            ui.getPage().executeJs(
-                    "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+            ui.getPage().executeJs(HistoryJs.class).pushState(state,
+                    pathWithQueryParameters);
         }
     }
 
@@ -327,13 +328,11 @@ public class History implements Serializable {
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         if (ui.getSession().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
-            ui.getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+            ui.getPage().executeJs(HistoryJs.class).navigateReplacing(state,
+                    pathWithQueryParameters, callback);
         } else {
-            ui.getPage().executeJs(
-                    "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+            ui.getPage().executeJs(HistoryJs.class).replaceState(state,
+                    pathWithQueryParameters);
         }
     }
 
@@ -412,5 +411,102 @@ public class History implements Serializable {
         return Optional.ofNullable(location)
                 .map(Location::getPathWithQueryParameters)
                 .map(path -> path.isEmpty() ? "." : path).orElse(null);
+    }
+
+    /**
+     * The client-side operations behind {@link History}, as a JavaScript
+     * definition for {@link Page#executeJs(Class)}.
+     * <p>
+     * A location is changed in one of two ways, depending on which router the
+     * application runs: through the browser's history API directly, or by
+     * asking the React router to navigate. Each is declared here rather than
+     * written at the call site, so that what a response carries is a call that
+     * the server side can recognize - which is how the MPR fix-up in
+     * {@code UidlRequestHandler} finds the location change it has to correct,
+     * rather than by looking for a browser function in the text of a script.
+     * <p>
+     * The second parameter of the browser's <code>pushState</code> and
+     * <code>replaceState</code> is a title that no browser uses, as <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/History_API">the
+     * History API documentation</a> says.
+     */
+    @JsDefinition
+    public interface HistoryJs extends Serializable {
+
+        /**
+         * Pushes the given state and location onto the browser's history.
+         *
+         * @param state
+         *            the state to push, or <code>null</code> to only change the
+         *            location
+         * @param location
+         *            the location to go to, or <code>null</code> to only change
+         *            the state
+         */
+        @JsExpression("""
+                setTimeout(() => {
+                    window.history.pushState($0, '', $1);
+                    window.dispatchEvent(new CustomEvent('vaadin-navigated'));
+                })
+                """)
+        void pushState(@Nullable BaseJsonNode state, @Nullable String location);
+
+        /**
+         * Replaces the current entry of the browser's history with the given
+         * state and location.
+         *
+         * @param state
+         *            the state to replace with, or <code>null</code> to only
+         *            change the location
+         * @param location
+         *            the location to go to, or <code>null</code> to only change
+         *            the state
+         */
+        @JsExpression("""
+                setTimeout(() => {
+                    window.history.replaceState($0, '', $1);
+                    window.dispatchEvent(new CustomEvent('vaadin-navigated'));
+                })
+                """)
+        void replaceState(@Nullable BaseJsonNode state,
+                @Nullable String location);
+
+        /**
+         * Asks the React router to navigate to the given location, adding a
+         * history entry for it.
+         *
+         * @param state
+         *            the state to navigate with, or <code>null</code> for none
+         * @param location
+         *            the location to go to
+         * @param callback
+         *            whether the navigation should call the server back
+         */
+        @JsExpression("""
+                window.dispatchEvent(new CustomEvent('vaadin-navigate', {
+                    detail: { state: $0, url: $1, replace: false, callback: $2 }
+                }));
+                """)
+        void navigate(@Nullable BaseJsonNode state, @Nullable String location,
+                boolean callback);
+
+        /**
+         * Asks the React router to navigate to the given location, replacing
+         * the current history entry with it.
+         *
+         * @param state
+         *            the state to navigate with, or <code>null</code> for none
+         * @param location
+         *            the location to go to
+         * @param callback
+         *            whether the navigation should call the server back
+         */
+        @JsExpression("""
+                window.dispatchEvent(new CustomEvent('vaadin-navigate', {
+                    detail: { state: $0, url: $1, replace: true, callback: $2 }
+                }));
+                """)
+        void navigateReplacing(@Nullable BaseJsonNode state,
+                @Nullable String location, boolean callback);
     }
 }
