@@ -100,18 +100,6 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Describes this call the way a developer wrote it, for a message about it
-     * that a hash would make unreadable.
-     *
-     * @return the interface, the method and the number of arguments, not
-     *         <code>null</code>
-     */
-    public String getDebugInfo() {
-        return definitionType.getName() + "." + methodName + "/"
-                + arguments.size();
-    }
-
-    /**
      * Gets the JavaScript that this call runs in a browser, as declared by
      * {@link JsExpression} on the called method.
      * <p>

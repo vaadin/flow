@@ -180,9 +180,7 @@ public class UidlWriter implements Serializable {
         if (!executeJavaScriptList.isEmpty()) {
             response.set(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList,
-                            uiInternals.getConstantPool(),
-                            !service.getDeploymentConfiguration()
-                                    .isProductionMode()));
+                            uiInternals.getConstantPool()));
         }
         // Dumped after the invocations are encoded, since what each of them
         // runs is a constant of this response
@@ -315,10 +313,9 @@ public class UidlWriter implements Serializable {
     // non-private for testing purposes
     static ArrayNode encodeExecuteJavaScriptList(
             List<PendingJavaScriptInvocation> executeJavaScriptList,
-            ConstantPool constantPool, boolean withDebugInfo) {
-        return executeJavaScriptList.stream()
-                .map(invocation -> encodeExecuteJavaScript(invocation,
-                        constantPool, withDebugInfo))
+            ConstantPool constantPool) {
+        return executeJavaScriptList.stream().map(
+                invocation -> encodeExecuteJavaScript(invocation, constantPool))
                 .collect(JacksonUtils.asArray());
     }
 
@@ -339,12 +336,10 @@ public class UidlWriter implements Serializable {
     }
 
     private static ArrayNode encodeExecuteJavaScript(
-            PendingJavaScriptInvocation invocation, ConstantPool constantPool,
-            boolean withDebugInfo) {
+            PendingJavaScriptInvocation invocation, ConstantPool constantPool) {
         JsCall jsCall = invocation.getInvocation().getJsCall();
         if (jsCall != null) {
-            return encodeJsCall(invocation, jsCall, constantPool,
-                    withDebugInfo);
+            return encodeJsCall(invocation, jsCall, constantPool);
         }
 
         List<Object> parametersList = invocation.getInvocation()
@@ -415,36 +410,23 @@ public class UidlWriter implements Serializable {
 
     /**
      * Encodes a call made through a JavaScript definition as
-     * <code>[argument1, ..., element, successChannel, errorChannel, target]</code>,
-     * where the trailing target object names the function to run instead of
-     * carrying JavaScript. The function is identified by a hash of the
-     * JavaScript it runs, so no expression is sent, nothing is compiled in the
-     * browser, and what declared the JavaScript in Java stays on the server.
+     * <code>[argument1, ..., element, successChannel, errorChannel, function]</code>,
+     * where the trailing constant names the function to run rather than
+     * carrying JavaScript. The name is a hash of the JavaScript the function
+     * runs, so no expression is sent, nothing is compiled in the browser, and
+     * what declared the JavaScript in Java stays on the server.
      * <p>
-     * Outside production mode the target also carries what a developer wrote,
-     * so that a message about the call can name it. The client only prints it.
-     * <p>
-     * The target tells the client how to read the parameters: the first
-     * <code>arguments</code> of them are the arguments of the call, the next
-     * one is the element to apply the function to, and the two after that are
-     * the return value channels when <code>returns</code> is set.
+     * The parameters are the arguments of the call, then the element to apply
+     * the function to, and the two return value channels when the call is
+     * subscribed to. The client reads them the other way around: the function
+     * it looks up takes the arguments, so what follows them is the element and
+     * the channels, if any.
      */
     private static ArrayNode encodeJsCall(
             PendingJavaScriptInvocation invocation, JsCall call,
-            ConstantPool constantPool, boolean withDebugInfo) {
+            ConstantPool constantPool) {
         Stream<Object> parameters = invocation.getInvocation().getParameters()
                 .stream();
-
-        ObjectNode target = JacksonUtils.createObjectNode();
-        target.put(JsonConstants.UIDL_KEY_JS_FUNCTION,
-                JsCall.functionId(invocation.getInvocation().getExpression(),
-                        call.arguments().size()));
-        target.put(JsonConstants.UIDL_KEY_JS_FUNCTION_ARGUMENTS,
-                call.arguments().size());
-        if (withDebugInfo) {
-            target.put(JsonConstants.UIDL_KEY_JS_FUNCTION_DEBUG,
-                    call.getDebugInfo());
-        }
 
         if (invocation.isSubscribed()) {
             StateNode owner = invocation.getOwner();
@@ -457,12 +439,16 @@ public class UidlWriter implements Serializable {
 
             parameters = Stream.concat(parameters,
                     Stream.of(successChannel, errorChannel));
-            target.put(JsonConstants.UIDL_KEY_JS_FUNCTION_RETURNS, true);
         }
 
         return Stream
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(constantOf(target, constantPool)))
+                        Stream.of(constantOf(
+                                JacksonUtils.createNode(JsCall.functionId(
+                                        invocation.getInvocation()
+                                                .getExpression(),
+                                        call.arguments().size())),
+                                constantPool)))
                 .collect(JacksonUtils.asArray());
     }
 

@@ -166,35 +166,6 @@ public class JsonConstants implements Serializable {
     public static final String UIDL_KEY_EXECUTE = "execute";
 
     /**
-     * Key of the function to run in the target object that ends an invocation
-     * of declared JavaScript in UIDL messages, in place of a JavaScript
-     * expression. The value identifies the JavaScript that the bundle holds,
-     * and says nothing about the Java that declared it.
-     */
-    public static final String UIDL_KEY_JS_FUNCTION = "function";
-
-    /**
-     * Key of the number of leading parameters that are the arguments of an
-     * invocation of declared JavaScript. The parameter after them is the
-     * element to apply the function to.
-     */
-    public static final String UIDL_KEY_JS_FUNCTION_ARGUMENTS = "arguments";
-
-    /**
-     * Key that marks an invocation of declared JavaScript whose two last
-     * parameters are the channels for its return value.
-     */
-    public static final String UIDL_KEY_JS_FUNCTION_RETURNS = "returns";
-
-    /**
-     * Key of what the client names the function in a message, sent outside
-     * production mode so that a message about a call can be read. Nothing reads
-     * it, so a production browser is not told what declared the JavaScript it
-     * runs.
-     */
-    public static final String UIDL_KEY_JS_FUNCTION_DEBUG = "debug";
-
-    /**
      * Key used to hold the feature id when synchronizing node values.
      */
     public static final String RPC_FEATURE = "feature";

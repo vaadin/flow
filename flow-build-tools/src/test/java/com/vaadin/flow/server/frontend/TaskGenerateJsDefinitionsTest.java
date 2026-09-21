@@ -81,7 +81,8 @@ class TaskGenerateJsDefinitionsTest {
         options = new Options(Mockito.mock(Lookup.class),
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
-                null).withFrontendDirectory(frontendFolder);
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true);
         task = new TaskGenerateJsDefinitions(options);
     }
 
@@ -109,12 +110,27 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript() {
+        // Which is what a message about a call says instead of a hash, and is
+        // of no use to a browser running the application
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + JsCall.functionId(GREETING_EXPRESSION, 1) + "\"] = \""
+                        + GreeterJs.class.getName() + ".showGreeting/1\";"),
+                "the name should be registered next to the function: "
+                        + content);
+    }
+
+    @Test
     void generatedFile_namesNothingOfTheJava() throws ExecutionFailedException {
         task.execute();
         String content = task.getFileContent();
 
         assertFalse(content.contains(GreeterJs.class.getName()),
-                "a browser that loads the file should not be told what declared the JavaScript: "
+                "a production bundle should not tell a browser what declared the JavaScript: "
                         + content);
         assertFalse(content.contains("showGreeting"),
                 "and not what the methods are called either: " + content);

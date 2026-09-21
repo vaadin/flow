@@ -66,26 +66,27 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-/**
- * What an invocation of declared JavaScript ends with instead of an expression:
- * the function to look up in the bundle, how many of the leading parameters
- * are the arguments of the call, and whether the two parameters after the
- * element are the channels for the return value.
- *
- * The function is identified by a hash of the JavaScript it runs, so a message
- * about a call has nothing to name it by. Outside production mode the server
- * sends what a developer wrote as `debug`, which is only ever printed.
- */
-export interface JsDefinitionTarget {
-  function: string;
-  arguments: number;
-  returns?: boolean;
-  debug?: string;
-}
-
 type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
+// What the server sends instead of an expression: the identifier of a function
+// of the bundle, which is a hash of the JavaScript it runs. Anything else it
+// sends is an expression, and one of these is not valid JavaScript, so an
+// identifier that the bundle does not have is reported rather than run.
+const FUNCTION_ID = /^[0-9a-f]{64}$/u;
+
 type ReturnChannel = (value: unknown) => void;
+
+/**
+ * Reports the given message through the error channel of an invocation, which
+ * is its last parameter when it was subscribed to, so that the pending result
+ * of the call is completed rather than left hanging on the server.
+ */
+function reportThroughChannel(parameters: unknown[], message: string): void {
+  const lastParameter = parameters[parameters.length - 1];
+  if (typeof lastParameter === 'function') {
+    (lastParameter as ReturnChannel)(message);
+  }
+}
 
 /**
  * Looks up the function that the build generated for declared JavaScript. The
@@ -102,11 +103,17 @@ function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefi
 }
 
 /**
- * What to call the target in a message: what a developer wrote when the server
- * sent it, and the identifier of the function otherwise.
+ * What to call a function in a message: what a developer wrote, which a
+ * development bundle registers next to the function itself, and the identifier
+ * of the function when it does not, as in production.
  */
-function nameOf(target: JsDefinitionTarget): string {
-  return target.debug ?? target.function;
+function nameOf(functionId: string): string {
+  const names = (
+    window as unknown as {
+      Vaadin?: { Flow?: { jsDefinitionNames?: Record<string, string> } };
+    }
+  ).Vaadin?.Flow?.jsDefinitionNames;
+  return names?.[functionId] ?? functionId;
 }
 
 /**
@@ -170,9 +177,7 @@ export class ExecuteJavaScriptProcessor {
     // What to run is a constant of the message, the same way for an
     // expression and for a call of declared JavaScript, so an expression the
     // server runs again costs a reference rather than its own text.
-    const whatToRun = this.#registry
-      .getConstantPool()
-      .get<string | JsDefinitionTarget | null>(invocation[invocation.length - 1] as string);
+    const whatToRun = this.#registry.getConstantPool().get<string | null>(invocation[invocation.length - 1] as string);
     if (whatToRun === null) {
       Console.error(
         `No constant for the invocation ${JSON.stringify(invocation)}. Reload the page to pick up the current state.`
@@ -180,7 +185,7 @@ export class ExecuteJavaScriptProcessor {
       return;
     }
 
-    if (typeof whatToRun === 'object') {
+    if (FUNCTION_ID.test(whatToRun)) {
       // A call of declared JavaScript: the bundle has the function, the
       // server sent only which one to run. The node parameters are for the
       // context object an expression runs against, whose `getNode` maps an
@@ -263,59 +268,51 @@ export class ExecuteJavaScriptProcessor {
   }
 
   /**
-   * Executes a call made through a JavaScript definition: looks the function up in the
-   * registry that the generated bundle populates and applies it to the element,
-   * with the arguments of the call. Nothing is compiled from a string, which is
-   * what makes this path work under a content security policy that does not
-   * allow `unsafe-eval`.
+   * Executes a call made through a JavaScript definition: looks the function up
+   * in the registry that the generated bundle populates and applies it to the
+   * element, with the arguments of the call. Nothing is compiled from a string,
+   * which is what makes this path work under a content security policy that
+   * does not allow `unsafe-eval`.
    *
    * Protected instead of private for testing purposes, as `invoke` is.
    *
-   * @param target - the JavaScript definition and method to run
+   * @param functionId - the identifier of the function to run
    * @param parameters - the decoded parameters: the arguments of the call, the
    *          element to apply the function to, and the return value channels
-   *          when the target declares them
+   *          when the call is subscribed to
    */
-  protected invokeFromBundle(target: JsDefinitionTarget, parameters: unknown[]): void {
-    const argumentCount = target.arguments;
-
-    // The parameters are the arguments of the call, then the element to apply
-    // the function to, then the two return value channels when the target
-    // declares them. Nothing else may be in there, so a count that does not
-    // add up means the invocation was not built by the server this client
-    // talks to, and reading the element out of it by index would bind an
-    // argument as `this`. Say so instead of running the call.
-    const expectedCount = argumentCount + 1 + (target.returns === true ? 2 : 0);
-    if (parameters.length !== expectedCount) {
-      const message = `Expected ${expectedCount} parameters for ${nameOf(target)} but the invocation carries ${
-        parameters.length
-      }. Reload the page to pick up the current signature.`;
+  protected invokeFromBundle(functionId: string, parameters: unknown[]): void {
+    const name = nameOf(functionId);
+    const fn = findDeclaredFunction(functionId);
+    if (fn === undefined) {
+      const message = `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
       Console.error(message);
       // The server appends the two channels after everything else, or neither
-      // of them, so the error channel is the last parameter even when the
-      // count in front of it does not add up. Report through it, or the
-      // pending result of the call is never completed on the server.
-      if (target.returns === true) {
-        const lastParameter = parameters[parameters.length - 1];
-        if (typeof lastParameter === 'function') {
-          (lastParameter as ReturnChannel)(message);
-        }
-      }
+      // of them, so the error channel is the last parameter. Report through it
+      // when there is one, or the pending result of the call is never
+      // completed on the server.
+      reportThroughChannel(parameters, message);
       return;
     }
 
-    const onSuccess = target.returns === true ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
-    const onError = target.returns === true ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
-
-    const fn = findDeclaredFunction(target.function);
-    if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${nameOf(
-        target
-      )}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+    // The function takes the arguments of the call, so what follows them is
+    // the element to apply it to, and then the two return value channels when
+    // the call is subscribed to. Nothing else may be in there, so a count that
+    // does not add up means the invocation was not built for this function,
+    // and reading the element out of it by index would bind an argument as
+    // `this`. Say so instead of running the call.
+    const argumentCount = fn.length;
+    const afterTheArguments = parameters.length - argumentCount;
+    if (afterTheArguments !== 1 && afterTheArguments !== 3) {
+      const message = `Expected ${argumentCount} arguments and the element for ${name} but the invocation carries ${parameters.length} parameters. Reload the page to pick up the current signature.`;
       Console.error(message);
-      onError?.(message);
+      reportThroughChannel(parameters, message);
       return;
     }
+
+    const returns = afterTheArguments === 3;
+    const onSuccess = returns ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
+    const onError = returns ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
 
     // The element the definition was obtained from is the parameter after the
     // arguments, and it is what the function runs against.
@@ -327,7 +324,7 @@ export class ExecuteJavaScriptProcessor {
       }
     } catch (exception) {
       Console.reportStacktrace(exception);
-      Console.error(`Exception is thrown while running ${nameOf(target)}. Stacktrace will be dumped separately.`);
+      Console.error(`Exception is thrown while running ${name}. Stacktrace will be dumped separately.`);
       onError?.(`${exception}`);
     }
   }

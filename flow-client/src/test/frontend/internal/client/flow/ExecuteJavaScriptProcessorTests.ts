@@ -86,22 +86,31 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 
 describe('ExecuteJavaScriptProcessor', () => {
   describe('JavaScript definition calls', () => {
-    const GREETING = '4e6f2a';
-    const VALUE = '9c1b7d';
+    // What the server sends: the identifier of a function of the bundle, which
+    // is a hash of the JavaScript it runs
+    const GREETING = 'a'.repeat(64);
+    const VALUE = 'b'.repeat(64);
 
     type DefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
     type DefinitionWindow = Window & {
-      Vaadin?: { Flow?: { jsDefinitions?: Record<string, DefinitionFunction> } };
+      Vaadin?: {
+        Flow?: { jsDefinitions?: Record<string, DefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+      };
     };
 
-    // Registers a function the way the generated bundle does.
-    function registerDefinition(functionId: string, fn: DefinitionFunction): void {
+    // Registers a function the way the generated bundle does, with the name a
+    // message calls it by, which a development bundle registers with it.
+    function registerDefinition(functionId: string, fn: DefinitionFunction, name?: string): void {
       const vaadin = (window as DefinitionWindow).Vaadin ?? {};
       (window as DefinitionWindow).Vaadin = vaadin;
       vaadin.Flow = vaadin.Flow ?? {};
       vaadin.Flow.jsDefinitions = vaadin.Flow.jsDefinitions ?? {};
       vaadin.Flow.jsDefinitions[functionId] = fn;
+      if (name !== undefined) {
+        vaadin.Flow.jsDefinitionNames = vaadin.Flow.jsDefinitionNames ?? {};
+        vaadin.Flow.jsDefinitionNames[functionId] = name;
+      }
     }
 
     function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
@@ -119,18 +128,21 @@ describe('ExecuteJavaScriptProcessor', () => {
     }
 
     afterEach(() => {
-      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[GREETING];
-      delete (window as DefinitionWindow).Vaadin?.Flow?.jsDefinitions?.[VALUE];
+      const flow = (window as DefinitionWindow).Vaadin?.Flow;
+      for (const functionId of [GREETING, VALUE]) {
+        delete flow?.jsDefinitions?.[functionId];
+        delete flow?.jsDefinitionNames?.[functionId];
+      }
     });
 
     it('runs the function from the bundle against the element', () => {
       const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
-      registerDefinition(GREETING, function (this: unknown, ...args: unknown[]) {
-        calls.push({ thisArg: this, args });
+      registerDefinition(GREETING, function (this: unknown, greeting: unknown) {
+        calls.push({ thisArg: this, args: [greeting] });
       });
       const element = { tagName: 'div' };
 
-      run(['Hello', element, { function: GREETING, arguments: 1 }]);
+      run(['Hello', element, GREETING]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -142,12 +154,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
-      run([
-        element,
-        (value: unknown) => resolved.push(value),
-        () => {},
-        { function: VALUE, arguments: 0, returns: true }
-      ]);
+      run([element, (value: unknown) => resolved.push(value), () => {}, VALUE]);
       // Settled in microtasks: a macrotask wait would also pick up the
       // asynchronous rethrow that the expression cases leave behind.
       await Promise.resolve();
@@ -156,54 +163,55 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(resolved).to.eql(['answer']);
     });
 
-    it('does not run a call whose parameters do not match the target', () => {
+    it('does not run a call whose parameters do not match the function', () => {
       let calls = 0;
-      registerDefinition(GREETING, () => {
+      registerDefinition(GREETING, (_greeting: unknown) => {
         calls += 1;
       });
 
-      // One argument declared, but no element to apply the function to: the
-      // invocation and this client disagree about the signature, which is the
+      // One argument the function takes, but no element to apply it to: the
+      // invocation and the bundle disagree about the signature, which is the
       // same disagreement as an invocation that carries one parameter too
       // many.
-      run(['Hello', { function: GREETING, arguments: 1 }]);
+      run(['Hello', GREETING]);
 
       expect(calls).to.equal(0);
     });
 
-    it('reports a mismatch to the error channel of a call that returns a value', () => {
+    it('reports a mismatch to the error channel, naming the function as it was written', () => {
       let calls = 0;
-      registerDefinition(VALUE, () => {
-        calls += 1;
-        return 'answer';
-      });
+      registerDefinition(
+        VALUE,
+        () => {
+          calls += 1;
+          return 'answer';
+        },
+        'com.acme.GreeterJs.readValue/0'
+      );
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      // Subscribed to, but one channel short of what the target declares.
-      run([element, (error: unknown) => errors.push(error), { function: VALUE, arguments: 0, returns: true }]);
+      // Subscribed to, but one channel short of what the server sends.
+      run([element, (error: unknown) => errors.push(error), VALUE]);
 
       expect(calls).to.equal(0);
       // Reported rather than left hanging: the pending result on the server
       // would otherwise never complete.
       expect(errors).to.have.lengthOf(1);
+      // A development bundle registers what a developer wrote next to the
+      // function, so a message says more than a hash does
+      expect(String(errors[0])).to.contain('com.acme.GreeterJs.readValue/0');
     });
 
     it('reports a function that is not in the bundle to the error channel', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      run([
-        element,
-        () => {},
-        (error: unknown) => errors.push(error),
-        { function: 'notinthebundle', arguments: 0, returns: true, debug: 'com.acme.GreeterJs.readValue/0' }
-      ]);
+      run([element, () => {}, (error: unknown) => errors.push(error), VALUE]);
 
       expect(errors).to.have.lengthOf(1);
-      // What the server sends outside production mode, so that the message
-      // says more than a hash does
-      expect(String(errors[0])).to.contain('com.acme.GreeterJs.readValue/0');
+      // Nothing registered it, so the message has only the identifier
+      expect(String(errors[0])).to.contain(VALUE);
     });
   });
 

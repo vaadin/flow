@@ -31,7 +31,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -193,7 +192,7 @@ class UidlWriterTest {
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
-                executeJavaScriptList, constantPool, false);
+                executeJavaScriptList, constantPool);
         ObjectNode constants = constantPool.dumpConstants();
 
         ArrayNode expectedJson = JacksonUtils.createArray(
@@ -214,15 +213,14 @@ class UidlWriterTest {
     }
 
     /**
-     * What names the given script among the given constants, which is what an
-     * invocation that runs it carries instead of the script itself.
+     * What names the given script, or the given function, among the given
+     * constants, which is what an invocation that runs it carries instead of
+     * the script or the function itself.
      */
-    private static String nameOfWhatRuns(Object whatRuns,
+    private static String nameOfWhatRuns(String whatRuns,
             ObjectNode constants) {
         return JacksonUtils.getKeys(constants).stream()
-                .filter(key -> whatRuns instanceof JsonNode node
-                        ? JacksonUtils.jsonEquals(node, constants.get(key))
-                        : whatRuns.equals(constants.get(key).asString()))
+                .filter(key -> whatRuns.equals(constants.get(key).asString()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("The constants "
                         + constants + " should carry " + whatRuns));
@@ -236,12 +234,12 @@ class UidlWriterTest {
         ArrayNode first = UidlWriter.encodeExecuteJavaScriptList(
                 List.of(new PendingJavaScriptInvocation(element.getNode(),
                         new JavaScriptInvocation("$0.focus()", element))),
-                constantPool, false);
+                constantPool);
         constantPool.dumpConstants();
         ArrayNode second = UidlWriter.encodeExecuteJavaScriptList(
                 List.of(new PendingJavaScriptInvocation(element.getNode(),
                         new JavaScriptInvocation("$0.focus()", element))),
-                constantPool, false);
+                constantPool);
 
         assertEquals(nameOfWhatRuns(first), nameOfWhatRuns(second),
                 "the same script should be named the same way");
@@ -268,58 +266,22 @@ class UidlWriterTest {
         ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
                 new PendingJavaScriptInvocation(element.getNode(), invocation)),
-                constantPool, false);
+                constantPool);
         ObjectNode constants = constantPool.dumpConstants();
 
-        ObjectNode target = JacksonUtils.createObjectNode();
-        target.put("function", JsCall.functionId("this.method($0)", 1));
-        target.put("arguments", 1);
+        String functionId = JsCall.functionId("this.method($0)", 1);
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
                         // Null since element is not attached
                         JacksonUtils.nullNode(), JacksonUtils.createNode(
-                                nameOfWhatRuns(target, constants))));
+                                nameOfWhatRuns(functionId, constants))));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
-                "a call of declared JavaScript should name a target, the same way an expression names a script: "
+                "a call of declared JavaScript should name a function, the same way an expression names a script: "
                         + json + " " + constants);
         assertFalse(constants.toString().contains(TestJs.class.getName()),
-                "and the target should carry neither JavaScript nor what declared it: "
+                "and the constant should carry neither JavaScript nor what declared it: "
                         + constants);
-    }
-
-    @Test
-    void encodeExecuteJavaScript_jsCallOutsideProductionMode_addsWhatToCallIt() {
-        Element element = ElementFactory.createDiv();
-
-        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
-        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
-                call.getExpression(), "foo", element);
-
-        ConstantPool constantPool = new ConstantPool();
-        UidlWriter.encodeExecuteJavaScriptList(List.of(
-                new PendingJavaScriptInvocation(element.getNode(), invocation)),
-                constantPool, true);
-        ObjectNode constants = constantPool.dumpConstants();
-
-        assertEquals(TestJs.class.getName() + ".method/1",
-                targetIn(constants).get("debug").asString(),
-                "a message about the call should be able to name it: "
-                        + constants);
-    }
-
-    /**
-     * The one target among the given constants, which is what a call of
-     * declared JavaScript runs.
-     */
-    private static ObjectNode targetIn(ObjectNode constants) {
-        return (ObjectNode) JacksonUtils.getKeys(constants).stream()
-                .map(constants::get)
-                .filter(constant -> constant.isObject()
-                        && constant.has("function"))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("The constants "
-                        + constants + " should carry a target"));
     }
 
     @Test
@@ -335,45 +297,19 @@ class UidlWriterTest {
         });
 
         ConstantPool constantPool = new ConstantPool();
-        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
-                List.of(pending), constantPool, false);
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending), constantPool);
 
         ArrayNode encoded = (ArrayNode) json.get(0);
         assertEquals(5, encoded.size(),
-                "the argument and the element should be followed by the two channels and the target: "
+                "the argument and the element should be followed by the two channels and the function to run: "
                         + encoded);
-        ObjectNode target = targetIn(constantPool.dumpConstants());
-        assertTrue(target.get("returns").asBoolean(),
-                "the target should tell the client that the call is subscribed to");
-        assertEquals(1, target.get("arguments").asInt());
-    }
-
-    @Test
-    void createUidl_productionMode_decidesWhatTheBrowserIsToldAboutACall()
-            throws Exception {
-        assertFalse(callInUidl(true).has("debug"),
-                "a production browser should not be told what declared the JavaScript it runs");
-        assertTrue(callInUidl(false).has("debug"),
-                "and a development one should, or a message about a call can only name a hash");
-    }
-
-    /**
-     * The target of a call of declared JavaScript, as a response written for a
-     * UI of an application running in the given mode carries it.
-     */
-    private ObjectNode callInUidl(boolean productionMode) throws Exception {
-        UI ui = initializeUIForDependenciesTest(new UI());
-        mocks.getDeploymentConfiguration().setProductionMode(productionMode);
-        Element element = ElementFactory.createDiv();
-        ui.getElement().appendChild(element);
-        element.executeJs(TestJs.class).method("foo");
-
-        ObjectNode response = new UidlWriter().createUidl(ui, false);
-        // An invocation names what it runs among the constants of the
-        // response; whatever else it carries runs an expression, which is a
-        // string where a call of declared JavaScript has its target
-        ObjectNode constants = (ObjectNode) response.get("constants");
-        return targetIn(constants);
+        assertEquals(
+                nameOfWhatRuns(JsCall.functionId("this.method($0)", 1),
+                        constantPool.dumpConstants()),
+                encoded.get(4).asString(),
+                "and the function should be the same one as for a call that is not subscribed to: "
+                        + encoded);
     }
 
     @JsDefinition

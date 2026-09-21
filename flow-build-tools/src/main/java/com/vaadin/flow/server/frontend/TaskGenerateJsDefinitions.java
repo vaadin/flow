@@ -50,6 +50,10 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * <code>unsafe-eval</code>, the JavaScript an application can be made to run is
  * known when it is built, and what declared it in Java stays there.
  * <p>
+ * Outside production mode the file also registers what a developer wrote for
+ * each function, so that a message about a call in the browser names it rather
+ * than a hash. A production bundle carries the functions alone.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
@@ -58,6 +62,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             "window.Vaadin = window.Vaadin || {};",
             "window.Vaadin.Flow = window.Vaadin.Flow || {};",
             "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
+
+    // What a message about a call names it by, which is of no use to a browser
+    // running the application and is left out of a production bundle
+    private static final String NAMES = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
@@ -76,8 +84,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() {
-        return renderFileContent(options.getClassFinder()
-                .getAnnotatedClasses(JsDefinition.class));
+        return renderFileContent(options.getClassFinder().getAnnotatedClasses(
+                JsDefinition.class), !options.isProductionMode());
     }
 
     /**
@@ -90,13 +98,20 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *
      * @param definitions
      *            the JavaScript definitions to render, not <code>null</code>
+     * @param withNames
+     *            whether to register what a message about a call names it by,
+     *            which is for a development bundle
      * @return the content of the generated file
      */
-    static String renderFileContent(Collection<Class<?>> definitions) {
+    static String renderFileContent(Collection<Class<?>> definitions,
+            boolean withNames) {
         List<String> lines = new ArrayList<>(HEADER);
+        if (withNames) {
+            lines.add(NAMES);
+        }
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
-                        .addAll(renderDefinitionLines(definition)));
+                        .addAll(renderDefinitionLines(definition, withNames)));
         lines.addAll(FOOTER);
         return String.join(System.lineSeparator(), lines);
     }
@@ -116,7 +131,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
         return definitions.stream()
-                .filter(definition -> !isInGeneratedFile(definition, generated))
+                .filter(definition -> !isInGeneratedFile(definition, generated,
+                        !options.isProductionMode()))
                 .toList();
     }
 
@@ -146,7 +162,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> updateJsDefinitions(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        String content = withMissingEntries(generated, definitions);
+        String content = withMissingEntries(generated, definitions,
+                !options.isProductionMode());
 
         TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
@@ -155,8 +172,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
             // The file is as it was, so only what it was already missing is
             // missing now
-            return definitions.stream().filter(
-                    definition -> !isInGeneratedFile(definition, generated))
+            return definitions.stream()
+                    .filter(definition -> !isInGeneratedFile(definition,
+                            generated, !options.isProductionMode()))
                     .toList();
         }
         // Everything asked for went into the content that was written
@@ -171,11 +189,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * nothing calling it.
      */
     private static boolean isInGeneratedFile(Class<?> definition,
-            String generated) {
+            String generated, boolean withNames) {
         if (generated == null) {
             return false;
         }
-        List<String> declared = renderDefinitionLines(definition);
+        List<String> declared = renderDefinitionLines(definition, withNames);
         if (declared.isEmpty()) {
             // Declares no JavaScript, so there is nothing to carry
             return true;
@@ -196,13 +214,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * than for everything an application declares.
      */
     private static String withMissingEntries(String generated,
-            Collection<Class<?>> definitions) {
+            Collection<Class<?>> definitions, boolean withNames) {
         if (generated == null || generated.isBlank()) {
-            return renderFileContent(definitions);
+            return renderFileContent(definitions, withNames);
         }
         List<String> missing = definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
-                .flatMap(definition -> renderFunctions(definition).stream())
+                .flatMap(definition -> renderFunctions(definition, withNames)
+                        .stream())
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
@@ -216,11 +235,15 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (generated.contains(footer)) {
             return generated.replace(footer, added + separator + footer);
         }
+        List<String> header = new ArrayList<>(HEADER);
+        if (withNames) {
+            header.add(NAMES);
+        }
         // Written by another version of this class: what it holds is what a
         // browser has, so the functions go after it rather than instead of it.
         // The header only assigns what is not there, so repeating it is what
         // makes the content that follows land in the registry.
-        return generated + separator + String.join(separator, HEADER)
+        return generated + separator + String.join(separator, header)
                 + separator + added + separator + footer;
     }
 
@@ -259,8 +282,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * @return the lines this definition contributes, empty if it declares no
      *         JavaScript
      */
-    static List<String> renderDefinitionLines(Class<?> definition) {
-        return renderFunctions(definition).stream()
+    static List<String> renderDefinitionLines(Class<?> definition,
+            boolean withNames) {
+        return renderFunctions(definition, withNames).stream()
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
                 .toList();
@@ -270,7 +294,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * What one JavaScript definition contributes, one registered function per
      * method that declares JavaScript, each as the lines it is written as.
      */
-    private static List<String> renderFunctions(Class<?> definition) {
+    private static List<String> renderFunctions(Class<?> definition,
+            boolean withNames) {
         List<Method> methods = new ArrayList<>();
         for (Method method : definition.getMethods()) {
             if (method.isAnnotationPresent(JsExpression.class)) {
@@ -290,12 +315,28 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     .mapToObj(index -> "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            functions.add(String.join(System.lineSeparator(), String.format(
+            List<String> function = new ArrayList<>(List.of(String.format(
                     "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
                     quote(functionId(method)), parameters),
                     method.getAnnotation(JsExpression.class).value(), "};"));
+            if (withNames) {
+                function.add(String.format(
+                        "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;",
+                        quote(functionId(method)),
+                        quote(nameOf(definition, method))));
+            }
+            functions.add(String.join(System.lineSeparator(), function));
         }
         return functions;
+    }
+
+    /**
+     * What a message about a call of the given method names it by: what a
+     * developer wrote, rather than the hash the call itself carries.
+     */
+    private static String nameOf(Class<?> definition, Method method) {
+        return definition.getName() + "." + method.getName() + "/"
+                + method.getParameterCount();
     }
 
     private static String functionId(Method method) {
