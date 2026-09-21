@@ -99,6 +99,17 @@ The diagram is a Mermaid block, which GitHub renders inline in the
 comment. A re-run hides the previous comment instead of stacking another
 diagram onto the conversation.
 
+A block that does not parse renders as an error box rather than a
+picture, so the bot checks its figure before posting with
+`.github/scripts/validate-mermaid.mjs`, which parses it with the same
+Mermaid version GitHub uses and reports the line at fault. The script
+takes a `.mmd` file, a `.md` file whose fenced `mermaid` blocks it
+extracts, or the figure on stdin, and it is useful by hand too:
+
+```bash
+node .github/scripts/validate-mermaid.mjs .github/workflows/diagram-bot.md
+```
+
 To ask for a diagram on a pull request the bot passed over, add the
 `diagram` label. That skips the decision and draws the most useful figure
 the change supports.
