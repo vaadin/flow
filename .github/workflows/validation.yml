@@ -381,13 +381,6 @@ jobs:
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
-      - name: Compile and Install Flow
-        # On re-runs the saved-workspace artifact has already been deleted,
-        # so compile from scratch like the test jobs do.
-        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
-        run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
-          eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         if: ${{ steps.decide.outputs.run == 'true' }}
         env:
@@ -395,6 +388,13 @@ jobs:
         run: |
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
       - name: Run Gradle build and functionalTests
         if: ${{ steps.decide.outputs.run == 'true' }}
         working-directory: flow-plugins/flow-gradle-plugin
