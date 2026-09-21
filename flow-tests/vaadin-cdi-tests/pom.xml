@@ -544,7 +544,7 @@
         <dependency>
           <groupId>org.jboss.arquillian.container</groupId>
           <artifactId>arquillian-tomcat-managed-10</artifactId>
-          <version>1.2.3.Final</version>
+          <version>1.2.5.Final</version>
           <scope>test</scope>
         </dependency>
         <!-- Weld servlet for testing CDI injections -->
