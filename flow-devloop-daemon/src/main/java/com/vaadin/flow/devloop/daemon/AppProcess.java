@@ -443,10 +443,10 @@ final class AppProcess {
 
     /**
      * Awaits the whole tree under a single deadline, because a stop must not be
-     * able to hang the daemon - and awaiting each descendant in turn would let a
-     * stalled tree of {@code k} of them serialise into {@code 10s * k} while the
-     * lifecycle lock is held. The handles have already been forcibly destroyed,
-     * so this only collects exits that are on their way, together.
+     * able to hang the daemon - and awaiting each descendant in turn would let
+     * a stalled tree of {@code k} of them serialise into {@code 10s * k} while
+     * the lifecycle lock is held. The handles have already been forcibly
+     * destroyed, so this only collects exits that are on their way, together.
      * <p>
      * {@code System.out} is this daemon's log - it has no logging framework and
      * the enforcer rule in its pom is what keeps it that way - so java:S106 is
