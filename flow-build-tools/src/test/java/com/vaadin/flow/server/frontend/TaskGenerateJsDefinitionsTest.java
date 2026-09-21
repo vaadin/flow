@@ -47,6 +47,10 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
 
+    private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
+
+    private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
+
     @JsDefinition
     public interface GreeterJs extends Serializable {
         @JsExpression(GREETING_EXPRESSION)
@@ -58,7 +62,7 @@ class TaskGenerateJsDefinitionsTest {
 
     @JsDefinition
     public interface CounterJs extends Serializable {
-        @JsExpression("this.count = ($0 || 0) + 1")
+        @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
     }
 
@@ -116,12 +120,71 @@ class TaskGenerateJsDefinitionsTest {
         String content = TaskGenerateJsDefinitions
                 .renderFileContent(List.of(GreeterJs.class), true);
 
+        assertTrue(content.contains(NAMES_REGISTRY),
+                "the registry a name is assigned into has to be there, or the module throws: "
+                        + content);
         assertTrue(
                 content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
                         + JsCall.functionId(GREETING_EXPRESSION, 1) + "\"] = \""
                         + GreeterJs.class.getName() + ".showGreeting/1\";"),
-                "the name should be registered next to the function: "
+                "and the name should be registered next to the function: "
                         + content);
+    }
+
+    @Test
+    void updateJsDefinitions_developmentMode_writesTheNamesAndWhatHoldsThem()
+            throws IOException {
+        // What the hotswapper does, which only runs outside production mode,
+        // into a file that a build wrote before names were rendered at all
+        Options development = options.withProductionMode(false);
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), false));
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(development, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(NAMES_REGISTRY),
+                "the registry the names are assigned into should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(NAMES_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsDefinitionNames[\""),
+                "and it should come before the name it holds: " + written);
+        assertTrue(
+                written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + JsCall.functionId(COUNT_EXPRESSION, 1) + "\"] = \""
+                        + CounterJs.class.getName() + ".count/1\";"),
+                "the name of what was asked for should be in the file: "
+                        + written);
+        assertTrue(written.contains(JsCall.functionId(GREETING_EXPRESSION, 1)),
+                "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_developmentMode_nothingMissing_leavesTheFileAlone()
+            throws IOException {
+        // The same file a dev build writes: everything it is asked for is in
+        // it, names and all, so there is nothing to add
+        Options development = options.withProductionMode(false);
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        String carried = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true);
+        Files.writeString(generated.toPath(), carried);
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(development,
+                List.of(GreeterJs.class));
+
+        assertEquals(carried, Files.readString(generated.toPath()),
+                "a definition the file carries should not be written into it again");
     }
 
     @Test
@@ -218,16 +281,14 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(missing.isEmpty());
         String written = Files.readString(generated.toPath());
-        assertTrue(
-                written.contains(
-                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
+        assertTrue(written.contains(JsCall.functionId(COUNT_EXPRESSION, 1)),
                 "the interface that was asked for should be in the file: "
                         + written);
         assertTrue(written.contains(JsCall.functionId(GREETING_EXPRESSION, 1)),
                 "what the file held should still be in it: " + written);
         assertTrue(
-                written.indexOf("import.meta.hot") > written.indexOf(
-                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
+                written.indexOf("import.meta.hot") > written
+                        .indexOf(JsCall.functionId(COUNT_EXPRESSION, 1)),
                 "and what was added should be part of the module: " + written);
     }
 
@@ -252,9 +313,7 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(written.contains("fromsomewhereelse"),
                 "a function a browser has should not be taken out of the file: "
                         + written);
-        assertTrue(
-                written.contains(
-                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
+        assertTrue(written.contains(JsCall.functionId(COUNT_EXPRESSION, 1)),
                 "and the one that was asked for should be in it: " + written);
     }
 

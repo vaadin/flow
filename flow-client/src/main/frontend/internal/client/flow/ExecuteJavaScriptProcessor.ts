@@ -89,17 +89,32 @@ function reportThroughChannel(parameters: unknown[], message: string): void {
 }
 
 /**
+ * What the generated bundle registers on the page: a function per declared
+ * expression, and, outside production, what a developer wrote for each of
+ * them.
+ */
+function declaredJavaScript(): {
+  jsDefinitions?: Record<string, JsDefinitionFunction>;
+  jsDefinitionNames?: Record<string, string>;
+} {
+  return (
+    (
+      window as unknown as {
+        Vaadin?: {
+          Flow?: { jsDefinitions?: Record<string, JsDefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+        };
+      }
+    ).Vaadin?.Flow ?? {}
+  );
+}
+
+/**
  * Looks up the function that the build generated for declared JavaScript. The
  * registry is populated by the generated bundle, so the function is ordinary
  * bundled code and nothing has to be compiled from a string here.
  */
 function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefined {
-  const registry = (
-    window as unknown as {
-      Vaadin?: { Flow?: { jsDefinitions?: Record<string, JsDefinitionFunction> } };
-    }
-  ).Vaadin?.Flow?.jsDefinitions;
-  return registry?.[functionId];
+  return declaredJavaScript().jsDefinitions?.[functionId];
 }
 
 /**
@@ -108,12 +123,7 @@ function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefi
  * of the function when it does not, as in production.
  */
 function nameOf(functionId: string): string {
-  const names = (
-    window as unknown as {
-      Vaadin?: { Flow?: { jsDefinitionNames?: Record<string, string> } };
-    }
-  ).Vaadin?.Flow?.jsDefinitionNames;
-  return names?.[functionId] ?? functionId;
+  return declaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
 }
 
 /**

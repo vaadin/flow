@@ -105,10 +105,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     static String renderFileContent(Collection<Class<?>> definitions,
             boolean withNames) {
-        List<String> lines = new ArrayList<>(HEADER);
-        if (withNames) {
-            lines.add(NAMES);
-        }
+        List<String> lines = new ArrayList<>(header(withNames));
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition, withNames)));
@@ -231,20 +228,37 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         String separator = System.lineSeparator();
         String footer = String.join(separator, FOOTER);
-        String added = String.join(separator, missing);
-        if (generated.contains(footer)) {
-            return generated.replace(footer, added + separator + footer);
+        List<String> added = new ArrayList<>();
+        if (withNames && !generated.contains(NAMES)) {
+            // Written before names were registered at all, and a name is
+            // assigned into an object that has to be there
+            added.add(NAMES);
         }
-        List<String> header = new ArrayList<>(HEADER);
-        if (withNames) {
-            header.add(NAMES);
+        added.addAll(missing);
+        if (generated.contains(footer)) {
+            return generated.replace(footer,
+                    String.join(separator, added) + separator + footer);
         }
         // Written by another version of this class: what it holds is what a
         // browser has, so the functions go after it rather than instead of it.
         // The header only assigns what is not there, so repeating it is what
         // makes the content that follows land in the registry.
-        return generated + separator + String.join(separator, header)
-                + separator + added + separator + footer;
+        return generated + separator + String.join(separator, header(withNames))
+                + separator + String.join(separator, missing) + separator
+                + footer;
+    }
+
+    /**
+     * What a generated file opens with: the registry a function is assigned
+     * into, and the one a name is assigned into when names are rendered. Both
+     * assign only what is not there, so a file can carry them more than once.
+     */
+    private static List<String> header(boolean withNames) {
+        List<String> header = new ArrayList<>(HEADER);
+        if (withNames) {
+            header.add(NAMES);
+        }
+        return header;
     }
 
     private static String readGeneratedFile(Options options) {
