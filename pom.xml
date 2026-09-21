@@ -123,7 +123,7 @@
     <javassist.version>3.30.2-GA</javassist.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
     <weld.version>6.0.4.Final</weld.version>
-    <weld.junit.version>5.0.1.Final</weld.junit.version>
+    <weld.junit.version>5.0.3.Final</weld.junit.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -206,6 +206,15 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- Manages every JUnit artifact, including the ones pulled in
+           transitively by test libraries such as weld-junit5 -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
       <dependency>
         <groupId>commons-io</groupId>
@@ -256,26 +265,6 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.13.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>${junit.jupiter.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.jupiter.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.vintage</groupId>
-        <artifactId>junit-vintage-engine</artifactId>
-        <version>${junit.jupiter.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-launcher</artifactId>
-        <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -742,6 +731,11 @@
             </path>
           </annotationProcessorPaths>
           <fork>true</fork>
+          <!-- Tests deliberately exercise APIs that are deprecated for
+               removal, so the removal lint only produces noise there. It
+               stays on for src/main, where using such an API is a real
+               finding. -->
+          <testCompilerArgument>-Xlint:-removal</testCompilerArgument>
         </configuration>
       </plugin>
 

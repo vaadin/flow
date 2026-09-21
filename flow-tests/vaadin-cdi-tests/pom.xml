@@ -20,14 +20,14 @@
     <openliberty.version>25.0.0.6</openliberty.version>
     <openliberty.template>jakartaee10</openliberty.template>
     <openliberty.runtimeArtifactGroupId>io.openliberty</openliberty.runtimeArtifactGroupId>
-    <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
     <!-- Every test in this module deploys to a real application server, so
          there is nothing to run until one of the container profiles below is
          activated. Skipping by default keeps a plain `mvn verify` over
          flow-tests from failing on a missing container. -->
     <cdi.container.tests.skip>true</cdi.container.tests.skip>
-    <arquillian.version>1.9.5.Final</arquillian.version>
-    <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+    <arquillian.version>1.10.2.Final</arquillian.version>
+    <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
     <shrinkwrap.descriptors.version>2.0.0</shrinkwrap.descriptors.version>
   </properties>
 
@@ -594,7 +594,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-resources-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.5.0</version>
             <executions>
               <execution>
                 <id>setup-tomcat-users</id>

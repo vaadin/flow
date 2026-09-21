@@ -124,8 +124,12 @@ public final class PublicStyleSheetBundler {
     }
 
     /**
-     * Normalize an incoming stylesheet URL from @StyleSheet into a relative
-     * path under the servlet context.
+     * Normalize an incoming stylesheet URL from {@code @StyleSheet} into a
+     * relative path under the servlet context.
+     *
+     * @param url
+     *            the URL to normalize
+     * @return the path relative to the servlet context
      */
     public static String normalizeUrl(String url) {
         url = url.trim();

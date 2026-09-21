@@ -46,6 +46,13 @@ import com.vaadin.flow.shared.ui.Dependency;
  */
 public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
 
+    /**
+     * Creates the registrar. Spring instantiates it.
+     */
+    public VaadinHintsRegistrar() {
+        // Default constructor
+    }
+
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
         ReflectionHints ref = hints.reflection();

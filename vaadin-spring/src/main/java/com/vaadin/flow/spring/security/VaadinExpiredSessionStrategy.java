@@ -42,6 +42,13 @@ public class VaadinExpiredSessionStrategy
 
     private static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy();
 
+    /**
+     * Creates the strategy.
+     */
+    public VaadinExpiredSessionStrategy() {
+        // Default constructor
+    }
+
     @Override
     public void onExpiredSessionDetected(SessionInformationExpiredEvent event)
             throws IOException, ServletException {
