@@ -86,10 +86,12 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 
 describe('ExecuteJavaScriptProcessor', () => {
   describe('JavaScript definition calls', () => {
-    // What the server sends: the identifier of a function of the bundle, which
-    // is a hash of the JavaScript it runs
+    // What the server sends: an object naming a function of the bundle, which
+    // is identified by a hash of the JavaScript it runs
     const GREETING = 'a'.repeat(64);
     const VALUE = 'b'.repeat(64);
+    const greeting = { f: GREETING };
+    const value = { f: VALUE };
 
     type DefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
@@ -142,7 +144,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       });
       const element = { tagName: 'div' };
 
-      run(['Hello', element, GREETING]);
+      run(['Hello', element, greeting]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -154,7 +156,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
-      run([element, (value: unknown) => resolved.push(value), () => {}, VALUE]);
+      run([element, (returned: unknown) => resolved.push(returned), () => {}, value]);
       // Settled in microtasks: a macrotask wait would also pick up the
       // asynchronous rethrow that the expression cases leave behind.
       await Promise.resolve();
@@ -173,7 +175,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       // invocation and the bundle disagree about the signature, which is the
       // same disagreement as an invocation that carries one parameter too
       // many.
-      run(['Hello', GREETING]);
+      run(['Hello', greeting]);
 
       expect(calls).to.equal(0);
     });
@@ -192,7 +194,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const element = { tagName: 'div' };
 
       // Subscribed to, but one channel short of what the server sends.
-      run([element, (error: unknown) => errors.push(error), VALUE]);
+      run([element, (error: unknown) => errors.push(error), value]);
 
       expect(calls).to.equal(0);
       // Reported rather than left hanging: the pending result on the server
@@ -207,7 +209,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      run([element, () => {}, (error: unknown) => errors.push(error), VALUE]);
+      run([element, () => {}, (error: unknown) => errors.push(error), value]);
 
       expect(errors).to.have.lengthOf(1);
       // Nothing registered it, so the message has only the identifier
