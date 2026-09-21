@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,6 +41,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -315,6 +320,89 @@ public class Page implements Serializable {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser, through an implementation of the interface that this method
+     * answers with: calling a method of the implementation runs the JavaScript
+     * that the method declares, with the arguments of the call as its
+     * parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ClipboardJs extends Serializable {
+     *     &#64;JsExpression("return navigator.clipboard.readText()")
+     *     PendingJavaScriptResult readText();
+     * }
+     *
+     * page.executeJs(ClipboardJs.class).readText().then(String.class,
+     *         text -&gt; ...);
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with the arguments of the call as <code>$0</code>,
+     * <code>$1</code>, and so on, and a method that returns
+     * {@link PendingJavaScriptResult} can be used to retrieve the
+     * <code>return</code> value the same way. It runs on nothing in particular
+     * - page JavaScript works on globals - where the JavaScript of
+     * {@link Element#executeJs(Class)} runs on the element it was obtained
+     * from.
+     * <p>
+     * What differs from an expression is that nothing about the JavaScript is
+     * decided at the call site: the build collects the declarations of every
+     * JavaScript definition into the bundle, and the client runs the collected
+     * function after looking it up by an identifier of the JavaScript itself.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>,
+     * and what declared the JavaScript in Java is not sent to a production
+     * browser either.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
+    }
+
+    /**
+     * Schedules a call made through a JavaScript definition, the way an
+     * expression is scheduled, so that the two reach the client in the order
+     * they were made. The parameters are the arguments of the call and then
+     * nothing to run it on, which is the slot the element goes into for a call
+     * made on one: page JavaScript has no <code>this</code>.
+     */
+    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
+        List<Object> parameters = new ArrayList<>(call.arguments());
+        parameters.add(null);
+        return schedule(new JavaScriptInvocation(call, call.getExpression(),
+                parameters.toArray()));
+    }
+
+    /**
+     * Queues an invocation for the client, owned by the root node of the state
+     * tree, which is what makes it an invocation of this page rather than of
+     * anything in it.
+     */
+    private PendingJavaScriptResult schedule(JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
+                ui.getInternals().getStateTree().getRootNode(), invocation);
+
+        ui.getInternals().addJavaScriptInvocation(execution);
+
+        return execution;
+    }
+
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
@@ -363,15 +451,7 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        return schedule(new JavaScriptInvocation(expression, parameters));
     }
 
     /**
