@@ -169,9 +169,9 @@ form, key order included, changes the id.
   `try { Promise.resolve((async function(){ … })()).then($ok, $err) }
   catch { … }` wrapper and appends two extra return-channel parameters.
   The expression the client runs is therefore not the string that was
-  passed in. Those two channels are the error channel a call has to
-  report through: anything the client cannot execute must reach the
-  second one, or the `PendingJavaScriptResult` never completes.
+  passed in. The second of those channels is the error channel a call
+  has to report through: anything the client cannot execute must reach
+  it, or the `PendingJavaScriptResult` never completes.
 
 ### Wire shape
 
