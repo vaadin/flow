@@ -175,6 +175,61 @@ client-side subscriptions — must be tied to a component's lifecycle:
   — inert exists to prevent user actions while something else has
   focus; only bypass it for passive streams.
 
+### Extending an existing entry point
+
+A second way to do what an existing method already does is an overload of that
+method, not a new name. `executeJs(String, Object…)` sends an expression and
+`executeJs(Class)` hands out an implementation whose methods send declared
+JavaScript — both execute JavaScript on the element, and a user who knows the
+first finds the second among the overloads of what they already call. A new
+name (`getJsInvoker`, `invokeJs`) has to be discovered on its own and reads as
+a different feature.
+
+The cost lands in the Javadoc: two overloads that do the same thing differently
+have to open with the same sentence about what the method is for, and then say
+which is which — "the version that takes a string" against "the version that
+takes an interface". That is cheaper than a name nobody finds.
+
+### Where a new type belongs
+
+- **Package by scope, not by first caller.** A capability that `Element` uses
+  today and `Page` will use tomorrow is not a `com.vaadin.flow.dom` feature.
+  Put it in a package named after the capability (`com.vaadin.flow.js`) as soon
+  as a second entry point is foreseen — moving it afterwards is a breaking
+  change.
+- **Nest a definition interface in the class that uses it.** An interface whose
+  only purpose is to declare the JavaScript one component runs belongs inside
+  that component — `Focusable.FocusJs`, not a file of its own. The reader finds
+  it next to the code that calls it.
+- **A method goes where its data is.** A static helper that validates an
+  annotated interface has nothing to do with `Element`, even when `Element` is
+  its only caller. Central types accumulate methods like that until nobody can
+  tell what the class is about.
+- **A caller that reacts to a change does not reimplement the format.** A
+  hotswapper that has to bring a generated file up to date asks the task that
+  writes the file (`updateJsDefinitions(…)`); the reading, merging and writing
+  stay private to that task. Two implementations of one file format drift, and
+  the test of the caller ends up testing the generator.
+
+### Validate what you accept
+
+When API accepts a type the application writes — an annotated interface, a
+class following a convention — check every assumption where the type is
+accepted and throw with the reason: that it is an interface, that it carries
+the annotation, that every method declares what the mechanism needs, and that
+the return types are among the supported ones. A method that forgot its
+annotation then fails at the call that hands out the implementation, with a
+message naming the method, instead of in the browser at some later point.
+
+Do not let a partial case through unspoken. When some methods of such an
+interface are declarations and others are ordinary Java, the type carries two
+kinds of method with different rules, and the user has to know which is which.
+That can be the right design — a `default` method implemented in Java next to
+abstract methods that declare JavaScript is useful — but then the line between
+them is a rule stated in one sentence in the Javadoc and enforced for
+everything on the declaring side. What must never happen is a method that
+quietly does nothing because it fell between the two.
+
 ### Naming components that wrap HTML elements
 
 A component class name in `flow-html-components` is public API: changing it

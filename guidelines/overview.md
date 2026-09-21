@@ -13,11 +13,11 @@ For repository-level commands (build, test, format) see [`CLAUDE.md`](../CLAUDE.
 
 ## Chapters
 
-| Chapter                                     | Topic                                                                          |
-| ------------------------------------------- | ------------------------------------------------------------------------------ |
-| [Repository](repository.md)                 | Tech stack, module layout, where things live, Maven and build plugins.         |
-| [Architecture](architecture.md)             | State tree, `Element`, the Jackson codec, routing, component development.      |
-| [Design](design.md)                         | Shape of new public Java API: facades, signals, sealed types, naming, lifecycle. |
-| [Browser Integration](browser-integration.md) | Wrapping browser APIs, `executeJs`, DOM events, bootstrap data, capability detection. |
-| [Documenting](documenting.md)               | Javadoc expectations, documenting wrapped browser APIs.                        |
-| [Testing](testing.md)                       | Unit tests, integration tests, debugging failures.                             |
+| Chapter                                       | Topic                                                                                                            |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [Repository](repository.md)                   | Tech stack, module layout, where things live, Maven and build plugins.                                           |
+| [Architecture](architecture.md)               | State tree, `Element`, the Jackson codec, routing, component development.                                        |
+| [Design](design.md)                           | Shape of new public Java API: facades, signals, sealed types, naming, placement, lifecycle.                      |
+| [Browser Integration](browser-integration.md) | Wrapping browser APIs, `executeJs`, DOM events, what goes on the wire, generated frontend files, bootstrap data. |
+| [Documenting](documenting.md)                 | Javadoc expectations, documenting wrapped browser APIs.                                                          |
+| [Testing](testing.md)                         | Unit tests, integration tests, reviewing your own tests, debugging failures.                                     |

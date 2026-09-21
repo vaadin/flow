@@ -34,6 +34,30 @@ application server (the Maven build starts and stops it).
   "not null" — assert the JSON structure and content for serialization, and
   cover the edge cases the change actually introduces.
 
+## Reviewing the tests you added
+
+Read the tests of a change once more before asking for a review, and drop the
+ones that do not earn their place:
+
+- **A near-duplicate is one case.** Two cases that differ only in the direction
+  of the same comparison — one parameter too many, one too few — exercise the
+  same code. Parameterize, or keep one.
+- **Behavior you did not change needs no new test.** When a change only
+  replaces the implementation behind an existing API, the tests that already
+  cover the API are what proves it still behaves the same. Assert the new shape
+  only where the change is actually observable.
+- **A case belongs to the class it asserts about.** A test in
+  `XxxHotswapperTest` that sets up files and checks what the generator wrote is
+  a test of the generator: move it to `TaskGenerateXxxTest` and leave the
+  hotswapper test asserting what the hotswapper decides.
+- **An arbitrary value should look arbitrary.** A stats hash of `"1"` says "any
+  value that does not match"; a byte-exact copy of what a real generated file
+  contains says "this exact content matters", which is a contract the code does
+  not have.
+- **Build the state a case needs directly.** Setup that writes a file, deletes
+  it, and writes it again through another path hides what the case is about —
+  one helper per state, named after the state.
+
 ## Debugging failures
 
 - Analyze *why* a test fails, code does not compile, or a build breaks, before

@@ -59,6 +59,53 @@ Renaming an existing public class is a breaking change. Add the new class,
 deprecate the old one with a `@deprecated` pointer to the replacement, and
 remove it in the next major.
 
+Put a new type in the package that matches its scope, not in the package of
+its first caller. A capability that `Element` uses today and `Page` will use
+tomorrow is not a `com.vaadin.flow.dom` feature. See `guidelines/design.md`.
+
+Declare a small interface that only one class uses as a nested type inside that
+class (`Focusable.FocusJs`) instead of adding a top-level file for it.
+
+A method that does not touch the state of the class it sits on belongs
+elsewhere. Check whether it is a static helper of another type before adding it
+to a central class like `Element`.
+
+Keep the surface of an internal class to what its callers need — static helpers
+that only sibling classes and tests call are package private.
+
+Validate a type the user writes where you accept it, and throw with the reason:
+that it is an annotated interface, that every method the mechanism has to
+implement carries the annotation that declares what it does, and that the
+return types are supported. A method that forgot the annotation must fail where
+the implementation is handed out, with a message naming it, not later in the
+browser.
+
+Model an absent argument as a value of the one method instead of adding a
+method for the empty case. `focus(null)` keeps one declaration; `focus()`
+beside `focus(options)` doubles what has to be generated, wired and
+maintained.
+
+## Naming
+
+Every method name contains a verb that says what the method does. `header(…)`,
+`names(…)` and `report(…)` name a noun or a category; `writeHeader(…)`,
+`collectDefinitionNames(…)` and `warnAboutMissingDefinitions(…)` say what
+happens. This holds for TypeScript as much as for Java.
+
+Name a type after what it is, not after what the machinery around it does. An
+interface whose methods declare JavaScript is a `JsDefinition`; `JsInvoker`
+names the caller, not the type the user writes.
+
+Do not expose two names for the same value — a record component `methodId()`
+with a `getMethodId()` beside it is one accessor too many.
+
+Prefer an overload of the existing entry point over a new name for a second way
+to do the same thing: `executeJs(Class)` next to `executeJs(String, …)`, not
+`getJsInvoker(Class)` or `invokeJs(Class)`. A separate name has to be
+discovered on its own, while an overload is found by everyone who already calls
+the method. Spell out the difference in the Javadoc of both instead. See
+`guidelines/design.md`.
+
 ## Nullability
 
 Apply `@NullMarked` (JSpecify) at the package level and annotate only what
@@ -105,6 +152,35 @@ calling it usually triggers a permission prompt.
 Update both sides in the same PR when a change touches the client-server
 protocol or a DOM event contract.
 
+Never send a Java class or method name to the browser. Key what the client
+looks up by a hash of the content it runs, and keep the readable identifier as
+a development-only debug string in the generated frontend file rather than in
+every response.
+
+Send a payload that repeats once, through the constant pool the client already
+caches, and keep the message shape the same for the new and the old path
+instead of adding a second cache beside it. Put arriving constants in the pool
+before anything resolves a reference to them.
+
+Keep a wire object down to what the receiver cannot derive: no key the client
+ignores, no count it can read off the payload it already has.
+
+Do not assume that what the server sends matches what the bundle declares. A
+browser that reconnects after a restart without reloading holds the previous
+bundle, so compare what arrives with what the local function expects and report
+a mismatch through the error channel of the call — a pending result that can
+never run has to complete instead of hanging. Binding a parameter one slot off
+is the failure mode to design out.
+
+Regenerate a frontend file that is generated from Java in a `VaadinHotswapper`
+too, not only in the dev-loop path: a class the IDE recompiles never reaches
+the `vaadin-dev` CLI. Push the new content to the browser with
+`sendHmrEvent(…)` instead of asking the developer to restart.
+
+Keep reading and patching a generated file inside the task that generates it.
+A hotswapper asks the task to update the definitions; it does not parse the
+file itself. See `guidelines/browser-integration.md`.
+
 ## Build & Dependencies
 
 Do not add a dev-runtime artifact as a `compile` or `runtime` scope dependency
@@ -128,10 +204,27 @@ Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
 
+Do not skip a build step whose output the application needs. A bundle built
+without the generated content is a broken application — do the work, or fail
+with a message that names what is missing.
+
+Search for an existing utility before writing a helper, and when the helper is
+genuinely new, add it to the util class it belongs to (`ReflectTools`,
+`FrontendUtils`, …) instead of keeping it private in the class that happens to
+need it first.
+
+Follow the existing implementation of an extension point you are adding to (a
+`VaadinHotswapper`, a `TaskGenerate…`), including one that is in review at the
+same time, rather than inventing a second shape for it.
+
 ## Javadoc
 
 Do not add `@since` tags. What to write in Javadoc, and how to document a
 wrapped browser API, is covered by `guidelines/documenting.md`.
+
+A new overload starts with the same opening sentence as its siblings and then
+says what is different about it. Javadoc that describes only the parameters and
+the return value is missing the sentence that says what the method is for.
 
 ## Testing
 
@@ -164,6 +257,25 @@ browser-facing features, and exercise both the happy path and the error branch.
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
 
+Check the cases that already exist — including the ones you added earlier in
+the same change — before adding a test, and extend one instead of adding a
+near-duplicate. Two cases that differ only in the direction of the same
+comparison (one parameter too many, one too few) are one case.
+
+Do not add tests for behavior you did not change. When a change only replaces
+the implementation behind an existing API, the tests that already cover it are
+what proves it still works.
+
+Test the class the test class is named after. When the assertions are about
+what a collaborator does, the case belongs in that collaborator's test class.
+
+Make an arbitrary fixture value look arbitrary. A stats hash of `"1"` reads as
+"any value that does not match"; a byte-exact copy of a real generated file
+reads as a contract that does not exist.
+
+Build the state a case needs directly. Setup that writes a file, deletes it and
+writes it again through another path hides what the case is about.
+
 ## Code Style
 
 Run `mvn spotless:apply` before every commit.
@@ -173,9 +285,21 @@ previous version.
 
 Use Java text blocks for multi-line strings instead of string concatenation.
 
+Delete code that cannot run: no null check for a value that is never null, no
+production-mode check in a class that only runs in development, and no special
+case for input the general path already handles — compare against empty content
+instead of special-casing a missing file.
+
+If a reviewer has to ask why a check is there, it either needs a comment that
+says why, or it does not need to exist.
+
 ## Commit & PR Hygiene
 
 The commit message format, the shape of a pull request description and what to
 check before opening a PR live in
 [`.claude/skills/commit-and-pr/SKILL.md`](.claude/skills/commit-and-pr/SKILL.md).
 Read it before committing or opening a pull request.
+
+Keep a pull request to one increment. When a follow-up — a second entry point,
+converting the existing call sites — is a behavior change of its own, open it
+on top of the branch under review instead of growing that branch.
