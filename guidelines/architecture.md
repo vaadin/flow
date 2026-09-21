@@ -39,9 +39,14 @@ one.
 - `Element` instances are sent as DOM references (or `null`).
 - Arbitrary objects are supported via Jackson serialization.
 
+Values that would be repeated across many state nodes — DOM event settings,
+for instance — are sent once through the shared constant pool and referenced
+by id in each node's change.
+
 Always pass values to `executeJs()` as parameters, never concatenated into the
 expression string. See [Browser Integration](browser-integration.md) for the
-full rules on calling into the browser.
+full rules on calling into the browser, and [Wire Protocol](wire-protocol.md)
+for what the response actually contains and what that means for new code.
 
 Push uses a WebSocket-based connection (`PushConnection`,
 `AtmospherePushConnection`).

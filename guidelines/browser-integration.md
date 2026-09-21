@@ -46,6 +46,10 @@ anything else:
 
 ## `executeJs` parameter passing
 
+For how an invocation is encoded, when it is actually sent, and why the
+expression string itself is worth keeping short, see
+[Wire Protocol](wire-protocol.md).
+
 - **Never** concatenate values into the expression string. Always pass
   them as parameters and reference them positionally (`$0`, `$1`, ...).
   String concatenation is a prompt for injection bugs and quoting
