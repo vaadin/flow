@@ -105,7 +105,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     static String renderFileContent(Collection<Class<?>> definitions,
             boolean withNames) {
-        List<String> lines = new ArrayList<>(header(withNames));
+        List<String> lines = new ArrayList<>(renderHeader(withNames));
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition, withNames)));
@@ -128,8 +128,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
         return definitions.stream()
-                .filter(definition -> !isInGeneratedFile(definition, generated,
-                        !options.isProductionMode()))
+                .filter(definition -> !isInGeneratedFile(definition, generated))
                 .toList();
     }
 
@@ -159,8 +158,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> updateJsDefinitions(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        String content = withMissingEntries(generated, definitions,
-                !options.isProductionMode());
+        String content = withMissingEntries(generated, definitions);
 
         TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
@@ -169,9 +167,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
             // The file is as it was, so only what it was already missing is
             // missing now
-            return definitions.stream()
-                    .filter(definition -> !isInGeneratedFile(definition,
-                            generated, !options.isProductionMode()))
+            return definitions.stream().filter(
+                    definition -> !isInGeneratedFile(definition, generated))
                     .toList();
         }
         // Everything asked for went into the content that was written
@@ -180,17 +177,18 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * Whether the given content carries what the definition declares, compared
-     * as this class renders it, so the JavaScript of every method and the
-     * number of arguments it takes have to match. A method that was removed
-     * does not show up as a difference: its function stays in the file with
-     * nothing calling it.
+     * as this class renders it for a development build - the one the caller of
+     * this runs in - so the JavaScript of every method, the number of arguments
+     * it takes and its name have to match. A method that was removed does not
+     * show up as a difference: its function stays in the file with nothing
+     * calling it.
      */
     private static boolean isInGeneratedFile(Class<?> definition,
-            String generated, boolean withNames) {
+            String generated) {
         if (generated == null) {
             return false;
         }
-        List<String> declared = renderDefinitionLines(definition, withNames);
+        List<String> declared = renderDefinitionLines(definition, true);
         if (declared.isEmpty()) {
             // Declares no JavaScript, so there is nothing to carry
             return true;
@@ -211,13 +209,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * than for everything an application declares.
      */
     private static String withMissingEntries(String generated,
-            Collection<Class<?>> definitions, boolean withNames) {
+            Collection<Class<?>> definitions) {
         if (generated == null || generated.isBlank()) {
-            return renderFileContent(definitions, withNames);
+            return renderFileContent(definitions, true);
         }
         List<String> missing = definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
-                .flatMap(definition -> renderFunctions(definition, withNames)
+                .flatMap(definition -> renderFunctions(definition, true)
                         .stream())
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
@@ -229,7 +227,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         String separator = System.lineSeparator();
         String footer = String.join(separator, FOOTER);
         List<String> added = new ArrayList<>();
-        if (withNames && !generated.contains(NAMES)) {
+        if (!generated.contains(NAMES)) {
             // Written before names were registered at all, and a name is
             // assigned into an object that has to be there
             added.add(NAMES);
@@ -243,9 +241,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         // browser has, so the functions go after it rather than instead of it.
         // The header only assigns what is not there, so repeating it is what
         // makes the content that follows land in the registry.
-        return generated + separator + String.join(separator, header(withNames))
-                + separator + String.join(separator, missing) + separator
-                + footer;
+        return generated + separator
+                + String.join(separator, renderHeader(true)) + separator
+                + String.join(separator, missing) + separator + footer;
     }
 
     /**
@@ -253,7 +251,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * into, and the one a name is assigned into when names are rendered. Both
      * assign only what is not there, so a file can carry them more than once.
      */
-    private static List<String> header(boolean withNames) {
+    private static List<String> renderHeader(boolean withNames) {
         List<String> header = new ArrayList<>(HEADER);
         if (withNames) {
             header.add(NAMES);
@@ -372,6 +370,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        return options.getClassFinder() != null;
+        // Whether an application declares any JavaScript is answered by
+        // scanning for it, which a build that scans for anything can do
+        return true;
     }
 }

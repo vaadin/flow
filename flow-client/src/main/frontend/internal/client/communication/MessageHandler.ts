@@ -182,6 +182,15 @@ export class MessageHandler {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
 
+    // Before anything decides what to do with the message, since what an
+    // invocation of it runs is a constant of it, and that decides whether a
+    // forced reload is what arrived. A message that is queued here is read
+    // again when it is handled, and a key is a hash of its value, so the
+    // second import is the same values.
+    if ('constants' in valueMap) {
+      this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
+    }
+
     if (
       !hasResynchronize &&
       this.#registry.getMessageSender().getResynchronizationState() === ResynchronizationState.WAITING_FOR_RESPONSE
@@ -189,12 +198,7 @@ export class MessageHandler {
       if (UIDL_KEY_EXECUTE in valueMap) {
         const commands = valueMap[UIDL_KEY_EXECUTE] as unknown[][];
         for (const command of commands) {
-          const runs = whatInvocationRuns(
-            command,
-            (valueMap.constants ?? {}) as Record<string, unknown>,
-            this.#registry.getConstantPool()
-          );
-          if (runs === 'window.location.reload();') {
+          if (resolveWhatRuns(command, this.#registry.getConstantPool()) === 'window.location.reload();') {
             Console.warn('Executing forced page reload while a resync request is ongoing.');
             window.location.reload();
             return;
@@ -344,9 +348,8 @@ export class MessageHandler {
     }
     try {
       const processUidlStart = performance.now();
-      if ('constants' in valueMap) {
-        this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
-      }
+      // The constants went into the pool as the message arrived, which is
+      // before anything reads what one of its invocations runs
       if ('changes' in valueMap) {
         this.#processChanges(valueMap);
       }
@@ -664,23 +667,19 @@ export class MessageHandler {
  * @returns A ValueMap created from the JSON
  */
 /**
- * What an invocation runs, which the invocation names rather than carries.
+ * Resolves what an invocation runs, which the invocation names rather than
+ * carries.
  *
  * @param invocation - the invocation, whose last element is the name
- * @param constants - the constants of the message carrying the invocation
- * @param constantPool - what earlier messages put in the pool
+ * @param constantPool - the constants the client has been sent
  * @returns what to run, or `null` when nothing is named
  */
-export function whatInvocationRuns(
-  invocation: unknown[],
-  constants: Record<string, unknown>,
-  constantPool: ConstantPool
-): unknown {
+export function resolveWhatRuns(invocation: unknown[], constantPool: ConstantPool): unknown {
   const name = invocation[invocation.length - 1];
   if (typeof name !== 'string') {
     return null;
   }
-  return constants[name] ?? constantPool.get<unknown>(name);
+  return constantPool.get<unknown>(name);
 }
 
 export function parseJson(jsonText: string | null): ValueMap | null {

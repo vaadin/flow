@@ -93,7 +93,7 @@ function reportThroughChannel(parameters: unknown[], message: string): void {
  * expression, and, outside production, what a developer wrote for each of
  * them.
  */
-function declaredJavaScript(): {
+function getDeclaredJavaScript(): {
   jsDefinitions?: Record<string, JsDefinitionFunction>;
   jsDefinitionNames?: Record<string, string>;
 } {
@@ -114,7 +114,7 @@ function declaredJavaScript(): {
  * bundled code and nothing has to be compiled from a string here.
  */
 function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefined {
-  return declaredJavaScript().jsDefinitions?.[functionId];
+  return getDeclaredJavaScript().jsDefinitions?.[functionId];
 }
 
 /**
@@ -122,8 +122,8 @@ function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefi
  * development bundle registers next to the function itself, and the identifier
  * of the function when it does not, as in production.
  */
-function nameOf(functionId: string): string {
-  return declaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
+function getNameOf(functionId: string): string {
+  return getDeclaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
 }
 
 /**
@@ -292,7 +292,7 @@ export class ExecuteJavaScriptProcessor {
    *          when the call is subscribed to
    */
   protected invokeFromBundle(functionId: string, parameters: unknown[]): void {
-    const name = nameOf(functionId);
+    const name = getNameOf(functionId);
     const fn = findDeclaredFunction(functionId);
     if (fn === undefined) {
       const message = `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;

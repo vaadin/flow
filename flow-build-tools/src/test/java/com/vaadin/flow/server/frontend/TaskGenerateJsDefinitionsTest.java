@@ -86,7 +86,7 @@ class TaskGenerateJsDefinitionsTest {
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
                 null).withFrontendDirectory(frontendFolder)
-                .withProductionMode(true);
+                .withProductionMode(false);
         task = new TaskGenerateJsDefinitions(options);
     }
 
@@ -114,11 +114,12 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript() {
+    void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript()
+            throws ExecutionFailedException {
         // Which is what a message about a call says instead of a hash, and is
         // of no use to a browser running the application
-        String content = TaskGenerateJsDefinitions
-                .renderFileContent(List.of(GreeterJs.class), true);
+        task.execute();
+        String content = task.getFileContent();
 
         assertTrue(content.contains(NAMES_REGISTRY),
                 "the registry a name is assigned into has to be there, or the module throws: "
@@ -132,11 +133,9 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void updateJsDefinitions_developmentMode_writesTheNamesAndWhatHoldsThem()
+    void updateJsDefinitions_writesTheNamesAndWhatHoldsThem()
             throws IOException {
-        // What the hotswapper does, which only runs outside production mode,
-        // into a file that a build wrote before names were rendered at all
-        Options development = options.withProductionMode(false);
+        // Into a file that a build wrote before names were rendered at all
         File generated = new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_DEFINITIONS_FILE_NAME);
@@ -145,7 +144,7 @@ class TaskGenerateJsDefinitionsTest {
                 .renderFileContent(List.of(GreeterJs.class), false));
 
         List<Class<?>> missing = TaskGenerateJsDefinitions
-                .updateJsDefinitions(development, List.of(CounterJs.class));
+                .updateJsDefinitions(options, List.of(CounterJs.class));
 
         assertTrue(missing.isEmpty());
         String written = Files.readString(generated.toPath());
@@ -167,11 +166,10 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void updateJsDefinitions_developmentMode_nothingMissing_leavesTheFileAlone()
+    void updateJsDefinitions_nothingMissing_leavesTheFileAlone()
             throws IOException {
-        // The same file a dev build writes: everything it is asked for is in
-        // it, names and all, so there is nothing to add
-        Options development = options.withProductionMode(false);
+        // The same file a build writes: everything it is asked for is in it,
+        // names and all, so there is nothing to add
         File generated = new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_DEFINITIONS_FILE_NAME);
@@ -180,7 +178,7 @@ class TaskGenerateJsDefinitionsTest {
                 .renderFileContent(List.of(GreeterJs.class), true);
         Files.writeString(generated.toPath(), carried);
 
-        TaskGenerateJsDefinitions.updateJsDefinitions(development,
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(GreeterJs.class));
 
         assertEquals(carried, Files.readString(generated.toPath()),
@@ -188,9 +186,9 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void generatedFile_namesNothingOfTheJava() throws ExecutionFailedException {
-        task.execute();
-        String content = task.getFileContent();
+    void generatedFile_productionMode_namesNothingOfTheJava() {
+        String content = new TaskGenerateJsDefinitions(
+                options.withProductionMode(true)).getFileContent();
 
         assertFalse(content.contains(GreeterJs.class.getName()),
                 "a production bundle should not tell a browser what declared the JavaScript: "
@@ -326,7 +324,8 @@ class TaskGenerateJsDefinitionsTest {
         File generated = new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_DEFINITIONS_FILE_NAME);
-        String unchanged = JsCall.functionId("window.alert('Hello')", 0);
+        String unchanged = "window.Vaadin.Flow.jsDefinitions[\""
+                + JsCall.functionId("window.alert('Hello')", 0) + "\"]";
         Files.writeString(generated.toPath(),
                 Files.readString(generated.toPath()).replace(
                         GREETING_EXPRESSION, "window.alert('what it was')"));

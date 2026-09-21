@@ -26,6 +26,15 @@ describe('ConstantPool', () => {
     expect(pool.get<string>('missing')).to.equal(null);
   });
 
+  it('takes the same key again, since a key is a hash of its value', () => {
+    // A message is read before it is processed, so its constants are imported
+    // as it arrives and again when it is handled.
+    const pool = new ConstantPool();
+    pool.importFromJson({ a: 'value-a' });
+    pool.importFromJson({ a: 'value-a' });
+    expect(pool.get<string>('a')).to.equal('value-a');
+  });
+
   it('accumulates constants across imports', () => {
     const pool = new ConstantPool();
     pool.importFromJson({ a: '1' });
