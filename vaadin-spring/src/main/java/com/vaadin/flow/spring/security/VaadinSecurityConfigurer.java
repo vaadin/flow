@@ -502,6 +502,7 @@ public final class VaadinSecurityConfigurer
      * @param enableSessionManagementConfiguration
      *            whether configuration of session management should be enabled
      * @return the current configurer instance for method chaining
+     * @since 25.4
      */
     public VaadinSecurityConfigurer enableSessionManagementConfiguration(
             boolean enableSessionManagementConfiguration) {
@@ -519,6 +520,7 @@ public final class VaadinSecurityConfigurer
      *            the strategy to use, or {@code null} to use the default one
      * @return the current configurer instance for method chaining
      * @see #enableSessionManagementConfiguration(boolean)
+     * @since 25.4
      */
     public VaadinSecurityConfigurer expiredSessionStrategy(
             SessionInformationExpiredStrategy expiredSessionStrategy) {

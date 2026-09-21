@@ -28,6 +28,7 @@ import com.vaadin.flow.server.VaadinService;
  * Default CDI instantiator.
  *
  * @see Instantiator
+ * @since 10.0
  */
 public class CdiInstantiator extends AbstractCdiInstantiator {
 

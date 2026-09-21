@@ -49,6 +49,7 @@ import java.util.Set;
  *
  *      Changes made by Vaadin: removed logging warning if bean is Dependent
  *      scope
+ * @since 15.0
  */
 @Typed()
 public final class BeanProvider {
