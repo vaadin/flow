@@ -154,6 +154,18 @@ public class UIInternals implements Serializable {
             Collections.addAll(this.parameters, parameters);
         }
 
+        /*
+         * Restores an invocation whose parameters were already validated when
+         * it was first created. Skips the dry run because deserialization may
+         * reach this point before the state nodes behind any element parameters
+         * are fully restored.
+         */
+        private JavaScriptInvocation(String expression,
+                List<Object> parameters) {
+            this.expression = expression;
+            this.parameters.addAll(parameters);
+        }
+
         /**
          * Gets the JavaScript expression to invoke.
          *
@@ -170,6 +182,34 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * Replaces this instance with a form whose parameters Java
+         * serialization can write. An invocation can wait in the session across
+         * requests when its target element is not yet attached or not visible,
+         * and parameters are only ever encoded for the client, so a parameter
+         * that is not itself serializable can be stored as the JSON it encodes
+         * to.
+         */
+        private Object writeReplace() {
+            return new SerializedForm(expression, parameters);
+        }
+
+        private static final class SerializedForm implements Serializable {
+
+            private final String expression;
+            private final List<Object> parameters;
+
+            private SerializedForm(String expression, List<Object> parameters) {
+                this.expression = expression;
+                this.parameters = parameters.stream()
+                        .map(JacksonCodec::serializableParameter).toList();
+            }
+
+            private Object readResolve() {
+                return new JavaScriptInvocation(expression, parameters);
+            }
         }
     }
 
