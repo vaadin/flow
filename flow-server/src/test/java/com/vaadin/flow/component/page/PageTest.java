@@ -211,45 +211,24 @@ class PageTest {
     void fetchCurrentUrl_consumerReceivesCorrectURL() {
         // given
         final UI mockUI = new MockUI();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... params) {
-                super.executeJs(expression, params);
-                assertEquals("return window.location.href", expression,
-                        "Expected javascript for fetching location is wrong.");
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(JacksonUtils
-                                .createNode("http://localhost:8080/home"));
-                    }
-                };
-            }
-        };
         final AtomicReference<URL> callbackInvocations = new AtomicReference<>();
         final SerializableConsumer<URL> receiver = details -> {
             callbackInvocations.compareAndSet(null, details);
         };
 
         // when
-        page.fetchCurrentURL(receiver);
+        mockUI.getPage().fetchCurrentURL(receiver);
 
         // then
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(new JsCall(Page.LocationJs.class, "getHref", List.of()),
+                invocations.get(0).getInvocation().getJsCall(),
+                "the address should be asked for through the declared JavaScript");
+
+        invocations.get(0).complete(
+                JacksonUtils.createNode("http://localhost:8080/home"));
         assertEquals("http://localhost:8080/home",
                 callbackInvocations.get().toString(), "Returned URL was wrong");
     }

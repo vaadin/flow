@@ -159,7 +159,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         calls.push({ thisArg: this, greeting });
       });
 
-      run(['Hello', null, GREETING]);
+      run(['Hello', null, greeting]);
 
       expect(calls).to.eql([{ thisArg: null, greeting: 'Hello' }]);
     });
