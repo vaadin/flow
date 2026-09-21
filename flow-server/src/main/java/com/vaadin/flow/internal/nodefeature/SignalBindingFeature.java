@@ -56,6 +56,8 @@ public class SignalBindingFeature extends ServerSideFeature {
      * through a resize trigger instead of from the signal to a client-side
      * property, and nothing reads the binding except {@code sizeSignal()}
      * itself, which uses it to return the same signal for every call.
+     * 
+     * @since 25.3
      */
     public static final String SIZE = "size";
 

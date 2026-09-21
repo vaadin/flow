@@ -35,6 +35,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -460,6 +461,23 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "pnpm install should let the packages Vaadin publishes be "
                         + "installed regardless of the minimum frontend "
                         + "package age");
+    }
+
+    @Test
+    void runPnpmInstall_postinstallDoesNotVerifyTheDependencies()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        MockLogger mockLogger = new MockLogger();
+        logger = mockLogger;
+        TaskRunNpmInstall task = createTask();
+
+        task.execute();
+
+        assertTrue(
+                mockLogger.getLogs()
+                        .contains("--config.verify-deps-before-run=false"),
+                "the postinstall command should stop pnpm from running an "
+                        + "install of its own, was: " + mockLogger.getLogs());
     }
 
     @Override

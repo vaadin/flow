@@ -22,6 +22,8 @@ import java.io.Serializable;
 /**
  * This data holder contains all necessary data you need to store a Contextual
  * Instance in a CDI Context.
+ * 
+ * @since 15.0
  */
 public class ContextualInstanceInfo<T> implements Serializable {
     private static final long serialVersionUID = 6384932199958645324L;

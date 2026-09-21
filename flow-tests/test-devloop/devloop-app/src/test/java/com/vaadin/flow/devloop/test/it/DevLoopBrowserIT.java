@@ -147,6 +147,33 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
     }
 
     @BrowserTest
+    void cssAndJavaInOneApply_reportBothHalvesAndBothLandInTheOpenPage() {
+        // The case the reporting used to lose: the resource leg pushes and the
+        // Java leg redefines, and with a page open the push's own words are
+        // what says the stylesheet arrived. Asserted here rather than in
+        // DevLoopCssIT because "no browser connected" is the only answer a
+        // headless apply can get.
+        Assertions.assertEquals("Task List", text("#title"));
+        String reloadMarker = markPage();
+
+        patch.replace(STYLESHEET, "row-gap: 12px;", "row-gap: 41px;");
+        patch.replace(VIEW, "\"Task List\"", "\"Tasks, mixed\"");
+        cli.run("apply").assertExitCode(0)
+                .assertOutputContains(
+                        "hmr: 1 resource(s) copied, pushed 1 stylesheet(s)"
+                                + " in place")
+                .assertOutputContains("hot-reload:");
+
+        new WebDriverWait(getDriver(), Duration.ofSeconds(30))
+                .until(driver -> "41px"
+                        .equals(computedStyle(".task-list-view", "rowGap")));
+        new WebDriverWait(getDriver(), Duration.ofSeconds(30))
+                .until(driver -> "Tasks, mixed".equals(text("#title")));
+        Assertions.assertEquals(reloadMarker, currentMarker(),
+                "neither half of a mixed change-set may reload the page");
+    }
+
+    @BrowserTest
     void siblingModuleEdit_isVisibleOnceTheViewRendersAgain() {
         patch.replace(AbstractDevLoopIT.SHARED.resolve(
                 "src/main/java/com/vaadin/flow/devloop/test/shared/DueDateFormatter.java"),

@@ -347,6 +347,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
                         npmExecutable, minimumAge.applies(), logger));
 
+        postinstallCommand.addAll(resolvePostinstallArguments(options));
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
 
@@ -354,6 +355,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             logger.debug(
                     commandToString(options.getNpmFolder().getAbsolutePath(),
                             npmInstallCommand));
+            logger.debug(
+                    commandToString(options.getNpmFolder().getAbsolutePath(),
+                            postinstallCommand));
         }
 
         String toolName = getToolName(options);
@@ -447,8 +451,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 postinstallProcess = runNpmCommand(postinstallCommand,
                         packageFolder);
                 logger.debug("Output of postinstall `{}`:", postinstallPackage);
-                consumeProcessOutput(postinstallProcess, logger::debug);
-                postinstallProcess.waitFor();
+                StringBuilder output = new StringBuilder();
+                consumeProcessOutput(postinstallProcess, line -> {
+                    logger.debug(line);
+                    output.append(line).append(System.lineSeparator());
+                });
+                int exitCode = postinstallProcess.waitFor();
+                if (exitCode != 0) {
+                    throw new ExecutionFailedException(
+                            "The postinstall script of '" + postinstallPackage
+                                    + "' exited with status " + exitCode + ":"
+                                    + System.lineSeparator() + output);
+                }
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
                     // Restore interrupted state
@@ -508,15 +522,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Options options, FrontendTools tools, List<String> toolCommand,
             Logger logger) {
         Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
-        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
-                && !options.isEnablePnpm()
-                && tools.npmSupportsMinReleaseAge(toolCommand);
         if (configuredDays != null && configuredDays == 0) {
             // Vaadin adds no restriction of its own, but an age the package
             // manager is configured with still applies to the install
             return new MinimumFrontendPackageAge(
                     getPackageManagerConfiguredMinimumReleaseAge(options, tools,
-                            toolCommand, npmSupportsMinReleaseAge)
+                            toolCommand)
                             .filter(TaskRunNpmInstall::blocksSomeVersion)
                             .isPresent(),
                     Optional.empty());
@@ -526,13 +537,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
             days = configuredDays;
         } else {
             Optional<String> packageManagerValue = getPackageManagerConfiguredMinimumReleaseAge(
-                    options, tools, toolCommand, npmSupportsMinReleaseAge);
+                    options, tools, toolCommand);
             if (packageManagerValue.isPresent()) {
                 logger.info(
                         "Keeping the minimum frontend package age configured for {} "
                                 + "({}) instead of applying the Vaadin default. Set the "
                                 + "'{}' parameter to override it.",
-                        getToolName(options), packageManagerValue.get(),
+                        getToolName(options),
+                        describeConfiguredMinimumReleaseAge(options,
+                                packageManagerValue.get()),
                         InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
                 return new MinimumFrontendPackageAge(
                         blocksSomeVersion(packageManagerValue.get()),
@@ -540,6 +553,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
             days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
         }
+        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(toolCommand);
         return new MinimumFrontendPackageAge(true,
                 Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
                         npmSupportsMinReleaseAge)));
@@ -573,6 +589,26 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return Double.parseDouble(packageManagerValue.trim()) != 0;
         } catch (NumberFormatException e) { // NOSONAR
             return true;
+        }
+    }
+
+    /**
+     * Spells out a minimum release age the package manager resolved for itself,
+     * as the unit of the value depends on the package manager and the setting
+     * it comes from: days for npm, minutes for pnpm, and a date for the
+     * {@code before} setting npm resolves {@code min-release-age} into.
+     */
+    private static String describeConfiguredMinimumReleaseAge(Options options,
+            String packageManagerValue) {
+        String value = packageManagerValue.trim();
+        if (options.isEnablePnpm()) {
+            return value + " minutes";
+        }
+        try {
+            Double.parseDouble(value);
+            return value + " days";
+        } catch (NumberFormatException e) { // NOSONAR
+            return "no versions released after " + value;
         }
     }
 
@@ -673,6 +709,34 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
+     * Resolves the arguments that the command running a {@code postinstall}
+     * script needs on top of the ones the package manager is called with
+     * anyway.
+     * <p>
+     * Before pnpm runs a script it checks that {@code node_modules} is up to
+     * date, and that check starts an install of its own. The install right
+     * above has just made that pointless, and the one pnpm starts is not the
+     * same one: it is not passed the arguments that exempt the packages Vaadin
+     * publishes from the minimum release age, and it does not skip the
+     * lifecycle scripts of the dependencies. Whenever it fails, for that or any
+     * other reason, the script itself is never run, so the check is turned off.
+     * <p>
+     * npm and bun run a script without checking anything, and bun rejects an
+     * argument it is not expecting, so nothing is passed for them.
+     *
+     * @param options
+     *            current build options
+     * @return the arguments to pass before {@code run}, empty when the package
+     *         manager needs none
+     */
+    static List<String> resolvePostinstallArguments(Options options) {
+        if (!options.isEnablePnpm()) {
+            return List.of();
+        }
+        return List.of("--config.verify-deps-before-run=false");
+    }
+
+    /**
      * Builds one install argument per package name pattern that has to be
      * excluded, which are the ones the package manager is configured with plus
      * the one Vaadin needs.
@@ -730,10 +794,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * "https://github.com/oven-sh/bun/issues/7140">oven-sh/bun#7140</a>). The
      * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
      * therefore not taken into account.
+     *
+     * @return the value as the package manager reports it, which is a number of
+     *         days for npm, a number of minutes for pnpm and a date for the
+     *         {@code before} setting npm resolves {@code min-release-age} into.
+     *         It is never converted into days, only checked for whether it
+     *         blocks a version at all ({@link #blocksSomeVersion(String)}) and
+     *         reported to the build
+     *         ({@link #describeConfiguredMinimumReleaseAge(Options, String)}),
+     *         as the package manager is the one applying it.
      */
     private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
-            Options options, FrontendTools tools, List<String> toolCommand,
-            boolean npmSupportsMinReleaseAge) {
+            Options options, FrontendTools tools, List<String> toolCommand) {
         File npmFolder = options.getNpmFolder();
         if (options.isEnableBun()) {
             return Optional.empty();
@@ -744,13 +816,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return tools.getConfiguredSetting(toolCommand, npmFolder,
                     "minimumReleaseAge", "minimum-release-age");
         }
-        if (npmSupportsMinReleaseAge) {
-            return tools.getConfiguredSetting(toolCommand, npmFolder,
-                    "min-release-age");
-        }
-        // Older npm has no min-release-age setting, but the --before argument
-        // used as a fallback does have a configuration counterpart
-        return tools.getConfiguredSetting(toolCommand, npmFolder, "before");
+        // npm resolves min-release-age into the before setting it shares the
+        // implementation with, and up to npm 11.13 it drops the key itself
+        // while doing so, reporting an age the project configured as unset.
+        // Reading before as well covers those versions, npm older than 11.10
+        // where the setting does not exist at all and the --before argument is
+        // used as a fallback, and a project configuring before directly; the
+        // two settings are mutually exclusive for npm, so a Vaadin argument
+        // would override whichever of them is configured.
+        return tools.getConfiguredSetting(toolCommand, npmFolder,
+                "min-release-age", "before");
     }
 
     /**

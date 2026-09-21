@@ -23,6 +23,8 @@ import java.util.List;
 
 /**
  * Helper for proxies
+ * 
+ * @since 15.0
  */
 @Typed()
 public abstract class ProxyUtils {

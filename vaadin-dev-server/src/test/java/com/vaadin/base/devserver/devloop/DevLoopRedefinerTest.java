@@ -18,6 +18,7 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -36,10 +37,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -159,6 +164,18 @@ class DevLoopRedefinerTest {
     static class NothingDeclared {
     }
 
+    @JsDefinition
+    interface GreeterJs extends Serializable {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
+    interface EditedGreeterJs extends Serializable {
+        @JsExpression("window.alert('edited ' + $0)")
+        void showGreeting(String greeting);
+    }
+
     @Test
     void frontendDependencies_seesTheThemeOnAnAppShellThatIsNoComponent() {
         // @Theme belongs on the AppShellConfigurator, which is never a
@@ -173,6 +190,22 @@ class DevLoopRedefinerTest {
         // The variant is read at startup the same way the name is, so a change
         // to it is the same kind of change.
         assertTrue(imports.contains("dark"), imports);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptADefinitionDeclares() {
+        // The declared JavaScript is generated into the bundle by the build, so
+        // a redefined interface leaves the browser running the JavaScript the
+        // bundle was built with until a restart regenerates it.
+        String imports = DevLoopRedefiner.frontendDependencies(GreeterJs.class);
+
+        assertTrue(imports.contains(
+                "jsdefinition:" + JsCall.functionId("window.alert($0)", 1)),
+                imports);
+        // What the browser has of a method is the function of what it
+        // declares, so an edited expression is a different one.
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
     }
 
     @Test

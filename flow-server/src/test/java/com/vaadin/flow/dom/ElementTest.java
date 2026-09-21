@@ -77,6 +77,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2660,6 +2663,57 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.property.other.method()", element);
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).method("foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals("this.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", element), invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsCall(TestJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
+    }
+
+    @Test
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        PendingJavaScriptResult result = element.executeJs(ResultJs.class)
+                .readValue();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the element scheduled");
+    }
+
+    @JsDefinition
+    interface ResultJs extends Serializable {
+        @JsExpression("return this.value;")
+        PendingJavaScriptResult readValue();
+    }
+
+    @JsDefinition
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
     }
 
     @Test
