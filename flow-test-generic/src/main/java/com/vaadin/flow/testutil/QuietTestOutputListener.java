@@ -40,6 +40,14 @@ import org.junit.platform.launcher.TestPlan;
  * handlers keep writing to the stream they were created with; configure the
  * logger levels instead when such output is too noisy.
  * <p>
+ * Replacing {@code System.out} and {@code System.err} affects the whole JVM, so
+ * this only works when tests run one at a time. Surefire runs the unit tests
+ * sequentially; do not enable it for tests that run in parallel, such as the
+ * TestBench integration tests run by Failsafe, where whichever test happens to
+ * be running would capture, and on success discard, the output of the others.
+ * Should tests nevertheless start on more than one thread, the capture gives up
+ * for the rest of the run instead of mixing up their output.
+ * <p>
  * Registered automatically via ServiceLoader in
  * {@code META-INF/services/org.junit.platform.launcher.TestExecutionListener}
  * and enabled by the {@value #ENABLED_PROPERTY} system property, which Surefire
@@ -63,6 +71,14 @@ public class QuietTestOutputListener implements TestExecutionListener {
 
     private final Deque<CapturedOutput> captured = new ArrayDeque<>();
 
+    /**
+     * The thread the open captures belong to, used to notice tests running in
+     * parallel.
+     */
+    private Thread capturingThread;
+
+    private boolean givenUp;
+
     private record CapturedOutput(String uniqueId, ByteArrayOutputStream buffer,
             PrintStream previousOut, PrintStream previousErr) {
     }
@@ -82,9 +98,14 @@ public class QuietTestOutputListener implements TestExecutionListener {
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {
-        if (!enabled || !shouldCapture(testIdentifier)) {
+        if (!enabled || givenUp || !shouldCapture(testIdentifier)) {
             return;
         }
+        if (!captured.isEmpty() && capturingThread != Thread.currentThread()) {
+            giveUp();
+            return;
+        }
+        capturingThread = Thread.currentThread();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         PrintStream captureStream = new PrintStream(buffer, true,
                 StandardCharsets.UTF_8);
@@ -97,6 +118,9 @@ public class QuietTestOutputListener implements TestExecutionListener {
     @Override
     public void executionFinished(TestIdentifier testIdentifier,
             TestExecutionResult testExecutionResult) {
+        if (givenUp) {
+            return;
+        }
         CapturedOutput capture = captured.peek();
         if (capture == null
                 || !capture.uniqueId().equals(testIdentifier.getUniqueId())) {
@@ -126,6 +150,21 @@ public class QuietTestOutputListener implements TestExecutionListener {
     private boolean shouldCapture(TestIdentifier testIdentifier) {
         return testIdentifier.isTest() || testIdentifier.getSource()
                 .filter(ClassSource.class::isInstance).isPresent();
+    }
+
+    /**
+     * Stops capturing for good once tests turn out to run in parallel, since
+     * replacing the streams is a JVM wide operation that cannot be shared.
+     * Losing the output of a test to a buffer belonging to another one would be
+     * worse than a noisy build log.
+     */
+    private void giveUp() {
+        givenUp = true;
+        while (!captured.isEmpty()) {
+            restore(captured.pop());
+        }
+        buildOutput.println(getClass().getSimpleName()
+                + ": tests are running in parallel, printing all test output");
     }
 
     private void restore(CapturedOutput capture) {

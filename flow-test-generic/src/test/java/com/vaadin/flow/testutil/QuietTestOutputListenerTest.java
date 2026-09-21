@@ -133,6 +133,27 @@ class QuietTestOutputListenerTest {
     }
 
     @Test
+    void testsStartingOnAnotherThread_captureGivenUp() throws Exception {
+        TestIdentifier first = testIdentifier();
+        TestIdentifier second = testIdentifier();
+        PrintStream streamBeforeCapture = System.err;
+        listener.executionStarted(first);
+
+        Thread parallelTest = new Thread(
+                () -> listener.executionStarted(second));
+        parallelTest.start();
+        parallelTest.join();
+
+        Assertions.assertSame(streamBeforeCapture, System.err,
+                "the streams should be restored when tests run in parallel");
+        System.err.println("printed by a test");
+        listener.executionFinished(first, TestExecutionResult.successful());
+        Assertions.assertTrue(buildOutput().contains("printed by a test"),
+                "output should go to the build output once the capture gave up, but was: "
+                        + buildOutput());
+    }
+
+    @Test
     void unfinishedTest_streamsRestoredWhenTestPlanEnds() {
         listener.executionStarted(testIdentifier());
         PrintStream streamInstalledByListener = System.out;

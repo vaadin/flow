@@ -182,7 +182,10 @@
     <jacoco.agent.argLine/>
 
     <!-- Keep what passing unit tests print out of the build log, see
-         QuietTestOutputListener. Set to false to see everything again. -->
+         QuietTestOutputListener. Set to false to see everything again.
+         Only ever passed to Surefire: the capture replaces the JVM wide
+         System.out and System.err, so it must not be used for the tests that
+         Failsafe runs in parallel. -->
     <vaadin.test.quietOutput>true</vaadin.test.quietOutput>
 
     <!-- Skip these categories in validation, use -Pslow-tests to run them
