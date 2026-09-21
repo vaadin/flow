@@ -539,36 +539,18 @@ describe('MessageHandler', () => {
         expect(resolveWhatRuns([], pool)).to.be.null;
       });
 
-      it('takes the constants of a message in once, however often it is read', () => {
-        // A message that arrives while a resynchronization is ongoing is
-        // queued and read again when it is handled.
-        const log: unknown[] = [];
-        const registry = testRegistry({
-          MessageSender: {
-            getResynchronizationState: () => ResynchronizationState.NOT_ACTIVE,
-            clearResynchronizationState: () => {},
-            setClientToServerMessageId: () => {}
-          },
-          ConstantPool: new ConstantPool(),
-          RequestResponseTracker: {
-            fireResponseHandlingStarted: () => {},
-            endRequest: () => {},
-            hasActiveRequest: () => true
-          },
-          LoadingIndicatorStateHandler: { stopLoading: () => {} },
-          ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
-          StateTree: { prepareForResync: () => {} },
-          ExecuteJavaScriptProcessor: { execute: (invocations: unknown) => log.push(invocations) }
-        });
-        const handler = new TestMessageHandler(registry);
-        const message = { syncId: 5, constants: { c: 'window.alert($0)' } };
+      it('takes the constants of a message the server re-sends', () => {
+        // The message is ignored as already seen, but its constants are read
+        // before that, as they are for any message that arrives. They name
+        // what the pool holds, which is what the pool makes of a key it has.
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
 
-        // Out of order, so it is queued, and handled once the one before it
-        // arrives
-        handler.callHandleJSON(message);
-        handler.callHandleJSON({ syncId: 0 });
+        registry.startRequest();
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
 
-        expect(registry.getConstantPool().get<string>('c')).to.equal('window.alert($0)');
+        expect(registry.log.constants).to.deep.equal([{ c: 'window.alert($0)' }, { c: 'window.alert($0)' }]);
       });
 
       it('takes the constants of a message in before deciding what to do with it', () => {

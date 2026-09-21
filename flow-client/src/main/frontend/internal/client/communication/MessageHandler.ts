@@ -112,10 +112,6 @@ export class MessageHandler {
   // The server-sync-id ordering state + the queue of pending messages.
   readonly #ordering = new PendingMessageQueue();
 
-  // The messages whose constants are in the pool, so that one that is queued
-  // and read again is not imported twice
-  readonly #importedConstantsOf = new WeakSet<ValueMap>();
-
   #csrfToken = CSRF_TOKEN_DEFAULT_VALUE;
 
   #pushId: string | null = null;
@@ -188,10 +184,10 @@ export class MessageHandler {
 
     // Before anything decides what to do with the message, since what an
     // invocation of it runs is a constant of it, and that decides whether a
-    // forced reload is what arrived. A message that is queued here is read
-    // again when it is handled, so the ones already taken in are remembered.
-    if ('constants' in valueMap && !this.#importedConstantsOf.has(valueMap)) {
-      this.#importedConstantsOf.add(valueMap);
+    // forced reload is what arrived. A message read more than once - queued
+    // and handled later, or re-sent by the server - carries the constants it
+    // carried before, which the pool takes as the values it already holds.
+    if ('constants' in valueMap) {
       this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
     }
 
