@@ -251,6 +251,17 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(processor.parameterNamesAndCodeList).to.have.length(0);
     });
 
+    it('runs a string constant as an expression, whatever it looks like', () => {
+      // A function is named by an object, so an expression that happens to
+      // read like the identifier of one is still an expression
+      const registry = treeRegistry();
+      const processor = new CollectingExecuteJavaScriptProcessor(registry);
+
+      execute(processor, registry, [['a'.repeat(64)]]);
+
+      expect(processor.parameterNamesAndCodeList).to.deep.equal([['a'.repeat(64)]]);
+    });
+
     it('passes a node parameter as the element it is bound to', () => {
       // Ported from execute_nodeParametersAreCorrectlyPassed.
       const registry = treeRegistry({ existingElementMap: true });

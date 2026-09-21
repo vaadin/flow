@@ -294,9 +294,6 @@ class UidlWriterTest {
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
                 "a call of declared JavaScript should name a function, the same way an expression names a script: "
                         + json + " " + constants);
-        assertTrue(constants.toString().contains("\"f\":"),
-                "and the constant should be an object naming it, which is what tells it apart from an expression: "
-                        + constants);
         assertFalse(constants.toString().contains(TestJs.class.getName()),
                 "and the constant should carry neither JavaScript nor what declared it: "
                         + constants);

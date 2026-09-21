@@ -48,6 +48,7 @@ import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // NodeFeatures.NodeFeatures.ELEMENT_DATA / NodeProperties
 
@@ -75,9 +76,7 @@ type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
  * string, so the two are told apart by what the constant is rather than by
  * what it says.
  */
-interface JsFunctionConstant {
-  f: string;
-}
+type JsFunctionConstant = Record<typeof JsonConstants.UIDL_KEY_JS_FUNCTION, string>;
 
 type ReturnChannel = (value: unknown) => void;
 
@@ -208,7 +207,7 @@ export class ExecuteJavaScriptProcessor {
       // context object an expression runs against, whose `getNode` maps an
       // element back to its state node; a declared function runs against the
       // element itself and has no context, so there is nothing that could ask.
-      this.invokeFromBundle(whatToRun.f, parameters);
+      this.invokeFromBundle(whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION], parameters);
       return;
     }
 
