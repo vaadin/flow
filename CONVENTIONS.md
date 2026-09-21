@@ -54,54 +54,54 @@ Renaming an existing public class is a breaking change. Add the new class,
 deprecate the old one with a `@deprecated` pointer to the replacement, and
 remove it in the next major.
 
-Put a new type in the package that matches its scope, not in the package of
-its first caller. A capability that `Element` uses today and `Page` will use
-tomorrow is not a `com.vaadin.flow.dom` feature. See `guidelines/design.md`.
+Put a new type in the package that matches its scope, not in the package of its
+first caller. A second entry point for the same capability is normal, and
+moving a public type afterwards is a breaking change. See
+`guidelines/design.md`.
 
-Declare a small interface that only one class uses as a nested type inside that
-class (`Focusable.FocusJs`) instead of adding a top-level file for it.
+Declare a type that only one class uses as a nested type inside that class
+instead of giving it a file of its own.
 
 A method that does not touch the state of the class it sits on belongs
-elsewhere — do not add it to a central class like `Element` just because that
-is its first caller. Search for an existing utility before writing a helper,
-and when the helper is genuinely new, put it in the util class it belongs to
+elsewhere — do not add it to a central class just because that class is its
+first caller. Search for an existing utility before writing a helper, and when
+the helper is genuinely new, put it in the util class it belongs to
 (`ReflectTools`, `FrontendUtils`, …) instead of keeping it private where it is
 needed first.
 
 Keep the surface of an internal class to what its callers need — static helpers
 that only sibling classes and tests call are package private.
 
-Validate a type the user writes where you accept it, and throw with the reason:
-that it is an annotated interface, that every method the mechanism has to
-implement carries the annotation that declares what it does, and that the
-return types are supported. A method that forgot the annotation must fail where
-the implementation is handed out, with a message naming it, not later in the
-browser.
+When API accepts a type the application writes — an annotated interface, a
+class following a convention — validate every assumption about it where it is
+accepted and throw with the reason. What does not satisfy the contract has to
+fail at the call that accepts the type, with a message naming what is wrong,
+rather than at some later point of use.
 
 ## Naming
 
-Every method name contains a verb that says what the method does. `header(…)`,
-`names(…)` and `report(…)` name a noun or a category; `writeHeader(…)`,
-`collectDefinitionNames(…)` and `warnAboutMissingDefinitions(…)` say what
-happens. This holds for TypeScript as much as for Java.
+Every method name contains a verb that says what the method does. A name that
+is only a noun or a category — `header(…)`, `names(…)`, `report(…)` — leaves
+the reader to open the method; `writeHeader(…)`, `collectNames(…)`,
+`warnAboutMissingFiles(…)` say what happens. This holds for TypeScript as much
+as for Java.
 
-Name a type after what it is, not after what the machinery around it does. An
-interface whose methods declare JavaScript is a `JsDefinition`; `JsInvoker`
-names the caller, not the type the user writes.
+Name a type after what it is, not after what the code around it does with it. A
+type the application writes is named for what it declares, not for the
+machinery that consumes it.
 
 Name a component that wraps an HTML element after the element itself, and add
 the `Native` prefix only when the plain name is taken or when it invites a
 mistake that goes unnoticed. Do not introduce further `Html…` names. See
 `guidelines/design.md`.
 
-Do not expose two names for the same value — a record component `methodId()`
-with a `getMethodId()` beside it is one accessor too many.
+Do not expose two names for the same value — a record component and a `get…`
+method beside it returning the same thing is one accessor too many.
 
-Prefer an overload of the existing entry point over a new name for a second way
-to do the same thing: `executeJs(Class)` next to `executeJs(String, …)`, not
-`getJsInvoker(Class)` or `invokeJs(Class)`. A separate name has to be
-discovered on its own, while an overload is found by everyone who already calls
-the method. Spell out the difference in the Javadoc of both instead. See
+A second way to do what an existing method already does is an overload of that
+method, not a new name. An overload is found by everyone who already calls the
+method, while a separate name has to be discovered on its own. Spell out the
+difference between the overloads in the Javadoc of both. See
 `guidelines/design.md`.
 
 ## Nullability
@@ -150,41 +150,37 @@ calling it usually triggers a permission prompt.
 Update both sides in the same PR when a change touches the client-server
 protocol or a DOM event contract.
 
-In an interface whose methods declare JavaScript, cover the absent-argument
-case with a `null` argument of the one declaring method instead of a second
-declaration: every declaration is hashed, generated into the bundle and wired
-on its own, so `FocusJs.focus(null)` costs less than a second declaration for
-the case without options. This is about declaration interfaces — convenience
-overloads of ordinary Java API are welcome, see `guidelines/design.md`.
+Prefer one parameterized declaration over one declaration per case when every
+declaration has to be generated into the bundle and wired on its own.
 
-Never send a Java class or method name to the browser. Key what the client
-looks up by a hash of the content it runs, and keep the readable identifier as
-a development-only debug string in the generated frontend file rather than in
-every response.
+Never send a server-side class or method name to the browser. Key what the
+client has to look up by a hash of the content it runs, so renaming changes
+nothing the browser holds, and keep readable identifiers for development-only
+debug output.
 
-Send a payload that repeats once, through the constant pool the client already
-caches, and keep the message shape the same for the new and the old path
+Send a payload that repeats through the constant pool the client already
+caches, and keep the message shape the same for a new path and the existing one
 instead of adding a second cache beside it. Put arriving constants in the pool
 before anything resolves a reference to them.
 
-Keep a wire object down to what the receiver cannot derive: no key the client
-ignores, no count it can read off the payload it already has.
+Keep a wire object down to what the receiver cannot derive: no key it ignores,
+no value it can read off the payload it already has.
 
-Do not assume that what the server sends matches what the bundle declares. A
-browser that reconnects after a restart without reloading holds the previous
-bundle, so compare what arrives with what the local function expects and report
-a mismatch through the error channel of the call — a pending result that can
-never run has to complete instead of hanging. Binding a parameter one slot off
-is the failure mode to design out.
+Do not assume the browser runs the bundle the server was built with. A client
+that reconnects after a restart without reloading holds the previous one, so
+verify what arrives against what the client itself declares and report a
+mismatch through the error channel of the call — a pending result that can never
+run has to complete instead of hanging. Running on anyway, with the values
+shifted by one, is the failure mode to design out.
 
-Regenerate a frontend file that is generated from Java in a `VaadinHotswapper`
-too, not only in the dev-loop path: a class the IDE recompiles never reaches
-the `vaadin-dev` CLI. Push the new content to the browser with
-`sendHmrEvent(…)` instead of asking the developer to restart.
+Regenerate a file that the build generates from Java in a `VaadinHotswapper`
+too, not only in the dev-loop path: a class the IDE recompiles does not pass
+through the `vaadin-dev` CLI. Push the new content to the browser with an HMR
+event instead of asking the developer to restart.
 
-Keep reading and patching a generated file inside the task that generates it.
-A hotswapper asks the task to update the definitions; it does not parse the
-file itself. See `guidelines/browser-integration.md`.
+Keep reading and patching a generated file inside the task that generates it. A
+caller that reacts to a change asks the task to bring the file up to date; it
+does not parse the format itself. See `guidelines/browser-integration.md`.
 
 ## Build & Dependencies
 
@@ -209,13 +205,13 @@ Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
 
-Do not skip a build step whose output the application needs. A bundle built
-without the generated content is a broken application — do the work, or fail
-with a message that names what is missing.
+Do not skip a build step whose output the application needs. Reusing output
+that predates the change is a broken application — do the work, or fail with a
+message that names what is missing.
 
-Follow the existing implementation of an extension point you are adding to (a
-`VaadinHotswapper`, a `TaskGenerate…`), including one that is in review at the
-same time, rather than inventing a second shape for it.
+Follow the existing implementations when you add one to an extension point,
+including one that is in review at the same time, instead of introducing a
+second shape for the same thing.
 
 ## Javadoc
 
@@ -269,9 +265,8 @@ what proves it still works.
 Test the class the test class is named after. When the assertions are about
 what a collaborator does, the case belongs in that collaborator's test class.
 
-Make an arbitrary fixture value look arbitrary. A stats hash of `"1"` reads as
-"any value that does not match"; a byte-exact copy of a real generated file
-reads as a contract that does not exist.
+Make a value that only has to differ look arbitrary. A byte-exact copy of real
+data reads as a contract that the code does not have.
 
 Build the state a case needs directly. Setup that writes a file, deletes it and
 writes it again through another path hides what the case is about.

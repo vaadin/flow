@@ -178,57 +178,53 @@ client-side subscriptions — must be tied to a component's lifecycle:
 ### Extending an existing entry point
 
 A second way to do what an existing method already does is an overload of that
-method, not a new name. `executeJs(String, Object…)` sends an expression and
-`executeJs(Class)` hands out an implementation whose methods send declared
-JavaScript — both execute JavaScript on the element, and a user who knows the
-first finds the second among the overloads of what they already call. A new
-name (`getJsInvoker`, `invokeJs`) has to be discovered on its own and reads as
-a different feature.
+method, not a new name. The user who knows the first form finds the second
+among the overloads of what they already call, while a new name has to be
+discovered on its own and reads as a different feature. `executeJs(String,
+Object…)` and `executeJs(Class)` are one operation set up two ways, so they
+share a name.
 
-The cost lands in the Javadoc: two overloads that do the same thing differently
-have to open with the same sentence about what the method is for, and then say
+The cost lands in the Javadoc: overloads that do the same thing differently
+have to open with the same sentence about what the method is for and then say
 which is which — "the version that takes a string" against "the version that
 takes an interface". That is cheaper than a name nobody finds.
 
 ### Where a new type belongs
 
-- **Package by scope, not by first caller.** A capability that `Element` uses
-  today and `Page` will use tomorrow is not a `com.vaadin.flow.dom` feature.
-  Put it in a package named after the capability (`com.vaadin.flow.js`) as soon
-  as a second entry point is foreseen — moving it afterwards is a breaking
-  change.
-- **Nest a definition interface in the class that uses it.** An interface whose
-  only purpose is to declare the JavaScript one component runs belongs inside
-  that component — `Focusable.FocusJs`, not a file of its own. The reader finds
-  it next to the code that calls it.
+- **Package by scope, not by first caller.** A capability that one entry point
+  uses today and another will use tomorrow does not belong in the package of
+  the first. Name the package after the capability as soon as a second caller
+  is foreseen — moving a public type afterwards is a breaking change.
+- **Nest a type that only one class uses.** An interface or a record whose only
+  purpose is to serve one class belongs inside that class, where the reader
+  finds it next to the code that uses it, rather than in a file of its own.
 - **A method goes where its data is.** A static helper that validates an
-  annotated interface has nothing to do with `Element`, even when `Element` is
-  its only caller. Central types accumulate methods like that until nobody can
-  tell what the class is about.
-- **A caller that reacts to a change does not reimplement the format.** A
-  hotswapper that has to bring a generated file up to date asks the task that
-  writes the file (`updateJsDefinitions(…)`); the reading, merging and writing
-  stay private to that task. Two implementations of one file format drift, and
-  the test of the caller ends up testing the generator.
+  argument has nothing to do with the class that happens to call it first.
+  Central types accumulate methods like that until nobody can tell what the
+  class is about.
+- **A caller does not reimplement a format its owner already writes.** Code
+  that has to bring a generated file up to date asks the task that writes it;
+  the reading, merging and writing stay private to that task. Two
+  implementations of one format drift apart, and the test of the caller ends up
+  testing the writer.
 
 ### Validate what you accept
 
 When API accepts a type the application writes — an annotated interface, a
 class following a convention — check every assumption where the type is
-accepted and throw with the reason: that it is an interface, that it carries
-the annotation, that every method declares what the mechanism needs, and that
-the return types are among the supported ones. A method that forgot its
-annotation then fails at the call that hands out the implementation, with a
-message naming the method, instead of in the browser at some later point.
+accepted and throw with the reason: that it is the kind of type expected, that
+it carries what the mechanism requires, and that the members it declares are
+supported. A member that does not satisfy the contract then fails at the call
+that accepts the type, with a message naming it, instead of at some later point
+of use.
 
-Do not let a partial case through unspoken. When some methods of such an
-interface are declarations and others are ordinary Java, the type carries two
-kinds of method with different rules, and the user has to know which is which.
-That can be the right design — a `default` method implemented in Java next to
-abstract methods that declare JavaScript is useful — but then the line between
-them is a rule stated in one sentence in the Javadoc and enforced for
-everything on the declaring side. What must never happen is a method that
-quietly does nothing because it fell between the two.
+Do not let a partial case through unspoken. When some members of such a type
+are handled by the mechanism and others are ordinary Java, the type carries two
+kinds of member with different rules and the user has to know which is which.
+That can be the right design, but then the line between them is a rule stated
+in one sentence in the Javadoc and enforced for everything on the handled side.
+What must never happen is a member that quietly does nothing because it fell
+between the two.
 
 ### Naming components that wrap HTML elements
 
