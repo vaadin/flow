@@ -216,10 +216,10 @@ public class FrontendUtils {
 
     /**
      * File name of the generated file that registers the JavaScript of the
-     * {@code @JsInvoker} interfaces on the class path, so that the client can
-     * run a server-initiated call without compiling an expression.
+     * {@code @JsDefinition} interfaces on the class path, so that the client
+     * can run a server-initiated call without compiling an expression.
      */
-    public static final String JS_INVOKERS_FILE_NAME = "vaadin-js-invokers.js";
+    public static final String JS_DEFINITIONS_FILE_NAME = "vaadin-js-definitions.js";
 
     /**
      * File name of the index.html in client side.

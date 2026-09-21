@@ -76,7 +76,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
-            TaskGenerateJsInvokers.class,
+            TaskGenerateJsDefinitions.class,
             TaskInstallFrontendBuildPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
@@ -263,7 +263,7 @@ public class NodeTasks implements FallibleCommand {
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
-        commands.add(new TaskGenerateJsInvokers(options));
+        commands.add(new TaskGenerateJsDefinitions(options));
 
         if (options.getJarFiles() != null
                 && options.getJarFrontendResourcesFolder() != null) {

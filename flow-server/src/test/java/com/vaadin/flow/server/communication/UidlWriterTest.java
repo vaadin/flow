@@ -49,11 +49,12 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -189,56 +190,105 @@ class UidlWriterTest {
                         element.getNode(), invocation))
                 .collect(Collectors.toList());
 
-        ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(executeJavaScriptList);
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                executeJavaScriptList, constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
 
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(
                         // Null since element is not attached
                         JacksonUtils.nullNode(),
-                        JacksonUtils.createNode("$0.focus()")),
+                        JacksonUtils.createNode(
+                                nameOfWhatRuns("$0.focus()", constants))),
                 JacksonUtils.createArray(
                         JacksonUtils.createNode("Lives remaining:"),
                         JacksonUtils.createNode(3),
-                        JacksonUtils.createNode("console.log($0, $1)")));
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                "console.log($0, $1)", constants))));
 
-        assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "an invocation should name what it runs among the constants of the message: "
+                        + json + " " + constants);
+    }
+
+    /**
+     * What names the given script, or the given function, among the given
+     * constants, which is what an invocation that runs it carries instead of
+     * the script or the function itself.
+     */
+    private static String nameOfWhatRuns(String whatRuns,
+            ObjectNode constants) {
+        return JacksonUtils.getKeys(constants).stream()
+                .filter(key -> whatRuns.equals(constants.get(key).asString()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("The constants "
+                        + constants + " should carry " + whatRuns));
     }
 
     @Test
-    void encodeExecuteJavaScript_invokerCall_sendsTheTargetInsteadOfTheScript() {
+    void encodeExecuteJavaScript_sameScriptTwice_sentOnceAndNamedTwice() {
+        Element element = ElementFactory.createDiv();
+        ConstantPool constantPool = new ConstantPool();
+
+        ArrayNode first = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool);
+        constantPool.dumpConstants();
+        ArrayNode second = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool);
+
+        assertEquals(nameOfWhatRuns(first), nameOfWhatRuns(second),
+                "the same script should be named the same way");
+        assertFalse(constantPool.hasNewConstants(),
+                "and sent once, not with every invocation that runs it");
+    }
+
+    /**
+     * What the first invocation of the given list names as the thing it runs.
+     */
+    private static String nameOfWhatRuns(ArrayNode invocations) {
+        ArrayNode invocation = (ArrayNode) invocations.get(0);
+        return invocation.get(invocation.size() - 1).asString();
+    }
+
+    @Test
+    void encodeExecuteJavaScript_jsCall_sendsTheTargetInsteadOfTheScript() {
         Element element = ElementFactory.createDiv();
 
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
 
-        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
-                List.of(new PendingJavaScriptInvocation(element.getNode(),
-                        invocation)));
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
 
-        ObjectNode target = JacksonUtils.createObjectNode();
-        target.put("invoker", TestJs.class.getName());
-        target.put("method", "method/1");
-        target.put("arguments", 1);
-        target.put("element", true);
+        String functionId = JsCall.functionId("this.method($0)", 1);
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
                         // Null since element is not attached
-                        JacksonUtils.nullNode(), target));
+                        JacksonUtils.nullNode(), JacksonUtils.createNode(
+                                nameOfWhatRuns(functionId, constants))));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
-                "an invoker call should carry its target, and no JavaScript: "
-                        + json);
+                "a call of declared JavaScript should name a function, the same way an expression names a script: "
+                        + json + " " + constants);
+        assertFalse(constants.toString().contains(TestJs.class.getName()),
+                "and the constant should carry neither JavaScript nor what declared it: "
+                        + constants);
     }
 
     @Test
-    void encodeExecuteJavaScript_subscribedInvokerCall_addsTheReturnChannels() {
+    void encodeExecuteJavaScript_subscribedDefinitionCall_addsTheReturnChannels() {
         Element element = ElementFactory.createDiv();
 
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
@@ -246,69 +296,23 @@ class UidlWriterTest {
         pending.then(value -> {
         });
 
+        ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(List.of(pending));
+                .encodeExecuteJavaScriptList(List.of(pending), constantPool);
 
         ArrayNode encoded = (ArrayNode) json.get(0);
         assertEquals(5, encoded.size(),
-                "the argument and the element should be followed by the two channels and the target: "
+                "the argument and the element should be followed by the two channels and the function to run: "
                         + encoded);
-        ObjectNode target = (ObjectNode) encoded.get(4);
-        assertTrue(target.get("returns").asBoolean(),
-                "the target should tell the client that the call is subscribed to");
-        assertEquals(1, target.get("arguments").asInt());
+        assertEquals(
+                nameOfWhatRuns(JsCall.functionId("this.method($0)", 1),
+                        constantPool.dumpConstants()),
+                encoded.get(4).asString(),
+                "and the function should be the same one as for a call that is not subscribed to: "
+                        + encoded);
     }
 
-    @Test
-    void encodeExecuteJavaScript_invokerCallWithoutAnElement_targetSaysSo() {
-        Element element = ElementFactory.createDiv();
-
-        // What a page invoker schedules: the arguments and nothing else, since
-        // there is no element to apply the function to
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
-        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
-                call.getExpression(), "foo");
-
-        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
-                List.of(new PendingJavaScriptInvocation(element.getNode(),
-                        invocation)));
-
-        ArrayNode encoded = (ArrayNode) json.get(0);
-        assertEquals(2, encoded.size(),
-                "the argument should be followed by the target alone: "
-                        + encoded);
-        assertFalse(((ObjectNode) encoded.get(1)).has("element"),
-                "without an element the function runs with no this");
-    }
-
-    @Test
-    void encodeExecuteJavaScript_subscribedInvokerCallWithoutAnElement_channelsFollowTheArguments() {
-        Element element = ElementFactory.createDiv();
-
-        JsInvokerCall call = new JsInvokerCall(TestJs.class, "method",
-                List.of("foo"));
-        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
-                call.getExpression(), "foo");
-        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
-                element.getNode(), invocation);
-        pending.then(value -> {
-        });
-
-        ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(List.of(pending));
-
-        ArrayNode encoded = (ArrayNode) json.get(0);
-        assertEquals(4, encoded.size(),
-                "the argument should be followed by the two channels and the target: "
-                        + encoded);
-        ObjectNode target = (ObjectNode) encoded.get(3);
-        assertTrue(target.get("returns").asBoolean());
-        assertFalse(target.has("element"),
-                "the channels follow the arguments when there is no element");
-    }
-
-    @JsInvoker
+    @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);

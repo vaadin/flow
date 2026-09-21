@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ import com.vaadin.flow.component.FocusOption.FocusVisible;
 import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.js.JsInvokerCall;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -274,42 +273,7 @@ class FocusableTest {
     }
 
     @Test
-    void focus_invocationCarriesTheInvokerCallWithTheOptions() {
-        ui.add(component);
-        component.focus(PreventScroll.ENABLED);
-
-        JsInvokerCall call = dumpSingleCall();
-        assertEquals(Focusable.FocusJs.class, call.invokerType());
-        assertEquals("focus", call.methodName());
-        assertEquals("{\"preventScroll\":true}",
-                call.arguments().get(0).toString(),
-                "the options reach the driver as the JSON the browser gets");
-    }
-
-    @Test
-    void focusWithoutOptions_invocationCarriesTheNoArgumentCall() {
-        ui.add(component);
-        component.focus();
-
-        assertEquals(
-                new JsInvokerCall(Focusable.FocusJs.class, "focus",
-                        Collections.singletonList(null)),
-                dumpSingleCall(),
-                "no options is the options of the browser, which is what it makes of none");
-    }
-
-    @Test
-    void blur_invocationCarriesTheBlurCall() {
-        ui.add(component);
-        component.blur();
-
-        assertEquals(
-                new JsInvokerCall(Focusable.FocusJs.class, "blur", List.of()),
-                dumpSingleCall());
-    }
-
-    @Test
-    void pendingInvocations_runOnAnImplementationOfTheInvoker_plainJavaScriptLeftIntact() {
+    void pendingInvocations_runOnAnImplementationOfTheDefinition_plainJavaScriptLeftIntact() {
         ui.add(component);
         component.focus(PreventScroll.ENABLED);
         component.getElement().executeJs("this.scrollTop = 0");
@@ -317,13 +281,14 @@ class FocusableTest {
 
         // What a driver of the client side that cannot run JavaScript does:
         // take the queue once, in order, and let Java dispatch the calls it
-        // recognizes onto its own implementation of the invoker interface
+        // recognizes onto its own implementation of the JavaScript definition
         List<String> log = new ArrayList<>();
         List<String> unhandledJs = new ArrayList<>();
         for (PendingJavaScriptInvocation pending : ui
                 .dumpPendingJsInvocations()) {
-            JsInvokerCall call = pending.getInvocation().getInvokerCall();
-            if (call != null && call.invokerType() == Focusable.FocusJs.class) {
+            JsCall call = pending.getInvocation().getJsCall();
+            if (call != null
+                    && call.definitionType() == Focusable.FocusJs.class) {
                 call.invokeOn(new FocusSimulation(
                         Element.get(pending.getOwner()), log));
             } else {
@@ -341,13 +306,6 @@ class FocusableTest {
                 "the application JavaScript should be left for the driver to report");
         assertTrue(unhandledJs.get(0).contains("this.scrollTop = 0"),
                 "the unhandled invocation should be the application JavaScript");
-    }
-
-    private JsInvokerCall dumpSingleCall() {
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getInvokerCall();
     }
 
     /**

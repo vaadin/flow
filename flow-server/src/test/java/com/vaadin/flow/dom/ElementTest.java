@@ -77,9 +77,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
-import com.vaadin.flow.js.JsInvoker;
-import com.vaadin.flow.js.JsInvokerCall;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2666,12 +2666,12 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getJsInvoker_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        element.getJsInvoker(TestJs.class).method("foo");
+        element.executeJs(TestJs.class).method("foo");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
@@ -2683,75 +2683,34 @@ class ElementTest extends AbstractNodeTest {
                 "the declared expression should not be wrapped, since the generated function is what runs");
         assertEquals(List.of("foo", element), invocation.getParameters(),
                 "the arguments should be followed by the element to apply the function to");
-        assertEquals(new JsInvokerCall(TestJs.class, "method", List.of("foo")),
-                invocation.getInvokerCall());
+        assertEquals(new JsCall(TestJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
     }
 
     @Test
-    void getJsInvoker_interfaceWithoutAnnotation_throws() {
-        Element element = ElementFactory.createDiv();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> element.getJsInvoker(Serializable.class),
-                "an interface the build does not collect should be rejected");
-    }
-
-    @Test
-    void getJsInvoker_notAnInterface_throws() {
-        Element element = ElementFactory.createDiv();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> element.getJsInvoker(ElementTest.class),
-                "only an interface can declare invoker methods");
-    }
-
-    @Test
-    void getJsInvoker_methodReturningAResult_schedulesAndReturnsIt() {
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        ResultJs invoker = element.getJsInvoker(ResultJs.class);
-        assertNotNull(invoker.toString(),
-                "the invoker should answer the methods of Object");
-
-        PendingJavaScriptResult result = invoker.readValue();
+        PendingJavaScriptResult result = element.executeJs(ResultJs.class)
+                .readValue();
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertNotNull(result,
-                "a method declaring a result should return the pending result");
-        assertEquals(1,
-                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the element scheduled");
     }
 
-    @Test
-    void getJsInvoker_methodWithAnotherReturnType_throwsAndSchedulesNothing() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
-        ui.getElement().appendChild(element);
-
-        assertThrows(IllegalStateException.class,
-                () -> element.getJsInvoker(UnsupportedJs.class).readValue());
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertTrue(
-                ui.getInternals().dumpPendingJavaScriptInvocations().isEmpty(),
-                "a method the invoker can not answer should not run in the browser either");
-    }
-
-    @JsInvoker
+    @JsDefinition
     interface ResultJs extends Serializable {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
     }
 
-    @JsInvoker
-    interface UnsupportedJs extends Serializable {
-        @JsExpression("return this.value;")
-        String readValue();
-    }
-
-    @JsInvoker
+    @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);

@@ -7,8 +7,23 @@ import { StateTree } from '../../../../../main/frontend/internal/client/flow/Sta
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { type RecordedCalls, recordingRegistry } from './stateTreeTestRegistry';
 import { TestRegistry, testRegistry } from '../testRegistry';
+
+// What to run is a constant of the message rather than part of the invocation,
+// so a case writes it at the end of an invocation, as the message reads, and
+// this puts it in the pool and names it the way the server does.
+let nextConstant = 0;
+function execute(processor: ExecuteJavaScriptProcessor, registry: TestRegistry, invocations: unknown[][]): void {
+  const named = invocations.map((invocation) => {
+    nextConstant += 1;
+    const key = `constant-${nextConstant}`;
+    registry.getConstantPool().importFromJson({ [key]: invocation[invocation.length - 1] });
+    return [...invocation.slice(0, -1), key];
+  });
+  processor.execute(named);
+}
 
 // Ported from com.vaadin.client.flow.ExecuteJavaScriptProcessorTest and
 // com.vaadin.client.GwtExecuteJavaScriptElementUtilsTest (the return-channel
@@ -54,6 +69,7 @@ class TestJsProcessor extends ExecuteJavaScriptProcessor {
 // Registry does.
 function treeRegistry(services: { existingElementMap?: boolean } = {}): TestRegistry {
   const registry = new TestRegistry();
+  registry.register('ConstantPool', new ConstantPool());
   registry.register('StateTree', new StateTree(registry));
   if (services.existingElementMap === true) {
     registry.register('ExistingElementMap', new ExistingElementMap());
@@ -69,47 +85,64 @@ function registeredNode(registry: TestRegistry, id: number): StateNode {
 }
 
 describe('ExecuteJavaScriptProcessor', () => {
-  describe('js invoker calls', () => {
-    const INVOKER = 'com.acme.GreeterJs';
+  describe('JavaScript definition calls', () => {
+    // What the server sends: the identifier of a function of the bundle, which
+    // is a hash of the JavaScript it runs
+    const GREETING = 'a'.repeat(64);
+    const VALUE = 'b'.repeat(64);
 
-    type InvokerFunction = (this: unknown, ...args: unknown[]) => unknown;
+    type DefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
 
-    type InvokerWindow = Window & {
-      Vaadin?: { Flow?: { jsInvokers?: Record<string, Record<string, InvokerFunction>> } };
+    type DefinitionWindow = Window & {
+      Vaadin?: {
+        Flow?: { jsDefinitions?: Record<string, DefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+      };
     };
 
-    // Registers a function the way the generated bundle does.
-    function registerInvoker(method: string, fn: InvokerFunction): void {
-      const vaadin = (window as InvokerWindow).Vaadin ?? {};
-      (window as InvokerWindow).Vaadin = vaadin;
+    // Registers a function the way the generated bundle does, with the name a
+    // message calls it by, which a development bundle registers with it.
+    function registerDefinition(functionId: string, fn: DefinitionFunction, name?: string): void {
+      const vaadin = (window as DefinitionWindow).Vaadin ?? {};
+      (window as DefinitionWindow).Vaadin = vaadin;
       vaadin.Flow = vaadin.Flow ?? {};
-      vaadin.Flow.jsInvokers = vaadin.Flow.jsInvokers ?? {};
-      vaadin.Flow.jsInvokers[INVOKER] = { ...vaadin.Flow.jsInvokers[INVOKER], [method]: fn };
+      vaadin.Flow.jsDefinitions = vaadin.Flow.jsDefinitions ?? {};
+      vaadin.Flow.jsDefinitions[functionId] = fn;
+      if (name !== undefined) {
+        vaadin.Flow.jsDefinitionNames = vaadin.Flow.jsDefinitionNames ?? {};
+        vaadin.Flow.jsDefinitionNames[functionId] = name;
+      }
     }
 
-    function processor(): ExecuteJavaScriptProcessor {
-      return new ExecuteJavaScriptProcessor(
-        testRegistry({
-          StateTree: { getNode: () => null },
-          ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false }
-        })
-      );
+    function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
+      const registry = testRegistry({
+        ConstantPool: new ConstantPool(),
+        StateTree: { getNode: () => null },
+        ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false }
+      });
+      return { processor: new ExecuteJavaScriptProcessor(registry), registry };
+    }
+
+    function run(invocation: unknown[]): void {
+      const { processor, registry } = fixture();
+      execute(processor, registry, [invocation]);
     }
 
     afterEach(() => {
-      delete (window as InvokerWindow).Vaadin?.Flow?.jsInvokers?.[INVOKER];
+      const flow = (window as DefinitionWindow).Vaadin?.Flow;
+      for (const functionId of [GREETING, VALUE]) {
+        delete flow?.jsDefinitions?.[functionId];
+        delete flow?.jsDefinitionNames?.[functionId];
+      }
     });
 
     it('runs the function from the bundle against the element', () => {
       const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
-      registerInvoker('showGreeting/1', function (this: unknown, ...args: unknown[]) {
-        calls.push({ thisArg: this, args });
+      registerDefinition(GREETING, function (this: unknown, greeting: unknown) {
+        calls.push({ thisArg: this, args: [greeting] });
       });
       const element = { tagName: 'div' };
 
-      processor().execute([
-        ['Hello', element, { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }]
-      ]);
+      run(['Hello', element, GREETING]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -117,18 +150,11 @@ describe('ExecuteJavaScriptProcessor', () => {
     });
 
     it('passes the return value to the success channel', async () => {
-      registerInvoker('readValue/0', () => 'answer');
+      registerDefinition(VALUE, () => 'answer');
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
-      processor().execute([
-        [
-          element,
-          (value: unknown) => resolved.push(value),
-          () => {},
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, element: true, returns: true }
-        ]
-      ]);
+      run([element, (value: unknown) => resolved.push(value), () => {}, VALUE]);
       // Settled in microtasks: a macrotask wait would also pick up the
       // asynchronous rethrow that the expression cases leave behind.
       await Promise.resolve();
@@ -137,109 +163,65 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(resolved).to.eql(['answer']);
     });
 
-    it('does not run a call whose parameters do not match the target', () => {
+    it('does not run a call whose parameters do not match the function', () => {
       let calls = 0;
-      registerInvoker('showGreeting/1', () => {
+      registerDefinition(GREETING, (_greeting: unknown) => {
         calls += 1;
       });
 
-      // One argument declared, but no element to apply the function to: the
-      // invocation and this client disagree about the signature.
-      processor().execute([['Hello', { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }]]);
+      // One argument the function takes, but no element to apply it to: the
+      // invocation and the bundle disagree about the signature, which is the
+      // same disagreement as an invocation that carries one parameter too
+      // many.
+      run(['Hello', GREETING]);
 
       expect(calls).to.equal(0);
     });
 
-    it('reports a mismatch to the error channel of a call that returns a value', () => {
+    it('reports a mismatch to the error channel, naming the function as it was written', () => {
       let calls = 0;
-      registerInvoker('readValue/0', () => {
-        calls += 1;
-        return 'answer';
-      });
+      registerDefinition(
+        VALUE,
+        () => {
+          calls += 1;
+          return 'answer';
+        },
+        'com.acme.GreeterJs.readValue/0'
+      );
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      // Subscribed to, but one channel short of what the target declares.
-      processor().execute([
-        [
-          element,
-          (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, element: true, returns: true }
-        ]
-      ]);
+      // Subscribed to, but one channel short of what the server sends.
+      run([element, (error: unknown) => errors.push(error), VALUE]);
 
       expect(calls).to.equal(0);
       // Reported rather than left hanging: the pending result on the server
       // would otherwise never complete.
       expect(errors).to.have.lengthOf(1);
-    });
-
-    it('does not run a call that carries more parameters than the target declares', () => {
-      let calls = 0;
-      registerInvoker('showGreeting/1', () => {
-        calls += 1;
-      });
-
-      processor().execute([
-        [
-          'Hello',
-          'unexpected',
-          { tagName: 'div' },
-          { invoker: INVOKER, method: 'showGreeting/1', arguments: 1, element: true }
-        ]
-      ]);
-
-      expect(calls).to.equal(0);
-    });
-
-    it('runs a call with no element without a this, and answers its channel', async () => {
-      // What a page invoker sends: the arguments, then the channels, and no
-      // element to apply the function to.
-      const thisArgs: unknown[] = [];
-      registerInvoker('readValue/0', function (this: unknown) {
-        thisArgs.push(this);
-        return 'answer';
-      });
-      const resolved: unknown[] = [];
-
-      processor().execute([
-        [
-          (value: unknown) => resolved.push(value),
-          () => {},
-          { invoker: INVOKER, method: 'readValue/0', arguments: 0, returns: true }
-        ]
-      ]);
-      await Promise.resolve();
-      await Promise.resolve();
-
-      expect(thisArgs).to.eql([undefined]);
-      expect(resolved).to.eql(['answer']);
+      // A development bundle registers what a developer wrote next to the
+      // function, so a message says more than a hash does
+      expect(String(errors[0])).to.contain('com.acme.GreeterJs.readValue/0');
     });
 
     it('reports a function that is not in the bundle to the error channel', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      processor().execute([
-        [
-          element,
-          () => {},
-          (error: unknown) => errors.push(error),
-          { invoker: INVOKER, method: 'missing/0', arguments: 0, element: true, returns: true }
-        ]
-      ]);
+      run([element, () => {}, (error: unknown) => errors.push(error), VALUE]);
 
       expect(errors).to.have.lengthOf(1);
-      expect(String(errors[0])).to.contain(INVOKER);
+      // Nothing registered it, so the message has only the identifier
+      expect(String(errors[0])).to.contain(VALUE);
     });
   });
 
   describe('execute', () => {
     it('passes the parameters and code of each invocation on', () => {
       // Ported from execute_parametersAndCodeAreValidAndNoNodeParameters.
-      const processor = new CollectingExecuteJavaScriptProcessor(treeRegistry());
+      const registry = treeRegistry();
+      const processor = new CollectingExecuteJavaScriptProcessor(registry);
 
-      processor.execute([['script1'], ['param1', 'param2', 'script2']]);
+      execute(processor, registry, [['script1'], ['param1', 'param2', 'script2']]);
 
       expect(processor.parameterNamesAndCodeList).to.have.length(2);
       expect(processor.parametersList).to.have.length(2);
@@ -255,6 +237,18 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(processor.nodeParametersList[1].size).to.equal(0);
     });
 
+    it('runs nothing for an invocation whose constant is not there', () => {
+      // A message that named a constant of one that never arrived, or arrived
+      // out of order: running the name as a script is the one thing that must
+      // not happen.
+      const registry = treeRegistry();
+      const processor = new CollectingExecuteJavaScriptProcessor(registry);
+
+      processor.execute([['neverimported']]);
+
+      expect(processor.parameterNamesAndCodeList).to.have.length(0);
+    });
+
     it('passes a node parameter as the element it is bound to', () => {
       // Ported from execute_nodeParametersAreCorrectlyPassed.
       const registry = treeRegistry({ existingElementMap: true });
@@ -263,7 +257,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const element = document.createElement('div');
       node.setDomNode(element);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       expect(processor.nodeParametersList).to.have.length(1);
       expect(processor.nodeParametersList[0].size).to.equal(1);
@@ -281,7 +275,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         .setValue({ [NodeProperties.TYPE]: NodeProperties.INJECT_BY_ID });
       registry.getStateTree().registerNode(node);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       // The invocation has not been executed
       expect(processor.nodeParametersList).to.have.length(0);
@@ -303,7 +297,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const node = registeredNode(registry, 31);
       processor.bound = false;
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       expect(processor.nodeParametersList).to.have.length(0);
 
@@ -324,7 +318,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const processor = new CollectingExecuteJavaScriptProcessor(registry);
       const node = registeredNode(registry, 12);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       // The invocation has been executed
       expect(processor.nodeParametersList).to.have.length(1);
@@ -411,11 +405,18 @@ describe('ExecuteJavaScriptProcessor', () => {
       return {
         lifecycleStates,
         registry: testRegistry({
+          ConstantPool: new ConstantPool(),
           StateTree: { getNode: () => null },
           ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false },
           UILifecycle: { isTerminated: () => false, setState: (state: UIState) => lifecycleStates.push(state) }
         })
       };
+    }
+
+    // The invocation of one expression that most cases here run
+    function runExpression(expression: string): void {
+      const registry = makeRegistry().registry;
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [[expression]]);
     }
 
     afterEach(() => {
@@ -429,6 +430,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const recorded: RecordedCalls = built.recorded;
       const tree = new StateTree(built.registry);
       const registry = testRegistry({
+        ConstantPool: new ConstantPool(),
         StateTree: tree,
         ApplicationConfiguration: { getApplicationId: () => 'test', isProductionMode: () => false },
         UILifecycle: { isTerminated: () => false, setState: () => {} }
@@ -438,7 +440,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const expectedChannelId = 20;
 
       // The @v-return parameter decodes to a callback; the expression calls it.
-      new ExecuteJavaScriptProcessor(registry).execute([
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [
         [{ '@v-return': [expectedNodeId, expectedChannelId] }, '$0(2)']
       ]);
 
@@ -449,27 +451,26 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('runs an invocation expression', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpRan = true;']]);
+      runExpression('globalThis.__ejpRan = true;');
       expect((globalThis as Record<string, unknown>).__ejpRan).to.be.true;
     });
 
     it('binds invocation parameters to $0, $1, ...', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['hello', 'globalThis.__ejpParam = $0;']]);
+      const registry = makeRegistry().registry;
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [['hello', 'globalThis.__ejpParam = $0;']]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('hello');
     });
 
     it('exposes the app id with the per-UI suffix stripped', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpParam = this.$appId;']]);
+      runExpression('globalThis.__ejpParam = this.$appId;');
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ROOT');
     });
 
     it('exposes the registry on the context', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
-        ['globalThis.__ejpParam = this.registry === undefined;']
-      ]);
+      runExpression('globalThis.__ejpParam = this.registry === undefined;');
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal(false);
     });
 
@@ -477,23 +478,21 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Beyond the Java suite.
       // getNode throws when the argument is not a state-node parameter; the
       // executed code sees that as a thrown ReferenceError.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
-        ['try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }']
-      ]);
+      runExpression(
+        'try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }'
+      );
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ReferenceError');
     });
 
     it('catches exceptions thrown by the executed code', () => {
       // Beyond the Java suite.
-      expect(() =>
-        new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['throw new Error("boom");']])
-      ).to.not.throw();
+      expect(() => runExpression('throw new Error("boom");')).to.not.throw();
     });
 
     it('exposes stopApplication on the context, terminating the UI lifecycle', () => {
       // Beyond the Java suite.
       const fixture = makeRegistry();
-      new ExecuteJavaScriptProcessor(fixture.registry).execute([['this.stopApplication();']]);
+      execute(new ExecuteJavaScriptProcessor(fixture.registry), fixture.registry, [['this.stopApplication();']]);
       expect(fixture.lifecycleStates).to.deep.equal([UIState.TERMINATED]);
     });
   });

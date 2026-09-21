@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -203,11 +204,14 @@ class BundleValidationTest {
         frontendHashes.put("theme-util.js",
                 BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
-        // A bundle carries the JavaScript declared by the invoker interfaces
+        // A bundle carries the JavaScript declared by the JavaScript
+        // definitions
         frontendHashes.put(
-                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME,
-                BundleValidationUtil.calculateHash(
-                        new TaskGenerateJsInvokers(options).getFileContent()));
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                BundleValidationUtil
+                        .calculateHash(new TaskGenerateJsDefinitions(options)
+                                .getFileContent()));
         return stats;
     }
 
@@ -1072,40 +1076,38 @@ class BundleValidationTest {
         assertFalse(needsBuild, "Jar fronted file content hash should match.");
     }
 
-    @ParameterizedTest
-    @MethodSource("modes")
-    void bundleWithoutJsInvokerJavaScript_noBundleRebuild(Mode mode) {
-        setupMode(mode);
-
-        ObjectNode stats = getBasicStats();
-        ((ObjectNode) stats.get(FRONTEND_HASHES)).remove(
-                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME);
-        setupFrontendUtilsMock(stats);
-
-        boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, mode);
-
-        assertFalse(needsBuild,
-                "a bundle that predates invoker interfaces should keep being used, since an application running on a precompiled bundle has no frontend build to replace it with");
+    static Stream<Arguments> modesAndBundleHashes() {
+        // What the stats say the bundle was built with: a hash the declarations
+        // do not produce, so it was built with another version of them, and no
+        // hash at all, as in a bundle built before any definition existed
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode,
+                        "not the hash of what the interfaces declare"),
+                Arguments.of(mode, null)));
     }
 
     @ParameterizedTest
-    @MethodSource("modes")
-    void jsInvokerJavaScriptChanged_bundleRebuild(Mode mode) {
+    @MethodSource("modesAndBundleHashes")
+    void jsDefinitionJavaScriptNotInTheBundle_bundleRebuild(Mode mode,
+            String bundleHash) {
         setupMode(mode);
 
         ObjectNode stats = getBasicStats();
-        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED + FrontendUtils.JS_INVOKERS_FILE_NAME,
-                BundleValidationUtil
-                        .calculateHash("window.Vaadin.Flow.jsInvokers = {};"));
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        String generatedFile = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        if (bundleHash == null) {
+            hashes.remove(generatedFile);
+        } else {
+            hashes.put(generatedFile, bundleHash);
+        }
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
 
         assertTrue(needsBuild,
-                "JavaScript declared by an invoker interface that the bundle was not built with should trigger a rebuild");
+                "JavaScript declared by a JavaScript definition that the bundle was not built with should trigger a rebuild, whether the bundle carries another version of it or none at all");
     }
 
     @ParameterizedTest

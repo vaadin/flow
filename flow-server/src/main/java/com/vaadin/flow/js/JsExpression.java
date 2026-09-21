@@ -24,17 +24,17 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.dom.Element;
 
 /**
- * The JavaScript that a method of a JS invoker interface runs, as a constant
+ * The JavaScript that a method of a JavaScript definition runs, as a constant
  * expression.
  * <p>
- * The annotated method is called through {@link Element#getJsInvoker(Class)}.
- * Its arguments are the parameters of the expression, referenced positionally
- * as <code>$0</code>, <code>$1</code>, &hellip;, and the element the invoker
+ * The annotated method is called through {@link Element#executeJs(Class)}. Its
+ * arguments are the parameters of the expression, referenced positionally as
+ * <code>$0</code>, <code>$1</code>, &hellip;, and the element the definition
  * was obtained from is <code>this</code> — the same contract as
  * {@link Element#executeJs(String, Object...)}, except that the expression is a
  * constant of the interface instead of a string built at the call site.
  *
- * @see Element#getJsInvoker(Class)
+ * @see Element#executeJs(Class)
  */
 @Documented
 @Target(ElementType.METHOD)
