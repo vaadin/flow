@@ -68,24 +68,36 @@ expressions of a Polymer template listener.
 
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
-key says whether that expression also acts as a debounce filter —
-`false` for a plain expression, or `[[timeout, phase…], …]`:
+key says whether that expression is also a filter that decides whether
+the event is sent at all, and takes one of exactly three forms:
+
+- `false` — a plain expression, evaluated and sent as event data.
+- `true` — a filter with no debounce.
+- `[[timeout, phase…], …]` — a filter with debounce settings.
 
 ```json
 "constants": {
   "RBNvo1WzZ4o=": {},
   "J4r/ss0KY+c=": { "event.clientX": false, "event.clientY": false },
+  "24b7yiAh6SA=": { "event.button === 0": true },
   "vdAdQQWwVaQ=": { "1": [[250, "trailing"]] },
   "gKEp5ocBgAc=": { "}value": false }
 }
 ```
 
+Where each of those comes from:
+
 - `{}` — a plain listener with no event data: nothing for the client to
   evaluate, it just sends the event.
-- The second entry comes from two `addEventData(…)` calls.
-- The third comes from `debounce(250)`. There is no real filter, so the
-  always-true filter expression `1` carries the debounce settings.
-- The fourth comes from `synchronizeProperty("value")`. The `}` prefix
+- `{ "event.clientX": …, "event.clientY": … }` — two `addEventData(…)`
+  calls.
+- `{ "event.button === 0": true }` — `setFilter("event.button === 0")`.
+- `{ "1": [[250, "trailing"]] }` — `debounce(250)`. There is no real
+  filter, so the always-true filter expression `1` carries the debounce
+  settings. `1` also shows up as `"1": true` when an element has both
+  filtered and unfiltered listeners for one event type, so that the
+  unfiltered ones are still notified when no filter matches.
+- `{ "}value": false }` — `synchronizeProperty("value")`. The `}` prefix
   (`JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN`) marks a property to read
   off the element and send back, rather than an expression to evaluate.
 
@@ -94,9 +106,12 @@ listener feature with `"key": "click"` and `"value": "J4r/ss0KY+c="`.
 That is where the saving is: two thousand buttons sharing one click
 listener configuration cost one entry instead of two thousand copies of
 the same object, which is what `ConstantPoolPerformanceView` in
-`flow-tests` makes visible. The ids above are the real hashes of those
-exact serialized values, so anything that changes the serialized form
-changes the id.
+`flow-tests` makes visible.
+
+The ids above are the real hashes of those values, but the hash is taken
+over `json.toString()` — the compact form, without the spaces the
+snippet is pretty-printed with. Anything that changes the serialized
+form, key order included, changes the id.
 
 ### Constraints this puts on new code
 
