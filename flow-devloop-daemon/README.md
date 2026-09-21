@@ -220,7 +220,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
-| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11` (see `AppRuntime`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -235,14 +235,18 @@ properties files, where the rest of the team can see it (see
 
 ## How the application is started
 
-`AppRuntime` decides which of two shapes this project is.
+`AppRuntime` decides which of two shapes this project is, and for a WAR
+which of the containers in `ServerPlugin.KNOWN` its build runs.
 
 **An entry point** — a Spring Boot class, or any `public static void main` — is
 launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
 
 **A WAR** has no entry point, and its servlet container is a build plugin rather
 than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
-asks it to:
+asks it to. Jetty runs the application in the build's own JVM; WildFly and
+TomEE cannot, and the section after this one is about the difference.
+
+### A container that runs in the build's JVM
 
 ```
 MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -DdisabledPlugins>
@@ -273,6 +277,51 @@ a server plugin from `ServerPlugin.KNOWN`; then any `public static void main`.
 The order matters both ways - a Spring Boot app can be packaged as a WAR, and a
 WAR can carry an unrelated main method. Another container later is an entry in
 that table.
+
+### A container that forks
+
+WildFly and TomEE have no embedded mode: `wildfly:run` and `tomee:run` each
+provision a server and start it as a **process of its own**. Nothing on Maven's
+command line, and nothing in its environment, reaches a JVM that Maven forked,
+so the agents, the JVM flags and the settings the application reads all travel
+together in the one parameter each plugin hands on to that process:
+
+```
+JAVA_HOME=<the JDK Jvm chose>
+  mvnw -B -ntp -nsu [-f <root>/pom.xml -pl :<app> -am] -Dmaven.test.skip=true
+       org.wildfly.plugins:wildfly-maven-plugin:<version>:run
+       -Dwildfly.javaOpts="<agents, opens, -XX:...> <settings the app reads>"
+```
+
+Both containers deploy the packaged WAR rather than the module's own output,
+so one has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)` and
+forks the packaging itself, which is why the command above names no phase;
+TomEE's forks nothing, so `package` goes on its command line instead — and
+naming it for WildFly too would only build the WAR twice. The parameter is
+`wildfly.javaOpts`
+for WildFly, whose mojo splits the value on whitespace, and `tomee-plugin.args`
+for TomEE, which parses it the way a shell would — `javaagents` would read
+better and carries no user property, so no command line can set it. WildFly's
+`javaHome` defaults to `${java.home}`, so the server runs on the JVM Maven runs
+on and the JBR carries over unasked.
+
+Module options go in as `--add-opens=<module>/<package>=<target>`, one token
+rather than two. WildFly sorts module options apart from the rest before it
+builds the server's command line, and the two-token form comes apart in the
+sorting — measured, seven `--add-opens` arrived ahead of their seven values and
+the JVM refused to start at all. `MavenGoalRuntime.singleToken` folds them.
+
+Three consequences. The application is a **grandchild** of the daemon: stopping
+it is still reliable, because `AppProcess` ends a launch descendants-first, but
+its own exit code is lost — the code the daemon waits on is Maven's. A pom that
+pins `<javaOpts>` or `<args>` in `<configuration>` beats the command line and
+would silently drop the agents; that one the build extension cannot rewrite for
+you, because the value it would have to write is composed per launch, so the
+daemon warns about it instead. And the **first** `start` on a WildFly project
+provisions a server under `target/` before it can start one, which is far
+slower than any boot — so `AppRuntime.startupTimeout` is a runtime's own to
+declare, and a forked container asks for twenty minutes where an embedded one
+gets five.
 
 ## Which JVM runs the app
 

@@ -49,9 +49,6 @@ final class AppProcess {
         STOPPED, STARTING, RUNNING, CRASHED
     }
 
-    /** How long an app may take to register before a start gives up on it. */
-    private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(5);
-
     /**
      * How long a registered app has to report a listening web server before the
      * start settles for "registered and still alive". A start returns the
@@ -304,7 +301,11 @@ final class AppProcess {
             AppLog.Watch watching = new AppLog.Watch(appLog);
             this.watch = watching;
             CountDownLatch latch = current.registrationLatch;
-            long registerBy = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
+            // The runtime's own, because a container that provisions a
+            // server before starting one needs a window an ordinary boot does
+            // not; see AppRuntime#startupTimeout.
+            Duration startupTimeout = runtime.startupTimeout();
+            long registerBy = System.nanoTime() + startupTimeout.toNanos();
             long settleBy = 0;
             boolean up = false;
             boolean serving = false;
@@ -330,7 +331,7 @@ final class AppProcess {
                     // merely reported: see abandon.
                     return abandon(current,
                             "app did not register within "
-                                    + STARTUP_TIMEOUT.toMinutes() + " minutes",
+                                    + startupTimeout.toMinutes() + " minutes",
                             appLog);
                 }
                 try {

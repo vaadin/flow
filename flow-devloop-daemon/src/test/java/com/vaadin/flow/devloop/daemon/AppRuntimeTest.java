@@ -198,6 +198,197 @@ class AppRuntimeTest {
      * agent jar under a path with a space has to be named rather than left to
      * fail as a JVM that would not start.
      */
+    /**
+     * WildFly and TomEE are the two forked containers: neither has an embedded
+     * mode, so the table entry carries a phase and a JVM-flag parameter that
+     * Jetty's does not, and the readiness lines come from another catalogue
+     * entirely. The coordinates are the ones the CDI starter declares.
+     */
+    private static final String WILDFLY = "org.wildfly.plugins:"
+            + "wildfly-maven-plugin:5.1.5.Final";
+
+    private static final String TOMEE = "org.apache.tomee.maven:"
+            + "tomee-maven-plugin:10.1.2";
+
+    @Test
+    void warWithWildflyPlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("wf", WILDFLY, Map.of());
+
+        assertEquals("wildfly", runtimeOf(app).name());
+    }
+
+    @Test
+    void warWithTomeePlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("te", TOMEE, Map.of());
+
+        assertEquals("tomee", runtimeOf(app).name());
+    }
+
+    @Test
+    void wildflyReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("wf", WILDFLY, Map.of()));
+
+        // WFLYUT0006, as wildfly-undertow's own message catalogue spells it:
+        // "Undertow %s listener %s listening on %s:%d".
+        String line = "15:21:03,112 INFO  [org.wildfly.extension.undertow] "
+                + "(MSC service thread 1-4) WFLYUT0006: Undertow HTTP "
+                + "listener default listening on 127.0.0.1:8080";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(8080), runtime.port(line));
+    }
+
+    /**
+     * The HTTPS listener logs the same message, and its port is not the one a
+     * browser is sent to - so it must not be read as the application serving.
+     */
+    @Test
+    void wildflyHttpsListenerIsNotTheServingLine() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("wf", WILDFLY, Map.of()));
+
+        assertFalse(runtime.serving("WFLYUT0006: Undertow HTTPS listener "
+                + "default listening on 127.0.0.1:8443"));
+    }
+
+    @Test
+    void tomeeReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("te", TOMEE, Map.of()));
+
+        // Tomcat's abstractProtocolHandler.start, whose argument is the
+        // endpoint name run through ObjectName.quote - hence the quotes.
+        String line = "21-Sep-2026 15:21:03.112 INFO [main] "
+                + "org.apache.coyote.AbstractProtocol.start Starting "
+                + "ProtocolHandler [\"http-nio-8080\"]";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(8080), runtime.port(line));
+    }
+
+    /**
+     * A connector that names an address puts it between the protocol and the
+     * port, so the port is the last segment rather than the second.
+     */
+    @Test
+    void tomeeReadsThePortPastABoundAddress() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("te", TOMEE, Map.of()));
+
+        assertEquals(OptionalInt.of(8081), runtime.port(
+                "Starting ProtocolHandler [\"http-nio-127.0.0.1-8081\"]"));
+    }
+
+    /**
+     * The CDI starter declares WildFly and TomEE both, so the table's order
+     * decides and not the pom's - and the developer has to be able to decide
+     * otherwise. TomEE is written first here for exactly that reason.
+     */
+    @Test
+    void bothServersDeclared_theTableDecidesAndThePropertyOverrules()
+            throws IOException {
+        Path app = module("both", "war", "");
+        writeModel(app, List.of(TOMEE, WILDFLY));
+
+        assertEquals("wildfly", runtimeOf(app).name());
+
+        System.setProperty("vaadin.dev.runtime", "tomee");
+        try {
+            assertEquals("tomee", runtimeOf(app).name());
+        } finally {
+            System.clearProperty("vaadin.dev.runtime");
+        }
+    }
+
+    /**
+     * TomEE's redeploy-on-change is the second driver of restarts that
+     * {@code jetty.scan} is for Jetty, and the generated starter turns it on.
+     */
+    @Test
+    void tomeeReloadOnUpdateIsWarnedAbout() throws IOException {
+        AppRuntime runtime = runtimeOf(
+                serverModule("te", TOMEE, Map.of("reloadOnUpdate", "true")));
+
+        assertTrue(
+                runtime.warnings().stream().anyMatch(
+                        line -> line.contains("<reloadOnUpdate>true")),
+                runtime.warnings().toString());
+    }
+
+    /**
+     * The extension forces constants. The parameter that carries the loop's own
+     * agents has no constant to force - its value is composed per launch - so
+     * it must stay out of the forced set, where an empty value would blank what
+     * the launch had just put there.
+     */
+    @Test
+    void theAgentParameterIsNotAmongTheForcedConfiguration() {
+        assertEquals("reloadOnUpdate=false",
+                entry("tomee").forcedConfiguration());
+    }
+
+    /**
+     * WildFly's run mojo declares {@code @Execute(phase = PACKAGE)} and forks
+     * the packaging itself; TomEE's declares nothing, so the command line has
+     * to ask for it. Naming a phase for WildFly too would build the WAR twice,
+     * and leaving it off TomEE would deploy whatever WAR was lying about.
+     */
+    @Test
+    void onlyTheContainerThatForksNoLifecycleOfItsOwnIsGivenAPhase() {
+        assertEquals("", entry("wildfly").phase());
+        assertEquals("package", entry("tomee").phase());
+        assertEquals("", entry("jetty-ee10").phase());
+    }
+
+    /**
+     * Jetty is the only one that runs in the build's JVM, so it is the only one
+     * whose flags go in MAVEN_OPTS rather than a parameter of the plugin.
+     */
+    /**
+     * TomEE unescapes the value it is handed and WildFly does not, so only one
+     * of them may have its backslashes doubled. Getting it the wrong way round
+     * is invisible on Linux and stops the JVM starting on Windows.
+     */
+    @Test
+    void onlyTheShellParsedChannelIsEscaped() {
+        assertTrue(entry("tomee").shellEscapedFlags());
+        assertFalse(entry("wildfly").shellEscapedFlags());
+        assertFalse(entry("jetty-ee10").shellEscapedFlags());
+    }
+
+    @Test
+    void onlyJettyIsEmbedded() {
+        assertTrue(entry("jetty-ee10").embedded());
+        assertFalse(entry("wildfly").embedded());
+        assertEquals("wildfly.javaOpts", entry("wildfly").jvmFlagsProperty());
+        assertEquals("tomee-plugin.args", entry("tomee").jvmFlagsProperty());
+    }
+
+    private static ServerPlugin entry(String name) {
+        return ServerPlugin.KNOWN.stream()
+                .filter(plugin -> name.equals(plugin.name())).findFirst()
+                .orElseThrow();
+    }
+
+    /** A WAR module whose build runs one of the forked containers. */
+    private Path serverModule(String name, String coordinates,
+            Map<String, String> configuration) throws IOException {
+        Path app = module(name, "war", "");
+        writeModel(app, coordinates, configuration);
+        return app;
+    }
+
+    /** A module whose build runs several known plugins, in pom order. */
+    private void writeModel(Path app, List<String> coordinates)
+            throws IOException {
+        Properties model = new Properties();
+        model.setProperty("packaging", "war");
+        model.setProperty("plugins", String.valueOf(coordinates.size()));
+        for (int index = 0; index < coordinates.size(); index++) {
+            model.setProperty("plugin." + index, coordinates.get(index));
+        }
+        Path file = app.resolve(EffectiveModel.FILE);
+        Files.createDirectories(file.getParent());
+        try (Writer writer = Files.newBufferedWriter(file)) {
+            model.store(writer, "test fixture");
+        }
+    }
+
     @Test
     void aFlagWithASpaceIsCalledOut() {
         List<String> warnings = MavenGoalRuntime.unsplittable(
