@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -184,29 +185,43 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * The given content with the entries of the given definitions that it does
-     * not hold yet put in front of what closes the file, or the whole file
-     * rendered when there is no content to add to.
+     * The given content with the functions of the given definitions that it
+     * does not hold yet put in front of what closes the file, or the whole file
+     * rendered when there is nothing to add to.
+     * <p>
+     * Only the functions that are not in the content are added, so editing one
+     * method of an interface does not write the others a second time. Nothing
+     * the content holds is taken out of it: it is what a browser that has the
+     * file can run, and this is asked for the definitions that changed rather
+     * than for everything an application declares.
      */
     private static String withMissingEntries(String generated,
             Collection<Class<?>> definitions) {
-        List<String> missing = definitions.stream()
-                .sorted(Comparator.comparing(Class::getName))
-                .filter(definition -> !isInGeneratedFile(definition, generated))
-                .flatMap(definition -> renderDefinitionLines(definition)
-                        .stream())
-                .toList();
-        String footer = String.join(System.lineSeparator(), FOOTER);
-        if (generated == null || !generated.contains(footer)) {
-            // Nothing to add to, or something else than this class wrote it
+        if (generated == null || generated.isBlank()) {
             return renderFileContent(definitions);
         }
+        List<String> missing = definitions.stream()
+                .sorted(Comparator.comparing(Class::getName))
+                .flatMap(definition -> renderFunctions(definition).stream())
+                .filter(function -> !generated.contains(function))
+                .flatMap(function -> Arrays
+                        .stream(function.split(System.lineSeparator())))
+                .toList();
         if (missing.isEmpty()) {
             return generated;
         }
-        return generated.replace(footer,
-                String.join(System.lineSeparator(), missing)
-                        + System.lineSeparator() + footer);
+        String separator = System.lineSeparator();
+        String footer = String.join(separator, FOOTER);
+        String added = String.join(separator, missing);
+        if (generated.contains(footer)) {
+            return generated.replace(footer, added + separator + footer);
+        }
+        // Written by another version of this class: what it holds is what a
+        // browser has, so the functions go after it rather than instead of it.
+        // The header only assigns what is not there, so repeating it is what
+        // makes the content that follows land in the registry.
+        return generated + separator + String.join(separator, HEADER)
+                + separator + added + separator + footer;
     }
 
     private static String readGeneratedFile(Options options) {
@@ -245,19 +260,27 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *         JavaScript
      */
     static List<String> renderDefinitionLines(Class<?> definition) {
-        List<String> lines = new ArrayList<>();
+        return renderFunctions(definition).stream()
+                .flatMap(function -> Arrays
+                        .stream(function.split(System.lineSeparator())))
+                .toList();
+    }
+
+    /**
+     * What one JavaScript definition contributes, one registered function per
+     * method that declares JavaScript, each as the lines it is written as.
+     */
+    private static List<String> renderFunctions(Class<?> definition) {
         List<Method> methods = new ArrayList<>();
         for (Method method : definition.getMethods()) {
             if (method.isAnnotationPresent(JsExpression.class)) {
                 methods.add(method);
             }
         }
-        if (methods.isEmpty()) {
-            return lines;
-        }
         methods.sort(
                 Comparator.comparing(TaskGenerateJsDefinitions::functionId));
 
+        List<String> functions = new ArrayList<>();
         for (Method method : methods) {
             // The parameters of the generated function are the arguments of the
             // call, referenced as $0, $1, ... by the declared expression, and
@@ -267,13 +290,12 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     .mapToObj(index -> "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            lines.add(String.format(
+            functions.add(String.join(System.lineSeparator(), String.format(
                     "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
-                    quote(functionId(method)), parameters));
-            lines.add(method.getAnnotation(JsExpression.class).value());
-            lines.add("};");
+                    quote(functionId(method)), parameters),
+                    method.getAnnotation(JsExpression.class).value(), "};"));
         }
-        return lines;
+        return functions;
     }
 
     private static String functionId(Method method) {

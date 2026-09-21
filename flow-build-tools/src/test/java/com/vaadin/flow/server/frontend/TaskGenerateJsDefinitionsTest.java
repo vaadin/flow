@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -179,7 +180,6 @@ class TaskGenerateJsDefinitionsTest {
                         List.of(GreeterJs.class)),
                 "another version of the declarations is not the declarations");
 
-        Files.writeString(generated.toPath(), carried);
         Files.delete(generated.toPath());
         assertEquals(List.of(GreeterJs.class),
                 TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
@@ -213,6 +213,62 @@ class TaskGenerateJsDefinitionsTest {
                 written.indexOf("import.meta.hot") > written.indexOf(
                         JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
                 "and what was added should be part of the module: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_fileWrittenByAnotherVersion_keepsWhatItHolds()
+            throws IOException {
+        // What a file written by another version of this class looks like:
+        // functions a browser has, and nothing this one recognizes to write
+        // around
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(),
+                "window.Vaadin.Flow.jsDefinitions = {\n  \"fromsomewhereelse\": async function () {}\n};\n");
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains("fromsomewhereelse"),
+                "a function a browser has should not be taken out of the file: "
+                        + written);
+        assertTrue(
+                written.contains(
+                        JsCall.functionId("this.count = ($0 || 0) + 1", 1)),
+                "and the one that was asked for should be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_oneMethodEdited_writesOnlyThatFunction()
+            throws ExecutionFailedException, IOException {
+        // An interface of two methods, of which one declares something else
+        // than what the file was written with
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        String unchanged = JsCall.functionId("window.alert('Hello')", 0);
+        Files.writeString(generated.toPath(),
+                Files.readString(generated.toPath()).replace(
+                        GREETING_EXPRESSION, "window.alert('what it was')"));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(GreeterJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertEquals(1, countOf(written, unchanged),
+                "the method that was not edited should not be written again: "
+                        + written);
+        assertTrue(written.contains(GREETING_EXPRESSION),
+                "and the edited one should be in the file: " + written);
+    }
+
+    private static int countOf(String content, String value) {
+        return content.split(Pattern.quote(value), -1).length - 1;
     }
 
     @Test

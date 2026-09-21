@@ -26,11 +26,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -65,6 +67,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -226,13 +229,8 @@ class UidlWriterTest {
                         JacksonUtils.nullNode(), target));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
-                "a call of declared JavaScript should carry its target, and no JavaScript: "
+                "a call of declared JavaScript should carry the function to run, and neither JavaScript nor what declared it: "
                         + json);
-        assertFalse(json.toString().contains(TestJs.class.getName()),
-                "a production browser should not be told what declared the JavaScript: "
-                        + json);
-        assertFalse(json.toString().contains("method"),
-                "and not what the method is called either: " + json);
     }
 
     @Test
@@ -276,6 +274,38 @@ class UidlWriterTest {
         assertTrue(target.get("returns").asBoolean(),
                 "the target should tell the client that the call is subscribed to");
         assertEquals(1, target.get("arguments").asInt());
+    }
+
+    @Test
+    void createUidl_productionMode_decidesWhatTheBrowserIsToldAboutACall()
+            throws Exception {
+        assertFalse(callInUidl(true).has("debug"),
+                "a production browser should not be told what declared the JavaScript it runs");
+        assertTrue(callInUidl(false).has("debug"),
+                "and a development one should, or a message about a call can only name a hash");
+    }
+
+    /**
+     * The target of a call of declared JavaScript, as a response written for a
+     * UI of an application running in the given mode carries it.
+     */
+    private ObjectNode callInUidl(boolean productionMode) throws Exception {
+        UI ui = initializeUIForDependenciesTest(new UI());
+        mocks.getDeploymentConfiguration().setProductionMode(productionMode);
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.executeJs(TestJs.class).method("foo");
+
+        ArrayNode execute = (ArrayNode) new UidlWriter().createUidl(ui, false)
+                .get(JsonConstants.UIDL_KEY_EXECUTE);
+        // Whatever else the response carries runs an expression, which is a
+        // string where a call of declared JavaScript has its target
+        return (ObjectNode) StreamSupport.stream(execute.spliterator(), false)
+                .map(ArrayNode.class::cast)
+                .map(invocation -> invocation.get(invocation.size() - 1))
+                .filter(JsonNode::isObject).findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "the response should carry the call: " + execute));
     }
 
     @JsDefinition
