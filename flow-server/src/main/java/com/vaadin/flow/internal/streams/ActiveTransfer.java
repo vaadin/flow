@@ -33,6 +33,8 @@ import com.vaadin.flow.server.VaadinResponse;
  * has handed out to the request handler refuse to transfer any more bytes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public class ActiveTransfer implements Serializable {
 

@@ -65,7 +65,12 @@ public final class HotswapAgentJar {
      * the version means downloading that asset and recomputing this.
      */
     public static final String VERSION = "2.0.3";
+    /**
+     * SHA-256 of the release asset at {@link #URL}, verified after download.
+     */
     public static final String SHA256 = "4ef49724b7d8523536d2e2a7310f827f4db9f4fed3489224e05d7bf87f0594f9";
+
+    /** Where the pinned {@link #VERSION} of the agent is downloaded from. */
     public static final String URL = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-"
             + VERSION + "/hotswap-agent-" + VERSION + ".jar";
 
@@ -86,13 +91,19 @@ public final class HotswapAgentJar {
      * download serves every application on the machine and nothing is written
      * into a project. It also survives a {@code mvn clean}, which a per-project
      * cache did not.
+     *
+     * @return the machine-level dev-loop cache directory
      */
     public static Path cacheDir() {
         return Path.of(System.getProperty("user.home", "."), ".vaadin",
                 "devloop");
     }
 
-    /** Where {@link #VERSION} lives once it has been provisioned. */
+    /**
+     * Where {@link #VERSION} lives once it has been provisioned.
+     *
+     * @return the path of the cached agent jar, which need not exist yet
+     */
     public static Path cachedJar() {
         return cacheDir().resolve("hotswap-agent-" + VERSION + ".jar");
     }

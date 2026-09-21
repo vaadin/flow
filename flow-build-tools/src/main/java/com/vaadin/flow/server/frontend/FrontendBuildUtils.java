@@ -246,6 +246,7 @@ public class FrontendBuildUtils {
      * @param finder
      *            the class finder to use for locating the resource
      * @return the resource or {@code null} if not found
+     * @since 25.3
      */
     public static URL getJarResource(String jarImport, ClassFinder finder) {
         URL resource = finder

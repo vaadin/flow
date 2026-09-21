@@ -26,8 +26,8 @@
          activated. Skipping by default keeps a plain `mvn verify` over
          flow-tests from failing on a missing container. -->
     <cdi.container.tests.skip>true</cdi.container.tests.skip>
-    <arquillian.version>1.9.5.Final</arquillian.version>
-    <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+    <arquillian.version>1.10.2.Final</arquillian.version>
+    <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
     <shrinkwrap.descriptors.version>2.0.0</shrinkwrap.descriptors.version>
   </properties>
 
@@ -408,7 +408,7 @@
                     <artifactItem>
                       <groupId>fish.payara.distributions</groupId>
                       <artifactId>payara</artifactId>
-                      <version>7.2026.8</version>
+                      <version>7.2026.9</version>
                       <type>zip</type>
                       <overWrite>true</overWrite>
                       <outputDirectory>target</outputDirectory>
@@ -544,7 +544,7 @@
         <dependency>
           <groupId>org.jboss.arquillian.container</groupId>
           <artifactId>arquillian-tomcat-managed-10</artifactId>
-          <version>1.2.3.Final</version>
+          <version>1.2.5.Final</version>
           <scope>test</scope>
         </dependency>
         <!-- Weld servlet for testing CDI injections -->
@@ -594,7 +594,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-resources-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.5.0</version>
             <executions>
               <execution>
                 <id>setup-tomcat-users</id>

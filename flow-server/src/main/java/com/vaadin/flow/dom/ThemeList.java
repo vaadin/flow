@@ -52,6 +52,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *            the theme name to add, not {@code null} or blank
      * @return {@code true} if the theme list was modified, {@code false} if all
      *         the given theme names were already present
+     * @since 25.3
      */
     @Override
     boolean add(String themeName);

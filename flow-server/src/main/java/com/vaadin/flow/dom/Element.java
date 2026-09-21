@@ -1747,6 +1747,7 @@ public class Element extends Node<Element> {
      *
      * @return a read-only signal with the current size of this element, never
      *         <code>null</code>
+     * @since 25.3
      */
     public Signal<Size> sizeSignal() {
         SignalBindingFeature feature = getNode()

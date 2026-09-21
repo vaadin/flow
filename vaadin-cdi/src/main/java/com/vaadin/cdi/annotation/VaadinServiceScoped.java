@@ -29,6 +29,8 @@ import java.lang.annotation.Target;
  * <p>
  * Injecting with this annotation will create a proxy for the contextual
  * instance rather than provide the contextual instance itself.
+ * 
+ * @since 10.0
  */
 @NormalScope
 @Inherited

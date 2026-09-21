@@ -32,6 +32,8 @@ import java.util.Map;
  * implementing Context needs to implement the missing methods from the
  * {@link Context} interface and
  * {@link #getContextualStorage(Contextual, boolean)}.
+ * 
+ * @since 15.0
  */
 public abstract class AbstractContext implements Context {
     /**

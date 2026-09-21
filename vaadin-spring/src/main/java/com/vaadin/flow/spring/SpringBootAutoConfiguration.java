@@ -55,6 +55,13 @@ public class SpringBootAutoConfiguration {
     @Autowired
     private WebApplicationContext context;
 
+    /**
+     * Creates the auto configuration. Spring instantiates it.
+     */
+    public SpringBootAutoConfiguration() {
+        // Default constructor
+    }
+
     @Bean
     static VaadinBeanFactoryInitializationAotProcessor flowBeanFactoryInitializationAotProcessor() {
         return new VaadinBeanFactoryInitializationAotProcessor();
@@ -98,6 +105,20 @@ public class SpringBootAutoConfiguration {
                 new SpringServlet(context, rootMapping));
     }
 
+    /**
+     * Configures a servlet registration for the given Vaadin servlet instance,
+     * so that an application providing its own servlet bean gets the same url
+     * mapping, push mapping and multipart setup as the default one.
+     *
+     * @param multipartConfig
+     *            multipart configuration, if available
+     * @param configurationProperties
+     *            the vaadin configuration properties
+     * @param servletInstance
+     *            the servlet to register
+     * @return the configured registration bean
+     * @since 24.5.1
+     */
     public static ServletRegistrationBean<SpringServlet> configureServletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
             VaadinConfigurationProperties configurationProperties,

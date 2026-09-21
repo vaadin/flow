@@ -66,6 +66,8 @@ import org.slf4j.LoggerFactory;
  * e.g. {@link #cleanupFinalBeanManagers}). This is the only way to guarantee
  * that the right BeanManager is obtained in more complex Container scenarios.
  * </p>
+ * 
+ * @since 15.0
  */
 public class BeanManagerProvider implements Extension {
     private static final Logger LOG = LoggerFactory

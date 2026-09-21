@@ -2089,6 +2089,7 @@ public class UIInternals implements Serializable {
      * @param transfer
      *            the transfer to register, not {@code null}
      * @return a registration for removing the transfer
+     * @since 25.4
      */
     public Registration registerActiveTransfer(ActiveTransfer transfer) {
         return Registration.addAndRemove(activeTransfers, transfer);
@@ -2100,6 +2101,7 @@ public class UIInternals implements Serializable {
      *
      * @return {@code true} if there is at least one active transfer,
      *         {@code false} otherwise
+     * @since 25.4
      */
     public boolean hasActiveTransfers() {
         return !activeTransfers.isEmpty();
@@ -2112,6 +2114,8 @@ public class UIInternals implements Serializable {
      * The reason for the invalidation is not known here, so a session that has
      * merely timed out is treated in the same way as one that has been
      * invalidated for a security critical reason such as a password reset.
+     * 
+     * @since 25.4
      */
     public void terminateActiveTransfers() {
         /*

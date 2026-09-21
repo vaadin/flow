@@ -49,6 +49,8 @@ import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link RouteScoped @RouteScoped} beans.
+ * 
+ * @since 10.0
  */
 public class RouteScopedContext extends AbstractContext {
 
