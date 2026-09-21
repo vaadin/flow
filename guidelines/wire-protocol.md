@@ -7,7 +7,10 @@ between the server and the client.
 
 The mechanics here are internal and may change, but the constraints they
 impose on new code are real — most of them only surface as a runtime
-failure or a memory leak in a long-lived UI.
+failure or a memory leak in a long-lived UI. The checkable form of those
+constraints is in the Client-Side JavaScript section of
+[`CONVENTIONS.md`](../CONVENTIONS.md); this chapter is the reasoning
+behind them.
 
 ## The UIDL response
 
@@ -166,7 +169,9 @@ form, key order included, changes the id.
   `try { Promise.resolve((async function(){ … })()).then($ok, $err) }
   catch { … }` wrapper and appends two extra return-channel parameters.
   The expression the client runs is therefore not the string that was
-  passed in.
+  passed in. Those two channels are the error channel a call has to
+  report through: anything the client cannot execute must reach the
+  second one, or the `PendingJavaScriptResult` never completes.
 
 ### Wire shape
 
