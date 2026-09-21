@@ -71,6 +71,35 @@ class MavenGoalRuntimeTest {
      * reaches the JVM as two broken arguments. Nothing can fix that, so it is
      * named at launch rather than left to fail as a JVM that will not start.
      */
+    /**
+     * WildFly sorts module options apart from the rest before it builds the
+     * server's command line, and the two-token form comes apart in the sorting:
+     * measured, every {@code --add-opens} arrived ahead of every value and the
+     * JVM refused to start with "--add-opens requires modules to be specified".
+     */
+    @Test
+    void singleToken_foldsAModuleOptionOntoItsValue() {
+        assertEquals(
+                List.of("-javaagent:a.jar",
+                        "--add-opens=java.base/java.net=ALL-UNNAMED",
+                        "--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED",
+                        "-Dport=1"),
+                MavenGoalRuntime
+                        .singleToken(List.of("-javaagent:a.jar", "--add-opens",
+                                "java.base/java.net=ALL-UNNAMED", "--add-opens",
+                                "java.base/jdk.internal.loader=ALL-UNNAMED",
+                                "-Dport=1")));
+    }
+
+    /** One already in the {@code =} form is left exactly as it is. */
+    @Test
+    void singleToken_leavesAnOptionThatAlreadyCarriesItsValue() {
+        List<String> flags = List
+                .of("--add-exports=java.base/sun.nio.ch=ALL-UNNAMED", "-Xmx2g");
+
+        assertEquals(flags, MavenGoalRuntime.singleToken(flags));
+    }
+
     @Test
     void unsplittable_namesTheFlagWithASpaceAndNoOther() {
         List<String> warnings = MavenGoalRuntime.unsplittable(List.of(

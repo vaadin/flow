@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,14 +38,19 @@ import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
  * than shipping a container of its own and guessing at the project's
  * configuration.
  * <p>
- * The plugin is run <em>in the build's own JVM</em> ({@code EMBED}), which is
- * what keeps the application a direct child of the daemon: a forked deploy mode
- * would make it a grandchild, and {@link AppProcess} exists because exit codes
- * are lost and kills orphan JVMs when that happens. Since the application JVM
- * is then Maven's JVM, the agents and the JVM flags travel in
- * {@code MAVEN_OPTS} and the JDK choice travels in {@code JAVA_HOME} - the
- * plugin's own {@code jvmArgs} parameter is no use here, because it only
- * applies to a fork.
+ * Jetty is run <em>in the build's own JVM</em> ({@code EMBED}), which is what
+ * keeps the application a direct child of the daemon. The application JVM is
+ * then Maven's JVM, so the agents and the JVM flags travel in
+ * {@code MAVEN_OPTS} and the JDK choice travels in {@code JAVA_HOME}.
+ * <p>
+ * WildFly and TomEE offer no such mode: each starts the server as a process of
+ * its own, so the application is a grandchild. Stopping one is still reliable,
+ * because {@link AppProcess} ends a launch descendants-first; what is lost is
+ * the application's own exit code, since the code the daemon waits on is
+ * Maven's. For those the agents, the JVM flags and the settings the application
+ * reads all travel in the plugin's own parameter - see {@link #forkedJvmFlags}
+ * - because neither Maven's command line nor its environment reaches a JVM that
+ * Maven forked.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -93,23 +99,40 @@ final class MavenGoalRuntime implements AppRuntime {
         // The run goal forks a lifecycle as far as test-compile, and the loop
         // has no use for test sources - or for their failing to compile.
         command.add("-Dmaven.test.skip=true");
-        if (reactor.isMultiModule()) {
-            command.add("compile");
+        // Jetty serves the module's own output, so there is nothing to build
+        // for it beyond the compile a multi-module reactor already needs. A
+        // container that deploys a packaged WAR needs that WAR to exist, and
+        // names the phase that makes one.
+        String phase = plugin.phase();
+        if (phase.isBlank() && reactor.isMultiModule()) {
+            phase = "compile";
+        }
+        if (!phase.isBlank()) {
+            command.add(phase);
         }
         command.add(plugin.goalSpecification(declared));
         plugin.goalProperties()
                 .forEach((key, value) -> command.add("-D" + key + "=" + value));
-        // Read by the application long after Maven has started, so the command
-        // line is the right place for them - and the right place precisely
-        // because ProcessBuilder passes each one as its own argument, which
-        // MAVEN_OPTS cannot do for a value containing a space.
-        command.addAll(systemProperties);
+        if (plugin.embedded()) {
+            // Read by the application long after Maven has started, so the
+            // command line is the right place for them - and the right place
+            // precisely because ProcessBuilder passes each one as its own
+            // argument, which MAVEN_OPTS cannot do for a value containing a
+            // space.
+            command.addAll(systemProperties);
+        } else {
+            command.add(forkedJvmFlags(jvmFlags, systemProperties));
+        }
 
         writeHotswapAgentProperties(project);
 
         Map<String, String> environment = new LinkedHashMap<>();
-        environment.put("MAVEN_OPTS",
-                mavenOpts(System.getenv("MAVEN_OPTS"), jvmFlags));
+        // The inherited value is kept either way; the loop's own flags are
+        // added only when the application is going to run in this JVM. Adding
+        // them for a forked server would put the agents on Maven instead,
+        // where they would find no application and instrument nothing.
+        environment.put("MAVEN_OPTS", mavenOpts(System.getenv("MAVEN_OPTS"),
+                plugin.embedded() ? jvmFlags : List.of()));
         // The application JVM is Maven's JVM, so this is the only way the
         // JetBrains Runtime that Jvm chose is the one the application runs on -
         // and with it, enhanced class redefinition.
@@ -120,6 +143,92 @@ final class MavenGoalRuntime implements AppRuntime {
         // root. Setting it explicitly takes that guess out of the picture.
         environment.put("MAVEN_BASEDIR", reactor.root().toString());
         return new Invocation(command, environment, false);
+    }
+
+    /**
+     * Everything a forked server's JVM must start with, as one {@code -D}.
+     * <p>
+     * Neither channel the embedded case uses reaches a forked server:
+     * {@code MAVEN_OPTS} starts Maven, and a {@code -D} on Maven's command line
+     * sets a property in Maven's JVM. So both the agents and the settings the
+     * application reads - the daemon's port and token among them - travel in
+     * the plugin's own parameter, which is the one thing either server hands on
+     * to the process it starts.
+     * <p>
+     * Joined with spaces, because that is how both plugins take it: WildFly's
+     * {@code setJavaOpts} splits the value on whitespace, and TomEE parses
+     * {@code args} the way a shell would. A value with a space in it is
+     * therefore as unsplittable here as in {@code MAVEN_OPTS}. The flags are
+     * already reported by {@code Launch}; the settings are not, and only reach
+     * this channel for a forked server, so they are checked here.
+     *
+     * @param jvmFlags
+     *            the flags the loop needs the application JVM to start with
+     * @param systemProperties
+     *            the {@code -D} settings the application reads
+     * @return the single argument carrying them
+     */
+    private String forkedJvmFlags(List<String> jvmFlags,
+            List<String> systemProperties) {
+        unsplittable(systemProperties, plugin.artifactId() + " splits "
+                + plugin.jvmFlagsProperty() + " on whitespace")
+                .forEach(log::line);
+        List<String> forked = new ArrayList<>(jvmFlags);
+        forked.addAll(systemProperties);
+        List<String> tokens = singleToken(forked);
+        if (plugin.shellEscapedFlags()) {
+            tokens = tokens.stream().map(MavenGoalRuntime::escapeBackslashes)
+                    .toList();
+        }
+        return "-D" + plugin.jvmFlagsProperty() + "="
+                + String.join(" ", tokens);
+    }
+
+    /**
+     * Doubles every backslash, for a plugin that unescapes what it is given.
+     * <p>
+     * A no-op anywhere a path has no backslashes in it, which is everywhere but
+     * Windows - and on Windows it is the difference between the agent jar being
+     * found and the JVM refusing to start. See {@code ServerPlugin}'s TomEE
+     * entry for the parser this answers.
+     *
+     * @param flag
+     *            one flag
+     * @return the flag with its backslashes doubled
+     */
+    private static String escapeBackslashes(String flag) {
+        return flag.replace("\\", "\\\\");
+    }
+
+    /**
+     * Folds a module option and its value into the one token {@code --x=y}.
+     * <p>
+     * A JVM takes {@code --add-opens java.base/java.io=ALL-UNNAMED} as two
+     * arguments or as one with an {@code =} between them, and for
+     * {@code MAVEN_OPTS} either does. Not so for a forked server: WildFly sorts
+     * what it is handed into module options and the rest before building the
+     * command line, and two-token options come apart in the sorting. Measured,
+     * seven {@code --add-opens} arrived in a row ahead of their seven values
+     * and the server JVM refused to start at all -
+     * {@code Error: --add-opens requires modules to be specified}.
+     * <p>
+     * The {@code =} form cannot be separated from its value by anything that
+     * reorders whole tokens, which is why WildFly writes its own module options
+     * that way too.
+     *
+     * @param flags
+     *            the flags, as a JVM command line would take them
+     * @return the same flags, with every module option in one token
+     */
+    static List<String> singleToken(List<String> flags) {
+        List<String> folded = new ArrayList<>();
+        for (int index = 0; index < flags.size(); index++) {
+            String flag = flags.get(index);
+            boolean wantsValue = flag.startsWith("--add-")
+                    && flag.indexOf('=') < 0 && index + 1 < flags.size();
+            folded.add(wantsValue ? flag + "=" + flags.get(++index) : flag);
+        }
+        return folded;
     }
 
     /**
@@ -160,14 +269,22 @@ final class MavenGoalRuntime implements AppRuntime {
         Path classes = project.app().classesDir();
         try {
             Files.createDirectories(classes);
+            // extraClasspath only for an embedded server. It is what the two
+            // --add-opens in extraJvmFlags pay for, and those do not go to a
+            // forked server; writing it anyway would ask HotswapAgent for a
+            // swap it has not been given the access to make, and log a failure
+            // for it on every start.
+            String extraClasspath = plugin.embedded()
+                    ? "extraClasspath=" + launch.ensureHotswapAgent().toUri()
+                            + System.lineSeparator()
+                    : "";
             Files.writeString(classes.resolve("hotswap-agent.properties"),
                     "# Written by the Vaadin dev loop; see MavenGoalRuntime."
                             + System.lineSeparator()
                             + "# Only read when HotswapAgent is on the JVM, so"
                             + " it does nothing in a normal build."
-                            + System.lineSeparator() + "extraClasspath="
-                            + launch.ensureHotswapAgent().toUri()
-                            + System.lineSeparator() + "disabledPlugins="
+                            + System.lineSeparator() + extraClasspath
+                            + "disabledPlugins="
                             + Launch.DISABLED_HOTSWAP_PLUGINS
                             + System.lineSeparator());
         } catch (IOException e) {
@@ -238,11 +355,17 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     @Override
     public List<String> warnings() {
-        if (!configurationOverride().isEmpty()) {
-            return List.of();
-        }
+        boolean rewritten = !configurationOverride().isEmpty();
         List<String> warnings = new ArrayList<>();
         for (ServerPlugin.Competing competing : plugin.competing()) {
+            // The extension can only force a constant, so an entry that names
+            // no acceptable value is beyond it: those name a parameter the
+            // loop needs for itself, whose value is composed per launch. That
+            // one is worth saying even when the extension is in play.
+            boolean forceable = !competing.acceptable().isEmpty();
+            if (rewritten && forceable) {
+                continue;
+            }
             Optional<String> configured = declared
                     .configured(competing.element());
             if (configured.isEmpty()
@@ -250,14 +373,36 @@ final class MavenGoalRuntime implements AppRuntime {
                             .equalsIgnoreCase(configured.get()))) {
                 continue;
             }
+            String why = forceable
+                    ? "and this daemon is not running from a jar so it "
+                            + "cannot override that for you"
+                    : "which the dev loop needs for itself";
             warnings.add("WARNING: " + plugin.artifactId() + " is configured "
                     + "with <" + competing.element() + ">" + configured.get()
-                    + "</" + competing.element() + ">, and this daemon is "
-                    + "not running from a jar so it cannot override that for "
-                    + "you - " + competing.consequence() + ". Please "
-                    + competing.fix() + ".");
+                    + "</" + competing.element() + ">, " + why + " - "
+                    + competing.consequence() + ". Please " + competing.fix()
+                    + ".");
         }
         return warnings;
+    }
+
+    /**
+     * Longer for a forked container, which may have to build a server before it
+     * can start one.
+     * <p>
+     * {@code wildfly:run} provisions a server under {@code target/} the first
+     * time it runs, laying out a few hundred megabytes of modules. Measured
+     * against a warm local repository it still outran the five minutes an
+     * embedded start is given, and the loop killed a provision that was making
+     * progress - on every first run, since the provision it killed was never
+     * finished either. The window is only ever reached when something is wrong,
+     * so widening it for the case that is legitimately slow costs a failing
+     * start nothing but patience.
+     */
+    @Override
+    public Duration startupTimeout() {
+        return plugin.embedded() ? AppRuntime.super.startupTimeout()
+                : Duration.ofMinutes(20);
     }
 
     /**
@@ -280,12 +425,32 @@ final class MavenGoalRuntime implements AppRuntime {
      * And the two {@code --add-opens}: the price of the {@code extraClasspath}
      * that lets HotswapAgent see itself from the webapp class loader; see
      * {@link #writeHotswapAgentProperties}.
+     * <p>
+     * None of it goes to a forked server, and the opens least of all. They buy
+     * HotswapAgent the right to replace {@code ucp} on every
+     * {@code URLClassLoader} in the JVM, which is worth it where the webapp
+     * loader is one and cannot otherwise see the agent. A container of its own
+     * is neither: the agent is already on that JVM's class path, and JBoss
+     * Modules hands the deployment a {@code ModuleClassLoader} that the swap
+     * could not help in any case. What the swap does reach there is the
+     * server's own loaders - measured against WildFly 38, the transactions
+     * subsystem then failed to read {@code jbossts-properties.xml} out of its
+     * own jar and the boot was unrecoverable, listeners bound and all.
      */
     @Override
     public List<String> extraJvmFlags() {
-        // Unescaped dots: this is a regular expression, and a dot matching any
-        // character rather than only a dot cannot widen it onto anything else.
+        if (!plugin.embedded()) {
+            // Neither of the embedded flags applies to a forked server, and
+            // the opens are actively harmful there; see below.
+            return List.of();
+        }
         return List.of(
+                // Only an embedded server shares its JVM with the build, so
+                // only there is the plugin's own loader present to exclude.
+                //
+                // Unescaped dots: this is a regular expression, and a dot
+                // matching any character rather than only a dot cannot widen
+                // it onto anything else.
                 "-DexcludedClassLoaderPatterns="
                         + "com.vaadin.flow.plugin.maven.Reflector.*",
                 // What HotswapAgent needs in order to honour the
@@ -351,11 +516,28 @@ final class MavenGoalRuntime implements AppRuntime {
      * @return one warning per flag that cannot survive, empty when all can
      */
     static List<String> unsplittable(List<String> flags) {
+        return unsplittable(flags, "Maven splits MAVEN_OPTS on whitespace");
+    }
+
+    /**
+     * The same, for a channel that is not {@code MAVEN_OPTS}.
+     * <p>
+     * A forked server is handed its JVM flags in one whitespace-separated
+     * value, so the same space breaks the same way - but naming MAVEN_OPTS as
+     * the splitter would send a reader looking in the wrong place.
+     *
+     * @param flags
+     *            the values to check
+     * @param splitter
+     *            what splits them, as a clause reading "and ..."
+     * @return one warning per value that cannot survive the trip
+     */
+    static List<String> unsplittable(List<String> flags, String splitter) {
         List<String> warnings = new ArrayList<>();
         for (String flag : flags) {
             if (flag.chars().anyMatch(Character::isWhitespace)) {
                 warnings.add("WARNING: " + flag + " contains a space, and "
-                        + "Maven splits MAVEN_OPTS on whitespace, so the "
+                        + splitter + ", so the "
                         + "application JVM will not receive it intact. Move "
                         + "the file it names to a path without spaces.");
             }

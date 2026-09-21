@@ -16,6 +16,7 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,21 @@ interface AppRuntime {
      */
     default List<String> warnings() {
         return List.of();
+    }
+
+    /**
+     * How long this runtime's application may take to register before a start
+     * gives up on it.
+     * <p>
+     * Five minutes is generous for an application that only has to boot, and
+     * short enough that a start which is never going to work says so. A
+     * container that has to build a server before it can start one needs more
+     * than that, and overrides this.
+     *
+     * @return the window a start waits for registration
+     */
+    default Duration startupTimeout() {
+        return Duration.ofMinutes(5);
     }
 
     /**
