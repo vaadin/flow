@@ -36,12 +36,11 @@ export default {
       </body>
     </html>`,
   // Engine code logs through Console, which is only silent in production mode,
-  // so the cases that drive it print hundreds of debug lines even when they
-  // pass. Drop all but warnings and errors for a session that passed, and keep
-  // everything for one that did not, where the log is the diagnostic. Set
-  // VAADIN_TEST_QUIET_OUTPUT=false to see everything again.
-  filterBrowserLogs: ({ type }, session) =>
-    session?.passed !== true || process.env.VAADIN_TEST_QUIET_OUTPUT === 'false' || type === 'warn' || type === 'error',
+  // so the cases that drive it print hundreds of lines even when they pass.
+  // Keep what a session logged only when it did not pass, where the log is the
+  // diagnostic, and set VAADIN_TEST_QUIET_OUTPUT=false to see it all again.
+  // This mirrors what QuietTestOutputListener does for the Java tests.
+  filterBrowserLogs: (log, session) => session?.passed !== true || process.env.VAADIN_TEST_QUIET_OUTPUT === 'false',
   plugins: [
     {
       // Flow.ts loads the client through the bare `vaadin-flow-client`
