@@ -97,52 +97,6 @@ the DOM events are an implementation detail of the facade.
   subsequent operations (`clearWatch(key)` on the client looks up the
   browser-assigned id).
 
-## What goes on the wire
-
-- **No server-side identifiers.** A class or method name in a UIDL response
-  tells the browser about the application without helping it run. Key what the
-  client looks up by a hash of the content it runs: renaming then changes
-  nothing the browser holds, and two call sites that send the same content
-  share one entry.
-- **Debug information is development-only and belongs next to what it
-  describes.** One readable string in a generated file makes a client-side
-  error message useful; repeating it in every response is payload that
-  production does not need.
-- **Reuse the client's constant pool instead of adding a second cache.** A
-  payload the server sends more than once goes out once as a constant and is
-  referenced afterwards. Keep the message shape identical for a new path and
-  the existing one so one code path on the client resolves both, and put
-  arriving constants in the pool before anything resolves a reference to them.
-- **Nothing the receiver can derive.** A key the client ignores, or a value it
-  can read off the payload it already has, is size on every response and one
-  more thing that can disagree with reality.
-- **Assume the two sides can disagree.** A browser that reconnects after a
-  server restart, without reloading the page, still holds the bundle from
-  before. Verify what arrives against what the client itself declares and
-  report a mismatch through the error channel of the call, so a
-  `PendingJavaScriptResult` that can never run completes instead of hanging.
-  Running on anyway, with the values shifted by one, is the failure mode to
-  design out, because it is silent.
-
-## Generated frontend files
-
-A file the build generates from Java into `frontend/generated/` is part of the
-bundle contract, and three things follow from that:
-
-- **A bundle that predates the generated content has to be rebuilt.** Hash the
-  file into the stats that bundle validation compares, so the first build after
-  the content changes rebuilds once. Never skip a rebuild the application
-  needs: a bundle without the content is a broken application, so either
-  rebuild or fail with a message that names what is missing.
-- **Regeneration in development cannot rely on the dev loop alone.** The
-  `vaadin-dev` CLI refines the frontend on its own terms, but a class the IDE
-  recompiles never passes through it. Implement a `VaadinHotswapper` for the
-  change as well and push the result to the browser with an HMR event, so the
-  new content shows up without a restart.
-- **The task that generates the file owns reading and patching it.** Callers
-  ask it to bring the file up to date; parsing and merging stay private. See
-  [Design](design.md).
-
 ## Bootstrap-time data
 
 If a feature needs an initial value before the first user interaction,

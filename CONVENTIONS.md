@@ -56,8 +56,7 @@ remove it in the next major.
 
 Put a new type in the package that matches its scope, not in the package of its
 first caller. A second entry point for the same capability is normal, and
-moving a public type afterwards is a breaking change. See
-`guidelines/design.md`.
+moving a public type afterwards is a breaking change.
 
 Declare a type that only one class uses as a nested type inside that class
 instead of giving it a file of its own.
@@ -76,7 +75,7 @@ When API accepts a type the application writes — an annotated interface, a
 class following a convention — validate every assumption about it where it is
 accepted and throw with the reason. What does not satisfy the contract has to
 fail at the call that accepts the type, with a message naming what is wrong,
-rather than at some later point of use.
+rather than at some later point of use. See `guidelines/design.md`.
 
 ## Naming
 
@@ -167,21 +166,20 @@ before anything resolves a reference to them.
 Keep a wire object down to what the receiver cannot derive: no key it ignores,
 no value it can read off the payload it already has.
 
-Do not assume the browser runs the bundle the server was built with. A client
-that reconnects after a restart without reloading holds the previous one, so
-verify what arrives against what the client itself declares and report a
-mismatch through the error channel of the call — a pending result that can never
-run has to complete instead of hanging. Running on anyway, with the values
-shifted by one, is the failure mode to design out.
+Report a call the client cannot execute — an unknown function, a payload that
+does not match it — through the error channel of the call, so a pending result
+that can never run completes instead of hanging.
 
-Regenerate a file that the build generates from Java in a `VaadinHotswapper`
-too, not only in the dev-loop path: a class the IDE recompiles does not pass
-through the `vaadin-dev` CLI. Push the new content to the browser with an HMR
-event instead of asking the developer to restart.
+Implement a `VaadinHotswapper` for everything a class change needs beyond the
+changed class itself, such as regenerating a file the build generates from Java
+or updating what the browser already holds. Hotswapping through JRebel or
+HotswapAgent is the main way a developer sees a change without a restart, and
+it replaces only the class — the hotswapper does the rest and pushes it to the
+browser with an HMR event.
 
 Keep reading and patching a generated file inside the task that generates it. A
 caller that reacts to a change asks the task to bring the file up to date; it
-does not parse the format itself. See `guidelines/browser-integration.md`.
+does not parse the format itself.
 
 ## Build & Dependencies
 
@@ -218,10 +216,6 @@ second shape for the same thing.
 
 Do not add `@since` tags. What to write in Javadoc, and how to document a
 wrapped browser API, is covered by `guidelines/documenting.md`.
-
-A new overload starts with the same opening sentence as its siblings and then
-says what is different about it. Javadoc that describes only the parameters and
-the return value is missing the sentence that says what the method is for.
 
 ## Testing
 
