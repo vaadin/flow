@@ -44,6 +44,8 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
@@ -169,10 +171,6 @@ public class UidlWriter implements Serializable {
             uiInternals.clearPendingStyleSheetRemovals();
         }
 
-        if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.set("constants",
-                    uiInternals.getConstantPool().dumpConstants());
-        }
         if (!stateChanges.isEmpty()) {
             response.set("changes", stateChanges);
         }
@@ -181,8 +179,16 @@ public class UidlWriter implements Serializable {
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
             response.set(JsonConstants.UIDL_KEY_EXECUTE,
-                    encodeExecuteJavaScriptList(executeJavaScriptList, !service
-                            .getDeploymentConfiguration().isProductionMode()));
+                    encodeExecuteJavaScriptList(executeJavaScriptList,
+                            uiInternals.getConstantPool(),
+                            !service.getDeploymentConfiguration()
+                                    .isProductionMode()));
+        }
+        // Dumped after the invocations are encoded, since what each of them
+        // runs is a constant of this response
+        if (uiInternals.getConstantPool().hasNewConstants()) {
+            response.set("constants",
+                    uiInternals.getConstantPool().dumpConstants());
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
             response.set("timings", createPerformanceData(ui));
@@ -309,10 +315,10 @@ public class UidlWriter implements Serializable {
     // non-private for testing purposes
     static ArrayNode encodeExecuteJavaScriptList(
             List<PendingJavaScriptInvocation> executeJavaScriptList,
-            boolean withDebugInfo) {
+            ConstantPool constantPool, boolean withDebugInfo) {
         return executeJavaScriptList.stream()
                 .map(invocation -> encodeExecuteJavaScript(invocation,
-                        withDebugInfo))
+                        constantPool, withDebugInfo))
                 .collect(JacksonUtils.asArray());
     }
 
@@ -333,10 +339,12 @@ public class UidlWriter implements Serializable {
     }
 
     private static ArrayNode encodeExecuteJavaScript(
-            PendingJavaScriptInvocation invocation, boolean withDebugInfo) {
+            PendingJavaScriptInvocation invocation, ConstantPool constantPool,
+            boolean withDebugInfo) {
         JsCall jsCall = invocation.getInvocation().getJsCall();
         if (jsCall != null) {
-            return encodeJsCall(invocation, jsCall, withDebugInfo);
+            return encodeJsCall(invocation, jsCall, constantPool,
+                    withDebugInfo);
         }
 
         List<Object> parametersList = invocation.getInvocation()
@@ -380,11 +388,26 @@ public class UidlWriter implements Serializable {
             //@formatter:on
         }
 
-        // [argument1, argument2, ..., script]
-        return Stream
-                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(JacksonUtils.createNode(expression)))
+        // [argument1, argument2, ..., what to run]
+        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                Stream.of(JacksonUtils.createNode(constantOf(
+                        JacksonUtils.createNode(expression), constantPool))))
                 .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Registers what an invocation runs with the constant pool and answers with
+     * what names it in the invocation.
+     * <p>
+     * An expression is then sent once per session rather than with every
+     * invocation that runs it, and the target of an invocation of declared
+     * JavaScript is a constant like any other. The two kinds of invocation look
+     * the same on the wire, and the client reads what to run out of the pool
+     * either way.
+     */
+    private static String constantOf(JsonNode whatToRun,
+            ConstantPool constantPool) {
+        return constantPool.getConstantId(new ConstantPoolKey(whatToRun));
     }
 
     /**
@@ -405,7 +428,7 @@ public class UidlWriter implements Serializable {
      */
     private static ArrayNode encodeJsCall(
             PendingJavaScriptInvocation invocation, JsCall call,
-            boolean withDebugInfo) {
+            ConstantPool constantPool, boolean withDebugInfo) {
         Stream<Object> parameters = invocation.getInvocation().getParameters()
                 .stream();
 
@@ -434,8 +457,11 @@ public class UidlWriter implements Serializable {
             target.put(JsonConstants.UIDL_KEY_JS_FUNCTION_RETURNS, true);
         }
 
-        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                Stream.of(target)).collect(JacksonUtils.asArray());
+        return Stream
+                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                        Stream.of(JacksonUtils
+                                .createNode(constantOf(target, constantPool))))
+                .collect(JacksonUtils.asArray());
     }
 
     /**

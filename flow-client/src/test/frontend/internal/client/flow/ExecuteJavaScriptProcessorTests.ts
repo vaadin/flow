@@ -7,8 +7,23 @@ import { StateTree } from '../../../../../main/frontend/internal/client/flow/Sta
 import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
 import { type RecordedCalls, recordingRegistry } from './stateTreeTestRegistry';
 import { TestRegistry, testRegistry } from '../testRegistry';
+
+// What to run is a constant of the message rather than part of the invocation,
+// so a case writes it at the end of an invocation, as the message reads, and
+// this puts it in the pool and names it the way the server does.
+let nextConstant = 0;
+function execute(processor: ExecuteJavaScriptProcessor, registry: TestRegistry, invocations: unknown[][]): void {
+  const named = invocations.map((invocation) => {
+    nextConstant += 1;
+    const key = `constant-${nextConstant}`;
+    registry.getConstantPool().importFromJson({ [key]: invocation[invocation.length - 1] });
+    return [...invocation.slice(0, -1), key];
+  });
+  processor.execute(named);
+}
 
 // Ported from com.vaadin.client.flow.ExecuteJavaScriptProcessorTest and
 // com.vaadin.client.GwtExecuteJavaScriptElementUtilsTest (the return-channel
@@ -54,6 +69,7 @@ class TestJsProcessor extends ExecuteJavaScriptProcessor {
 // Registry does.
 function treeRegistry(services: { existingElementMap?: boolean } = {}): TestRegistry {
   const registry = new TestRegistry();
+  registry.register('ConstantPool', new ConstantPool());
   registry.register('StateTree', new StateTree(registry));
   if (services.existingElementMap === true) {
     registry.register('ExistingElementMap', new ExistingElementMap());
@@ -88,13 +104,18 @@ describe('ExecuteJavaScriptProcessor', () => {
       vaadin.Flow.jsDefinitions[functionId] = fn;
     }
 
-    function processor(): ExecuteJavaScriptProcessor {
-      return new ExecuteJavaScriptProcessor(
-        testRegistry({
-          StateTree: { getNode: () => null },
-          ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false }
-        })
-      );
+    function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
+      const registry = testRegistry({
+        ConstantPool: new ConstantPool(),
+        StateTree: { getNode: () => null },
+        ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false }
+      });
+      return { processor: new ExecuteJavaScriptProcessor(registry), registry };
+    }
+
+    function run(invocation: unknown[]): void {
+      const { processor, registry } = fixture();
+      execute(processor, registry, [invocation]);
     }
 
     afterEach(() => {
@@ -109,7 +130,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       });
       const element = { tagName: 'div' };
 
-      processor().execute([['Hello', element, { function: GREETING, arguments: 1 }]]);
+      run(['Hello', element, { function: GREETING, arguments: 1 }]);
 
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
@@ -121,14 +142,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const resolved: unknown[] = [];
       const element = { tagName: 'div' };
 
-      processor().execute([
-        [
-          element,
-          (value: unknown) => resolved.push(value),
-          () => {},
-          { function: VALUE, arguments: 0, returns: true }
-        ]
-      ]);
+      run([element, (value: unknown) => resolved.push(value), () => {}, { function: VALUE, arguments: 0, returns: true }]);
       // Settled in microtasks: a macrotask wait would also pick up the
       // asynchronous rethrow that the expression cases leave behind.
       await Promise.resolve();
@@ -147,7 +161,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       // invocation and this client disagree about the signature, which is the
       // same disagreement as an invocation that carries one parameter too
       // many.
-      processor().execute([['Hello', { function: GREETING, arguments: 1 }]]);
+      run(['Hello', { function: GREETING, arguments: 1 }]);
 
       expect(calls).to.equal(0);
     });
@@ -162,13 +176,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const element = { tagName: 'div' };
 
       // Subscribed to, but one channel short of what the target declares.
-      processor().execute([
-        [
-          element,
-          (error: unknown) => errors.push(error),
-          { function: VALUE, arguments: 0, returns: true }
-        ]
-      ]);
+      run([element, (error: unknown) => errors.push(error), { function: VALUE, arguments: 0, returns: true }]);
 
       expect(calls).to.equal(0);
       // Reported rather than left hanging: the pending result on the server
@@ -180,13 +188,11 @@ describe('ExecuteJavaScriptProcessor', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
 
-      processor().execute([
-        [
-          element,
-          () => {},
-          (error: unknown) => errors.push(error),
-          { function: 'notinthebundle', arguments: 0, returns: true, debug: 'com.acme.GreeterJs.readValue/0' }
-        ]
+      run([
+        element,
+        () => {},
+        (error: unknown) => errors.push(error),
+        { function: 'notinthebundle', arguments: 0, returns: true, debug: 'com.acme.GreeterJs.readValue/0' }
       ]);
 
       expect(errors).to.have.lengthOf(1);
@@ -199,9 +205,10 @@ describe('ExecuteJavaScriptProcessor', () => {
   describe('execute', () => {
     it('passes the parameters and code of each invocation on', () => {
       // Ported from execute_parametersAndCodeAreValidAndNoNodeParameters.
-      const processor = new CollectingExecuteJavaScriptProcessor(treeRegistry());
+      const registry = treeRegistry();
+      const processor = new CollectingExecuteJavaScriptProcessor(registry);
 
-      processor.execute([['script1'], ['param1', 'param2', 'script2']]);
+      execute(processor, registry, [['script1'], ['param1', 'param2', 'script2']]);
 
       expect(processor.parameterNamesAndCodeList).to.have.length(2);
       expect(processor.parametersList).to.have.length(2);
@@ -225,7 +232,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const element = document.createElement('div');
       node.setDomNode(element);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       expect(processor.nodeParametersList).to.have.length(1);
       expect(processor.nodeParametersList[0].size).to.equal(1);
@@ -243,7 +250,7 @@ describe('ExecuteJavaScriptProcessor', () => {
         .setValue({ [NodeProperties.TYPE]: NodeProperties.INJECT_BY_ID });
       registry.getStateTree().registerNode(node);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       // The invocation has not been executed
       expect(processor.nodeParametersList).to.have.length(0);
@@ -265,7 +272,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const node = registeredNode(registry, 31);
       processor.bound = false;
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       expect(processor.nodeParametersList).to.have.length(0);
 
@@ -286,7 +293,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const processor = new CollectingExecuteJavaScriptProcessor(registry);
       const node = registeredNode(registry, 12);
 
-      processor.execute([[{ '@v-node': node.getId() }, '$0']]);
+      execute(processor, registry, [[{ '@v-node': node.getId() }, '$0']]);
 
       // The invocation has been executed
       expect(processor.nodeParametersList).to.have.length(1);
@@ -373,11 +380,18 @@ describe('ExecuteJavaScriptProcessor', () => {
       return {
         lifecycleStates,
         registry: testRegistry({
+          ConstantPool: new ConstantPool(),
           StateTree: { getNode: () => null },
           ApplicationConfiguration: { getApplicationId: () => 'ROOT-1', isProductionMode: () => false },
           UILifecycle: { isTerminated: () => false, setState: (state: UIState) => lifecycleStates.push(state) }
         })
       };
+    }
+
+    // The invocation of one expression that most cases here run
+    function runExpression(expression: string): void {
+      const registry = makeRegistry().registry;
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [[expression]]);
     }
 
     afterEach(() => {
@@ -391,6 +405,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const recorded: RecordedCalls = built.recorded;
       const tree = new StateTree(built.registry);
       const registry = testRegistry({
+        ConstantPool: new ConstantPool(),
         StateTree: tree,
         ApplicationConfiguration: { getApplicationId: () => 'test', isProductionMode: () => false },
         UILifecycle: { isTerminated: () => false, setState: () => {} }
@@ -400,7 +415,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const expectedChannelId = 20;
 
       // The @v-return parameter decodes to a callback; the expression calls it.
-      new ExecuteJavaScriptProcessor(registry).execute([
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [
         [{ '@v-return': [expectedNodeId, expectedChannelId] }, '$0(2)']
       ]);
 
@@ -411,27 +426,26 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     it('runs an invocation expression', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpRan = true;']]);
+      runExpression('globalThis.__ejpRan = true;');
       expect((globalThis as Record<string, unknown>).__ejpRan).to.be.true;
     });
 
     it('binds invocation parameters to $0, $1, ...', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['hello', 'globalThis.__ejpParam = $0;']]);
+      const registry = makeRegistry().registry;
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [['hello', 'globalThis.__ejpParam = $0;']]);
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('hello');
     });
 
     it('exposes the app id with the per-UI suffix stripped', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['globalThis.__ejpParam = this.$appId;']]);
+      runExpression('globalThis.__ejpParam = this.$appId;');
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ROOT');
     });
 
     it('exposes the registry on the context', () => {
       // Beyond the Java suite.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
-        ['globalThis.__ejpParam = this.registry === undefined;']
-      ]);
+      runExpression('globalThis.__ejpParam = this.registry === undefined;');
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal(false);
     });
 
@@ -439,23 +453,19 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Beyond the Java suite.
       // getNode throws when the argument is not a state-node parameter; the
       // executed code sees that as a thrown ReferenceError.
-      new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([
-        ['try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }']
-      ]);
+      runExpression('try { this.attachExistingElement({}); } catch (e) { globalThis.__ejpParam = e.constructor.name; }');
       expect((globalThis as Record<string, unknown>).__ejpParam).to.equal('ReferenceError');
     });
 
     it('catches exceptions thrown by the executed code', () => {
       // Beyond the Java suite.
-      expect(() =>
-        new ExecuteJavaScriptProcessor(makeRegistry().registry).execute([['throw new Error("boom");']])
-      ).to.not.throw();
+      expect(() => runExpression('throw new Error("boom");')).to.not.throw();
     });
 
     it('exposes stopApplication on the context, terminating the UI lifecycle', () => {
       // Beyond the Java suite.
       const fixture = makeRegistry();
-      new ExecuteJavaScriptProcessor(fixture.registry).execute([['this.stopApplication();']]);
+      execute(new ExecuteJavaScriptProcessor(fixture.registry), fixture.registry, [['this.stopApplication();']]);
       expect(fixture.lifecycleStates).to.deep.equal([UIState.TERMINATED]);
     });
   });

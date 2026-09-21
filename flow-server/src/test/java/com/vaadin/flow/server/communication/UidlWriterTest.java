@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +50,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
@@ -67,7 +67,6 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -192,20 +191,41 @@ class UidlWriterTest {
                         element.getNode(), invocation))
                 .collect(Collectors.toList());
 
-        ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(executeJavaScriptList, false);
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                executeJavaScriptList, constantPool, false);
+        ObjectNode constants = constantPool.dumpConstants();
 
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(
                         // Null since element is not attached
                         JacksonUtils.nullNode(),
-                        JacksonUtils.createNode("$0.focus()")),
+                        JacksonUtils.createNode(
+                                nameOfWhatRuns("$0.focus()", constants))),
                 JacksonUtils.createArray(
                         JacksonUtils.createNode("Lives remaining:"),
                         JacksonUtils.createNode(3),
-                        JacksonUtils.createNode("console.log($0, $1)")));
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                "console.log($0, $1)", constants))));
 
-        assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "an invocation should name what it runs among the constants of the message: "
+                        + json + " " + constants);
+    }
+
+    /**
+     * What names the given script among the given constants, which is what an
+     * invocation that runs it carries instead of the script itself.
+     */
+    private static String nameOfWhatRuns(Object whatRuns,
+            ObjectNode constants) {
+        return JacksonUtils.getKeys(constants).stream()
+                .filter(key -> whatRuns instanceof JsonNode node
+                        ? JacksonUtils.jsonEquals(node, constants.get(key))
+                        : whatRuns.equals(constants.get(key).asString()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("The constants "
+                        + constants + " should carry " + whatRuns));
     }
 
     @Test
@@ -216,9 +236,11 @@ class UidlWriterTest {
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
 
+        ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
                 new PendingJavaScriptInvocation(element.getNode(), invocation)),
-                false);
+                constantPool, false);
+        ObjectNode constants = constantPool.dumpConstants();
 
         ObjectNode target = JacksonUtils.createObjectNode();
         target.put("function", JsCall.functionId("this.method($0)", 1));
@@ -226,11 +248,15 @@ class UidlWriterTest {
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(JacksonUtils.createNode("foo"),
                         // Null since element is not attached
-                        JacksonUtils.nullNode(), target));
+                        JacksonUtils.nullNode(), JacksonUtils.createNode(
+                                nameOfWhatRuns(target, constants))));
 
         assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
-                "a call of declared JavaScript should carry the function to run, and neither JavaScript nor what declared it: "
-                        + json);
+                "a call of declared JavaScript should name a target, the same way an expression names a script: "
+                        + json + " " + constants);
+        assertFalse(constants.toString().contains(TestJs.class.getName()),
+                "and the target should carry neither JavaScript nor what declared it: "
+                        + constants);
     }
 
     @Test
@@ -241,14 +267,30 @@ class UidlWriterTest {
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), "foo", element);
 
-        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+        ConstantPool constantPool = new ConstantPool();
+        UidlWriter.encodeExecuteJavaScriptList(List.of(
                 new PendingJavaScriptInvocation(element.getNode(), invocation)),
-                true);
+                constantPool, true);
+        ObjectNode constants = constantPool.dumpConstants();
 
         assertEquals(TestJs.class.getName() + ".method/1",
-                ((ObjectNode) ((ArrayNode) json.get(0)).get(2)).get("debug")
-                        .asString(),
-                "a message about the call should be able to name it: " + json);
+                targetIn(constants).get("debug").asString(),
+                "a message about the call should be able to name it: "
+                        + constants);
+    }
+
+    /**
+     * The one target among the given constants, which is what a call of
+     * declared JavaScript runs.
+     */
+    private static ObjectNode targetIn(ObjectNode constants) {
+        return (ObjectNode) JacksonUtils.getKeys(constants).stream()
+                .map(constants::get)
+                .filter(constant -> constant.isObject()
+                        && constant.has("function"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("The constants "
+                        + constants + " should carry a target"));
     }
 
     @Test
@@ -263,14 +305,15 @@ class UidlWriterTest {
         pending.then(value -> {
         });
 
-        ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(List.of(pending), false);
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(pending), constantPool, false);
 
         ArrayNode encoded = (ArrayNode) json.get(0);
         assertEquals(5, encoded.size(),
                 "the argument and the element should be followed by the two channels and the target: "
                         + encoded);
-        ObjectNode target = (ObjectNode) encoded.get(4);
+        ObjectNode target = targetIn(constantPool.dumpConstants());
         assertTrue(target.get("returns").asBoolean(),
                 "the target should tell the client that the call is subscribed to");
         assertEquals(1, target.get("arguments").asInt());
@@ -296,16 +339,12 @@ class UidlWriterTest {
         ui.getElement().appendChild(element);
         element.executeJs(TestJs.class).method("foo");
 
-        ArrayNode execute = (ArrayNode) new UidlWriter().createUidl(ui, false)
-                .get(JsonConstants.UIDL_KEY_EXECUTE);
-        // Whatever else the response carries runs an expression, which is a
+        ObjectNode response = new UidlWriter().createUidl(ui, false);
+        // An invocation names what it runs among the constants of the
+        // response; whatever else it carries runs an expression, which is a
         // string where a call of declared JavaScript has its target
-        return (ObjectNode) StreamSupport.stream(execute.spliterator(), false)
-                .map(ArrayNode.class::cast)
-                .map(invocation -> invocation.get(invocation.size() - 1))
-                .filter(JsonNode::isObject).findFirst()
-                .orElseThrow(() -> new AssertionError(
-                        "the response should carry the call: " + execute));
+        ObjectNode constants = (ObjectNode) response.get("constants");
+        return targetIn(constants);
     }
 
     @JsDefinition

@@ -138,7 +138,7 @@ export class ExecuteJavaScriptProcessor {
 
   #handleInvocation(invocation: unknown[]): void {
     const tree = this.#registry.getStateTree();
-    // Last item is the script, the rest are parameters.
+    // Last item names what to run in the constant pool, the rest are parameters.
     const parameterCount = invocation.length - 1;
 
     const parameterNamesAndCode: string[] = [];
@@ -167,18 +167,30 @@ export class ExecuteJavaScriptProcessor {
       }
     }
 
-    const target = invocation[invocation.length - 1];
-    if (typeof target === 'object' && target !== null) {
+    // What to run is a constant of the message, the same way for an
+    // expression and for a call of declared JavaScript, so an expression the
+    // server runs again costs a reference rather than its own text.
+    const whatToRun = this.#registry
+      .getConstantPool()
+      .get<string | JsDefinitionTarget | null>(invocation[invocation.length - 1] as string);
+    if (whatToRun === null) {
+      Console.error(
+        `No constant for the invocation ${JSON.stringify(invocation)}. Reload the page to pick up the current state.`
+      );
+      return;
+    }
+
+    if (typeof whatToRun === 'object') {
       // A call of declared JavaScript: the bundle has the function, the
       // server sent only which one to run. The node parameters are for the
       // context object an expression runs against, whose `getNode` maps an
       // element back to its state node; a declared function runs against the
       // element itself and has no context, so there is nothing that could ask.
-      this.invokeFromBundle(target as JsDefinitionTarget, parameters);
+      this.invokeFromBundle(whatToRun, parameters);
       return;
     }
 
-    parameterNamesAndCode.push(target as string);
+    parameterNamesAndCode.push(whatToRun);
     this.invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
