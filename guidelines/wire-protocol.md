@@ -26,13 +26,15 @@ and the `execute` list runs last — behind a doubly nested post-flush
 listener, so the scripts see the DOM that the same response's changes
 produced, including any post-flush listener added while applying them.
 
-**On the server the write order is the reverse of the read order, and it
-has to be.** `encodeChanges` runs first because encoding a change is what
-registers new constants; `dumpConstants` is called after it and clears the
-new-key set; `dumpPendingJavaScriptInvocations` is called after that
-because `beforeClientResponse` executions run during change encoding and
-can queue more JavaScript. Anything new that contributes to the response
-has to be slotted into that sequence rather than appended at the end.
+**The server writes them in a different order: `changes`, then
+`constants`, then `execute`.** `encodeChanges` runs first because
+encoding a change is what registers the constants it references;
+`dumpConstants` runs after it and clears the new-key set, so a constant
+registered later in the response would miss the message;
+`dumpPendingJavaScriptInvocations` runs last, because the
+`beforeClientResponse` executions that run during change encoding can
+queue more JavaScript. Anything new that contributes to the response has
+to be slotted into that sequence rather than appended at the end.
 
 ## Constant pool
 
@@ -74,10 +76,11 @@ under a short id, and each node's change carries only the id.
   `StateTree.prepareForResync` rebuilds the client's state tree, and the
   ids in the replayed changes still have to resolve.
 - **Read constants by key on the client, and assert presence**, as
-  `SimpleElementBindingStrategy.handleDomEvent` and
-  `ServerEventObject.getEventData` do. A missing key means the two pools
-  diverged, and failing loudly at that point is far cheaper to debug than
-  the behaviour that follows.
+  `SimpleElementBindingStrategy.handleDomEvent` does. A missing key means
+  the two pools diverged, and failing loudly at that point is far cheaper
+  to debug than the behaviour that follows —
+  `ServerEventObject.getEventData` has no such guard, and a divergence
+  there surfaces as a null dereference several frames away.
 
 The canonical producer is `ElementListenerMap`, which stores each event
 type's expression settings (event data expressions, filters, debounce
