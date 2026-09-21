@@ -59,6 +59,45 @@ under a short id, and each node's change carries only the id.
   `JacksonCodec.encodeWithConstantPool`, which replaces the key with its
   id string; every other value is encoded inline.
 
+### What is in the pool today
+
+Two node features put values there, and both store the settings of a DOM
+event listener. `ElementListenerMap` stores one constant per event type
+on an element; `PolymerEventListenerMap` does the same for the event data
+expressions of a Polymer template listener.
+
+An `ElementListenerMap` value is an object keyed by the JavaScript
+expressions the client evaluates when the event fires. The value of each
+key says whether that expression also acts as a debounce filter —
+`false` for a plain expression, or `[[timeout, phase…], …]`:
+
+```json
+"constants": {
+  "RBNvo1WzZ4o=": {},
+  "J4r/ss0KY+c=": { "event.clientX": false, "event.clientY": false },
+  "vdAdQQWwVaQ=": { "1": [[250, "trailing"]] },
+  "gKEp5ocBgAc=": { "}value": false }
+}
+```
+
+- `{}` — a plain listener with no event data: nothing for the client to
+  evaluate, it just sends the event.
+- The second entry comes from two `addEventData(…)` calls.
+- The third comes from `debounce(250)`. There is no real filter, so the
+  always-true filter expression `1` carries the debounce settings.
+- The fourth comes from `synchronizeProperty("value")`. The `}` prefix
+  (`JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN`) marks a property to read
+  off the element and send back, rather than an expression to evaluate.
+
+The change that uses one carries only the id — a `put` on the element's
+listener feature with `"key": "click"` and `"value": "J4r/ss0KY+c="`.
+That is where the saving is: two thousand buttons sharing one click
+listener configuration cost one entry instead of two thousand copies of
+the same object, which is what `ConstantPoolPerformanceView` in
+`flow-tests` makes visible. The ids above are the real hashes of those
+exact serialized values, so anything that changes the serialized form
+changes the id.
+
 ### Constraints this puts on new code
 
 - **Nothing is ever evicted, on either side.** The pool grows for the
@@ -81,14 +120,6 @@ under a short id, and each node's change carries only the id.
   to debug than the behaviour that follows —
   `ServerEventObject.getEventData` has no such guard, and a divergence
   there surfaces as a null dereference several frames away.
-
-The canonical producer is `ElementListenerMap`, which stores each event
-type's expression settings (event data expressions, filters, debounce
-phases) as a constant: two thousand buttons sharing one click listener
-configuration cost one constant pool entry instead of two thousand copies
-of the same object. `ConstantPoolPerformanceView` in `flow-tests` exists
-to make that difference visible. `PolymerEventListenerMap` does the same
-for its event data expressions.
 
 ## `executeJs` over the wire
 
