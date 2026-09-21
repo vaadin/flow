@@ -49,12 +49,15 @@ documentation, cheapest first:
    `refactor:`, `chore:`, or `build:` (with or without a scope) are
    skipped. `fix:`, `feat:`, `docs:`, and `perf:` are not.
 4. **The agent itself.** It classifies the diff and stops when everything
-   in it is internal, test-only, or build-only, recording the reason in
-   the run log without commenting on the pull request.
+   in it is internal, test-only, or build-only.
 
-The bot leaves one standing comment on the source pull request linking to
-the documentation pull request; a later run replaces it rather than adding
-another. It says nothing at all when there is nothing to document.
+Every run that gets as far as the agent leaves one standing comment on the
+source pull request saying how it ended — a link to the documentation pull
+request, or the reason no documentation was needed. A later run replaces
+that comment rather than adding another. Whoever merged the pull request
+should not have to open a run log to find out whether the change was
+documented, which is why the "nothing to document" outcome is a comment
+and not just a line in the log.
 
 There is no manual trigger. A pull request the type filter passed over
 gets no documentation pull request, and the way to correct that is to
@@ -65,6 +68,21 @@ onto its branch instead of opening a second one.
 
 An abandoned documentation pull request closes itself: `expires: 30` marks
 it, and the scheduled `agentics-maintenance` workflow does the closing.
+
+The trigger is `pull_request_target`, not `pull_request`, because the
+workflow runs at the one moment the head branch no longer exists — GitHub
+deletes it on merge. For a `pull_request` trigger gh-aw always emits a
+"Checkout PR branch" step that fetches that branch, so every run failed it
+and wrote an expected-failure warning into its summary; gh-aw suppresses
+the step for `pull_request_target`. The workspace is pinned to the merge
+commit, which is already on `main`, and the workflow never builds or runs
+the project, so the usual `pull_request_target` hazard of executing
+untrusted fork code does not arise. `gh aw compile` warns about the
+trigger-and-checkout combination all the same, because it matches on the
+shape rather than on the ref. One behaviour follows from the switch:
+merged pull requests from forks are documented now. A `pull_request` run
+from a fork is given no secrets, so those merges used to go silently
+undocumented.
 
 ### Diagram Bot
 
