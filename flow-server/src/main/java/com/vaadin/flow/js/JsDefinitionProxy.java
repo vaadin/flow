@@ -103,6 +103,7 @@ public final class JsDefinitionProxy {
             }
             if (!method.isAnnotationPresent(JsExpression.class)) {
                 undeclared.add(method.getName());
+                continue;
             }
             Class<?> returnType = method.getReturnType();
             if (returnType != void.class && !returnType
