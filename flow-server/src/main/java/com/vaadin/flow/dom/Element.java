@@ -64,6 +64,10 @@ import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
@@ -1823,6 +1827,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The call is sent to the browser as an expression and compiled there,
+     * which a content security policy without <code>unsafe-eval</code> does not
+     * allow. {@link #executeJs(Class)} runs JavaScript that is declared in Java
+     * and collected into the bundle instead, and sends no expression.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1835,6 +1844,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1856,8 +1866,8 @@ public class Element extends Node<Element> {
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
 
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return scheduleJavaScriptInvocation(null, "return $0." + functionName
+                + "(" + paramPlaceholderString + ")", jsParameters);
     }
 
     /**
@@ -1919,6 +1929,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow.
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1926,27 +1941,109 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        return scheduleExecuteJs(expression, parameters);
+    }
 
-        // Add "this" as the last parameter
-        Object[] wrappedParameters;
-        if (parameters.length == 0) {
-            wrappedParameters = new Object[] { this };
-        } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
-            wrappedParameters[parameters.length] = this;
-        }
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser in the context of this element, through an implementation of
+     * the interface that this method answers with: calling a method of the
+     * implementation runs the JavaScript that the method declares, with the
+     * arguments of the call as its parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface GreeterJs extends Serializable {
+     *     &#64;JsExpression("window.alert($0)")
+     *     void showGreeting(String greeting);
+     * }
+     *
+     * element.executeJs(GreeterJs.class).showGreeting("Hello");
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with this element available as <code>this</code> and
+     * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
+     * after pending DOM updates, and deferred while the element is not attached
+     * or not visible. A method that returns {@link PendingJavaScriptResult} can
+     * be used to retrieve the <code>return</code> value the same way.
+     * <p>
+     * What differs is that nothing about the JavaScript is decided at the call
+     * site: the build collects the declarations of every JavaScript definition
+     * into the bundle, and the client runs the collected function after looking
+     * it up by an identifier of the JavaScript itself. No expression is sent
+     * and none is compiled in the browser, so the call works under a content
+     * security policy without <code>unsafe-eval</code>, and what declared the
+     * JavaScript in Java is not sent to a production browser either.
+     * <p>
+     * The scheduled invocation carries the call as a {@link JsCall}, so a
+     * driver of the client side that can not run JavaScript can recognize it,
+     * or run it on its own implementation of the same interface.
+     * <p>
+     * Every method of the interface declares JavaScript and returns either
+     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
+     * implemented in Java instead - a <code>default</code> or a
+     * <code>static</code> method - is not what such an interface is for, so the
+     * interface is refused rather than partly run in the browser.
+     * <p>
+     * The interface is checked when the implementation is handed out, so one
+     * that can not work says so here rather than at the first call.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
+    }
+
+    private PendingJavaScriptResult scheduleExecuteJs(String expression,
+            Object[] parameters) {
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(null, wrappedExpression,
+                withElementAsLastParameter(parameters));
+    }
+
+    /**
+     * Schedules a call made through a JavaScript definition. The parameters are
+     * the arguments of the call followed by this element, which the client
+     * applies the generated function to, so there is no expression to wrap: the
+     * function that the build generated is already the equivalent of the
+     * wrapping that {@link #scheduleExecuteJs(String, Object[])} does around an
+     * expression.
+     */
+    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
+        return scheduleJavaScriptInvocation(call, call.getExpression(),
+                withElementAsLastParameter(call.arguments().toArray()));
+    }
+
+    private Object[] withElementAsLastParameter(Object[] parameters) {
+        if (parameters.length == 0) {
+            return new Object[] { this };
+        }
+        Object[] withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        withElement[parameters.length] = this;
+        return withElement;
     }
 
     /**
@@ -2011,11 +2108,11 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Object[] parameters) {
+            @Nullable JsCall jsCall, String expression, Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
+                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

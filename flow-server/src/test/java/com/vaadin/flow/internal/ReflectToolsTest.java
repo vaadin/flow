@@ -618,10 +618,40 @@ class ReflectToolsTest {
     }
 
     @Test
+    void getMethodsWithParameterCount_nameAndArity_allTheCallerCannotTellApart() {
+        assertEquals(
+                List.of(ReflectTools.findMethod(Overloading.class, "once",
+                        String.class)),
+                ReflectTools.getMethodsWithParameterCount(Overloading.class,
+                        "once", 1),
+                "a method should be found without knowing the parameter types");
+        assertEquals(2,
+                ReflectTools.getMethodsWithParameterCount(Overloading.class,
+                        "overloaded", 1).size(),
+                "overloads with the same arity cannot be told apart this way");
+        assertTrue(ReflectTools
+                .getMethodsWithParameterCount(Overloading.class, "once", 3)
+                .isEmpty());
+    }
+
+    @Test
     void findDeclaredMethod_declaredOnObject_empty() {
         assertTrue(ReflectTools
                 .findDeclaredMethod(FieldsAndMethodsSubclass.class, "toString")
                 .isEmpty());
+    }
+
+    // S1172: the parameters are what the lookup by arity tells apart
+    @SuppressWarnings("java:S1172")
+    public static class Overloading {
+        public void once(String value) {
+        }
+
+        public void overloaded(String value) {
+        }
+
+        public void overloaded(int value) {
+        }
     }
 
     // S1068 and S1144: the members are looked up and used reflectively

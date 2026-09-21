@@ -149,6 +149,13 @@ export const JsonConstants = {
   RPC_EVENT_DATA: 'data',
 
   /**
+   * Key of the function to run in the constant that an invocation of declared
+   * JavaScript names, in place of the expression that an invocation of an
+   * expression names.
+   */
+  UIDL_KEY_JS_FUNCTION: 'f',
+
+  /**
    * Key used to hold the feature id when synchronizing node values.
    */
   RPC_FEATURE: 'feature',
