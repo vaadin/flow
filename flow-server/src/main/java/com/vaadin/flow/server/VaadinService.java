@@ -397,6 +397,7 @@ public abstract class VaadinService implements Serializable {
      * @return {@code true} if this service can process requests, {@code false}
      *         otherwise
      * @see #whenInitialized(Consumer)
+     * @since 25.4
      */
     public boolean isInitialized() {
         return initialized;
@@ -438,6 +439,7 @@ public abstract class VaadinService implements Serializable {
      *            the action to run, given whether the service was initialized
      *            successfully
      * @see #isInitialized()
+     * @since 25.4
      */
     public void whenInitialized(Consumer<Boolean> action) {
         // handle() absorbs an initialization failure into the action itself, so

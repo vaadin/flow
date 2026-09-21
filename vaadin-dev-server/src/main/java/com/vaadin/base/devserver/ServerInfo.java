@@ -126,6 +126,7 @@ public class ServerInfo implements Serializable {
      * Gets the vendor and version of the JVM the application runs on.
      *
      * @return the Java version
+     * @since 24.2.1
      */
     public static String fetchJavaVersion() {
         String vendor = System.getProperty("java.vendor");
@@ -138,6 +139,7 @@ public class ServerInfo implements Serializable {
      * Gets the architecture, name and version of the operating system.
      *
      * @return the operating system
+     * @since 24.2.1
      */
     public static String fetchOperatingSystem() {
         String arch = System.getProperty("os.arch");
@@ -152,6 +154,7 @@ public class ServerInfo implements Serializable {
      *
      * @return the version, {@code "-"} if the platform is not on the classpath
      *         and {@code "?"} if it is but the version is unknown
+     * @since 24.2.1
      */
     public static String fetchVaadinVersion() {
         return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
@@ -163,6 +166,7 @@ public class ServerInfo implements Serializable {
      *
      * @return the version, {@code "-"} if Hilla is not on the classpath and
      *         {@code "?"} if it is but the version is unknown
+     * @since 24.2.1
      */
     public static String fetchHillaVersion() {
         return EndpointRequestUtil.isHillaAvailable()
@@ -242,6 +246,7 @@ public class ServerInfo implements Serializable {
      * Gets the versions of the components reported to the debug window.
      *
      * @return the versions
+     * @since 24.2.1
      */
     public List<NameAndVersion> getVersions() {
         return versions;

@@ -194,6 +194,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * server.
      *
      * @return the frontend tools of this runner
+     * @since 24.8
      */
     protected FrontendTools getFrontendTools() {
         return frontendTools;

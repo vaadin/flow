@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  * Alternative/Specializes, or can be customized with a Decorator.
  *
  * @see Instantiator
+ * @since 15.0
  */
 @VaadinServiceScoped
 @VaadinServiceEnabled

@@ -38,6 +38,7 @@ import java.io.Serializable;
  *
  * @see BeanProvider#getDependent(java.lang.Class,
  *      java.lang.annotation.Annotation...)
+ * @since 15.0
  */
 public class DependentProvider<T> implements Provider<T>, Serializable {
     private static final long serialVersionUID = 23423413412001L;

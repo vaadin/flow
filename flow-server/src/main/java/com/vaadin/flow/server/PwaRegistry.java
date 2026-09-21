@@ -643,6 +643,7 @@ public class PwaRegistry implements Serializable {
      *            the request for sw-runtime.js, or {@code null} to leave out
      *            the entries that cannot be resolved without one
      * @return contents of sw-runtime.js
+     * @since 25.2.9
      */
     public String getRuntimeServiceWorkerJs(VaadinRequest request) {
         Collection<String> filesToCache = new LinkedHashSet<>(

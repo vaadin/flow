@@ -117,6 +117,7 @@ public class SpringBootAutoConfiguration {
      * @param servletInstance
      *            the servlet to register
      * @return the configured registration bean
+     * @since 24.5.1
      */
     public static ServletRegistrationBean<SpringServlet> configureServletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,

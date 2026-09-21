@@ -48,6 +48,8 @@ import com.vaadin.flow.server.startup.ServletDeployer;
  * the default one.
  * <p>
  * The rest of this class is copied from {@link ServletDeployer}.
+ * 
+ * @since 10.0
  */
 @HandlesTypes(Route.class)
 public class CdiServletDeployer implements ServletContainerInitializer {
