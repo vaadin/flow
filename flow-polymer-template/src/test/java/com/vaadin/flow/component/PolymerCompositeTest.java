@@ -24,7 +24,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Isolated
-class CompositeTest {
+class PolymerCompositeTest {
 
     @Tag("div")
     public static class MyTemplate extends PolymerTemplate<TemplateModel> {

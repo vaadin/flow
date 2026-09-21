@@ -17,12 +17,9 @@ package com.vaadin.tests.util;
 
 import java.util.List;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
@@ -90,12 +87,6 @@ public class MockUI extends UI {
         }
         VaadinSession.setCurrent(session);
         return session;
-    }
-
-    private static DeploymentConfiguration createConfiguration() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        return configuration;
     }
 
     public static MockUI createUI() {
