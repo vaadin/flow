@@ -39,11 +39,22 @@ public class ServerInfo implements Serializable {
      * @since 25.1
      */
     public enum ContainerInfo {
+        /** Docker. */
         DOCKER("docker"),
+
+        /** Podman. */
         PODMAN("podman"),
+
+        /** Kubernetes. */
         KUBERNETES("kubernetes"),
+
+        /** Apple container runtime. */
         APPLE("apple"),
+
+        /** Linux containers. */
         LXC("lxc"),
+
+        /** Not running in a container, or the runtime is unknown. */
         NONE("-");
 
         private final String value;
@@ -80,12 +91,19 @@ public class ServerInfo implements Serializable {
     }
 
     /**
+     * The version of one of the components the debug window reports.
+     *
+     * @param name
+     *            the name of the component, such as {@code Flow}
+     * @param version
+     *            the version of that component
      * @since 24.2.1
      */
     public record NameAndVersion(String name,
             String version) implements Serializable {
     };
 
+    /** The versions reported to the debug window. */
     private List<NameAndVersion> versions = new ArrayList<>();
 
     /**
@@ -104,6 +122,11 @@ public class ServerInfo implements Serializable {
         versions.add(new NameAndVersion("OS", fetchOperatingSystem()));
     }
 
+    /**
+     * Gets the vendor and version of the JVM the application runs on.
+     *
+     * @return the Java version
+     */
     public static String fetchJavaVersion() {
         String vendor = System.getProperty("java.vendor");
         String version = System.getProperty("java.version");
@@ -111,6 +134,11 @@ public class ServerInfo implements Serializable {
         return vendor + " " + version;
     }
 
+    /**
+     * Gets the architecture, name and version of the operating system.
+     *
+     * @return the operating system
+     */
     public static String fetchOperatingSystem() {
         String arch = System.getProperty("os.arch");
         String name = System.getProperty("os.name");
@@ -119,11 +147,23 @@ public class ServerInfo implements Serializable {
         return arch + " " + name + " " + version;
     }
 
+    /**
+     * Gets the Vaadin platform version.
+     *
+     * @return the version, {@code "-"} if the platform is not on the classpath
+     *         and {@code "?"} if it is but the version is unknown
+     */
     public static String fetchVaadinVersion() {
         return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
                 : "-";
     }
 
+    /**
+     * Gets the Hilla version.
+     *
+     * @return the version, {@code "-"} if Hilla is not on the classpath and
+     *         {@code "?"} if it is but the version is unknown
+     */
     public static String fetchHillaVersion() {
         return EndpointRequestUtil.isHillaAvailable()
                 ? Platform.getHillaVersion().orElse("?")
@@ -198,6 +238,11 @@ public class ServerInfo implements Serializable {
         return ContainerInfo.NONE;
     }
 
+    /**
+     * Gets the versions of the components reported to the debug window.
+     *
+     * @return the versions
+     */
     public List<NameAndVersion> getVersions() {
         return versions;
     }
