@@ -77,6 +77,11 @@ moving a test.
 | {ccdm, router, …} × production (`pom-production.xml` variants) | **retain** only where prod-specific behavior is asserted (reuse into `test-production`); **drop** the mode-irrelevant ones — decide per case |
 | context path × {dev, prod, encoded} | one home (`test-contextpath`) + `pom-*.xml`/profile variants |
 | feature × dev-bundle | **dropped on purpose** — one representative `test-dev-bundle` covers the dev-bundle code path; build mode is irrelevant to the feature behavior |
+| all of `test-dev-mode` (12 ITs) — the module pinned no setting | **collapsed** into `test-default` (`devmode`, `dependencies`, `components` packages); no permutation existed, so nothing was dropped |
+| `test-dev-mode` fixtures with no IT: `DebugWindowErrorHandlingView`, `DevToolsPluginView`, `FeatureView` (+ `externalErrorTrigger.js`) | **dropped on purpose** — their ITs were deleted in #19205, so the views were only manual dev-tools/feature-flag fixtures; no IT coverage was lost |
+| `AttachExistingElementById` (Polymer template, from `test-dev-mode`) | **home moved to `test-root-context`**, next to the other `templates.polymer` tests; it reaches `test-default` with that batch, which keeps `flow-polymer-template` (and the license check its constructor runs in dev mode) out of `test-default` until then |
+| `test-misc` × production | **retained as production**: the module runs `build-frontend`, which writes `productionMode=true`, so its ITs are production ITs, not defaults; the mode-independent ones move to `test-default` when that module is migrated |
+| `test-spring-common` × {war, jar, undertow, contextpath, reverseproxy, scan, …} | **retain**: 10+ sibling modules already run its ITs by reusing its `test-jar`, so migrating it has to turn those into reuse-runs instead of moving the source away |
 
 Every source module's migration PR updates this ledger so each retain/drop is
 explicit.
@@ -154,9 +159,9 @@ encoded-context module).
 
 | Module | Setting pinned | Deployment | Base package | Holds (setting-relevant tests only) |
 |---|---|---|---|---|
-| **test-default** | React, dev hotdeploy, root context, default Lumo, npm | Spring Boot, JUnit 6 | `com.vaadin.flow.test` | bulk of test-root-context (~250); **test-dev-mode** (dev mode *is* default); **test-react-router** (React *is* default → react routing = default routing); **test-react-adapter** (add `flow-react` dep); Spring DI/scope ITs (test-default is Spring Boot); generic ITs scattered elsewhere |
+| **test-default** | React, dev hotdeploy, root context, default Lumo, npm | Spring Boot, JUnit 6 | `com.vaadin.flow.test` | bulk of test-root-context (~250); **test-dev-mode** *(merged — `devmode`, `dependencies` and `components` packages)*; **test-react-router** *(merged — React is the default engine, so react routing is default routing)*; **test-react-adapter** (add `flow-react` dep); Spring DI/scope ITs (test-default is Spring Boot); generic ITs scattered elsewhere |
 | **test-plain-servlet** | plain `VaadinServlet` / custom servlet service (no Spring Boot) | plain Jetty | `…test.servlet` | test-servlet, test-custom-route-registry, test-client-queue, `SyncError*` & custom-servlet ITs |
-| **test-production** | `productionMode=true` | build-frontend | `…test.production` | prod-only ITs (e.g. RouteNotFoundProdMode), prod-bundle |
+| **test-production** | `productionMode=true` | build-frontend | `…test.production` | prod-only ITs (e.g. RouteNotFoundProdMode), prod-bundle, **test-misc** (it runs `build-frontend`, so every IT there is a production IT) |
 | **test-vaadin-router** | `reactEnable=false` (legacy client router) | as default | `…test.vaadinrouter` | test-vaadin-router, test-ccdm |
 | **test-contextpath** | custom / encoded context (+prod profile) | Jetty contextPath | `…test.contextpath` | test-router-custom-context (+encoded, +encoded-prod) |
 | **test-dev-bundle** | dev bundle (`vaadin.frontend.hotdeploy=false`) — the dev mode *without* hotdeploy that contrasts with test-default | dev, prebuilt bundle | `…test.devbundle` | a **representative subset** that proves the dev-bundle code path (from test-express-build dev-bundle parts); not a per-feature re-run |
@@ -185,8 +190,10 @@ setting is `test-custom-frontend-directory`, and its PWA/embedding tests move to
 `servlet-containers` (Cargo/Tomcat), `test-multi-war` (two WARs in one Jetty),
 `test-commercial-banner` (fake `user.home` license hack), a fault-tolerance
 module for proxy-based tests (`NetworkInterruptionIT` uses
-`ChromeBrowserTestWithProxy`), and `test-npm-performance-regression` (heavy
-payload deps).
+`ChromeBrowserTestWithProxy`), `test-npm-performance-regression` (heavy
+payload deps), `test-devloop` (the dev-loop daemon owns the application
+process) and `test-push-startup` (a deliberately slow service init listener,
+which cannot be imposed on a shared module).
 
 **Why several proposed modules were dropped:**
 - **No `test-react`** — React is the default engine (`reactEnable` defaults to
@@ -240,6 +247,12 @@ For each IT moved into a module:
 
 - **Spring Boot** deployment, frontend **hotdeploy** (Vite), no
   `flow-maven-plugin`.
+- Spring idioms replace the servlet-era plumbing of the old modules: a
+  `VaadinServiceInitListener` is a `@Component` bean instead of a
+  `META-INF/services` entry, static files live in
+  `src/main/resources/META-INF/resources` instead of `src/main/webapp`, and
+  `@ServletComponentScan` is enabled so the rare test that needs a
+  `@WebFilter`/`@WebListener` can still declare one.
 - ITs on the **JUnit Platform** via the `failsafe.provider.artifactId` override
   (the `flow-tests` parent exposes this property; default stays
   `surefire-junit47`).
@@ -259,20 +272,27 @@ in `computeMatrix.js` so its tests fan out across parallel slices.
 1. **(done)** Scaffold `test-default` (Spring Boot, JUnit 6, hotdeploy),
    make the failsafe provider overridable, add `@TestFor`, migrate the first IT
    (`RemoveAddVisibility`).
-2. Establish the feature packages in `test-default` and migrate the
+2. **(done)** Merge `test-dev-mode` into `test-default` — it pinned no setting,
+   so the whole module collapsed (`devmode`, `dependencies`, `components`) and
+   was deleted; its Polymer template test moved to `test-root-context` to travel
+   with the `templates.polymer` batch.
+3. Establish the remaining feature packages in `test-default` and migrate the
    default-settings ITs from `test-root-context` feature-by-feature
    (`dom`, `components`, `routing`, `lifecycle`, `dependencies`, `scroll`,
    `signals`, `templates.lit`, `templates.polymer`, `push`, `errorhandling`,
    `bootstrap`, `i18n`).
-3. Add **test-plain-servlet** for the custom-servlet ITs.
-4. Collapse the **spring-security** 14→~4 and the **context-path** 3→1.
-5. Split the theme modules (**test-themes**, **test-no-theme**, **test-tailwind**)
+4. Add **test-plain-servlet** for the custom-servlet ITs.
+5. Collapse the **spring-security** 14→~4 and the **context-path** 3→1.
+6. Split the theme modules (**test-themes**, **test-no-theme**, **test-tailwind**)
    and add **test-pnpm** / **test-bun**; keep **test-custom-frontend-directory**
    for the frontend-dir setting.
-6. Fold the router-engine (`test-vaadin-router`) and production variants into
+7. Fold the router-engine (`test-vaadin-router`) and production variants into
    shared-source builds where behavior matches.
-7. Retire emptied modules (and delete the placeholder `test-embedded-jetty-12`).
-8. Add **test-cdi** when vaadin-cdi merges.
+8. Retire emptied modules (and delete the placeholder `test-embedded-jetty-12`).
+9. Add **test-cdi** when vaadin-cdi merges.
+
+Each migration PR re-runs `python3 scripts/generate-migration-list.py`, so
+[MIGRATION_LIST.md](MIGRATION_LIST.md) keeps matching the tree.
 
 ## 10. Open questions (not set in stone)
 
