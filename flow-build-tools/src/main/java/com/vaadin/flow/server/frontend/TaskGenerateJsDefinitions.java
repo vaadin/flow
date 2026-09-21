@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
@@ -84,8 +86,15 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() {
-        return renderFileContent(options.getClassFinder().getAnnotatedClasses(
-                JsDefinition.class), !options.isProductionMode());
+        // Generating the file is scanning for what goes into it, which a
+        // caller that writes it again while the application runs does not do:
+        // it passes the definitions in, through updateJsDefinitions
+        ClassFinder classFinder = Objects.requireNonNull(
+                options.getClassFinder(),
+                "Generating the file needs a class finder to scan for the JavaScript definitions with");
+        return renderFileContent(
+                classFinder.getAnnotatedClasses(JsDefinition.class),
+                !options.isProductionMode());
     }
 
     /**

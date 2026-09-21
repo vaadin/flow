@@ -27,10 +27,10 @@ export class ConstantPool {
    * Imports new constants into this pool.
    *
    * A key is a hash of the value it names, so importing one the pool already
-   * holds is importing the same value again, which happens when a message is
-   * read before it is processed: what an invocation runs is read out of the
-   * pool, so the constants of a message go in as it arrives, and again when
-   * it is processed.
+   * holds is importing the same value again, which happens because a message
+   * is read before it is handled: what an invocation runs is read out of the
+   * pool, so the constants of a message go in as it arrives, and again if the
+   * message was queued and is handled later.
    *
    * @param json - a JSON object mapping constant keys to constant values, not
    *          `null`

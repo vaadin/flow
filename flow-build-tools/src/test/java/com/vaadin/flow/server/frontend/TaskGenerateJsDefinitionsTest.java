@@ -40,6 +40,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -353,6 +354,22 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains("import.meta.hot.accept()"),
                 "the file should accept its own update, or writing it again while the application runs is ignored by the browser instead of replacing the module: "
                         + content);
+    }
+
+    @Test
+    void getFileContent_noClassFinder_saysWhatItIsFor() {
+        // The options a caller that writes the file again while the
+        // application runs builds: it knows the definitions, so it has nothing
+        // to scan with, and going through the generating side is a mistake
+        // that should say so
+        Options withoutAClassFinder = new Options(Mockito.mock(Lookup.class),
+                null, null).withFrontendDirectory(frontendFolder);
+
+        assertTrue(
+                assertThrows(NullPointerException.class,
+                        () -> new TaskGenerateJsDefinitions(withoutAClassFinder)
+                                .getFileContent())
+                        .getMessage().contains("scan"));
     }
 
     @Test
