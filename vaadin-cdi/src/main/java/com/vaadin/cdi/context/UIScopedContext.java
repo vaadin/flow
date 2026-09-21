@@ -31,6 +31,8 @@ import com.vaadin.flow.server.VaadinSession;
 
 /**
  * UIScopedContext is the context for {@link UIScoped @UIScoped} beans.
+ * 
+ * @since 10.0
  */
 public class UIScopedContext extends AbstractContext {
 
