@@ -17,7 +17,6 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
-import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
@@ -139,8 +138,15 @@ public interface Focusable<T extends Component>
      * @since 25.0
      */
     default void focus(FocusOption... options) {
-        getElement().executeJs(FocusJs.class)
-                .focus(FocusOption.buildOptions(options));
+        ObjectNode focusOptions = FocusOption.buildOptions(options);
+        FocusJs focusJs = getElement().executeJs(FocusJs.class);
+        // Focusing with no options is what the browser does by default, so
+        // nothing is passed for it rather than an empty options object
+        if (focusOptions == null) {
+            focusJs.focus();
+        } else {
+            focusJs.focus(focusOptions);
+        }
     }
 
     // for binary compatibility with the previous Vaadin versions
@@ -229,20 +235,19 @@ public interface Focusable<T extends Component>
          *
          * @param options
          *            the options of the browser's <code>focus</code> function,
-         *            or <code>null</code> for its defaults, which is what the
-         *            browser makes of an empty set of options
+         *            or nothing for its defaults
          */
         @JsExpression("""
                 setTimeout(() => {
                     try {
                        this._nextFocusIsFromClient = false;
-                       this.focus($0);
+                       this.focus(...$0);
                     } finally {
                        this._nextFocusIsFromClient = true;
                     }
                 }, 0)
                 """)
-        void focus(@Nullable ObjectNode options);
+        void focus(ObjectNode... options);
 
         /**
          * Removes focus from the element.

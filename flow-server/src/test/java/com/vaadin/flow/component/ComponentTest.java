@@ -2013,10 +2013,17 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView();
 
-        assertPendingJs("scrollIntoView()");
+        JavaScriptInvocation inv = assertScrollIntoViewScheduled();
+        assertEquals(List.of(div.getElement()), inv.getParameters(),
+                "Should pass the element to scroll and no options");
     }
 
-    private void assertPendingJs(String expectedJs) {
+    /**
+     * Asserts that the only scheduled invocation is a call of the declared
+     * JavaScript behind scrollIntoView, which spreads the options it is given
+     * so that a call without them reaches the browser as scrollIntoView().
+     */
+    private JavaScriptInvocation assertScrollIntoViewScheduled() {
         testUI.getInternals().getStateTree()
                 .runExecutionsBeforeClientResponse();
 
@@ -2025,7 +2032,11 @@ public class ComponentTest {
         assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
         MatcherAssert.assertThat(inv.getExpression(),
-                CoreMatchers.containsString(expectedJs));
+                CoreMatchers.containsString("this.scrollIntoView(...$0)"));
+        assertEquals(Element.ScrollIntoViewJs.class,
+                inv.getJsCall().definitionType(),
+                "Should run the declared JavaScript rather than an expression built for the call");
+        return inv;
     }
 
     @Test
@@ -2034,7 +2045,7 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
-        assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
     }
 
     @Test
@@ -2044,8 +2055,8 @@ public class ComponentTest {
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
-        assertPendingJs(
-                "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
+                "\"block\":\"end\"", "\"inline\":\"center\"");
     }
 
     @Test
@@ -2088,17 +2099,7 @@ public class ComponentTest {
     }
 
     private void assertScrollIntoViewWithParams(String... expectedJsonParts) {
-        testUI.getInternals().getStateTree()
-                .runExecutionsBeforeClientResponse();
-        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pendingJs.size());
-        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
-
-        // Verify it uses parameter passing
-        String expression = inv.getExpression();
-        MatcherAssert.assertThat(expression,
-                CoreMatchers.containsString("this.scrollIntoView($0)"));
+        JavaScriptInvocation inv = assertScrollIntoViewScheduled();
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
