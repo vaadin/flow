@@ -321,10 +321,8 @@ public class WebComponentUI extends UI {
         // The tag and the attributes travel as values rather than as
         // JavaScript, so a value carrying a quote cannot end the string it was
         // written into
-        ObjectNode attributeJson = JacksonUtils.createObjectNode();
-        attributes.forEach(attributeJson::put);
         getPage().executeJs(ThemeAttributesJs.class).setAttributes(tag,
-                attributeJson);
+                JacksonUtils.mapToJson(attributes));
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
