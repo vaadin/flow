@@ -445,6 +445,14 @@ public class FrontendToolsTest {
         assertFaultyNpmVersion(new FrontendVersion(9, 2, 0));
     }
 
+    @Test
+    public void pnpmPackageSpecifier_pinsTheDefaultVersion() {
+        // npx would otherwise install the newest pnpm, whose node_modules
+        // layout the frontend build cannot always resolve
+        Assert.assertEquals("pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
+                FrontendTools.getPnpmPackageSpecifier());
+    }
+
     @Ignore("Until a newer version of Node.js is installed in CI/CD, which doesn't let pnpm version check to fail")
     @Test
     public void getPnpmExecutable_executableIsAvailable() {

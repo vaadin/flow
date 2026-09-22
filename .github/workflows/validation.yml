@@ -147,7 +147,7 @@ jobs:
           node-version: '22.23.2'
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '8.15.9'
+          version: '10.34.5'
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
