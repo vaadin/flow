@@ -32,8 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +65,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -2031,8 +2031,8 @@ public class ComponentTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
-        MatcherAssert.assertThat(inv.getExpression(),
-                CoreMatchers.containsString("this.scrollIntoView(...$0)"));
+        assertThat(inv.getExpression(),
+                containsString("this.scrollIntoView(...$0)"));
         assertEquals(Element.ScrollIntoViewJs.class,
                 inv.getJsCall().definitionType(),
                 "Should run the declared JavaScript rather than an expression built for the call");
@@ -2045,7 +2045,9 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
-        assertScrollIntoViewWithOptions("behavior", "smooth");
+        assertScrollIntoViewOptions("""
+                {"behavior": "smooth"}
+                """);
     }
 
     @Test
@@ -2055,8 +2057,9 @@ public class ComponentTest {
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
-        assertScrollIntoViewWithOptions("behavior", "smooth", "block", "end",
-                "inline", "center");
+        assertScrollIntoViewOptions("""
+                {"behavior": "smooth", "block": "end", "inline": "center"}
+                """);
     }
 
     @Test
@@ -2065,7 +2068,9 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
 
-        assertScrollIntoViewWithOptions("behavior", "smooth");
+        assertScrollIntoViewOptions("""
+                {"behavior": "smooth"}
+                """);
     }
 
     @Test
@@ -2074,7 +2079,9 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Block.END);
 
-        assertScrollIntoViewWithOptions("block", "end");
+        assertScrollIntoViewOptions("""
+                {"block": "end"}
+                """);
     }
 
     @Test
@@ -2083,7 +2090,9 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
 
-        assertScrollIntoViewWithOptions("inline", "center");
+        assertScrollIntoViewOptions("""
+                {"inline": "center"}
+                """);
     }
 
     @Test
@@ -2094,28 +2103,21 @@ public class ComponentTest {
                 ScrollIntoViewOption.Block.END,
                 ScrollIntoViewOption.Inline.CENTER);
 
-        assertScrollIntoViewWithOptions("behavior", "smooth", "block", "end",
-                "inline", "center");
+        assertScrollIntoViewOptions("""
+                {"behavior": "smooth", "block": "end", "inline": "center"}
+                """);
     }
 
     /**
-     * Asserts that the options the call carries hold the given values, as pairs
-     * of an option name followed by its value.
+     * Asserts that the options the call carries are the given ones, which are
+     * compared as objects, so an option that should not be there fails too.
      */
-    private void assertScrollIntoViewWithOptions(String... namesAndValues) {
-        assertEquals(0, namesAndValues.length % 2,
-                "Should be given an option name and a value for each option");
+    private void assertScrollIntoViewOptions(String expectedOptions) {
         JavaScriptInvocation inv = assertScrollIntoViewScheduled();
 
-        // Verify parameters contain expected options
-        List<Object> params = inv.getParameters();
-        assertTrue(params.size() >= 1, "Should have at least 1 parameter");
-        String paramJson = params.get(0).toString();
-        for (int i = 0; i < namesAndValues.length; i += 2) {
-            MatcherAssert.assertThat(paramJson,
-                    CoreMatchers.containsString("\"" + namesAndValues[i]
-                            + "\":\"" + namesAndValues[i + 1] + "\""));
-        }
+        assertEquals(JacksonUtils.readTree(expectedOptions),
+                inv.getParameters().get(0),
+                "Should pass the options the element was asked to scroll with");
     }
 
     @Test
