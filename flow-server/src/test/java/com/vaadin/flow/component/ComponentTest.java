@@ -2045,7 +2045,7 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
-        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
+        assertScrollIntoViewWithOptions("behavior", "smooth");
     }
 
     @Test
@@ -2055,8 +2055,8 @@ public class ComponentTest {
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
-        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
-                "\"block\":\"end\"", "\"inline\":\"center\"");
+        assertScrollIntoViewWithOptions("behavior", "smooth", "block", "end",
+                "inline", "center");
     }
 
     @Test
@@ -2065,7 +2065,7 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
 
-        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
+        assertScrollIntoViewWithOptions("behavior", "smooth");
     }
 
     @Test
@@ -2074,7 +2074,7 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Block.END);
 
-        assertScrollIntoViewWithParams("\"block\":\"end\"");
+        assertScrollIntoViewWithOptions("block", "end");
     }
 
     @Test
@@ -2083,7 +2083,7 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
 
-        assertScrollIntoViewWithParams("\"inline\":\"center\"");
+        assertScrollIntoViewWithOptions("inline", "center");
     }
 
     @Test
@@ -2094,20 +2094,27 @@ public class ComponentTest {
                 ScrollIntoViewOption.Block.END,
                 ScrollIntoViewOption.Inline.CENTER);
 
-        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
-                "\"block\":\"end\"", "\"inline\":\"center\"");
+        assertScrollIntoViewWithOptions("behavior", "smooth", "block", "end",
+                "inline", "center");
     }
 
-    private void assertScrollIntoViewWithParams(String... expectedJsonParts) {
+    /**
+     * Asserts that the options the call carries hold the given values, as pairs
+     * of an option name followed by its value.
+     */
+    private void assertScrollIntoViewWithOptions(String... namesAndValues) {
+        assertEquals(0, namesAndValues.length % 2,
+                "Should be given an option name and a value for each option");
         JavaScriptInvocation inv = assertScrollIntoViewScheduled();
 
-        // Verify parameters contain expected JSON parts
+        // Verify parameters contain expected options
         List<Object> params = inv.getParameters();
         assertTrue(params.size() >= 1, "Should have at least 1 parameter");
         String paramJson = params.get(0).toString();
-        for (String expectedPart : expectedJsonParts) {
+        for (int i = 0; i < namesAndValues.length; i += 2) {
             MatcherAssert.assertThat(paramJson,
-                    CoreMatchers.containsString(expectedPart));
+                    CoreMatchers.containsString("\"" + namesAndValues[i]
+                            + "\":\"" + namesAndValues[i + 1] + "\""));
         }
     }
 
