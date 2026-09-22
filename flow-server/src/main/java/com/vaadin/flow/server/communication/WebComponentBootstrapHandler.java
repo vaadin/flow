@@ -441,11 +441,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .getProjectFrontendDir(config);
 
             // Add document.css link to the document
+            StylesheetJs stylesheetJs = UI.getCurrentOrThrow().getPage()
+                    .executeJs(StylesheetJs.class);
             BootstrapHandler
                     .getStylesheetLinks(context, "document.css",
                             frontendDirectory)
-                    .forEach(link -> UI.getCurrentOrThrow().getPage()
-                            .executeJs(StylesheetJs.class)
+                    .forEach(link -> stylesheetJs
                             .addStylesheet(modifyPath(serviceUrl, link)));
         }
 

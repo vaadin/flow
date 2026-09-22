@@ -884,7 +884,7 @@ public class Page implements Serializable {
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
                 "Url consumer callback should not be null.");
-        executeJs(LocationJs.class).getHref().then(String.class, urlString -> {
+        executeJs(PageJs.class).getHref().then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
@@ -895,13 +895,13 @@ public class Page implements Serializable {
     }
 
     /**
-     * What the page reads of <code>window.location</code>, as a JavaScript
-     * definition for {@link #executeJs(Class)}: the build collects it into the
-     * bundle, so asking the browser where it is needs no expression and works
-     * under a content security policy without <code>unsafe-eval</code>.
+     * What this page asks of the browser, as a JavaScript definition for
+     * {@link #executeJs(Class)}: the build collects it into the bundle, so none
+     * of it needs an expression and all of it works under a content security
+     * policy without <code>unsafe-eval</code>.
      */
     @JsDefinition
-    interface LocationJs extends Serializable {
+    public interface PageJs extends Serializable {
 
         /**
          * The address the browser is at.
@@ -910,14 +910,6 @@ public class Page implements Serializable {
          */
         @JsExpression("return window.location.href")
         PendingJavaScriptResult getHref();
-    }
-
-    /**
-     * What this page asks of the document, as a JavaScript definition for
-     * {@link #executeJs(Class)}.
-     */
-    @JsDefinition
-    public interface PageJs extends Serializable {
 
         /**
          * Lets the document follow the color scheme the user asked the browser

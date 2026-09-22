@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class PageTest {
 
     @JsDefinition
-    interface PageJs extends Serializable {
+    interface TestPageJs extends Serializable {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -71,13 +71,14 @@ class PageTest {
     void executeJsWithDefinition_schedulesTheCallOnNothingInParticular() {
         MockUI mockUI = new MockUI();
 
-        mockUI.getPage().executeJs(PageJs.class).showGreeting("Hello");
+        mockUI.getPage().executeJs(TestPageJs.class).showGreeting("Hello");
 
         List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, invocations.size());
         JavaScriptInvocation invocation = invocations.get(0).getInvocation();
-        assertEquals(new JsCall(PageJs.class, "showGreeting", List.of("Hello")),
+        assertEquals(
+                new JsCall(TestPageJs.class, "showGreeting", List.of("Hello")),
                 invocation.getJsCall());
         assertEquals(Arrays.asList("Hello", null), invocation.getParameters(),
                 "the arguments should be followed by nothing to run the function on");
@@ -88,7 +89,7 @@ class PageTest {
         MockUI mockUI = new MockUI();
 
         PendingJavaScriptResult result = mockUI.getPage()
-                .executeJs(PageJs.class).readText();
+                .executeJs(TestPageJs.class).readText();
         List<String> values = new ArrayList<>();
         result.then(String.class, values::add);
 
@@ -237,7 +238,7 @@ class PageTest {
         List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, invocations.size());
-        assertEquals(new JsCall(Page.LocationJs.class, "getHref", List.of()),
+        assertEquals(new JsCall(Page.PageJs.class, "getHref", List.of()),
                 invocations.get(0).getInvocation().getJsCall(),
                 "the address should be asked for through the declared JavaScript");
 

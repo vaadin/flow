@@ -538,10 +538,11 @@ class JavaScriptBootstrapUITest {
         JsCall call = onlyPageCall();
         if (reactEnabled) {
             assertEquals(REACT_PUSHSTATE_TO, call.getExpression());
+            assertEquals(3, call.arguments().size());
         } else {
             assertEquals(CLIENT_PUSHSTATE_TO, call.getExpression());
+            assertEquals(2, call.arguments().size());
         }
-        assertEquals(3, call.arguments().size());
         assertNull(call.arguments().get(0));
         assertEquals("dirty", call.arguments().get(1));
     }
