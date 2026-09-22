@@ -174,6 +174,14 @@ public class JsonConstants implements Serializable {
     public static final String UIDL_KEY_JS_FUNCTION = "f";
 
     /**
+     * Key of the number of arguments an invocation of declared JavaScript
+     * carries, present only when the function collects them into a rest
+     * parameter and the client therefore cannot read their number off the
+     * function it looks up.
+     */
+    public static final String UIDL_KEY_JS_ARGUMENT_COUNT = "n";
+
+    /**
      * Key used to hold the feature id when synchronizing node values.
      */
     public static final String RPC_FEATURE = "feature";

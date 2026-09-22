@@ -61,6 +61,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class DevLoopRedefinerTest {
 
+    private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
+
     @Test
     void redefine_withoutAnAgent_reportsTheReasonInTheProtocolVocabulary() {
         String reply = DevLoopRedefiner.redefine("com.example.Foo");
@@ -168,6 +170,9 @@ class DevLoopRedefinerTest {
     interface GreeterJs extends Serializable {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
+
+        @JsExpression(SHOUT_EXPRESSION)
+        void shout(String greeting, Object... names);
     }
 
     @JsDefinition
@@ -199,8 +204,22 @@ class DevLoopRedefinerTest {
         // bundle was built with until a restart regenerates it.
         String imports = DevLoopRedefiner.frontendDependencies(GreeterJs.class);
 
-        assertTrue(imports.contains(
-                "jsdefinition:" + JsCall.functionId("window.alert($0)", 1)),
+        assertTrue(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId("window.alert($0)", 1, false)),
+                imports);
+        // A method that collects its trailing arguments generates a function
+        // with a rest parameter, which is not the function that the same
+        // JavaScript for the same number of fixed parameters generates - so
+        // turning Object... into Object[] has to be a change the browser is
+        // told about rather than the same fingerprint.
+        assertTrue(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, true)),
+                imports);
+        assertFalse(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, false)),
                 imports);
         // What the browser has of a method is the function of what it
         // declares, so an edited expression is a different one.
