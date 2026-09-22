@@ -49,8 +49,10 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
@@ -363,6 +365,32 @@ class UidlWriterTest {
                 encoded.get(encoded.size() - 1).asString(),
                 "the three arguments the call spread should be counted for the client, which cannot read them off the function: "
                         + encoded + " " + constants);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_variadicCall_trailingFunctionSentAsAFunction() {
+        Element element = ElementFactory.createDiv();
+        JsFunction callback = JsFunction.of("return 1;");
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { callback }));
+        // The parameters an element schedules: the arguments of the call as
+        // the client receives them, followed by the element itself
+        List<Object> parameters = new ArrayList<>(call.flattenArguments());
+        parameters.add(element);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), parameters.toArray());
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonCodec.encodeWithTypeInfo(callback), encoded.get(1)),
+                "a function among the trailing arguments should reach the browser as the function it is, which is what sending them one by one rather than as one array is for: "
+                        + encoded);
     }
 
     @JsDefinition

@@ -27,7 +27,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -278,14 +281,44 @@ public class ExecJavaScriptView extends AbstractDivView {
                                     """);
                 });
 
+        NativeButton variadicButton = createButton(
+                "Variadic JavaScript definition", "variadicButton",
+                e -> getElement().executeJs(JoinJs.class)
+                        .join("a", 1, true, "b")
+                        .then(String.class, this::addVariadicResult));
+
+        NativeButton variadicNoArgumentsButton = createButton(
+                "Variadic JavaScript definition without a tail",
+                "variadicNoArgumentsButton",
+                e -> getElement().executeJs(JoinJs.class).join("a")
+                        .then(String.class, this::addVariadicResult));
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
                 returnBeanButton, listButton, returnListButton, mapButton,
                 returnMapButton, componentArrayButton, beanWithComponentButton,
                 clientCallableBeanButton, clientCallableListButton,
                 clientCallableNestedButton, returnBeanButton2,
-                returnListButton2, returnNestedButton2,
-                returnIntegerListButton);
+                returnListButton2, returnNestedButton2, returnIntegerListButton,
+                variadicButton, variadicNoArgumentsButton);
+    }
+
+    private void addVariadicResult(String joined) {
+        Div result = new Div();
+        result.setId("variadicResult");
+        result.setText("Variadic call: " + joined);
+        add(result);
+    }
+
+    /**
+     * Joins what it is called with, so that what the browser received of a call
+     * is what the server reads back.
+     */
+    @JsDefinition
+    public interface JoinJs extends Serializable {
+
+        @JsExpression("return [$0, ...$1].join('-')")
+        PendingJavaScriptResult join(String first, Object... rest);
     }
 
     private void testBeanSerialization() {

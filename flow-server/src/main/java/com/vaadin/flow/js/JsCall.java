@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -164,8 +166,8 @@ public record JsCall(Class<?> definitionType, String methodName,
         List<Object> flattened = new ArrayList<>(
                 arguments.subList(0, arguments.size() - 1));
         Object tail = arguments.get(arguments.size() - 1);
-        // A call written as callFunction(name, (Object[]) null) passes no
-        // trailing arguments rather than one null argument, as Java reads it
+        // A call written as method(name, (Object[]) null) passes no trailing
+        // arguments rather than one null argument, as Java reads it
         if (tail != null) {
             // Read through reflection rather than as an Object[], so that a
             // method declaring a primitive tail - int... for one - hands the
@@ -176,6 +178,26 @@ public record JsCall(Class<?> definitionType, String methodName,
             }
         }
         return Collections.unmodifiableList(flattened);
+    }
+
+    /**
+     * Gets what this call is sent with: its arguments as the client receives
+     * them, and then the element to run the function on, which the client
+     * applies the function to.
+     * <p>
+     * The element a call was made on goes into that last place, and a call made
+     * on nothing in particular - page JavaScript, which works on globals - puts
+     * <code>null</code> there, so a client reads the two the same way.
+     *
+     * @param runOn
+     *            the element to run the function on, or <code>null</code> for
+     *            page JavaScript, which runs on nothing in particular
+     * @return the parameters of the call, not <code>null</code>
+     */
+    public Object[] parametersFor(@Nullable Element runOn) {
+        List<Object> parameters = new ArrayList<>(flattenArguments());
+        parameters.add(runOn);
+        return parameters.toArray();
     }
 
     /**
