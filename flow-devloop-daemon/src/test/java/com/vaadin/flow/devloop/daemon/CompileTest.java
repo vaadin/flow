@@ -596,6 +596,81 @@ class CompileTest {
         assertEquals(List.of(config), changes.startup().modified());
     }
 
+    /**
+     * A build that regenerates a resource rewrites it whether or not anything
+     * about it changed, and both of the questions {@code staleResources} asks
+     * are asked of timestamps. Measured in this repository: {@code tsc}
+     * rewrites nine {@code .d.ts} files under
+     * {@code vaadin-dev-server/src/main/resources} on every build with
+     * byte-identical content, and because they are startup-only resources every
+     * apply restarted the application - over an edit that was one method body
+     * in one class.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsNotAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        // What a regenerating build does: same bytes, new modification time.
+        Files.writeString(served, "body{}");
+        Files.writeString(config, "server.port=8080");
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+    }
+
+    /** And a rewrite that did change something still is one. */
+    @Test
+    void staleResources_aRewriteThatChangedBytesIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        Files.writeString(served, "body{margin:0}");
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
+    /**
+     * The comparison is against the classpath copy, so a resource that has
+     * never been copied is a change however old it is - otherwise a first apply
+     * on a module built by something other than this daemon would leave the
+     * application reading nothing.
+     */
+    @Test
+    void staleResources_aResourceWithNoClasspathCopyIsAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.seedResources();
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
     @Test
     void staleResources_reportADeletedResourceTheWalkCannotSee()
             throws IOException {

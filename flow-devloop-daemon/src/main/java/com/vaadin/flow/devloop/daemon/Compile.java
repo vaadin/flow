@@ -361,6 +361,12 @@ final class Compile {
      * Both questions are asked of every resource; only the consequence of a
      * "yes" differs, which is why the two kinds come back separately.
      * <p>
+     * Both are also asked of timestamps, and a timestamp says a file was
+     * written rather than that it changed. So a "yes" from either is confirmed
+     * against the bytes on the classpath before it counts - see
+     * {@link #copyHasSameBytes} - which is what keeps a build that regenerates
+     * its own resources from restarting the application over nothing.
+     * <p>
      * Deletions are the third question, and the walk cannot answer it: a file
      * that is gone is not visited. The fingerprint map is the inventory that
      * can - every resource on disk at the last seed is a key in it - and a
@@ -380,8 +386,14 @@ final class Compile {
         java.util.Set<Path> seen = new java.util.HashSet<>();
         forEachResource((module, source, stamp) -> {
             seen.add(source);
-            if (!copyIsCurrent(module, source)
-                    || !stamp.equals(notified.get(source))) {
+            // Both questions above are asked of timestamps, and a build that
+            // regenerates a file answers yes to them without changing a byte.
+            // The classpath copy is what the running application actually
+            // read, so it is the thing to compare against before calling this
+            // a change; see copyHasSameBytes.
+            boolean looksChanged = !copyIsCurrent(module, source)
+                    || !stamp.equals(notified.get(source));
+            if (looksChanged && !copyHasSameBytes(module, source)) {
                 (resourceKindOf(module, source) == ResourceKind.LIVE ? live
                         : startup).add(source);
             }
@@ -548,6 +560,48 @@ final class Compile {
             });
         } catch (IOException ignored) {
             // Same contract as the compile leg's walk.
+        }
+    }
+
+    /**
+     * Whether the classpath copy of a resource already holds the source's
+     * bytes.
+     * <p>
+     * A timestamp says a file was written; it does not say the file changed.
+     * Builds rewrite generated resources wholesale - measured in this
+     * repository, {@code tsc} rewrites nine {@code .d.ts} files under
+     * {@code vaadin-dev-server/src/main/resources} on every build with
+     * byte-identical content and a fresh modification time. They are
+     * startup-only resources, so each apply counted nine changes nothing could
+     * make live and restarted the application over an edit that was a method
+     * body and nothing else.
+     * <p>
+     * The copy is the right thing to compare against rather than a remembered
+     * hash: it is what the running application read, so "the copy already says
+     * this" is exactly the question worth asking, and it stays true across a
+     * daemon restart that remembers nothing.
+     * <p>
+     * {@link Files#mismatch} rather than reading both files: it stops at the
+     * first differing byte and compares lengths first, so the common case of a
+     * real edit costs almost nothing. Only a resource that already looks
+     * changed is ever read at all.
+     *
+     * @param module
+     *            the module the resource belongs to
+     * @param source
+     *            the resource under {@code src/main/resources}
+     * @return {@code true} when the copy exists and matches byte for byte
+     */
+    private boolean copyHasSameBytes(Reactor.Module module, Path source) {
+        Path target = module.targetFor(source);
+        try {
+            return Files.isRegularFile(target)
+                    && Files.mismatch(source, target) == -1L;
+        } catch (IOException e) {
+            // Unreadable on either side: fall back to what the timestamps said,
+            // which is that this is a change. A resource the daemon cannot read
+            // is not one it may quietly drop.
+            return false;
         }
     }
 
