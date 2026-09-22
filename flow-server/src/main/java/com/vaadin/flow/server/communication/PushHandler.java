@@ -344,9 +344,10 @@ public class PushHandler {
 
             if (callback == establishCallback && !isPushIdValid(session,
                     req.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))) {
-                // Reject before locking the session so that a request that is
-                // not allowed to open a connection cannot compete for the lock
-                // with the legitimate requests of that session
+                // Answered before the session is locked, so that a request
+                // that is not allowed to open a connection is not left waiting
+                // for the lock behind the legitimate requests of that session,
+                // and does not hold it while being rejected
                 getLogger().warn(
                         "Invalid identifier in new connection received from {}",
                         req.getRemoteHost());
