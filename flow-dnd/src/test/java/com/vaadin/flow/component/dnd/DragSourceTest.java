@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.dnd;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.router.RouterLink;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,6 +46,33 @@ class DragSourceTest extends AbstractDnDUnitTest {
     @Override
     protected void runStaticCreateMethodForExtension(Component component) {
         DragSource.create(component);
+    }
+
+    @Test
+    void draggable_activationAndDragImageRunTheDeclaredJavaScript() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setDraggable(true);
+
+        TestComponent dragImage = new TestComponent();
+        ui.add(dragImage);
+        component.setDragImage(dragImage, 10, 20);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Both reach the browser as a call of the declared JavaScript, which
+        // the build collected into the bundle, rather than as an expression
+        assertEquals(List.of(
+                new JsCall(DndUtil.DndJs.class, "setDragImage",
+                        Arrays.asList(dragImage, 10, 20)),
+                new JsCall(DndUtil.DndJs.class, "updateDragSource", List.of())),
+                scheduledCalls());
+    }
+
+    private List<JsCall> scheduledCalls() {
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .filter(Objects::nonNull).toList();
     }
 
     @Test

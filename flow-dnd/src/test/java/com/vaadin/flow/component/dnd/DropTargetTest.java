@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.dnd;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.router.RouterLink;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,6 +47,24 @@ class DropTargetTest extends AbstractDnDUnitTest {
     @Override
     protected void runStaticCreateMethodForExtension(Component component) {
         DropTarget.create(component);
+    }
+
+    @Test
+    void dropTargetActivation_runsTheDeclaredJavaScript() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        component.setActive(true);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // Reaches the browser as a call of the declared JavaScript, which the
+        // build collected into the bundle, rather than as an expression
+        assertEquals(
+                List.of(new JsCall(DndUtil.DndJs.class, "updateDropTarget",
+                        List.of())),
+                ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                        .map(pending -> pending.getInvocation().getJsCall())
+                        .filter(Objects::nonNull).toList());
     }
 
     @Test

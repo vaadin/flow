@@ -17,9 +17,10 @@ package com.vaadin.flow.component.webcomponent;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.IntNode;
+import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
@@ -30,6 +31,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -142,23 +144,37 @@ class WebComponentTest {
         WebComponent<Component> webComponent = new WebComponent<>(binding,
                 element);
 
-        // Each supported type reaches the client through the declared
-        // JavaScript rather than through an expression built here
+        // Every supported type reaches the client through the declared
+        // JavaScript rather than through an expression built here, and with
+        // the value the property takes
+        WebComponent.UpdatePropertyJs updates = mock(
+                WebComponent.UpdatePropertyJs.class);
+        doReturn(updates).when(element)
+                .executeJs(WebComponent.UpdatePropertyJs.class);
+
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1))
-                .executeJs(WebComponent.UpdatePropertyJs.class);
+        verify(updates).updateProperty("int", 1);
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2))
-                .executeJs(WebComponent.UpdatePropertyJs.class);
+        verify(updates).updateProperty("double", 1.0);
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3))
-                .executeJs(WebComponent.UpdatePropertyJs.class);
+        verify(updates).updateProperty("string", "asd");
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4))
-                .executeJs(WebComponent.UpdatePropertyJs.class);
+        verify(updates).updateProperty("boolean", true);
+        // A node standing for a single value is sent as that value
         webComponent.setProperty(jsonNodeConfiguration,
                 (ValueNode) JacksonUtils.createNode(true));
-        verify(element, Mockito.times(5))
-                .executeJs(WebComponent.UpdatePropertyJs.class);
+        verify(updates).updateProperty("jsonNode", "true");
+        webComponent.setProperty(jsonNodeConfiguration,
+                (IntNode) JacksonUtils.createNode(7));
+        verify(updates).updateProperty("jsonNode", 7);
+        // while an object node is sent as it is, rather than written into the
+        // JavaScript, which a content security policy would refuse to compile
+        ObjectNode object = JacksonUtils.createObjectNode();
+        object.put("a", 1);
+        webComponent.setProperty(jsonNodeConfiguration, object);
+        verify(updates).updateProperty("jsonNode", object);
+
+        webComponent.setProperty(stringConfiguration, null);
+        verify(updates).updateProperty("string", null);
     }
 }
