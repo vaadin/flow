@@ -23,15 +23,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 
 /**
@@ -62,16 +59,6 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {
-
-    /**
-     * The called method of a definition by name and argument count. Everything
-     * a scheduled call is described by - what it runs, which function of the
-     * bundle that is, and how its arguments reach the client - is read off the
-     * called method, and a call of a component's client side connector is made
-     * often enough that looking the method up again for each of them shows.
-     */
-    private static final ReflectionCache<Object, Map<String, List<Method>>> METHODS = new ReflectionCache<>(
-            definitionType -> new ConcurrentHashMap<>());
 
     /**
      * Creates a call of the given method of the given JavaScript definition.
@@ -267,10 +254,8 @@ public record JsCall(Class<?> definitionType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
-        List<Method> candidates = METHODS.get(definitionType).computeIfAbsent(
-                methodName + "/" + arguments.size(),
-                signature -> ReflectTools.getMethodsWithParameterCount(
-                        definitionType, methodName, arguments.size()));
+        List<Method> candidates = ReflectTools.getMethodsWithParameterCount(
+                definitionType, methodName, arguments.size());
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
                     + methodName + " with " + arguments.size()
