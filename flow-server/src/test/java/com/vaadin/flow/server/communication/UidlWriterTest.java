@@ -49,6 +49,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -363,6 +364,27 @@ class UidlWriterTest {
                 encoded.get(encoded.size() - 1).asString(),
                 "the three arguments the call spread should be counted for the client, which cannot read them off the function: "
                         + encoded + " " + constants);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_variadicCall_trailingFunctionSentAsAFunction() {
+        Element element = ElementFactory.createDiv();
+        JsFunction callback = JsFunction.of("return 1;");
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { callback }));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", callback, element);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertTrue(encoded.get(1).has("@v-fn"),
+                "a function among the trailing arguments should reach the browser as the function it is, which is why they are spread rather than sent as one array: "
+                        + encoded);
     }
 
     @JsDefinition
