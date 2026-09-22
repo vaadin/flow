@@ -308,21 +308,29 @@ public class BuildFrontendUtilTest {
     @Test
     public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
+        // make prepare-frontend write every optional development entry as well
+        Mockito.when(adapter.isPrepareFrontendCacheDisabled()).thenReturn(true);
+        Mockito.when(adapter.isFrontendHotdeploy()).thenReturn(true);
+        Mockito.when(adapter.isNpmExcludeWebComponents()).thenReturn(true);
+        Mockito.when(adapter.frontendExtraFileExtensions())
+                .thenReturn(List.of("svg"));
+
         File tokenFile = prepareAndAssertTokenFile();
-        JsonNode buildInfoJsonDev = JacksonUtils
-                .readTree(Files.readString(tokenFile.toPath()));
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
 
-        Set<String> removedKeys = JacksonUtils.getKeys(buildInfoJsonDev)
-                .stream().filter(key -> !buildInfoJsonProd.has(key))
-                .collect(Collectors.toSet());
-        Assert.assertFalse(
-                "Development entries have not been removed from token file",
-                removedKeys.isEmpty());
+        // The production token file is packaged into the application artifact,
+        // so it must contain only entries the runtime uses in production mode,
+        // and in particular no path from the machine that ran the build.
+        Assert.assertEquals("Unexpected entries in the production token file",
+                Set.of(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                        InitParameters.REACT_ENABLE,
+                        InitParameters.APPLICATION_IDENTIFIER),
+                new HashSet<>(JacksonUtils.getKeys(buildInfoJsonProd)));
     }
 
     @Test
