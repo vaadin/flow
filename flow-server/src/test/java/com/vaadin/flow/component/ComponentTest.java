@@ -2013,17 +2013,18 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView();
 
-        JavaScriptInvocation inv = assertScrollIntoViewScheduled();
+        JavaScriptInvocation inv = assertScrollIntoViewScheduled(
+                "this.scrollIntoView()");
         assertEquals(List.of(div.getElement()), inv.getParameters(),
                 "Should pass the element to scroll and no options");
     }
 
     /**
      * Asserts that the only scheduled invocation is a call of the declared
-     * JavaScript behind scrollIntoView, which spreads the options it is given
-     * so that a call without them reaches the browser as scrollIntoView().
+     * JavaScript behind scrollIntoView that runs the given JavaScript.
      */
-    private JavaScriptInvocation assertScrollIntoViewScheduled() {
+    private JavaScriptInvocation assertScrollIntoViewScheduled(
+            String expectedCall) {
         testUI.getInternals().getStateTree()
                 .runExecutionsBeforeClientResponse();
 
@@ -2031,8 +2032,7 @@ public class ComponentTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
-        assertThat(inv.getExpression(),
-                containsString("this.scrollIntoView(...$0)"));
+        assertThat(inv.getExpression(), containsString(expectedCall));
         assertEquals(Element.ScrollIntoViewJs.class,
                 inv.getJsCall().definitionType(),
                 "Should run the declared JavaScript rather than an expression built for the call");
@@ -2113,7 +2113,8 @@ public class ComponentTest {
      * compared as objects, so an option that should not be there fails too.
      */
     private void assertScrollIntoViewOptions(String expectedOptions) {
-        JavaScriptInvocation inv = assertScrollIntoViewScheduled();
+        JavaScriptInvocation inv = assertScrollIntoViewScheduled(
+                "this.scrollIntoView($0)");
 
         assertEquals(JacksonUtils.readTree(expectedOptions),
                 inv.getParameters().get(0),

@@ -17,8 +17,6 @@ package com.vaadin.flow.component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
@@ -32,6 +30,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FocusableTest {
@@ -102,7 +101,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -129,7 +128,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -154,7 +153,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -181,7 +180,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -206,7 +205,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -233,7 +232,7 @@ class FocusableTest {
         String expression = invocations.get(0).getInvocation().getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
+        assertTrue(expression.contains(".focus($0)"),
                 "Should contain focus call with parameter");
 
         // Check the parameters
@@ -261,15 +260,16 @@ class FocusableTest {
                 .getExpression();
         assertTrue(expression.contains("setTimeout"),
                 "Should contain setTimeout wrapper");
-        assertTrue(expression.contains(".focus(...$0)"),
-                "Should contain focus call spreading the options");
+        assertTrue(expression.contains(".focus($0)"),
+                "Should contain focus call with the options parameter");
 
-        // Check the parameters: no options are passed, which is what the
-        // browser makes of focus() with none
+        // Check the parameters: the options are null, which the browser makes
+        // the same as calling focus() with none
         List<Object> params = invocations.getFirst().getInvocation()
                 .getParameters();
-        assertEquals(List.of(component.getElement()), params,
-                "Should pass the element the function runs on and no options");
+        assertEquals(2, params.size(),
+                "Should have the options and the element the function runs on");
+        assertNull(params.getFirst(), "Should pass no options");
     }
 
     @Test
@@ -316,11 +316,8 @@ class FocusableTest {
             List<String> log) implements Focusable.FocusJs {
 
         @Override
-        public void focus(ObjectNode... options) {
-            log.add(Stream
-                    .concat(Stream.of("focus", target.getTag()),
-                            Stream.of(options).map(Object::toString))
-                    .collect(Collectors.joining(" ")));
+        public void focus(ObjectNode options) {
+            log.add("focus " + target.getTag() + " " + options);
         }
 
         @Override

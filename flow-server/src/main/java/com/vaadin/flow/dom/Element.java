@@ -2443,14 +2443,23 @@ public class Element extends Node<Element> {
     public interface ScrollIntoViewJs extends Serializable {
 
         /**
-         * Scrolls the element into view, deferred so that it also works on an
-         * element that was created in the same response.
+         * Scrolls the element into view the way the browser does by default,
+         * deferred so that it also works on an element that was created in the
+         * same response.
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView(), 0)")
+        void scrollIntoView();
+
+        /**
+         * Scrolls the element into view with the given options, deferred so
+         * that it also works on an element that was created in the same
+         * response.
          *
          * @param options
          *            the options of the browser's <code>scrollIntoView</code>
-         *            function, or nothing for its defaults
+         *            function
          */
-        @JsExpression("setTimeout(() => this.scrollIntoView(...$0), 0)")
-        void scrollIntoView(ObjectNode... options);
+        @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
+        void scrollIntoView(ObjectNode options);
     }
 }
