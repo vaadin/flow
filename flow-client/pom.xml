@@ -19,8 +19,8 @@
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
         <skipTsTests>${skipTests}</skipTsTests>
-        <org.eclipse.equinox.common.version>3.19.100</org.eclipse.equinox.common.version>
-        <org.eclipse.core.runtime.version>3.31.100</org.eclipse.core.runtime.version>
+        <org.eclipse.equinox.common.version>3.21.0</org.eclipse.equinox.common.version>
+        <org.eclipse.core.runtime.version>3.35.0</org.eclipse.core.runtime.version>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
