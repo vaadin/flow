@@ -1390,7 +1390,8 @@ final class DevLoopRedefiner {
                         .getAnnotation(JsExpression.class);
                 if (expression != null) {
                     imports.add("jsdefinition:" + JsCall.functionId(
-                            expression.value(), method.getParameterCount()));
+                            expression.value(), method.getParameterCount(),
+                            method.isVarArgs()));
                 }
             }
         }

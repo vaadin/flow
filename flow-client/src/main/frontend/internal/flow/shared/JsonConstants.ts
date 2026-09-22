@@ -156,6 +156,13 @@ export const JsonConstants = {
   UIDL_KEY_JS_FUNCTION: 'f',
 
   /**
+   * Key of the number of arguments an invocation of declared JavaScript
+   * carries, present only when the function collects them into a rest
+   * parameter and their number therefore cannot be read off the function.
+   */
+  UIDL_KEY_JS_ARGUMENT_COUNT: 'n',
+
+  /**
    * Key used to hold the feature id when synchronizing node values.
    */
   RPC_FEATURE: 'feature',

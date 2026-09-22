@@ -422,7 +422,10 @@ public class UidlWriter implements Serializable {
      * the function to, and the two return value channels when the call is
      * subscribed to. The client reads them the other way around: the function
      * it looks up takes the arguments, so what follows them is the element and
-     * the channels, if any.
+     * the channels, if any. A function that collects a variable number of
+     * arguments into a rest parameter does not report them in its length, so
+     * such a call carries how many arguments it has for the client to split the
+     * parameters by.
      */
     private static ArrayNode encodeJsCall(
             PendingJavaScriptInvocation invocation, JsCall call,
@@ -444,9 +447,11 @@ public class UidlWriter implements Serializable {
         }
 
         ObjectNode function = JacksonUtils.createObjectNode();
-        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION,
-                JsCall.functionId(invocation.getInvocation().getExpression(),
-                        call.arguments().size()));
+        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
+        if (call.isVariadic()) {
+            function.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
+                    call.flattenArguments().size());
+        }
 
         return Stream
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),

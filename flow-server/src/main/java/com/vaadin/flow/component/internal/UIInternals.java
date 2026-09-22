@@ -816,6 +816,58 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Adds an invocation of the given call to be sent to the client, owned by
+     * the root node of the state tree, which is what makes it an invocation of
+     * this UI rather than of anything in it.
+     * <p>
+     * The call runs on nothing in particular, the way JavaScript given to
+     * {@link Page#executeJs(String, Object...)} does, rather than on an element
+     * the way a call made on one does.
+     *
+     * @param call
+     *            the call to run, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
+        return addJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(null)));
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the root
+     * node of the state tree, which is what makes it an invocation of this UI
+     * rather than of anything in it.
+     *
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
+        return addJavaScriptInvocation(getStateTree().getRootNode(),
+                invocation);
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the given
+     * node, which is what decides when it is sent and what it is discarded
+     * with.
+     *
+     * @param owner
+     *            the node the invocation belongs to, not <code>null</code>
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
+            JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                owner, invocation);
+        addJavaScriptInvocation(pending);
+        return pending;
+    }
+
+    /**
      * Returns the next unique id for a JavaScript initializer registered
      * through {@link Element#addJsInitializer(String, Object...)} on any
      * element in this UI. Shared across the UI so cleanups can be keyed by the

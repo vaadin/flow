@@ -76,7 +76,8 @@ type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
  * string, so the two are told apart by what the constant is rather than by
  * what it says.
  */
-type JsFunctionConstant = Record<typeof JsonConstants.UIDL_KEY_JS_FUNCTION, string>;
+type JsFunctionConstant = Record<typeof JsonConstants.UIDL_KEY_JS_FUNCTION, string> &
+  Partial<Record<typeof JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT, number>>;
 
 type ReturnChannel = (value: unknown) => void;
 
@@ -207,7 +208,11 @@ export class ExecuteJavaScriptProcessor {
       // context object an expression runs against, whose `getNode` maps an
       // element back to its state node; a declared function runs against the
       // element itself and has no context, so there is nothing that could ask.
-      this.invokeFromBundle(whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION], parameters);
+      this.invokeFromBundle(
+        whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION],
+        parameters,
+        whatToRun[JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT]
+      );
       return;
     }
 
@@ -296,8 +301,11 @@ export class ExecuteJavaScriptProcessor {
    * @param parameters - the decoded parameters: the arguments of the call, the
    *          element to apply the function to, and the return value channels
    *          when the call is subscribed to
+   * @param sentArgumentCount - how many arguments the call carries, sent for a
+   *          function that collects them into a rest parameter and does not
+   *          report them in its length
    */
-  protected invokeFromBundle(functionId: string, parameters: unknown[]): void {
+  protected invokeFromBundle(functionId: string, parameters: unknown[], sentArgumentCount?: number): void {
     const name = getNameOf(functionId);
     const fn = findDeclaredFunction(functionId);
     if (fn === undefined) {
@@ -317,7 +325,7 @@ export class ExecuteJavaScriptProcessor {
     // does not add up means the invocation was not built for this function,
     // and reading the element out of it by index would bind an argument as
     // `this`. Say so instead of running the call.
-    const argumentCount = fn.length;
+    const argumentCount = sentArgumentCount ?? fn.length;
     const afterTheArguments = parameters.length - argumentCount;
     if (afterTheArguments !== 1 && afterTheArguments !== 3) {
       const message = `Expected ${argumentCount} arguments and the element for ${name} but the invocation carries ${parameters.length} parameters. Reload the page to pick up the current signature.`;
