@@ -238,8 +238,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } catch (IOException exception) {
                 logger.warn(".npmrc generation failed; pnpm "
                         + "package installation may require manually passing "
-                        + "the " + FrontendTools.PNPM_HOISTED_OPTION + " flag",
-                        exception);
+                        + "the --config.node-linker=hoisted flag", exception);
             }
         }
 
@@ -262,7 +261,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             npmInstallCommand = new ArrayList<>(npmExecutable);
             postinstallCommand = new ArrayList<>(npmExecutable);
             // This only works together with "install"
-            postinstallCommand.remove(FrontendTools.PNPM_HOISTED_OPTION);
+            postinstallCommand.remove("--config.node-linker=hoisted");
 
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
