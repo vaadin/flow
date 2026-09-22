@@ -63,6 +63,9 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1372,6 +1375,23 @@ final class DevLoopRedefiner {
                     .getAnnotationsByType(CssImport.class)) {
                 imports.add("css:" + annotation.value() + ":" + annotation.id()
                         + ":" + annotation.themeFor());
+            }
+        }
+        // The JavaScript a JavaScript definition declares is generated into
+        // the bundle by the build, exactly like the imports above, so an
+        // edited expression or a method added or removed only reaches the
+        // browser through a restart that regenerates the file and rebuilds the
+        // bundle. What identifies a function is what it runs, so that is what
+        // the fingerprint is made of: renaming a method changes nothing the
+        // browser has, and editing what it declares changes everything.
+        if (type.isAnnotationPresent(JsDefinition.class)) {
+            for (Method method : type.getMethods()) {
+                JsExpression expression = method
+                        .getAnnotation(JsExpression.class);
+                if (expression != null) {
+                    imports.add("jsdefinition:" + JsCall.functionId(
+                            expression.value(), method.getParameterCount()));
+                }
             }
         }
         // These two are read off the class whatever it is. @Theme in particular

@@ -166,6 +166,14 @@ public class JsonConstants implements Serializable {
     public static final String UIDL_KEY_EXECUTE = "execute";
 
     /**
+     * Key of the function to run in the constant that an invocation of declared
+     * JavaScript names, in place of the expression that an invocation of an
+     * expression names. The value identifies the JavaScript that the bundle
+     * holds, and says nothing about the Java that declared it.
+     */
+    public static final String UIDL_KEY_JS_FUNCTION = "f";
+
+    /**
      * Key used to hold the feature id when synchronizing node values.
      */
     public static final String RPC_FEATURE = "feature";

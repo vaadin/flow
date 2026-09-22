@@ -32,6 +32,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 
 /**
  * A task for generating the bootstrap file
@@ -83,6 +84,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         for (TypeScriptBootstrapModifier modifier : modifiers) {
             modifier.modify(lines, options);
         }
+        lines.add(0,
+                String.format("import './%s';%n", JS_DEFINITIONS_FILE_NAME));
         lines.add(0,
                 String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         return String.join(System.lineSeparator(), lines);
