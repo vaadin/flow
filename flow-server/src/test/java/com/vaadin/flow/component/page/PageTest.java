@@ -581,108 +581,56 @@ class PageTest {
 
     @Test
     void setColorScheme_setsStyleProperty() {
-        AtomicReference<String> capturedExpression = new AtomicReference<>();
-        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
         MockUI mockUI = new MockUI();
-        Page page = new Page(mockUI) {
-            @Override
-            public <T> T executeJs(Class<T> definitionType) {
-                return JsDefinitionProxy.create(definitionType, call -> {
-                    capturedExpression.set(call.getExpression());
-                    capturedParams.set(call.arguments().toArray());
-                    return Mockito.mock(PendingJavaScriptResult.class);
-                });
-            }
-        };
 
-        page.setColorScheme(ColorScheme.Value.DARK);
+        mockUI.getPage().setColorScheme(ColorScheme.Value.DARK);
 
-        String js = capturedExpression.get();
-        assertTrue(js.contains("setAttribute('theme', $0)"),
-                "Should set theme attribute");
-        assertTrue(js.contains("style.colorScheme = $1"),
-                "Should set color-scheme property");
-        Object[] params = capturedParams.get();
-        assertEquals("dark", params[0], "Theme attribute should be 'dark'");
-        assertEquals("dark", params[1],
-                "Color scheme property should be 'dark'");
+        assertEquals(
+                new JsCall(Page.PageJs.class, "setColorScheme",
+                        List.of("dark", "dark")),
+                onlyScheduledCall(mockUI),
+                "the theme and the color scheme should be set to 'dark'");
+        assertEquals(ColorScheme.Value.DARK, mockUI.getPage().getColorScheme());
     }
 
     @Test
     void setColorScheme_lightDark_setsCorrectValues() {
-        AtomicReference<String> capturedExpression = new AtomicReference<>();
-        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
         MockUI mockUI = new MockUI();
-        Page page = new Page(mockUI) {
-            @Override
-            public <T> T executeJs(Class<T> definitionType) {
-                return JsDefinitionProxy.create(definitionType, call -> {
-                    capturedExpression.set(call.getExpression());
-                    capturedParams.set(call.arguments().toArray());
-                    return Mockito.mock(PendingJavaScriptResult.class);
-                });
-            }
-        };
 
-        page.setColorScheme(ColorScheme.Value.LIGHT_DARK);
+        mockUI.getPage().setColorScheme(ColorScheme.Value.LIGHT_DARK);
 
-        String js = capturedExpression.get();
-        assertTrue(js.contains("setAttribute('theme', $0)"),
-                "Should set theme attribute");
-        assertTrue(js.contains("style.colorScheme = $1"),
-                "Should set color-scheme property");
-        Object[] params = capturedParams.get();
-        assertEquals("light-dark", params[0],
-                "Theme attribute should use hyphen");
-        assertEquals("light dark", params[1],
-                "Color scheme property should use space");
+        // The theme attribute uses a hyphen where the color scheme property
+        // uses a space
+        assertEquals(
+                new JsCall(Page.PageJs.class, "setColorScheme",
+                        List.of("light-dark", "light dark")),
+                onlyScheduledCall(mockUI));
     }
 
     @Test
-    void setColorScheme_null_clearsProperty() {
-        MockUI mockUI = new MockUI();
+    void setColorScheme_nullOrNormal_clearsProperty() {
+        // Both mean the same thing: let the document follow the browser again
+        for (ColorScheme.Value value : new ColorScheme.Value[] { null,
+                ColorScheme.Value.NORMAL }) {
+            MockUI mockUI = new MockUI();
 
-        AtomicReference<String> capturedExpression = new AtomicReference<>();
-        Page page = new Page(mockUI) {
-            @Override
-            public <T> T executeJs(Class<T> definitionType) {
-                return JsDefinitionProxy.create(definitionType, call -> {
-                    capturedExpression.set(call.getExpression());
-                    return Mockito.mock(PendingJavaScriptResult.class);
-                });
-            }
-        };
+            mockUI.getPage().setColorScheme(value);
 
-        page.setColorScheme(null);
-
-        String js = capturedExpression.get();
-        assertTrue(js.contains("removeAttribute('theme')"),
-                "Should remove theme attribute");
-        assertTrue(js.contains("style.colorScheme = ''"),
-                "Should clear inline style");
-        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+            assertEquals(
+                    new JsCall(Page.PageJs.class, "resetColorScheme",
+                            List.of()),
+                    onlyScheduledCall(mockUI), "for " + value);
+            assertEquals(ColorScheme.Value.NORMAL,
+                    mockUI.getPage().getColorScheme());
+        }
     }
 
-    @Test
-    void setColorScheme_normal_clearsProperty() {
-        MockUI mockUI = new MockUI();
-
-        AtomicReference<String> capturedExpression = new AtomicReference<>();
-        Page page = new Page(mockUI) {
-            @Override
-            public <T> T executeJs(Class<T> definitionType) {
-                return JsDefinitionProxy.create(definitionType, call -> {
-                    capturedExpression.set(call.getExpression());
-                    return Mockito.mock(PendingJavaScriptResult.class);
-                });
-            }
-        };
-
-        page.setColorScheme(ColorScheme.Value.NORMAL);
-
-        String js = capturedExpression.get();
-        assertTrue(js.contains("style.colorScheme = ''"));
-        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    /** The only call of declared JavaScript that the page scheduled. */
+    private static JsCall onlyScheduledCall(MockUI mockUI) {
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        return invocations.get(0).getInvocation().getJsCall();
     }
 
     @Test
@@ -713,13 +661,7 @@ class PageTest {
                 null, null, null, null, null, null, null);
         mockUI.getInternals().setExtendedClientDetails(details);
 
-        Page page = new Page(mockUI) {
-            @Override
-            public <T> T executeJs(Class<T> definitionType) {
-                return JsDefinitionProxy.create(definitionType,
-                        call -> Mockito.mock(PendingJavaScriptResult.class));
-            }
-        };
+        Page page = mockUI.getPage();
 
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
 
