@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.WebStorage.Storage;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.tests.util.MockUI;
@@ -75,13 +74,9 @@ class WebStorageTest {
      * The only call of declared JavaScript that the given operation scheduled.
      */
     private static JsCall onlyCallOf(SerializableUiOperation operation) {
-        MockUI ui = new MockUI();
+        MockUI ui = MockUI.createUI();
         operation.run(ui);
-
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getJsCall();
+        return ui.onlyScheduledJsCall();
     }
 
     @FunctionalInterface

@@ -16,19 +16,18 @@
 package com.vaadin.flow.component.page;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.BaseJsonNode;
 
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HistoryTest {
 
@@ -37,7 +36,7 @@ class HistoryTest {
 
     @BeforeEach
     void setup() {
-        ui = new MockUI();
+        ui = MockUI.createUI();
         history = ui.getPage().getHistory();
         // The history writes the entry itself unless the client side router
         // takes the navigation, which is what each _react case turns on
@@ -55,51 +54,51 @@ class HistoryTest {
 
         history.pushState(state, "context/view?param=4");
         assertEquals(call("pushState", state, "context/view?param=4"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.pushState(state, "context/view/?param=4");
         assertEquals(call("pushState", state, "context/view/?param=4"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test
     void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
         assertEquals(call("pushState", null, "context/view#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.pushState(null, "context/view/#foobar");
         assertEquals(call("pushState", null, "context/view/#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
     void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
         assertEquals(call("pushState", null, "context/view?foo=bar#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.pushState(null, "context/view/?foo=bar#foobar");
         assertEquals(call("pushState", null, "context/view/?foo=bar#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
     void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
         assertEquals(call("replaceState", null, "context/view?foo=bar#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
         assertEquals(call("replaceState", null, "context/view/?foo=bar#foobar"),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
     void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
 
-        assertEquals(call("replaceState", null, "."), scheduledCall(),
+        assertEquals(call("replaceState", null, "."), ui.onlyScheduledJsCall(),
                 "an empty location should be written as '.'");
     }
 
@@ -111,12 +110,12 @@ class HistoryTest {
         history.pushState(state, "context/view?param=4");
         assertEquals(
                 call("navigatePushing", state, "context/view?param=4", false),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.pushState(state, "context/view/?param=4");
         assertEquals(
                 call("navigatePushing", state, "context/view/?param=4", false),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test
@@ -126,12 +125,12 @@ class HistoryTest {
         history.pushState(null, "context/view#foobar");
         assertEquals(
                 call("navigatePushing", null, "context/view#foobar", false),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
 
         history.pushState(null, "context/view/#foobar");
         assertEquals(
                 call("navigatePushing", null, "context/view/#foobar", false),
-                scheduledCall());
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
@@ -140,11 +139,13 @@ class HistoryTest {
 
         history.pushState(null, "context/view?foo=bar#foobar");
         assertEquals(call("navigatePushing", null,
-                "context/view?foo=bar#foobar", false), scheduledCall());
+                "context/view?foo=bar#foobar", false),
+                ui.onlyScheduledJsCall());
 
         history.pushState(null, "context/view/?foo=bar#foobar");
         assertEquals(call("navigatePushing", null,
-                "context/view/?foo=bar#foobar", false), scheduledCall());
+                "context/view/?foo=bar#foobar", false),
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
@@ -153,11 +154,13 @@ class HistoryTest {
 
         history.replaceState(null, "context/view?foo=bar#foobar");
         assertEquals(call("navigateReplacing", null,
-                "context/view?foo=bar#foobar", false), scheduledCall());
+                "context/view?foo=bar#foobar", false),
+                ui.onlyScheduledJsCall());
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
         assertEquals(call("navigateReplacing", null,
-                "context/view/?foo=bar#foobar", false), scheduledCall());
+                "context/view/?foo=bar#foobar", false),
+                ui.onlyScheduledJsCall());
     }
 
     @Test // #11628
@@ -167,29 +170,46 @@ class HistoryTest {
         history.replaceState(null, "");
 
         assertEquals(call("navigateReplacing", null, ".", false),
-                scheduledCall(), "an empty location should be written as '.'");
+                ui.onlyScheduledJsCall(),
+                "an empty location should be written as '.'");
+    }
+
+    @Test
+    void writingAnEntry_declaresWhichOfThePairItIs() {
+        // Pushing and replacing differ only in the function called, and the
+        // two navigations only in the flag they carry, so a swap of either
+        // pair would not show in the method that was called
+        history.pushState(null, "view");
+        assertTrue(ui.onlyScheduledJsCall().getExpression()
+                .contains("window.history.pushState("));
+
+        history.replaceState(null, "view");
+        assertTrue(ui.onlyScheduledJsCall().getExpression()
+                .contains("window.history.replaceState("));
+
+        useReactRouter(true);
+
+        history.pushState(null, "view");
+        assertTrue(ui.onlyScheduledJsCall().getExpression()
+                .contains("replace: false"));
+
+        history.replaceState(null, "view");
+        assertTrue(ui.onlyScheduledJsCall().getExpression()
+                .contains("replace: true"));
     }
 
     @Test
     void navigatingTheHistory_runsTheDeclaredJavaScript() {
         // The three of them differ only in what they ask the browser for
         history.back();
-        assertEquals(call("back"), scheduledCall());
+        assertEquals(call("back"), ui.onlyScheduledJsCall());
 
         history.forward();
-        assertEquals(call("forward"), scheduledCall());
+        assertEquals(call("forward"), ui.onlyScheduledJsCall());
 
         history.go(-2);
-        assertEquals(call("go", -2), scheduledCall(),
+        assertEquals(call("go", -2), ui.onlyScheduledJsCall(),
                 "steps should be passed on");
-    }
-
-    /** The call of declared JavaScript that the history just scheduled. */
-    private JsCall scheduledCall() {
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getJsCall();
     }
 
     private static JsCall call(String methodName, Object... arguments) {

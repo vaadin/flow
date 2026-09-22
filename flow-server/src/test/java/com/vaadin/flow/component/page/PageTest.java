@@ -74,10 +74,7 @@ class PageTest {
 
         mockUI.getPage().executeJs(TestPageJs.class).showGreeting("Hello");
 
-        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, invocations.size());
-        JavaScriptInvocation invocation = invocations.get(0).getInvocation();
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
         assertEquals(
                 new JsCall(TestPageJs.class, "showGreeting", List.of("Hello")),
                 invocation.getJsCall());
@@ -588,7 +585,7 @@ class PageTest {
         assertEquals(
                 new JsCall(Page.PageJs.class, "setColorScheme",
                         List.of("dark", "dark")),
-                onlyScheduledCall(mockUI),
+                mockUI.onlyScheduledJsCall(),
                 "the theme and the color scheme should be set to 'dark'");
         assertEquals(ColorScheme.Value.DARK, mockUI.getPage().getColorScheme());
     }
@@ -604,7 +601,7 @@ class PageTest {
         assertEquals(
                 new JsCall(Page.PageJs.class, "setColorScheme",
                         List.of("light-dark", "light dark")),
-                onlyScheduledCall(mockUI));
+                mockUI.onlyScheduledJsCall());
     }
 
     @Test
@@ -619,18 +616,25 @@ class PageTest {
             assertEquals(
                     new JsCall(Page.PageJs.class, "resetColorScheme",
                             List.of()),
-                    onlyScheduledCall(mockUI), "for " + value);
+                    mockUI.onlyScheduledJsCall(), "for " + value);
             assertEquals(ColorScheme.Value.NORMAL,
                     mockUI.getPage().getColorScheme());
         }
     }
 
-    /** The only call of declared JavaScript that the page scheduled. */
-    private static JsCall onlyScheduledCall(MockUI mockUI) {
-        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, invocations.size());
-        return invocations.get(0).getInvocation().getJsCall();
+    @Test
+    void settingAndClearingTheColorScheme_declareTheirOwnJavaScript() {
+        // The two are told apart by the method that was called, so what each
+        // declares is what is left to get wrong
+        MockUI mockUI = MockUI.createUI();
+
+        mockUI.getPage().setColorScheme(ColorScheme.Value.DARK);
+        assertTrue(mockUI.onlyScheduledJsCall().getExpression()
+                .contains("setAttribute('theme', $0)"));
+
+        mockUI.getPage().setColorScheme(null);
+        assertTrue(mockUI.onlyScheduledJsCall().getExpression()
+                .contains("removeAttribute('theme')"));
     }
 
     @Test
