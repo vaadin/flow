@@ -70,6 +70,12 @@
       <artifactId>flow-polymer2lit</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-generic</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <!-- Needed for lambdas in Mojos -->
