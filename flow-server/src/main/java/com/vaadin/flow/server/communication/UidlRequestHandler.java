@@ -36,7 +36,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.js.JsCall;
@@ -403,10 +402,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         ArrayNode invocation = JacksonUtils.createArrayNode();
         invocation.add(location);
         // The client applies the function to the parameter that follows the
-        // arguments of the call. The declared JavaScript addresses the
-        // browser's history rather than an element, so what it is applied to
-        // only has to be something that is always there.
-        invocation.add(JacksonCodec.encodeWithTypeInfo(ui.getElement()));
+        // arguments of the call, and this call has nothing to run on: the
+        // declared JavaScript addresses the browser's history rather than an
+        // element, the same way page level JavaScript does.
+        invocation.addNull();
         invocation.add(asConstant(ui, uidl,
                 UidlWriter.functionConstant(location.startsWith("http")
                         ? CORRECTED_LOCATION_FUNCTION

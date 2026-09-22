@@ -673,9 +673,8 @@ class PageTest {
 
         assertEquals("window.method($0)", invocation.getExpression(),
                 "the declared expression should not be wrapped, since the generated function is what runs");
-        assertEquals(List.of("foo", mockUI.getElement()),
-                invocation.getParameters(),
-                "the arguments should be followed by the element to apply the function to");
+        assertEquals(Arrays.asList("foo", null), invocation.getParameters(),
+                "a page call has nothing to run on, so nothing should follow the arguments");
         assertEquals(new JsCall(PageJs.class, "method", List.of("foo")),
                 invocation.getJsCall());
     }

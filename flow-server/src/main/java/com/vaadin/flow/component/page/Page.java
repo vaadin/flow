@@ -428,15 +428,15 @@ public class Page implements Serializable {
     }
 
     /**
-     * Schedules a call made through a JavaScript definition. The client applies
-     * the function of the bundle to the parameter that follows the arguments of
-     * the call, which is the UI's own element here: JavaScript declared for the
-     * page addresses the window rather than an element, so what it is applied
-     * to only has to be something that is always there.
+     * Schedules a call made through a JavaScript definition. A page call has
+     * nothing to run its function on, and says so by putting nothing where a
+     * call made on an element puts the element: the client applies the function
+     * to it either way, so page JavaScript gets no <code>this</code> and works
+     * on globals, which is what page level JavaScript does anyway.
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
         List<Object> parameters = new ArrayList<>(call.arguments());
-        parameters.add(ui.getElement());
+        parameters.add(null);
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(call,
                 call.getExpression(), parameters.toArray());
