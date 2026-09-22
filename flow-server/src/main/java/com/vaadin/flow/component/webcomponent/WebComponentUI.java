@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -34,7 +35,10 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
@@ -314,15 +318,13 @@ public class WebComponentUI extends UI {
     }
 
     private void addAttributes(String tag, Map<String, String> attributes) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("var elements = document.querySelectorAll('").append(tag)
-                .append("');")
-                .append("for (let i = 0; i < elements.length; i++) {");
-        attributes.forEach((attribute, value) -> builder
-                .append("elements[i].setAttribute('").append(attribute)
-                .append("', '").append(value).append("');"));
-        builder.append("}");
-        getPage().executeJs(builder.toString());
+        // The tag and the attributes travel as values rather than as
+        // JavaScript, so a value carrying a quote cannot end the string it was
+        // written into
+        ObjectNode attributeJson = JacksonUtils.createObjectNode();
+        attributes.forEach(attributeJson::put);
+        getPage().executeJs(ThemeAttributesJs.class).setAttributes(tag,
+                attributeJson);
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
@@ -393,5 +395,25 @@ public class WebComponentUI extends UI {
             Objects.requireNonNull(identifier);
             return Optional.ofNullable(cache.get(identifier));
         }
+    }
+
+    /**
+     * How the attributes a theme asks for reach every exported web component on
+     * an embedding page, as a JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ThemeAttributesJs extends Serializable {
+
+        /**
+         * Sets the given attributes on every element of the given tag.
+         *
+         * @param tag
+         *            the tag of the elements to set the attributes on
+         * @param attributes
+         *            the attributes to set, by name
+         */
+        @JsExpression("document.querySelectorAll($0).forEach(element => Object.entries($1).forEach(([name, value]) => element.setAttribute(name, value)));")
+        void setAttributes(String tag, ObjectNode attributes);
     }
 }

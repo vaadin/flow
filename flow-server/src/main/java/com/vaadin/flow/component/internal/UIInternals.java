@@ -78,6 +78,8 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -953,27 +955,16 @@ public class UIInternals implements Serializable {
     public void setTitle(String title) {
         assert title != null;
 
-        pendingTitleUpdateCanceler = ui.getPage()
-                .executeJs(generateTitleScript().stripIndent(), title);
-
-        this.title = title;
-    }
-
-    private String generateTitleScript() {
-        String setTitleScript = """
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """;
+        TitleJs titleJs = ui.getPage().executeJs(TitleJs.class);
         if (getSession().getConfiguration().isReactEnabled()) {
             // For react-router we should wait for navigation to finish
             // before updating the title.
-            setTitleScript = String.format(
-                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
-                    setTitleScript);
+            pendingTitleUpdateCanceler = titleJs.setTitleAfterNavigation(title);
+        } else {
+            pendingTitleUpdateCanceler = titleJs.setTitle(title);
         }
-        return setTitleScript;
+
+        this.title = title;
     }
 
     /**
@@ -2128,5 +2119,52 @@ public class UIInternals implements Serializable {
         terminated.forEach(transfer -> getLogger().warn(
                 "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
                 ui.getUIId(), transfer.getDescription()));
+    }
+
+    /**
+     * How the title of the page is set, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface TitleJs extends Serializable {
+
+        /**
+         * What setting the title does, on its own and inside the wait. The
+         * leading indentation is part of it, so that what a browser runs is the
+         * same as before this was declared rather than built.
+         */
+        String SET_TITLE = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+
+        /**
+         * Sets the title of the page.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression(SET_TITLE)
+        PendingJavaScriptResult setTitle(String title);
+
+        /**
+         * Sets the title of the page once the client side router has finished
+         * navigating, so that the title of the page it navigated away from is
+         * not the one that sticks.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
+                + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
+        PendingJavaScriptResult setTitleAfterNavigation(String title);
     }
 }
