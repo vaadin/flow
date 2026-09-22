@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -635,6 +637,29 @@ class VaadinSessionTest {
         TestComponent testComponent = new TestComponent();
         ui.add(testComponent);
         return testComponent;
+    }
+
+    @Test
+    void getPushId_readFromAnotherThread_idIsReturnedWithoutLockCheck()
+            throws Exception {
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
+
+        String pushId = session.getPushId();
+        assertNotNull(pushId);
+
+        // A thread that has not locked the session must be able to read the
+        // push id, as the push request is validated against it before the
+        // session is locked
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            assertEquals(pushId, executor.submit(session::getPushId).get(),
+                    "The push id should be readable without the session lock");
+        } finally {
+            executor.shutdown();
+        }
     }
 
     @Test

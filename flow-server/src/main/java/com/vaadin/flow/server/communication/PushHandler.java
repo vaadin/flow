@@ -153,18 +153,8 @@ public class PushHandler {
 
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
-        VaadinSession session = ui.getSession();
-        String requestToken = resource.getRequest()
-                .getParameter(ApplicationConstants.PUSH_ID_PARAMETER);
-        if (!isPushIdValid(session, requestToken)) {
-            getLogger().warn(
-                    "Invalid identifier in new connection received from {}",
-                    resource.getRequest().getRemoteHost());
-            // Refresh on client side, create connection just for
-            // sending a message
-            sendRefreshAndDisconnect(resource);
-            return;
-        }
+        // The push id has already been validated in callWithUi, before the
+        // session was locked
 
         suspend(resource);
 
@@ -351,6 +341,20 @@ public class PushHandler {
                 return;
             }
             cleanDisconnectedUuidBuffer(resource);
+
+            if (callback == establishCallback && !isPushIdValid(session,
+                    req.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))) {
+                // Reject before locking the session so that a request that is
+                // not allowed to open a connection cannot compete for the lock
+                // with the legitimate requests of that session
+                getLogger().warn(
+                        "Invalid identifier in new connection received from {}",
+                        req.getRemoteHost());
+                // Refresh on client side, create connection just for
+                // sending a message
+                sendRefreshAndDisconnect(resource);
+                return;
+            }
 
             UI ui = null;
             session.lock();
