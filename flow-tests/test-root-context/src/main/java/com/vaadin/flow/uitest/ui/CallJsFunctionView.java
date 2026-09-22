@@ -49,9 +49,10 @@ public class CallJsFunctionView extends AbstractDivView {
 
         add(target, result);
 
-        add(createButton("Call with arguments", "call", event -> target
-                .getElement().callJsFunction("join", "a", 1, true)
-                .then(String.class, result::setText)));
+        add(createButton("Call with arguments", "call",
+                event -> target.getElement()
+                        .callJsFunction("join", "a", 1, true)
+                        .then(String.class, result::setText)));
 
         add(createButton("Call through a property", "call-on-property",
                 event -> target.getElement()
