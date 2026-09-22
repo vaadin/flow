@@ -44,6 +44,9 @@ class JsCallTest {
 
         @JsExpression("this.shout($0, ...$1)")
         void shout(String greeting, Object... names);
+
+        @JsExpression("this.count(...$0)")
+        void count(int... values);
     }
 
     private static class Greeter implements GreeterJs {
@@ -70,6 +73,11 @@ class JsCallTest {
         @Override
         public void shout(String greeting, Object... names) {
             greetings.add(greeting + " " + Arrays.toString(names));
+        }
+
+        @Override
+        public void count(int... values) {
+            greetings.add(Arrays.toString(values));
         }
     }
 
@@ -155,6 +163,20 @@ class JsCallTest {
 
         assertEquals(List.of("Hello [Alice, Bob]"), greeter.greetings,
                 "while Java should get the trailing arguments packed, as it declared them");
+    }
+
+    @Test
+    void variadicCall_primitiveTail_flattensToBoxedValues() {
+        // Nothing says a declaration has to collect its arguments as objects,
+        // and the client is sent one encodable value per argument either way
+        JsCall call = call("count", new int[] { 1, 2, 3 });
+        Greeter greeter = new Greeter();
+
+        assertEquals(List.of(1, 2, 3), call.flattenArguments());
+
+        call.invokeOn(greeter);
+
+        assertEquals(List.of("[1, 2, 3]"), greeter.greetings);
     }
 
     @Test

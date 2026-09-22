@@ -28,6 +28,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Hands out implementations of {@link JsDefinition} interfaces, which turn a
@@ -41,6 +42,14 @@ import com.vaadin.flow.function.SerializableFunction;
  * call on the element the implementation was obtained from.
  */
 public final class JsDefinitionProxy {
+
+    /**
+     * The JavaScript definitions that have been checked and can be implemented,
+     * so that the check is one lookup per call rather than a walk of what the
+     * interface declares.
+     */
+    private static final ReflectionCache<Object, Boolean> CHECKED = new ReflectionCache<>(
+            JsDefinitionProxy::check);
 
     private JsDefinitionProxy() {
         // Only static members
@@ -69,6 +78,25 @@ public final class JsDefinitionProxy {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
         Objects.requireNonNull(runner, "Runner cannot be null");
+        // What an interface declares does not change while it is loaded, so it
+        // is checked the first time an implementation of it is asked for. A
+        // call of a component's client side connector goes through here often
+        // enough that checking it again for each of them shows. A type that
+        // does not pass is not cached, and is refused again the next time.
+        CHECKED.get(definitionType);
+        return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
+                new Class<?>[] { definitionType },
+                new JsDefinitionHandler(runner, definitionType));
+    }
+
+    /**
+     * Checks that the given type is a JavaScript definition whose every method
+     * can be answered, which is what makes it usable through a proxy.
+     *
+     * @throws IllegalArgumentException
+     *             if it is not
+     */
+    private static Boolean check(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
             throw new IllegalArgumentException(
                     definitionType.getName() + " is not an interface");
@@ -79,9 +107,7 @@ public final class JsDefinitionProxy {
                     + " collect its JavaScript into the bundle");
         }
         checkMethods(definitionType);
-        return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
-                new Class<?>[] { definitionType },
-                new JsDefinitionHandler(runner, definitionType));
+        return Boolean.TRUE;
     }
 
     /**
