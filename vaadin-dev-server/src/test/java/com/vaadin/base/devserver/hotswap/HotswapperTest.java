@@ -27,6 +27,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
@@ -1607,6 +1608,11 @@ class HotswapperTest {
 
     static class RefreshTestingUI extends MockUI {
 
+        private static final String REFRESH_EVENT_NAME = "vaadin-refresh-ui";
+
+        private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
+                .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
+                        + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
         private Boolean refreshRouteChainRequested;
 
         private final Page pageSpy;
@@ -1614,18 +1620,18 @@ class HotswapperTest {
         public RefreshTestingUI(VaadinSession session) {
             super(session);
             pageSpy = Mockito.spy(super.getPage());
-            // Intercept the declared JavaScript the page is asked to run, to
-            // check whether the ui refresh event dispatch was requested and
-            // what it was asked to refresh.
-            Mockito.doAnswer(i -> JsDefinitionProxy
-                    .create(i.getArgument(0, Class.class), call -> {
-                        if (call.definitionType() == Hotswapper.RefreshJs.class
-                                && "refreshUi".equals(call.methodName())) {
-                            refreshRouteChainRequested = (Boolean) call
-                                    .arguments().get(0);
-                        }
-                        return null;
-                    })).when(pageSpy).executeJs(Mockito.any(Class.class));
+            // Intercept javascript executions to check if the custom ui refresh
+            // event dispatch has been registered.
+            Mockito.doAnswer(i -> {
+                String expression = i.getArgument(0);
+                Matcher matcher = FIRE_UI_REFRESH_EVENT.matcher(expression);
+                if (matcher.matches()) {
+                    refreshRouteChainRequested = Boolean
+                            .parseBoolean(matcher.group(1));
+                }
+                return null;
+            }).when(pageSpy).executeJs(Mockito.anyString(),
+                    Mockito.any(Object[].class));
         }
 
         @Override

@@ -45,9 +45,6 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.util.Assert;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.js.JsDefinition;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
@@ -151,28 +148,25 @@ public class AuthenticationContext {
             // invalidation. Switching to WEBSOCKET_XHR for a single request
             // to do the logout.
             ui.getPushConfiguration().setTransport(Transport.WEBSOCKET_XHR);
-            ui.getPage().executeJs(RoundTripJs.class).roundTrip()
-                    .then(ignored -> {
-                        LOGGER.debug(
-                                "Switched to WEBSOCKET_XHR transport mode successfully for logout operation.");
-                        ui.getPushConfiguration()
-                                .setTransport(Transport.WEBSOCKET);
-                        doLogout(ui);
-                    }, exception -> {
-                        LOGGER.debug(
-                                "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. "
-                                        + "Logout is performed anyway even if browser shows 'disconnected' message and browser console has WebSocket errors. "
-                                        + "Received exception: {}",
-                                exception);
-                        ui.getPushConfiguration()
-                                .setTransport(Transport.WEBSOCKET);
-                        doLogout(ui);
-                    });
+            ui.getPage().executeJs("return true").then(ignored -> {
+                LOGGER.debug(
+                        "Switched to WEBSOCKET_XHR transport mode successfully for logout operation.");
+                ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+                doLogout(ui);
+            }, exception -> {
+                LOGGER.debug(
+                        "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. "
+                                + "Logout is performed anyway even if browser shows 'disconnected' message and browser console has WebSocket errors. "
+                                + "Received exception: {}",
+                        exception);
+                ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+                doLogout(ui);
+            });
         } else if (VaadinRequest.getCurrent() == null) {
             // Logout started from a background thread, force client to send
             // a request
-            ui.getPage().executeJs(RoundTripJs.class).roundTrip()
-                    .then(ignored -> doLogout(ui), error -> doLogout(ui));
+            ui.getPage().executeJs("return true").then(ignored -> doLogout(ui),
+                    error -> doLogout(ui));
         } else {
             doLogout(ui);
         }
@@ -537,21 +531,4 @@ public class AuthenticationContext {
         }
     }
 
-    /**
-     * How the server makes the browser send one more request, as a JavaScript
-     * definition for
-     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
-     */
-    @JsDefinition
-    public interface RoundTripJs extends Serializable {
-
-        /**
-         * Answers as soon as it runs, which is all this is for: the request
-         * carrying the answer is the point, not the value.
-         *
-         * @return the pending answer
-         */
-        @JsExpression("return true")
-        PendingJavaScriptResult roundTrip();
-    }
 }

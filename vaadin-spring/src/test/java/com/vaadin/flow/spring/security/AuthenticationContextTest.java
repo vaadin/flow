@@ -53,7 +53,6 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -472,29 +471,25 @@ class AuthenticationContextTest {
         mockPush(ui, Transport.WEBSOCKET);
         Page page = Mockito.mock(Page.class);
         Mockito.when(ui.getPage()).thenReturn(page);
-        // The round trip is asked for through declared JavaScript, and the
-        // logout continues once the browser has answered
-        PendingJavaScriptResult answered = new PendingJavaScriptResult() {
-            @Override
-            public boolean cancelExecution() {
-                return false;
-            }
+        Mockito.when(page.executeJs(Mockito.anyString()))
+                .thenReturn(new PendingJavaScriptResult() {
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
 
-            @Override
-            public boolean isSentToBrowser() {
-                return true;
-            }
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return true;
+                    }
 
-            @Override
-            public void then(SerializableConsumer<JsonNode> resultHandler,
-                    SerializableConsumer<String> errorHandler) {
-                resultHandler.accept(null);
-            }
-        };
-        Mockito.when(page.executeJs(Mockito.any(Class.class)))
-                .thenAnswer(invocation -> JsDefinitionProxy.create(
-                        invocation.getArgument(0, Class.class),
-                        call -> answered));
+                    @Override
+                    public void then(
+                            SerializableConsumer<JsonNode> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        resultHandler.accept(null);
+                    }
+                });
         try {
             CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
             CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
