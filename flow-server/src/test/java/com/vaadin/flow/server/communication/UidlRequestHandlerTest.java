@@ -34,6 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.CustomizedSystemMessages;
@@ -297,10 +298,20 @@ class UidlRequestHandlerTest {
                 functionOf(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
                         + uidl);
+
+        // The client applies the function to the parameter that follows the
+        // arguments of the call, and refuses to run one whose parameters do
+        // not add up, so the whole invocation is pinned here
+        ArrayNode invocation = (ArrayNode) uidl.get("execute").get(1);
+        assertEquals(3, invocation.size(),
+                "the invocation should carry the argument, the element and what it runs: "
+                        + invocation);
         assertEquals("http://localhost:9998/#!away",
-                ((ArrayNode) uidl.get("execute").get(1)).get(0).asString(),
-                "the corrected location should be the argument of the call: "
-                        + uidl);
+                invocation.get(0).asString(),
+                "the corrected location should be the argument of the call");
+        assertEquals(JacksonCodec.encodeWithTypeInfo(ui.getElement()),
+                invocation.get(1),
+                "the element the function is applied to should follow the argument");
     }
 
     @Test

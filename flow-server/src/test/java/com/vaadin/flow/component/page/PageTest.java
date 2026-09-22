@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +33,13 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -44,6 +50,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -651,5 +658,51 @@ class PageTest {
 
         page.setColorScheme(ColorScheme.Value.NORMAL);
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().executeJs(PageJs.class).method("foo");
+
+        List<PendingJavaScriptInvocation> pendingJs = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals("window.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", mockUI.getElement()),
+                invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsCall(PageJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
+    }
+
+    @Test
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
+        MockUI mockUI = new MockUI();
+
+        PendingJavaScriptResult result = mockUI.getPage()
+                .executeJs(PageResultJs.class).readValue();
+
+        List<PendingJavaScriptInvocation> pendingJs = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the page scheduled");
+    }
+
+    @JsDefinition
+    interface PageJs extends Serializable {
+        @JsExpression("window.method($0)")
+        void method(String value);
+    }
+
+    @JsDefinition
+    interface PageResultJs extends Serializable {
+        @JsExpression("return window.value;")
+        PendingJavaScriptResult readValue();
     }
 }

@@ -37,6 +37,8 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
@@ -756,5 +758,35 @@ class UIInternalsTest {
         Mockito.verify(session).getService();
         Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
         assertEquals(config, result);
+    }
+
+    @Test
+    void containsPendingJsCall_recognizesTheLocationReplaceOfEitherRouter() {
+        // Before scheduling a location replace the router asks whether it has
+        // already scheduled one. It recognizes the call rather than the text
+        // of the script, so rewording the declaration cannot quietly stop the
+        // guard from matching.
+        History history = new History(ui);
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+
+        assertFalse(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "nothing should be pending before anything is scheduled");
+
+        configuration.setReactEnabled(false);
+        history.replaceState(null, "somewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "the replace the router scheduled should be recognized");
+
+        configuration.setReactEnabled(true);
+        history.replaceState(null, "elsewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing"),
+                "the replace the React router scheduled should be recognized");
     }
 }

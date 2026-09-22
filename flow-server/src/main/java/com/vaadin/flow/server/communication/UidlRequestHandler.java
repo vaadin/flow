@@ -92,14 +92,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * is at, for a v7 UIDL that named no location to go with it. The hash is
      * the parameter of the call rather than part of the JavaScript.
      */
-    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));";
+    private static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));";
 
     /**
      * The JavaScript that pushes a corrected location, which the v7 UIDL gave
      * in full. The location is the parameter of the call rather than part of
      * the JavaScript.
      */
-    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, '', $0));";
+    private static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, '', $0));";
 
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
