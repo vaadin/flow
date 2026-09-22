@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -220,6 +221,37 @@ class PageTest {
                 .dumpPendingJavaScriptInvocations().size();
         assertEquals(1, jsInvocations);
         assertEquals(2, callbackInvocations.get());
+    }
+
+    @Test
+    void reload_runsTheDeclaredJavaScript() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().reload();
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(new JsCall(Page.PageJs.class, "reload", List.of()),
+                invocations.get(0).getInvocation().getJsCall());
+    }
+
+    @Test
+    void fetchPageDirection_consumerReceivesTheDirection() {
+        MockUI mockUI = new MockUI();
+        AtomicReference<Direction> received = new AtomicReference<>();
+
+        mockUI.getPage().fetchPageDirection(received::set);
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(new JsCall(Page.PageJs.class, "readDirection", List.of()),
+                invocations.get(0).getInvocation().getJsCall(),
+                "the direction should be asked for through the declared JavaScript");
+
+        invocations.get(0).complete(JacksonUtils.createNode("rtl"));
+        assertEquals(Direction.RIGHT_TO_LEFT, received.get());
     }
 
     @Test
