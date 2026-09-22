@@ -37,6 +37,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.internal.UiConnectionJs;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -2016,7 +2017,6 @@ public class UI extends Component
         return getInternals().getActiveRouterTargetsChain();
     }
 
-    static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = """
             const url = new URL($0, document.baseURI);
             url["clientNavigation"] = true;
@@ -2293,11 +2293,13 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        internals.getWrapperElement().executeJs("this.serverPaused()");
+        internals.getWrapperElement().executeJs(UiConnectionJs.class)
+                .serverPaused();
     }
 
     private void serverConnected(boolean cancel) {
-        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().executeJs(UiConnectionJs.class)
+                .serverConnected(cancel);
     }
 
     private void navigateToPlaceholder(Location location) {

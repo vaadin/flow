@@ -28,6 +28,8 @@ import tools.jackson.databind.node.ValueNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
@@ -42,10 +44,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
  * @since 2.0
  */
 public final class WebComponent<C extends Component> implements Serializable {
-    private static final String UPDATE_PROPERTY = "this"
-            + "._updatePropertyFromServer($0, $1);";
-    private static final String UPDATE_PROPERTY_NULL = "this"
-            + "._updatePropertyFromServer($0, null);";
     private static final String UPDATE_PROPERTY_FORMAT = "this"
             + "._updatePropertyFromServer($0, %s);";
     private static final String CUSTOM_EVENT = "this.dispatchEvent(new "
@@ -211,30 +209,31 @@ public final class WebComponent<C extends Component> implements Serializable {
     private void setProperty(String propertyName, Object value) {
 
         if (value == null) {
-            componentHost.executeJs(UPDATE_PROPERTY_NULL, propertyName);
+            componentHost.executeJs(UpdatePropertyJs.class)
+                    .updateProperty(propertyName, null);
         }
 
         if (value instanceof Integer) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Integer) value);
+            componentHost.executeJs(UpdatePropertyJs.class)
+                    .updateProperty(propertyName, (Integer) value);
         } else if (value instanceof Double) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Double) value);
+            componentHost.executeJs(UpdatePropertyJs.class)
+                    .updateProperty(propertyName, (Double) value);
         } else if (value instanceof String) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (String) value);
+            componentHost.executeJs(UpdatePropertyJs.class)
+                    .updateProperty(propertyName, (String) value);
         } else if (value instanceof Boolean) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Boolean) value);
+            componentHost.executeJs(UpdatePropertyJs.class)
+                    .updateProperty(propertyName, (Boolean) value);
         } else if (value instanceof IntNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).intValue());
+            componentHost.executeJs(UpdatePropertyJs.class).updateProperty(
+                    propertyName, ((ValueNode) value).intValue());
         } else if (value instanceof NumericNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).doubleValue());
+            componentHost.executeJs(UpdatePropertyJs.class).updateProperty(
+                    propertyName, ((ValueNode) value).doubleValue());
         } else if (value instanceof ValueNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).asString());
+            componentHost.executeJs(UpdatePropertyJs.class).updateProperty(
+                    propertyName, ((ValueNode) value).asString());
         } else if (value instanceof BaseJsonNode) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow
@@ -242,5 +241,25 @@ public final class WebComponent<C extends Component> implements Serializable {
             componentHost.executeJs(
                     String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
         }
+    }
+
+    /**
+     * How a property value reaches the exported web component, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface UpdatePropertyJs extends Serializable {
+
+        /**
+         * Writes the value the server holds to the property of the web
+         * component.
+         *
+         * @param propertyName
+         *            the name of the property to write
+         * @param value
+         *            the value to write, or <code>null</code> to clear it
+         */
+        @JsExpression("this._updatePropertyFromServer($0, $1);")
+        void updateProperty(String propertyName, Object value);
     }
 }

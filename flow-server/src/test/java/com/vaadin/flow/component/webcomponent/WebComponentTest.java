@@ -17,7 +17,6 @@ package com.vaadin.flow.component.webcomponent;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -143,26 +142,23 @@ class WebComponentTest {
         WebComponent<Component> webComponent = new WebComponent<>(binding,
                 element);
 
+        // Each supported type reaches the client through the declared
+        // JavaScript rather than through an expression built here
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element, Mockito.times(1))
+                .executeJs(WebComponent.UpdatePropertyJs.class);
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element, Mockito.times(2))
+                .executeJs(WebComponent.UpdatePropertyJs.class);
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element, Mockito.times(3))
+                .executeJs(WebComponent.UpdatePropertyJs.class);
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element, Mockito.times(4))
+                .executeJs(WebComponent.UpdatePropertyJs.class);
         webComponent.setProperty(jsonNodeConfiguration,
                 (ValueNode) JacksonUtils.createNode(true));
-        verify(element, Mockito.times(5)).executeJs(
-                ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(Object[].class));
+        verify(element, Mockito.times(5))
+                .executeJs(WebComponent.UpdatePropertyJs.class);
     }
 }

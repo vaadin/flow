@@ -35,6 +35,8 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
@@ -238,7 +240,7 @@ public class WebComponentUI extends UI {
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
                 elementId);
-        child.executeJs("$0.serverConnected()");
+        child.executeJs(EmbeddedConnectionJs.class).serverConnected();
     }
 
     private boolean isConfigurationAnnotated(
@@ -393,5 +395,20 @@ public class WebComponentUI extends UI {
             Objects.requireNonNull(identifier);
             return Optional.ofNullable(cache.get(identifier));
         }
+    }
+
+    /**
+     * How an embedded component learns that the server has taken it over, as a
+     * JavaScript definition for {@link Element#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface EmbeddedConnectionJs extends Serializable {
+
+        /**
+         * Tells the embedded component that the server side of it is in place,
+         * so that it can start behaving as a connected one.
+         */
+        @JsExpression("this.serverConnected()")
+        void serverConnected();
     }
 }
