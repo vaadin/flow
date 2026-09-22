@@ -194,7 +194,7 @@ class NodeUpdaterTest {
         Set<String> expectedDependencies = new HashSet<>();
         // Flow ships the TypeScript compiler it needs under a name of its own
         // so that it never replaces the application's own typescript version.
-        expectedDependencies.add("@vaadin/typescript");
+        expectedDependencies.add("@typescript/native");
         return expectedDependencies;
     }
 

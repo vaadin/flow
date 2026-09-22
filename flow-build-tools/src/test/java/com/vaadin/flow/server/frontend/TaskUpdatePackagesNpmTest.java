@@ -158,7 +158,7 @@ class TaskUpdatePackagesNpmTest {
     void npmIsInUse_applicationPinsOwnTypescript_versionLeftAloneAndNotOverridden()
             throws IOException {
         // Flow ships the TypeScript it needs under a name of its own
-        // (@vaadin/typescript), so the application keeps whatever typescript
+        // (@typescript/native), so the application keeps whatever typescript
         // version it declares, e.g. one that @typescript-eslint accepts.
         createBasicVaadinVersionsJson();
 
