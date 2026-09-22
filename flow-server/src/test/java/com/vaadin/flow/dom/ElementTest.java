@@ -2704,6 +2704,25 @@ class ElementTest extends AbstractNodeTest {
                 "the result of the call should be the invocation the element scheduled");
     }
 
+    @Test
+    void executeJsWithDefinition_variadicMethod_trailingArgumentsSentOneByOne() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).methodWithMany("foo", "bar", "baz");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals(List.of("foo", "bar", "baz", element),
+                invocation.getParameters(),
+                "a trailing argument should reach the client on its own, so that the generated function collects it into its rest parameter");
+    }
+
     @JsDefinition
     interface ResultJs extends Serializable {
         @JsExpression("return this.value;")
@@ -2714,6 +2733,9 @@ class ElementTest extends AbstractNodeTest {
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test

@@ -62,6 +62,30 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testVariadicJsDefinition() {
+        open();
+
+        getButton("variadicButton").click();
+
+        // Each argument reaches the browser on its own, and the generated
+        // function collects the ones that follow the fixed parameter
+        WebElement result = waitUntil(
+                d -> findElement(By.id("variadicResult")));
+        Assert.assertEquals("Variadic call: a-1-true-b", result.getText());
+    }
+
+    @Test
+    public void testVariadicJsDefinitionWithoutTrailingArguments() {
+        open();
+
+        getButton("variadicNoArgumentsButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("variadicResult")));
+        Assert.assertEquals("Variadic call: a", result.getText());
+    }
+
+    @Test
     public void testBeanSerialization() {
         open();
 

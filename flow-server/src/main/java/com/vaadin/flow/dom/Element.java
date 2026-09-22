@@ -2034,7 +2034,7 @@ public class Element extends Node<Element> {
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
         return scheduleJavaScriptInvocation(call, call.getExpression(),
-                withElementAsLastParameter(call.arguments().toArray()));
+                call.parametersFor(this));
     }
 
     private Object[] withElementAsLastParameter(Object[] parameters) {
@@ -2396,14 +2396,14 @@ public class Element extends Node<Element> {
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
-
-        // Use setTimeout to work on newly created elements
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        // No options is not the same call as an empty options object, so the
+        // browser is handed the one argument or none, as it was written here
         if (json == null) {
-            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
+            scroll.scrollIntoView();
         } else {
-            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
+            scroll.scrollIntoView(json);
         }
-
         return getSelf();
     }
 
@@ -2421,12 +2421,45 @@ public class Element extends Node<Element> {
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // for an unknown reason, needs to be called deferred to work on a newly
-        // created element
-        String options = scrollOptions == null ? "" : scrollOptions.toJson();
-
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        if (scrollOptions == null) {
+            scroll.scrollIntoView();
+        } else {
+            // The options are written as JavaScript by a class that is on its
+            // way out, and what the browser is sent is a value rather than an
+            // expression, so they are read back into the object they were
+            // built from
+            scroll.scrollIntoView(
+                    JacksonUtils.readTree(scrollOptions.toJson()));
+        }
         return getSelf();
+    }
+
+    /**
+     * The JavaScript behind {@link #scrollIntoView(ScrollIntoViewOption...)},
+     * as a JavaScript definition for {@link #executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ScrollIntoViewJs extends Serializable {
+
+        /**
+         * Scrolls the element into view the way the browser does by default,
+         * deferred so that it also works on an element that was created in the
+         * same response.
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView(), 0)")
+        void scrollIntoView();
+
+        /**
+         * Scrolls the element into view with the given options, deferred so
+         * that it also works on an element that was created in the same
+         * response.
+         *
+         * @param options
+         *            the options of the browser's <code>scrollIntoView</code>
+         *            function
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
+        void scrollIntoView(ObjectNode options);
     }
 }

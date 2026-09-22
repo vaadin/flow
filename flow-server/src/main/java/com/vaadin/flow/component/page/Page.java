@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,14 +33,12 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -367,35 +364,10 @@ public class Page implements Serializable {
      *             answered
      */
     public <T> T executeJs(Class<T> definitionType) {
-        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
-    }
-
-    /**
-     * Schedules a call made through a JavaScript definition, the way an
-     * expression is scheduled, so that the two reach the client in the order
-     * they were made. The parameters are the arguments of the call and then
-     * nothing to run it on, which is the slot the element goes into for a call
-     * made on one: page JavaScript has no <code>this</code>.
-     */
-    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        List<Object> parameters = new ArrayList<>(call.arguments());
-        parameters.add(null);
-        return schedule(new JavaScriptInvocation(call, call.getExpression(),
-                parameters.toArray()));
-    }
-
-    /**
-     * Queues an invocation for the client, owned by the root node of the state
-     * tree, which is what makes it an invocation of this page rather than of
-     * anything in it.
-     */
-    private PendingJavaScriptResult schedule(JavaScriptInvocation invocation) {
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        // Queued the way an expression given to the page is, so that the two
+        // reach the client in the order they were made
+        return JsDefinitionProxy.create(definitionType,
+                ui.getInternals()::addJavaScriptInvocation);
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -446,7 +418,8 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        return schedule(new JavaScriptInvocation(expression, parameters));
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, parameters));
     }
 
     /**

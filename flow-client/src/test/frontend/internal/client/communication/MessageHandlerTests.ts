@@ -464,7 +464,7 @@ describe('MessageHandler', () => {
         // sheet the same message is about to remove, leaving the page with
         // neither. Both the real loader and the real DependencyLoader are wired
         // in, as that dedup is the thing under test.
-        const url = '/stylesheet-swap.css';
+        const url = '/src/test/frontend/stylesheet-swap.css';
         const oldLink = document.createElement('link');
         oldLink.rel = 'stylesheet';
         oldLink.href = url;
@@ -487,8 +487,7 @@ describe('MessageHandler', () => {
           LoadingIndicatorStateHandler: { stopLoading: () => {} },
           ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
           URIResolver: { resolveVaadinUri: (uri: string) => uri },
-          // The swapped URL has no file behind it, so the load fails; the
-          // assertions below are made before it settles either way.
+          // The assertions below are made before the load settles either way
           SystemErrorHandler: { handleError: () => {} }
         });
         // initFromDom: true, as in the browser, so the sheet already on the page
