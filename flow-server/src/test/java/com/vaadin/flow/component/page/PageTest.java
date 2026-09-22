@@ -39,6 +39,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
@@ -153,10 +154,23 @@ class PageTest {
         final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
+            public <T> T executeJs(Class<T> definitionType) {
+                // The details are asked for through declared JavaScript, so
+                // the stub has to answer that call rather than an expression
+                return JsDefinitionProxy.create(definitionType, call -> {
+                    super.executeJs(call.getExpression());
+                    return answerWithDetails();
+                });
+            }
+
+            @Override
             public PendingJavaScriptResult executeJs(String expression,
                     Object... params) {
                 super.executeJs(expression, params);
+                return answerWithDetails();
+            }
 
+            private PendingJavaScriptResult answerWithDetails() {
                 return new PendingJavaScriptResult() {
 
                     @Override
@@ -539,11 +553,12 @@ class PageTest {
         MockUI mockUI = new MockUI();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capturedExpression.set(expression);
-                capturedParams.set(parameters);
-                return Mockito.mock(PendingJavaScriptResult.class);
+            public <T> T executeJs(Class<T> definitionType) {
+                return JsDefinitionProxy.create(definitionType, call -> {
+                    capturedExpression.set(call.getExpression());
+                    capturedParams.set(call.arguments().toArray());
+                    return Mockito.mock(PendingJavaScriptResult.class);
+                });
             }
         };
 
@@ -567,11 +582,12 @@ class PageTest {
         MockUI mockUI = new MockUI();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capturedExpression.set(expression);
-                capturedParams.set(parameters);
-                return Mockito.mock(PendingJavaScriptResult.class);
+            public <T> T executeJs(Class<T> definitionType) {
+                return JsDefinitionProxy.create(definitionType, call -> {
+                    capturedExpression.set(call.getExpression());
+                    capturedParams.set(call.arguments().toArray());
+                    return Mockito.mock(PendingJavaScriptResult.class);
+                });
             }
         };
 
@@ -596,10 +612,11 @@ class PageTest {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capturedExpression.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+            public <T> T executeJs(Class<T> definitionType) {
+                return JsDefinitionProxy.create(definitionType, call -> {
+                    capturedExpression.set(call.getExpression());
+                    return Mockito.mock(PendingJavaScriptResult.class);
+                });
             }
         };
 
@@ -620,10 +637,11 @@ class PageTest {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capturedExpression.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+            public <T> T executeJs(Class<T> definitionType) {
+                return JsDefinitionProxy.create(definitionType, call -> {
+                    capturedExpression.set(call.getExpression());
+                    return Mockito.mock(PendingJavaScriptResult.class);
+                });
             }
         };
 
@@ -664,9 +682,9 @@ class PageTest {
 
         Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return Mockito.mock(PendingJavaScriptResult.class);
+            public <T> T executeJs(Class<T> definitionType) {
+                return JsDefinitionProxy.create(definitionType,
+                        call -> Mockito.mock(PendingJavaScriptResult.class));
             }
         };
 

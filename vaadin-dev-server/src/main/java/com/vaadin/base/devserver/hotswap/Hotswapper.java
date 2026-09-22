@@ -47,6 +47,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -587,11 +589,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.debug(
                     "Triggering re-navigation to current route for UIs affected by classes changes.");
             for (UIRefreshStrategy action : uisToRefresh.keySet()) {
-                String triggerEventJS = String.format(
-                        "window.dispatchEvent(new CustomEvent(\"vaadin-refresh-ui\", { detail: { fullRefresh: %s }}));",
-                        action == UIRefreshStrategy.PUSH_REFRESH_CHAIN);
-                uisToRefresh.get(action).forEach(ui -> ui
-                        .access(() -> ui.getPage().executeJs(triggerEventJS)));
+                boolean fullRefresh = action == UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+                uisToRefresh.get(action)
+                        .forEach(ui -> ui.access(
+                                () -> ui.getPage().executeJs(RefreshJs.class)
+                                        .refreshUi(fullRefresh)));
             }
         }
     }
@@ -799,4 +801,24 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         }
     }
 
+    /**
+     * How a browser is told to show the current route again after a class
+     * changed, as a JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface RefreshJs extends Serializable {
+
+        /**
+         * Tells the client to show the current route again.
+         *
+         * @param fullRefresh
+         *            whether the whole chain of routes is refreshed rather than
+         *            only the route itself
+         */
+        @JsExpression("window.dispatchEvent(new CustomEvent(\"vaadin-refresh-ui\", { detail: { fullRefresh: $0 }}));")
+        void refreshUi(boolean fullRefresh);
+    }
 }

@@ -23,6 +23,7 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -58,6 +59,17 @@ class HistoryTest {
             this.expression = expression;
             this.parameters = parameters;
             return null;
+        }
+
+        @Override
+        public <T> T executeJs(Class<T> definitionType) {
+            // What the browser would run and what it is passed, which is what
+            // a call of declared JavaScript carries in place of a script
+            return JsDefinitionProxy.create(definitionType, call -> {
+                this.expression = call.getExpression();
+                this.parameters = call.arguments().toArray();
+                return null;
+            });
         }
     }
 
