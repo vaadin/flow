@@ -934,6 +934,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
             buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
+            buildInfo.remove(DISABLE_PREPARE_FRONTEND_CACHE);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.
             // Thus, resets the premium feature flag and DAU flag before asking
