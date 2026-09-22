@@ -2034,7 +2034,7 @@ public class Element extends Node<Element> {
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
         return scheduleJavaScriptInvocation(call, call.getExpression(),
-                withElementAsLastParameter(call.flattenArguments().toArray()));
+                call.parametersFor(this));
     }
 
     private Object[] withElementAsLastParameter(Object[] parameters) {
