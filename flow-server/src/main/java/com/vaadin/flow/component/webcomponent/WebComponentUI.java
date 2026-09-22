@@ -317,6 +317,7 @@ public class WebComponentUI extends UI {
                 .forEach(config -> addAttributes(config.getTag(), attributes));
     }
 
+    // non-private for testing purposes
     void addAttributes(String tag, Map<String, String> attributes) {
         // The tag and the attributes travel as values rather than as
         // JavaScript, so a value carrying a quote cannot end the string it was
