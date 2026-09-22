@@ -285,4 +285,19 @@ class HistoryTest {
         assertEquals(null, page.parameters[0]);
         assertEquals(".", page.parameters[1], "location should be '.'");
     }
+
+    @Test
+    void navigatingTheHistory_runsTheDeclaredJavaScript() {
+        // The three of them differ only in what they ask the browser for,
+        // which is the JavaScript each declares
+        history.back();
+        assertEquals("history.back()", page.expression);
+
+        history.forward();
+        assertEquals("history.forward()", page.expression);
+
+        history.go(-2);
+        assertEquals("history.go($0)", page.expression);
+        assertEquals(-2, page.parameters[0], "steps should be passed on");
+    }
 }
