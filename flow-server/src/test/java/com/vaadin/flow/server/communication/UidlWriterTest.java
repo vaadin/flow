@@ -236,7 +236,21 @@ class UidlWriterTest {
     private static ObjectNode functionConstant(String expression,
             int argumentCount) {
         ObjectNode constant = JacksonUtils.createObjectNode();
-        constant.put("f", JsCall.functionId(expression, argumentCount));
+        constant.put("f", JsCall.functionId(expression, argumentCount, false));
+        return constant;
+    }
+
+    /**
+     * The constant that names the function of the JavaScript declared for a
+     * variable number of arguments, which carries how many of them a call has
+     * because the function collects them into a rest parameter and does not
+     * report them in its length.
+     */
+    private static ObjectNode variadicFunctionConstant(String expression,
+            int parameterCount, int argumentCount) {
+        ObjectNode constant = JacksonUtils.createObjectNode();
+        constant.put("f", JsCall.functionId(expression, parameterCount, true));
+        constant.put("n", argumentCount);
         return constant;
     }
 
@@ -327,10 +341,37 @@ class UidlWriterTest {
                         + encoded);
     }
 
+    @Test
+    void encodeExecuteJavaScript_variadicCall_sendsHowManyArgumentsItCarries() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { 1, 2 }));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", 1, 2, element);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(
+                nameOfWhatRuns(variadicFunctionConstant(
+                        "this.method($0, ...$1)", 2, 3), constants),
+                encoded.get(encoded.size() - 1).asString(),
+                "the three arguments the call spread should be counted for the client, which cannot read them off the function: "
+                        + encoded + " " + constants);
+    }
+
     @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test
