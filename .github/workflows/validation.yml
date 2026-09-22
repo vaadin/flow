@@ -134,6 +134,8 @@ jobs:
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
@@ -243,6 +245,8 @@ jobs:
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
@@ -398,6 +402,8 @@ jobs:
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
         if: ${{ steps.decide.outputs.run == 'true' }}
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
