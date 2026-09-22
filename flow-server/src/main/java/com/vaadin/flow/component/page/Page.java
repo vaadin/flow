@@ -33,7 +33,6 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -370,26 +369,10 @@ public class Page implements Serializable {
      *             answered
      */
     public <T> T executeJs(Class<T> definitionType) {
-        // Scheduled the way an expression given to the page is, so that the
-        // two reach the client in the order they were made, and run on
-        // nothing in particular
+        // Queued the way an expression given to the page is, so that the two
+        // reach the client in the order they were made
         return JsDefinitionProxy.create(definitionType,
-                call -> schedule(new JavaScriptInvocation(call,
-                        call.getExpression(), call.parametersFor(null))));
-    }
-
-    /**
-     * Queues an invocation for the client, owned by the root node of the state
-     * tree, which is what makes it an invocation of this page rather than of
-     * anything in it.
-     */
-    private PendingJavaScriptResult schedule(JavaScriptInvocation invocation) {
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+                ui.getInternals()::addJavaScriptInvocation);
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -440,7 +423,8 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        return schedule(new JavaScriptInvocation(expression, parameters));
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, parameters));
     }
 
     /**
