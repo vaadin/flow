@@ -22,6 +22,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,8 +77,10 @@ class JsCallTest {
         // The element a call was made on goes in the last place, and a call
         // made on nothing in particular leaves it empty, so a client reads
         // the two the same way
-        assertEquals(Arrays.asList("Hello", "the element"), Arrays.asList(
-                call("showGreeting", "Hello").parametersFor("the element")));
+        Element element = ElementFactory.createDiv();
+
+        assertEquals(Arrays.asList("Hello", element), Arrays
+                .asList(call("showGreeting", "Hello").parametersFor(element)));
         assertEquals(Arrays.asList("Hello", null), Arrays
                 .asList(call("showGreeting", "Hello").parametersFor(null)));
     }

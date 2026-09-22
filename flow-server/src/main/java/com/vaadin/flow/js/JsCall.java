@@ -102,7 +102,7 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets what this call is sent with: its arguments, and then the thing to
+     * Gets what this call is sent with: its arguments, and then the element to
      * run the function on, which the client applies the function to.
      * <p>
      * The element a call was made on goes into that last place, and a call made
@@ -110,11 +110,11 @@ public record JsCall(Class<?> definitionType, String methodName,
      * <code>null</code> there, so a client reads the two the same way.
      *
      * @param runOn
-     *            what to run the function on, or <code>null</code> for nothing
-     *            in particular
+     *            the element to run the function on, or <code>null</code> for
+     *            page JavaScript, which runs on nothing in particular
      * @return the parameters of the call, not <code>null</code>
      */
-    public Object[] parametersFor(@Nullable Object runOn) {
+    public Object[] parametersFor(@Nullable Element runOn) {
         List<Object> parameters = new ArrayList<>(arguments);
         parameters.add(runOn);
         return parameters.toArray();
