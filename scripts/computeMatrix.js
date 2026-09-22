@@ -133,6 +133,8 @@ const moduleWeights = {
   'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-app': { pos: 7, weight: 10 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },

@@ -12,15 +12,16 @@ one shape while the other stayed green:
 |---|---|
 | [test-devloop-spring](test-devloop-spring/README.md) | an application with an entry point of its own: Spring Boot, launched as `java -cp … <MainClass>` |
 | [test-devloop-jetty](test-devloop-jetty/README.md) | a WAR with no entry point, run by the project's own build plugin, with the servlet container nowhere on its classpath |
-| test-devloop-support | everything both of them run: the CLI driver (`VaadinDevCli`), the source patcher (`SourcePatch`), and the ITs themselves, published as a test-jar |
+| [test-devloop-cargo](test-devloop-cargo/README.md) | the same WAR, but deployed: the container is installed and started as a process of its own and handed a packaged copy, rather than serving the module's output in place |
+| test-devloop-support | everything they all run: the CLI driver (`VaadinDevCli`), the source patcher (`SourcePatch`), and the ITs themselves, published as a test-jar |
 
 Each fixture is its own multi-module reactor with a sibling library beside the
 application, because the case worth testing — an edit in a sibling reaching the
-running page — only exists if there is a sibling. The two are laid out
+running page — only exists if there is a sibling. All three are laid out
 identically, down to the module directory names and the fixture files
 (`TaskListView`, `TaskService`, `DueDateFormatter`, `task-list.css`), so that
 the tests which are about the loop rather than about a container can be written
-once and run twice. Those ITs are ordinary classes in `test-devloop-support` -
+once and run in each. Those ITs are ordinary classes in `test-devloop-support` -
 `DevLoopApplyIT`, `DevLoopCssIT`, `DevLoopMultiModuleIT`, `DevLoopLifecycleIT`,
 `DevLoopBrowserIT`, `DevLoopCliContractIT`, `DevLoopDaemonSurvivalIT`,
 `DevLoopDeletionIT`, `DevLoopPomEditIT`, `DevLoopFrontendIT` - test sources
@@ -29,10 +30,14 @@ fixture's failsafe runs them straight out of it with `<dependenciesToScan>`,
 against its own application. No module declares a subclass of them, and the
 support module runs none of them itself (`skipITs`): it has no application to
 drive. What is left in a fixture is only what is true of its own
-shape, in a `DevLoopSpring*IT` or `DevLoopJetty*IT` class of its own. The two run on different ports
-(8899 and 8898) so that neither can take the other's, and neither uses the usual
-`spring-boot:start` / `jetty:start` IT lifecycle: the daemon owns the
-application process, and a second launcher would fight it for the port.
+shape, in a `DevLoopSpring*IT`, `DevLoopJetty*IT` or `DevLoopCargo*IT` class of
+its own - and, where a shape genuinely cannot answer a shared question, an
+exclusion with a replacement beside it: `test-devloop-cargo` excludes
+`DevLoopCssIT`, because a container reading a deployed WAR cannot see a resource
+refreshed in the module's own output. The three run on different ports
+(8899, 8898 and 8897) so that none can take another's, and none uses the usual
+`spring-boot:start` / `jetty:start` / `cargo:start` IT lifecycle: the daemon owns
+the application process, and a second launcher would fight it for the port.
 
 `test-devloop-support` is listed among the modules `flow-tests` builds
 regardless of `-DskipTests`, rather than in this aggregator's `<modules>`. That
@@ -45,8 +50,8 @@ which runs with `-DskipTests`.
 From the repository root, after one `mvn install -DskipTests`:
 
 ```bash
-# both fixtures
-mvn -o -pl flow-tests/test-devloop/test-devloop-spring/devloop-app,flow-tests/test-devloop/test-devloop-jetty/devloop-app verify
+# every fixture
+mvn -o -pl flow-tests/test-devloop/test-devloop-spring/devloop-app,flow-tests/test-devloop/test-devloop-jetty/devloop-app,flow-tests/test-devloop/test-devloop-cargo/devloop-app verify
 ```
 
 Each fixture's README has the rest: what it pins and why, how to drive the loop
