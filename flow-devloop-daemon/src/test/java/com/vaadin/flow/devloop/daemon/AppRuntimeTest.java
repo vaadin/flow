@@ -210,6 +210,16 @@ class AppRuntimeTest {
     private static final String TOMEE = "org.apache.tomee.maven:"
             + "tomee-maven-plugin:10.1.2";
 
+    /**
+     * Cargo is a plugin that drives containers rather than a container, and it
+     * is how the loop runs Apache Tomcat: Apache's own
+     * {@code tomcat7-maven-plugin} stopped at Tomcat 7 and
+     * {@code javax.servlet} in 2013, so a Jakarta EE application cannot be
+     * deployed through it at all.
+     */
+    private static final String CARGO = "org.codehaus.cargo:"
+            + "cargo-maven3-plugin:1.10.29";
+
     @Test
     void warWithWildflyPlugin_runsThroughTheBuild() throws IOException {
         Path app = serverModule("wf", WILDFLY, Map.of());
@@ -220,6 +230,70 @@ class AppRuntimeTest {
     @Test
     void warWithTomeePlugin_runsThroughTheBuild() throws IOException {
         Path app = serverModule("te", TOMEE, Map.of());
+
+        assertEquals("tomee", runtimeOf(app).name());
+    }
+
+    @Test
+    void warWithCargoPlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("tc", CARGO, Map.of());
+
+        assertEquals("cargo", runtimeOf(app).name());
+    }
+
+    /**
+     * Cargo's own line rather than the container's, so that one entry answers
+     * for every container it drives - and so that a project which sends the
+     * container's output to a file still has a readiness signal.
+     */
+    @Test
+    void cargoReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("tc", CARGO, Map.of()));
+
+        // AbstractLocalContainer.start, whose argument is the name Cargo gives
+        // the container it installed.
+        String line = "[INFO] Tomcat 10.x started on port [8080]";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(8080), runtime.port(line));
+    }
+
+    /** The line before it names no port, so it is not the readiness signal. */
+    @Test
+    void cargoStartingUpIsNotYetServing() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("tc", CARGO, Map.of()));
+
+        assertFalse(runtime.serving("[INFO] Tomcat 10.x starting..."));
+        assertFalse(runtime.serving("[INFO] Tomcat 10.x is stopped"));
+    }
+
+    /**
+     * Cargo's run mojo exposes no user property on any parameter that could
+     * carry the loop's flags, so the only channel is a Maven project property
+     * the build extension sets - and a daemon running from an exploded build
+     * directory has no jar to point Maven at, so there is no extension and no
+     * channel. That has to be said out loud: the application would otherwise
+     * start without the agents and every apply would quietly restart.
+     */
+    @Test
+    void cargoWithoutTheExtensionSaysTheAgentsCannotGetThrough()
+            throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("tc", CARGO, Map.of()));
+
+        List<String> warnings = runtime.warnings();
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(warnings.get(0).contains("cargo.start.jvmargs"),
+                warnings.get(0));
+    }
+
+    /**
+     * A project may declare Cargo for its integration tests alone, so the
+     * container's own plugin is the better answer when a pom has both.
+     */
+    @Test
+    void theContainersOwnPluginBeatsCargo() throws IOException {
+        Path app = module("both", "war", "");
+        writeModel(app, List.of(CARGO, TOMEE));
 
         assertEquals("tomee", runtimeOf(app).name());
     }
@@ -332,7 +406,53 @@ class AppRuntimeTest {
     void onlyTheContainerThatForksNoLifecycleOfItsOwnIsGivenAPhase() {
         assertEquals("", entry("wildfly").phase());
         assertEquals("package", entry("tomee").phase());
+        assertEquals("package", entry("cargo").phase());
         assertEquals("", entry("jetty-ee10").phase());
+    }
+
+    /**
+     * A goal named on a Maven command line runs on <em>every</em> project in
+     * the reactor, and the loop names one with {@code -pl :app -am} so that a
+     * sibling module builds in the same session. Jetty's mojo supports
+     * {@code war} packaging alone and skips the rest; Cargo's does not -
+     * measured against this repository's own multi-module fixture it ran first
+     * on the reactor root and failed the build before anything started. So the
+     * goal is switched off for the whole reactor by its user property and
+     * switched back on, by a {@code <configuration>} value the extension
+     * writes, for the one module that declares the plugin.
+     */
+    @Test
+    void cargoRunsOnTheApplicationsOwnModuleAlone() {
+        assertEquals(Map.of("cargo.maven.skip", "true"),
+                entry("cargo").goalProperties());
+        assertEquals("skip=false", entry("cargo").forcedConfiguration());
+    }
+
+    /**
+     * And the other way round for the containers that need no such treatment: a
+     * skip switched on for them and never switched off would start nothing.
+     */
+    @Test
+    void noOtherRuntimeSwitchesItsGoalOff() {
+        assertEquals(Map.of(), entry("wildfly").goalProperties());
+        assertEquals(Map.of(), entry("tomee").goalProperties());
+    }
+
+    /**
+     * Cargo is the only one whose flags parameter no {@code -D} can set: every
+     * element of its run mojo that could carry them is nested and settable from
+     * a pom alone, so the build extension has to put the value on the model
+     * instead. Getting this wrong for one of the others would send its flags
+     * through an extension that was never asked to set that property, and the
+     * server would start without the agents.
+     */
+    @Test
+    void onlyCargoTakesItsFlagsFromAProjectProperty() {
+        assertTrue(entry("cargo").projectPropertyFlags());
+        assertEquals("cargo.start.jvmargs", entry("cargo").jvmFlagsProperty());
+        assertFalse(entry("wildfly").projectPropertyFlags());
+        assertFalse(entry("tomee").projectPropertyFlags());
+        assertFalse(entry("jetty-ee10").projectPropertyFlags());
     }
 
     /**
@@ -348,6 +468,9 @@ class AppRuntimeTest {
     void onlyTheShellParsedChannelIsEscaped() {
         assertTrue(entry("tomee").shellEscapedFlags());
         assertFalse(entry("wildfly").shellEscapedFlags());
+        // Cargo runs Ant's translateCommandline over the value: quotes group
+        // and whitespace separates, but a backslash is an ordinary character.
+        assertFalse(entry("cargo").shellEscapedFlags());
         assertFalse(entry("jetty-ee10").shellEscapedFlags());
     }
 
@@ -355,6 +478,7 @@ class AppRuntimeTest {
     void onlyJettyIsEmbedded() {
         assertTrue(entry("jetty-ee10").embedded());
         assertFalse(entry("wildfly").embedded());
+        assertFalse(entry("cargo").embedded());
         assertEquals("wildfly.javaOpts", entry("wildfly").jvmFlagsProperty());
         assertEquals("tomee-plugin.args", entry("tomee").jvmFlagsProperty());
     }

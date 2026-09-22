@@ -220,7 +220,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
-| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee` (see `AppRuntime`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee`, `cargo` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -243,8 +243,8 @@ launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
 
 **A WAR** has no entry point, and its servlet container is a build plugin rather
 than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
-asks it to. Jetty runs the application in the build's own JVM; WildFly and
-TomEE cannot, and the section after this one is about the difference.
+asks it to. Jetty runs the application in the build's own JVM; WildFly, TomEE
+and Cargo cannot, and the section after this one is about the difference.
 
 ### A container that runs in the build's JVM
 
@@ -280,11 +280,12 @@ that table.
 
 ### A container that forks
 
-WildFly and TomEE have no embedded mode: `wildfly:run` and `tomee:run` each
-provision a server and start it as a **process of its own**. Nothing on Maven's
-command line, and nothing in its environment, reaches a JVM that Maven forked,
-so the agents, the JVM flags and the settings the application reads all travel
-together in the one parameter each plugin hands on to that process:
+WildFly, TomEE and Cargo have no embedded mode: `wildfly:run`, `tomee:run` and
+`cargo:run` each provision a server and start it as a **process of its own**.
+Nothing on Maven's command line, and nothing in its environment, reaches a JVM
+that Maven forked, so the agents, the JVM flags and the settings the application
+reads all travel together in the one parameter each plugin hands on to that
+process:
 
 ```
 JAVA_HOME=<the JDK Jvm chose>
@@ -293,17 +294,74 @@ JAVA_HOME=<the JDK Jvm chose>
        -Dwildfly.javaOpts="<agents, opens, -XX:...> <settings the app reads>"
 ```
 
-Both containers deploy the packaged WAR rather than the module's own output,
-so one has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)` and
-forks the packaging itself, which is why the command above names no phase;
-TomEE's forks nothing, so `package` goes on its command line instead — and
+All three deploy the packaged WAR rather than the module's own output, so one
+has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)` and forks the
+packaging itself, which is why the command above names no phase; TomEE's and
+Cargo's fork nothing, so `package` goes on their command line instead — and
 naming it for WildFly too would only build the WAR twice. The parameter is
 `wildfly.javaOpts`
 for WildFly, whose mojo splits the value on whitespace, and `tomee-plugin.args`
 for TomEE, which parses it the way a shell would — `javaagents` would read
 better and carries no user property, so no command line can set it. WildFly's
 `javaHome` defaults to `${java.home}`, so the server runs on the JVM Maven runs
-on and the JBR carries over unasked.
+on and the JBR carries over unasked; Cargo's `cargo.java.home` defaults the same
+way.
+
+### Apache Tomcat, through Cargo
+
+Tomcat has no Maven plugin of its own a Vaadin project could use: Apache's
+`tomcat7-maven-plugin` was last released in 2013 and runs a `javax.servlet`
+container, which a Jakarta EE application cannot be deployed to at all. What the
+ecosystem uses instead — this repository's own `flow-tests/servlet-containers`
+included — is Codehaus Cargo, so the table entry is named `cargo` after the
+plugin rather than after Tomcat, and it covers every other container Cargo
+drives as well.
+
+Cargo forks like the other two, but its flags cannot travel the same way. Every
+parameter of `cargo:run` that could carry them — `<container>`,
+`<configuration>` — is a nested element with no user property behind it, so no
+`-D` reaches one. What Cargo *does* read is any **Maven project property** named
+`cargo.*`, which it injects as a container configuration property, after the
+pom's own `<properties>`. So the daemon asks the build extension to put one on
+the model:
+
+```
+  mvnw ... -Dmaven.ext.class.path=<daemon jar>
+       -Dvaadin.devloop.ext.property.cargo.start.jvmargs="<agents, -XX:...> <settings>"
+       package org.codehaus.cargo:cargo-maven3-plugin:<version>:run
+```
+
+`cargo.start.jvmargs` and not `cargo.jvmargs`, because Cargo appends both to the
+container's command line and only the second is one a project is likely to have
+written for itself — the loop takes the one nobody else wants and leaves a
+project's heap settings alone. The value needs no backslash escaping: Cargo
+parses it with its own copy of Ant's `translateCommandline`, where quotes group
+and a backslash is an ordinary character.
+
+The consequence is that this one runtime **needs** the extension rather than
+merely benefiting from it. A daemon running from an exploded build directory has
+no jar to point Maven at, so there is no channel at all and the server would
+start without the agents; `MavenGoalRuntime.warnings` says so rather than
+letting every apply quietly restart.
+
+Readiness is read off Cargo's own line, `<name> started on port [<port>]`, and
+not off the container's. That is what lets one entry answer for every container
+Cargo drives, and it still works for a project that sends the container's output
+to a file with `<container><output>`.
+
+### What a deployed WAR costs a hot swap
+
+All three forked containers deploy a *copy* of the WAR, and the webapp class
+loader reads that copy rather than the module's `target/classes`. A hot swap
+acts on classes already loaded, so it is unaffected — but a class the
+application has not loaded *yet* still loads its pre-edit bytes from the
+deployed copy, until the next restart rebuilds and redeploys the WAR. Measured
+against Tomcat: an `apply` on a view's service class reported
+`redefineClasses(0)` because the page had never been opened, and the value that
+then rendered was the deployed one. Once the page had been opened, the same edit
+hot-swapped in under a second and the new value rendered without a reload.
+Jetty never shows this, because there the webapp class loader *is*
+`target/classes`.
 
 Module options go in as `--add-opens=<module>/<package>=<target>`, one token
 rather than two. WildFly sorts module options apart from the rest before it
@@ -318,10 +376,10 @@ pins `<javaOpts>` or `<args>` in `<configuration>` beats the command line and
 would silently drop the agents; that one the build extension cannot rewrite for
 you, because the value it would have to write is composed per launch, so the
 daemon warns about it instead. And the **first** `start` on a WildFly project
-provisions a server under `target/` before it can start one, which is far
-slower than any boot — so `AppRuntime.startupTimeout` is a runtime's own to
-declare, and a forked container asks for twenty minutes where an embedded one
-gets five.
+provisions a server under `target/` before it can start one, and a Cargo project
+downloads and unpacks one, which is far slower than any boot — so
+`AppRuntime.startupTimeout` is a runtime's own to declare, and a forked container
+asks for twenty minutes where an embedded one gets five.
 
 ## Which JVM runs the app
 

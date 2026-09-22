@@ -43,14 +43,14 @@ import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
  * then Maven's JVM, so the agents and the JVM flags travel in
  * {@code MAVEN_OPTS} and the JDK choice travels in {@code JAVA_HOME}.
  * <p>
- * WildFly and TomEE offer no such mode: each starts the server as a process of
- * its own, so the application is a grandchild. Stopping one is still reliable,
- * because {@link AppProcess} ends a launch descendants-first; what is lost is
- * the application's own exit code, since the code the daemon waits on is
- * Maven's. For those the agents, the JVM flags and the settings the application
- * reads all travel in the plugin's own parameter - see {@link #forkedJvmFlags}
- * - because neither Maven's command line nor its environment reaches a JVM that
- * Maven forked.
+ * WildFly, TomEE and Cargo offer no such mode: each starts the server as a
+ * process of its own, so the application is a grandchild. Stopping one is still
+ * reliable, because {@link AppProcess} ends a launch descendants-first; what is
+ * lost is the application's own exit code, since the code the daemon waits on
+ * is Maven's. For those the agents, the JVM flags and the settings the
+ * application reads all travel in the plugin's own parameter - see
+ * {@link #forkedJvmFlags} - because neither Maven's command line nor its
+ * environment reaches a JVM that Maven forked.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -111,7 +111,7 @@ final class MavenGoalRuntime implements AppRuntime {
             command.add(phase);
         }
         command.add(plugin.goalSpecification(declared));
-        plugin.goalProperties()
+        goalProperties()
                 .forEach((key, value) -> command.add("-D" + key + "=" + value));
         if (plugin.embedded()) {
             // Read by the application long after Maven has started, so the
@@ -146,21 +146,47 @@ final class MavenGoalRuntime implements AppRuntime {
     }
 
     /**
+     * The {@code -D} settings that keep the plugin in the shape the loop needs.
+     * <p>
+     * The table's, except for a plugin that cannot work without the build
+     * extension when there is no extension to work with. Cargo's entry switches
+     * its run goal off for the whole reactor so that the extension can switch
+     * it back on for the application's own module alone; passing the first half
+     * without the second would start nothing at all, which is worse than the
+     * degraded run {@link #warnings()} already describes.
+     *
+     * @return the settings to pass
+     */
+    private Map<String, String> goalProperties() {
+        if (plugin.projectPropertyFlags()
+                && configurationOverride().isEmpty()) {
+            return Map.of();
+        }
+        return plugin.goalProperties();
+    }
+
+    /**
      * Everything a forked server's JVM must start with, as one {@code -D}.
      * <p>
      * Neither channel the embedded case uses reaches a forked server:
      * {@code MAVEN_OPTS} starts Maven, and a {@code -D} on Maven's command line
      * sets a property in Maven's JVM. So both the agents and the settings the
      * application reads - the daemon's port and token among them - travel in
-     * the plugin's own parameter, which is the one thing either server hands on
-     * to the process it starts.
+     * the plugin's own parameter, which is the one thing a forked server hands
+     * on to the process it starts.
      * <p>
-     * Joined with spaces, because that is how both plugins take it: WildFly's
-     * {@code setJavaOpts} splits the value on whitespace, and TomEE parses
-     * {@code args} the way a shell would. A value with a space in it is
+     * Joined with spaces, because that is how all three plugins take it:
+     * WildFly's {@code setJavaOpts} splits the value on whitespace, TomEE
+     * parses {@code args} the way a shell would, and Cargo runs its own copy of
+     * Ant's {@code translateCommandline} over it. A value with a space in it is
      * therefore as unsplittable here as in {@code MAVEN_OPTS}. The flags are
      * already reported by {@code Launch}; the settings are not, and only reach
      * this channel for a forked server, so they are checked here.
+     * <p>
+     * The name on the left of the {@code =} is the plugin's own parameter for a
+     * plugin that exposes one, and otherwise a request to the build extension
+     * to put that name on the project's model - see {@link #warnings()} for
+     * what happens when there is no extension to ask.
      *
      * @param jvmFlags
      *            the flags the loop needs the application JVM to start with
@@ -180,8 +206,20 @@ final class MavenGoalRuntime implements AppRuntime {
             tokens = tokens.stream().map(MavenGoalRuntime::escapeBackslashes)
                     .toList();
         }
-        return "-D" + plugin.jvmFlagsProperty() + "="
-                + String.join(" ", tokens);
+        return "-D" + flagsSetting() + "=" + String.join(" ", tokens);
+    }
+
+    /**
+     * What the {@code -D} carrying the flags is called on Maven's command line.
+     *
+     * @return the plugin's own user property, or the setting that asks the
+     *         build extension for a project property of that name
+     */
+    private String flagsSetting() {
+        return plugin.projectPropertyFlags()
+                ? DevLoopBuildExtension.PROPERTY_PREFIX
+                        + plugin.jvmFlagsProperty()
+                : plugin.jvmFlagsProperty();
     }
 
     /**
@@ -352,11 +390,27 @@ final class MavenGoalRuntime implements AppRuntime {
      * to point Maven at, though, and a daemon running from an exploded build
      * directory has none - so that is the case this warns about, rather than
      * asking every project to change its pom.
+     * <p>
+     * For a plugin whose JVM flags travel as a project property that jar is not
+     * a nicety but the whole channel: without it the agents never reach the
+     * server at all, and the loop would run as a build-and-restart loop without
+     * saying why. That one is first, because it is the one that stops the loop
+     * working rather than merely competing with it.
      */
     @Override
     public List<String> warnings() {
         boolean rewritten = !configurationOverride().isEmpty();
         List<String> warnings = new ArrayList<>();
+        if (plugin.projectPropertyFlags() && !rewritten) {
+            warnings.add("WARNING: " + plugin.artifactId() + " takes the JVM "
+                    + "flags for the server it starts from the Maven project "
+                    + "property " + plugin.jvmFlagsProperty() + ", which no "
+                    + "command line can set - only the dev loop's build "
+                    + "extension can, and this daemon is not running from a "
+                    + "jar so it has none. The agents the loop needs will be "
+                    + "dropped, and every apply will restart instead of hot "
+                    + "reloading. Please run the daemon from its jar.");
+        }
         for (ServerPlugin.Competing competing : plugin.competing()) {
             // The extension can only force a constant, so an entry that names
             // no acceptable value is beyond it: those name a parameter the
@@ -391,13 +445,14 @@ final class MavenGoalRuntime implements AppRuntime {
      * can start one.
      * <p>
      * {@code wildfly:run} provisions a server under {@code target/} the first
-     * time it runs, laying out a few hundred megabytes of modules. Measured
-     * against a warm local repository it still outran the five minutes an
-     * embedded start is given, and the loop killed a provision that was making
-     * progress - on every first run, since the provision it killed was never
-     * finished either. The window is only ever reached when something is wrong,
-     * so widening it for the case that is legitimately slow costs a failing
-     * start nothing but patience.
+     * time it runs, laying out a few hundred megabytes of modules, and
+     * {@code cargo:run} downloads and unpacks one. Measured against a warm
+     * local repository WildFly's still outran the five minutes an embedded
+     * start is given, and the loop killed a provision that was making progress
+     * - on every first run, since the provision it killed was never finished
+     * either. The window is only ever reached when something is wrong, so
+     * widening it for the case that is legitimately slow costs a failing start
+     * nothing but patience.
      */
     @Override
     public Duration startupTimeout() {
