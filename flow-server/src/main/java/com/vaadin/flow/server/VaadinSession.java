@@ -133,8 +133,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * This token should be handled with care since it's used to protect against
      * cross-site attacks in addition to general identifier duty.
      *
-     * It is read without the session lock, see getPushId(), and must therefore
-     * stay immutable.
+     * PushHandler reads this through getPushId() without the session lock, to
+     * be able to reject a connection before locking, so the field must stay
+     * immutable for as long as it does.
      */
     private final String pushId = UUID.randomUUID().toString();
 
@@ -1127,11 +1128,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the push connection identifier for this session. Used when
      * establishing a push connection with the client.
-     * <p>
-     * It is safe to call this method without holding the {@link #lock() session
-     * lock}. The identifier is created together with the session and never
-     * changes, and a push request is validated against it before the session is
-     * locked.
      *
      * @return the push connection identifier string
      */
