@@ -151,6 +151,19 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(calls[0].args).to.eql(['Hello']);
     });
 
+    it('runs a call that has nothing to run on without a this', () => {
+      // What a call made on the page carries: the arguments, and nothing
+      // where a call made on an element has the element
+      const calls: unknown[] = [];
+      registerDefinition(GREETING, function (this: unknown, greeting: unknown) {
+        calls.push({ thisArg: this, greeting });
+      });
+
+      run(['Hello', null, greeting]);
+
+      expect(calls).to.eql([{ thisArg: null, greeting: 'Hello' }]);
+    });
+
     it('passes the return value to the success channel', async () => {
       registerDefinition(VALUE, () => 'answer');
       const resolved: unknown[] = [];
