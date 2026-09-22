@@ -70,6 +70,17 @@ class JsCallTest {
     }
 
     @Test
+    void parametersFor_argumentsFollowedByWhatToRunOn() {
+        // The element a call was made on goes in the last place, and a call
+        // made on nothing in particular leaves it empty, so a client reads
+        // the two the same way
+        assertEquals(Arrays.asList("Hello", "the element"), Arrays.asList(
+                call("showGreeting", "Hello").parametersFor("the element")));
+        assertEquals(Arrays.asList("Hello", null), Arrays
+                .asList(call("showGreeting", "Hello").parametersFor(null)));
+    }
+
+    @Test
     void getExpression_methodWithoutDeclaredJavaScript_throws() {
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,

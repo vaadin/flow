@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StringUtil;
@@ -97,6 +99,25 @@ public record JsCall(Class<?> definitionType, String methodName,
     public static String functionId(String expression, int argumentCount) {
         return StringUtil.getHash(argumentCount + ":" + expression,
                 StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Gets what this call is sent with: its arguments, and then the thing to
+     * run the function on, which the client applies the function to.
+     * <p>
+     * The element a call was made on goes into that last place, and a call made
+     * on nothing in particular - page JavaScript, which works on globals - puts
+     * <code>null</code> there, so a client reads the two the same way.
+     *
+     * @param runOn
+     *            what to run the function on, or <code>null</code> for nothing
+     *            in particular
+     * @return the parameters of the call, not <code>null</code>
+     */
+    public Object[] parametersFor(@Nullable Object runOn) {
+        List<Object> parameters = new ArrayList<>(arguments);
+        parameters.add(runOn);
+        return parameters.toArray();
     }
 
     /**

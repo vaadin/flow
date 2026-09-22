@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,7 +40,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -372,21 +370,12 @@ public class Page implements Serializable {
      *             answered
      */
     public <T> T executeJs(Class<T> definitionType) {
-        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
-    }
-
-    /**
-     * Schedules a call made through a JavaScript definition, the way an
-     * expression is scheduled, so that the two reach the client in the order
-     * they were made. The parameters are the arguments of the call and then
-     * nothing to run it on, which is the slot the element goes into for a call
-     * made on one: page JavaScript has no <code>this</code>.
-     */
-    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        List<Object> parameters = new ArrayList<>(call.arguments());
-        parameters.add(null);
-        return schedule(new JavaScriptInvocation(call, call.getExpression(),
-                parameters.toArray()));
+        // Scheduled the way an expression given to the page is, so that the
+        // two reach the client in the order they were made, and run on
+        // nothing in particular
+        return JsDefinitionProxy.create(definitionType,
+                call -> schedule(new JavaScriptInvocation(call,
+                        call.getExpression(), call.parametersFor(null))));
     }
 
     /**
