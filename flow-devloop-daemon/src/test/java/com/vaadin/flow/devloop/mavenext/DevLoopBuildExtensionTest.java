@@ -280,6 +280,112 @@ class DevLoopBuildExtensionTest {
         assertEquals("2", forced(jetty, "scan"));
     }
 
+    /**
+     * The second channel: a plugin whose parameter carries no user property at
+     * all - Cargo's, whose run mojo takes its JVM flags from a nested element a
+     * pom alone can write, and which reads any {@code cargo.*} project property
+     * instead. Setting one here is the only way the loop's agents reach the
+     * container Cargo starts.
+     */
+    @Test
+    void aUserPropertySetsAProjectProperty() {
+        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject project = project(cargo);
+
+        afterProjectsRead(
+                projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "cargo.start.jvmargs", "-javaagent:/ha.jar -Dp=1"),
+                new Properties(), project);
+
+        assertEquals("-javaagent:/ha.jar -Dp=1",
+                project.getProperties().getProperty("cargo.start.jvmargs"));
+    }
+
+    /**
+     * A value the project already declared is replaced, exactly as a forced
+     * {@code <configuration>} element is: the loop owns that parameter for the
+     * run, and two sets of agents would be no better than none.
+     */
+    @Test
+    void aDeclaredProjectPropertyIsReplaced() {
+        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject project = project(cargo);
+        project.getProperties().setProperty("cargo.start.jvmargs", "-Xmx2g");
+
+        afterProjectsRead(
+                projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "cargo.start.jvmargs", "-javaagent:/ha.jar"),
+                new Properties(), project);
+
+        assertEquals("-javaagent:/ha.jar",
+                project.getProperties().getProperty("cargo.start.jvmargs"));
+    }
+
+    /**
+     * There is nothing to force on Cargo, so the force setting arrives blank -
+     * and that must not be read as "this build is not the daemon's", which
+     * would leave the project property unset and the agents behind.
+     */
+    @Test
+    void nothingToForceStillSetsTheProjectProperty() {
+        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject project = project(cargo);
+        Properties user = projectProperties(
+                "org.codehaus.cargo:cargo-maven3-plugin", "cargo.start.jvmargs",
+                "-javaagent:/ha.jar");
+        user.setProperty(DevLoopBuildExtension.FORCE_PROPERTY, "");
+
+        afterProjectsRead(user, new Properties(), project);
+
+        assertEquals("-javaagent:/ha.jar",
+                project.getProperties().getProperty("cargo.start.jvmargs"));
+    }
+
+    /** A module that does not run the named plugin keeps its own model. */
+    @Test
+    void anotherModulesPropertiesAreLeftAlone() {
+        Plugin compiler = jetty("org.apache.maven.plugins",
+                "maven-compiler-plugin", "3.13.0");
+        MavenProject project = project(compiler);
+
+        afterProjectsRead(
+                projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "cargo.start.jvmargs", "-javaagent:/ha.jar"),
+                new Properties(), project);
+
+        assertNull(project.getProperties().getProperty("cargo.start.jvmargs"));
+    }
+
+    /**
+     * The prefix on its own names no property, so it is not one to set - an
+     * empty name would go on the model as the empty string.
+     */
+    @Test
+    void thePrefixAloneNamesNothing() {
+        Properties user = new Properties();
+        user.setProperty(DevLoopBuildExtension.PROPERTY_PREFIX, "value");
+        DefaultMavenExecutionRequest request = new DefaultMavenExecutionRequest();
+        request.setUserProperties(user);
+        request.setSystemProperties(new Properties());
+        MavenSession session = new MavenSession(null, request,
+                new DefaultMavenExecutionResult(), List.of(project()));
+
+        assertTrue(DevLoopBuildExtension.projectProperties(session).isEmpty());
+    }
+
+    private static Properties projectProperties(String coordinates, String name,
+            String value) {
+        Properties properties = new Properties();
+        properties.setProperty(DevLoopBuildExtension.PLUGIN_PROPERTY,
+                coordinates);
+        properties.setProperty(DevLoopBuildExtension.PROPERTY_PREFIX + name,
+                value);
+        return properties;
+    }
+
     private void afterProjectsRead(Properties user, Properties system,
             MavenProject project) {
         DefaultMavenExecutionRequest request = new DefaultMavenExecutionRequest();

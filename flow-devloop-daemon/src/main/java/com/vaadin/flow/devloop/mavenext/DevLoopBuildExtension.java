@@ -21,7 +21,9 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
@@ -51,6 +53,12 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * runs inside the application's own build, before any mojo, and edits the
  * effective plugin configuration in memory. Nothing is written to the project.
  * <p>
+ * A second plugin shape needs more than a rewrite: Cargo's run mojo exposes no
+ * user property on any parameter that could carry the loop's JVM flags, and
+ * reads a Maven project property named {@code cargo.*} instead. So the
+ * extension also sets project properties for the run, named one at a time by
+ * {@link #PROPERTY_PREFIX}.
+ * <p>
  * This class lives in the daemon's jar because that jar's path is the one thing
  * the daemon always knows - it is already its own {@code -javaagent} - so
  * putting the extension anywhere else would mean a second artifact to resolve
@@ -71,6 +79,26 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      * a second container needs no change here.
      */
     public static final String FORCE_PROPERTY = "vaadin.devloop.ext.force";
+
+    /**
+     * Prefix of a setting naming a Maven <em>project</em> property to put on
+     * the model, as {@code <prefix><name>=<value>}.
+     * <p>
+     * The channel for a plugin whose parameter carries no user property at all,
+     * which is the shape Cargo has: every element of its run mojo that could
+     * hold the loop's JVM flags is nested and settable from a pom only, while
+     * any project property named {@code cargo.*} is read and injected as a
+     * container configuration property. Setting one is therefore the only way
+     * in, and doing it here rather than in the pom leaves the project
+     * untouched, exactly as {@link #FORCE_PROPERTY} does.
+     * <p>
+     * One setting per property, rather than the {@code name=value} list
+     * {@link #FORCE_PROPERTY} uses, because there is no separator that would be
+     * safe: a value carried this way holds the application's whole JVM command
+     * line, and on Windows {@code -Dvaadin.devloop.classes=} alone contains
+     * semicolons.
+     */
+    public static final String PROPERTY_PREFIX = "vaadin.devloop.ext.property.";
 
     /**
      * Where each module's effective model is left, relative to the module's own
@@ -247,9 +275,13 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
 
     private void reconfigure(MavenSession session) {
         String coordinates = property(session, PLUGIN_PROPERTY);
+        if (coordinates == null || coordinates.isBlank()) {
+            return;
+        }
         String force = property(session, FORCE_PROPERTY);
-        if (coordinates == null || force == null || coordinates.isBlank()
-                || force.isBlank()) {
+        boolean forcing = force != null && !force.isBlank();
+        Map<String, String> properties = projectProperties(session);
+        if (!forcing && properties.isEmpty()) {
             return;
         }
         int colon = coordinates.indexOf(':');
@@ -262,10 +294,80 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             for (Plugin plugin : project.getBuildPlugins()) {
                 if (groupId.equals(plugin.getGroupId())
                         && artifactId.equals(plugin.getArtifactId())) {
-                    apply(project, plugin, force);
+                    if (forcing) {
+                        apply(project, plugin, force);
+                    }
+                    applyProperties(project, plugin, properties);
                 }
             }
         }
+    }
+
+    /**
+     * The project properties this run was asked to set, by name.
+     * <p>
+     * The user properties are collected last and so win, for the reason
+     * {@link #property} gives: a {@code -D} on a Maven command line is a user
+     * property, and its appearing among the system properties too is a Maven 3
+     * convenience that Maven 4 does not repeat.
+     *
+     * @param session
+     *            the build in progress
+     * @return the properties to set, empty when this build was asked for none
+     */
+    static Map<String, String> projectProperties(MavenSession session) {
+        Map<String, String> asked = new LinkedHashMap<>();
+        collect(session.getSystemProperties(), asked);
+        collect(session.getUserProperties(), asked);
+        return asked;
+    }
+
+    private static void collect(Properties from, Map<String, String> into) {
+        if (from == null) {
+            return;
+        }
+        for (String name : from.stringPropertyNames()) {
+            if (name.startsWith(PROPERTY_PREFIX)
+                    && name.length() > PROPERTY_PREFIX.length()) {
+                into.put(name.substring(PROPERTY_PREFIX.length()),
+                        from.getProperty(name));
+            }
+        }
+    }
+
+    /**
+     * Puts those properties on one module's model.
+     * <p>
+     * Values are never logged. The one property this exists for carries the
+     * application's JVM command line, and that command line carries the token
+     * the daemon authenticates the application with; the name alone is enough
+     * to say what happened.
+     *
+     * @param project
+     *            the module running the plugin
+     * @param plugin
+     *            the plugin the daemon named, for the message
+     * @param properties
+     *            the properties to set
+     */
+    @SuppressWarnings("java:S106")
+    private void applyProperties(MavenProject project, Plugin plugin,
+            Map<String, String> properties) {
+        Properties model = project.getProperties();
+        properties.forEach((name, value) -> {
+            String replaced = model.getProperty(name);
+            if (!value.equals(replaced)) {
+                // Said out loud for the same reason a forced element is: this
+                // run is not the build the pom describes.
+                System.out.println("[vaadin-dev] " + plugin.getArtifactId()
+                        + ": setting the project property " + name
+                        + " for this run"
+                        + (replaced == null ? ""
+                                : " (replacing the value the pom sets)")
+                        + " in " + project.getArtifactId());
+            }
+            model.setProperty(name, value);
+        });
     }
 
     @SuppressWarnings("java:S106")
