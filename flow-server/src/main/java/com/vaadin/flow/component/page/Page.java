@@ -341,7 +341,7 @@ public class Page implements Serializable {
      *             also accepts a {@link LoadMode}.
      * @since 2.0
      */
-    @Deprecated(since = "25.3")
+    @Deprecated(since = "25.4")
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
             addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));

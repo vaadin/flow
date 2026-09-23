@@ -1187,7 +1187,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(componentClass, dependencies);
+        addRuntimeDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1291,7 +1291,7 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(
+    private void addRuntimeDependencies(
             Class<? extends Component> componentClass,
             DependencyInfo dependency) {
         Page page = ui.getPage();
