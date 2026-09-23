@@ -25,8 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
@@ -1828,10 +1826,10 @@ public class Element extends Node<Element> {
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
      * <p>
-     * The call is sent to the browser as an expression and compiled there,
-     * which a content security policy without <code>unsafe-eval</code> does not
-     * allow. {@link #executeJs(Class)} runs JavaScript that is declared in Java
-     * and collected into the bundle instead, and sends no expression.
+     * The name of the function and the arguments are sent to the browser, which
+     * looks the function up on the element and calls it. Nothing is compiled
+     * from a string there, so the call works under a content security policy
+     * that does not allow <code>unsafe-eval</code>.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1853,21 +1851,8 @@ public class Element extends Node<Element> {
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
 
-        // "$1,$2,$3,..."
-        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
-        // Inject the element as $0
-        Object[] jsParameters;
-        if (arguments.length == 0) {
-            jsParameters = new Object[] { this };
-        } else {
-            jsParameters = new Object[arguments.length + 1];
-            jsParameters[0] = this;
-            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
-        }
-
-        return scheduleJavaScriptInvocation(null, "return $0." + functionName
-                + "(" + paramPlaceholderString + ")", jsParameters);
+        return executeJs(CallFunctionJs.class).callFunction(functionName,
+                arguments);
     }
 
     /**
@@ -2034,7 +2019,7 @@ public class Element extends Node<Element> {
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
         return scheduleJavaScriptInvocation(call, call.getExpression(),
-                withElementAsLastParameter(call.arguments().toArray()));
+                call.parametersFor(this));
     }
 
     private Object[] withElementAsLastParameter(Object[] parameters) {
@@ -2396,14 +2381,14 @@ public class Element extends Node<Element> {
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
-
-        // Use setTimeout to work on newly created elements
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        // No options is not the same call as an empty options object, so the
+        // browser is handed the one argument or none, as it was written here
         if (json == null) {
-            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
+            scroll.scrollIntoView();
         } else {
-            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
+            scroll.scrollIntoView(json);
         }
-
         return getSelf();
     }
 
@@ -2421,12 +2406,84 @@ public class Element extends Node<Element> {
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // for an unknown reason, needs to be called deferred to work on a newly
-        // created element
-        String options = scrollOptions == null ? "" : scrollOptions.toJson();
-
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        if (scrollOptions == null) {
+            scroll.scrollIntoView();
+        } else {
+            // The options are written as JavaScript by a class that is on its
+            // way out, and what the browser is sent is a value rather than an
+            // expression, so they are read back into the object they were
+            // built from
+            scroll.scrollIntoView(
+                    JacksonUtils.readTree(scrollOptions.toJson()));
+        }
         return getSelf();
+    }
+
+    /**
+     * The JavaScript behind {@link #callJsFunction(String, Object...)}, as a
+     * JavaScript definition for {@link #executeJs(Class)}.
+     * <p>
+     * One declaration serves every call, whatever the function is called and
+     * however many arguments it takes, so the bundle carries a single function
+     * for all of them and the browser is sent the name and the arguments of a
+     * call rather than JavaScript that names the function.
+     */
+    @JsDefinition
+    public interface CallFunctionJs extends Serializable {
+
+        /**
+         * Calls the named function on the element, with the element as
+         * <code>this</code> of a plain name and the property it is read from as
+         * <code>this</code> of a dotted one, which is how a function reached
+         * through a property is called in JavaScript.
+         *
+         * @param functionName
+         *            the name of the function to call, which may contain dots
+         *            to name a function on a property
+         * @param arguments
+         *            the arguments to pass to the function
+         * @return the pending result of the call, which answers with what the
+         *         function returned
+         */
+        @JsExpression("""
+                const path = $0.split('.');
+                const name = path.pop();
+                let target = this;
+                for (const step of path) {
+                    target = target[step];
+                }
+                return target[name](...$1);
+                """)
+        PendingJavaScriptResult callFunction(String functionName,
+                Object... arguments);
+    }
+
+    /**
+     * The JavaScript behind {@link #scrollIntoView(ScrollIntoViewOption...)},
+     * as a JavaScript definition for {@link #executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ScrollIntoViewJs extends Serializable {
+
+        /**
+         * Scrolls the element into view the way the browser does by default,
+         * deferred so that it also works on an element that was created in the
+         * same response.
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView(), 0)")
+        void scrollIntoView();
+
+        /**
+         * Scrolls the element into view with the given options, deferred so
+         * that it also works on an element that was created in the same
+         * response.
+         *
+         * @param options
+         *            the options of the browser's <code>scrollIntoView</code>
+         *            function
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
+        void scrollIntoView(ObjectNode options);
     }
 }

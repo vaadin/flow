@@ -57,6 +57,52 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class PageTest {
 
+    @JsDefinition
+    interface PageJs extends Serializable {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        @JsExpression("return navigator.clipboard.readText()")
+        PendingJavaScriptResult readText();
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheCallOnNothingInParticular() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().executeJs(PageJs.class).showGreeting("Hello");
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        JavaScriptInvocation invocation = invocations.get(0).getInvocation();
+        assertEquals(new JsCall(PageJs.class, "showGreeting", List.of("Hello")),
+                invocation.getJsCall());
+        assertEquals(Arrays.asList("Hello", null), invocation.getParameters(),
+                "the arguments should be followed by nothing to run the function on");
+    }
+
+    @Test
+    void executeJsWithDefinition_methodDeclaringAResult_answersWithTheExecution() {
+        MockUI mockUI = new MockUI();
+
+        PendingJavaScriptResult result = mockUI.getPage()
+                .executeJs(PageJs.class).readText();
+        List<String> values = new ArrayList<>();
+        result.then(String.class, values::add);
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertSame(result, invocations.get(0),
+                "the scheduled invocation is what the method answers with");
+        assertTrue(invocations.get(0).isSubscribed(),
+                "and the return value should be asked for from the client");
+
+        invocations.get(0).complete(JacksonUtils.createNode("text"));
+        assertEquals(List.of("text"), values);
+    }
+
     private class TestUI extends UI {
         @Override
         public Page getPage() {
@@ -165,45 +211,24 @@ class PageTest {
     void fetchCurrentUrl_consumerReceivesCorrectURL() {
         // given
         final UI mockUI = new MockUI();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... params) {
-                super.executeJs(expression, params);
-                assertEquals("return window.location.href", expression,
-                        "Expected javascript for fetching location is wrong.");
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(JacksonUtils
-                                .createNode("http://localhost:8080/home"));
-                    }
-                };
-            }
-        };
         final AtomicReference<URL> callbackInvocations = new AtomicReference<>();
         final SerializableConsumer<URL> receiver = details -> {
             callbackInvocations.compareAndSet(null, details);
         };
 
         // when
-        page.fetchCurrentURL(receiver);
+        mockUI.getPage().fetchCurrentURL(receiver);
 
         // then
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(new JsCall(Page.LocationJs.class, "getHref", List.of()),
+                invocations.get(0).getInvocation().getJsCall(),
+                "the address should be asked for through the declared JavaScript");
+
+        invocations.get(0).complete(
+                JacksonUtils.createNode("http://localhost:8080/home"));
         assertEquals("http://localhost:8080/home",
                 callbackInvocations.get().toString(), "Returned URL was wrong");
     }
@@ -658,50 +683,5 @@ class PageTest {
 
         page.setColorScheme(ColorScheme.Value.NORMAL);
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
-    }
-
-    @Test
-    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
-        MockUI mockUI = new MockUI();
-
-        mockUI.getPage().executeJs(PageJs.class).method("foo");
-
-        List<PendingJavaScriptInvocation> pendingJs = mockUI.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pendingJs.size());
-        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
-
-        assertEquals("window.method($0)", invocation.getExpression(),
-                "the declared expression should not be wrapped, since the generated function is what runs");
-        assertEquals(Arrays.asList("foo", null), invocation.getParameters(),
-                "a page call has nothing to run on, so nothing should follow the arguments");
-        assertEquals(new JsCall(PageJs.class, "method", List.of("foo")),
-                invocation.getJsCall());
-    }
-
-    @Test
-    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
-        MockUI mockUI = new MockUI();
-
-        PendingJavaScriptResult result = mockUI.getPage()
-                .executeJs(PageResultJs.class).readValue();
-
-        List<PendingJavaScriptInvocation> pendingJs = mockUI.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, pendingJs.size());
-        assertSame(pendingJs.get(0), result,
-                "the result of the call should be the invocation the page scheduled");
-    }
-
-    @JsDefinition
-    interface PageJs extends Serializable {
-        @JsExpression("window.method($0)")
-        void method(String value);
-    }
-
-    @JsDefinition
-    interface PageResultJs extends Serializable {
-        @JsExpression("return window.value;")
-        PendingJavaScriptResult readValue();
     }
 }

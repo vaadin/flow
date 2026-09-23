@@ -152,18 +152,16 @@ describe('ExecuteJavaScriptProcessor', () => {
     });
 
     it('runs a call that has nothing to run on without a this', () => {
-      // What a call that is not made on an element carries: the arguments,
-      // and nothing where a call made on an element has the element
-      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      // What a call made on the page carries: the arguments, and nothing
+      // where a call made on an element has the element
+      const calls: unknown[] = [];
       registerDefinition(GREETING, function (this: unknown, greeting: unknown) {
-        calls.push({ thisArg: this, args: [greeting] });
+        calls.push({ thisArg: this, greeting });
       });
 
       run(['Hello', null, greeting]);
 
-      expect(calls).to.have.lengthOf(1);
-      expect(calls[0].thisArg).to.equal(null);
-      expect(calls[0].args).to.eql(['Hello']);
+      expect(calls).to.eql([{ thisArg: null, greeting: 'Hello' }]);
     });
 
     it('passes the return value to the success channel', async () => {
@@ -218,6 +216,23 @@ describe('ExecuteJavaScriptProcessor', () => {
       // A development bundle registers what a developer wrote next to the
       // function, so a message says more than a hash does
       expect(String(errors[0])).to.contain('com.acme.GreeterJs.readValue/0');
+    });
+
+    it('splits the parameters of a variadic call by the count the server sent', () => {
+      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      // What the build generates for a method whose last parameter collects
+      // the arguments that follow the fixed ones: a rest parameter, which
+      // does not count towards the length of the function.
+      registerDefinition(GREETING, function (this: unknown, name: unknown, ...rest: unknown[]) {
+        calls.push({ thisArg: this, args: [name, rest] });
+      });
+      const element = { tagName: 'div' };
+
+      run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(element);
+      expect(calls[0].args).to.eql(['greet', ['Alice', 'Bob']]);
     });
 
     it('reports a function that is not in the bundle to the error channel', () => {

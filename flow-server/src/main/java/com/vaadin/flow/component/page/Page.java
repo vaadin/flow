@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,14 +33,12 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -320,6 +317,64 @@ public class Page implements Serializable {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser, through an implementation of the interface that this method
+     * answers with: calling a method of the implementation runs the JavaScript
+     * that the method declares, with the arguments of the call as its
+     * parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ClipboardJs extends Serializable {
+     *     &#64;JsExpression("return navigator.clipboard.readText()")
+     *     PendingJavaScriptResult readText();
+     * }
+     *
+     * page.executeJs(ClipboardJs.class).readText().then(String.class,
+     *         text -&gt; ...);
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with the arguments of the call as <code>$0</code>,
+     * <code>$1</code>, and so on, and a method that returns
+     * {@link PendingJavaScriptResult} can be used to retrieve the
+     * <code>return</code> value the same way. It runs on nothing in particular
+     * - page JavaScript works on globals - where the JavaScript of
+     * {@link Element#executeJs(Class)} runs on the element it was obtained
+     * from.
+     * <p>
+     * What differs from an expression is that nothing about the JavaScript is
+     * decided at the call site: the build collects the declarations of every
+     * JavaScript definition into the bundle, and the client runs the collected
+     * function after looking it up by an identifier of the JavaScript itself.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>,
+     * and what declared the JavaScript in Java is not sent to a production
+     * browser either.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        // Queued the way an expression given to the page is, so that the two
+        // reach the client in the order they were made
+        return JsDefinitionProxy.create(definitionType,
+                ui.getInternals()::addJavaScriptInvocation);
+    }
+
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
@@ -368,15 +423,8 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, parameters));
     }
 
     /**
@@ -396,57 +444,6 @@ public class Page implements Serializable {
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
-    }
-
-    /**
-     * Asynchronously runs the JavaScript that the given interface declares in
-     * the browser, through an implementation of the interface that this method
-     * answers with: calling a method of the implementation runs the JavaScript
-     * that the method declares, with the arguments of the call as its
-     * parameters.
-     * <p>
-     * This is {@link Element#executeJs(Class)} for JavaScript that addresses
-     * the page rather than an element, and the contract is the same one: the
-     * interface is annotated with {@link JsDefinition}, each of its methods
-     * declares what it runs with {@link JsExpression}, and the build collects
-     * the declarations into the bundle so that the browser runs a function it
-     * already has instead of compiling what the server sent.
-     *
-     * @param <T>
-     *            the JavaScript definition type
-     * @param definitionType
-     *            the JavaScript definition, not <code>null</code>
-     * @return an implementation of the interface, to call the declared
-     *         JavaScript through, not <code>null</code>
-     * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
-     */
-    public <T> T executeJs(Class<T> definitionType) {
-        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
-    }
-
-    /**
-     * Schedules a call made through a JavaScript definition. A page call has
-     * nothing to run its function on, and says so by putting nothing where a
-     * call made on an element puts the element: the client applies the function
-     * to it either way, so page JavaScript gets no <code>this</code> and works
-     * on globals, which is what page level JavaScript does anyway.
-     */
-    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        List<Object> parameters = new ArrayList<>(call.arguments());
-        parameters.add(null);
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
-                call.getExpression(), parameters.toArray());
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
     }
 
     /**
@@ -865,8 +862,7 @@ public class Page implements Serializable {
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
                 "Url consumer callback should not be null.");
-        final String js = "return window.location.href";
-        executeJs(js).then(String.class, urlString -> {
+        executeJs(LocationJs.class).getHref().then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
@@ -874,6 +870,24 @@ public class Page implements Serializable {
                         "Error while encoding the URL from client", e);
             }
         });
+    }
+
+    /**
+     * What the page reads of <code>window.location</code>, as a JavaScript
+     * definition for {@link #executeJs(Class)}: the build collects it into the
+     * bundle, so asking the browser where it is needs no expression and works
+     * under a content security policy without <code>unsafe-eval</code>.
+     */
+    @JsDefinition
+    interface LocationJs extends Serializable {
+
+        /**
+         * The address the browser is at.
+         *
+         * @return the pending address
+         */
+        @JsExpression("return window.location.href")
+        PendingJavaScriptResult getHref();
     }
 
     /**

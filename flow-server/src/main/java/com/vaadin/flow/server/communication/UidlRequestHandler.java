@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -120,13 +121,27 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * function are all named differently.
      */
     private static final String ROUTER_PUSH_STATE = nameOfFunction(
-            JsCall.functionId(HistoryJs.class, "pushState", 2));
+            functionOf(HistoryJs.class, "pushState", 2));
 
-    private static final String CORRECTED_LOCATION_FUNCTION = JsCall
-            .functionId(MprPushStateJs.class, "pushLocation", 1);
+    private static final String CORRECTED_LOCATION_FUNCTION = functionOf(
+            MprPushStateJs.class, "pushLocation", 1);
 
-    private static final String CORRECTED_HASH_FUNCTION = JsCall
-            .functionId(MprPushStateJs.class, "pushHash", 1);
+    private static final String CORRECTED_HASH_FUNCTION = functionOf(
+            MprPushStateJs.class, "pushHash", 1);
+
+    /**
+     * The identifier of the function that the named method of the given
+     * JavaScript definition runs, which is what an invocation of it names.
+     * <p>
+     * A call is built to ask it, since the identifier is a property of the
+     * declaration rather than of the arguments: the arguments only say which of
+     * the methods of that name is meant.
+     */
+    private static String functionOf(Class<?> definitionType, String methodName,
+            int parameterCount) {
+        return new JsCall(definitionType, methodName,
+                Collections.nCopies(parameterCount, null)).getFunctionId();
+    }
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {

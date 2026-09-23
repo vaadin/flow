@@ -293,7 +293,7 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+        assertEquals(functionIdOf(MprPushStateJs.class, "pushLocation", 1),
                 functionOf(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
                         + uidl);
@@ -327,7 +327,7 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushHash", 1),
+        assertEquals(functionIdOf(MprPushStateJs.class, "pushHash", 1),
                 functionOf(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
                         + uidl);
@@ -651,6 +651,16 @@ class UidlRequestHandlerTest {
     }
 
     /**
+     * The identifier of the function that the named method of the given
+     * JavaScript definition runs, which is what an invocation of it names.
+     */
+    private static String functionIdOf(Class<?> definitionType,
+            String methodName, int parameterCount) {
+        return new JsCall(definitionType, methodName,
+                Collections.nCopies(parameterCount, null)).getFunctionId();
+    }
+
+    /**
      * Whether the given invocation carries the given value as a parameter,
      * which is any element but the last, that one naming what it runs.
      */
@@ -758,7 +768,7 @@ class UidlRequestHandlerTest {
         // for History.HistoryJs.pushState, and that is what the fix-up
         // corrects.
         ObjectNode routerPushState = UidlWriter.functionConstant(
-                JsCall.functionId(HistoryJs.class, "pushState", 2));
+                functionIdOf(HistoryJs.class, "pushState", 2));
         String name = new ConstantPoolKey(routerPushState).getId();
         ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
         ((ObjectNode) uidl.get("constants")).remove("pushState");
