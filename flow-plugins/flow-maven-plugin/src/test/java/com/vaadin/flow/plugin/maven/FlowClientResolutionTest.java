@@ -23,10 +23,15 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -60,6 +65,7 @@ class FlowClientResolutionTest {
     private PrepareFrontendMojo mojo;
     private MavenProject project;
     private RepositorySystem repositorySystem;
+    private RepositorySystemSession repositorySession;
     private File resolvedClient;
 
     @BeforeEach
@@ -78,27 +84,50 @@ class FlowClientResolutionTest {
                     return result;
                 });
 
+        repositorySession = mock(RepositorySystemSession.class);
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(repositorySession);
+
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "session",
-                mock(MavenSession.class));
+        ReflectionUtils.setVariableValueInObject(mojo, "session", session);
         mojo.setRepositorySystem(repositorySystem);
     }
 
     @Test
     void should_resolveTheClient_ofTheVersionOfTheServer() throws Exception {
+        project.setRemoteArtifactRepositories(
+                List.of(new MavenArtifactRepository("releases",
+                        "https://example.com/maven",
+                        new DefaultRepositoryLayout(),
+                        new ArtifactRepositoryPolicy(),
+                        new ArtifactRepositoryPolicy())));
         project.setArtifacts(Set.of(artifact("com.vaadin", "flow-server",
                 "1.2.3", tempDir.resolve("flow-server-1.2.3.jar").toFile())));
 
         assertTrue(mojo.getJarFiles().contains(resolvedClient),
                 "The build should have resolved the Flow client");
 
+        ArgumentCaptor<RepositorySystemSession> session = ArgumentCaptor
+                .forClass(RepositorySystemSession.class);
         ArgumentCaptor<ArtifactRequest> request = ArgumentCaptor
                 .forClass(ArtifactRequest.class);
-        verify(repositorySystem).resolveArtifact(any(), request.capture());
+        verify(repositorySystem).resolveArtifact(session.capture(),
+                request.capture());
         assertEquals("com.vaadin:flow-client:jar:1.2.3",
                 request.getValue().getArtifact().toString(),
                 "The client should be resolved at the version of the server "
                         + "the project resolves");
+        List<RemoteRepository> repositories = project
+                .getRemoteProjectRepositories();
+        assertFalse(repositories.isEmpty(),
+                "The project of the test should have a repository to resolve "
+                        + "from");
+        assertEquals(repositories, request.getValue().getRepositories(),
+                "The client should be resolved from the repositories of the "
+                        + "project");
+        assertEquals(repositorySession, session.getValue(),
+                "The client should be resolved in the repository session of "
+                        + "the build");
     }
 
     @Test
