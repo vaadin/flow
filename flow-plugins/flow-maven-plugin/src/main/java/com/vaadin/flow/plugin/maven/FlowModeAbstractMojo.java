@@ -576,13 +576,16 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * The client holds the frontend sources of the client engine, which are
      * input to the frontend build, and a production application serves the
-     * build output rather than the client itself. A project therefore does not
-     * depend on the client, and a build resolves it here, pinned to the version
-     * of {@code flow-server} the project resolves - a build must not compile a
+     * build output rather than the client itself, so a project does not depend
+     * on the client. In development mode the client comes in with the
+     * development server, but a production build excludes
+     * {@code com.vaadin:vaadin-dev} and with it the development server, and
+     * then nothing on the classpath of the project carries the client. The
+     * build resolves it here instead, pinned to the version of
+     * {@code flow-server} the project resolves - a build must not compile a
      * client of one version into an application running the server of another.
      * <p>
-     * A project that does depend on the client, as one in development mode does
-     * through the development server, keeps the client it resolves itself and
+     * A project that does resolve the client itself keeps that client, and
      * nothing is resolved here.
      *
      * @return the jar of the Flow client, or an empty optional when the project
