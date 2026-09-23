@@ -35,7 +35,6 @@ Every top-level Maven module of the repository:
 | `vaadin-spring`                  | Spring Framework integration.                                                   |
 | `vaadin-cdi`                     | CDI integration, for Jakarta EE application servers.                            |
 | `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
-| `flow-jandex`                    | Deprecated empty artifact; each module ships its own `META-INF/jandex.idx`.     |
 | `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |
 | `flow-bom`                       | Bill of materials.                                                              |
 | `flow-test-util`                 | Test utilities (TestBench base classes, IT helpers).                            |
@@ -43,6 +42,10 @@ Every top-level Maven module of the repository:
 | `flow-tests/`                    | Integration test suite.                                                         |
 
 Routing lives in `flow-server` — there is no separate router module.
+
+Every module jar carries a Jandex index of its own classes in
+`META-INF/jandex.idx`, so Quarkus and other Jandex consumers do not need a
+separate index artifact.
 
 ## Build plugins
 

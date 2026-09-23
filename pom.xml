@@ -48,7 +48,6 @@
     <module>flow-bom</module>
     <module>flow-devloop-daemon</module>
     <module>vaadin-dev-server</module>
-    <module>flow-jandex</module>
     <module>vaadin-spring</module>
     <module>vaadin-cdi</module>
     <module>flow-polymer2lit</module>
