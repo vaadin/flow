@@ -15,6 +15,7 @@
   <modules>
     <module>test-resources</module>
     <module>test-common</module>
+    <module>test-devloop/test-devloop-support</module>
     <module>test-lumo</module>
     <module>test-express-build</module>
     <module>test-aura</module>
