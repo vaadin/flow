@@ -436,7 +436,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
     // Visible for testing
     Collection<Class<?>> getAnnotatedClasses(String basePackage,
             Class<?>... annotations) {
-        Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
 
@@ -445,22 +444,11 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     (Class<? extends Annotation>) annotation));
         }
 
-        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
-            try {
-                Class<?> clazz = Class.forName(bd.getBeanClassName());
-                result.add(clazz);
-            } catch (ClassNotFoundException e) {
-                logger.warn("Could not load class {}", bd.getBeanClassName(),
-                        e);
-            }
-        }
-
-        return result;
+        return loadCandidates(scanner, basePackage);
     }
 
     // Visible for testing
     Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
-        Set<Class<?>> result = new HashSet<>();
         // A JavaScript definition is an interface, which the scanner leaves
         // out by default as it only accepts what can be instantiated
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -468,11 +456,37 @@ public class VaadinBeanFactoryInitializationAotProcessor
             @Override
             protected boolean isCandidateComponent(
                     AnnotatedBeanDefinition beanDefinition) {
-                return beanDefinition.getMetadata().isInterface();
+                // Independence is what the default check keeps, and a local
+                // interface has no canonical name to register a hint for
+                return beanDefinition.getMetadata().isInterface()
+                        && beanDefinition.getMetadata().isIndependent();
             }
         };
         scanner.addIncludeFilter(new AnnotationTypeFilter(JsDefinition.class));
 
+        return loadCandidates(scanner, basePackage);
+    }
+
+    // Visible for testing
+    Collection<Class<?>> getSubtypesOf(String basePackage,
+            Class<?> parentType) {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(parentType));
+
+        Set<Class<?>> result = loadCandidates(scanner, basePackage);
+        result.remove(parentType);
+        return result;
+    }
+
+    /**
+     * Loads the classes a scan of the given package found, leaving out what the
+     * class loader can not load.
+     */
+    private Set<Class<?>> loadCandidates(
+            ClassPathScanningCandidateComponentProvider scanner,
+            String basePackage) {
+        Set<Class<?>> result = new HashSet<>();
         for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
             try {
                 result.add(Class.forName(bd.getBeanClassName()));
@@ -481,30 +495,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
                         e);
             }
         }
-
-        return result;
-    }
-
-    // Visible for testing
-    Collection<Class<?>> getSubtypesOf(String basePackage,
-            Class<?> parentType) {
-        Set<Class<?>> result = new HashSet<>();
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-                false);
-        scanner.addIncludeFilter(new AssignableTypeFilter(parentType));
-
-        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
-            try {
-                Class<?> clazz = Class.forName(bd.getBeanClassName());
-                if (!parentType.equals(clazz)) {
-                    result.add(clazz);
-                }
-            } catch (ClassNotFoundException e) {
-                logger.warn("Could not load class {}", bd.getBeanClassName(),
-                        e);
-            }
-        }
-
         return result;
     }
 

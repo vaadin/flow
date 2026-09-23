@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.springnative;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -692,8 +691,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 .as("JavaScript definition should be registered as a JDK proxy")
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onType(TestJsDefinition.class))
-                .as("JavaScript definition should be registered for reflection")
+                .onMethodInvocation(TestJsDefinition.class, "addClass"))
+                .as("JavaScript definition methods should be invokable through reflection")
                 .accepts(hints);
     }
 
@@ -736,9 +735,38 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
     // ================== Helper Methods ==================
 
+    /**
+     * Processor that finds nothing, so that a case decides what a scan answers
+     * by overriding the one method it is about.
+     */
+    private static class StubProcessor
+            extends VaadinBeanFactoryInitializationAotProcessor {
+        @Override
+        Collection<Class<?>> getRouteTypesFor(String packageName) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getSubtypesOf(String basePackage,
+                Class<?> parentType) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getAnnotatedClasses(String basePackage,
+                Class<?>... annotations) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+            return List.of();
+        }
+    }
+
     private VaadinBeanFactoryInitializationAotProcessor createProcessor(
             Class<?>... routeClasses) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getRouteTypesFor(String packageName) {
                 return Arrays.asList(routeClasses);
@@ -751,28 +779,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         .filter(parentType::isAssignableFrom)
                         .collect(Collectors.toList());
             }
-
-            @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
-            }
-
-            @Override
-            Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
-                return Collections.emptyList();
-            }
         };
     }
 
     private VaadinBeanFactoryInitializationAotProcessor createProcessorWithSubtypes(
             Class<?> subtypeClass, Class<?> parentType) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
-            @Override
-            Collection<Class<?>> getRouteTypesFor(String packageName) {
-                return Collections.emptyList();
-            }
-
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getSubtypesOf(String basePackage,
                     Class<?> parentTypeParam) {
@@ -780,42 +792,14 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         || parentTypeParam.isAssignableFrom(subtypeClass)) {
                     return List.of(subtypeClass);
                 }
-                return Collections.emptyList();
-            }
-
-            @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
-            }
-
-            @Override
-            Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
-                return Collections.emptyList();
+                return List.of();
             }
         };
     }
 
     private VaadinBeanFactoryInitializationAotProcessor createProcessorWithJsDefinitions(
             Class<?>... definitionTypes) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
-            @Override
-            Collection<Class<?>> getRouteTypesFor(String packageName) {
-                return Collections.emptyList();
-            }
-
-            @Override
-            Collection<Class<?>> getSubtypesOf(String basePackage,
-                    Class<?> parentType) {
-                return Collections.emptyList();
-            }
-
-            @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
-            }
-
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
                 return Arrays.asList(definitionTypes);
