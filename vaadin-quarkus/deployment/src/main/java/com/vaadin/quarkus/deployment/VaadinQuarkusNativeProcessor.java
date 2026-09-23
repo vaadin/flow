@@ -36,6 +36,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.GeneratedNativeImageClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
@@ -85,6 +86,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -114,9 +116,13 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
+ * <li>Registers the JDK proxies of the JavaScript definitions
  * </ul>
  */
 public class VaadinQuarkusNativeProcessor {
+
+    private static final DotName JS_DEFINITION = DotName
+            .createSimple(JsDefinition.class);
 
     @BuildStep(onlyIf = IsNativeBuild.class)
     void patchAtmosphere(CombinedIndexBuildItem index,
@@ -258,6 +264,35 @@ public class VaadinQuarkusNativeProcessor {
         }
     }
 
+    /*
+     * Element.executeJs(Class) hands a JavaScript definition to
+     * JsDefinitionProxy, which implements it with a JDK proxy, and a native
+     * image only builds a proxy that is registered at build time. The interface
+     * itself is registered for reflection as well, as that is how the
+     * annotations the definition is validated against are read.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
+            BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinition,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+        Set<String> definitions = getJsDefinitions(combinedIndex.getIndex())
+                .stream().map(classInfo -> classInfo.name().toString())
+                .collect(Collectors.toSet());
+        if (definitions.isEmpty()) {
+            return;
+        }
+        definitions.stream().map(NativeImageProxyDefinitionBuildItem::new)
+                .forEach(proxyDefinition::produce);
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder(definitions.toArray(String[]::new)).methods().build());
+    }
+
+    // Visible for testing
+    Set<ClassInfo> getJsDefinitions(IndexView index) {
+        return getAnnotatedClasses(index, JS_DEFINITION).stream()
+                .filter(ClassInfo::isInterface).collect(Collectors.toSet());
+    }
+
     @BuildStep(onlyIf = IsNativeBuild.class)
     void vaadinNativeSupport(CombinedIndexBuildItem combinedIndex,
             BuildProducer<RuntimeInitializedPackageBuildItem> runtimeInitializedPackage,
@@ -267,10 +302,15 @@ public class VaadinQuarkusNativeProcessor {
 
         IndexView index = combinedIndex.getIndex();
 
+        // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
+        // from the classpath at runtime. The rest of META-INF/frontend is
+        // build-time input for Vite and is served from the production bundle,
+        // so it is deliberately left out.
         nativeImageResource.produce(NativeImageResourcePatternsBuildItem
                 .builder()
                 .includeGlobs("META-INF/VAADIN/**", "com/vaadin/**",
-                        "vaadin-i18n/**")
+                        "vaadin-i18n/**", "META-INF/frontend/FlowShortcut.js",
+                        "META-INF/frontend/FlowWebPush.js")
                 .includePatterns("org/atmosphere/util/version\\.properties")
                 .includePatterns(
                         "META-INF/maven/com.vaadin/vaadin-core/pom\\.properties",

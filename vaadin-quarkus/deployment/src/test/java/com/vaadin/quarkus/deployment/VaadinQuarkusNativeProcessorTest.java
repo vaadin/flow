@@ -16,12 +16,16 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
@@ -30,7 +34,9 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.js.JsDefinition;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -191,6 +197,56 @@ class VaadinQuarkusNativeProcessorTest {
                 "com.vaadin.flow.component.login.LoginI18nProvider"));
         assertFalse(VaadinQuarkusNativeProcessor
                 .isI18nClassName("com.vaadin.flow.i18n.I18NProvider"));
+    }
+
+    @Test
+    void testVaadinNativeSupport_registersRuntimeLoadedClientHelpers() {
+        List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
+
+        processor.vaadinNativeSupport(new CombinedIndexBuildItem(index, index),
+                item -> {
+                }, resources::add, item -> {
+                }, item -> {
+                });
+
+        assertTrue(isIncluded(resources, "META-INF/frontend/FlowShortcut.js"),
+                "Shortcut client helper should be included in the image");
+        assertTrue(isIncluded(resources, "META-INF/frontend/FlowWebPush.js"),
+                "Web push client helper should be included in the image");
+    }
+
+    @Test
+    void testGetJsDefinitions_onlyAnnotatedInterfaces() throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(GreeterJs.class);
+        indexer.indexClass(Greeter.class);
+
+        Set<ClassInfo> result = processor.getJsDefinitions(indexer.complete());
+
+        assertEquals(Set.of(GreeterJs.class.getName()),
+                result.stream().map(classInfo -> classInfo.name().toString())
+                        .collect(Collectors.toSet()),
+                "Should detect the annotated interface and leave the annotated class out");
+    }
+
+    private static boolean isIncluded(
+            List<NativeImageResourcePatternsBuildItem> resources,
+            String resource) {
+        return resources.stream()
+                .flatMap(item -> item.getIncludePatterns().stream())
+                .anyMatch(pattern -> Pattern.compile(pattern).matcher(resource)
+                        .matches());
+    }
+
+    // Only an interface can be implemented by the JDK proxy the definitions
+    // are used through, so an annotated class is not one of them
+    @JsDefinition
+    public interface GreeterJs {
+        void greet(String name);
+    }
+
+    @JsDefinition
+    public static class Greeter {
     }
 
     private static Predicate<ClassInfo> containsClass(Class<?> expectedClass) {
