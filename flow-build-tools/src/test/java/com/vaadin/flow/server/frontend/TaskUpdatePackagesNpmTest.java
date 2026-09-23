@@ -86,7 +86,7 @@ class TaskUpdatePackagesNpmTest {
 
     private ClassFinder finder;
 
-    private Logger logger = Mockito
+    private final Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
     private File generatedPath;
 
@@ -538,7 +538,7 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged()
             throws IOException {
-        final ObjectNode packageJson = (ObjectNode) getOrCreatePackageJson();
+        final ObjectNode packageJson = getOrCreatePackageJson();
         ObjectNode dependencies = (ObjectNode) packageJson.get(DEPENDENCIES);
         dependencies.put(VAADIN_ELEMENT_MIXIN, "1.2.3");
         ObjectNode vaadinSection = JacksonUtils.createObjectNode();
@@ -750,6 +750,21 @@ class TaskUpdatePackagesNpmTest {
 
         assertFalse(newPackageJson.has("overrides")
                 && newPackageJson.get("overrides").has("localdep"));
+    }
+
+    @Test
+    void npmAlias_isPinnedUsingDependencyReference() throws IOException {
+        createBasicVaadinVersionsJson();
+        Map<String, String> dependencies = createApplicationDependencies();
+        String alias = "npm:@typescript/typescript6@6.0.2";
+        dependencies.put("compiler", alias);
+        createTask(dependencies).execute();
+
+        JsonNode result = getOrCreatePackageJson();
+        assertEquals(alias,
+                result.get(DEPENDENCIES).get("compiler").asString());
+        assertEquals("$compiler",
+                result.get(OVERRIDES).get("compiler").asString());
     }
 
     @Test
@@ -1468,7 +1483,7 @@ class TaskUpdatePackagesNpmTest {
                 "workbox-build should be a nested object");
 
         // Verify nested structure exists
-        assertTrue(((ObjectNode) workboxOverride).size() > 0,
+        assertTrue(workboxOverride.size() > 0,
                 "workbox-build nested object should have at least one child");
 
         // Second run with PWA offline disabled
@@ -1484,7 +1499,7 @@ class TaskUpdatePackagesNpmTest {
             // key
             ObjectNode overridesSection = (ObjectNode) pkgJson.get(OVERRIDES);
             for (String key : JacksonUtils.getKeys(overridesSection)) {
-                assertFalse(key.equals("workbox-build"),
+                assertNotEquals("workbox-build", key,
                         "No workbox-build key should remain in any form");
             }
         }

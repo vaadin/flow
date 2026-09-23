@@ -27,6 +27,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FrontendVersionTest {
 
     @Test
+    void npmAliases_compareVersionsAndPreserveSpecification() {
+        FrontendVersion classic = new FrontendVersion(
+                "npm:@typescript/typescript6@6.0.2");
+        assertVersion(classic, 6, 0, 2, "");
+        assertEquals("npm:@typescript/typescript6@6.0.2",
+                classic.getFullVersion());
+        assertTrue(classic.isOlderThan(
+                new FrontendVersion("npm:@typescript/typescript6@6.0.3")));
+        FrontendVersion nativeCompiler = new FrontendVersion(
+                "npm:typescript@7.0.2");
+        assertVersion(nativeCompiler, 7, 0, 2, "");
+        assertEquals("npm:typescript@7.0.2", nativeCompiler.getFullVersion());
+        assertTrue(nativeCompiler.isNewerThan(classic));
+        assertVersion(new FrontendVersion("npm:typescript@^7.0.2-beta1"), 7, 0,
+                2, "beta1");
+    }
+
+    @Test
+    void npmAliases_dependencyIdentityIncludesTarget() {
+        FrontendVersion alias = new FrontendVersion(
+                "npm:@typescript/typescript6@6.0.2");
+        assertTrue(alias.isSameDependency(
+                new FrontendVersion("npm:@typescript/typescript6@6.0.2")));
+        assertFalse(alias.isSameDependency(new FrontendVersion("6.0.2")));
+        assertFalse(alias
+                .isSameDependency(new FrontendVersion("npm:typescript@6.0.2")));
+    }
+
+    @Test
+    void npmAliases_unsupportedSpecificationsAreRejected() {
+        for (String specification : new String[] { "npm:typescript",
+                "npm:@typescript/typescript6", "npm:typescript@latest",
+                "npm:typescript@", "npm:@6.0.2", "npm:typescript@*",
+                "npm:typescript@6.x", "npm:typescript@>=6.0.0",
+                "npm:typescript@6.0.2 || 7.0.2" }) {
+            assertThrows(NumberFormatException.class,
+                    () -> new FrontendVersion(specification), specification);
+        }
+    }
+
+    @Test
     void stringParser_returnsExpectedVersions() {
         FrontendVersion frontendVersion = new FrontendVersion("1.0.1");
         assertVersion(frontendVersion, 1, 0, 1, "");
@@ -58,19 +99,19 @@ class FrontendVersionTest {
         FrontendVersion fromString = new FrontendVersion("1.1.0");
         FrontendVersion fromConstructor = new FrontendVersion(1, 1);
 
-        assertTrue(fromString.equals(fromConstructor),
+        assertEquals(fromString, fromConstructor,
                 "Parsed string didn't equal constructor");
-        assertTrue(fromConstructor.equals(fromString),
+        assertEquals(fromConstructor, fromString,
                 "Constructor didn't equal parsed string");
 
         fromString = new FrontendVersion("1.1.alpha12");
         fromConstructor = new FrontendVersion(1, 1, 0, "alpha12");
-        assertTrue(fromConstructor.equals(fromString),
+        assertEquals(fromConstructor, fromString,
                 "Major-Minor version with build identifier didn't match");
 
         fromString = new FrontendVersion("12.3.5.alpha12");
         fromConstructor = new FrontendVersion(12, 3, 5, "alpha12");
-        assertTrue(fromString.equals(fromConstructor),
+        assertEquals(fromString, fromConstructor,
                 "Full version with build identifier didn't match");
     }
 

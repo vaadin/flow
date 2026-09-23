@@ -44,6 +44,11 @@ public class FrontendVersion
      */
     private final String version;
 
+    private final String aliasTarget;
+
+    private static final Pattern NPM_ALIAS = Pattern.compile(
+            "^npm:((?:@[^/@\\s]+/)?[^/@\\s]+)@([~^]?\\d+(?:\\.\\d+){0,2}(?:-[0-9A-Za-z.-]+)?)$");
+
     /**
      * Major version number. For example 6 in 6.2.0.
      */
@@ -104,6 +109,7 @@ public class FrontendVersion
      *            build identifier
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
+        aliasTarget = null;
         if (build.isEmpty()) {
             this.version = major + "." + minor + "." + revision;
         } else {
@@ -119,7 +125,9 @@ public class FrontendVersion
      * Parse version numbers from version string with the format
      * "major.minor.revision[.build]". The build part is optional.
      * <p>
-     * Versions are normalized and any caret or tildes will not be considered.
+     * Versions are normalized and any caret or tildes will not be considered
+     * when comparing versions. Versioned npm aliases are compared using their
+     * embedded version, while retaining the full alias specification.
      *
      * @param version
      *            version string as "major.minor.revision[.build]"
@@ -132,7 +140,9 @@ public class FrontendVersion
      * Parse version numbers from version string with the format
      * "major.minor.revision[.build]". The build part is optional.
      * <p>
-     * Versions are normalized and any caret or tildes will not be considered.
+     * Versions are normalized and any caret or tildes will not be considered
+     * when comparing versions. Versioned npm aliases are compared using their
+     * embedded version, while retaining the full alias specification.
      *
      * @param name
      *            the name of the artifact which version is to be parsed, used
@@ -142,17 +152,28 @@ public class FrontendVersion
      */
     public FrontendVersion(String name, String version) {
         Objects.requireNonNull(version);
+        String originalVersion = version;
+        if (version.startsWith("npm:")) {
+            Matcher alias = NPM_ALIAS.matcher(version);
+            if (!alias.matches()) {
+                throw new NumberFormatException(
+                        getInvalidVersionMessage(name, version));
+            }
+            aliasTarget = alias.group(1);
+            version = alias.group(2);
+        } else {
+            aliasTarget = null;
+        }
         if (version.isEmpty()) {
             throw new NumberFormatException(
                     getInvalidVersionMessage(name, version));
         }
-        if (!Character.isDigit(version.charAt(0))) {
-            this.version = version.substring(1).trim();
-        } else {
-            this.version = version.trim();
-        }
+        String numericVersion = !Character.isDigit(version.charAt(0))
+                ? version.substring(1).trim()
+                : version.trim();
+        this.version = aliasTarget == null ? numericVersion : originalVersion;
 
-        final String[] digits = this.version.split("[-.]", 4);
+        final String[] digits = numericVersion.split("[-.]", 4);
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
@@ -190,12 +211,36 @@ public class FrontendVersion
 
     /**
      * Gets the full version, in format {@literal x.y.z} or
-     * {@literal x.y.z.qualifier}.
+     * {@literal x.y.z.qualifier}. For npm aliases, returns the complete alias
+     * specification so that writing it back preserves the target package.
      *
      * @return the full version number
      */
     public String getFullVersion() {
         return version;
+    }
+
+    /**
+     * Checks whether two versions refer to the same npm alias target, or both
+     * are ordinary versions. Version ordering itself ignores alias targets.
+     *
+     * @param other
+     *            the version to compare
+     * @return whether the package targets match
+     */
+    public boolean hasSamePackageTarget(FrontendVersion other) {
+        return Objects.equals(aliasTarget, other.aliasTarget);
+    }
+
+    /**
+     * Checks both package target and version when detecting dependency edits.
+     *
+     * @param other
+     *            the version to compare
+     * @return whether the target and parsed version are equal
+     */
+    public boolean isSameDependency(FrontendVersion other) {
+        return hasSamePackageTarget(other) && isEqualTo(other);
     }
 
     /**
@@ -284,8 +329,7 @@ public class FrontendVersion
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof FrontendVersion) {
-            FrontendVersion other = (FrontendVersion) obj;
+        if (obj instanceof FrontendVersion other) {
             return majorVersion == other.getMajorVersion()
                     && minorVersion == other.getMinorVersion()
                     && revision == other.getRevision()
