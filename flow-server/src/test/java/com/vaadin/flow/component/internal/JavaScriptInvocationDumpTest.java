@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.js;
+package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,19 +22,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptInvocationDump.Call;
+import com.vaadin.flow.component.internal.JavaScriptInvocationDump.Entry;
+import com.vaadin.flow.component.internal.JavaScriptInvocationDump.FunctionCall;
+import com.vaadin.flow.component.internal.JavaScriptInvocationDump.Script;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.js.JsInvocations.Call;
-import com.vaadin.flow.js.JsInvocations.FunctionCall;
-import com.vaadin.flow.js.JsInvocations.Invocation;
-import com.vaadin.flow.js.JsInvocations.Script;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JsInvocationsTest {
+class JavaScriptInvocationDumpTest {
 
     @JsDefinition
     interface ScrollJs extends Serializable {
@@ -59,16 +62,16 @@ class JsInvocationsTest {
         element.callJsFunction("$connector.scrollToItem", "key", 3);
         element.executeJs("this.scrollTop = $0", 0);
 
-        List<Invocation> invocations = dumpFromUi().getInvocations();
+        List<Entry> entries = takeFromUi().getEntries();
 
-        assertEquals(3, invocations.size());
+        assertEquals(3, entries.size());
         assertEquals(ScrollJs.class,
-                assertInstanceOf(Call.class, invocations.get(0)).call()
+                assertInstanceOf(Call.class, entries.get(0)).call()
                         .definitionType());
         assertEquals(Element.CallFunctionJs.class,
-                assertInstanceOf(Call.class, invocations.get(1)).call()
+                assertInstanceOf(Call.class, entries.get(1)).call()
                         .definitionType());
-        Script script = assertInstanceOf(Script.class, invocations.get(2),
+        Script script = assertInstanceOf(Script.class, entries.get(2),
                 "plain JavaScript should be read as an expression, since it carries no call");
         assertTrue(script.expression().contains("this.scrollTop = $0"),
                 "the expression should be the JavaScript the element was given");
@@ -83,7 +86,7 @@ class JsInvocationsTest {
         element.callJsFunction("open");
         element.executeJs("this.scrollTop = 0");
 
-        List<Call> calls = dumpFromUi().getCalls(ScrollJs.class);
+        List<Call> calls = takeFromUi().getCalls(ScrollJs.class);
 
         assertEquals(1, calls.size());
         assertEquals(new JsCall(ScrollJs.class, "scrollTo", List.of(42)),
@@ -97,7 +100,7 @@ class JsInvocationsTest {
         element.callJsFunction("clearCache");
         element.executeJs(ScrollJs.class).scrollTo(42);
 
-        List<FunctionCall> calls = dumpFromUi().getFunctionCalls();
+        List<FunctionCall> calls = takeFromUi().getFunctionCalls();
 
         assertEquals(List.of("$connector.setDateMetadataConfig", "clearCache"),
                 calls.stream().map(FunctionCall::functionName).toList(),
@@ -109,20 +112,21 @@ class JsInvocationsTest {
     }
 
     @Test
-    void queriedTwice_answeredFromWhatWasRead() {
+    void queriedTwice_answeredFromWhatWasTaken() {
         element.callJsFunction("open");
 
-        JsInvocations scheduled = dumpFromUi();
+        JavaScriptInvocationDump dump = takeFromUi();
 
-        assertEquals(1, scheduled.getFunctionCalls().size());
-        assertEquals(1, scheduled.getFunctionCalls().size(),
-                "a second query should be answered from the snapshot, although the queue is empty");
-        assertEquals(List.of(), JsInvocations.dumpFrom(ui).getInvocations(),
+        assertEquals(1, dump.getFunctionCalls().size());
+        assertEquals(1, dump.getFunctionCalls().size(),
+                "a second query should be answered from the dump, although the queue is empty");
+        assertEquals(List.of(),
+                JavaScriptInvocationDump.takeFrom(ui).getEntries(),
                 "the queue should have been emptied by reading it");
     }
 
-    private JsInvocations dumpFromUi() {
+    private JavaScriptInvocationDump takeFromUi() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        return JsInvocations.dumpFrom(ui);
+        return JavaScriptInvocationDump.takeFrom(ui);
     }
 }
