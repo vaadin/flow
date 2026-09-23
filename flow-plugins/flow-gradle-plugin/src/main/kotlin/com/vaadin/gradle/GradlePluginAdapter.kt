@@ -28,7 +28,10 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleIdentifier
+import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
@@ -97,20 +100,17 @@ internal class GradlePluginAdapter private constructor(
         project: Project,
         dependencyConfiguration: Configuration
     ): FileCollection {
-        val version =
-            dependencyConfiguration.incoming.artifacts.resolvedArtifacts.map { result ->
-                val modules = result
-                    .map { it.id.componentIdentifier }
-                    .filterIsInstance<ModuleComponentIdentifier>()
-                if (modules.any {
-                        it.group == VAADIN_GROUP && it.module == FLOW_CLIENT_MODULE
-                    }
-                ) {
+        // The graph of the dependencies rather than their artifacts: a
+        // version is metadata, while asking for artifacts would ask for the
+        // jar of a project dependency before the task that builds it has run
+        val version = dependencyConfiguration.incoming.resolutionResult
+            .rootComponent.map { root ->
+                val modules = vaadinModulesOf(root)
+                if (modules.any { it.module == FLOW_CLIENT_MODULE }) {
                     NO_VERSION
                 } else {
-                    modules.firstOrNull {
-                        it.group == VAADIN_GROUP && it.module == FLOW_SERVER_MODULE
-                    }?.version ?: NO_VERSION
+                    modules.firstOrNull { it.module == FLOW_SERVER_MODULE }
+                        ?.version ?: NO_VERSION
                 }
             }
         // Held on to rather than the project, which a task must not keep
@@ -125,6 +125,31 @@ internal class GradlePluginAdapter private constructor(
             }
         }
         return project.files(client)
+    }
+
+    /**
+     * Returns the Vaadin modules of the dependency graph the given component
+     * is the root of.
+     */
+    private fun vaadinModulesOf(
+        root: ResolvedComponentResult
+    ): List<ModuleComponentIdentifier> {
+        val modules = mutableListOf<ModuleComponentIdentifier>()
+        val visited = mutableSetOf<ComponentIdentifier>()
+        val pending = ArrayDeque(listOf(root))
+        while (pending.isNotEmpty()) {
+            val component = pending.removeFirst()
+            if (!visited.add(component.id)) {
+                continue
+            }
+            (component.id as? ModuleComponentIdentifier)
+                ?.takeIf { it.group == VAADIN_GROUP }
+                ?.let { modules.add(it) }
+            component.dependencies
+                .filterIsInstance<ResolvedDependencyResult>()
+                .forEach { pending.add(it.selected) }
+        }
+        return modules
     }
 
     // ClassFinder instance is created the first time it is accessed with the
