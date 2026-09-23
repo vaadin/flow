@@ -22,7 +22,10 @@ import com.vaadin.testbench.elementsbase.Element;
  * A TestBench element representing a <code>&lt;tr&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26 together with the
+ *             component it matches. Use {@code TableRowElement} instead.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Element("tr")
 public class NativeTableRowElement extends TestBenchElement {
 }

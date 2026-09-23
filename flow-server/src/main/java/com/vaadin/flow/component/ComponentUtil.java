@@ -812,6 +812,47 @@ public class ComponentUtil {
     }
 
     /**
+     * Gets the child components of the given parent that are instances of the
+     * given type, in child order.
+     * <p>
+     * Useful for components whose children have a known structure, such as the
+     * rows of a table or the items of a list, where the child of interest is
+     * identified by its type rather than by its position.
+     *
+     * @param <T>
+     *            the child component type
+     * @param parent
+     *            the parent component from which to get the child components
+     * @param type
+     *            the type the children must be instances of
+     * @return the children of the given type, in child order
+     * @since 25.3
+     */
+    public static <T extends Component> Stream<T> getChildrenOfType(
+            Component parent, Class<T> type) {
+        return parent.getChildren().filter(type::isInstance).map(type::cast);
+    }
+
+    /**
+     * Gets the first child component of the given parent that is an instance of
+     * the given type.
+     *
+     * @param <T>
+     *            the child component type
+     * @param parent
+     *            the parent component from which to get the child component
+     * @param type
+     *            the type the child must be an instance of
+     * @return the first child of the given type, or an empty optional if the
+     *         parent has no such child
+     * @since 25.3
+     */
+    public static <T extends Component> Optional<T> getFirstChildOfType(
+            Component parent, Class<T> type) {
+        return getChildrenOfType(parent, type).findFirst();
+    }
+
+    /**
      * Resolves the id of {@code targetComponent} lazily, as described in
      * {@link #resolveOrGenerateIdLater(Element, Component, String, SerializableSupplier, SerializableConsumer)},
      * but without a getter for the current value, so the resolution cannot
@@ -890,6 +931,7 @@ public class ComponentUtil {
      *            not {@code null}
      * @param idConsumer
      *            receives the id referencing the target, not {@code null}
+     * @since 25.3
      */
     public static void resolveOrGenerateIdLater(Element sourceElement,
             Component targetComponent, String generatedIdPrefix,

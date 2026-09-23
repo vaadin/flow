@@ -41,9 +41,16 @@ import java.lang.annotation.Target;
  * A {@link PageTitle} value may be declared alongside this annotation; it is
  * then handed to the generator through {@link PageTitleContext#value()} (for
  * example as an i18n message key) rather than used as the title directly.
+ * <p>
+ * When the title instead depends on the live state of the already shown view
+ * &mdash; for example a value looked up while building the view or a title that
+ * changes after navigation &mdash; implement {@link HasDynamicTitle} on the
+ * view itself.
  *
  * @author Vaadin Ltd
  * @since 25.2
+ * @see HasDynamicTitle
+ * @see PageTitleGenerator
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

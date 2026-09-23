@@ -25,7 +25,12 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;ol&gt;</code> element.
+ * <p>
+ * A numbered list of items. Use UnorderedList when order does not matter.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ol">MDN:
+ *      &lt;ol&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -107,6 +112,14 @@ public class OrderedList extends HtmlContainer
         super(items);
     }
 
+    /**
+     * Gets the numbering type of the list items.
+     *
+     * @return the numbering type
+     * @throws IllegalStateException
+     *             if the {@code type} attribute has a value that is not one of
+     *             the {@link NumberingType} values
+     */
     public NumberingType getType() {
         String value = get(typeDescriptor);
         try {
@@ -117,6 +130,12 @@ public class OrderedList extends HtmlContainer
         }
     }
 
+    /**
+     * Sets the numbering type of the list items.
+     *
+     * @param type
+     *            the numbering type to set
+     */
     public void setType(NumberingType type) {
         set(typeDescriptor, type.value);
     }

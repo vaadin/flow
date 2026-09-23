@@ -23,9 +23,10 @@ import com.vaadin.experimental.Feature;
 /**
  * Message with feature flags sent to the debug window.
  * 
- * @since 24.3.22
+ * @since 9.0
  */
 public class FeatureFlagMessage implements Serializable {
+    /** The features reported to the debug window. */
     private List<Feature> features;
 
     /**
@@ -38,6 +39,11 @@ public class FeatureFlagMessage implements Serializable {
         this.features = features;
     }
 
+    /**
+     * Gets the features of this message.
+     *
+     * @return the features
+     */
     public List<Feature> getFeatures() {
         return features;
     }

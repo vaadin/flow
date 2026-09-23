@@ -56,6 +56,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.CustomAccessDeniedErrorView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.CustomAccessDeniedException;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.CustomAccessDeniedWithMessageView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.TestLoginView;
 
@@ -373,6 +376,23 @@ class NavigationAccessControlTest {
     }
 
     @Test
+    void beforeEnter_accessDeniedErrorRouter_customException_reroutedToCustomErrorWithReason() {
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
+
+        TestNavigationResult result = checkAccess(
+                CustomAccessDeniedWithMessageView.class, true, false, true);
+
+        assertFalse(result.wasTargetViewRendered());
+        assertEquals(CustomAccessDeniedException.class,
+                result.getRerouteError());
+        assertEquals(String.join(System.lineSeparator(),
+                accessDeniedReason(checker1), accessDeniedReason(checker2),
+                accessDeniedReason(checker3)), result.getRerouteErrorMessage());
+    }
+
+    @Test
     void beforeEnter_redirectUrlStoredForAnonymousUsers() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
@@ -562,6 +582,10 @@ class NavigationAccessControlTest {
                         return Optional.of(new ErrorTargetEntry(
                                 RouteAccessDeniedError.class,
                                 AccessDeniedException.class));
+                    } else if (exceptionClass == CustomAccessDeniedException.class) {
+                        return Optional.of(new ErrorTargetEntry(
+                                CustomAccessDeniedErrorView.class,
+                                CustomAccessDeniedException.class));
                     } else {
                         return Optional.empty();
                     }

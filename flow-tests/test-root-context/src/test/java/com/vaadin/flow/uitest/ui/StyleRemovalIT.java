@@ -53,6 +53,35 @@ public class StyleRemovalIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void removeAndAddSameStylesheetInOneRoundTrip_stylesheetStaysApplied() {
+        open();
+
+        findElement(By.id("add-style")).click();
+
+        WebElement testDiv = findElement(By.id("test-div"));
+        waitUntil(driver -> isRed(testDiv));
+        String idBeforeSwap = getRedStylesheetId();
+        Assert.assertNotNull(
+                "The added style sheet should carry a dependency id",
+                idBeforeSwap);
+
+        // Removes the style sheet and adds the same URL back before the
+        // response is sent, so one message carries both
+        findElement(By.id("swap-style")).click();
+
+        // The re-added sheet arrives under a new dependency id, so this waits
+        // for the swap to land instead of seeing the sheet on its way out
+        waitUntil(driver -> !idBeforeSwap.equals(getRedStylesheetId()), 5);
+
+        Assert.assertNotNull(
+                "The re-added style sheet should be on the page, but the page has none",
+                getRedStylesheetId());
+        // The re-added link applies the (already cached) sheet, which can take
+        // a moment to take effect
+        waitUntil(driver -> isRed(testDiv), 5);
+    }
+
+    @Test
     public void multipleStylesheets_canBeRemovedIndependently() {
         open();
 
@@ -142,5 +171,17 @@ public class StyleRemovalIT extends ChromeBrowserTest {
                         + removedColor,
                 removedColor.equals("rgb(255, 0, 0)")
                         || removedColor.equals("rgba(255, 0, 0, 1)"));
+    }
+
+    private static boolean isRed(WebElement element) {
+        String color = element.getCssValue("color");
+        return color.equals("rgb(255, 0, 0)")
+                || color.equals("rgba(255, 0, 0, 1)");
+    }
+
+    private String getRedStylesheetId() {
+        return (String) executeScript(
+                "const sheet = document.querySelector(\"link[href*='style-removal-red.css']\");"
+                        + "return sheet ? sheet.getAttribute('data-id') : null;");
     }
 }

@@ -39,7 +39,7 @@ import com.vaadin.open.Open;
  * <p>
  * Supports detecting VS Code, Eclipse and IntelliJ.
  * 
- * @since 24.3.22
+ * @since 24.0
  */
 public final class OpenInCurrentIde {
 
@@ -100,13 +100,33 @@ public final class OpenInCurrentIde {
     }
 
     /**
+     * The IDEs that can be detected from the process tree.
+     *
      * @since 24.6.7
      */
     public enum Ide {
-        ECLIPSE, VSCODE, INTELLIJ, OTHER
+        /** Eclipse IDE. */
+        ECLIPSE,
+
+        /** Visual Studio Code. */
+        VSCODE,
+
+        /** IntelliJ IDEA. */
+        INTELLIJ,
+
+        /** Anything else, including a launch from the command line. */
+        OTHER
     }
 
     /**
+     * The IDE the application was launched from, and the process it was
+     * detected in.
+     *
+     * @param ide
+     *            the detected IDE, {@link Ide#OTHER} if none was found
+     * @param processInfo
+     *            the process the IDE was detected in, {@code null} if none was
+     *            found
      * @since 24.6.7
      */
     public record IdeAndProcessInfo(Ide ide, Info processInfo) {
@@ -155,6 +175,13 @@ public final class OpenInCurrentIde {
         return LoggerFactory.getLogger(OpenInCurrentIde.class);
     }
 
+    /**
+     * Prints the process tree the IDE detection works on, to make a detection
+     * problem easier to diagnose.
+     *
+     * @param args
+     *            ignored
+     */
     public static void main(String[] args) {
         // This is so it will be easier to debug problems in the future
         printProcessTree(System.out::println);

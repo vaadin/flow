@@ -31,11 +31,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -77,7 +77,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-@NotThreadSafe
+@Isolated
 public class RouterTest extends RoutingTestBase {
 
     private static final String DYNAMIC_TITLE = "I am dynamic!";
@@ -119,6 +119,12 @@ public class RouterTest extends RoutingTestBase {
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
+
+    }
+
+    @Route("grüße")
+    @Tag(Tag.DIV)
+    public static class NonAsciiNavigationTarget extends Component {
 
     }
 
@@ -2560,6 +2566,46 @@ public class RouterTest extends RoutingTestBase {
                 "Expected event amount was wrong");
         assertEquals("path/encoded/normal/another/one", WildParameter.param,
                 "Should decode individual segments but preserve literal slashes");
+    }
+
+    @Test
+    public void static_route_with_non_ascii_character()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(NonAsciiNavigationTarget.class);
+
+        // A servlet container decodes the path info, so the route is resolved
+        // from literal characters
+        assertEquals(HttpStatusCode.OK.getCode(),
+                router.navigate(ui, new Location("grüße"),
+                        NavigationTrigger.PROGRAMMATIC),
+                "A literal non-ASCII segment should match the route");
+        assertEquals(NonAsciiNavigationTarget.class, getUIComponentClass());
+
+        // The same route is also resolved when the segment is still encoded,
+        // which is the case for client side navigation
+        assertEquals(HttpStatusCode.OK.getCode(),
+                router.navigate(ui, new Location("gr%C3%BC%C3%9Fe"),
+                        NavigationTrigger.PROGRAMMATIC),
+                "A percent-encoded non-ASCII segment should match the route");
+        assertEquals(NonAsciiNavigationTarget.class, getUIComponentClass());
+    }
+
+    @Test
+    public void wildcard_parameter_with_non_ascii_characters()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        router.navigate(ui, new Location("wild/grüße"),
+                NavigationTrigger.PROGRAMMATIC);
+        assertEquals("grüße", WildParameter.param,
+                "Literal non-ASCII characters should be preserved");
+
+        router.navigate(ui, new Location("wild/gr%C3%BC%C3%9Fe"),
+                NavigationTrigger.PROGRAMMATIC);
+        assertEquals("grüße", WildParameter.param,
+                "Encoded non-ASCII characters should be decoded");
     }
 
     @Test

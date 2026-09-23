@@ -76,6 +76,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
+            TaskGenerateJsDefinitions.class,
             TaskInstallFrontendBuildPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
@@ -84,6 +85,7 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskCopyNpmAssetsFiles.class,
+            TaskGenerateJarResourcesTsConfig.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -124,6 +126,17 @@ public class NodeTasks implements FallibleCommand {
 
         Set<String> webComponentTags = new HashSet<>();
 
+        String themeName = "";
+        PwaConfiguration pwa;
+        if (frontendDependencies != null) {
+            if (frontendDependencies.getThemeDefinition() != null) {
+                themeName = frontendDependencies.getThemeDefinition().getName();
+            }
+            pwa = frontendDependencies.getPwaConfiguration();
+        } else {
+            pwa = new PwaConfiguration();
+        }
+
         if (options.isFrontendHotdeploy()) {
             UsageStatistics.markAsUsed("flow/hotdeploy", null);
         }
@@ -137,7 +150,7 @@ public class NodeTasks implements FallibleCommand {
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
-                    commands.add(new TaskPrepareProdBundle(options));
+                    commands.add(new TaskPrepareProdBundle(options, pwa));
                     File prodBundle = ProdBundleUtils
                             .getProdBundle(options.getNpmFolder());
                     if (prodBundle.exists()) {
@@ -250,6 +263,8 @@ public class NodeTasks implements FallibleCommand {
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
+        commands.add(new TaskGenerateJsDefinitions(options));
+
         if (options.getJarFiles() != null
                 && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyFrontendFiles(options));
@@ -265,16 +280,6 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskCopyNpmAssetsFiles(options));
         }
 
-        String themeName = "";
-        PwaConfiguration pwa;
-        if (frontendDependencies != null) {
-            if (frontendDependencies.getThemeDefinition() != null) {
-                themeName = frontendDependencies.getThemeDefinition().getName();
-            }
-            pwa = frontendDependencies.getPwaConfiguration();
-        } else {
-            pwa = new PwaConfiguration();
-        }
         if (options.isProductionMode() && pwa.isEnabled()) {
             commands.add(new TaskGeneratePWAIcons(options, pwa));
         }
@@ -328,6 +333,10 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
                 options);
         commands.add(taskGenerateTsDefinitions);
+
+        // Ordered after the tasks that empty the folder the add-on sources are
+        // copied to, see TaskGenerateJarResourcesTsConfig
+        commands.add(new TaskGenerateJarResourcesTsConfig(options));
 
     }
 

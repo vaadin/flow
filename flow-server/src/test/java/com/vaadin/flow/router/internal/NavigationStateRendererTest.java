@@ -31,9 +31,9 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
@@ -96,7 +96,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class NavigationStateRendererTest {
 
     @Route(value = "preserved")
@@ -417,6 +417,13 @@ class NavigationStateRendererTest {
                         Object... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
+                }
+
+                @Override
+                public <T> T executeJs(Class<T> definitionType) {
+                    // The details are asked for through declared JavaScript
+                    jsInvoked.set(true);
+                    return super.executeJs(definitionType);
                 }
             };
 

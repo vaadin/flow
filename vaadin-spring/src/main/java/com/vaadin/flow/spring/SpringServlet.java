@@ -73,7 +73,10 @@ public class SpringServlet extends VaadinServlet {
                 }
             }).collect(Collectors.toList());
 
+    /** The application context the servlet and its service are wired to. */
     private final ApplicationContext context;
+
+    /** Whether the servlet is mapped to the context root. */
     private final boolean rootMapping;
 
     /**

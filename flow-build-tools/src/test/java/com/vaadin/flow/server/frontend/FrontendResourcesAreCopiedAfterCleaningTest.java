@@ -59,7 +59,13 @@ class FrontendResourcesAreCopiedAfterCleaningTest {
             throws IOException {
         File dir = getJarFrontendResourcesFolder();
         FileUtils.forceMkdir(dir);
-        List<String> files = TestUtils.listFilesRecursively(dir);
+        // The tsconfig.json generated for the copied add-on sources is not
+        // itself a copied resource. Only the one at the root of the folder is
+        // generated, so that a copied one still counts.
+        List<String> files = TestUtils.listFilesRecursively(dir).stream()
+                .filter(file -> !TaskGenerateTsConfig.TSCONFIG_JSON
+                        .equals(file))
+                .toList();
 
         assertEquals(fileCount, files.size(), "Should have frontend files");
     }

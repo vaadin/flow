@@ -33,6 +33,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Component representing a <code>&lt;iframe&gt;</code> element.
+ * <p>
+ * A nested browsing context that embeds another HTML page. Prefer this over
+ * HtmlObject for documents.
  *
  * @author Vaadin Ltd
  * @since 1.3
@@ -68,7 +71,14 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Importance types.
      */
     public enum ImportanceType {
-        AUTO("auto"), HIGH("high"), LOW("low");
+        /** The browser decides the download priority of the frame. */
+        AUTO("auto"),
+
+        /** The frame is downloaded before other, lower priority resources. */
+        HIGH("high"),
+
+        /** The frame is downloaded after other, higher priority resources. */
+        LOW("low");
 
         private final String value;
 
@@ -76,6 +86,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             this.value = value;
         }
 
+        /**
+         * Gets the value used for the {@code importance} attribute.
+         *
+         * @return the attribute value
+         */
         public String getValue() {
             return value;
         }
@@ -91,19 +106,57 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Sandbox types.
      */
     public enum SandboxType {
+        /** Applies all restrictions, which is what an empty sandbox does. */
         RESTRICT_ALL(""),
+
+        /** Allows form submission. */
         ALLOW_FORMS("allow-forms"),
+
+        /**
+         * Allows opening modal windows, such as {@code window.alert()}.
+         */
         ALLOW_MODALS("allow-modals"),
+
+        /** Allows locking the screen orientation. */
         ALLOW_ORIENTATION_LOCK("allow-orientation-lock"),
+
+        /** Allows using the Pointer Lock API. */
         ALLOW_POINTER_LOCK("allow-pointer-lock"),
+
+        /** Allows opening popups. */
         ALLOW_POPUPS("allow-popups"),
+
+        /**
+         * Allows popups to open without inheriting the sandbox restrictions.
+         */
         ALLOW_POPUPS_TO_ESCAPE_SANDBOX("allow-popups-to-escape-sandbox"),
+
+        /** Allows starting a presentation session. */
         ALLOW_PRESENTATION("allow-presentation"),
+
+        /**
+         * Keeps the content in its own origin instead of a unique one, so that
+         * it can access same-origin data such as cookies and local storage.
+         */
         ALLOW_SAME_ORIGIN("allow-same-origin"),
+
+        /** Allows running scripts. */
         ALLOW_SCRIPTS("allow-scripts"),
+
+        /**
+         * Allows requesting access to the parent's storage through the Storage
+         * Access API.
+         */
         ALLOW_STORAGE_ACCESS_BY_USER_ACTIVATION(
                 "allow-storage-access-by-user-activation"),
+
+        /** Allows navigating the top-level browsing context. */
         ALLOW_TOP_NAVIGATION("allow-top-navigation"),
+
+        /**
+         * Allows navigating the top-level browsing context, but only as a
+         * result of a user gesture.
+         */
         ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION(
                 "allow-top-navigation-by-user-activation");
 
@@ -113,6 +166,11 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
             this.value = value;
         }
 
+        /**
+         * Gets the value used for the {@code sandbox} attribute.
+         *
+         * @return the attribute value
+         */
         public String getValue() {
             return value;
         }

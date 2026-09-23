@@ -29,6 +29,20 @@ import java.io.Serializable;
  * to send UI changes from progress listeners when the download or upload
  * request is being handled. Thus, it needs
  * {@link com.vaadin.flow.component.page.Push} to be enabled in the application.
+ * <p>
+ * Since detaching the owner component does not interrupt an ongoing transfer,
+ * listeners are also notified for a transfer that outlives its owner. The UI
+ * used for the {@code UI.access} call is the one that was active when the
+ * transfer started. That UI is kept attached to its session until the transfer
+ * has completed, even if it is closed while the transfer is ongoing, so that
+ * the notifications are still run. If the client is gone but the UI is still
+ * attached, for example right after the browser tab has been closed, the UI
+ * changes are queued in the session but never reach the client.
+ * <p>
+ * The session is what an ongoing transfer cannot outlive: invalidating it
+ * terminates the transfer, and the listener is notified through
+ * {@link #onError(TransferContext, java.io.IOException)} rather than
+ * {@link #onComplete(TransferContext, long)}.
  *
  * @since 24.8
  */

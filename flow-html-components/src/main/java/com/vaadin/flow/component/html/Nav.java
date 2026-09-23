@@ -24,11 +24,20 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;nav&gt;</code> element.
+ * <p>
+ * A section of major navigation links, not every group of links on the page.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/nav">MDN:
+ *      &lt;nav&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.NAV)
+// The deprecated HasOrderedComponents is declared until its removal in 26,
+// so that applications typing this component as HasOrderedComponents keep
+// compiling
+@SuppressWarnings("removal")
 public class Nav extends HtmlContainer
         implements ClickNotifier<Nav>, HasOrderedComponents, HasAriaLabel {
 

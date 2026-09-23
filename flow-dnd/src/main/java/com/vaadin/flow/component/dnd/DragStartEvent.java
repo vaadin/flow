@@ -31,7 +31,10 @@ import com.vaadin.flow.component.EventData;
 @DomEvent("dragstart")
 public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
 
+    /** The x coordinate of the mouse pointer relative to the drag source. */
     private final int offsetX;
+
+    /** The y coordinate of the mouse pointer relative to the drag source. */
     private final int offsetY;
 
     /**

@@ -57,26 +57,26 @@ class VersionsJsonFilterTest {
     }
 
     @Test
-    void filterPlatformVersions_dependencies() throws IOException {
-        assertFilterPlatformVersions(NodeUpdater.DEPENDENCIES);
+    void filterPinnedNpmVersions_dependencies() throws IOException {
+        assertFilterPinnedNpmVersions(NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformVersions_devDependencies() throws IOException {
-        assertFilterPlatformVersions(NodeUpdater.DEV_DEPENDENCIES);
+    void filterPinnedNpmVersions_devDependencies() throws IOException {
+        assertFilterPinnedNpmVersions(NodeUpdater.DEV_DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPinnedNpmDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
-        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+        assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPinnedNpmDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
-        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+        assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEV_DEPENDENCIES);
     }
 
@@ -163,7 +163,7 @@ class VersionsJsonFilterTest {
                 filteredJson.get("@vaadin/vaadin-progress-bar").asString());
     }
 
-    private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+    private void assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
             String depKey) throws IOException {
         String versions = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()
@@ -207,7 +207,7 @@ class VersionsJsonFilterTest {
         }
     }
 
-    private void assertFilterPlatformVersions(String depKey)
+    private void assertFilterPinnedNpmVersions(String depKey)
             throws IOException {
         String pkgJson = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()

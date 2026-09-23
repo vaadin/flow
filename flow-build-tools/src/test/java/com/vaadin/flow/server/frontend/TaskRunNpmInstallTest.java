@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@NotThreadSafe
+@Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class TaskRunNpmInstallTest {
 
@@ -504,6 +504,33 @@ class TaskRunNpmInstallTest {
                 "Postinstall for 'foo' was not run");
     }
 
+    // https://github.com/vaadin/flow/issues/21662
+    @Test
+    void runNpmInstall_postInstallFails_buildFailsWithTheScriptOutput()
+            throws IOException {
+        setupPostinstallPackages();
+
+        File nodeModules = options.getNodeModulesFolder();
+        File fooPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-foo"),
+                "package.json");
+        Files.writeString(fooPackageJson.toPath(),
+                new String(getClass()
+                        .getResourceAsStream(
+                                "fake-package-with-failing-postinstall.json")
+                        .readAllBytes(), StandardCharsets.UTF_8));
+
+        task = createTask(List.of("foo"));
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        assertTrue(
+                exception.getMessage().contains("'foo'") && exception
+                        .getMessage().contains("failing on purpose"),
+                "the failure should name the package and report what the "
+                        + "script printed, was: " + exception.getMessage());
+    }
+
     @Test
     void shouldRunNpmInstallWhenFolderChanges() throws Exception {
         setupPostinstallPackages();
@@ -767,93 +794,465 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
-    void minimumFrontendPackageAge_defaultIsOneDay_addsArgument() {
-        // Default is 1 day → 1440 minutes for pnpm, 86400 seconds for bun,
-        // --min-release-age=1 for npm 11.10+, and --before=<iso-instant> for
-        // older npm
-        assertEquals("--min-release-age=1",
-                TaskRunNpmInstall
-                        .getMinimumFrontendPackageAgeArgument(
-                                new MockOptions(npmFolder), true)
-                        .orElseThrow());
-        assertTrue(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder), false)
-                .orElseThrow().startsWith("--before="));
-        assertEquals("--config.minimum-release-age=1440",
-                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnablePnpm(true), false)
-                        .orElseThrow());
-        assertEquals("--minimum-release-age=86400",
-                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnableBun(true), false)
-                        .orElseThrow());
-    }
-
-    @Test
-    void minimumFrontendPackageAge_zeroDisablesCheck_returnsEmpty() {
-        Options npmOptions = new MockOptions(npmFolder)
-                .withMinimumFrontendPackageAgeDays(0);
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, true)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, false)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnablePnpm(true)
-                                .withMinimumFrontendPackageAgeDays(0),
-                        false)
-                .isPresent());
-        assertFalse(TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(
-                        new MockOptions(npmFolder).withEnableBun(true)
-                                .withMinimumFrontendPackageAgeDays(0),
-                        false)
-                .isPresent());
-    }
-
-    @Test
-    void minimumFrontendPackageAge_npmNewEnough_addsMinReleaseAgeArgument() {
-        Options npmOptions = new MockOptions(npmFolder)
-                .withMinimumFrontendPackageAgeDays(2);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, true);
-        // npm 11.10+: --min-release-age takes a value in days
-        assertEquals("--min-release-age=2", arg.orElseThrow());
-    }
-
-    @Test
-    void minimumFrontendPackageAge_npmTooOld_fallsBackToBeforeArgument() {
-        Options npmOptions = new MockOptions(npmFolder)
-                .withMinimumFrontendPackageAgeDays(2);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(npmOptions, false);
-        assertTrue(arg.isPresent());
-        assertTrue(arg.get().startsWith("--before="),
-                "Older npm should fall back to --before, was: " + arg.get());
-    }
-
-    @Test
-    void minimumFrontendPackageAge_pnpm_addsMinimumReleaseAgeArgument() {
-        Options pnpmOptions = new MockOptions(npmFolder).withEnablePnpm(true)
-                .withMinimumFrontendPackageAgeDays(2);
-        Optional<String> arg = TaskRunNpmInstall
-                .getMinimumFrontendPackageAgeArgument(pnpmOptions, false);
+    void minimumFrontendPackageAge_pnpm_usesMinimumReleaseAgeInMinutes() {
         // 2 days = 2880 minutes; pnpm setting form
-        assertEquals("--config.minimum-release-age=2880", arg.orElseThrow());
+        assertEquals("--config.minimum-release-age=2880",
+                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnablePnpm(true), 2,
+                        false));
     }
 
     @Test
-    void minimumFrontendPackageAge_bun_addsMinimumReleaseAgeInSeconds() {
-        Options bunOptions = new MockOptions(npmFolder).withEnableBun(true)
-                .withMinimumFrontendPackageAgeDays(2);
+    void minimumFrontendPackageAge_bun_usesMinimumReleaseAgeInSeconds() {
         // 2 days = 172800 seconds
         assertEquals("--minimum-release-age=172800",
-                TaskRunNpmInstall
-                        .getMinimumFrontendPackageAgeArgument(bunOptions, false)
+                TaskRunNpmInstall.getMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true), 2,
+                        false));
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_nothingConfigured_usesDefault() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+
+        assertEquals("--min-release-age="
+                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS,
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder), tools).orElseThrow());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_zeroConfigured_noArgumentAndNoAge() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Options options = new MockOptions(npmFolder)
+                .withMinimumFrontendPackageAgeDays(0);
+
+        // nothing blocks a version, so nothing has to be excluded either
+        assertMinimumFrontendPackageAge(options, tools, false, null);
+
+        // an age npm is configured with is a value that blocks nothing too
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("0"));
+
+        assertMinimumFrontendPackageAge(options, tools, false, null);
+    }
+
+    private MockLogger assertMinimumFrontendPackageAge(Options options,
+            FrontendTools tools, boolean applies, String argument) {
+        MockLogger logger = new MockLogger();
+        TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(options, tools,
+                        List.of(TaskRunNpmInstall.getToolName(options)),
+                        logger);
+
+        assertEquals(applies, minimumAge.applies());
+        assertEquals(Optional.ofNullable(argument), minimumAge.argument());
+        return logger;
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmrcValue_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+
+        // No argument is passed, so npm applies its own configuration
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder), tools, true, null);
+
+        // the value npm reports is a number of days
+        assertTrue(logger.getLogs().contains("configured for npm (7 days)"),
+                logger.getLogs());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmReportsNpmrcValueAsBefore_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm 11.10 to 11.13 turn a configured min-release-age into the date
+        // of the before setting and report min-release-age as unset, while
+        // still applying the configured age to an install. npm older than
+        // 11.10 has no min-release-age setting at all, and a project may
+        // configure before itself, so a date is what npm reports in any of
+        // those cases
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before")))
+                .thenReturn(Optional.of("2026-06-08T08:04:31.925Z"));
+
+        // No argument is passed, so npm applies its own configuration, and a
+        // date blocks a version too new even though it is not a day count
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder), tools, true, null);
+
+        // a date is reported as a date instead of as a number of days
+        assertTrue(logger.getLogs().contains(
+                "(no versions released after 2026-06-08T08:04:31.925Z)"),
+                logger.getLogs());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_configuredInVaadin_overridesNpmrcValue() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+
+        assertEquals("--min-release-age=3",
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder)
+                                .withMinimumFrontendPackageAgeDays(3),
+                        tools).orElseThrow());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmTooOldWithNothingConfigured_usesBeforeDefault() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+                .thenReturn(false);
+
+        assertTrue(resolveMinimumFrontendPackageAgeArgument(
+                new MockOptions(npmFolder), tools).orElseThrow()
+                .startsWith("--before="));
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_pnpmConfiguredValue_doesNotOverrideIt() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // pnpm names the setting minimumReleaseAge, unlike npm
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("minimumReleaseAge"),
+                Mockito.eq("minimum-release-age")))
+                .thenReturn(Optional.of("4320"));
+
+        // No argument is passed, so pnpm applies its own configuration
+        MockLogger logger = assertMinimumFrontendPackageAge(
+                new MockOptions(npmFolder).withEnablePnpm(true), tools, true,
+                null);
+
+        // the value pnpm reports is a number of minutes
+        assertTrue(
+                logger.getLogs().contains("configured for pnpm (4320 minutes)"),
+                logger.getLogs());
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_bun_configurationIsNotRead() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // whatever bun might resolve is ignored, as bun cannot report it
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.any(), Mockito.any(String[].class)))
+                .thenReturn(Optional.of("4320"));
+
+        // bunfig.toml is not looked at, so the default is applied
+        assertEquals("--minimum-release-age="
+                + TaskRunNpmInstall.DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS
+                        * 24 * 60 * 60,
+                resolveMinimumFrontendPackageAgeArgument(
+                        new MockOptions(npmFolder).withEnableBun(true), tools)
                         .orElseThrow());
+        Mockito.verify(tools, Mockito.never()).getConfiguredSetting(
+                Mockito.anyList(), Mockito.any(), Mockito.any(String[].class));
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_zeroConfiguredWithNpmrcValue_ageStillApplies() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm keeps applying the 7 days of its own configuration, as Vaadin
+        // only leaves out the command line argument
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        Options options = new MockOptions(npmFolder)
+                .withMinimumFrontendPackageAgeDays(0);
+
+        TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(options, tools,
+                        List.of("npm"),
+                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
+
+        assertTrue(minimumAge.applies());
+        assertFalse(minimumAge.argument().isPresent());
+        // so the packages Vaadin publishes are excluded from it
+        assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
+                TaskRunNpmInstall
+                        .resolveMinimumFrontendPackageAgeExcludeArguments(
+                                options, tools, List.of("npm"),
+                                minimumAge.applies(), new MockLogger()));
+    }
+
+    @Test
+    void resolveMinimumFrontendPackageAge_npmrcValueOfZero_noAgeApplies() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm is configured not to block anything, so neither does Vaadin
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("0"));
+
+        TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(new MockOptions(npmFolder),
+                        tools, List.of("npm"),
+                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class));
+
+        assertFalse(minimumAge.applies());
+        assertFalse(minimumAge.argument().isPresent());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_npm_excludesVaadinPackages() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+
+        assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder), tools, logger));
+        assertEquals("", logger.getLogs(),
+                "excluding the packages needs no warning");
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_pnpm_excludesVaadinPackagesAsAList() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+
+        // a single occurrence stays a string, which pnpm 11 reads as
+        // excluding every package
+        assertEquals(
+                List.of("--config.minimum-release-age-exclude=@vaadin/*",
+                        "--config.minimum-release-age-exclude=@vaadin/*"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnablePnpm(true), tools,
+                        logger));
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_configuredPatterns_areKept() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // a command line value replaces the configured list instead of
+        // adding to it, so the configured patterns are passed along
+        Mockito.when(tools.getConfiguredSettingValues(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age-exclude")))
+                .thenReturn(List.of("@acme/*", "internal-tooling"));
+
+        assertEquals(
+                List.of("--min-release-age-exclude=@acme/*",
+                        "--min-release-age-exclude=internal-tooling",
+                        "--min-release-age-exclude=@vaadin/*"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder), tools, new MockLogger()));
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_npmTooOld_warnsInsteadOfExcluding() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // npm older than 11.17 only warns about an unknown configuration
+        Mockito.when(tools.npmSupportsMinReleaseAgeExclude(Mockito.anyList()))
+                .thenReturn(false);
+        MockLogger logger = new MockLogger();
+
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder), tools, logger));
+        assertWarnsAboutTheFirstDay(logger);
+        assertTrue(logger.getLogs()
+                .contains(FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                        .getFullVersion())
+                && logger.getLogs().contains(
+                        FrontendTools.MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                .getFullVersion()),
+                "the warning should name the npm version to upgrade to and "
+                        + "the Node.js version that ships it, was: "
+                        + logger.getLogs());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_pnpmTooOld_warnsInsteadOfExcluding() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        // pnpm 10.16 ignores the setting
+        Mockito.when(
+                tools.pnpmSupportsMinimumReleaseAgeExclude(Mockito.anyList()))
+                .thenReturn(false);
+        MockLogger logger = new MockLogger();
+
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnablePnpm(true), tools,
+                        logger));
+        assertWarnsAboutTheFirstDay(logger);
+        assertTrue(logger.getLogs().contains("10.17.0"),
+                "the warning should name the pnpm version to upgrade to, was: "
+                        + logger.getLogs());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_bun_warnsInsteadOfExcluding() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+
+        // bun can only exclude packages through bunfig.toml, and only by
+        // their exact name
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnableBun(true), tools,
+                        logger));
+        assertWarnsAboutTheFirstDay(logger);
+        assertTrue(
+                logger.getLogs().contains("minimumReleaseAgeExcludes")
+                        && logger.getLogs().contains("@vaadin/*"),
+                "the warning should name the bunfig.toml setting to list the "
+                        + "packages in, was: " + logger.getLogs());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_bunfigListsThePackages_noWarning()
+            throws IOException {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+        Files.writeString(new File(npmFolder, "bunfig.toml").toPath(), """
+                [install]
+                minimumReleaseAgeExcludes = ["@vaadin/react-components"]
+                """);
+
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnableBun(true), tools,
+                        logger));
+        assertEquals("", logger.getLogs(),
+                "a project that lists the packages itself needs no warning");
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_bunfigListsOtherPackages_warns()
+            throws IOException {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+        // the packages Vaadin publishes are not among the excluded ones,
+        // mentioning them elsewhere in the file is not enough
+        Files.writeString(new File(npmFolder, "bunfig.toml").toPath(), """
+                [install]
+                # @vaadin/react-components
+                minimumReleaseAgeExcludes = ["react"]
+                """);
+
+        assertEquals(List.of(),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnableBun(true), tools,
+                        logger));
+        assertWarnsAboutTheFirstDay(logger);
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_noAgeApplies_noArgumentOrWarning() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+
+        // nothing is blocked, so nothing has to be excluded either
+        assertEquals(List.of(),
+                TaskRunNpmInstall
+                        .resolveMinimumFrontendPackageAgeExcludeArguments(
+                                new MockOptions(npmFolder).withEnableBun(true),
+                                tools, List.of("bun"), false, logger));
+        assertEquals("", logger.getLogs());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeExclude_npmrcValue_isStillExcludedFrom() {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
+                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        Options options = new MockOptions(npmFolder);
+
+        // the age npm resolves itself is kept, but the packages Vaadin
+        // publishes are excluded from it
+        assertFalse(resolveMinimumFrontendPackageAgeArgument(options, tools)
+                .isPresent());
+        assertEquals(List.of("--min-release-age-exclude=@vaadin/*"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
+                        new MockLogger()));
+    }
+
+    @Test
+    void postinstallArguments_pnpm_doesNotVerifyTheDependencies() {
+        // the install pnpm would start to check node_modules repeats the one
+        // Vaadin just ran, without the exclusions and without --ignore-scripts
+        assertEquals(List.of("--config.verify-deps-before-run=false"),
+                TaskRunNpmInstall.resolvePostinstallArguments(
+                        new MockOptions(npmFolder).withEnablePnpm(true)));
+    }
+
+    @Test
+    void postinstallArguments_npmAndBun_needNone() {
+        // neither checks anything before running a script, and bun rejects an
+        // argument it is not expecting
+        assertEquals(List.of(), TaskRunNpmInstall
+                .resolvePostinstallArguments(new MockOptions(npmFolder)));
+        assertEquals(List.of(), TaskRunNpmInstall.resolvePostinstallArguments(
+                new MockOptions(npmFolder).withEnableBun(true)));
+    }
+
+    private void assertWarnsAboutTheFirstDay(MockLogger logger) {
+        assertTrue(logger.getLogs().contains("first day"),
+                "the build should be warned that an installation may fail "
+                        + "during the first day after a Vaadin release, was: "
+                        + logger.getLogs());
+    }
+
+    private FrontendTools mockToolsWithoutMinimumReleaseAge() {
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+                .thenReturn(true);
+        Mockito.when(tools.npmSupportsMinReleaseAgeExclude(Mockito.anyList()))
+                .thenReturn(true);
+        Mockito.when(
+                tools.pnpmSupportsMinimumReleaseAgeExclude(Mockito.anyList()))
+                .thenReturn(true);
+        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
+                Mockito.any(), Mockito.any(String[].class)))
+                .thenReturn(Optional.empty());
+        Mockito.when(tools.getConfiguredSettingValues(Mockito.anyList(),
+                Mockito.any(), Mockito.any(String[].class)))
+                .thenReturn(List.of());
+        return tools;
+    }
+
+    private List<String> resolveMinimumFrontendPackageAgeExcludeArguments(
+            Options options, FrontendTools tools, Logger logger) {
+        return TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAgeExcludeArguments(options,
+                        tools, List.of(TaskRunNpmInstall.getToolName(options)),
+                        true, logger);
+    }
+
+    private Optional<String> resolveMinimumFrontendPackageAgeArgument(
+            Options options, FrontendTools tools) {
+        return TaskRunNpmInstall
+                .resolveMinimumFrontendPackageAge(options, tools,
+                        List.of("npm"),
+                        LoggerFactory.getLogger(TaskRunNpmInstallTest.class))
+                .argument();
+    }
+
+    @Test
+    void isNetworkFailure_connectionResetOutput_detected() {
+        assertTrue(TaskRunNpmInstall.isNetworkFailure(
+                """
+                        npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+                        npm error code ECONNRESET
+                        npm error network aborted
+                        npm error network This is a problem related to network connectivity.
+                        """));
+    }
+
+    @Test
+    void isNetworkFailure_missingDependencyOutput_notDetected() {
+        assertFalse(TaskRunNpmInstall.isNetworkFailure(
+                """
+                        npm error code E404
+                        npm error 404 Not Found - GET https://registry.npmjs.org/@vaadin/no-such-package
+                        npm error 404 '@vaadin/no-such-package@^1.0.0' is not in this registry.
+                        """));
     }
 
 }

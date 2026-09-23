@@ -126,17 +126,10 @@ internal class GradlePluginAdapter private constructor(
     ): FileCollection {
         val dependencyConfigurationJars: FileCollection =
             if (dependencyConfiguration != null) {
-                val artifactFilter = config.classpathFilter.toPredicate()
                 val artifacts = dependencyConfiguration.incoming.artifactView {
-                    it.componentFilter { componentId ->
-                        // a componentId different ModuleComponentIdentifier
-                        // could be a local library, should not be filtered out
-                        val accepted =
-                            componentId !is ModuleComponentIdentifier || artifactFilter.test(
-                                componentId.moduleIdentifier
-                            )
-                        accepted
-                    }
+                    it.componentFilter(
+                        ClasspathComponentFilter(config.classpathFilter)
+                    )
                 }.files
                 artifacts
             } else project.files()
@@ -373,7 +366,9 @@ internal class GradlePluginAdapter private constructor(
         return config.commercialWithBanner.get()
     }
 
-    override fun minimumFrontendPackageAgeDays(): Int =
-        config.minimumFrontendPackageAgeDays.get()
+    // Null when not configured, so that the value configured for the package
+    // manager itself is used instead of being overridden
+    override fun minimumFrontendPackageAgeDays(): Int? =
+        config.minimumFrontendPackageAgeDays.orNull
 
 }

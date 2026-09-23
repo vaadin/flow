@@ -41,6 +41,18 @@ public interface ElementRequestHandler extends Serializable {
      * typical stream handling issues, e.g. exceptions yourself. However, you do
      * not need to close the stream yourself, Flow will handle that for you when
      * needed.
+     * <p>
+     * Note: the owner element's attached, visible, enabled and inert state is
+     * checked before this method is called, but not while it is running. A
+     * request that has already been passed to this method is therefore served
+     * to the end even if the owner element is detached, hidden or disabled in
+     * the meantime.
+     * <p>
+     * Note: the request is terminated if the session is invalidated while it is
+     * being served. The streams of the given request and response then refuse
+     * to transfer any more bytes and throw an {@link IOException} instead, so a
+     * handler that reads or writes through some other means should stop on its
+     * own account when the session is no longer valid.
      *
      * @param request
      *            VaadinRequest request to handle

@@ -28,10 +28,18 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * Default implementation for {@link BrowserLiveReloadAccessor} that stores the
  * instance in the Vaadin context.
  * 
- * @since 24.3.22
+ * @since 8.0
  */
 public class BrowserLiveReloadAccessorImpl
         implements BrowserLiveReloadAccessor {
+
+    /**
+     * Creates the accessor. Flow instantiates it when building the
+     * {@code Lookup}.
+     */
+    public BrowserLiveReloadAccessorImpl() {
+        // Default constructor
+    }
 
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {

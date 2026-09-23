@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -33,6 +34,8 @@ import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -331,6 +334,33 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns the current time of the browser as an {@link Instant}. This will
+     * not be entirely accurate due to varying network latencies, but should
+     * provide a close-enough value for most cases.
+     * <p>
+     * The returned instant is a point on the time line and does not carry a
+     * time zone. To get the date and time as shown in the end user's computer,
+     * combine it with the browser's time zone. Note that
+     * {@link #getTimeZoneId()} returns {@code null} if the browser did not
+     * report a time zone, so a fallback is needed:
+     *
+     * <pre>
+     * ExtendedClientDetails details = ...;
+     * String timeZoneId = details.getTimeZoneId();
+     * ZoneId zone = timeZoneId != null ? ZoneId.of(timeZoneId)
+     *         : ZoneId.systemDefault();
+     * ZonedDateTime browserDateTime = details.getBrowserTime().atZone(zone);
+     * </pre>
+     *
+     * @return the current time of the browser, not {@code null}
+     * @see #getTimeZoneId()
+     * @since 25.3
+     */
+    public Instant getBrowserTime() {
+        return Instant.now().plusMillis(clientServerTimeDelta);
+    }
+
+    /**
      * Returns the current date and time of the browser. This will not be
      * entirely accurate due to varying network latencies, but should provide a
      * close-enough value for most cases. Also note that the returned Date
@@ -351,9 +381,12 @@ public class ExtendedClientDetails implements Serializable {
      * @see #isDSTInEffect()
      * @see #getDSTSavings()
      * @see #getTimezoneOffset()
+     * @deprecated use {@link #getBrowserTime()} instead, which returns a
+     *             time-zone independent {@link Instant}
      */
+    @Deprecated(since = "25.3", forRemoval = true)
     public Date getCurrentDate() {
-        return new Date(new Date().getTime() + clientServerTimeDelta);
+        return Date.from(getBrowserTime());
     }
 
     /**
@@ -406,6 +439,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the platform reported by the browser, or {@code null} if the
      *         browser did not report one
+     * @since 25.3
      */
     public String getNavigatorPlatform() {
         return navigatorPlatform;
@@ -625,7 +659,6 @@ public class ExtendedClientDetails implements Serializable {
      * @since 25.0
      */
     public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
-        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
         final SerializableConsumer<JsonNode> resultHandler = json -> {
             ExtendedClientDetails details = updateFromJson(ui, json);
             if (callback != null) {
@@ -636,6 +669,24 @@ public class ExtendedClientDetails implements Serializable {
             throw new RuntimeException("Unable to retrieve extended "
                     + "client details. JS error is '" + err + "'");
         };
-        ui.getPage().executeJs(js).then(resultHandler, errorHandler);
+        ui.getPage().executeJs(ClientDetailsJs.class).readDetails()
+                .then(resultHandler, errorHandler);
+    }
+
+    /**
+     * How the browser is asked about itself again, as a JavaScript definition
+     * for {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ClientDetailsJs extends Serializable {
+
+        /**
+         * Reads what the browser reports about itself, which is the same set of
+         * values the bootstrap collects.
+         *
+         * @return the pending details
+         */
+        @JsExpression("return Vaadin.Flow.getBrowserDetailsParameters();")
+        PendingJavaScriptResult readDetails();
     }
 }

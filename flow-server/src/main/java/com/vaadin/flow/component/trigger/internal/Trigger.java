@@ -83,7 +83,19 @@ public abstract class Trigger implements Serializable {
      *            {@code null}
      */
     protected Trigger(Component host) {
-        this.host = Objects.requireNonNull(host).getElement();
+        this(Objects.requireNonNull(host, "host must not be null")
+                .getElement());
+    }
+
+    /**
+     * Creates a new trigger bound to the given element.
+     *
+     * @param host
+     *            the element the trigger fires on, not {@code null}
+     * @since 25.3
+     */
+    protected Trigger(Element host) {
+        this.host = Objects.requireNonNull(host, "host must not be null");
         verifyArmedBeforeClientResponse();
     }
 

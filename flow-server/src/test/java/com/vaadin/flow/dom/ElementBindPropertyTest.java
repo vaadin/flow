@@ -32,6 +32,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -42,6 +43,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -1008,8 +1010,105 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         emulateClientUpdate(component.getElement(), "prop", "bar");
     }
 
+    @Test
+    void bindProperty_clientSendsObjectForStringSignal_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        // The compiler generates a cast to String into the write callback, so
+        // the client value is rejected before it reaches the signal
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        rejectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForErasedStringSignal_signalNotPoisoned() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        // Binding through generic code erases the value type, so nothing casts
+        // the client value before it reaches SharedValueSignal.set
+        component.getElement().bindProperty("prop", signal,
+                erasedSetter(signal));
+        rejectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_writeCallbackThrowsUnrelatedClassCastException_updateIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        // A failed cast inside the callback looks exactly like the cast that
+        // the compiler generates for a typed callback, so it is reported and
+        // reverted instead of propagating like other callback failures
+        component.getElement().bindProperty("prop", signal, value -> {
+            Object notAString = Integer.valueOf(1);
+            signal.set((String) notAString);
+        });
+        rejectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", "bar");
+
+        assertEquals("foo", signal.peek());
+        assertEquals("foo", component.getElement().getProperty("prop"));
+    }
+
+    @Test
+    void bindProperty_clientSendsObjectForErasedLocalSignal_valueAccepted() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        // A local signal declares no value type and an erased callback casts
+        // nothing, so nothing detects the mismatch. That is accepted since a
+        // local signal is confined to one session and cannot poison a signal
+        // tree that other sessions read.
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        ObjectNode fromClient = mismatchedJson();
+        component.getElement().bindProperty("prop", signal,
+                erasedSetter(signal));
+        AtomicReference<Serializable> eventValue = new AtomicReference<>();
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> eventValue.set(event.getValue()));
+
+        emulateClientUpdate(component.getElement(), "prop", fromClient);
+
+        assertEquals(fromClient, ((ValueSignal<?>) signal).peek());
+        assertEquals(fromClient, eventValue.get());
+    }
+
+    private <T> SerializableConsumer<T> erasedSetter(
+            SharedValueSignal<T> signal) {
+        return signal::set;
+    }
+
+    private <T> SerializableConsumer<T> erasedSetter(ValueSignal<T> signal) {
+        return signal::set;
+    }
+
+    private void rejectPropertyChanges(Element element) {
+        element.addPropertyChangeListener("prop", "change",
+                event -> fail("Property change listener should not be "
+                        + "triggered for a value that the signal rejected, "
+                        + "but got " + event.getValue()));
+    }
+
+    private ObjectNode mismatchedJson() {
+        ObjectNode json = JacksonUtils.createObjectNode();
+        json.put("evil", true);
+        return json;
+    }
+
     private void emulateClientUpdate(Element element, String property,
-            String value) {
+            Serializable value) {
         ElementPropertyMap childModel = ElementPropertyMap
                 .getModel(element.getNode());
         try {

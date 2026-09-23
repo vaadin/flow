@@ -1,5 +1,5 @@
 import { UserConfigFn } from 'vite';
-import { overrideVaadinConfig } from './vite.generated';
+import { overrideVaadinConfig } from './vite.generated.ts';
 
 /**
  * Dumps effective contents of config.optimizeDeps for tests

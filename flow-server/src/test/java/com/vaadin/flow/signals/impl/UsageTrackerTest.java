@@ -474,11 +474,13 @@ class UsageTrackerTest extends SignalTestBase {
                 committerRef.set(committer);
                 committer.start();
 
-                // Wait until the committer holds the tree lock and is blocked
-                // trying to enter the monitor. Bounded so the fixed code --
-                // where the committer never stays blocked -- does not hang.
+                // Wait until the committer either holds the tree lock and
+                // is blocked trying to enter the monitor (the inversion) or
+                // has run the commit to completion (no inversion). Bounded so
+                // that neither outcome hangs the test.
                 long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
                 while (committer.getState() != Thread.State.BLOCKED
+                        && committer.getState() != Thread.State.TERMINATED
                         && System.nanoTime() < deadline) {
                     Thread.onSpinWait();
                 }
@@ -513,16 +515,24 @@ class UsageTrackerTest extends SignalTestBase {
 
         registrar.join(10_000);
 
+        // The committer runs to completion on its own once registration no
+        // longer holds the monitor, so wait for it too: only a thread that is
+        // still alive after its own join is actually stuck.
         Thread committer = committerRef.get();
-        if (registrar.isAlive() || (committer != null && committer.isAlive())) {
+        if (committer != null) {
+            committer.join(10_000);
+        }
+
+        boolean registrarStuck = registrar.isAlive();
+        boolean committerStuck = committer != null && committer.isAlive();
+        if (registrarStuck || committerStuck) {
             ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
             long[] deadlocked = tmx.findDeadlockedThreads();
             StringBuilder sb = new StringBuilder(
                     "CombinedUsage lock-order inversion between the SignalTree "
                             + "lock and the CombinedUsage monitor (see #25166): "
-                            + "registrar alive=" + registrar.isAlive()
-                            + ", committer alive="
-                            + (committer != null && committer.isAlive()));
+                            + "registrar alive=" + registrarStuck
+                            + ", committer alive=" + committerStuck);
             if (deadlocked != null) {
                 sb.append(", deadlocked thread IDs=")
                         .append(Arrays.toString(deadlocked));

@@ -15,11 +15,141 @@ files directly — edit the source `.md` file and regenerate.
 
 | Source (edit this) | Generated (do not edit) | Purpose |
 |---|---|---|
-| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes PRs and proposes documentation updates in `vaadin/docs`. |
+| `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes a pull request merged into `main` and opens a draft documentation pull request for it in `vaadin/docs`. |
+| `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
+| `guidelines-bot.md` | `guidelines-bot.lock.yml` | Guidelines bot that distils recurring code review feedback into `CONVENTIONS.md` and `guidelines/`. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
 Pinned action versions and SHAs used by the generated workflows are
 tracked in [`../aw/actions-lock.json`](../aw/actions-lock.json).
+
+### Documentation Bot
+
+`doc-bot.md` runs once per pull request, when it is merged into `main`.
+Running after the merge rather than on every push means the change has
+already been reviewed and approved, so the documentation is written
+against its final shape instead of an in-progress feature — and one run
+replaces the burst of runs a long-lived pull request used to trigger.
+
+It reads the whole pull request and decides whether the change is
+something a reader of [vaadin/docs](https://github.com/vaadin/docs) would
+need to know about. When it is, the bot opens a draft documentation pull
+request there.
+
+Four filters keep the bot off pull requests that cannot need
+documentation, cheapest first:
+
+1. **Base branch.** Only merges into `main` count. Development lands
+   there and is cherry-picked into the maintenance branches, so `main`
+   sees every change once, and a backport does not open a second
+   documentation pull request for a change already documented.
+2. **Paths.** A pull request that touches only tests, build files,
+   `.github/`, or Markdown never starts a runner.
+3. **Conventional-commit type.** Titles starting with `test:`, `ci:`,
+   `refactor:`, `chore:`, or `build:` (with or without a scope) are
+   skipped. `fix:`, `feat:`, `docs:`, and `perf:` are not.
+4. **The agent itself.** It classifies the diff and stops when everything
+   in it is internal, test-only, or build-only.
+
+Every run that gets as far as the agent leaves one standing comment on the
+source pull request saying how it ended — a link to the documentation pull
+request, or the reason no documentation was needed. A later run replaces
+that comment rather than adding another. Whoever merged the pull request
+should not have to open a run log to find out whether the change was
+documented, which is why the "nothing to document" outcome is a comment
+and not just a line in the log.
+
+There is no manual trigger. A pull request the type filter passed over
+gets no documentation pull request, and the way to correct that is to
+document the change by hand in `vaadin/docs`. To make the bot look at a
+pull request again, re-run the workflow from the Actions UI; Phase 0 then
+finds the documentation pull request an earlier run opened and commits
+onto its branch instead of opening a second one.
+
+An abandoned documentation pull request closes itself: `expires: 30` marks
+it, and the scheduled `agentics-maintenance` workflow does the closing.
+
+The trigger is `pull_request_target`, not `pull_request`, because the
+workflow runs at the one moment the head branch no longer exists — GitHub
+deletes it on merge. For a `pull_request` trigger gh-aw always emits a
+"Checkout PR branch" step that fetches that branch, so every run failed it
+and wrote an expected-failure warning into its summary; gh-aw suppresses
+the step for `pull_request_target`. The workspace is pinned to the merge
+commit, which is already on `main`, and the workflow never builds or runs
+the project, so the usual `pull_request_target` hazard of executing
+untrusted fork code does not arise. `gh aw compile` warns about the
+trigger-and-checkout combination all the same, because it matches on the
+shape rather than on the ref. One behaviour follows from the switch:
+merged pull requests from forks are documented now. A `pull_request` run
+from a fork is given no secrets, so those merges used to go silently
+undocumented.
+
+### Diagram Bot
+
+`diagram-bot.md` runs once per pull request, on `opened` and on
+`ready_for_review`. It reads the diff and the surrounding code, then
+decides for itself whether a picture would help the reviewer. Most pull
+requests do not get one: the bot only draws when the change is about
+structure, flow, or ordering — a rerouted call path, a changed lifecycle,
+a hop added or removed, a different shape of data crossing the
+client/server boundary. When it decides against a diagram it records the
+reason in the run log and leaves the pull request untouched.
+
+The diagram is a Mermaid block, which GitHub renders inline in the
+comment. A re-run hides the previous comment instead of stacking another
+diagram onto the conversation.
+
+A block that does not parse renders as an error box rather than a
+picture, so the bot checks its figure before posting with
+`.github/scripts/validate-mermaid.mjs`, which parses it with the same
+Mermaid version GitHub uses and reports the line at fault. The script
+takes a `.mmd` file, a `.md` file whose fenced `mermaid` blocks it
+extracts, or the figure on stdin, and it is useful by hand too:
+
+```bash
+node .github/scripts/validate-mermaid.mjs .github/workflows/diagram-bot.md
+```
+
+To ask for a diagram on a pull request the bot passed over, add the
+`diagram` label. That skips the decision and draws the most useful figure
+the change supports.
+
+Like every agentic workflow, it runs only for pull requests from branches
+in this repository, opened by users with write access — `gh-aw` gates
+both. Pull requests from forks never trigger it.
+
+### Guidelines Bot
+
+`guidelines-bot.md` runs once a week and reads the review comments on every
+pull request merged into `main` since the previous run — around seventy of
+them, of which roughly half carry any inline comment. The window matches the
+cadence, so recurrence means the same point raised twice inside one week of
+reviews. Release branches are left alone: a backport is the same review a
+second time.
+
+It keeps only the comments that state a rule rather than report a defect,
+that it can show were acted on — the merged code obeys the point, or the
+hunk the comment was anchored to was rewritten after it, never an author's
+"done" on its own — and that `CONVENTIONS.md` and `guidelines/` do not
+already cover. A rule also has to survive a counter-example check: `grep`
+has to show that `main` mostly follows it already. From what is left it
+proposes at most three rules in a single draft pull request, and in most
+weeks it proposes nothing at all.
+
+A rule reaches the pull request only when it recurs — two pull requests or
+two reviewers — or when repeating the mistake once more would be expensive:
+a correctness or thread-safety trap, a break in public API compatibility, a
+security consequence, a broken build or release. Everything the bot weighed
+and dropped is listed in the pull request body, which is where you tune what
+it does next.
+
+The bot's own pull requests are its memory. Closing one without merging tells
+it never to propose those rules again; while one is open it proposes nothing
+new. It only ever edits `CONVENTIONS.md` and the chapters under `guidelines/`
+— never `CLAUDE.md`, never `guidelines/overview.md`, and never code.
+
+Run it by hand from the Actions tab with `workflow_dispatch`, optionally
+setting `lookback-days` to widen or narrow the window.
 
 ### When regeneration happens
 
@@ -54,3 +184,42 @@ Commit the regenerated files together with the source `.md` changes.
 
 - Agentic workflows documentation: https://github.github.com/gh-aw/
 - `gh-aw` CLI: https://github.com/github/gh-aw
+
+## Pull request snapshots
+
+`pr-snapshot.yml` builds and publishes a Flow snapshot for a single pull
+request, so a change can be tried out from a Maven repository before it is
+merged. It is opt-in per pull request: add the `snapshot build` label and the
+build starts, and every commit pushed while the label is there republishes the
+snapshot. Removing the label stops that.
+
+The version comes from the branch name — everything up to the last slash is
+dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
+`25.4.my-thing-SNAPSHOT`. That is the scheme the TeamCity feature branch
+snapshot builds of the other Vaadin repositories use, so snapshots built from
+equally named branches of two repositories resolve each other. The workflow
+comments the version and a copy-pasteable `flow-bom` import on the pull
+request, editing the same comment on every rebuild.
+
+Dropping the prefix means the version is only as unique as the part of the
+branch name after the last slash: `fix/npe` and `issues/npe` both publish
+`25.4.npe-SNAPSHOT`, and the later build replaces the earlier one without
+warning. Two snapshot builds running at once want two names that differ by
+more than their prefix.
+
+Publishing needs the credentials, and GitHub only hands secrets to pull
+requests from a branch of this repository. That is also what limits who can
+trigger a snapshot: pushing such a branch takes write access. Labeling a pull
+request from a fork does nothing.
+
+Configuration:
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `SNAPSHOT_USERNAME` | organization secret | User the snapshot is deployed as, shared with the other builds that publish, so the account stays inventoried in one place. |
+| `SNAPSHOT_PASSWORD` | organization secret | Its password or token. |
+| `MAVEN_SNAPSHOT_DEPLOY_URL` | variable | Address the snapshot is uploaded to, which is the deploy endpoint of the repository rather than `MAVEN_SNAPSHOT_READ_URL` below: uploads go to the repository itself, resolving goes through the public address in front of it. It is the value the TeamCity snapshot builds deploy to, `%snapshot.target%`. Pointing this at the read address is refused with a 403. A variable rather than a secret, so the upload lines in the run log stay readable. |
+| `MAVEN_SNAPSHOT_READ_URL` | variable (optional) | Address the pull request comment tells people to resolve from. Defaults to `https://maven.vaadin.com/vaadin-prereleases`, so only a repository publishing elsewhere has to set it. Public by nature - it is handed out in a comment. |
+
+The `snapshot build` label has to exist in the repository for it to be
+selectable.

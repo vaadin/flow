@@ -39,10 +39,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -77,7 +77,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-@NotThreadSafe
+@Isolated
 class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @TempDir(cleanup = CleanupMode.NEVER)
@@ -260,10 +260,19 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     void minimumFrontendPackageAgeDays_readFromConfig_passedToOptions()
             throws Exception {
         Mockito.when(appConfig.getStringProperty(
-                InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, "1"))
+                InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, null))
                 .thenReturn("7");
 
         assertEquals(7,
+                captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
+    }
+
+    @Test
+    void minimumFrontendPackageAgeDays_notInConfig_leftUnsetInOptions()
+            throws Exception {
+        // Null lets the package manager configuration decide instead of
+        // overriding it with a command line argument
+        assertNull(
                 captureNodeTasksOptions().getMinimumFrontendPackageAgeDays());
     }
 

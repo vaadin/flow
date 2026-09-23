@@ -28,6 +28,7 @@ import java.io.IOException;
  *
  * @see UploadValidator
  * @see UploadEvent#reject(String)
+ * @since 25.3
  */
 public class UploadRejectedException extends IOException {
 

@@ -225,6 +225,8 @@ public class StateTree implements NodeOwner {
 
         if (node.hasBeforeClientResponseEntries()) {
             pendingExecutionNodes.add(node);
+            // A response is written for the node again
+            node.getBeforeClientResponseEntries().forEach(StateTree::restore);
         }
 
         return nodeId;
@@ -249,6 +251,10 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        // The executions stay on the node, but no response is written for a
+        // node that is not in the tree
+        node.getBeforeClientResponseEntries().forEach(StateTree::discard);
+        uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
     @Override
@@ -389,22 +395,45 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
-                    .forEach(entry -> {
-                        try {
-                            ExecutionContext context = new ExecutionContext(
-                                    getUI(), entry.getStateNode()
-                                            .isClientSideInitialized());
-                            entry.getExecution().accept(context);
-                        } catch (Exception e) {
-                            if (getErrorHandlerClass()
-                                    .equals(DefaultErrorHandler.class)) {
-                                throw e;
-                            }
-                            getUI().getSession().getErrorHandler().error(
-                                    new ErrorEvent(e, entry.getStateNode()));
-                        }
-                    });
+            callbacks.forEach(entry -> {
+                if (!entry.canExecute(getUI())) {
+                    // Flushed off its node for a tree it cannot run in
+                    discard(entry);
+                    return;
+                }
+                try {
+                    ExecutionContext context = new ExecutionContext(getUI(),
+                            entry.getStateNode().isClientSideInitialized());
+                    entry.getExecution().accept(context);
+                } catch (Exception e) {
+                    if (getErrorHandlerClass()
+                            .equals(DefaultErrorHandler.class)) {
+                        throw e;
+                    }
+                    getUI().getSession().getErrorHandler()
+                            .error(new ErrorEvent(e, entry.getStateNode()));
+                }
+            });
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree has stopped waiting
+     * to run it, if it wants to know.
+     */
+    private static void discard(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionDiscarded();
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree is waiting to run it
+     * again, if it wants to know.
+     */
+    private static void restore(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionRestored();
         }
     }
 
@@ -484,6 +513,11 @@ public class StateTree implements NodeOwner {
     public void prepareForResync() {
         preparingForResync = true;
         try {
+            // The client rebuilds its state from scratch, and the components
+            // reinitialize it from the initial attach events that preparing
+            // dispatches. Anything still queued predates that, so it would run
+            // against a client side that no longer expects it.
+            uiInternals.discardPendingJavaScriptInvocations();
             rootNode.prepareForResync();
         } finally {
             preparingForResync = false;

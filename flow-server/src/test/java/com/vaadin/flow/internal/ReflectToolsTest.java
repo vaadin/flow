@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
@@ -555,6 +556,120 @@ class ReflectToolsTest {
                 .load(originalClass.getClassLoader(),
                         ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
+    }
+
+    @Test
+    void findDeclaredField_declaredOnSameClass_foundAndAccessible()
+            throws Exception {
+        Field field = ReflectTools
+                .findDeclaredField(FieldsAndMethodsSubclass.class, "subField")
+                .orElseThrow();
+
+        assertSame(FieldsAndMethodsSubclass.class, field.getDeclaringClass());
+        assertEquals("sub", field.get(new FieldsAndMethodsSubclass()));
+    }
+
+    @Test
+    void findDeclaredField_declaredOnSuperclass_foundAndAccessible()
+            throws Exception {
+        Field field = ReflectTools
+                .findDeclaredField(FieldsAndMethodsSubclass.class, "superField")
+                .orElseThrow();
+
+        assertSame(FieldsAndMethodsSuperclass.class, field.getDeclaringClass());
+        assertEquals("super", field.get(new FieldsAndMethodsSubclass()));
+    }
+
+    @Test
+    void findDeclaredField_shadowedBySubclass_subclassFieldFound() {
+        Field field = ReflectTools
+                .findDeclaredField(FieldsAndMethodsSubclass.class, "shadowed")
+                .orElseThrow();
+
+        assertSame(FieldsAndMethodsSubclass.class, field.getDeclaringClass());
+    }
+
+    @Test
+    void findDeclaredField_notInHierarchy_empty() {
+        assertTrue(ReflectTools
+                .findDeclaredField(FieldsAndMethodsSubclass.class, "missing")
+                .isEmpty());
+    }
+
+    @Test
+    void findDeclaredMethod_declaredOnSuperclass_foundAndAccessible()
+            throws Exception {
+        Method method = ReflectTools
+                .findDeclaredMethod(FieldsAndMethodsSubclass.class,
+                        "superMethod", String.class)
+                .orElseThrow();
+
+        assertSame(FieldsAndMethodsSuperclass.class,
+                method.getDeclaringClass());
+        assertEquals("super-suffix",
+                method.invoke(new FieldsAndMethodsSubclass(), "suffix"));
+    }
+
+    @Test
+    void findDeclaredMethod_otherParameterTypes_empty() {
+        assertTrue(
+                ReflectTools.findDeclaredMethod(FieldsAndMethodsSubclass.class,
+                        "superMethod", Integer.class).isEmpty());
+    }
+
+    @Test
+    void getMethodsWithParameterCount_nameAndArity_allTheCallerCannotTellApart() {
+        assertEquals(
+                List.of(ReflectTools.findMethod(Overloading.class, "once",
+                        String.class)),
+                ReflectTools.getMethodsWithParameterCount(Overloading.class,
+                        "once", 1),
+                "a method should be found without knowing the parameter types");
+        assertEquals(2,
+                ReflectTools.getMethodsWithParameterCount(Overloading.class,
+                        "overloaded", 1).size(),
+                "overloads with the same arity cannot be told apart this way");
+        assertTrue(ReflectTools
+                .getMethodsWithParameterCount(Overloading.class, "once", 3)
+                .isEmpty());
+    }
+
+    @Test
+    void findDeclaredMethod_declaredOnObject_empty() {
+        assertTrue(ReflectTools
+                .findDeclaredMethod(FieldsAndMethodsSubclass.class, "toString")
+                .isEmpty());
+    }
+
+    // S1172: the parameters are what the lookup by arity tells apart
+    @SuppressWarnings("java:S1172")
+    public static class Overloading {
+        public void once(String value) {
+        }
+
+        public void overloaded(String value) {
+        }
+
+        public void overloaded(int value) {
+        }
+    }
+
+    // S1068 and S1144: the members are looked up and used reflectively
+    @SuppressWarnings({ "java:S1068", "java:S1144" })
+    private static class FieldsAndMethodsSuperclass {
+        private final String superField = "super";
+        private final String shadowed = "superShadowed";
+
+        private String superMethod(String suffix) {
+            return "super-" + suffix;
+        }
+    }
+
+    @SuppressWarnings("java:S1068")
+    private static class FieldsAndMethodsSubclass
+            extends FieldsAndMethodsSuperclass {
+        private final String subField = "sub";
+        private final String shadowed = "subShadowed";
     }
 
     private void assertError(String expectedError, Class<?> cls) {

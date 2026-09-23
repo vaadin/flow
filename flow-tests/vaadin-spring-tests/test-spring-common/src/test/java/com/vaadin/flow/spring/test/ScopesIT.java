@@ -18,12 +18,21 @@ package com.vaadin.flow.spring.test;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
  * @author Vaadin Ltd
  *
  */
 public class ScopesIT extends AbstractSpringTest {
+
+    /**
+     * The client only requests a resynchronization once it has waited for the
+     * message it thinks it lost, which takes {@code maxMessageSuspendTimeout}
+     * (5 seconds by default).
+     */
+    private static final int RESYNC_TIMEOUT_SECONDS = 30;
 
     @Override
     protected String getTestPath() {
@@ -87,7 +96,15 @@ public class ScopesIT extends AbstractSpringTest {
         Assert.assertEquals(mainId, innerId);
 
         // Resynchronize
-        findElement(By.id("resynchronize")).click();
+        WebElement resynchronize = findElement(By.id("resynchronize"));
+        resynchronize.click();
+
+        // The client notices the skipped sync id, requests a resync and
+        // rebuilds the DOM from scratch, which detaches the old elements. Wait
+        // for that before interacting with the view again, so that the click
+        // below is handled after the resynchronization instead of before it.
+        waitUntil(ExpectedConditions.stalenessOf(resynchronize),
+                RESYNC_TIMEOUT_SECONDS);
 
         findElement(By.id("status-check")).click();
 

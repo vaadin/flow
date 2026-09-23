@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -37,7 +37,7 @@ import com.vaadin.tests.util.TestUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@NotThreadSafe
+@Isolated
 class CompositeTest {
 
     // layoutWithSingleComponentComposite (TestLayout)

@@ -1,0 +1,16 @@
+/*
+ * A fixture the dev-loop ITs edit: DevLoopFrontendIT patches the padding below
+ * and asserts that `apply` pushed the stylesheet rather than restarting.
+ *
+ * Deliberately not activated with @Theme. An active theme puts its theme.json
+ * into the dev bundle's stats, which would make BundleValidationUtil.needsBuild
+ * true on the next start and cost every run in this module a full Vite build.
+ * The theme leg the daemon owns - classify, THEME over the connector,
+ * ThemeLiveUpdater.push - runs identically either way, because the push
+ * resolves the theme by folder rather than by what the page is using.
+ */
+@import './imported.css';
+
+.task-list {
+  padding: 8px;
+}

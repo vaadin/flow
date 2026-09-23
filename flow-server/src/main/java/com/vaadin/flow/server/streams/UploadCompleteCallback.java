@@ -26,6 +26,8 @@ import java.io.Serializable;
  * {@link UploadValidator#validateComplete(UploadEvent, UploadContent)} for the
  * phase semantics; this runs only after the whole upload has been received, so
  * it cannot abort reading early.
+ * 
+ * @since 25.3
  */
 @FunctionalInterface
 public interface UploadCompleteCallback extends Serializable {

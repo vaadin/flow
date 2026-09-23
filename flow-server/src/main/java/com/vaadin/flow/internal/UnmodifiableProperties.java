@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 25.3
  */
 public class UnmodifiableProperties extends Properties {
 

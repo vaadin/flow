@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -15,6 +15,7 @@
   <modules>
     <module>test-resources</module>
     <module>test-common</module>
+    <module>test-devloop/test-devloop-support</module>
     <module>test-lumo</module>
     <module>test-express-build</module>
     <module>test-aura</module>
@@ -36,7 +37,6 @@
     <!-- This property is needed to allow some Win-specific IT tests -->
     <!-- to be disabled via system property in CI until they got fixed-->
     <exclude.windows.failed.it.tests/>
-    <testListener/>
 
     <!-- Skip these categories in validation, use -Pslow-tests to run them -->
     <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
@@ -337,7 +337,6 @@
       </activation>
       <modules>
         <module>test-default</module>
-        <module>test-dev-mode</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
         <module>test-pwa-disabled-offline</module>
@@ -385,11 +384,14 @@
         <module>test-custom-frontend-directory</module>
 
         <module>vaadin-spring-tests</module>
+        <module>vaadin-cdi-tests</module>
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
         <module>test-legacy-frontend</module>
         <module>test-client-queue</module>
+        <module>test-push-startup</module>
+        <module>test-devloop</module>
         <module>test-commercial-banner</module>
       </modules>
     </profile>

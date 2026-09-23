@@ -25,6 +25,8 @@ import java.io.Serializable;
  * Call {@link UploadEvent#reject(String)} to refuse the upload. See
  * {@link UploadValidator#validateMetadata(UploadEvent)} for the phase
  * semantics.
+ * 
+ * @since 25.3
  */
 @FunctionalInterface
 public interface UploadMetadataCallback extends Serializable {

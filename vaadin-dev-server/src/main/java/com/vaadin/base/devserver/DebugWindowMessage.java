@@ -20,11 +20,14 @@ import java.io.Serializable;
 /**
  * A message sent to the debug window.
  * 
- * @since 24.3.22
+ * @since 9.0
  */
 public class DebugWindowMessage implements Serializable {
 
+    /** The command the debug window dispatches on. */
     private final String command;
+
+    /** The payload of the command. */
     private final Object data;
 
     /**
@@ -41,10 +44,20 @@ public class DebugWindowMessage implements Serializable {
 
     }
 
+    /**
+     * Gets the command of this message.
+     *
+     * @return the command
+     */
     public String getCommand() {
         return command;
     }
 
+    /**
+     * Gets the data of this message.
+     *
+     * @return the data, which is specific to the command
+     */
     public Object getData() {
         return data;
     }

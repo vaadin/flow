@@ -52,7 +52,12 @@ import java.io.Serializable;
  * @see VaadinService#addSessionLockListener(SessionLockListener)
  * @see SessionLockEvent
  * @since 25.2
+ * @deprecated add listeners for {@link SessionLockRequestedEvent},
+ *             {@link SessionLockAcquiredEvent} and
+ *             {@link SessionLockReleasedEvent} on the
+ *             {@link VaadinService#getEventBus() service event bus} instead
  */
+@Deprecated(since = "25.3", forRemoval = true)
 public interface SessionLockListener extends Serializable {
 
     /**

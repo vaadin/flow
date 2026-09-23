@@ -18,8 +18,8 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 import java.io.InputStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@NotThreadSafe
+@Isolated
 class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test

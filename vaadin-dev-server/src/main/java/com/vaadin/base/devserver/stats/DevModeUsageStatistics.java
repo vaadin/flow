@@ -39,7 +39,7 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.3.22
+ * @since 9.0.2
  */
 public class DevModeUsageStatistics {
 
@@ -85,6 +85,7 @@ public class DevModeUsageStatistics {
      *            the statistics sender to use
      *
      * @return the created instance or {@code null} if telemetry is not used
+     * @since 24.0.5
      */
     public static DevModeUsageStatistics init(File projectFolder,
             StatisticsStorage storage, StatisticsSender sender) {
