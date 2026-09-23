@@ -40,13 +40,15 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@link com.vaadin.flow.component.dependency.JsModule} and before
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
- * NOTE: Currently all frontend resources are bundled together into one big
- * bundle. This means, that JavaScript files loaded by one class will be present
- * on a view constructed by another class. For example, if there are two classes
+ * NOTE: Bundled frontend resources are combined into one big bundle. This
+ * means, that a bundled JavaScript file loaded by one class will be present on a
+ * view constructed by another class. For example, if there are two classes
  * {@code RootRoute} annotated with {@code @Route("")}, and another class
  * {@code RouteA} annotated with {@code @Route("route-a")} and
  * {@code @JavaScript("./src/javascript.js")}, the {@code javascript.js} will be
- * run on the root route as well.
+ * run on the root route as well. This does not apply to resources loaded at
+ * runtime, such as a {@code @JavaScript} with {@link #type()} set to
+ * {@link Type#MODULE}, which are loaded per page and never bundled.
  * <p>
  * External JavaScript dependencies (e.g. "http://example.com/some.js") are
  * added in the same way as {@link Page#addJavaScript(String)} and the result is
