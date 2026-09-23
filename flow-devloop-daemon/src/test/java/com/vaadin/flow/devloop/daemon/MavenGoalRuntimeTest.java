@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -114,5 +119,45 @@ class MavenGoalRuntimeTest {
     @Test
     void unsplittable_saysNothingWhenEveryFlagSurvives() {
         assertEquals(List.of(), MavenGoalRuntime.unsplittable(NEEDED));
+    }
+
+    /**
+     * Payara Server's channel is a {@code List<String>}, which Maven splits on
+     * commas before the plugin sees it - and the plugin then drops every piece
+     * with no {@code =} in it, so a comma does not divide a flag, it deletes
+     * most of it. The comma-bearing flags go to an argument file, which the JVM
+     * expands itself, and the rest stay inline where the launch line shows
+     * them.
+     */
+    @Test
+    void withCommasInArgFile_onlyTheCommaBearingFlagsAreMoved(@TempDir Path dir)
+            throws IOException {
+        Path file = dir.resolve("payara-args.txt");
+
+        List<String> passed = MavenGoalRuntime
+                .withCommasInArgFile(List.of("-javaagent:/ha.jar",
+                        "-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty",
+                        "-XX:+AllowEnhancedClassRedefinition"), file);
+
+        assertEquals(
+                List.of("-javaagent:/ha.jar",
+                        "-XX:+AllowEnhancedClassRedefinition", "@" + file),
+                passed);
+        assertEquals("\"-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty\"\n",
+                Files.readString(file));
+    }
+
+    /**
+     * And nothing is written when nothing needs it, so a channel of this shape
+     * costs a launch with no comma in it neither a file nor a token.
+     */
+    @Test
+    void withCommasInArgFile_noCommaLeavesTheFlagsAndTheDiskAlone(
+            @TempDir Path dir) throws IOException {
+        Path file = dir.resolve("payara-args.txt");
+
+        assertEquals(NEEDED,
+                MavenGoalRuntime.withCommasInArgFile(NEEDED, file));
+        assertFalse(Files.exists(file));
     }
 }

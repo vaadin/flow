@@ -148,17 +148,18 @@ final class MavenGoalRuntime implements AppRuntime {
     /**
      * The {@code -D} settings that keep the plugin in the shape the loop needs.
      * <p>
-     * The table's, except for a plugin that cannot work without the build
-     * extension when there is no extension to work with. Cargo's entry switches
-     * its run goal off for the whole reactor so that the extension can switch
-     * it back on for the application's own module alone; passing the first half
-     * without the second would start nothing at all, which is worse than the
-     * degraded run {@link #warnings()} already describes.
+     * The table's, except for an entry that switches its own goal off for the
+     * whole reactor so that the extension can switch it back on for the
+     * application's own module alone - Cargo and both Payaras. Passing the
+     * first half without the second would start nothing at all, which is worse
+     * than the degraded run {@link #warnings()} describes, so when there is no
+     * extension neither half is sent and the goal runs everywhere instead. That
+     * is what the warning about it is for.
      *
      * @return the settings to pass
      */
     private Map<String, String> goalProperties() {
-        if (plugin.projectPropertyFlags()
+        if (plugin.skippedOutsideTheApplication()
                 && configurationOverride().isEmpty()) {
             return Map.of();
         }
@@ -195,18 +196,104 @@ final class MavenGoalRuntime implements AppRuntime {
      * @return the single argument carrying them
      */
     private String forkedJvmFlags(List<String> jvmFlags,
-            List<String> systemProperties) {
+            List<String> systemProperties) throws IOException {
         unsplittable(systemProperties, plugin.artifactId() + " splits "
                 + plugin.jvmFlagsProperty() + " on whitespace")
                 .forEach(log::line);
         List<String> forked = new ArrayList<>(jvmFlags);
         forked.addAll(systemProperties);
         List<String> tokens = singleToken(forked);
+        if (plugin.commaSplitFlags()) {
+            tokens = withoutCommas(tokens);
+        }
         if (plugin.shellEscapedFlags()) {
             tokens = tokens.stream().map(MavenGoalRuntime::escapeBackslashes)
                     .toList();
         }
         return "-D" + flagsSetting() + "=" + String.join(" ", tokens);
+    }
+
+    /**
+     * Moves every flag with a comma in it into a JVM argument file.
+     * <p>
+     * For a channel Maven splits on commas - a plugin parameter declared
+     * {@code List<String>}, which is Payara Server's shape - a comma does not
+     * merely divide the value. Maven's converter splits on it with no escaping
+     * available, and the plugin then makes a key and a value of each piece at
+     * its first {@code =} and <em>discards any piece that has none</em>. So
+     * {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would reach the
+     * server as {@code -DdisabledPlugins=Vaadin}, with three quarters of it
+     * gone and nothing logged. Measured against nothing yet - the mechanism is
+     * read out of Plexus's converter and the mojo, and that is exactly why it
+     * is worth writing down rather than discovering later as HotswapAgent's
+     * Vaadin plugin quietly competing with every apply.
+     * <p>
+     * A JVM argument file is the way out, and it costs the channel nothing: the
+     * JVM expands {@code @file} itself, so the plugin passes the token through
+     * as one more argument, and the file's own quoting carries a comma without
+     * further ado. Only the flags that need it go there, so the rest stay
+     * visible in the launch line the daemon logs.
+     * <p>
+     * Written per module beside everything else the daemon keeps under
+     * {@code target/devloop/}, and named after the runtime so two of them could
+     * never collide.
+     *
+     * @param tokens
+     *            the flags as they would have been passed inline
+     * @return the same flags, with the comma-bearing ones replaced by one
+     *         {@code @file} token
+     * @throws IOException
+     *             if the argument file cannot be written
+     */
+    private List<String> withoutCommas(List<String> tokens) throws IOException {
+        long affected = tokens.stream().filter(MavenGoalRuntime::hasComma)
+                .count();
+        if (affected == 0) {
+            return tokens;
+        }
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve(plugin.name() + "-args.txt");
+        List<String> reduced = withCommasInArgFile(tokens, file);
+        // The path travels in the same whitespace-separated value as the rest,
+        // so a space in it breaks exactly as a space in any other flag does.
+        unsplittable(List.of("@" + file), plugin.artifactId() + " splits "
+                + plugin.jvmFlagsProperty() + " on whitespace")
+                .forEach(log::line);
+        log.line(affected + " flag(s) with a comma in them go to " + file
+                + ", which " + plugin.jvmFlagsProperty()
+                + " cannot carry intact");
+        return reduced;
+    }
+
+    /**
+     * The same flags, with the comma-bearing ones moved into an argument file.
+     *
+     * @param tokens
+     *            the flags as they would have been passed inline
+     * @param file
+     *            the argument file to write, if any flag needs one
+     * @return the flags to pass inline, with one {@code @file} token at the end
+     *         when the file was written
+     * @throws IOException
+     *             if the argument file cannot be written
+     */
+    static List<String> withCommasInArgFile(List<String> tokens, Path file)
+            throws IOException {
+        List<String> inline = new ArrayList<>();
+        List<String> quoted = new ArrayList<>();
+        for (String token : tokens) {
+            (hasComma(token) ? quoted : inline).add(token);
+        }
+        if (quoted.isEmpty()) {
+            return inline;
+        }
+        AppProcess.writeArgFile(file, quoted);
+        inline.add("@" + file);
+        return inline;
+    }
+
+    private static boolean hasComma(String flag) {
+        return flag.indexOf(',') >= 0;
     }
 
     /**
@@ -410,6 +497,18 @@ final class MavenGoalRuntime implements AppRuntime {
                     + "jar so it has none. The agents the loop needs will be "
                     + "dropped, and every apply will restart instead of hot "
                     + "reloading. Please run the daemon from its jar.");
+        } else if (plugin.skippedOutsideTheApplication() && !rewritten) {
+            // Only when the warning above has not already said it: that one
+            // ends in the same instruction, and a second copy of it would be
+            // noise rather than news.
+            warnings.add("WARNING: a goal named on a Maven command line runs "
+                    + "on every module in the reactor, and " + plugin.goal()
+                    + " has to be switched off for all but the application's "
+                    + "own - which only the dev loop's build extension can do, "
+                    + "and this daemon is not running from a jar so it has "
+                    + "none. The reactor root will start a server of its own "
+                    + "with nothing deployed in it, and the start will time "
+                    + "out. Please run the daemon from its jar.");
         }
         for (ServerPlugin.Competing competing : plugin.competing()) {
             // The extension can only force a constant, so an entry that names

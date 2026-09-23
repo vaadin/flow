@@ -295,32 +295,60 @@ class DevLoopBuildExtensionTest {
 
         afterProjectsRead(
                 projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
-                        "cargo.start.jvmargs", "-javaagent:/ha.jar -Dp=1"),
+                        "cargo.jvmargs", "-javaagent:/ha.jar -Dp=1"),
                 new Properties(), project);
 
         assertEquals("-javaagent:/ha.jar -Dp=1",
-                project.getProperties().getProperty("cargo.start.jvmargs"));
+                project.getProperties().getProperty("cargo.jvmargs"));
     }
 
     /**
-     * A value the project already declared is replaced, exactly as a forced
-     * {@code <configuration>} element is: the loop owns that parameter for the
-     * run, and two sets of agents would be no better than none.
+     * A value the project already declared is kept, and the loop's own added
+     * after it.
+     * <p>
+     * Unlike a forced {@code <configuration>} element, which the loop does own
+     * for the run, {@code cargo.jvmargs} is an ordinary thing for a project to
+     * have written for itself - the heap its container needs, a trust store -
+     * and a dev-loop run is still that project's build. Replacing it would make
+     * the loop fail where a plain {@code mvn cargo:run} works.
      */
     @Test
-    void aDeclaredProjectPropertyIsReplaced() {
+    void aDeclaredProjectPropertyIsAddedTo() {
         Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
                 "1.10.29");
         MavenProject project = project(cargo);
-        project.getProperties().setProperty("cargo.start.jvmargs", "-Xmx2g");
+        project.getProperties().setProperty("cargo.jvmargs", "-Xmx2g");
 
         afterProjectsRead(
                 projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
-                        "cargo.start.jvmargs", "-javaagent:/ha.jar"),
+                        "cargo.jvmargs", "-javaagent:/ha.jar"),
+                new Properties(), project);
+
+        // The loop's flags last: these reach a JVM command line, where the
+        // later of two conflicting flags wins, so the pom's heap size is
+        // honoured and the agents cannot be switched off by one.
+        assertEquals("-Xmx2g -javaagent:/ha.jar",
+                project.getProperties().getProperty("cargo.jvmargs"));
+    }
+
+    /**
+     * And a blank declaration is not something to append to, which would leave
+     * the value with a space in front of it and every flag one position out.
+     */
+    @Test
+    void aBlankDeclaredProjectPropertyIsSimplySet() {
+        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject project = project(cargo);
+        project.getProperties().setProperty("cargo.jvmargs", "   ");
+
+        afterProjectsRead(
+                projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "cargo.jvmargs", "-javaagent:/ha.jar"),
                 new Properties(), project);
 
         assertEquals("-javaagent:/ha.jar",
-                project.getProperties().getProperty("cargo.start.jvmargs"));
+                project.getProperties().getProperty("cargo.jvmargs"));
     }
 
     /**
@@ -334,14 +362,14 @@ class DevLoopBuildExtensionTest {
                 "1.10.29");
         MavenProject project = project(cargo);
         Properties user = projectProperties(
-                "org.codehaus.cargo:cargo-maven3-plugin", "cargo.start.jvmargs",
+                "org.codehaus.cargo:cargo-maven3-plugin", "cargo.jvmargs",
                 "-javaagent:/ha.jar");
         user.setProperty(DevLoopBuildExtension.FORCE_PROPERTY, "");
 
         afterProjectsRead(user, new Properties(), project);
 
         assertEquals("-javaagent:/ha.jar",
-                project.getProperties().getProperty("cargo.start.jvmargs"));
+                project.getProperties().getProperty("cargo.jvmargs"));
     }
 
     /** A module that does not run the named plugin keeps its own model. */
@@ -353,10 +381,10 @@ class DevLoopBuildExtensionTest {
 
         afterProjectsRead(
                 projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
-                        "cargo.start.jvmargs", "-javaagent:/ha.jar"),
+                        "cargo.jvmargs", "-javaagent:/ha.jar"),
                 new Properties(), project);
 
-        assertNull(project.getProperties().getProperty("cargo.start.jvmargs"));
+        assertNull(project.getProperties().getProperty("cargo.jvmargs"));
     }
 
     /**

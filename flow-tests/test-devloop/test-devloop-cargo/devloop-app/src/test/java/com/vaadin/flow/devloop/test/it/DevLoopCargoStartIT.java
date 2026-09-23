@@ -59,7 +59,7 @@ class DevLoopCargoStartIT extends AbstractDevLoopIT {
      * <p>
      * No parameter of {@code cargo:run} that could carry the loop's JVM flags
      * has a user property, so the daemon asks its build extension to put
-     * {@code cargo.start.jvmargs} on the model. If that channel were ever
+     * {@code cargo.jvmargs} on the model. If that channel were ever
      * broken the application would still start and still serve - it would just
      * carry no agents, and every apply would restart. This is what says the
      * agents arrived.

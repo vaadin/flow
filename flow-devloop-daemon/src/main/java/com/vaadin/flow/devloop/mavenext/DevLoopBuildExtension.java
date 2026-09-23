@@ -336,12 +336,27 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
     }
 
     /**
-     * Puts those properties on one module's model.
+     * Puts those properties on one module's model, keeping what the pom already
+     * had.
      * <p>
-     * Values are never logged. The one property this exists for carries the
-     * application's JVM command line, and that command line carries the token
-     * the daemon authenticates the application with; the name alone is enough
-     * to say what happened.
+     * Added to rather than replaced, and that is not politeness. The property
+     * this exists for is {@code cargo.jvmargs}, which is a perfectly ordinary
+     * thing for a project to have written for itself - the heap the container
+     * needs, a trust store, a flag its own stack requires - and a dev-loop run
+     * is still that project's build. Replacing it would make the loop fail
+     * where a plain {@code mvn cargo:run} works, for a reason nothing in the
+     * log would explain.
+     * <p>
+     * The loop's value goes last, because these reach a JVM command line where
+     * the later of two conflicting flags wins: a heap size the pom asks for is
+     * honoured, while the agents cannot be switched off by one. That is the
+     * same precedence {@code MavenGoalRuntime.mavenOpts} applies to
+     * {@code MAVEN_OPTS}, for the same reason.
+     * <p>
+     * Values are never logged. The value carries the application's whole JVM
+     * command line, and that command line carries the token the daemon
+     * authenticates the application with; the name alone is enough to say what
+     * happened.
      *
      * @param project
      *            the module running the plugin
@@ -355,18 +370,18 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             Map<String, String> properties) {
         Properties model = project.getProperties();
         properties.forEach((name, value) -> {
-            String replaced = model.getProperty(name);
-            if (!value.equals(replaced)) {
+            String existing = model.getProperty(name);
+            boolean adding = existing != null && !existing.isBlank();
+            String effective = adding ? existing.strip() + " " + value : value;
+            if (!effective.equals(existing)) {
                 // Said out loud for the same reason a forced element is: this
                 // run is not the build the pom describes.
                 System.out.println("[vaadin-dev] " + plugin.getArtifactId()
-                        + ": setting the project property " + name
-                        + " for this run"
-                        + (replaced == null ? ""
-                                : " (replacing the value the pom sets)")
-                        + " in " + project.getArtifactId());
+                        + ": " + (adding ? "adding to" : "setting")
+                        + " the project property " + name + " for this run in "
+                        + project.getArtifactId());
             }
-            model.setProperty(name, value);
+            model.setProperty(name, effective);
         });
     }
 
