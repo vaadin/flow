@@ -15,6 +15,7 @@
  */
 package com.vaadin.quarkus.deployment;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -27,10 +28,13 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -170,6 +174,41 @@ class VaadinQuarkusNativeProcessorTest {
         // TestComponent which extends Component
         assertTrue(result.stream().anyMatch(containsClass(NestedDto.class)),
                 "Should detect NestedDto from multi-level Component subclass");
+    }
+
+    @Test
+    void testGetJsDefinitions_onlyAnnotatedInterfaces() throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.index(new ByteArrayInputStream(
+                jsDefinitionAnnotated("com/example/GreeterJs", true)));
+        indexer.index(new ByteArrayInputStream(
+                jsDefinitionAnnotated("com/example/Greeter", false)));
+
+        Set<ClassInfo> result = processor.getJsDefinitions(indexer.complete());
+
+        assertEquals(Set.of("com.example.GreeterJs"),
+                result.stream().map(classInfo -> classInfo.name().toString())
+                        .collect(Collectors.toSet()),
+                "Should detect the annotated interface and leave the annotated class out");
+    }
+
+    /*
+     * Writes a type annotated with the JavaScript definition annotation, which
+     * is not on the class path of the Flow version this extension builds
+     * against.
+     */
+    private static byte[] jsDefinitionAnnotated(String internalName,
+            boolean asInterface) {
+        ClassWriter writer = new ClassWriter(0);
+        int access = Opcodes.ACC_PUBLIC
+                | (asInterface ? Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT
+                        : 0);
+        writer.visit(Opcodes.V17, access, internalName, null,
+                "java/lang/Object", null);
+        writer.visitAnnotation("Lcom/vaadin/flow/js/JsDefinition;", true)
+                .visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
     }
 
     private static Predicate<ClassInfo> containsClass(Class<?> expectedClass) {

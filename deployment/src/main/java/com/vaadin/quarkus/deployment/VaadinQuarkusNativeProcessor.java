@@ -34,6 +34,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.GeneratedNativeImageClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
@@ -113,9 +114,17 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
+ * <li>Registers the JDK proxies of the JavaScript definitions
  * </ul>
  */
 public class VaadinQuarkusNativeProcessor {
+
+    /*
+     * Referenced by name because the annotation was added in a later Flow
+     * version than the one this extension builds against.
+     */
+    private static final DotName JS_DEFINITION = DotName
+            .createSimple("com.vaadin.flow.js.JsDefinition");
 
     @BuildStep(onlyIf = IsNativeBuild.class)
     void patchAtmosphere(CombinedIndexBuildItem index,
@@ -255,6 +264,35 @@ public class VaadinQuarkusNativeProcessor {
                 methodCreator.returnValue(null);
             }
         }
+    }
+
+    /*
+     * Element.executeJs(Class) hands a JavaScript definition to
+     * JsDefinitionProxy, which implements it with a JDK proxy, and a native
+     * image only builds a proxy that is registered at build time. The interface
+     * itself is registered for reflection as well, as that is how the
+     * annotations the definition is validated against are read.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
+            BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinition,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+        Set<String> definitions = getJsDefinitions(combinedIndex.getIndex())
+                .stream().map(classInfo -> classInfo.name().toString())
+                .collect(Collectors.toSet());
+        if (definitions.isEmpty()) {
+            return;
+        }
+        definitions.stream().map(NativeImageProxyDefinitionBuildItem::new)
+                .forEach(proxyDefinition::produce);
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder(definitions.toArray(String[]::new)).methods().build());
+    }
+
+    // Visible for testing
+    Set<ClassInfo> getJsDefinitions(IndexView index) {
+        return getAnnotatedClasses(index, JS_DEFINITION).stream()
+                .filter(ClassInfo::isInterface).collect(Collectors.toSet());
     }
 
     @BuildStep(onlyIf = IsNativeBuild.class)
