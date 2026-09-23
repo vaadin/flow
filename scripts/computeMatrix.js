@@ -11,10 +11,6 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
-  // Each module boots a Quarkus application of its own rather than a servlet
-  // container, and the native leg needs GraalVM, so these run in the
-  // quarkus-tests job in validation.yml and in quarkus-native.yml
-  'flow-tests/vaadin-quarkus-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
