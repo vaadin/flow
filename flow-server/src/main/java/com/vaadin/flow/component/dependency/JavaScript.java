@@ -41,8 +41,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
  * NOTE: Bundled frontend resources are combined into one big bundle. This
- * means, that a bundled JavaScript file loaded by one class will be present on a
- * view constructed by another class. For example, if there are two classes
+ * means, that a bundled JavaScript file loaded by one class will be present on
+ * a view constructed by another class. For example, if there are two classes
  * {@code RootRoute} annotated with {@code @Route("")}, and another class
  * {@code RouteA} annotated with {@code @Route("route-a")} and
  * {@code @JavaScript("./src/javascript.js")}, the {@code javascript.js} will be
