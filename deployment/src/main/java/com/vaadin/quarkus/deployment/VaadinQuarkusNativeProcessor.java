@@ -304,10 +304,15 @@ public class VaadinQuarkusNativeProcessor {
 
         IndexView index = combinedIndex.getIndex();
 
+        // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
+        // from the classpath at runtime. The rest of META-INF/frontend is
+        // build-time input for Vite and is served from the production bundle,
+        // so it is deliberately left out.
         nativeImageResource.produce(NativeImageResourcePatternsBuildItem
                 .builder()
                 .includeGlobs("META-INF/VAADIN/**", "com/vaadin/**",
-                        "vaadin-i18n/**")
+                        "vaadin-i18n/**", "META-INF/frontend/FlowShortcut.js",
+                        "META-INF/frontend/FlowWebPush.js")
                 .includePatterns("org/atmosphere/util/version\\.properties")
                 .includePatterns(
                         "META-INF/maven/com.vaadin/vaadin-core/pom\\.properties",
