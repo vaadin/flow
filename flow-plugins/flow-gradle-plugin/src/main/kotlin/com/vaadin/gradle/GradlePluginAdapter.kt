@@ -78,8 +78,8 @@ internal class GradlePluginAdapter private constructor(
     }
 
     /**
-     * Resolves the jar of the Flow client of the version the project builds
-     * against.
+     * Returns the jar of the Flow client for the frontend build to copy the
+     * client frontend sources from.
      *
      * The client holds the frontend sources of the client engine, which are
      * input to the frontend build, and a production application serves the
@@ -87,31 +87,43 @@ internal class GradlePluginAdapter private constructor(
      * depend on the client, and a build resolves it here, pinned to the
      * version of flow-server the project resolves - a build must not compile a
      * client of one version into an application running the server of another.
+     *
+     * The collection is empty when the project resolves a client of its own,
+     * as one with the development server on the classpath does, and when there
+     * is no flow-server module to take a version from - the class finder
+     * reports a project without the server dependency.
      */
     private fun resolveFlowClient(
         project: Project,
         dependencyConfiguration: Configuration
     ): FileCollection {
-        val client =
+        val version =
             dependencyConfiguration.incoming.artifacts.resolvedArtifacts.map { result ->
-                val flowServer = result
+                val modules = result
                     .map { it.id.componentIdentifier }
                     .filterIsInstance<ModuleComponentIdentifier>()
-                    .firstOrNull {
-                        it.group == VAADIN_GROUP && it.module == FLOW_SERVER_MODULE
+                if (modules.any {
+                        it.group == VAADIN_GROUP && it.module == FLOW_CLIENT_MODULE
                     }
-                    ?: throw GradleException(
-                        "Unable to resolve the Flow client for the frontend " +
-                            "build: the project does not depend on " +
-                            "$VAADIN_GROUP:$FLOW_SERVER_MODULE, so there is " +
-                            "no Flow version to build the client of."
-                    )
-                project.configurations.detachedConfiguration(
-                    project.dependencies.create(
-                        "$VAADIN_GROUP:$FLOW_CLIENT_MODULE:${flowServer.version}"
-                    )
-                ).apply { isTransitive = false }.files
+                ) {
+                    NO_VERSION
+                } else {
+                    modules.firstOrNull {
+                        it.group == VAADIN_GROUP && it.module == FLOW_SERVER_MODULE
+                    }?.version ?: NO_VERSION
+                }
             }
+        // Held on to rather than the project, which a task must not keep
+        val dependencies = project.dependencies
+        val client = project.configurations.detachedConfiguration()
+        client.isTransitive = false
+        client.withDependencies { declared ->
+            version.get().takeIf { it != NO_VERSION }?.let {
+                declared.add(
+                    dependencies.create("$VAADIN_GROUP:$FLOW_CLIENT_MODULE:$it")
+                )
+            }
+        }
         return project.files(client)
     }
 
@@ -416,6 +428,10 @@ internal class GradlePluginAdapter private constructor(
         const val VAADIN_GROUP = "com.vaadin"
         const val FLOW_SERVER_MODULE = "flow-server"
         const val FLOW_CLIENT_MODULE = "flow-client"
+
+        // Providers have no absent value once mapped, so this stands for
+        // "there is no client to resolve"
+        const val NO_VERSION = ""
     }
 
 }

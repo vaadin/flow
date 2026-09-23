@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -557,14 +558,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
-        jarFiles.add(resolveFlowClient());
+        findFlowClient().ifPresent(jarFiles::add);
         return jarFiles;
 
     }
 
     /**
-     * Resolves the jar of the Flow client of the version the project builds
-     * against.
+     * Returns the jar of the Flow client for the frontend build to copy the
+     * client frontend sources from.
      * <p>
      * The client holds the frontend sources of the client engine, which are
      * input to the frontend build, and a production application serves the
@@ -572,37 +573,53 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * depend on the client, and a build resolves it here, pinned to the version
      * of {@code flow-server} the project resolves - a build must not compile a
      * client of one version into an application running the server of another.
-     * A project in development mode resolves the very same jar through the
-     * development server, which makes this a no-op there.
+     * <p>
+     * A project that does depend on the client, as one in development mode does
+     * through the development server, keeps the client it resolves itself and
+     * nothing is resolved here.
      *
-     * @return the jar of the Flow client
+     * @return the jar of the Flow client, or an empty optional when the project
+     *         resolves the client itself
      */
-    private File resolveFlowClient() {
-        String version = project.getArtifacts().stream().filter(
-                artifact -> VAADIN_GROUP_ID.equals(artifact.getGroupId())
-                        && FLOW_SERVER_ARTIFACT_ID
-                                .equals(artifact.getArtifactId()))
-                .map(Artifact::getVersion).findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Unable to resolve the Flow client for the frontend "
-                                + "build: the project does not depend on "
-                                + VAADIN_GROUP_ID + ":"
-                                + FLOW_SERVER_ARTIFACT_ID
-                                + ", so there is no Flow version to build "
-                                + "the client of."));
+    private Optional<File> findFlowClient() {
+        Set<Artifact> artifacts = project.getArtifacts();
+        if (artifacts.stream().anyMatch(artifact -> isVaadinArtifact(artifact,
+                FLOW_CLIENT_ARTIFACT_ID))) {
+            return Optional.empty();
+        }
+        Optional<String> version = artifacts.stream().filter(
+                artifact -> isVaadinArtifact(artifact, FLOW_SERVER_ARTIFACT_ID))
+                .map(Artifact::getVersion).findFirst();
+        if (version.isEmpty()) {
+            // Not a project with a Flow version to build the client of. The
+            // class finder reports the missing server dependency
+            getLog().debug("Not resolving the Flow client, the project does "
+                    + "not depend on " + VAADIN_GROUP_ID + ":"
+                    + FLOW_SERVER_ARTIFACT_ID);
+            return Optional.empty();
+        }
         ArtifactRequest request = new ArtifactRequest(
                 new DefaultArtifact(VAADIN_GROUP_ID, FLOW_CLIENT_ARTIFACT_ID,
-                        "jar", version),
+                        "jar", version.get()),
                 remoteRepositories, null);
         try {
-            return repositorySystem.resolveArtifact(repositorySession, request)
-                    .getArtifact().getFile();
+            return Optional.of(
+                    repositorySystem.resolveArtifact(repositorySession, request)
+                            .getArtifact().getFile());
         } catch (ArtifactResolutionException e) {
-            throw new IllegalStateException("Unable to resolve "
-                    + VAADIN_GROUP_ID + ":" + FLOW_CLIENT_ARTIFACT_ID + ":"
-                    + version + ", which the frontend build compiles into the "
-                    + "application bundle.", e);
+            throw new IllegalStateException(
+                    "Unable to resolve " + VAADIN_GROUP_ID + ":"
+                            + FLOW_CLIENT_ARTIFACT_ID + ":" + version.get()
+                            + ", which the frontend build compiles into the "
+                            + "application bundle.",
+                    e);
         }
+    }
+
+    private static boolean isVaadinArtifact(Artifact artifact,
+            String artifactId) {
+        return VAADIN_GROUP_ID.equals(artifact.getGroupId())
+                && artifactId.equals(artifact.getArtifactId());
     }
 
     @Override
