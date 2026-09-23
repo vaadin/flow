@@ -98,13 +98,15 @@ public final class BrowserTab implements Serializable {
 
     private final List<Command> destroyListeners = new ArrayList<>();
 
-    private long lastActiveTimestamp = System.currentTimeMillis();
+    private long lastActiveTimestamp;
 
     private boolean destroyed;
 
-    private BrowserTab(VaadinSession session, String id) {
+    private BrowserTab(VaadinSession session, String id,
+            long lastActiveTimestamp) {
         this.session = session;
         this.id = id;
+        this.lastActiveTimestamp = lastActiveTimestamp;
     }
 
     /**
@@ -143,7 +145,8 @@ public final class BrowserTab implements Serializable {
             String windowName = getWindowName(ui);
             tab = new BrowserTab(session,
                     windowName == null ? UUID.randomUUID().toString()
-                            : windowName);
+                            : windowName,
+                    ui.getInternals().getLastHeartbeatTimestamp());
             getOrCreateRegistry(session).tabs.put(tab.id, tab);
         }
         ComponentUtil.setData(ui, BrowserTab.class, tab);

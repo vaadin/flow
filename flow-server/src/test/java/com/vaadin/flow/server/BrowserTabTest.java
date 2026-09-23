@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
@@ -123,15 +125,22 @@ class BrowserTabTest {
 
     @Test
     void destroyAllTabs_destroysEveryTab() {
+        List<Throwable> errors = new ArrayList<>();
+        session.setErrorHandler(event -> errors.add(event.getThrowable()));
+        IllegalStateException failure = new IllegalStateException("failure");
         AtomicInteger destroyed = new AtomicInteger();
-        BrowserTab.get(addUI("tab-a"))
-                .addDestroyListener(destroyed::incrementAndGet);
+        BrowserTab tab = BrowserTab.get(addUI("tab-a"));
+        tab.addDestroyListener(() -> {
+            throw failure;
+        });
+        tab.addDestroyListener(destroyed::incrementAndGet);
         BrowserTab.get(addUI("tab-b"))
                 .addDestroyListener(destroyed::incrementAndGet);
 
         BrowserTab.destroyAllTabs(session);
 
         assertEquals(2, destroyed.get());
+        assertEquals(List.of(failure), errors);
     }
 
     private UI addUI(String windowName) {

@@ -1764,9 +1764,11 @@ public abstract class VaadinService implements Serializable {
      */
     void cleanupSession(VaadinSession session) {
         if (isSessionActive(session)) {
+            closeInactiveUIs(session);
+            // Before the closed UIs are removed, so that their last heartbeat
+            // still counts for the browser tab they were loaded in
             BrowserTab.destroyInactiveTabs(session,
                     1000L * getHeartbeatTimeout());
-            closeInactiveUIs(session);
             removeClosedUIs(session);
         } else {
             if (session.getState() == VaadinSessionState.OPEN) {
