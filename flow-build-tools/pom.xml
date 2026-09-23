@@ -145,6 +145,8 @@
                     <exclude>META-INF/native-image/**</exclude>
                     <!-- Dependency Maven metadata -->
                     <exclude>META-INF/maven/**</exclude>
+                    <!-- Jandex index (references unshaded class names) -->
+                    <exclude>META-INF/jandex.idx</exclude>
                   </excludes>
                 </filter>
                 <filter>
