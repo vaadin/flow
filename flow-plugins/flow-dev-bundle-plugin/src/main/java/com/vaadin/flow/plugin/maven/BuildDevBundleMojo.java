@@ -406,7 +406,7 @@ public class BuildDevBundleMojo extends AbstractMojo
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
         // The Flow client comes with the plugin rather than with the project
-        BuildFrontendUtil.findClientLocation().ifPresent(jarFiles::add);
+        BuildFrontendUtil.findClientLocation(jarFiles).ifPresent(jarFiles::add);
         return jarFiles;
 
     }

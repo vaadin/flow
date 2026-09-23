@@ -163,7 +163,7 @@ internal class GradlePluginAdapter private constructor(
         jarFiles.toMutableSet().apply {
             // The Flow client comes with the plugin rather than with the
             // project
-            BuildFrontendUtil.findClientLocation().ifPresent { add(it) }
+            BuildFrontendUtil.findClientLocation(this).ifPresent { add(it) }
         }
 
     override fun isJarProject(): Boolean = jarProject

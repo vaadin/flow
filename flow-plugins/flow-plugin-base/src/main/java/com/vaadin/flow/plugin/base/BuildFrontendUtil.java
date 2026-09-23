@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.ProdBundleUtils;
@@ -127,21 +129,32 @@ public class BuildFrontendUtil {
      * The client is a dependency of the build tooling rather than of the
      * application, so that nothing an application deploys has to carry it. The
      * location is the jar of the client, or the folder its files are in when
-     * the tooling runs from compiled classes. An application that still
-     * declares the client among its own dependencies resolves the very same
-     * jar, so adding this location to the ones a build scans is a no-op there.
+     * the tooling runs from compiled classes.
+     * <p>
+     * A project that declares the client among its own dependencies keeps the
+     * client it declares: the caller passes that client in, and this method
+     * hands over the one the tooling has only when the project has none.
      *
-     * @return the location of the Flow client, or an empty optional if the
-     *         tooling has no client to hand over
+     * @param projectJars
+     *            the locations the project itself provides the build with
+     * @return the location of the Flow client of the build tooling, or an empty
+     *         optional when the project provides a client of its own
      */
-    public static Optional<File> findClientLocation() {
+    public static Optional<File> findClientLocation(
+            Collection<File> projectJars) {
+        if (projectJars.stream().anyMatch(BuildFrontendUtil::holdsClient)) {
+            return Optional.empty();
+        }
         URL url = BuildFrontendUtil.class.getClassLoader()
                 .getResource(CLIENT_ENTRY_POINT);
         if (url == null) {
-            getLogger().debug(
-                    "The build tooling has no Flow client to copy into the "
-                            + "project, {} is not on its classpath",
-                    CLIENT_ENTRY_POINT);
+            getLogger().warn(
+                    "The Flow client is not on the classpath of the build, so "
+                            + "the frontend bundle is built without it and the "
+                            + "application will not start in the browser. The "
+                            + "build tooling is expected to carry the client, "
+                            + "check that com.vaadin:flow-client has not been "
+                            + "excluded from it.");
             return Optional.empty();
         }
         try {
@@ -158,12 +171,26 @@ public class BuildFrontendUtil {
             }
             return Optional.of(location);
         } catch (IOException | URISyntaxException e) {
-            getLogger().debug(
+            getLogger().warn(
                     "Unable to resolve the location of the Flow client from "
-                            + url,
+                            + url
+                            + ", so the frontend bundle is built without the "
+                            + "client and the application will not start in "
+                            + "the browser.",
                     e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Returns whether the given jar or folder holds the Flow client.
+     */
+    private static boolean holdsClient(File location) {
+        if (location.isDirectory()) {
+            return new File(location, CLIENT_ENTRY_POINT).exists();
+        }
+        return location.isFile() && new JarContentsManager()
+                .containsPath(location, CLIENT_ENTRY_POINT);
     }
 
     /**

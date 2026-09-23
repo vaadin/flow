@@ -138,11 +138,7 @@ class BuildFrontendUtilTest {
         String clientEntryPoint = Constants.RESOURCES_FRONTEND_DEFAULT
                 + "/FlowClient.js";
 
-        File location = BuildFrontendUtil.findClientLocation()
-                .orElseThrow(() -> new AssertionError(
-                        "The build tooling should carry the Flow client, so "
-                                + "that a project does not have to depend on "
-                                + "it to have a frontend build"));
+        File location = findClientOfTheBuildTooling();
 
         assertTrue(
                 location.isDirectory()
@@ -150,6 +146,17 @@ class BuildFrontendUtilTest {
                         : new JarContentsManager().containsPath(location,
                                 clientEntryPoint),
                 location + " should hold " + clientEntryPoint);
+    }
+
+    @Test
+    void should_leaveTheFlowClientOfTheProject_whenItHasOne() {
+        File client = findClientOfTheBuildTooling();
+
+        assertTrue(
+                BuildFrontendUtil.findClientLocation(List.of(client)).isEmpty(),
+                "A project that provides a Flow client of its own should keep "
+                        + "it rather than get a second one from the build "
+                        + "tooling");
     }
 
     @Test
@@ -944,6 +951,14 @@ class BuildFrontendUtilTest {
                 () -> "leaked env marker in: " + message);
         // No zt-exec exception should be chained as cause.
         assertEquals(null, ex.getCause());
+    }
+
+    private File findClientOfTheBuildTooling() {
+        return BuildFrontendUtil.findClientLocation(List.of())
+                .orElseThrow(() -> new AssertionError(
+                        "The build tooling should carry the Flow client, so "
+                                + "that a project does not have to depend on "
+                                + "it to have a frontend build"));
     }
 
     private static String statsJsonWithCommercialComponents() {
