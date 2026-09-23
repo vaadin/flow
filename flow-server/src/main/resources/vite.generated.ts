@@ -257,7 +257,7 @@ function statsExtracterPlugin(): PluginOption {
       const frontendFiles: Record<string, string> = {};
       frontendFiles['index.html'] = createHash('sha256').update(customIndexData.replace(/\r\n/g, '\n'), 'utf8').digest('hex');
 
-      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'#frontendExtraFileExtensions#];
+      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'#frontendExtraFileExtensions#]
 
       const isThemeComponentsResource = (id: string) =>
           id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
@@ -780,8 +780,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // tsconfig. The dev server instead locates the tsc binary with
           // Node's require relative to this root. We point it at the alias
           // Flow ships TypeScript under (@typescript/native) so the checker
-          // spawns the native `tsgo` binary instead of touching the app's own
-          // (classic) typescript specifier, which its eslint toolchain needs.
+          // spawns the native `tsgo` binary. The separate typescript alias
+          // provides the classic TS6 compiler API for tools such as eslint.
           root: env.command === 'build' ? '.' : dirname,
           typescriptPath: '@typescript/native',
         }

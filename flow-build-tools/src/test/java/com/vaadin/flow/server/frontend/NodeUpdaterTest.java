@@ -192,9 +192,10 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
-        // Flow ships the TypeScript compiler it needs under a name of its own
-        // so that it never replaces the application's own typescript version.
+        // Native TypeScript for Flow's checker and classic TypeScript for
+        // tooling that needs the compiler API.
         expectedDependencies.add("@typescript/native");
+        expectedDependencies.add("typescript");
         return expectedDependencies;
     }
 
