@@ -45,6 +45,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -695,6 +696,27 @@ class UIInternalsTest {
 
         assertEquals(initialTimestamp, internals.getLastUpdateSentTimestamp(),
                 "scheduling an invocation should not update the timestamp");
+    }
+
+    @Test
+    void setTitle_reactEnabled_titleSetOnceTheClientHasNavigated() {
+        ((MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration()).setReactEnabled(true);
+
+        internals.setTitle("new title");
+
+        var invocation = internals.getPendingJavaScriptInvocations().findFirst()
+                .orElseThrow().getInvocation();
+        // The client side router decides when the navigation is over, so the
+        // title is set from a listener rather than straight away
+        assertEquals(new JsCall(UIInternals.TitleJs.class,
+                "setTitleAfterNavigation", List.of("new title")),
+                invocation.getJsCall());
+        assertTrue(
+                invocation.getExpression()
+                        .contains("window.addEventListener('vaadin-navigated'"),
+                "the title should wait for the navigation: "
+                        + invocation.getExpression());
     }
 
     @Test
