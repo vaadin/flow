@@ -83,6 +83,10 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // RouteNotFoundError_prod.html
         hints.resources().registerPattern("com/vaadin/flow/server/**");
         hints.resources().registerPattern("com/vaadin/flow/router/**");
+
+        // Client-side helpers that are read from the classpath at runtime,
+        // like FlowShortcut.js and FlowWebPush.js
+        hints.resources().registerPattern("META-INF/frontend/**");
     }
 
     private void registerResourceIfPresent(RuntimeHints hints, String path) {
