@@ -331,9 +331,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             // The parameters of the generated function are the arguments of the
             // call, referenced as $0, $1, ... by the declared expression, and
             // the element the definition was obtained from is its `this` - the
-            // same contract as an executeJs expression has.
+            // same contract as an executeJs expression has. The last parameter
+            // of a variadic method collects the arguments that follow the
+            // fixed ones into an array, as it does in Java.
             String parameters = IntStream.range(0, method.getParameterCount())
-                    .mapToObj(index -> "$" + index)
+                    .mapToObj(index -> isRestParameter(method, index)
+                            ? "...$" + index
+                            : "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
             List<String> function = new ArrayList<>(List.of(String.format(
@@ -360,10 +364,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 + method.getParameterCount();
     }
 
+    private static boolean isRestParameter(Method method, int index) {
+        return method.isVarArgs() && index == method.getParameterCount() - 1;
+    }
+
     private static String functionId(Method method) {
         return JsCall.functionId(
                 method.getAnnotation(JsExpression.class).value(),
-                method.getParameterCount());
+                method.getParameterCount(), method.isVarArgs());
     }
 
     private static String quote(String value) {
