@@ -29,6 +29,7 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -48,6 +49,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -151,6 +153,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, pkg, WebComponentExporter.class);
                 registerSubTypes(hints, pkg, I18NProvider.class);
                 registerSubTypes(hints, pkg, MenuAccessControl.class);
+
+                for (var c : getJsDefinitionTypes(pkg)) {
+                    registerJsDefinition(hints, c);
+                }
             }
         };
     }
@@ -287,6 +293,19 @@ public class VaadinBeanFactoryInitializationAotProcessor
     Collection<Class<?>> getRouteTypesFor(String packageName) {
         return getAnnotatedClasses(packageName, Route.class, RouteAlias.class,
                 RouteAlias.Container.class, Layout.class);
+    }
+
+    /**
+     * Registers what a JavaScript definition needs at runtime: the dynamic
+     * proxy Flow creates for the interface, which a native image only builds
+     * for a proxy that is known at build time, and reflection on the interface
+     * itself, which is how the annotations it is validated against are read.
+     */
+    private void registerJsDefinition(RuntimeHints hints,
+            Class<?> definitionType) {
+        hints.proxies().registerJdkProxy(definitionType);
+        hints.reflection().registerType(definitionType,
+                MemberCategory.INVOKE_PUBLIC_METHODS);
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
@@ -430,6 +449,33 @@ public class VaadinBeanFactoryInitializationAotProcessor
             try {
                 Class<?> clazz = Class.forName(bd.getBeanClassName());
                 result.add(clazz);
+            } catch (ClassNotFoundException e) {
+                logger.warn("Could not load class {}", bd.getBeanClassName(),
+                        e);
+            }
+        }
+
+        return result;
+    }
+
+    // Visible for testing
+    Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+        Set<Class<?>> result = new HashSet<>();
+        // A JavaScript definition is an interface, which the scanner leaves
+        // out by default as it only accepts what can be instantiated
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false) {
+            @Override
+            protected boolean isCandidateComponent(
+                    AnnotatedBeanDefinition beanDefinition) {
+                return beanDefinition.getMetadata().isInterface();
+            }
+        };
+        scanner.addIncludeFilter(new AnnotationTypeFilter(JsDefinition.class));
+
+        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
+            try {
+                result.add(Class.forName(bd.getBeanClassName()));
             } catch (ClassNotFoundException e) {
                 logger.warn("Could not load class {}", bd.getBeanClassName(),
                         e);
