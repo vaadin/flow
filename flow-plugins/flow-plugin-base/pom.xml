@@ -25,15 +25,6 @@
       <version>${project.version}</version>
       <classifier>shaded</classifier>
     </dependency>
-    <!-- The Flow client. No code of it is called from here: it is a
-         dependency of the build tooling so that a build can copy the client
-         frontend sources into the project without the application having to
-         declare the client among its own dependencies. -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-client</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>

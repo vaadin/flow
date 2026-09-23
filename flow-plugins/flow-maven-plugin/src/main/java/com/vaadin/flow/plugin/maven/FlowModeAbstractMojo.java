@@ -46,6 +46,12 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.build.BuildContext;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Platform;
@@ -74,6 +80,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Additionally include compile-time-only dependencies matching the pattern.
      */
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+
+    private static final String VAADIN_GROUP_ID = "com.vaadin";
+    private static final String FLOW_SERVER_ARTIFACT_ID = "flow-server";
+    private static final String FLOW_CLIENT_ARTIFACT_ID = "flow-client";
 
     /**
      * Application properties file in Spring project.
@@ -189,6 +199,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
+
+    @Inject
+    private RepositorySystem repositorySystem;
+
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repositorySession;
+
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
+    private List<RemoteRepository> remoteRepositories;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -538,10 +557,52 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
-        // The Flow client comes with the plugin rather than with the project
-        BuildFrontendUtil.findClientLocation(jarFiles).ifPresent(jarFiles::add);
+        jarFiles.add(resolveFlowClient());
         return jarFiles;
 
+    }
+
+    /**
+     * Resolves the jar of the Flow client of the version the project builds
+     * against.
+     * <p>
+     * The client holds the frontend sources of the client engine, which are
+     * input to the frontend build, and a production application serves the
+     * build output rather than the client itself. A project therefore does not
+     * depend on the client, and a build resolves it here, pinned to the version
+     * of {@code flow-server} the project resolves - a build must not compile a
+     * client of one version into an application running the server of another.
+     * A project in development mode resolves the very same jar through the
+     * development server, which makes this a no-op there.
+     *
+     * @return the jar of the Flow client
+     */
+    private File resolveFlowClient() {
+        String version = project.getArtifacts().stream().filter(
+                artifact -> VAADIN_GROUP_ID.equals(artifact.getGroupId())
+                        && FLOW_SERVER_ARTIFACT_ID
+                                .equals(artifact.getArtifactId()))
+                .map(Artifact::getVersion).findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Unable to resolve the Flow client for the frontend "
+                                + "build: the project does not depend on "
+                                + VAADIN_GROUP_ID + ":"
+                                + FLOW_SERVER_ARTIFACT_ID
+                                + ", so there is no Flow version to build "
+                                + "the client of."));
+        ArtifactRequest request = new ArtifactRequest(
+                new DefaultArtifact(VAADIN_GROUP_ID, FLOW_CLIENT_ARTIFACT_ID,
+                        "jar", version),
+                remoteRepositories, null);
+        try {
+            return repositorySystem.resolveArtifact(repositorySession, request)
+                    .getArtifact().getFile();
+        } catch (ArtifactResolutionException e) {
+            throw new IllegalStateException("Unable to resolve "
+                    + VAADIN_GROUP_ID + ":" + FLOW_CLIENT_ARTIFACT_ID + ":"
+                    + version + ", which the frontend build compiles into the "
+                    + "application bundle.", e);
+        }
     }
 
     @Override

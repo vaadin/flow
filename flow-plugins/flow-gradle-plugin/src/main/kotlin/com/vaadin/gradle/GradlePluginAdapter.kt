@@ -52,6 +52,7 @@ internal class GradlePluginAdapter private constructor(
     private val jarFiles: FileCollection
     private val resolvedArtifacts: Provider<Set<ModuleIdentifier>>
     private val classFinderClasspath: FileCollection
+    private val flowClient: FileCollection
 
     constructor(
         task: Task,
@@ -73,6 +74,45 @@ internal class GradlePluginAdapter private constructor(
         jarFiles = dependencyConfiguration.incoming.files.filter {
             it.name.endsWith(".jar", true)
         } ?: project.files()
+        flowClient = resolveFlowClient(project, dependencyConfiguration)
+    }
+
+    /**
+     * Resolves the jar of the Flow client of the version the project builds
+     * against.
+     *
+     * The client holds the frontend sources of the client engine, which are
+     * input to the frontend build, and a production application serves the
+     * build output rather than the client itself. A project therefore does not
+     * depend on the client, and a build resolves it here, pinned to the
+     * version of flow-server the project resolves - a build must not compile a
+     * client of one version into an application running the server of another.
+     */
+    private fun resolveFlowClient(
+        project: Project,
+        dependencyConfiguration: Configuration
+    ): FileCollection {
+        val client =
+            dependencyConfiguration.incoming.artifacts.resolvedArtifacts.map { result ->
+                val flowServer = result
+                    .map { it.id.componentIdentifier }
+                    .filterIsInstance<ModuleComponentIdentifier>()
+                    .firstOrNull {
+                        it.group == VAADIN_GROUP && it.module == FLOW_SERVER_MODULE
+                    }
+                    ?: throw GradleException(
+                        "Unable to resolve the Flow client for the frontend " +
+                            "build: the project does not depend on " +
+                            "$VAADIN_GROUP:$FLOW_SERVER_MODULE, so there is " +
+                            "no Flow version to build the client of."
+                    )
+                project.configurations.detachedConfiguration(
+                    project.dependencies.create(
+                        "$VAADIN_GROUP:$FLOW_CLIENT_MODULE:${flowServer.version}"
+                    )
+                ).apply { isTransitive = false }.files
+            }
+        return project.files(client)
     }
 
     // ClassFinder instance is created the first time it is accessed with the
@@ -160,11 +200,7 @@ internal class GradlePluginAdapter private constructor(
     }
 
     override fun getJarFiles(): MutableSet<File> =
-        jarFiles.toMutableSet().apply {
-            // The Flow client comes with the plugin rather than with the
-            // project
-            BuildFrontendUtil.findClientLocation(this).ifPresent { add(it) }
-        }
+        jarFiles.toMutableSet().apply { addAll(flowClient) }
 
     override fun isJarProject(): Boolean = jarProject
 
@@ -375,5 +411,11 @@ internal class GradlePluginAdapter private constructor(
     // manager itself is used instead of being overridden
     override fun minimumFrontendPackageAgeDays(): Int? =
         config.minimumFrontendPackageAgeDays.orNull
+
+    private companion object {
+        const val VAADIN_GROUP = "com.vaadin"
+        const val FLOW_SERVER_MODULE = "flow-server"
+        const val FLOW_CLIENT_MODULE = "flow-client"
+    }
 
 }

@@ -62,7 +62,6 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
@@ -131,32 +130,6 @@ class BuildFrontendUtilTest {
         try (FileOutputStream out = new FileOutputStream(statsJson)) {
             IOUtils.write("{\"npmModules\":{}}", out, StandardCharsets.UTF_8);
         }
-    }
-
-    @Test
-    void should_carryFlowClient_forProjectsThatDoNotDependOnIt() {
-        String clientEntryPoint = Constants.RESOURCES_FRONTEND_DEFAULT
-                + "/FlowClient.js";
-
-        File location = findClientOfTheBuildTooling();
-
-        assertTrue(
-                location.isDirectory()
-                        ? new File(location, clientEntryPoint).exists()
-                        : new JarContentsManager().containsPath(location,
-                                clientEntryPoint),
-                location + " should hold " + clientEntryPoint);
-    }
-
-    @Test
-    void should_leaveTheFlowClientOfTheProject_whenItHasOne() {
-        File client = findClientOfTheBuildTooling();
-
-        assertTrue(
-                BuildFrontendUtil.findClientLocation(List.of(client)).isEmpty(),
-                "A project that provides a Flow client of its own should keep "
-                        + "it rather than get a second one from the build "
-                        + "tooling");
     }
 
     @Test
@@ -951,14 +924,6 @@ class BuildFrontendUtilTest {
                 () -> "leaked env marker in: " + message);
         // No zt-exec exception should be chained as cause.
         assertEquals(null, ex.getCause());
-    }
-
-    private File findClientOfTheBuildTooling() {
-        return BuildFrontendUtil.findClientLocation(List.of())
-                .orElseThrow(() -> new AssertionError(
-                        "The build tooling should carry the Flow client, so "
-                                + "that a project does not have to depend on "
-                                + "it to have a frontend build"));
     }
 
     private static String statsJsonWithCommercialComponents() {

@@ -24,15 +24,15 @@ import com.vaadin.flow.internal.FrontendUtils;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Verifies that a production build gets the Flow client from the build tooling.
- * This module does not depend on the client, the way an application does not,
- * so the frontend build has to copy it out of the plugin for the bundle to have
- * it at all.
+ * Verifies that a production build gets the Flow client without the project
+ * depending on it. This module has no dependency on the client, the way an
+ * application has none, so the build has to resolve it for the bundle to have
+ * the client at all.
  */
 public class FlowClientIT {
 
     @Test
-    public void clientIsCopiedFromTheBuildTooling() {
+    public void clientIsResolvedForTheFrontendBuild() {
         File jarResources = new File(System.getProperty("user.dir", "."),
                 FrontendUtils.DEFAULT_FRONTEND_DIR + FrontendUtils.GENERATED
                         + FrontendUtils.JAR_RESOURCES_FOLDER);

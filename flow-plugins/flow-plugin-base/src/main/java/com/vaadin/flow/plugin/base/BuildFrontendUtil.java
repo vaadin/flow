@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -27,12 +26,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -55,7 +52,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
-import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.ProdBundleUtils;
@@ -94,13 +90,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 public class BuildFrontendUtil {
 
     /**
-     * The entry point of the Flow client, used to locate the client among the
-     * frontend resources on the classpath of the build tooling.
-     */
-    private static final String CLIENT_ENTRY_POINT = Constants.RESOURCES_FRONTEND_DEFAULT
-            + "/FlowClient.js";
-
-    /**
      * Hide public constructor.
      */
     private BuildFrontendUtil() {
@@ -120,77 +109,6 @@ public class BuildFrontendUtil {
                 .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
 
         return new ReflectionsClassFinder(urls);
-    }
-
-    /**
-     * Returns the location the build tooling carries the Flow client in, for
-     * the build to copy the client frontend sources from.
-     * <p>
-     * The client is a dependency of the build tooling rather than of the
-     * application, so that nothing an application deploys has to carry it. The
-     * location is the jar of the client, or the folder its files are in when
-     * the tooling runs from compiled classes.
-     * <p>
-     * A project that declares the client among its own dependencies keeps the
-     * client it declares: the caller passes that client in, and this method
-     * hands over the one the tooling has only when the project has none.
-     *
-     * @param projectJars
-     *            the locations the project itself provides the build with
-     * @return the location of the Flow client of the build tooling, or an empty
-     *         optional when the project provides a client of its own
-     */
-    public static Optional<File> findClientLocation(
-            Collection<File> projectJars) {
-        if (projectJars.stream().anyMatch(BuildFrontendUtil::holdsClient)) {
-            return Optional.empty();
-        }
-        URL url = BuildFrontendUtil.class.getClassLoader()
-                .getResource(CLIENT_ENTRY_POINT);
-        if (url == null) {
-            getLogger().warn(
-                    "The Flow client is not on the classpath of the build, so "
-                            + "the frontend bundle is built without it and the "
-                            + "application will not start in the browser. The "
-                            + "build tooling is expected to carry the client, "
-                            + "check that com.vaadin:flow-client has not been "
-                            + "excluded from it.");
-            return Optional.empty();
-        }
-        try {
-            if ("jar".equals(url.getProtocol())) {
-                return Optional
-                        .of(new File(((JarURLConnection) url.openConnection())
-                                .getJarFileURL().toURI()));
-            }
-            // A folder of compiled classes, stepped up to the root the
-            // resource path is relative to
-            File location = new File(url.toURI());
-            for (int i = 0; i < CLIENT_ENTRY_POINT.split("/").length; i++) {
-                location = location.getParentFile();
-            }
-            return Optional.of(location);
-        } catch (IOException | URISyntaxException e) {
-            getLogger().warn(
-                    "Unable to resolve the location of the Flow client from "
-                            + url
-                            + ", so the frontend bundle is built without the "
-                            + "client and the application will not start in "
-                            + "the browser.",
-                    e);
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Returns whether the given jar or folder holds the Flow client.
-     */
-    private static boolean holdsClient(File location) {
-        if (location.isDirectory()) {
-            return new File(location, CLIENT_ENTRY_POINT).exists();
-        }
-        return location.isFile() && new JarContentsManager()
-                .containsPath(location, CLIENT_ENTRY_POINT);
     }
 
     /**
