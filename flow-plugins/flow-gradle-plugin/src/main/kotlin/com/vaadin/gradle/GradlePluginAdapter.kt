@@ -105,7 +105,7 @@ internal class GradlePluginAdapter private constructor(
         // jar of a project dependency before the task that builds it has run
         val version = dependencyConfiguration.incoming.resolutionResult
             .rootComponent.map { root ->
-                val modules = vaadinModulesOf(root)
+                val modules = collectVaadinModules(root)
                 if (modules.any { it.module == FLOW_CLIENT_MODULE }) {
                     NO_VERSION
                 } else {
@@ -131,7 +131,7 @@ internal class GradlePluginAdapter private constructor(
      * Returns the Vaadin modules of the dependency graph the given component
      * is the root of.
      */
-    private fun vaadinModulesOf(
+    private fun collectVaadinModules(
         root: ResolvedComponentResult
     ): List<ModuleComponentIdentifier> {
         val modules = mutableListOf<ModuleComponentIdentifier>()

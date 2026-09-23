@@ -49,15 +49,18 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
             }
             project(':lib') {
-                apply plugin: 'java'
+                apply plugin: 'java-library'
+
+                dependencies {
+                    api("com.vaadin:flow:$flowVersion")
+                }
             }
             project(':web') {
                 apply plugin: 'war'
                 apply plugin: 'com.vaadin.flow'
-                
+
                 dependencies {
                     implementation project(':lib')
-                    implementation("com.vaadin:flow:$flowVersion")
                 }
 
                 vaadin {
@@ -71,6 +74,15 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         // the vaadinPrepareFrontend task would work erratically because of dependent jars not yet produced,
         // or it would blow up with FileNotFoundException straight away.
         testProject.build("web:vaadinPrepareFrontend")
+
+        // Flow comes in through the lib project rather than through a
+        // dependency of the web project, and the client the build resolves is
+        // of the version the graph of the dependencies has
+        val client = File(
+            testProject.dir,
+            "web/src/main/frontend/generated/jar-resources/FlowClient.js"
+        )
+        expect(true, client.toString()) { client.isFile }
     }
 
     /**
