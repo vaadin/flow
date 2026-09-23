@@ -45,6 +45,19 @@
       <artifactId>flow-devloop-daemon</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- The sourcemaps of the Flow client. Only the dev server consumes them,
+         by chaining them onto the sourcemaps it emits for the browser, so they
+         travel the route this module already travels - in through the optional
+         com.vaadin:vaadin-dev dependency a starter declares, and out of a
+         production build by the same mechanism that excludes the dev server.
+         The build copies them next to the client the flow-client jar itself
+         carries. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+      <version>${project.version}</version>
+      <classifier>sourcemaps</classifier>
+    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>

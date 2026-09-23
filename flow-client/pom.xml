@@ -173,22 +173,51 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <!-- Exclude all source files and classes so only the
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <configuration>
+              <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->
-          <includes>
-            <include>com/vaadin/flow/client/osgi/*</include>
-            <include>META-INF/**</include>
-            <include>OSGI-INF/**</include>
-          </includes>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-            <index>false</index>
-            <manifest>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
+              <includes>
+                <include>com/vaadin/flow/client/osgi/*</include>
+                <include>META-INF/**</include>
+                <include>OSGI-INF/**</include>
+              </includes>
+              <excludes>
+                <!-- Only the dev server reads the sourcemaps, so they are
+                     published as the artifact below instead of travelling
+                     into every deployed application -->
+                <exclude>META-INF/frontend/**/*.js.map</exclude>
+              </excludes>
+              <archive>
+                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                <index>false</index>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+          <execution>
+            <id>sourcemaps-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>sourcemaps</classifier>
+              <includes>
+                <include>META-INF/frontend/**/*.js.map</include>
+              </includes>
+              <archive>
+                <index>false</index>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
