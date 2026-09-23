@@ -28,8 +28,6 @@ import tools.jackson.databind.node.ValueNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.js.JsDefinition;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
@@ -50,6 +48,8 @@ public final class WebComponent<C extends Component> implements Serializable {
             + "._updatePropertyFromServer($0, null);";
     private static final String UPDATE_PROPERTY_FORMAT = "this"
             + "._updatePropertyFromServer($0, %s);";
+    private static final String CUSTOM_EVENT = "this.dispatchEvent(new "
+            + "CustomEvent($0, %s));";
 
     private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
@@ -143,10 +143,7 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.set("detail",
                 objectData == null ? JacksonUtils.nullNode() : objectData);
 
-        // The options travel as a value rather than as JavaScript written
-        // into the expression, so nothing a detail carries is read as code
-        componentHost.executeJs(CustomEventJs.class).fireEvent(eventName,
-                object);
+        componentHost.executeJs(String.format(CUSTOM_EVENT, object), eventName);
     }
 
     /**
@@ -245,24 +242,5 @@ public final class WebComponent<C extends Component> implements Serializable {
             componentHost.executeJs(
                     String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
         }
-    }
-
-    /**
-     * How an event of an exported web component is fired, as a JavaScript
-     * definition for {@link Element#executeJs(Class)}.
-     */
-    @JsDefinition
-    public interface CustomEventJs extends Serializable {
-
-        /**
-         * Fires an event on the host of the web component.
-         *
-         * @param eventName
-         *            the name of the event
-         * @param options
-         *            what the event is made of, including its detail
-         */
-        @JsExpression("this.dispatchEvent(new CustomEvent($0, $1));")
-        void fireEvent(String eventName, ObjectNode options);
     }
 }
