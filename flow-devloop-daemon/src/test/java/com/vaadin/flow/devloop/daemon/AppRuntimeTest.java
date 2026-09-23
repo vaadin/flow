@@ -220,6 +220,20 @@ class AppRuntimeTest {
     private static final String CARGO = "org.codehaus.cargo:"
             + "cargo-maven3-plugin:1.10.29";
 
+    /**
+     * Payara ships two runtimes and a project declares one or the other, so
+     * there are two entries rather than one. Both fork, both run {@code start}
+     * rather than the {@code dev} whose watcher would fight every apply, and
+     * they differ in the one thing the table has to know: Payara Server's
+     * channel is a {@code List<String>} that Maven splits on commas, while
+     * Micro's is read as a plain string.
+     */
+    private static final String PAYARA = "fish.payara.maven.plugins:"
+            + "payara-server-maven-plugin:1.3.0";
+
+    private static final String PAYARA_MICRO = "fish.payara.maven.plugins:"
+            + "payara-micro-maven-plugin:2.6.0";
+
     @Test
     void warWithWildflyPlugin_runsThroughTheBuild() throws IOException {
         Path app = serverModule("wf", WILDFLY, Map.of());
@@ -266,6 +280,115 @@ class AppRuntimeTest {
         assertFalse(runtime.serving("[INFO] Tomcat 10.x is stopped"));
     }
 
+    @Test
+    void warWithPayaraPlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("ps", PAYARA, Map.of());
+
+        assertEquals("payara", runtimeOf(app).name());
+    }
+
+    @Test
+    void warWithPayaraMicroPlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("pm", PAYARA_MICRO, Map.of());
+
+        assertEquals("payara-micro", runtimeOf(app).name());
+    }
+
+    /**
+     * The plugin's own line rather than the server's, and for a sharper reason
+     * than Cargo's: the domain is started with no {@code --verbose}, so the
+     * kernel's listener line may go only to the domain's {@code server.log} and
+     * never reach the stream the daemon reads. What does reach it is the line
+     * the plugin logs once the admin endpoint has answered <em>and</em> the
+     * deployment has succeeded, which is a stronger signal than a bound socket.
+     */
+    @Test
+    void payaraReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("ps", PAYARA, Map.of()));
+
+        String line = "[INFO] devloop-app application deployed successfully :"
+                + " http://localhost:8080/";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(8080), runtime.port(line));
+    }
+
+    /**
+     * That message degrades to a portless one when the follow-up call for the
+     * application's details fails. Matching it would mean reporting a start as
+     * serving on a port nobody had been told.
+     */
+    @Test
+    void payaraWithoutAUrlIsNotTheServingLine() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("ps", PAYARA, Map.of()));
+
+        assertFalse(runtime.serving(
+                "[INFO] devloop-app application deployed successfully."));
+    }
+
+    /**
+     * Micro logs the kernel's own listener line, and a real one carries ANSI
+     * colour - its default logging configuration sets {@code ansiColor=true} -
+     * around the level and the logger name, both of which come before the
+     * message. Anchoring on the message text is what steps over them.
+     */
+    @Test
+    void payaraMicroReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(
+                serverModule("pm", PAYARA_MICRO, Map.of()));
+
+        String line = "[2023-11-19T22:05:42.526+0000] [] [\u001b[1;92mINFO"
+                + "\u001b[0m] [NCLS-CORE-00101] [javax.enterprise.system.core]"
+                + " [tid: _ThreadID=23] [levelValue: 800] Network Listener"
+                + " http-listener started in: 49ms - bound to [/0.0.0.0:8080]";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(8080), runtime.port(line));
+    }
+
+    /**
+     * The elapsed time is a {@code long} put through {@code MessageFormat}, so
+     * it is grouped by the JVM's locale and reads {@code 5,072ms} in one and
+     * {@code 5 072ms} in another. It is stepped over rather than matched, and
+     * this is what says so.
+     */
+    @Test
+    void payaraMicroReadsThePortPastAGroupedElapsedTime() throws IOException {
+        AppRuntime runtime = runtimeOf(
+                serverModule("pm", PAYARA_MICRO, Map.of()));
+
+        assertEquals(OptionalInt.of(8080), runtime.port("Network Listener "
+                + "http-listener started in: 5,072ms - bound to [/0.0.0.0:8080]"));
+        assertEquals(OptionalInt.of(8080), runtime.port("Network Listener "
+                + "http-listener started in: 5 072ms - bound to [/0.0.0.0:8080]"));
+    }
+
+    /** And an IPv6 address's own colons are eaten, as WildFly's are. */
+    @Test
+    void payaraMicroReadsThePortPastAnIpv6Address() throws IOException {
+        AppRuntime runtime = runtimeOf(
+                serverModule("pm", PAYARA_MICRO, Map.of()));
+
+        assertEquals(OptionalInt.of(8080),
+                runtime.port("Network Listener http-listener started in: 3ms"
+                        + " - bound to [/0:0:0:0:0:0:0:1:8080]"));
+    }
+
+    /**
+     * An HTTPS listener logs the very same message, and a project that enabled
+     * one would otherwise have the loop send a browser to the wrong port. The
+     * name is matched literally so it cannot.
+     */
+    @Test
+    void payaraMicroHttpsListenerIsNotTheServingLine() throws IOException {
+        AppRuntime runtime = runtimeOf(
+                serverModule("pm", PAYARA_MICRO, Map.of()));
+
+        assertFalse(runtime.serving("Network Listener https-listener started"
+                + " in: 1ms - bound to [/0.0.0.0:8181]"));
+        // And the line announcing one that is switched off carries a port too.
+        assertFalse(runtime.serving("Network listener https-listener on port"
+                + " 8443 disabled per domain.xml"));
+    }
+
     /**
      * Cargo's run mojo exposes no user property on any parameter that could
      * carry the loop's flags, so the only channel is a Maven project property
@@ -282,8 +405,7 @@ class AppRuntimeTest {
         List<String> warnings = runtime.warnings();
 
         assertEquals(1, warnings.size(), warnings.toString());
-        assertTrue(warnings.get(0).contains("cargo.start.jvmargs"),
-                warnings.get(0));
+        assertTrue(warnings.get(0).contains("cargo.jvmargs"), warnings.get(0));
     }
 
     /**
@@ -296,6 +418,24 @@ class AppRuntimeTest {
         writeModel(app, List.of(CARGO, TOMEE));
 
         assertEquals("tomee", runtimeOf(app).name());
+    }
+
+    /**
+     * And the same for Payara, which Cargo can also drive - it has a container
+     * of its own for it. A project declaring both means its own plugin, so both
+     * Payara entries have to sit ahead of Cargo's in the table. The order is
+     * the whole of the rule, so it is worth a test that fails if someone
+     * appends a future entry after {@code cargo()} rather than before it.
+     */
+    @Test
+    void payarasOwnPluginsBeatCargoToo() throws IOException {
+        Path server = module("bothServer", "war", "");
+        writeModel(server, List.of(CARGO, PAYARA));
+        assertEquals("payara", runtimeOf(server).name());
+
+        Path micro = module("bothMicro", "war", "");
+        writeModel(micro, List.of(CARGO, PAYARA_MICRO));
+        assertEquals("payara-micro", runtimeOf(micro).name());
     }
 
     @Test
@@ -408,6 +548,12 @@ class AppRuntimeTest {
         assertEquals("package", entry("tomee").phase());
         assertEquals("package", entry("cargo").phase());
         assertEquals("", entry("jetty-ee10").phase());
+        // Neither Payara mojo declares @Execute of any kind, so both are in
+        // TomEE's position rather than WildFly's: nothing builds the WAR for
+        // them, and a goal run without the phase would deploy whatever was
+        // lying about in target from a previous build.
+        assertEquals("package", entry("payara").phase());
+        assertEquals("package", entry("payara-micro").phase());
     }
 
     /**
@@ -439,6 +585,100 @@ class AppRuntimeTest {
     }
 
     /**
+     * Payara Micro's goal property is the one that is not a skip, and it is
+     * switched the other way: {@code deployWar} defaults to <em>false</em> and
+     * it is the {@code dev} goal that turns it on, so a project whose pom
+     * relies on {@code payara-micro:dev} declares it nowhere and the
+     * {@code start} the loop runs would bring up a server with the application
+     * deployed in it nowhere at all. The forced element is what holds a pom
+     * that pins it off, the {@code -D} what covers a daemon with no extension.
+     */
+    @Test
+    void payaraMicroIsToldToDeployTheApplication() {
+        assertEquals(Map.of("payara.skip", "true", "payara.deploy.war", "true"),
+                entry("payara-micro").goalProperties());
+        assertTrue(
+                entry("payara-micro").forcedConfiguration()
+                        .contains("deployWar=true"),
+                entry("payara-micro").forcedConfiguration());
+    }
+
+    /**
+     * Both Payara entries pay Cargo's price, and for the same reason. Measured:
+     * {@code payara-micro:start} named on the command line ran first on the
+     * reactor <em>root</em>, started a Payara Micro there, reported
+     * {@code Deployed 0 archive(s)} and blocked the reactor before the
+     * application module was built at all. So the goal is switched off for the
+     * whole reactor by its user property and switched back on, by a
+     * {@code <configuration>} value the extension writes, for the one module
+     * that declares the plugin.
+     */
+    @Test
+    void bothPayarasRunOnTheApplicationsOwnModuleAlone() {
+        assertEquals("true", entry("payara").goalProperties().get("skip"));
+        assertEquals("true",
+                entry("payara-micro").goalProperties().get("payara.skip"));
+        for (String name : List.of("payara", "payara-micro")) {
+            assertTrue(entry(name).skippedOutsideTheApplication(), name);
+            assertTrue(entry(name).forcedConfiguration().contains("skip=false"),
+                    name + ": " + entry(name).forcedConfiguration());
+        }
+    }
+
+    /**
+     * The two halves belong together, so the flag saying an entry has them has
+     * to agree with the entries that do. An entry that set the skip and forgot
+     * the force would start nothing at all.
+     */
+    @Test
+    void onlyTheEntriesThatSwitchTheirGoalOffSaySo() {
+        assertTrue(entry("cargo").skippedOutsideTheApplication());
+        assertFalse(entry("jetty-ee10").skippedOutsideTheApplication());
+        assertFalse(entry("wildfly").skippedOutsideTheApplication());
+        assertFalse(entry("tomee").skippedOutsideTheApplication());
+    }
+
+    /**
+     * And without the extension neither half is sent: the goal then runs on
+     * every module, which is a bad day, but sending only the skip would start
+     * nothing at all, which is a worse one. The warning is what makes the
+     * difference diagnosable.
+     */
+    @Test
+    void payaraWithoutTheExtensionSaysTheGoalCannotBeKeptToOneModule()
+            throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("ps", PAYARA, Map.of()));
+
+        List<String> warnings = runtime.warnings();
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(warnings.get(0).contains("every module in the reactor"),
+                warnings.get(0));
+    }
+
+    /**
+     * Both Payara entries force their plugin's own watcher and log rewriting
+     * off. {@code start} already defaults all of them off, so these only hold a
+     * pom that asks for them back - but that pom would otherwise win, a
+     * {@code <configuration>} value beating the user property of the same
+     * parameter, and the loop would be sharing the application with a second
+     * thing redeploying it.
+     */
+    @Test
+    void bothPayarasForceTheirOwnRedeployersOff() {
+        for (String name : List.of("payara", "payara-micro")) {
+            String forced = entry(name).forcedConfiguration();
+            assertTrue(forced.contains("autoDeploy=false"),
+                    name + ": " + forced);
+            assertTrue(forced.contains("liveReload=false"),
+                    name + ": " + forced);
+            // A goal that returned as soon as the server was up would leave the
+            // daemon owning a Maven that had already exited.
+            assertTrue(forced.contains("daemon=false"), name + ": " + forced);
+        }
+    }
+
+    /**
      * Cargo is the only one whose flags parameter no {@code -D} can set: every
      * element of its run mojo that could carry them is nested and settable from
      * a pom alone, so the build extension has to put the value on the model
@@ -449,10 +689,56 @@ class AppRuntimeTest {
     @Test
     void onlyCargoTakesItsFlagsFromAProjectProperty() {
         assertTrue(entry("cargo").projectPropertyFlags());
-        assertEquals("cargo.start.jvmargs", entry("cargo").jvmFlagsProperty());
+        assertEquals("cargo.jvmargs", entry("cargo").jvmFlagsProperty());
         assertFalse(entry("wildfly").projectPropertyFlags());
         assertFalse(entry("tomee").projectPropertyFlags());
         assertFalse(entry("jetty-ee10").projectPropertyFlags());
+        // Both Payaras expose a user property of their own, so neither needs
+        // the extension to get its flags through - which is why neither is
+        // listed among the warnings a daemon without one produces.
+        assertFalse(entry("payara").projectPropertyFlags());
+        assertFalse(entry("payara-micro").projectPropertyFlags());
+    }
+
+    /**
+     * Payara Server's channel is declared {@code List<String>}, and Maven
+     * splits such a user property on commas before the plugin sees it - a bare
+     * comma split with no escaping available. The mojo then makes a key and a
+     * value of each piece at its first {@code =} and drops any piece with none,
+     * so the loop's own
+     * {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would arrive as
+     * {@code -DdisabledPlugins=Vaadin} and nothing would say so. Micro's is a
+     * plain string read straight off the user properties and split on
+     * whitespace alone, so it has no such problem and must not pay the cost of
+     * an argument file for it.
+     */
+    @Test
+    void onlyTheListValuedChannelIsSplitOnCommas() {
+        assertTrue(entry("payara").commaSplitFlags());
+        assertFalse(entry("payara-micro").commaSplitFlags());
+        assertFalse(entry("wildfly").commaSplitFlags());
+        assertFalse(entry("tomee").commaSplitFlags());
+        assertFalse(entry("cargo").commaSplitFlags());
+        assertFalse(entry("jetty-ee10").commaSplitFlags());
+    }
+
+    /**
+     * Neither Payara entry has a parameter it must warn about rather than
+     * force, which is the shape WildFly's {@code <javaOpts>} and TomEE's
+     * {@code <args>} are in: for both of those the pom's value beats the
+     * command line and the value the loop would need to write is composed per
+     * launch, so the daemon can only ask. Payara's plugins append the user
+     * property's value to the pom's list instead of replacing it, so the
+     * question never arises - and an entry with no acceptable value added here
+     * by accident would produce a warning on every start that no developer
+     * could act on.
+     */
+    @Test
+    void neitherPayaraHasAParameterItCanOnlyWarnAbout() {
+        for (String name : List.of("payara", "payara-micro")) {
+            assertTrue(entry(name).competing().stream()
+                    .noneMatch(value -> value.acceptable().isEmpty()), name);
+        }
     }
 
     /**
@@ -472,6 +758,12 @@ class AppRuntimeTest {
         // and whitespace separates, but a backslash is an ordinary character.
         assertFalse(entry("cargo").shellEscapedFlags());
         assertFalse(entry("jetty-ee10").shellEscapedFlags());
+        // Payara Server's parser does treat a backslash as an escape, but only
+        // before a quote or another backslash - so a Windows path arrives whole
+        // and doubling it would be the thing that broke it. Micro's splits on
+        // whitespace and nothing else.
+        assertFalse(entry("payara").shellEscapedFlags());
+        assertFalse(entry("payara-micro").shellEscapedFlags());
     }
 
     @Test
@@ -479,8 +771,16 @@ class AppRuntimeTest {
         assertTrue(entry("jetty-ee10").embedded());
         assertFalse(entry("wildfly").embedded());
         assertFalse(entry("cargo").embedded());
+        assertFalse(entry("payara").embedded());
+        assertFalse(entry("payara-micro").embedded());
         assertEquals("wildfly.javaOpts", entry("wildfly").jvmFlagsProperty());
         assertEquals("tomee-plugin.args", entry("tomee").jvmFlagsProperty());
+        assertEquals("payara.javaCommandLineOptions",
+                entry("payara").jvmFlagsProperty());
+        // Undocumented, and the only channel the mojo offers: every parameter
+        // that could carry the flags is nested and pom-only, but exec.args is
+        // read straight off the session's user properties.
+        assertEquals("exec.args", entry("payara-micro").jvmFlagsProperty());
     }
 
     private static ServerPlugin entry(String name) {

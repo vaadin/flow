@@ -224,15 +224,37 @@ final class AppProcess {
      */
     private List<String> viaArgFile(List<String> command) throws IOException {
         Path file = Launch.workDir(root).resolve("jvm-args.txt");
+        writeArgFile(file, command.subList(1, command.size()));
+        return List.of(command.get(0), "@" + file);
+    }
+
+    /**
+     * Writes a JVM argument file, one quoted argument per line.
+     * <p>
+     * Shared with {@code MavenGoalRuntime}, which reaches for an argument file
+     * for a different reason: not length, but a channel that would otherwise
+     * mangle the value - Maven splits a {@code List<String>} user property on
+     * commas, and an argument file is the way to hand the JVM a value with a
+     * comma in it regardless. The quoting rules are the JVM's own either way,
+     * so there is one implementation of them.
+     *
+     * @param file
+     *            the file to write, whose directory is created if it is missing
+     * @param arguments
+     *            the arguments to write, each becoming one line
+     * @throws IOException
+     *             if the file cannot be written
+     */
+    static void writeArgFile(Path file, List<String> arguments)
+            throws IOException {
         Files.createDirectories(file.getParent());
         StringBuilder sb = new StringBuilder();
-        for (String argument : command.subList(1, command.size())) {
+        for (String argument : arguments) {
             sb.append('"').append(
                     argument.replace("\\", "\\\\").replace("\"", "\\\""))
                     .append('"').append('\n');
         }
         Files.writeString(file, sb.toString());
-        return List.of(command.get(0), "@" + file);
     }
 
     /**

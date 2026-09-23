@@ -25,7 +25,7 @@ for Cargo also covers every other container it drives.
 - **The JVM flags cannot travel in `MAVEN_OPTS`.** Nothing on Maven's command
   line and nothing in its environment reaches a JVM Maven forked, and no
   parameter of `cargo:run` that could carry them has a user property. They go on
-  the model as the project property `cargo.start.jvmargs`, which only
+  the model as the project property `cargo.jvmargs`, which only
   `DevLoopBuildExtension` can set, so this is the one runtime that does not work
   without that extension at all. `DevLoopCargoStartIT` asserts the agents
   arrived by hot swapping through them.

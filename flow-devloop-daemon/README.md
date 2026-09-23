@@ -220,7 +220,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
-| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee`, `cargo` (see `AppRuntime`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee`, `payara`, `payara-micro`, `cargo` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -243,8 +243,9 @@ launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
 
 **A WAR** has no entry point, and its servlet container is a build plugin rather
 than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
-asks it to. Jetty runs the application in the build's own JVM; WildFly, TomEE
-and Cargo cannot, and the section after this one is about the difference.
+asks it to. Jetty runs the application in the build's own JVM; WildFly, TomEE,
+both Payaras and Cargo cannot, and the section after this one is about the
+difference.
 
 ### A container that runs in the build's JVM
 
@@ -280,8 +281,9 @@ that table.
 
 ### A container that forks
 
-WildFly, TomEE and Cargo have no embedded mode: `wildfly:run`, `tomee:run` and
-`cargo:run` each provision a server and start it as a **process of its own**.
+WildFly, TomEE, both Payaras and Cargo have no embedded mode: `wildfly:run`,
+`tomee:run`, `payara-server:start`, `payara-micro:start` and `cargo:run` each
+provision a server and start it as a **process of its own**.
 Nothing on Maven's command line, and nothing in its environment, reaches a JVM
 that Maven forked, so the agents, the JVM flags and the settings the application
 reads all travel together in the one parameter each plugin hands on to that
@@ -327,16 +329,34 @@ the model:
 
 ```
   mvnw ... -Dmaven.ext.class.path=<daemon jar>
-       -Dvaadin.devloop.ext.property.cargo.start.jvmargs="<agents, -XX:...> <settings>"
+       -Dvaadin.devloop.ext.property.cargo.jvmargs="<agents, -XX:...> <settings>"
        package org.codehaus.cargo:cargo-maven3-plugin:<version>:run
 ```
 
-`cargo.start.jvmargs` and not `cargo.jvmargs`, because Cargo appends both to the
-container's command line and only the second is one a project is likely to have
-written for itself — the loop takes the one nobody else wants and leaves a
-project's heap settings alone. The value needs no backslash escaping: Cargo
-parses it with its own copy of Ant's `translateCommandline`, where quotes group
-and a backslash is an ordinary character.
+`cargo.jvmargs` and not `cargo.start.jvmargs`, which is what this said until a
+container that is not Tomcat was tried. Cargo appends both to the command line
+of the JVM it launches, and for Tomcat that JVM *is* the container, so either
+name works and the start-only one leaves a project's own heap settings alone.
+Cargo's GlassFish family is not that shape: there the JVM Cargo launches is the
+`asadmin` client and the server is a process asadmin starts in turn, so
+`AbstractGlassFishInstalledLocalContainer.startInternal` takes `cargo.jvmargs`
+away from asadmin on purpose (CARGO-1255) and the standalone configuration
+writes it into the domain's `domain.xml` as `<jvm-options>` instead.
+`cargo.start.jvmargs` gets no such treatment and reaches the asadmin client
+alone — so the agents were loaded into a command-line tool that exits, the
+application ran without them, and every apply restarted with nothing to say why.
+One name is correct for both families and this is it.
+
+What that costs is the thing the other name avoided: `cargo.jvmargs` is
+something a project may well have written for itself. So `DevLoopBuildExtension`
+**adds to** a project property it finds rather than replacing it, the loop's
+flags last — the same precedence `mavenOpts` applies to `MAVEN_OPTS`, and for
+the same reason. A heap size the pom asks for is honoured, and the agents cannot
+be switched off by one.
+
+The value needs no backslash escaping: Cargo parses it with its own copy of
+Ant's `translateCommandline`, where quotes group and a backslash is an ordinary
+character.
 
 The consequence is that this one runtime **needs** the extension rather than
 merely benefiting from it. A daemon running from an exploded build directory has
@@ -348,6 +368,78 @@ Readiness is read off Cargo's own line, `<name> started on port [<port>]`, and
 not off the container's. That is what lets one entry answer for every container
 Cargo drives, and it still works for a project that sends the container's output
 to a file with `<container><output>`.
+
+### Payara, both of them
+
+Payara ships two runtimes and a project declares one or the other, so there are
+two entries: `payara` for `fish.payara.maven.plugins:payara-server-maven-plugin`
+and `payara-micro` for its `payara-micro-maven-plugin`. Both run the `start`
+goal, neither declares an `@Execute`, so both name `package` themselves, and
+both block on the forked process the way the loop needs.
+
+**Never the `dev` goal.** Both plugins' `DevMojo` forces `autoDeploy` on, and
+that is a watcher which re-invokes Maven and redeploys — the same competing
+rebuilder `jetty.scan` and TomEE's `reloadOnUpdate` are switched off for. Payara
+Server's `dev` also turns on `trimLog`, which rewrites every line the server
+logs and so every line readiness is read from, and `aiAgent`, which turns the
+process into a prompt reading standard input. `start` defaults all of them off;
+the table's `Competing` entries only hold a pom that asks for them back.
+
+Neither channel can be taken away by a pom, which is new — for WildFly and TomEE
+a `<javaOpts>` or `<args>` in the pom beats the command line and the daemon can
+only warn. Payara Server's `payara.javaCommandLineOptions` feeds a *second*
+field that the mojo appends to the pom's list, and Payara Micro's `exec.args` is
+read straight off the session's user properties, where a pom cannot reach at
+all.
+
+Two things about those channels are worth knowing before changing either.
+
+**Payara Server drops any option with no `=` in it.** The mojo makes a key and a
+value of each element at the first `=` and adds nothing when there is no value —
+silently. That would take `-XX:+AllowEnhancedClassRedefinition` with it, and
+with it enhanced class redefinition. It survives because the flags are handed
+over as *one* whitespace-separated value: the split at the first `=` and the
+`key=value` that rebuilds it are exact inverses, so the value round-trips byte
+for byte and the server's own `JavaUtils.parseParameters` tokenizes it back at
+the far end. The requirement is only that the value contain an `=` somewhere,
+which the loop's settings always do.
+
+**And Maven splits that same value on commas**, the parameter being declared
+`List<String>` — a bare comma split in Plexus's converter, with no escaping
+available. Combined with the rule above, a comma does not divide a flag, it
+deletes most of it: `-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty` would
+arrive as `-DdisabledPlugins=Vaadin`. So `ServerPlugin.commaSplitFlags` marks
+that channel, and `MavenGoalRuntime` moves every comma-bearing flag into a JVM
+argument file under `target/devloop/payara-args.txt`, passing `@<file>` in its
+place — the JVM expands that itself, and an argument file quotes a comma without
+trouble. The flags that need no file stay inline, where the launch line shows
+them.
+
+Payara Micro has neither problem: `exec.args` is a plain string, split on
+whitespace and nothing else. It has no escaping either, so a Windows path passes
+through as it stands and one containing a space cannot be passed at all —
+`MavenGoalRuntime.unsplittable` says so. It is also **undocumented**: there is
+no constant behind it, the literal name is inline in the mojo, and a Payara
+release that dropped it would leave the server starting with no agents and every
+apply restarting. The launch line the daemon logs is where to look first.
+
+Readiness differs between the two, and not arbitrarily. Payara Micro logs the
+kernel's own `Network Listener http-listener started in: 49ms - bound to
+[/0.0.0.0:8080]`, which is one line and carries the port; the listener name is
+matched literally so an HTTPS one cannot answer for it, and the elapsed time is
+stepped over because `MessageFormat` groups it by locale. Payara Server's domain
+is started with no `--verbose`, so that line may go only to the domain's own
+`server.log` and never reach the daemon — readiness there is the *plugin's*
+line, `<name> application deployed successfully : http://host:port/ctx`, which
+is logged only after the admin endpoint has answered and the deployment has
+succeeded. That is a stronger signal than a bound socket, and it is the same
+reasoning Cargo's entry uses: read the plugin, not the container.
+
+One consequence for a test fixture, and it is why there is none: **Payara
+Server's HTTP port cannot be chosen from the command line.** `payara.http.port`
+only tells the plugin which port to talk to; the listener itself comes from the
+domain's `domain.xml`. Payara Micro's can — `-Dexec.args=-Dpayaramicro.port=<n>`
+— because Micro reads its own configuration from system properties.
 
 ### What a deployed WAR costs a hot swap
 
@@ -694,3 +786,26 @@ javac), `Frontend` in both frontend modes, `Jvm`, `HotswapAgentJar`,
 loop itself is tested in `flow-tests/test-devloop`: `test-devloop-spring` for
 an entry point and `test-devloop-jetty` for a WAR under its own build plugin,
 over the shared ITs in `test-devloop-support`.
+
+**WildFly, TomEE and both Payaras have no fixture**, only the table's own unit
+tests. What those cannot answer is the one question that matters for a forked
+container — did the agents reach the server's JVM — so that is verified by hand
+against a WAR whose pom runs the plugin in question:
+
+```bash
+.vaadin/vaadin-dev start
+.vaadin/vaadin-dev status     # the runtime named here must be the intended one
+#   target/devloop/app.log holds the readiness line the entry's pattern expects,
+#   and the "flags:" line holds the whole value handed to the plugin - for
+#   payara, check target/devloop/payara-args.txt exists and holds the flags
+#   with commas in them
+#   edit a method body in a class the running page has already loaded, then:
+.vaadin/vaadin-dev apply
+#   expect: exit 0 and hot-reload, NOT "restarting". A restart here is the
+#   symptom of every way this can go wrong - the flags dropped, split on a
+#   comma, or sent to a JVM that was not the server's.
+```
+
+A structural edit — adding a method — escalating to a restart *on a JBR* is the
+particular symptom of `-XX:+AllowEnhancedClassRedefinition` having been dropped,
+which is the failure the one-value trick above exists to prevent.

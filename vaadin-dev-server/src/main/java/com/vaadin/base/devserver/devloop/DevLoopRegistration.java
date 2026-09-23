@@ -16,11 +16,15 @@
 package com.vaadin.base.devserver.devloop;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -166,8 +170,73 @@ final class DevLoopRegistration {
                 : Hotswapper.getRegistered(current);
     }
 
+    /**
+     * Connects to the daemon on whichever loopback address it bound.
+     * <p>
+     * Both ends ask for {@link InetAddress#getLoopbackAddress()}, and that is
+     * not one address: it is IPv4 or IPv6 depending on the JVM asking. The
+     * daemon and the application are different JVMs, and a server may change
+     * the answer for its own while starting - measured against Payara Micro
+     * 7.2026.9, whose boot leaves the application JVM preferring IPv6, so the
+     * daemon was listening on {@code 127.0.0.1} and the application dialled
+     * {@code ::1} and was refused. The application then ran with no
+     * registration at all: serving pages, invisible to the loop, and every
+     * apply reporting that there was nothing to apply to.
+     * <p>
+     * So the preferred address is tried first and the other literal after it,
+     * rather than either end being pinned to one family. Nothing is widened -
+     * every candidate is a loopback address, so the daemon's port stays
+     * unreachable from off the machine.
+     *
+     * @param port
+     *            the port the daemon passed at launch
+     * @return the connected socket
+     * @throws IOException
+     *             if no loopback address accepted the connection, carrying the
+     *             failure from the address the JVM itself prefers
+     */
+    private static Socket connectToDaemon(int port) throws IOException {
+        IOException refused = null;
+        for (InetAddress address : loopbackAddresses()) {
+            try {
+                return new Socket(address, port);
+            } catch (IOException e) {
+                // Kept only if nothing else answers, and the first is the one
+                // worth reporting: it is the address this JVM would call the
+                // loopback, so it is the one a reader will go looking at.
+                if (refused == null) {
+                    refused = e;
+                }
+            }
+        }
+        throw refused;
+    }
+
+    /**
+     * Every loopback address worth trying, the JVM's own preference first.
+     *
+     * @return the candidates, without duplicates
+     */
+    static List<InetAddress> loopbackAddresses() {
+        List<InetAddress> candidates = new ArrayList<>();
+        candidates.add(InetAddress.getLoopbackAddress());
+        for (String literal : new String[] { "127.0.0.1", "::1" }) {
+            try {
+                // A literal, so this resolves without asking a name server.
+                InetAddress address = InetAddress.getByName(literal);
+                if (!candidates.contains(address)) {
+                    candidates.add(address);
+                }
+            } catch (UnknownHostException e) {
+                // A stack without that family. The other candidate answers for
+                // it, and if neither does the connect below reports it.
+            }
+        }
+        return candidates;
+    }
+
     private static void hold(int port, String token, String mode) {
-        try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), port);
+        try (Socket socket = connectToDaemon(port);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(),
                         true, StandardCharsets.UTF_8);
                 BufferedReader in = new BufferedReader(new InputStreamReader(
