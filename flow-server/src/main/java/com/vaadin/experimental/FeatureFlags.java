@@ -308,6 +308,10 @@ public class FeatureFlags implements Serializable {
      * from a test edits the repository. For a single run or a test, set the
      * <code>vaadin.experimental.&lt;id&gt;</code> system property instead;
      * that does not create or edit the file.
+     * <p>
+     * Browserless tests can set the flag with the
+     * <code>&#64;BrowserlessTestConfig</code> annotation on the test class
+     * or method instead of calling this method.
      *
      * @param featureId
      *            the feature id
