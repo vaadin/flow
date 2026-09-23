@@ -115,9 +115,17 @@ public abstract class Media extends HtmlComponent
             return value;
         }
 
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code preload} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code preload="NONE"} has to read back as
+         * {@link #NONE}.
+         */
         private static Optional<Preload> fromAttributeValue(String value) {
             return Stream.of(values())
-                    .filter(preload -> preload.value.equals(value)).findFirst();
+                    .filter(preload -> preload.value.equalsIgnoreCase(value))
+                    .findFirst();
         }
     }
 

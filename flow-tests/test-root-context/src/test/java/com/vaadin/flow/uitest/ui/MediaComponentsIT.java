@@ -30,6 +30,8 @@ import com.vaadin.flow.component.html.testbench.AudioElement;
 import com.vaadin.flow.component.html.testbench.VideoElement;
 
 import static com.vaadin.flow.uitest.ui.MediaComponentsView.POSTER_PAYLOAD;
+import static com.vaadin.flow.uitest.ui.MediaComponentsView.SAMPLE_COUNT;
+import static com.vaadin.flow.uitest.ui.MediaComponentsView.SAMPLE_RATE;
 
 /**
  * Verifies that the media components produce a player the browser can really
@@ -53,8 +55,8 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
         double duration = ((Number) executeScript(
                 "return arguments[0].duration", audio)).doubleValue();
         Assert.assertEquals(
-                "The browser should have decoded the half second of audio the download handler serves",
-                0.5, duration, 0.05);
+                "The browser should have decoded the audio the download handler serves",
+                SAMPLE_COUNT / (double) SAMPLE_RATE, duration, 0.05);
     }
 
     @Test

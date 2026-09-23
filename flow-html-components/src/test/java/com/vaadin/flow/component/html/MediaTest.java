@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,5 +102,18 @@ abstract class MediaTest extends ComponentTest {
         Media media = createMedia(source);
 
         assertEquals(List.of(source), media.getSources());
+    }
+
+    @Test
+    void getPreload_matchesTheKeywordRegardlessOfCase() {
+        Media media = (Media) getComponent();
+
+        // preload is an HTML enumerated attribute, so its keywords are matched
+        // ASCII case-insensitively
+        media.getElement().setAttribute("preload", "NONE");
+        assertEquals(Optional.of(Media.Preload.NONE), media.getPreload());
+
+        media.getElement().setAttribute("preload", "Metadata");
+        assertEquals(Optional.of(Media.Preload.METADATA), media.getPreload());
     }
 }
