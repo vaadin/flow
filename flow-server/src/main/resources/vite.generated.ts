@@ -137,6 +137,12 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
+// The JavaScript declared by the @JsDefinition interfaces, generated before the
+// build. Hashed into the stats like the banner above, so that a bundle whose
+// definitions changed is rebuilt instead of running with the functions it was
+// built with.
+const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
+const hasJsDefinitions = existsSync(jsDefinitionsFile);
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
 // versions current today, Firefox ESR, and Safari 17 in its latest minor
@@ -327,6 +333,12 @@ function statsExtracterPlugin(): PluginOption {
       if (hasCommercialBanner) {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+      }
+      if (hasJsDefinitions) {
+        const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
+          .update(fileBuffer, 'utf8')
+          .digest('hex');
       }
 
       const themeJsonContents: Record<string, string> = {};

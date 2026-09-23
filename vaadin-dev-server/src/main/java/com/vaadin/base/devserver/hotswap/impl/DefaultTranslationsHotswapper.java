@@ -39,6 +39,13 @@ import com.vaadin.flow.internal.JacksonUtils;
  */
 public class DefaultTranslationsHotswapper implements VaadinHotswapper {
 
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public DefaultTranslationsHotswapper() {
+        // Default constructor
+    }
+
     @Override
     public void onResourcesChange(HotswapResourceEvent event) {
         if (event.anyMatches(".*/vaadin-i18n/.*\\.properties")) {

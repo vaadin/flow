@@ -87,7 +87,7 @@ import com.vaadin.flow.shared.ui.Dependency;
  */
 public class StyleSheetHotswapper implements VaadinHotswapper {
 
-    public static final Logger LOGGER = LoggerFactory
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(StyleSheetHotswapper.class);
 
     /**
@@ -100,6 +100,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     // using class name to match also when class is reloaded
     private final ConcurrentHashMap<String, Set<String>> appShellStylesheets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Set<String>> componentStylesheets = new ConcurrentHashMap<>();
+
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public StyleSheetHotswapper() {
+        // Default constructor
+    }
 
     @Override
     public void onInit(VaadinService vaadinService) {

@@ -121,10 +121,6 @@ def target(module, submodule, pkg, cls, sub):
         return ("test-default", "(already migrated)", "done")
 
     M = module
-    if M == "test-dev-mode":
-        return ("test-default", "devmode", "move")
-    if M == "test-react-router":
-        return ("test-default", "routing", "move")
     if M == "test-react-adapter":
         return ("test-default", "react", "move")
     if M == "test-vaadin-router":
@@ -160,8 +156,13 @@ def target(module, submodule, pkg, cls, sub):
     if M == "test-client-queue":
         return ("test-plain-servlet", "devmode", "move")
     if M == "test-misc":
-        return ("test-default", "misc", "move")
-    if M in ("test-multi-war", "servlet-containers", "test-commercial-banner"):
+        # The module runs flow-maven-plugin:build-frontend, which writes
+        # productionMode=true, so every IT here is a production mode IT. The
+        # ones whose behavior turns out to be mode-independent move to
+        # test-default as part of the migration PR (permutation policy).
+        return ("test-production", feat_flat(cls), "move")
+    if M in ("test-multi-war", "servlet-containers", "test-commercial-banner",
+             "test-devloop", "test-push-startup"):
         return (M + "(keep)", "infra", "keep")
     if M == "test-express-build":
         s = (submodule or "").lower()

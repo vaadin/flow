@@ -33,7 +33,7 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
-import com.vaadin.flow.data.provider.DataCommunicatorTest;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -82,7 +82,7 @@ abstract class AbstractHierarchicalDataCommunicatorTest {
     @Mock
     protected Update arrayUpdate;
 
-    protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
+    protected MockUI ui = new MockUI();
 
     @BeforeEach
     void init() {

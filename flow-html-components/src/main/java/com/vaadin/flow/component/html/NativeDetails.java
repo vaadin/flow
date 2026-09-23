@@ -65,7 +65,10 @@ public class NativeDetails extends HtmlComponent
 
     }
 
+    /** The summary element, which is always present. */
     private final Summary summary;
+
+    /** The content shown when the details are open, or {@code null}. */
     private Component content;
 
     /**
@@ -328,6 +331,7 @@ public class NativeDetails extends HtmlComponent
     @DomEvent("toggle")
     public static class ToggleEvent extends ComponentEvent<NativeDetails> {
 
+        /** Whether the details are open after the toggle. */
         private final boolean open;
 
         /**

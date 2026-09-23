@@ -186,10 +186,12 @@ Use one accent, not a palette — everything you mark is marked the same way. Ne
 | `stateDiagram-v2` | Lifecycle and state machines: attach/detach, connection state, navigation phases. |
 | `classDiagram` | Only when the type relationships themselves are the change. |
 
-**Syntax that survives GitHub's renderer.** The quoting rule differs per diagram type, and getting it wrong either breaks the render or draws the quotes:
+**Syntax that survives GitHub's renderer.** Every figure this bot has failed to render in this repository broke on one of the first three rules. Step 4 checks them mechanically; know them anyway, so the figure comes out right the first time.
 
-- In `flowchart` and `classDiagram`, a node label containing punctuation, parentheses, `<`, `>`, `:` or `,` must be quoted: `A["StateTree.collectChanges()"]`.
-- In `sequenceDiagram`, the text after `as`, after `:` on a message, and after `Note over X:` is free text. Do not quote it — the quotes would be drawn. Parentheses are fine there, but a second `:` in a message ends the label, so leave colons out of message text.
+- In `flowchart` and `classDiagram`, **quote every label that is not a bare word — edge labels as much as node labels**. Parentheses are what usually breaks it, and `-->|calls foo() first|` fails exactly as `A[calls foo() first]` does. Write `A["StateTree.collectChanges()"]` and `-->|"calls collectChanges()"|`.
+- **Never open a label with a backtick.** ``A["`@Push` moved earlier"]`` starts a Mermaid markdown string, and the rest of the label is a lexical error. Write `A["@Push moved earlier"]`.
+- In `sequenceDiagram`, **no semicolon in message or note text**. A `;` ends the statement and what follows is read as a new one, so `Note over A,B: runs in the build JVM; agents travel via MAVEN_OPTS` does not parse. Use a comma, a dash, or a second `Note`.
+- In `sequenceDiagram`, the text after `as`, after `:` on a message, and after `Note over X:` is free text. Do not quote it — the quotes would be drawn. Parentheses and a second `:` are fine there.
 - Everywhere: no raw HTML, no `click` directives, no images, and no styling beyond the `classDef` form above. Keep node ids, class names and participant aliases short and alphanumeric.
 
 **Lay a before/after pair out side by side.** Mermaid orders disconnected subgraphs however it likes: leave the two halves unconnected and they come out stacked, often with `After` on top. Pin the layout down instead — `flowchart LR` for the frame, one subgraph per side, `direction TB` inside both so neither side sprawls, and the invisible edge `Before ~~~ After` to fix which comes first:
@@ -227,7 +229,27 @@ sequenceDiagram
 ```
 ````
 
-## Step 4 — Post, or do not
+## Step 4 — Check that it renders
+
+A figure that does not parse is worse than no figure: the reviewer gets a red error box where the picture should be. Write the block to a file and run the repository's validator, which parses it with the same Mermaid version GitHub renders comments with:
+
+```bash
+cat > /tmp/figure.mmd <<'MERMAID'
+sequenceDiagram
+    ...the figure, without the fences...
+MERMAID
+node .github/scripts/validate-mermaid.mjs /tmp/figure.mmd
+```
+
+It prints `OK` and exits 0 when the figure is sound. Otherwise every problem comes with the line it is on:
+
+- A `PARSE` line is what GitHub would show as an error box instead of the picture. Fix the figure and run the validator again.
+- A `lint` line is a figure that parses but draws something other than what it says. Fix it too.
+- Fix the figure, never the check.
+- If it still does not pass after three attempts, `noop` with the parse error as the reason. Never post a figure you could not get to parse.
+- Exit code 2 means the validator could not reach npm and only its lint rules ran. Read the syntax rules in step 3 against your figure line by line before you post.
+
+## Step 5 — Post, or do not
 
 When you decided to draw, add exactly one comment in this shape:
 
@@ -245,7 +267,7 @@ When you decided not to draw, call the `noop` tool with a one-sentence reason, f
 1. Every node is a symbol you actually read in this repository. Nothing is invented, and nothing rests on the linked issue alone.
 2. Every arrow carries a label naming something the code does.
 3. The figure shows what the change is about, not the surrounding subsystem.
-4. Twelve nodes or fewer; labels with punctuation are quoted; no HTML, no `%%{init}%%`; every `classDef` that sets `fill:` also sets `color:`.
+4. `validate-mermaid.mjs` printed `OK` for the figure exactly as you are about to post it. Twelve nodes or fewer; no HTML, no `%%{init}%%`; every `classDef` that sets `fill:` also sets `color:`.
 5. A before/after pair reads left to right — both halves are subgraphs of one `flowchart LR`, joined by `Before ~~~ After`, and neither sits above the other.
 6. The caption makes one claim, attributes or marks its intent statement, and contains no verdict and no instruction to the reviewer.
 7. If a check fails and you cannot fix it, `noop` instead of posting.

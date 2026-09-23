@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +33,13 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -44,11 +50,58 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class PageTest {
+
+    @JsDefinition
+    interface PageJs extends Serializable {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        @JsExpression("return navigator.clipboard.readText()")
+        PendingJavaScriptResult readText();
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheCallOnNothingInParticular() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().executeJs(PageJs.class).showGreeting("Hello");
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        JavaScriptInvocation invocation = invocations.get(0).getInvocation();
+        assertEquals(new JsCall(PageJs.class, "showGreeting", List.of("Hello")),
+                invocation.getJsCall());
+        assertEquals(Arrays.asList("Hello", null), invocation.getParameters(),
+                "the arguments should be followed by nothing to run the function on");
+    }
+
+    @Test
+    void executeJsWithDefinition_methodDeclaringAResult_answersWithTheExecution() {
+        MockUI mockUI = new MockUI();
+
+        PendingJavaScriptResult result = mockUI.getPage()
+                .executeJs(PageJs.class).readText();
+        List<String> values = new ArrayList<>();
+        result.then(String.class, values::add);
+
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertSame(result, invocations.get(0),
+                "the scheduled invocation is what the method answers with");
+        assertTrue(invocations.get(0).isSubscribed(),
+                "and the return value should be asked for from the client");
+
+        invocations.get(0).complete(JacksonUtils.createNode("text"));
+        assertEquals(List.of("text"), values);
+    }
 
     private class TestUI extends UI {
         @Override
@@ -158,45 +211,24 @@ class PageTest {
     void fetchCurrentUrl_consumerReceivesCorrectURL() {
         // given
         final UI mockUI = new MockUI();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... params) {
-                super.executeJs(expression, params);
-                assertEquals("return window.location.href", expression,
-                        "Expected javascript for fetching location is wrong.");
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(JacksonUtils
-                                .createNode("http://localhost:8080/home"));
-                    }
-                };
-            }
-        };
         final AtomicReference<URL> callbackInvocations = new AtomicReference<>();
         final SerializableConsumer<URL> receiver = details -> {
             callbackInvocations.compareAndSet(null, details);
         };
 
         // when
-        page.fetchCurrentURL(receiver);
+        mockUI.getPage().fetchCurrentURL(receiver);
 
         // then
+        List<PendingJavaScriptInvocation> invocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(new JsCall(Page.LocationJs.class, "getHref", List.of()),
+                invocations.get(0).getInvocation().getJsCall(),
+                "the address should be asked for through the declared JavaScript");
+
+        invocations.get(0).complete(
+                JacksonUtils.createNode("http://localhost:8080/home"));
         assertEquals("http://localhost:8080/home",
                 callbackInvocations.get().toString(), "Returned URL was wrong");
     }
