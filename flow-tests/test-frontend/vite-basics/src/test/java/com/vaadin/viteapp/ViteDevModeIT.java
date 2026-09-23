@@ -15,6 +15,10 @@
  */
 package com.vaadin.viteapp;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -30,5 +34,30 @@ abstract public class ViteDevModeIT extends ChromeBrowserTest {
         getCommandExecutor().waitForVaadin();
         waitUntil(ExpectedConditions
                 .presenceOfElementLocated(By.id("loadAndShowJson")), 300);
+    }
+
+    /**
+     * Returns the url the dev server serves the given file of the project from.
+     *
+     * @param fileInProject
+     *            the path of the file, relative to the project folder
+     * @return the url of the file on the dev server
+     * @throws IOException
+     *             if the project folder can not be resolved
+     */
+    protected URL getFsUrl(String fileInProject) throws IOException {
+        // For Windows, the URLs should be like
+        // http://localhost:8888/VAADIN/@fs/C:/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
+
+        String currentPath = new File(".").getCanonicalPath().replace("\\",
+                "/");
+        if (!currentPath.startsWith("/")) {
+            currentPath = "/" + currentPath;
+        }
+        if (currentPath.endsWith("/")) {
+            currentPath = currentPath.substring(0, currentPath.length() - 1);
+        }
+        return new URL(getRootURL() + "/VAADIN/@fs" + currentPath + "/"
+                + fileInProject);
     }
 }
