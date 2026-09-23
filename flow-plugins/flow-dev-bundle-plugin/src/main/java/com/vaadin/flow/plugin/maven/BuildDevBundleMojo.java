@@ -402,8 +402,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public Set<File> getJarFiles() {
 
-        // A development bundle is built with the development server on the
-        // classpath, and the Flow client comes in with it
         return project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());

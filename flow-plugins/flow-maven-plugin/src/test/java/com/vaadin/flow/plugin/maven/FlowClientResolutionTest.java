@@ -27,6 +27,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,8 +36,10 @@ import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -127,6 +130,22 @@ class FlowClientResolutionTest {
                 "A project without the Flow server has no Flow version to "
                         + "resolve a client of");
         verifyNoInteractions(repositorySystem);
+    }
+
+    @Test
+    void should_failTheBuild_whenTheClientCanNotBeResolved() throws Exception {
+        project.setArtifacts(Set.of(artifact("com.vaadin", "flow-server",
+                "1.2.3", tempDir.resolve("flow-server-1.2.3.jar").toFile())));
+        doThrow(new ArtifactResolutionException(List.of()))
+                .when(repositorySystem).resolveArtifact(any(), any());
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> mojo.getJarFiles());
+
+        assertTrue(
+                exception.getMessage().contains("com.vaadin:flow-client:1.2.3"),
+                "The build should name the client it can not resolve, was "
+                        + exception.getMessage());
     }
 
     private static Artifact artifact(String groupId, String artifactId,

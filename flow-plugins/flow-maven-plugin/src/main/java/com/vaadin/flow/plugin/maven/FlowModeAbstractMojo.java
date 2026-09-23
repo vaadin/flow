@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -555,11 +556,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public Set<File> getJarFiles() {
 
-        Set<File> jarFiles = project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(Artifact::getFile).collect(Collectors.toSet());
-        findFlowClient().ifPresent(jarFiles::add);
-        return jarFiles;
+        return Stream
+                .concat(project.getArtifacts().stream()
+                        .filter(artifact -> "jar".equals(artifact.getType()))
+                        .map(Artifact::getFile), findFlowClient().stream())
+                .collect(Collectors.toSet());
 
     }
 
