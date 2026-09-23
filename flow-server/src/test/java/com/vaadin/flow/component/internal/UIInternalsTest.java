@@ -720,6 +720,23 @@ class UIInternalsTest {
     }
 
     @Test
+    void setTitle_reactDisabled_titleSetStraightAway() {
+        ((MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration()).setReactEnabled(false);
+
+        internals.setTitle("new title");
+
+        var invocation = internals.getPendingJavaScriptInvocations().findFirst()
+                .orElseThrow().getInvocation();
+        // There is no client side router to wait for
+        assertEquals(new JsCall(UIInternals.TitleJs.class, "setTitle",
+                List.of("new title")), invocation.getJsCall());
+        assertFalse(invocation.getExpression().contains("vaadin-navigated"),
+                "the title should not wait for a navigation: "
+                        + invocation.getExpression());
+    }
+
+    @Test
     void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
         internals.setTitle("new title");
         assertEquals("new title", internals.getTitle());

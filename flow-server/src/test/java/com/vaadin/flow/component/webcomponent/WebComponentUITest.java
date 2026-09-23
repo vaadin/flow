@@ -41,7 +41,7 @@ class WebComponentUITest {
 
         Map<String, String> attributes = new LinkedHashMap<>();
         attributes.put("theme", "dark");
-        // A value that would end the string it used to be written into
+        // A quote, which has to reach the browser as data
         attributes.put("data-note", "quote ' inside");
         ui.addAttributes("my-component", attributes);
 

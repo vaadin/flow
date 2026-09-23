@@ -143,8 +143,8 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.set("detail",
                 objectData == null ? JacksonUtils.nullNode() : objectData);
 
-        // The options travel as a value rather than as JavaScript written
-        // into the expression, so nothing a detail carries is read as code
+        // The options are an argument of the call, so a quote in the detail
+        // is data instead of the end of a JavaScript string
         componentHost.executeJs(CustomEventJs.class).fireEvent(eventName,
                 object);
     }

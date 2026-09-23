@@ -319,9 +319,8 @@ public class WebComponentUI extends UI {
 
     // non-private for testing purposes
     void addAttributes(String tag, Map<String, String> attributes) {
-        // The tag and the attributes travel as values rather than as
-        // JavaScript, so a value carrying a quote cannot end the string it was
-        // written into
+        // The tag and the attributes are arguments of the call, so a quote
+        // in a value is data instead of the end of a JavaScript string
         getPage().executeJs(ThemeAttributesJs.class).setAttributes(tag,
                 JacksonUtils.mapToJson(attributes));
     }

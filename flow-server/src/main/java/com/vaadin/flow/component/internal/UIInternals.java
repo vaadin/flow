@@ -2183,9 +2183,9 @@ public class UIInternals implements Serializable {
     public interface TitleJs extends Serializable {
 
         /**
-         * What setting the title does, on its own and inside the wait. The
-         * leading indentation is part of it, so that what a browser runs is the
-         * same as before this was declared rather than built.
+         * What setting the title does, shared by the plain call and the one
+         * that waits for the navigation. The indentation ends up inside the
+         * body of the function the bundle carries, where JavaScript ignores it.
          */
         String SET_TITLE = """
                     document.title = $0;
