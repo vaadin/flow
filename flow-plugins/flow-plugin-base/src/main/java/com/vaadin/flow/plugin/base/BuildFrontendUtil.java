@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -90,6 +92,13 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 public class BuildFrontendUtil {
 
     /**
+     * The entry point of the Flow client, used to locate the client among the
+     * frontend resources on the classpath of the build tooling.
+     */
+    private static final String CLIENT_ENTRY_POINT = Constants.RESOURCES_FRONTEND_DEFAULT
+            + "/FlowClient.js";
+
+    /**
      * Hide public constructor.
      */
     private BuildFrontendUtil() {
@@ -109,6 +118,52 @@ public class BuildFrontendUtil {
                 .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
 
         return new ReflectionsClassFinder(urls);
+    }
+
+    /**
+     * Returns the location the build tooling carries the Flow client in, for
+     * the build to copy the client frontend sources from.
+     * <p>
+     * The client is a dependency of the build tooling rather than of the
+     * application, so that nothing an application deploys has to carry it. The
+     * location is the jar of the client, or the folder its files are in when
+     * the tooling runs from compiled classes. An application that still
+     * declares the client among its own dependencies resolves the very same
+     * jar, so adding this location to the ones a build scans is a no-op there.
+     *
+     * @return the location of the Flow client, or an empty optional if the
+     *         tooling has no client to hand over
+     */
+    public static Optional<File> findClientLocation() {
+        URL url = BuildFrontendUtil.class.getClassLoader()
+                .getResource(CLIENT_ENTRY_POINT);
+        if (url == null) {
+            getLogger().debug(
+                    "The build tooling has no Flow client to copy into the "
+                            + "project, {} is not on its classpath",
+                    CLIENT_ENTRY_POINT);
+            return Optional.empty();
+        }
+        try {
+            if ("jar".equals(url.getProtocol())) {
+                return Optional
+                        .of(new File(((JarURLConnection) url.openConnection())
+                                .getJarFileURL().toURI()));
+            }
+            // A folder of compiled classes, stepped up to the root the
+            // resource path is relative to
+            File location = new File(url.toURI());
+            for (int i = 0; i < CLIENT_ENTRY_POINT.split("/").length; i++) {
+                location = location.getParentFile();
+            }
+            return Optional.of(location);
+        } catch (IOException | URISyntaxException e) {
+            getLogger().debug(
+                    "Unable to resolve the location of the Flow client from "
+                            + url,
+                    e);
+            return Optional.empty();
+        }
     }
 
     /**

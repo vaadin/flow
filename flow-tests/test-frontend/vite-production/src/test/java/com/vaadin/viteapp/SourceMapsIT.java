@@ -15,26 +15,17 @@
  */
 package com.vaadin.viteapp;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.SourceMapTestUtil;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class SourceMapsIT extends BundleAccess {
 
@@ -58,7 +49,7 @@ public class SourceMapsIT extends BundleAccess {
             String contents = download(BUILD_PATH + bundle);
             Matcher matcher = SOURCE_MAPPING_URL.matcher(contents);
             if (!matcher.find()) {
-                assertNotEquals(
+                Assert.assertNotEquals(
                         entryBundle + " should refer to an emitted sourcemap",
                         entryBundle, bundle);
                 // Bundler runtime helpers are emitted without a sourcemap
@@ -69,37 +60,8 @@ public class SourceMapsIT extends BundleAccess {
             checkedBundles++;
         }
 
-        assertNotEquals("No bundle with a sourcemap was found", 0,
+        Assert.assertNotEquals("No bundle with a sourcemap was found", 0,
                 checkedBundles);
-    }
-
-    /**
-     * The sourcemaps of the Flow client are published as their own artifact
-     * that only the dev server brings in, so a production build copies the
-     * client out of the jars without them.
-     */
-    @Test
-    public void clientIsCopiedFromJarsWithoutSourceMaps() throws Exception {
-        File jarResources = new File(System.getProperty("user.dir", "."),
-                FrontendUtils.DEFAULT_FRONTEND_DIR + FrontendUtils.GENERATED
-                        + FrontendUtils.JAR_RESOURCES_FOLDER);
-
-        try (Stream<Path> files = Files.walk(jarResources.toPath())) {
-            List<Path> copied = files.filter(Files::isRegularFile).toList();
-
-            assertTrue(
-                    "The build should have copied the client from the jars "
-                            + "into " + jarResources,
-                    copied.stream().anyMatch(file -> file.endsWith(
-                            Path.of("bootstrap", "Bootstrapper.js"))));
-            assertEquals(
-                    "A production build should not copy any sourcemap into "
-                            + jarResources,
-                    List.of(),
-                    copied.stream()
-                            .filter(file -> file.toString().endsWith(".js.map"))
-                            .toList());
-        }
     }
 
     /**

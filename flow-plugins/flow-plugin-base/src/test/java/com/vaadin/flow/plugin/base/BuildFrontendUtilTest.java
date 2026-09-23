@@ -62,6 +62,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
@@ -130,6 +131,25 @@ class BuildFrontendUtilTest {
         try (FileOutputStream out = new FileOutputStream(statsJson)) {
             IOUtils.write("{\"npmModules\":{}}", out, StandardCharsets.UTF_8);
         }
+    }
+
+    @Test
+    void should_carryFlowClient_forProjectsThatDoNotDependOnIt() {
+        String clientEntryPoint = Constants.RESOURCES_FRONTEND_DEFAULT
+                + "/FlowClient.js";
+
+        File location = BuildFrontendUtil.findClientLocation()
+                .orElseThrow(() -> new AssertionError(
+                        "The build tooling should carry the Flow client, so "
+                                + "that a project does not have to depend on "
+                                + "it to have a frontend build"));
+
+        assertTrue(
+                location.isDirectory()
+                        ? new File(location, clientEntryPoint).exists()
+                        : new JarContentsManager().containsPath(location,
+                                clientEntryPoint),
+                location + " should hold " + clientEntryPoint);
     }
 
     @Test

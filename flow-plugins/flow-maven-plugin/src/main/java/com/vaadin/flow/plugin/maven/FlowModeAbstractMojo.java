@@ -535,9 +535,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public Set<File> getJarFiles() {
 
-        return project.getArtifacts().stream()
+        Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
+        // The Flow client comes with the plugin rather than with the project
+        BuildFrontendUtil.findClientLocation().ifPresent(jarFiles::add);
+        return jarFiles;
 
     }
 

@@ -86,8 +86,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Vaadin flow; flow-client and flow-html-components come from the
-         flow-tests parent -->
+    <!-- Vaadin flow; flow-html-components comes from the flow-tests parent -->
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-server</artifactId>

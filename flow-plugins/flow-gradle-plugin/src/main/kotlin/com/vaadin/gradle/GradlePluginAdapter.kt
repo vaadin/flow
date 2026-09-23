@@ -159,7 +159,12 @@ internal class GradlePluginAdapter private constructor(
             })
     }
 
-    override fun getJarFiles(): MutableSet<File> = jarFiles.toMutableSet()
+    override fun getJarFiles(): MutableSet<File> =
+        jarFiles.toMutableSet().apply {
+            // The Flow client comes with the plugin rather than with the
+            // project
+            BuildFrontendUtil.findClientLocation().ifPresent { add(it) }
+        }
 
     override fun isJarProject(): Boolean = jarProject
 
