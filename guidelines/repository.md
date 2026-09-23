@@ -35,7 +35,7 @@ Every top-level Maven module of the repository:
 | `vaadin-spring`                  | Spring Framework integration.                                                   |
 | `vaadin-cdi`                     | CDI integration, for Jakarta EE application servers.                            |
 | `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
-| `flow-jandex`                    | Jandex index of the Flow packages, for use outside Vaadin Platform.             |
+| `flow-jandex`                    | Deprecated empty artifact; each module ships its own `META-INF/jandex.idx`.     |
 | `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |
 | `flow-bom`                       | Bill of materials.                                                              |
 | `flow-test-util`                 | Test utilities (TestBench base classes, IT helpers).                            |
