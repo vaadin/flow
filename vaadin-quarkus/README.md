@@ -1,11 +1,12 @@
 # vaadin-quarkus
 
 A Quarkus extension that adds support for Vaadin Flow. It is built and
-released as part of Flow and shares its version number; before it was imported
-into this repository it lived in [vaadin/quarkus](https://github.com/vaadin/quarkus),
-where the branches for Vaadin 25.3 and earlier still are:
+released as part of Flow and shares its version number, from Vaadin 25.4
+onwards. Before it was imported into this repository it lived in
+[vaadin/quarkus](https://github.com/vaadin/quarkus), which still serves the
+earlier Vaadin versions:
 
-* `3.2` for Vaadin 25.2 and Quarkus 3.33
+* `main`, at 3.2-SNAPSHOT, for Vaadin 25.2 and 25.3, with Quarkus 3.33
 * `3.1` for Vaadin 25.1 and Quarkus 3.32
 * `3.0` for Vaadin 25.0 and Quarkus 3.32
 * `2.2` for Vaadin 24 and Quarkus 3.20
