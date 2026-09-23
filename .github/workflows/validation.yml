@@ -269,7 +269,7 @@ jobs:
             $cmd -T 1C || $cmd
           fi
           if [ ${{matrix.current}} -eq 7 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared -am"
             $cmd || $cmd
           fi
       - name: Run ITs
