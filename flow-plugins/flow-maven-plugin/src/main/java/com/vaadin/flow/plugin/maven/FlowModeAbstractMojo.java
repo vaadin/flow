@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,9 +50,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.build.BuildContext;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 
@@ -201,15 +200,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
-
-    @Inject
-    private RepositorySystem repositorySystem;
-
-    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
-    private RepositorySystemSession repositorySession;
-
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
-    private List<RemoteRepository> remoteRepositories;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -375,6 +365,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Inject
     void setBuildContext(BuildContext buildContext) {
         buildContextRefresher = buildContext::refresh;
+    }
+
+    /**
+     * Resolves the Flow client of the given version into its jar.
+     * <p>
+     * The mojo a build runs is a copy of this one, loaded in an isolated class
+     * loader, and a field of a type that loader does not share can not be
+     * copied into it. The copy therefore gets this function rather than the
+     * repository system it is made of.
+     */
+    private Function<String, File> flowClientResolver;
+
+    @Inject
+    void setRepositorySystem(RepositorySystem repositorySystem) {
+        flowClientResolver = version -> resolveFlowClient(repositorySystem,
+                version);
     }
 
     @Override
@@ -599,21 +605,24 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     + FLOW_SERVER_ARTIFACT_ID);
             return Optional.empty();
         }
+        return Optional.of(flowClientResolver.apply(version.get()));
+    }
+
+    private File resolveFlowClient(RepositorySystem repositorySystem,
+            String version) {
         ArtifactRequest request = new ArtifactRequest(
                 new DefaultArtifact(VAADIN_GROUP_ID, FLOW_CLIENT_ARTIFACT_ID,
-                        "jar", version.get()),
-                remoteRepositories, null);
+                        "jar", version),
+                project.getRemoteProjectRepositories(), null);
         try {
-            return Optional.of(
-                    repositorySystem.resolveArtifact(repositorySession, request)
-                            .getArtifact().getFile());
+            return repositorySystem
+                    .resolveArtifact(session.getRepositorySession(), request)
+                    .getArtifact().getFile();
         } catch (ArtifactResolutionException e) {
-            throw new IllegalStateException(
-                    "Unable to resolve " + VAADIN_GROUP_ID + ":"
-                            + FLOW_CLIENT_ARTIFACT_ID + ":" + version.get()
-                            + ", which the frontend build compiles into the "
-                            + "application bundle.",
-                    e);
+            throw new IllegalStateException("Unable to resolve "
+                    + VAADIN_GROUP_ID + ":" + FLOW_CLIENT_ARTIFACT_ID + ":"
+                    + version + ", which the frontend build compiles into the "
+                    + "application bundle.", e);
         }
     }
 

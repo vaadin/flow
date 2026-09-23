@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.eclipse.aether.RepositorySystem;
@@ -78,10 +79,9 @@ class FlowClientResolutionTest {
                 });
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "repositorySystem",
-                repositorySystem);
-        ReflectionUtils.setVariableValueInObject(mojo, "remoteRepositories",
-                List.of());
+        ReflectionUtils.setVariableValueInObject(mojo, "session",
+                mock(MavenSession.class));
+        mojo.setRepositorySystem(repositorySystem);
     }
 
     @Test
