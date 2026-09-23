@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.Before;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.devtools.v148.network.Network;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
