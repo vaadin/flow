@@ -293,8 +293,8 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(functionIdOf(MprPushStateJs.class, "pushLocation", 1),
-                functionOf(uidl, 1),
+        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+                functionRunBy(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
                         + uidl);
 
@@ -327,8 +327,8 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(functionIdOf(MprPushStateJs.class, "pushHash", 1),
-                functionOf(uidl, 1),
+        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushHash", 1),
+                functionRunBy(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
                         + uidl);
         assertEquals("!away",
@@ -409,6 +409,51 @@ class UidlRequestHandlerTest {
         assertEquals(applicationScript, whatRuns(written, index).asString(),
                 "what the application scheduled should still be there: "
                         + written);
+    }
+
+    @Test
+    void should_replaceThePushState_that_theWriterActuallyEncodes()
+            throws Exception {
+        UI ui = getUi();
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(ui.getSession().getService().getDeploymentConfiguration())
+                .thenReturn(configuration);
+        when(configuration.isReactEnabled()).thenReturn(false);
+
+        // The fix-up recognizes the router's push state by what names it among
+        // the constants of the response, which is a contract between it and
+        // the writer: this schedules a real location change and encodes it the
+        // way a response does, so that a change to either side that stops the
+        // two from naming the same thing fails here rather than silently
+        // leaving the wrong location pushed.
+        ui.getPage().getHistory().pushState(null, "away");
+        ArrayNode encoded = UidlWriter.encodeExecuteJavaScriptList(
+                ui.getInternals().dumpPendingJavaScriptInvocations(),
+                ui.getInternals().getConstantPool());
+        assertEquals(1, encoded.size(),
+                "the router should have scheduled one invocation, got: "
+                        + encoded);
+
+        ObjectNode uidl = generateUidl(true, true);
+        ((ArrayNode) uidl.get("execute")).set(1, encoded.get(0));
+        ((ObjectNode) uidl.get("constants"))
+                .setAll(ui.getInternals().getConstantPool().dumpConstants());
+        int invocations = uidl.get("execute").size();
+
+        handler = spy(new UidlRequestHandler());
+        doReturn(uidl).when(handler).createUidl(ui, false);
+        StringWriter writer = new StringWriter();
+
+        handler.writeUidl(ui, writer, false);
+
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(invocations, written.get("execute").size(),
+                "the corrected push state should replace the one the router scheduled rather than be added next to it: "
+                        + written);
+        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+                functionRunBy(written, 1),
+                "and it should be what that invocation now runs: " + written);
     }
 
     @Test
@@ -645,19 +690,9 @@ class UidlRequestHandlerTest {
      * The identifier of the function that the invocation at the given index of
      * the given response runs.
      */
-    private static String functionOf(ObjectNode uidl, int index) {
+    private static String functionRunBy(ObjectNode uidl, int index) {
         return whatRuns(uidl, index).get(JsonConstants.UIDL_KEY_JS_FUNCTION)
                 .asString();
-    }
-
-    /**
-     * The identifier of the function that the named method of the given
-     * JavaScript definition runs, which is what an invocation of it names.
-     */
-    private static String functionIdOf(Class<?> definitionType,
-            String methodName, int parameterCount) {
-        return new JsCall(definitionType, methodName,
-                Collections.nCopies(parameterCount, null)).getFunctionId();
     }
 
     /**
@@ -768,7 +803,7 @@ class UidlRequestHandlerTest {
         // for History.HistoryJs.pushState, and that is what the fix-up
         // corrects.
         ObjectNode routerPushState = UidlWriter.functionConstant(
-                functionIdOf(HistoryJs.class, "pushState", 2));
+                JsCall.functionId(HistoryJs.class, "pushState", 2));
         String name = new ConstantPoolKey(routerPushState).getId();
         ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
         ((ObjectNode) uidl.get("constants")).remove("pushState");
