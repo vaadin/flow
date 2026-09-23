@@ -577,10 +577,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * The client holds the frontend sources of the client engine, which are
      * input to the frontend build, and an application serves the build output
      * rather than the client itself, so an application does not depend on the
-     * client. What carries the client to a project is the development server,
-     * and that is optional for an application: a build can not count on finding
-     * it, and one running without it has nothing on the classpath to copy the
-     * client from. The build resolves the client here instead, pinned to the
+     * client. What brings the client to a project is the development server,
+     * which a project declares as an optional dependency, and a project that
+     * declares none has nothing on the classpath to copy the client from. So
+     * that a frontend build does not depend on how a project declares its
+     * development time dependencies, the client is resolved here, pinned to the
      * version of {@code flow-server} the project resolves - a build must not
      * compile a client of one version into an application running the server of
      * another.
