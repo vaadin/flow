@@ -25,7 +25,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
@@ -216,17 +218,54 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testGetJsDefinitions_onlyAnnotatedInterfaces() throws IOException {
+    void testRegisterJsDefinitionProxies_registersTheAnnotatedInterfaces()
+            throws IOException {
         Indexer indexer = new Indexer();
         indexer.indexClass(GreeterJs.class);
         indexer.indexClass(Greeter.class);
+        Index jsIndex = indexer.complete();
+        List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
 
-        Set<ClassInfo> result = processor.getJsDefinitions(indexer.complete());
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), proxies::add,
+                reflective::add);
 
+        // Only an interface can be implemented by a JDK proxy, so the
+        // annotated class has to be left out of both registrations.
+        assertEquals(List.of(List.of(GreeterJs.class.getName())),
+                proxies.stream()
+                        .map(NativeImageProxyDefinitionBuildItem::getClasses)
+                        .toList(),
+                "Should register the annotated interface as a proxy definition");
         assertEquals(Set.of(GreeterJs.class.getName()),
-                result.stream().map(classInfo -> classInfo.name().toString())
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
-                "Should detect the annotated interface and leave the annotated class out");
+                "Should register the annotated interface for reflection");
+        assertTrue(
+                reflective.stream()
+                        .allMatch(ReflectiveClassBuildItem::isMethods),
+                "The annotations are read off the interface methods");
+    }
+
+    @Test
+    void testRegisterJsDefinitionProxies_noDefinitions_registersNothing()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(Greeter.class);
+        Index emptyIndex = indexer.complete();
+        List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(emptyIndex, emptyIndex),
+                proxies::add, reflective::add);
+
+        assertTrue(proxies.isEmpty());
+        assertTrue(reflective.isEmpty(),
+                "An application with no JavaScript definitions needs no "
+                        + "reflection registration either");
     }
 
     private static boolean isIncluded(
