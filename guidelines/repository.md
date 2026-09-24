@@ -45,10 +45,11 @@ Routing lives in `flow-server` — there is no separate router module.
 
 The Flow modules a Quarkus application loads carry a Jandex index of their
 own classes in `META-INF/jandex.idx`, which is where the Quarkus extension
-reads it from. A new module of that kind sets the `jandex.skip` property
-to `false` in its `pom.xml` to get one; the parent POM skips it otherwise.
-`vaadin-spring` and `vaadin-cdi` are left out on purpose, since neither
-runs under Quarkus, and so are tooling and test modules.
+reads it from. Modules get one by default; those with no Jandex consumer
+set the `jandex.skip` property to `true` in their `pom.xml`. That covers
+`vaadin-spring` and `vaadin-cdi`, since neither runs under Quarkus, the
+build tooling, and the test modules (`flow-tests` sets it for every
+integration test module).
 
 ## Build plugins
 

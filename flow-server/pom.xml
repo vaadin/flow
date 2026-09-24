@@ -11,10 +11,6 @@
   <name>Flow Server</name>
   <description>${project.name}</description>
 
-  <properties>
-    <jandex.skip>false</jandex.skip>
-  </properties>
-
   <dependencies>
 
     <!-- Project dependencies -->

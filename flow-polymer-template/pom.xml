@@ -19,7 +19,6 @@
   </licenses>
 
   <properties>
-    <jandex.skip>false</jandex.skip>
     <cvdlName>flow-polymer-template</cvdlName>
     <currentYear>2022</currentYear>
   </properties>

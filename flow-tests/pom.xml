@@ -24,6 +24,7 @@
   </modules>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- Don't care about coding style or licenses for tests -->
     <sonar.skip>true</sonar.skip>
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>

@@ -12,10 +12,6 @@
   <name>Generic HTML 5 Drag and Drop support for Flow</name>
   <description>${project.name}</description>
 
-  <properties>
-    <jandex.skip>false</jandex.skip>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>com.vaadin</groupId>

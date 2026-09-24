@@ -13,6 +13,10 @@
   <name>vaadin-spring</name>
   <description>Provides Spring integration for Vaadin applications.</description>
 
+  <properties>
+    <jandex.skip>true</jandex.skip>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <!-- A BOM imported here outranks the one inherited from flow-project,

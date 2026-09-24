@@ -12,9 +12,7 @@
   <name>Flow WebPush</name>
   <description>${project.name}</description>
 
-  <properties>
-    <jandex.skip>false</jandex.skip>
-  </properties>
+  <properties/>
 
   <dependencies>
     <!-- Project dependencies -->

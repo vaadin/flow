@@ -11,10 +11,6 @@
   <name>Flow Data</name>
   <description>${project.name}</description>
 
-  <properties>
-    <jandex.skip>false</jandex.skip>
-  </properties>
-
   <dependencies>
 
     <dependency>
