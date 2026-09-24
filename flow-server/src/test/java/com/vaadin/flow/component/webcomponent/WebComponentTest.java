@@ -167,6 +167,11 @@ class WebComponentTest {
         webComponent.setProperty(jsonNodeConfiguration,
                 (IntNode) JacksonUtils.createNode(7));
         verify(updates).updateProperty("jsonNode", 7);
+        // A number that is not an integer stays a double rather than being
+        // read as one, which is what checking for an int node first is for
+        webComponent.setProperty(jsonNodeConfiguration,
+                (ValueNode) JacksonUtils.createNode(7.5));
+        verify(updates).updateProperty("jsonNode", 7.5);
         // while an object node is sent as it is, rather than written into the
         // JavaScript, which a content security policy would refuse to compile
         ObjectNode object = JacksonUtils.createObjectNode();

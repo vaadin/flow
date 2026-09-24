@@ -52,6 +52,7 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
@@ -104,6 +105,18 @@ class JavaScriptBootstrapUITest {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             event.postpone();
+        }
+    }
+
+    @Route("postponing")
+    @Tag(Tag.DIV)
+    public static class Postponing extends Component
+            implements BeforeLeaveObserver {
+        static ContinueNavigationAction action;
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            action = event.postpone();
         }
     }
 
@@ -195,6 +208,8 @@ class JavaScriptBootstrapUITest {
                 Clean.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("dirty",
                 Dirty.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("postponing",
+                Postponing.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
 
@@ -376,6 +391,44 @@ class JavaScriptBootstrapUITest {
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
         assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
                 .getChild(0).getTag());
+    }
+
+    @Test
+    void postponedLeave_proceedLetsTheClientGoAndCancelTurnsItBack() {
+        // The client waits to hear what became of the navigation it handed
+        // over, so each way out of a postponed one has to answer - and answer
+        // the right way round
+        for (boolean proceed : new boolean[] { true, false }) {
+            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/postponing",
+                    "", "", null, ""));
+            ui.leaveNavigation(new BrowserLeaveNavigationEvent(ui, true,
+                    "/client-view", ""));
+            dumpServerConnectedCalls();
+
+            if (proceed) {
+                Postponing.action.proceed();
+            } else {
+                Postponing.action.cancel();
+            }
+
+            assertEquals(List.of(!proceed), dumpServerConnectedCalls(),
+                    proceed ? "proceeding should not cancel the navigation"
+                            : "cancelling should turn the navigation back");
+        }
+    }
+
+    /**
+     * What the wrapper element has been told since last asked, as the cancel
+     * flag of each call.
+     */
+    private List<Object> dumpServerConnectedCalls() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .filter(call -> call != null
+                        && call.definitionType() == UiConnectionJs.class
+                        && "serverConnected".equals(call.methodName()))
+                .map(call -> call.arguments().get(0)).toList();
     }
 
     @Test
