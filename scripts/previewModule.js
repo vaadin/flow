@@ -11,20 +11,29 @@
  * between pushes.
  *
  * Links are generated to the views the pull request adds or changes, and to
- * the views of the integration tests it adds or changes, the same way the
- * tests themselves resolve them: @TestFor, or the IT to View naming
- * convention; @Route if the view declares one, /view/<class name> otherwise.
+ * the ones the integration tests it adds or changes open, resolved the way
+ * the tests resolve them: a getTestPath() returning a literal; otherwise the
+ * view named by @TestFor or by the IT to View naming convention, served at
+ * /view/<class name> in the modules that have ViewTestServlet (from
+ * flow-test-common) and at its @Route elsewhere.
  *
- * Usage: node scripts/previewModule.js <base ref> <preview url>
+ * Usage: node scripts/previewModule.js <preview url> < <changed files>
+ *
+ * The changed files are read from standard input, one repository path per
+ * line, e.g. from `git diff --name-only origin/main...`.
  *
  * Outputs:
- * - `module=<path>` appended to $GITHUB_OUTPUT (printed if not set)
+ * - `module=<path>` and `context-path=<path>` appended to $GITHUB_OUTPUT
+ *   (printed if not set)
  * - preview-comment.md: the sticky pull request comment body
  */
 const fs = require('fs');
-const { execFileSync } = require('child_process');
 
 const DEFAULT_MODULE = 'flow-tests/test-default';
+
+// Starts the pull request comment, so that each deployment updates the one
+// comment instead of adding another
+const COMMENT_MARKER = '<!-- flow-pr-preview -->';
 
 // Test modules that run as a single application with the default build, so
 // the preview image can build and start them like the ITs do. Modules left
@@ -47,14 +56,14 @@ const DEPLOYABLE_MODULES = {
   'flow-tests/test-push-startup': { contextPath: '' },
   'flow-tests/test-react-adapter': { contextPath: '' },
   'flow-tests/test-router-custom-context': {
-    contextPath: '/custom-context-router',
+    contextPath: '/custom-context-router'
   },
   'flow-tests/test-servlet': { contextPath: '' },
   'flow-tests/test-tailwindcss': { contextPath: '' },
   'flow-tests/test-theme-no-polymer': { contextPath: '' },
   'flow-tests/test-themes': { contextPath: '' },
   'flow-tests/test-vaadin-router': { contextPath: '' },
-  'flow-tests/test-webpush': { contextPath: '' },
+  'flow-tests/test-webpush': { contextPath: '' }
 };
 
 // Caps the links listed in the comment, which a large refactoring could
@@ -63,11 +72,7 @@ const MAX_LINKS = 20;
 
 /** The deployable test module a repository path belongs to, or null. */
 function moduleOf(file) {
-  return (
-    Object.keys(DEPLOYABLE_MODULES).find((module) =>
-      file.startsWith(module + '/'),
-    ) || null
-  );
+  return Object.keys(DEPLOYABLE_MODULES).find((module) => file.startsWith(module + '/')) || null;
 }
 
 /** The test module to deploy for the given changed files. */
@@ -82,9 +87,7 @@ function selectModule(changedFiles) {
   if (counts.size === 0 || counts.has(DEFAULT_MODULE)) {
     return DEFAULT_MODULE;
   }
-  return [...counts.entries()].sort(
-    ([a, countA], [b, countB]) => countB - countA || a.localeCompare(b),
-  )[0][0];
+  return [...counts.entries()].sort(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b))[0][0];
 }
 
 /** Fully qualified class name of a Java source file, or null. */
@@ -93,81 +96,93 @@ function classNameOf(file) {
   return match ? match[1].replace(/\//g, '.') : null;
 }
 
-/**
- * The path a view is served at, relative to the context path, or null if the
- * source is not a view. `readSource(file)` returns the source or null.
- */
-function viewPath(viewFile, readSource) {
-  const source = readSource(viewFile);
-  if (source === null || !/\bextends\s+\w+/.test(source)) {
-    return null;
-  }
-  const route = source.match(/@Route\s*\(\s*(?:value\s*=\s*)?([^,)]+)/);
-  if (route) {
-    let value = route[1].trim();
-    // A route held in a constant of the view itself, like LoginView.ROUTE
-    const constant = value.match(/^(?:\w+\.)?([A-Z_][A-Z0-9_]*)$/);
-    if (constant) {
-      const declaration = source.match(
-        new RegExp(`\\b${constant[1]}\\s*=\\s*("[^"]*")`),
-      );
-      value = declaration ? declaration[1] : null;
-    }
-    if (value && value.startsWith('"')) {
-      return '/' + JSON.parse(value).replace(/^\//, '');
-    }
-  }
-  if (/@Route\b/.test(source) && !route) {
-    // @Route without a value is the class name without "View", which only
-    // the Java side can derive reliably
-    return null;
-  }
-  return '/view/' + classNameOf(viewFile);
+/** The value of a Java string literal, or null if it is not one. */
+function stringLiteral(expression) {
+  return /^"(?:[^"\\]|\\.)*"$/.test(expression) ? JSON.parse(expression) : null;
 }
 
-/** The source file of the view an integration test opens, or null. */
-function viewOfTest(testFile, readSource) {
-  const source = readSource(testFile);
-  if (source === null) {
+/**
+ * The path a view is served at, relative to the context path, or null if the
+ * source is not a view or its path can't be told from the source.
+ * `readSource(file)` returns the source or null.
+ */
+function viewPath(viewFile, viewServlet, readSource) {
+  const source = readSource(viewFile);
+  if (source === null || !(/@Route\b/.test(source) || /View\.java$/.test(viewFile))) {
     return null;
   }
+  if (viewServlet) {
+    // ViewTestServlet serves any view by its class name, which is also where
+    // ChromeBrowserTest opens it
+    return '/view/' + classNameOf(viewFile);
+  }
+  const route = source.match(/@Route\s*\(\s*(?:value\s*=\s*)?([^,)]+)/);
+  if (!route) {
+    return null;
+  }
+  let value = route[1].trim();
+  // A route held in a constant of the view itself, like LoginView.ROUTE
+  const constant = value.match(/^(?:\w+\.)?([A-Z_][A-Z0-9_]*)$/);
+  if (constant) {
+    const declaration = source.match(new RegExp(`\\b${constant[1]}\\s*=\\s*("[^"]*")`));
+    value = declaration ? declaration[1] : '';
+  }
+  const literal = stringLiteral(value);
+  return literal === null ? null : '/' + literal.replace(/^\//, '');
+}
+
+/**
+ * The path an integration test opens, including the context path, when it
+ * overrides getTestPath() with a string literal; null otherwise.
+ */
+function testPath(source) {
+  const match = source.match(/String\s+getTestPath\s*\(\s*\)\s*\{\s*return\s+([^;]+);/);
+  const literal = match ? stringLiteral(match[1].trim()) : null;
+  return literal === null ? null : '/' + literal.replace(/^\//, '');
+}
+
+/** The source file of the view an integration test opens. */
+function viewOfTest(testFile, source) {
   const module = testFile.slice(0, testFile.indexOf('/src/test/java/'));
   const testFor = source.match(/@TestFor\s*\(\s*(?:value\s*=\s*)?(\w+)\.class/);
   if (testFor) {
-    const imported = source.match(
-      new RegExp(`import\\s+([\\w.]+\\.${testFor[1]})\\s*;`),
-    );
-    const className = imported
-      ? imported[1]
-      : classNameOf(testFile).replace(/\w+$/, testFor[1]);
+    const imported = source.match(new RegExp(`import\\s+([\\w.]+\\.${testFor[1]})\\s*;`));
+    const className = imported ? imported[1] : classNameOf(testFile).replace(/\w+$/, testFor[1]);
     return `${module}/src/main/java/${className.replace(/\./g, '/')}.java`;
   }
-  return testFile
-    .replace('/src/test/java/', '/src/main/java/')
-    .replace(/IT\.java$/, 'View.java');
+  return testFile.replace('/src/test/java/', '/src/main/java/').replace(/IT\.java$/, 'View.java');
 }
 
-/** Paths (relative to the context path) of the views worth linking to. */
+/**
+ * Paths, including the context path, of the views worth linking to: the ones
+ * the pull request changes and the ones its changed integration tests open.
+ */
 function viewPaths(module, changedFiles, readSource) {
-  const views = new Set();
+  const { contextPath } = DEPLOYABLE_MODULES[module];
+  const viewServlet = (readSource(`${module}/pom.xml`) || '').includes('<artifactId>flow-test-common</artifactId>');
+  const paths = new Set();
+  const addView = (view) => {
+    const path = viewPath(view, viewServlet, readSource);
+    if (path) {
+      paths.add(contextPath + path);
+    }
+  };
   for (const file of changedFiles) {
     if (!file.startsWith(module + '/') || !file.endsWith('.java')) {
       continue;
     }
     if (file.includes('/src/main/java/')) {
-      views.add(file);
+      addView(file);
     } else if (file.endsWith('IT.java')) {
-      const view = viewOfTest(file, readSource);
-      if (view) {
-        views.add(view);
+      const source = readSource(file);
+      if (source !== null) {
+        const path = testPath(source);
+        if (path) {
+          paths.add(path);
+        } else {
+          addView(viewOfTest(file, source));
+        }
       }
-    }
-  }
-  const paths = new Set();
-  for (const view of views) {
-    const viewUrl = viewPath(view, readSource);
-    if (viewUrl) {
-      paths.add(viewUrl);
     }
   }
   return [...paths].sort();
@@ -175,16 +190,12 @@ function viewPaths(module, changedFiles, readSource) {
 
 /** The pull request comment body. */
 function comment(module, paths, previewUrl) {
-  const root = previewUrl + DEPLOYABLE_MODULES[module].contextPath;
-  const lines = [
-    '## 🚀 Preview deployment',
-    '',
-    `Deployed \`${module}\`: ${root}/`,
-  ];
+  const root = previewUrl + DEPLOYABLE_MODULES[module].contextPath + '/';
+  const lines = [COMMENT_MARKER, '', '## 🚀 Preview deployment', '', `Deployed \`${module}\`: ${root}`];
   if (paths.length > 0) {
     lines.push('', 'Views changed in this pull request:', '');
     for (const viewUrl of paths.slice(0, MAX_LINKS)) {
-      lines.push(`- ${root}${encodeURI(viewUrl)}`);
+      lines.push(`- ${previewUrl}${viewUrl.replace(/ /g, '%20')}`);
     }
     if (paths.length > MAX_LINKS) {
       lines.push(`- …and ${paths.length - MAX_LINKS} more`);
@@ -194,30 +205,24 @@ function comment(module, paths, previewUrl) {
     '',
     '_Only one test module is deployed per pull request: `test-default`, ' +
       'unless the pull request changes only other test modules._',
-    '',
+    ''
   );
   return lines.join('\n');
 }
 
 function main() {
-  const [baseRef = 'origin/main', previewUrl = ''] = process.argv.slice(2);
-  const changedFiles = execFileSync(
-    'git',
-    ['diff', '--name-only', '--diff-filter=d', `${baseRef}...HEAD`],
-    { encoding: 'utf8' },
-  )
+  const previewUrl = (process.argv[2] || '').replace(/\/+$/, '');
+  const changedFiles = fs
+    .readFileSync(0, 'utf8')
     .split('\n')
+    .map((file) => file.trim())
     .filter(Boolean);
-  const readSource = (file) =>
-    fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+  const readSource = (file) => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null);
 
   const module = selectModule(changedFiles);
   const paths = viewPaths(module, changedFiles, readSource);
-  fs.writeFileSync(
-    'preview-comment.md',
-    comment(module, paths, previewUrl.replace(/\/+$/, '')),
-  );
-  const output = `module=${module}\n`;
+  fs.writeFileSync('preview-comment.md', comment(module, paths, previewUrl));
+  const output = `module=${module}\n` + `context-path=${DEPLOYABLE_MODULES[module].contextPath}\n`;
   if (process.env.GITHUB_OUTPUT) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, output);
   } else {
