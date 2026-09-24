@@ -4,7 +4,7 @@ name: Flow PR Preview
 # tried in a browser without building the branch, and destroys the deployment
 # when the pull request is closed. The deployment is opt-in per pull request,
 # like the snapshot build in pr-snapshot.yml: it starts once the
-# "deploy preview" label is added, runs again for every commit pushed while the
+# "test deploy" label is added, runs again for every commit pushed while the
 # label is there, and is destroyed when the label is removed.
 #
 # The whole test suite does not fit in one deployment, so one module is picked
@@ -27,7 +27,7 @@ concurrency:
   # their own instead of cancelling a deployment.
   group: >-
     ${{ github.workflow }}-${{ github.event.number }}${{
-    github.event.label && github.event.label.name != 'deploy preview' && format('-{0}', github.run_id) || '' }}
+    github.event.label && github.event.label.name != 'test deploy' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 env:
@@ -53,9 +53,9 @@ jobs:
     # for some other label must not start a deployment of its own.
     if: >-
       !github.event.pull_request.head.repo.fork
-      && contains(github.event.pull_request.labels.*.name, 'deploy preview')
+      && contains(github.event.pull_request.labels.*.name, 'test deploy')
       && (github.event.action == 'synchronize' || github.event.action == 'reopened'
-        || (github.event.action == 'labeled' && github.event.label.name == 'deploy preview'))
+        || (github.event.action == 'labeled' && github.event.label.name == 'test deploy'))
     timeout-minutes: 45
     runs-on: ubuntu-24.04
     permissions:
@@ -164,8 +164,8 @@ jobs:
     # to destroy: removing the label already did it.
     if: >-
       !github.event.pull_request.head.repo.fork
-      && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'deploy preview'))
-        || (github.event.action == 'unlabeled' && github.event.label.name == 'deploy preview'))
+      && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'test deploy'))
+        || (github.event.action == 'unlabeled' && github.event.label.name == 'test deploy'))
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     steps:
