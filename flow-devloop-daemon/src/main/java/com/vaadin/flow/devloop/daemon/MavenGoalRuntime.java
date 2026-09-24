@@ -495,6 +495,14 @@ final class MavenGoalRuntime implements AppRuntime {
      * {@link com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension} edit the
      * effective model in memory instead. Nothing is written to the project.
      * <p>
+     * The application's own module is named alongside the plugin, because the
+     * effective model the extension edits is the one Maven resolved: a plugin a
+     * reactor parent declares belongs to every module that inherits it, and an
+     * entry the loop switches off across the reactor - Cargo, WildFly, both
+     * Payaras - would be switched straight back on in the reactor root by the
+     * very {@code <skip>false</skip>} that is meant for the application alone.
+     * It is the same {@code artifactId} the {@code -pl :<app>} above selects.
+     * <p>
      * Empty when the daemon is running from an exploded build directory rather
      * than a jar, which is the one case there is nothing to point Maven at; the
      * warnings then stand as the fallback.
@@ -504,6 +512,8 @@ final class MavenGoalRuntime implements AppRuntime {
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar,
                         "-D" + DevLoopBuildExtension.PLUGIN_PROPERTY + "="
                                 + plugin.groupId() + ":" + plugin.artifactId(),
+                        "-D" + DevLoopBuildExtension.MODULE_PROPERTY + "="
+                                + launch.reactor().app().artifactId(),
                         "-D" + DevLoopBuildExtension.FORCE_PROPERTY + "="
                                 + plugin.forcedConfiguration()))
                 .orElseGet(List::of);

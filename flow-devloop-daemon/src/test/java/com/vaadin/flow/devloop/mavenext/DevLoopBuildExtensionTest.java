@@ -48,6 +48,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class DevLoopBuildExtensionTest {
 
+    /** The artifactId every module built here has unless it is renamed. */
+    private static final String APP = "app";
+
     @TempDir
     private Path module;
 
@@ -372,6 +375,75 @@ class DevLoopBuildExtensionTest {
                 project.getProperties().getProperty("cargo.jvmargs"));
     }
 
+    /**
+     * A plugin a reactor parent declares is in the effective model of every
+     * module that inherits it, so forcing the configuration wherever the plugin
+     * is found would reach the reactor root as well - and for Cargo, WildFly
+     * and both Payaras that is the opposite of the intent. Those entries are
+     * switched off across the reactor by a {@code *.skip=true} on the command
+     * line and switched back on by exactly this forced
+     * {@code <skip>false</skip>}, so a root that got one too would start a
+     * server, or fail on a packaging that builds no deployment, before the
+     * build ever reached the application.
+     */
+    @Test
+    void anInheritedPluginIsForcedInTheApplicationModuleAlone() {
+        Plugin inherited = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        Plugin declared = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject root = module("root", inherited);
+        MavenProject app = module(APP, declared);
+
+        afterProjectsRead(
+                userProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "skip=false"),
+                new Properties(), root, app);
+
+        assertEquals("false", forced(declared, "skip"));
+        assertNull(inherited.getConfiguration());
+    }
+
+    /** The project properties are scoped to that module for the same reason. */
+    @Test
+    void anInheritedPluginSetsThePropertyInTheApplicationModuleAlone() {
+        Plugin inherited = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        Plugin declared = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
+                "1.10.29");
+        MavenProject root = module("root", inherited);
+        MavenProject app = module(APP, declared);
+
+        afterProjectsRead(
+                projectProperties("org.codehaus.cargo:cargo-maven3-plugin",
+                        "cargo.jvmargs", "-javaagent:/ha.jar"),
+                new Properties(), root, app);
+
+        assertEquals("-javaagent:/ha.jar",
+                app.getProperties().getProperty("cargo.jvmargs"));
+        assertNull(root.getProperties().getProperty("cargo.jvmargs"));
+    }
+
+    /**
+     * And a build that names no module at all is one nothing can be scoped to,
+     * so nothing is rewritten: a run whose plugin keeps the pom's configuration
+     * is degraded and said so in the log, while one that rewrote every module
+     * could fail before the application had started.
+     */
+    @Test
+    void withoutTheModuleNothingIsForced() {
+        Plugin jetty = jetty("org.eclipse.jetty.ee11",
+                "jetty-ee11-maven-plugin", "12.1.13");
+        jetty.setConfiguration(configuration("scan", "2"));
+        Properties user = userProperties(
+                "org.eclipse.jetty.ee11:jetty-ee11-maven-plugin", "scan=0");
+        user.remove(DevLoopBuildExtension.MODULE_PROPERTY);
+
+        afterProjectsRead(user, new Properties(), project(jetty));
+
+        assertEquals("2", forced(jetty, "scan"));
+    }
+
     /** A module that does not run the named plugin keeps its own model. */
     @Test
     void anotherModulesPropertiesAreLeftAlone() {
@@ -409,18 +481,19 @@ class DevLoopBuildExtensionTest {
         Properties properties = new Properties();
         properties.setProperty(DevLoopBuildExtension.PLUGIN_PROPERTY,
                 coordinates);
+        properties.setProperty(DevLoopBuildExtension.MODULE_PROPERTY, APP);
         properties.setProperty(DevLoopBuildExtension.PROPERTY_PREFIX + name,
                 value);
         return properties;
     }
 
     private void afterProjectsRead(Properties user, Properties system,
-            MavenProject project) {
+            MavenProject... projects) {
         DefaultMavenExecutionRequest request = new DefaultMavenExecutionRequest();
         request.setUserProperties(user);
         request.setSystemProperties(system);
         MavenSession session = new MavenSession(null, request,
-                new DefaultMavenExecutionResult(), List.of(project));
+                new DefaultMavenExecutionResult(), List.of(projects));
         new DevLoopBuildExtension().afterProjectsRead(session);
     }
 
@@ -428,6 +501,7 @@ class DevLoopBuildExtensionTest {
         Properties properties = new Properties();
         properties.setProperty(DevLoopBuildExtension.PLUGIN_PROPERTY,
                 coordinates);
+        properties.setProperty(DevLoopBuildExtension.MODULE_PROPERTY, APP);
         properties.setProperty(DevLoopBuildExtension.FORCE_PROPERTY, force);
         return properties;
     }
@@ -451,6 +525,12 @@ class DevLoopBuildExtensionTest {
         return project(module.resolve("target"), plugins);
     }
 
+    private MavenProject module(String artifactId, Plugin... plugins) {
+        MavenProject project = project(plugins);
+        project.getModel().setArtifactId(artifactId);
+        return project;
+    }
+
     private MavenProject project(Path buildDirectory, Plugin... plugins) {
         Build build = new Build();
         build.setDirectory(buildDirectory.toString());
@@ -459,7 +539,7 @@ class DevLoopBuildExtensionTest {
         }
         Model model = new Model();
         model.setGroupId("com.example");
-        model.setArtifactId("app");
+        model.setArtifactId(APP);
         model.setVersion("1.0");
         model.setPackaging("war");
         model.setBuild(build);
