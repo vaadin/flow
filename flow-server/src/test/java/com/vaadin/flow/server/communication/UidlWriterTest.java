@@ -49,8 +49,10 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
@@ -236,7 +238,21 @@ class UidlWriterTest {
     private static ObjectNode functionConstant(String expression,
             int argumentCount) {
         ObjectNode constant = JacksonUtils.createObjectNode();
-        constant.put("f", JsCall.functionId(expression, argumentCount));
+        constant.put("f", JsCall.functionId(expression, argumentCount, false));
+        return constant;
+    }
+
+    /**
+     * The constant that names the function of the JavaScript declared for a
+     * variable number of arguments, which carries how many of them a call has
+     * because the function collects them into a rest parameter and does not
+     * report them in its length.
+     */
+    private static ObjectNode variadicFunctionConstant(String expression,
+            int parameterCount, int argumentCount) {
+        ObjectNode constant = JacksonUtils.createObjectNode();
+        constant.put("f", JsCall.functionId(expression, parameterCount, true));
+        constant.put("n", argumentCount);
         return constant;
     }
 
@@ -327,10 +343,63 @@ class UidlWriterTest {
                         + encoded);
     }
 
+    @Test
+    void encodeExecuteJavaScript_variadicCall_sendsHowManyArgumentsItCarries() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { 1, 2 }));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", 1, 2, element);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(
+                nameOfWhatRuns(variadicFunctionConstant(
+                        "this.method($0, ...$1)", 2, 3), constants),
+                encoded.get(encoded.size() - 1).asString(),
+                "the three arguments the call spread should be counted for the client, which cannot read them off the function: "
+                        + encoded + " " + constants);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_variadicCall_trailingFunctionSentAsAFunction() {
+        Element element = ElementFactory.createDiv();
+        JsFunction callback = JsFunction.of("return 1;");
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { callback }));
+        // The parameters an element schedules: the arguments of the call as
+        // the client receives them, followed by the element itself
+        List<Object> parameters = new ArrayList<>(call.flattenArguments());
+        parameters.add(element);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), parameters.toArray());
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonCodec.encodeWithTypeInfo(callback), encoded.get(1)),
+                "a function among the trailing arguments should reach the browser as the function it is, which is what sending them one by one rather than as one array is for: "
+                        + encoded);
+    }
+
     @JsDefinition
     interface TestJs extends Serializable {
         @JsExpression("this.method($0)")
         void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test

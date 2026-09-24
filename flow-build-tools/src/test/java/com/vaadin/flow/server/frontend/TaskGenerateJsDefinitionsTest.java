@@ -50,6 +50,8 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
+    private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
+
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     @JsDefinition
@@ -70,6 +72,12 @@ class TaskGenerateJsDefinitionsTest {
     @JsDefinition
     public interface NothingJs extends Serializable {
         void notDeclared();
+    }
+
+    @JsDefinition
+    public interface ShouterJs extends Serializable {
+        @JsExpression(SHOUT_EXPRESSION)
+        void shout(String greeting, Object... names);
     }
 
     @TempDir
@@ -99,7 +107,7 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(
                 content.contains("window.Vaadin.Flow.jsDefinitions[\""
-                        + JsCall.functionId(GREETING_EXPRESSION, 1)
+                        + JsCall.functionId(GREETING_EXPRESSION, 1, false)
                         + "\"] = async function ($0) {"),
                 "a function should be registered under the identifier of the JavaScript it runs: "
                         + content);
@@ -108,9 +116,22 @@ class TaskGenerateJsDefinitionsTest {
                         + content);
         assertTrue(
                 content.contains("window.Vaadin.Flow.jsDefinitions[\""
-                        + JsCall.functionId("window.alert('Hello')", 0)
+                        + JsCall.functionId("window.alert('Hello')", 0, false)
                         + "\"] = async function () {"),
                 "the overload that takes no arguments is another function: "
+                        + content);
+    }
+
+    @Test
+    void variadicMethod_collectsItsTrailingArgumentsIntoARestParameter() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ShouterJs.class), false);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, true)
+                        + "\"] = async function ($0, ...$1) {"),
+                "the last parameter should collect the arguments that follow the fixed ones, as it does in Java: "
                         + content);
     }
 
@@ -125,10 +146,9 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains(NAMES_REGISTRY),
                 "the registry a name is assigned into has to be there, or the module throws: "
                         + content);
-        assertTrue(
-                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
-                        + JsCall.functionId(GREETING_EXPRESSION, 1) + "\"] = \""
-                        + GreeterJs.class.getName() + ".showGreeting/1\";"),
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + JsCall.functionId(GREETING_EXPRESSION, 1, false) + "\"] = \""
+                + GreeterJs.class.getName() + ".showGreeting/1\";"),
                 "and the name should be registered next to the function: "
                         + content);
     }
@@ -156,13 +176,14 @@ class TaskGenerateJsDefinitionsTest {
                 written.indexOf(NAMES_REGISTRY) < written
                         .indexOf("window.Vaadin.Flow.jsDefinitionNames[\""),
                 "and it should come before the name it holds: " + written);
-        assertTrue(
-                written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
-                        + JsCall.functionId(COUNT_EXPRESSION, 1) + "\"] = \""
-                        + CounterJs.class.getName() + ".count/1\";"),
+        assertTrue(written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + JsCall.functionId(COUNT_EXPRESSION, 1, false) + "\"] = \""
+                + CounterJs.class.getName() + ".count/1\";"),
                 "the name of what was asked for should be in the file: "
                         + written);
-        assertTrue(written.contains(JsCall.functionId(GREETING_EXPRESSION, 1)),
+        assertTrue(
+                written.contains(
+                        JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "and what the file held should still be in it: " + written);
     }
 
@@ -280,14 +301,17 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(missing.isEmpty());
         String written = Files.readString(generated.toPath());
-        assertTrue(written.contains(JsCall.functionId(COUNT_EXPRESSION, 1)),
+        assertTrue(
+                written.contains(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
                 "the interface that was asked for should be in the file: "
                         + written);
-        assertTrue(written.contains(JsCall.functionId(GREETING_EXPRESSION, 1)),
+        assertTrue(
+                written.contains(
+                        JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "what the file held should still be in it: " + written);
         assertTrue(
                 written.indexOf("import.meta.hot") > written
-                        .indexOf(JsCall.functionId(COUNT_EXPRESSION, 1)),
+                        .indexOf(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
                 "and what was added should be part of the module: " + written);
     }
 
@@ -312,7 +336,8 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(written.contains("fromsomewhereelse"),
                 "a function a browser has should not be taken out of the file: "
                         + written);
-        assertTrue(written.contains(JsCall.functionId(COUNT_EXPRESSION, 1)),
+        assertTrue(
+                written.contains(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
                 "and the one that was asked for should be in it: " + written);
     }
 
@@ -326,7 +351,7 @@ class TaskGenerateJsDefinitionsTest {
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_DEFINITIONS_FILE_NAME);
         String unchanged = "window.Vaadin.Flow.jsDefinitions[\""
-                + JsCall.functionId("window.alert('Hello')", 0) + "\"]";
+                + JsCall.functionId("window.alert('Hello')", 0, false) + "\"]";
         Files.writeString(generated.toPath(),
                 Files.readString(generated.toPath()).replace(
                         GREETING_EXPRESSION, "window.alert('what it was')"));

@@ -99,6 +99,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -814,6 +815,58 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Adds an invocation of the given call to be sent to the client, owned by
+     * the root node of the state tree, which is what makes it an invocation of
+     * this UI rather than of anything in it.
+     * <p>
+     * The call runs on nothing in particular, the way JavaScript given to
+     * {@link Page#executeJs(String, Object...)} does, rather than on an element
+     * the way a call made on one does.
+     *
+     * @param call
+     *            the call to run, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
+        return addJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(null)));
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the root
+     * node of the state tree, which is what makes it an invocation of this UI
+     * rather than of anything in it.
+     *
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
+        return addJavaScriptInvocation(getStateTree().getRootNode(),
+                invocation);
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the given
+     * node, which is what decides when it is sent and what it is discarded
+     * with.
+     *
+     * @param owner
+     *            the node the invocation belongs to, not <code>null</code>
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
+            JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                owner, invocation);
+        addJavaScriptInvocation(pending);
+        return pending;
+    }
+
+    /**
      * Returns the next unique id for a JavaScript initializer registered
      * through {@link Element#addJsInitializer(String, Object...)} on any
      * element in this UI. Shared across the UI so cleanups can be keyed by the
@@ -1295,7 +1348,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addRuntimeDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1365,7 +1418,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1396,14 +1452,56 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addRuntimeDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**
