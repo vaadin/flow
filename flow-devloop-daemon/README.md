@@ -302,8 +302,20 @@ output, so one has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)`
 and forks the packaging itself, which is why the command above names no phase,
 and Liberty's runs `war:war` itself for the same effect; TomEE's, Cargo's and
 both Payaras' fork nothing, so `package` goes on their command line instead —
-and naming it for the other two would only build the WAR twice. The parameter
-is
+and naming it for the other two would only build the WAR twice.
+
+That last holds for a single-module project alone. A goal's fork runs the
+lifecycle of the **application's own module**, so a sibling module stops at
+whatever phase the command line names — and `compile`, which is all an embedded
+container needs, leaves it with no jar. Maven then substitutes its
+`target/classes` directory for the dependency and `maven-war-plugin` writes that
+directory into `WEB-INF/lib` under the jar's name — a zero-length
+`…-shared.jar/` entry in the WAR, and a `ClassNotFoundException` for every class
+in the sibling. So a forked container names `package` across the reactor whether
+or not its own goal forks one, and pays for it with one extra `war:war` on the
+application's module.
+
+The parameter is
 `wildfly.javaOpts`
 for WildFly, whose mojo splits the value on whitespace, and `tomee-plugin.args`
 for TomEE, which parses it the way a shell would — `javaagents` would read
@@ -891,3 +903,10 @@ A structural edit — adding a method — escalating to a restart *on a JBR* is 
 particular symptom of `-XX:+AllowEnhancedClassRedefinition` having been dropped,
 which is the failure Payara's one-value trick and Liberty's one property per
 flag both exist to prevent.
+
+**Run that by hand against a reactor, not a single module.** Two of the things a
+forked container has to get right are invisible to a project with no sibling: a
+goal named on a command line runs on every module in the reactor, which is what
+the skip and the forced `<skip>false</skip>` are for, and a sibling left at
+`compile` reaches the WAR as an empty directory, which is what `package` across
+the reactor is for.

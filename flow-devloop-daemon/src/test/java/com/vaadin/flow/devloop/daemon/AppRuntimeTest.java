@@ -661,12 +661,28 @@ class AppRuntimeTest {
     }
 
     /**
+     * WildFly pays the same price. {@code RunMojo} never looks at a project's
+     * packaging: it builds the deployment's file name from
+     * {@code ${project.build.finalName}} and that packaging, and fails when no
+     * such file exists - so the reactor root ends the build asking for a
+     * deployment named after a {@code pom}. A single-module project never shows
+     * it.
+     */
+    @Test
+    void wildflyRunsOnTheApplicationsOwnModuleAlone() {
+        assertEquals(Map.of("wildfly.skip", "true"),
+                entry("wildfly").goalProperties());
+        assertTrue(
+                entry("wildfly").forcedConfiguration().contains("skip=false"),
+                entry("wildfly").forcedConfiguration());
+    }
+
+    /**
      * And the other way round for the containers that need no such treatment: a
      * skip switched on for them and never switched off would start nothing.
      */
     @Test
     void noOtherRuntimeSwitchesItsGoalOff() {
-        assertEquals(Map.of(), entry("wildfly").goalProperties());
         assertEquals(Map.of(), entry("tomee").goalProperties());
     }
 
@@ -719,8 +735,11 @@ class AppRuntimeTest {
     @Test
     void onlyTheEntriesThatSwitchTheirGoalOffSaySo() {
         assertTrue(entry("cargo").skippedOutsideTheApplication());
+        assertTrue(entry("wildfly").skippedOutsideTheApplication());
         assertFalse(entry("jetty-ee10").skippedOutsideTheApplication());
-        assertFalse(entry("wildfly").skippedOutsideTheApplication());
+        // TomEE is left as it was: what its mojo does on a reactor root is not
+        // known, and switching a goal off without knowing it needs to be is how
+        // a container ends up starting nothing at all.
         assertFalse(entry("tomee").skippedOutsideTheApplication());
         // Liberty is the only forked container that keeps itself to one module
         // unasked: its mojo reads the session's ProjectDependencyGraph, runs
