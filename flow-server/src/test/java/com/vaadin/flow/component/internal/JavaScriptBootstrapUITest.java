@@ -415,9 +415,10 @@ class JavaScriptBootstrapUITest {
         return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
                 .map(pending -> pending.getInvocation().getJsCall())
                 .filter(call -> call != null
-                        && call.definitionType() == UiConnectionJs.class
-                        && "serverConnected".equals(call.methodName()))
-                .map(call -> call.arguments().get(0)).toList();
+                        && call.definitionType() == Element.CallFunctionJs.class
+                        && "serverConnected"
+                                .equals(call.flattenArguments().get(0)))
+                .map(call -> call.flattenArguments().get(1)).toList();
     }
 
     @Test

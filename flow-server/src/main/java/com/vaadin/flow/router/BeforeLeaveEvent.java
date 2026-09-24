@@ -20,7 +20,6 @@ import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.UiConnectionJs;
 
 /**
  * Event created before navigation happens.
@@ -81,8 +80,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 if (event.getUI().getInternals().getWrapperElement() != null) {
                     // See UI.acknowledgeClient.
                     event.getUI().getInternals().getWrapperElement()
-                            .executeJs(UiConnectionJs.class)
-                            .serverConnected(false);
+                            .callJsFunction("serverConnected", false);
                 }
 
                 handler.handle(event);
@@ -104,7 +102,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
                     .getWrapperElement() != null) {
                 // See UI.cancelClient.
                 event.getUI().getInternals().getWrapperElement()
-                        .executeJs(UiConnectionJs.class).serverConnected(true);
+                        .callJsFunction("serverConnected", true);
             }
         }
     }

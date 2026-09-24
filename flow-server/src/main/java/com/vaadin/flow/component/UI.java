@@ -38,7 +38,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
-import com.vaadin.flow.component.internal.UiConnectionJs;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -2296,13 +2295,11 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        internals.getWrapperElement().executeJs(UiConnectionJs.class)
-                .serverPaused();
+        internals.getWrapperElement().callJsFunction("serverPaused");
     }
 
     private void serverConnected(boolean cancel) {
-        internals.getWrapperElement().executeJs(UiConnectionJs.class)
-                .serverConnected(cancel);
+        internals.getWrapperElement().callJsFunction("serverConnected", cancel);
     }
 
     private void navigateToPlaceholder(Location location) {
