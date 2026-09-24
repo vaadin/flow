@@ -222,7 +222,7 @@ public class VaadinServletConfiguration {
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,
-            Controller vaadinForwardingController,
+            @Qualifier("vaadinForwardingController") Controller vaadinForwardingController,
             @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
                 vaadinForwardingController, resourceHandlerMapping);
