@@ -43,9 +43,11 @@ Every top-level Maven module of the repository:
 
 Routing lives in `flow-server` — there is no separate router module.
 
-Every module jar carries a Jandex index of its own classes in
-`META-INF/jandex.idx`, so Quarkus and other Jandex consumers do not need a
-separate index artifact.
+The runtime modules an application puts on its classpath carry a Jandex
+index of their own classes in `META-INF/jandex.idx`, which is where the
+Quarkus extension reads it from. A new runtime module declares
+`jandex-maven-plugin` in its `pom.xml` to get one; test and build-tool
+modules do not.
 
 ## Build plugins
 

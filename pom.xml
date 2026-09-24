@@ -644,6 +644,23 @@
           <artifactId>sonar-maven-plugin</artifactId>
           <version>5.8.0.7211</version>
         </plugin>
+        <plugin>
+          <!-- Indexes a module's own classes into META-INF/jandex.idx, which
+               is where Quarkus reads them from. Declared by the runtime
+               modules an application puts on its classpath; test and
+               build-tool modules have no use for an index. -->
+          <groupId>io.smallrye</groupId>
+          <artifactId>jandex-maven-plugin</artifactId>
+          <version>${jandex.plugin.version}</version>
+          <executions>
+            <execution>
+              <id>make-index</id>
+              <goals>
+                <goal>jandex</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -855,23 +872,6 @@
           <execution>
             <goals>
               <goal>bnd-process</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <!-- Every module indexes its own classes into META-INF/jandex.idx so
-             that Quarkus and other Jandex consumers read the index from the
-             jar the classes live in. Modules without classes get an empty
-             index, which costs nothing. -->
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-        <version>${jandex.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>make-index</id>
-            <goals>
-              <goal>jandex</goal>
             </goals>
           </execution>
         </executions>

@@ -125,6 +125,10 @@
           </excludedArtifactIds>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 </project>

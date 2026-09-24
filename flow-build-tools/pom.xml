@@ -145,8 +145,6 @@
                     <exclude>META-INF/native-image/**</exclude>
                     <!-- Dependency Maven metadata -->
                     <exclude>META-INF/maven/**</exclude>
-                    <!-- Jandex index (references unshaded class names) -->
-                    <exclude>META-INF/jandex.idx</exclude>
                   </excludes>
                 </filter>
                 <filter>
@@ -169,31 +167,6 @@
                 <!-- Handle Apache license files -->
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
               </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <!-- The index the parent POM generates is written before shade
-             relocates, so it names classes the shaded jar no longer has. It
-             is filtered out above and replaced here, once the jar is
-             packaged and the names in it are final. -->
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>index-shaded-jar</id>
-            <goals>
-              <goal>jandex-jar</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <jar>${project.build.directory}/${project.build.finalName}-shaded.jar</jar>
-              <excludes>
-                <!-- The relocated copies of asm and commons: bundled
-                     internals, not classes this module publishes. -->
-                <exclude>com/vaadin/frontendtools/internal/**</exclude>
-              </excludes>
             </configuration>
           </execution>
         </executions>
