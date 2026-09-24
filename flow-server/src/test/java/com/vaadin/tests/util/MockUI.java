@@ -19,7 +19,9 @@ import java.util.List;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
@@ -64,6 +66,29 @@ public class MockUI extends UI {
         getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         return getInternals().dumpPendingJavaScriptInvocations();
+    }
+
+    /**
+     * The only invocation that has been scheduled, which is what a test that
+     * asserts one call reads.
+     */
+    public JavaScriptInvocation onlyScheduledInvocation() {
+        List<PendingJavaScriptInvocation> invocations = dumpPendingJsInvocations();
+        if (invocations.size() != 1) {
+            throw new AssertionError(
+                    "Expected exactly one scheduled invocation, got "
+                            + invocations.size() + ": " + invocations);
+        }
+        return invocations.get(0).getInvocation();
+    }
+
+    /**
+     * The call of declared JavaScript that the only scheduled invocation
+     * carries, which says which method of which definition was called and with
+     * what.
+     */
+    public JsCall onlyScheduledJsCall() {
+        return onlyScheduledInvocation().getJsCall();
     }
 
     private static VaadinSession findOrCreateSession() {

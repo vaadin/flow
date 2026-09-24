@@ -259,6 +259,36 @@ final class AppLog {
     }
 
     /**
+     * Whether a line is part of Maven's epilogue rather than a failure of its
+     * own.
+     * <p>
+     * Under a runtime that starts the application through the project's own
+     * build plugin, the application log begins with a build log - and Maven
+     * ends every failure with several lines of "re-run with -e", "[Help 1]" and
+     * "you can resume the build with", every one of them at {@code ERROR}
+     * level. Counted, one failed build reads as half a dozen errors and "app
+     * log: N error(s)" stops meaning anything. The diagnostics themselves are
+     * not filtered: those are the answer.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the line is build epilogue
+     */
+    static boolean buildEpilogue(String line) {
+        String text = line.strip();
+        if (!text.startsWith("[ERROR]")) {
+            return false;
+        }
+        // The "-> [Help 1]" tail comes off first, exactly as
+        // Launch.failureReason takes it off: a line that is nothing but that
+        // tail is pure decoration, while a real failure wearing it is not.
+        String message = Launch.HELP_TAIL
+                .matcher(text.substring("[ERROR]".length()).strip())
+                .replaceAll("").strip();
+        return message.isEmpty() || Launch.BOILERPLATE.matcher(message).find();
+    }
+
+    /**
      * Whether one log line is a failure the dev server reported.
      * <p>
      * Separable from the app's own errors because it is attributable in a way
@@ -538,8 +568,9 @@ final class AppLog {
                     checkerBuilding = false;
                 }
                 boolean header = THROWN_HEADER.matcher(line).find();
-                boolean logged = ERROR_LINE.matcher(line).find()
-                        || DEV_SERVER_ERROR.matcher(line).find();
+                boolean logged = (ERROR_LINE.matcher(line).find()
+                        || DEV_SERVER_ERROR.matcher(line).find())
+                        && !buildEpilogue(line);
                 if (logged) {
                     if (checkerError(line)) {
                         checkerFailure = line;
