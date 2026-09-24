@@ -80,9 +80,6 @@ class VaadinHintsRegistrarTest {
         new VaadinHintsRegistrar().registerHints(hints,
                 getClass().getClassLoader());
         assertThat(RuntimeHintsPredicates.resource()
-                .forResource("META-INF/frontend/FlowShortcut.js"))
-                .accepts(hints);
-        assertThat(RuntimeHintsPredicates.resource()
                 .forResource("META-INF/frontend/FlowWebPush.js"))
                 .accepts(hints);
     }

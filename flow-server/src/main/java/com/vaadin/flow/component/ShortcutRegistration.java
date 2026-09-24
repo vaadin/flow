@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,11 +51,6 @@ import com.vaadin.flow.shared.Registration;
 public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
-
-    // Client helper resource lazily loaded per UI (see initShortcutClient),
-    // holding the origin guards and the keydown delegate (#24974).
-    static final String SHORTCUT_CLIENT_JS = "META-INF/frontend/FlowShortcut.js";
-    static final String SHORTCUT_CLIENT_INITIALIZED = "_shortcut_client_initialized";
 
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
@@ -135,11 +128,6 @@ public class ShortcutRegistration implements Registration, Serializable {
                 initListenOnComponent();
                 addListenOnDetachListeners();
             }
-
-            // Load the client helpers before the shortcut listeners/filters
-            // that reference them are queued for this response.
-            lifecycleOwner.getUI()
-                    .ifPresent(ShortcutRegistration.this::initShortcutClient);
 
             for (int i = 0; i < listenOnComponents.length; i++) {
                 updateHandlerListenerRegistration(i);
@@ -990,7 +978,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateNestedModalOriginFilter(String boundaryExpr) {
         // Delegate path: the boundary element is the listener element the
         // delegate re-dispatches to. Evaluated on the original event, so its
-        // composedPath is correct. Helper defined in FlowShortcut.js.
+        // composedPath is correct. Helper defined in Shortcut.ts of the client.
         return "window.Vaadin.Flow.shortcut.eventWithinBoundary(event, "
                 + boundaryExpr + ")";
     }
@@ -1021,7 +1009,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
-        // defined in FlowShortcut.js.
+        // defined in Shortcut.ts of the client.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
                 + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
     }
@@ -1142,35 +1130,6 @@ public class ShortcutRegistration implements Registration, Serializable {
             }
             expressions.add(expressionHash);
             listenOn.getElement().executeJs(jsExpression);
-        }
-    }
-
-    /**
-     * Lazily loads the shortcut client helpers ({@code FlowShortcut.js}) into
-     * the given UI, once per UI, mirroring how {@code WebPush} loads its client
-     * code. The helpers back the popover/modal origin guards and the keydown
-     * delegate, so they must be present before the shortcut listeners that
-     * reference them run on the client.
-     */
-    private void initShortcutClient(UI ui) {
-        if (ComponentUtil.getData(ui, SHORTCUT_CLIENT_INITIALIZED) != null) {
-            return;
-        }
-        ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, Boolean.TRUE);
-        try (InputStream stream = ShortcutRegistration.class.getClassLoader()
-                .getResourceAsStream(SHORTCUT_CLIENT_JS)) {
-            if (stream == null) {
-                throw new IOException("resource not found on the classpath");
-            }
-            ui.getPage().executeJs(
-                    StringUtil.removeComments(StringUtil.toUTF8String(stream)));
-        } catch (IOException e) {
-            // Loading failed: clear the flag so a later registration retries.
-            ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, null);
-            throw new IllegalStateException(
-                    "Could not load shortcut client code from "
-                            + SHORTCUT_CLIENT_JS,
-                    e);
         }
     }
 

@@ -15,58 +15,58 @@
  */
 
 /*
- * Client-side helpers for keyboard shortcuts. Loaded on demand by
- * ShortcutRegistration (see initShortcutClient) the same way FlowWebPush.js is
- * loaded by WebPush. Provides the popover/modal origin guards (#24974) and the
- * keydown delegate used when a shortcut listens on a browser-only element.
+ * Client-side helpers for keyboard shortcuts, installed when the client loads
+ * so that the listeners ShortcutRegistration adds can call them. Provides the
+ * popover/modal origin guards (#24974) and the keydown delegate used when a
+ * shortcut listens on a browser-only element.
  */
-window.Vaadin = window.Vaadin || {};
-window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
+/**
+ * A keydown event relayed by registerKeydownDelegate, which remembers the
+ * popover/modal scope the original event came from.
+ */
+type RelayedKeyboardEvent = KeyboardEvent & { _vaadinShortcutOriginScope?: Element | null };
+
+function isOpenOverlay(node: unknown): node is Element {
+  return node instanceof Element && (node.matches(':popover-open') || node.matches(':modal'));
+}
+
+const $wnd = window as any;
+$wnd.Vaadin ??= {};
+$wnd.Vaadin.Flow ??= {};
+$wnd.Vaadin.Flow.shortcut = {
   // Nearest open popover/modal ancestor of the given node in the flattened
   // (composed) tree, so slotted light-DOM content resolves to the overlay in a
   // component's shadow root.
-  _scopeOf: function (node) {
-    while (node) {
-      if (node.nodeType === 1 && node.matches && (node.matches(':popover-open') || node.matches(':modal'))) {
-        return node;
+  _scopeOf(node: Node | null): Element | null {
+    let current: Node | null = node;
+    while (current) {
+      if (isOpenOverlay(current)) {
+        return current;
       }
-      node = node.assignedSlot || node.parentNode || node.host || null;
+      current =
+        (current as Element).assignedSlot ?? current.parentNode ?? (current as unknown as ShadowRoot).host ?? null;
     }
     return null;
   },
 
   // Nearest open popover/modal ancestor of the event target.
-  _eventScope: function (event) {
-    const path = event.composedPath();
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i];
-      if (node && node.nodeType === 1 && node.matches && (node.matches(':popover-open') || node.matches(':modal'))) {
-        return node;
-      }
-    }
-    return null;
+  _eventScope(event: Event): Element | null {
+    return (event.composedPath().find(isOpenOverlay) as Element | undefined) ?? null;
   },
 
   // Delegate path: suppress when an open popover/modal sits between the event
   // target and the boundary element the listener is attached to. Returns true
   // when the shortcut is allowed to fire. Fails open on error.
-  eventWithinBoundary: function (event, boundary) {
+  eventWithinBoundary(event: Event, boundary: Element): boolean {
     try {
       const path = event.composedPath();
       const boundaryIndex = path.indexOf(boundary);
       if (boundaryIndex < 0) {
         return true;
       }
-      for (let i = 0; i < boundaryIndex; i++) {
-        const node = path[i];
-        if (node && node.nodeType === 1 && node.matches && (node.matches(':popover-open') || node.matches(':modal'))) {
-          return false;
-        }
-      }
-      return true;
-    } catch (e) {
+      return !path.slice(0, boundaryIndex).some(isOpenOverlay);
+    } catch {
       return true;
     }
   },
@@ -76,23 +76,23 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
   // A relayed clone (see registerKeydownDelegate) carries the real origin scope
   // in _vaadinShortcutOriginScope, because its own composedPath points at the
   // listenOn element and no longer reflects where the keydown happened.
-  _originScope: function (event) {
+  _originScope(event: RelayedKeyboardEvent): Element | null {
     return '_vaadinShortcutOriginScope' in event
-      ? event._vaadinShortcutOriginScope
-      : window.Vaadin.Flow.shortcut._eventScope(event);
+      ? event._vaadinShortcutOriginScope ?? null
+      : $wnd.Vaadin.Flow.shortcut._eventScope(event);
   },
 
   // Normal path: fire only when the event and the shortcut owner (located via
   // the given attribute selector) share the same popover/modal scope. Returns
   // true when the shortcut is allowed to fire. Fails open on error.
-  eventInOwnerScope: function (event, ownerSelector) {
+  eventInOwnerScope(event: RelayedKeyboardEvent, ownerSelector: string): boolean {
     try {
       const owner = document.querySelector(ownerSelector);
       if (!owner) {
         return true;
       }
-      return window.Vaadin.Flow.shortcut._originScope(event) === window.Vaadin.Flow.shortcut._scopeOf(owner);
-    } catch (e) {
+      return $wnd.Vaadin.Flow.shortcut._originScope(event) === $wnd.Vaadin.Flow.shortcut._scopeOf(owner);
+    } catch {
       return true;
     }
   },
@@ -101,10 +101,10 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
   // never sit inside an open popover/modal, so sharing its scope simply means
   // the event did not originate inside one. Expressed without an owner selector
   // so that every UI-owned shortcut yields the same filter expression.
-  eventInTopLevelScope: function (event) {
+  eventInTopLevelScope(event: RelayedKeyboardEvent): boolean {
     try {
-      return window.Vaadin.Flow.shortcut._originScope(event) === null;
-    } catch (e) {
+      return $wnd.Vaadin.Flow.shortcut._originScope(event) === null;
+    } catch {
       return true;
     }
   },
@@ -112,26 +112,35 @@ window.Vaadin.Flow.shortcut = window.Vaadin.Flow.shortcut || {
   // Relays keydown events from a browser-only element (found by the JS locator)
   // to the listenOn component. When the given matcher accepts the event a clone
   // is re-dispatched to listenOn so the server-side shortcut listener fires.
-  // (Previously the inline ELEMENT_LOCATOR_JS in ShortcutRegistration.)
-  registerKeydownDelegate: function (listenOn, delegate, matches, resetFocus, allowDefault) {
+  // The parameters are the arguments of the call ShortcutRegistration sends.
+  // eslint-disable-next-line @typescript-eslint/max-params
+  registerKeydownDelegate(
+    listenOn: Element,
+    delegate: Element | null,
+    matches: (event: KeyboardEvent, delegate: Element) => boolean,
+    resetFocus: boolean,
+    allowDefault: boolean
+  ): void {
     if (!delegate) {
-      throw 'Shortcut listenOn element not found with the given JS locator';
+      throw new Error('Shortcut listenOn element not found with the given JS locator');
     }
-    delegate.addEventListener('keydown', function (event) {
-      if (matches(event, delegate)) {
+    delegate.addEventListener('keydown', (event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (matches(keyboardEvent, delegate)) {
         if (resetFocus) {
-          window.Vaadin.Flow.resetFocus();
+          $wnd.Vaadin.Flow.resetFocus();
         }
-        const clone = new event.constructor(event.type, event);
+        const EventType = keyboardEvent.constructor as typeof KeyboardEvent;
+        const clone: RelayedKeyboardEvent = new EventType(keyboardEvent.type, keyboardEvent);
         // Remember where the keydown actually originated: the clone is
         // re-targeted at listenOn, so its composedPath can no longer tell a
         // downstream owner-scope guard that the event came from this overlay.
-        clone._vaadinShortcutOriginScope = window.Vaadin.Flow.shortcut._eventScope(event);
+        clone._vaadinShortcutOriginScope = $wnd.Vaadin.Flow.shortcut._eventScope(keyboardEvent);
         listenOn.dispatchEvent(clone);
         if (!allowDefault) {
-          event.preventDefault();
+          keyboardEvent.preventDefault();
         }
-        event.stopPropagation();
+        keyboardEvent.stopPropagation();
       }
     });
   }

@@ -66,9 +66,6 @@ class ShortcutRegistrationTest {
     @BeforeEach
     void initTests() {
         ui = mock(UI.class);
-        // initShortcutClient loads the client helper via ui.getPage()
-        when(ui.getPage())
-                .thenReturn(mock(com.vaadin.flow.component.page.Page.class));
         lifecycleOwner = mock(Component.class);
         Arrays.setAll(listenOn, i -> mock(Component.class));
 
@@ -982,7 +979,7 @@ class ShortcutRegistrationTest {
 
     private static UI spyUiWithSession() {
         UI spyUi = Mockito.spy(UI.class);
-        // A locked session lets initShortcutClient's executeJs run.
+        // A locked session lets the delegate registration run.
         VaadinSession session = mock(VaadinSession.class);
         when(session.hasLock()).thenReturn(true);
         spyUi.getInternals().setSession(session);
@@ -991,7 +988,6 @@ class ShortcutRegistrationTest {
 
     private static String delegateExpression(
             List<PendingJavaScriptInvocation> invocations) {
-        // Match the delegate CALL, not the FlowShortcut.js definition load.
         return invocations.stream().map(i -> i.getInvocation().getExpression())
                 .filter(e -> e.contains("registerKeydownDelegate(this,"))
                 .findFirst().orElseThrow(() -> new AssertionError(
