@@ -17,11 +17,12 @@ package com.vaadin.flow.test;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-
 import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.component.html.testbench.UnorderedListElement;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(IndexView.class)
 public class IndexIT extends AbstractDefaultIT {
@@ -34,15 +35,14 @@ public class IndexIT extends AbstractDefaultIT {
                 .id(IndexView.ROUTES_ID);
         List<String> hrefs = routes.$(AnchorElement.class).all().stream()
                 .map(link -> link.getDomAttribute("href")).toList();
-        Assertions.assertTrue(hrefs.contains("info"),
+        assertTrue(hrefs.contains("info"),
                 "Link to InfoView missing, found: " + hrefs);
-        Assertions.assertFalse(hrefs.contains(""),
-                "Index view should not link to itself");
+        assertFalse(hrefs.contains(""), "Index view should not link to itself");
 
         routes.$(AnchorElement.class).attribute("href", "info").first().click();
         waitUntil(driver -> driver.getCurrentUrl()
                 .equals(getRootURL() + "/info"));
-        Assertions.assertTrue(
+        assertTrue(
                 $("div").attributeContains("class", "infoContainer").exists());
     }
 }

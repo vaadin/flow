@@ -17,7 +17,6 @@ package com.vaadin.flow.test;
 
 import java.util.Comparator;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -40,11 +39,7 @@ public class IndexView extends Div {
 
     public static final String ROUTES_ID = "routes";
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        if (!attachEvent.isInitialAttach()) {
-            return;
-        }
+    public IndexView() {
         UnorderedList routes = new UnorderedList();
         routes.setId(ROUTES_ID);
         RouteConfiguration.forApplicationScope().getAvailableRoutes().stream()
