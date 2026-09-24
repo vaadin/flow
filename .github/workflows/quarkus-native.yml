@@ -15,7 +15,6 @@ env:
   # The native image build needs GraalVM; the rest of validation runs on
   # Temurin 21, which is what the compiler targets either way.
   GRAALVM_VERSION: '25'
-  NODE_VERSION: '24.21.0'
 jobs:
   native-tests:
     # The embedded-plugin suite packaged as a native image. Building it takes
@@ -24,17 +23,24 @@ jobs:
     # extension's native build configuration, not in the change that happened
     # to be merged last, and the JVM leg of the same suite already runs in
     # validation.
+    #
+    # Only in vaadin/flow: a schedule also fires in every fork that has
+    # Actions enabled, where there is no TestBench licence to run the tests
+    # with and the report job below would open issues in the fork.
     if: ${{ github.repository == 'vaadin/flow' }}
     timeout-minutes: 60
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.26.0'
+          version: ${{ steps.frontend-tools.outputs.pnpm-version }}
       - name: Set up GraalVM
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:

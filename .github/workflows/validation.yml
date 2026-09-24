@@ -52,6 +52,10 @@ jobs:
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
+      # The Node.js and pnpm versions Flow installs by default, read from
+      # FrontendTools so that CI does not carry its own copy of them.
+      node-version: ${{ steps.frontend-tools.outputs.node-version }}
+      pnpm-version: ${{ steps.frontend-tools.outputs.pnpm-version }}
     steps:
       - run: echo "Concurrency Group = $GITHUB_WORKFLOW-${_MERGE_GROUP_SHA:-${_HEAD_REF:-$_REF_NAME}}"
       - name: Check secrets
@@ -65,9 +69,12 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '26.10.0'
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -215,10 +222,10 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '26.10.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.26.0'
+          version: ${{ needs.build.outputs.pnpm-version }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
@@ -371,11 +378,11 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '26.10.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          version: '11.26.0'
+          version: ${{ needs.build.outputs.pnpm-version }}
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -485,13 +492,15 @@ jobs:
     name: Quarkus Tests (${{ matrix.name }})
     # Every module here boots a Quarkus application of its own instead of
     # deploying to a servlet container, which the generic it-tests matrix
-    # cannot express, so computeMatrix.js excludes them and they run here.
-    # Every change runs production and codestarts as a smoke test; the other
-    # three only run when the Quarkus sources themselves change, since that is
-    # when a mode specific regression gets introduced. The native image build
-    # is not here at all - it needs GraalVM and takes about half an hour, so it
-    # runs nightly from quarkus-native.yml. Needs the TestBench licence, so not
-    # for forks.
+    # cannot express, so the suite is not part of that matrix and runs here.
+    # Every change runs embedded-plugin, production and codestarts as a smoke
+    # test - embedded-plugin because building through the Vaadin plugin the
+    # extension embeds is how a Quarkus application is built by default now.
+    # development and push-dispatch only run when the Quarkus sources
+    # themselves change, since that is when a mode specific regression gets
+    # introduced. The native image build is not here at all - it needs GraalVM
+    # and takes about half an hour, so it runs nightly from
+    # quarkus-native.yml. Needs the TestBench licence, so not for forks.
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 40
@@ -511,6 +520,7 @@ jobs:
             module: development
           - name: embedded-plugin
             module: embedded-plugin
+            ungated: true
           - name: push-dispatch
             module: push-dispatch-it
     runs-on: ubuntu-24.04
@@ -564,11 +574,11 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '24.21.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          version: '11.26.0'
+          version: ${{ needs.build.outputs.pnpm-version }}
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -598,7 +608,7 @@ jobs:
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -DskipITs -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         if: ${{ steps.decide.outputs.run == 'true' }}
@@ -726,7 +736,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '26.10.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -1016,12 +1026,15 @@ jobs:
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
       # The base build and the apicmp build each run npm install in
       # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
       # ~/.npm those six installs dominate the job and exhaust its timeout.
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '26.10.0'
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
           cache: npm
           cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK
