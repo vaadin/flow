@@ -27,30 +27,32 @@ import com.vaadin.testbench.BrowserTest;
 public class QueuedNavigationQueryIT extends AbstractDefaultIT {
 
     @BrowserTest
-    public void navigateWhileNavigationInProgress_queryParametersPreserved()
-            throws InterruptedException {
+    public void navigateWhileNavigationInProgress_queryAndHashPreserved() {
         open();
 
-        AnchorElement anchor = $(AnchorElement.class)
-                .id(QueuedNavigationQueryView.ANCHOR_ID);
-        // Click the second time while the first navigation is still waiting
-        // for the server, so that the second one gets queued
-        executeScript(
-                "arguments[0].click(); setTimeout(() => arguments[0].click(), 100);",
-                anchor);
+        AnchorElement first = $(AnchorElement.class)
+                .id(QueuedNavigationQueryView.FIRST_ANCHOR_ID);
+        AnchorElement second = $(AnchorElement.class)
+                .id(QueuedNavigationQueryView.SECOND_ANCHOR_ID);
+        SpanElement queryLog = $(SpanElement.class)
+                .id(QueuedNavigationQueryView.QUERY_LOG_ID);
+        // Start the second navigation while the first one is still waiting
+        // for the server, and record the log at that moment to verify it
+        executeScript("""
+                arguments[0].click();
+                setTimeout(() => {
+                    window.queryLogAtSecondClick = arguments[2].textContent;
+                    arguments[1].click();
+                }, 100);
+                """, first, second, queryLog);
 
-        // Give both navigations time to complete
-        Thread.sleep(2000);
+        waitUntil(driver -> queryLog.getText().contains(","));
 
-        SpanElement query = $(SpanElement.class)
-                .id(QueuedNavigationQueryView.QUERY_ID);
-
-        Assertions.assertEquals(QueuedNavigationQueryView.QUERY_VALUE,
-                query.getText());
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith(
-                        "?qp=" + QueuedNavigationQueryView.QUERY_VALUE),
-                "Query parameters should be kept in the URL, but was "
-                        + getDriver().getCurrentUrl());
+        Assertions.assertEquals("",
+                executeScript("return window.queryLogAtSecondClick"),
+                "Second navigation should start while the first one is in progress");
+        Assertions.assertEquals("first,second", queryLog.getText());
+        waitUntil(driver -> driver.getCurrentUrl()
+                .endsWith("/second?qp=second#fragment"));
     }
 }

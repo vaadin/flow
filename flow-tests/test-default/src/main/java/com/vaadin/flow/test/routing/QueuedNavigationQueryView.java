@@ -18,38 +18,47 @@ package com.vaadin.flow.test.routing;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
 
 @Route("queued-navigation-query")
 public class QueuedNavigationQueryView extends Div
-        implements BeforeEnterObserver {
+        implements HasUrlParameter<String> {
 
-    public static final String ANCHOR_ID = "query-link";
-    public static final String QUERY_ID = "query";
-    public static final String QUERY_VALUE = "value";
+    public static final String FIRST_ANCHOR_ID = "first-link";
+    public static final String SECOND_ANCHOR_ID = "second-link";
+    public static final String QUERY_LOG_ID = "query-log";
 
-    private final Span query = new Span();
+    private final Span queryLog = new Span();
 
     public QueuedNavigationQueryView() {
-        Anchor anchor = new Anchor("queued-navigation-query?qp=" + QUERY_VALUE,
-                "Navigate with query parameter");
-        anchor.setId(ANCHOR_ID);
-        query.setId(QUERY_ID);
-        add(anchor, query);
+        Anchor first = new Anchor("queued-navigation-query/first?qp=first",
+                "First");
+        first.setId(FIRST_ANCHOR_ID);
+        Anchor second = new Anchor(
+                "queued-navigation-query/second?qp=second#fragment", "Second");
+        second.setId(SECOND_ANCHOR_ID);
+        queryLog.setId(QUERY_LOG_ID);
+        add(first, second, queryLog);
     }
 
     @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        // Slow navigation so that a second click is queued while the first
-        // navigation is still in progress
+    public void setParameter(BeforeEvent event,
+            @WildcardParameter String parameter) {
+        if (parameter.isEmpty()) {
+            return;
+        }
+        // Slow navigation so that a navigation started meanwhile gets queued
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        query.setText(event.getLocation().getQueryParameters()
-                .getSingleParameter("qp").orElse(""));
+        String query = event.getLocation().getQueryParameters()
+                .getSingleParameter("qp").orElse("");
+        queryLog.setText(queryLog.getText().isEmpty() ? query
+                : queryLog.getText() + "," + query);
     }
 }
