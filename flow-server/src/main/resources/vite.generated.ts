@@ -257,7 +257,7 @@ function statsExtracterPlugin(): PluginOption {
       const frontendFiles: Record<string, string> = {};
       frontendFiles['index.html'] = createHash('sha256').update(customIndexData.replace(/\r\n/g, '\n'), 'utf8').digest('hex');
 
-      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'#frontendExtraFileExtensions#]
+      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'#frontendExtraFileExtensions#];
 
       const isThemeComponentsResource = (id: string) =>
           id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
