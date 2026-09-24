@@ -2019,7 +2019,6 @@ public class UI extends Component
         return getInternals().getActiveRouterTargetsChain();
     }
 
-    static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = """
             const url = new URL($0, document.baseURI);
             url["clientNavigation"] = true;
@@ -2296,11 +2295,11 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        internals.getWrapperElement().executeJs("this.serverPaused()");
+        internals.getWrapperElement().callJsFunction("serverPaused");
     }
 
     private void serverConnected(boolean cancel) {
-        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().callJsFunction("serverConnected", cancel);
     }
 
     private void navigateToPlaceholder(Location location) {

@@ -183,6 +183,25 @@ class WakeLockTest {
     }
 
     @Test
+    void request_clientBridgeFails_errorHandlerGetsAnUnknownError() {
+        MockUI ui = new MockUI();
+        ui.getInternals()
+                .setWakeLockAvailability(WakeLockAvailability.SUPPORTED);
+        AtomicReference<WakeLockError> received = new AtomicReference<>();
+        WakeLock.request(received::set, ui);
+
+        // The browser could not run the request at all, which is not one of
+        // the refusals the Wake Lock API reports, so the application is told
+        // it failed without a reason it could act on
+        ui.dumpPendingJsInvocations().get(0)
+                .completeExceptionally(JacksonUtils.createNode("boom"));
+
+        assertEquals(WakeLockErrorCode.UNKNOWN, received.get().code());
+        assertTrue(received.get().message().contains("boom"),
+                "the failure should be passed on: " + received.get());
+    }
+
+    @Test
     void request_withErrorHandler_invokesClientWhenAvailabilityUnknown() {
         MockUI ui = new MockUI();
         AtomicReference<WakeLockError> received = new AtomicReference<>();

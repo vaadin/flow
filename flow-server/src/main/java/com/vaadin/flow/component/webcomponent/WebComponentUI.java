@@ -242,7 +242,7 @@ public class WebComponentUI extends UI {
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
                 elementId);
-        child.executeJs("$0.serverConnected()");
+        child.callJsFunction("serverConnected");
     }
 
     private boolean isConfigurationAnnotated(

@@ -17,10 +17,9 @@ package com.vaadin.flow.component.webcomponent;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.IntNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
 
@@ -168,25 +167,41 @@ class WebComponentTest {
                 element);
 
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element).callJsFunction("_updatePropertyFromServer", "int", 1);
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element).callJsFunction("_updatePropertyFromServer", "double",
+                1.0);
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element).callJsFunction("_updatePropertyFromServer", "string",
+                "asd");
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        verify(element).callJsFunction("_updatePropertyFromServer", "boolean",
+                true);
+        // A node standing for a single value is sent as that value
         webComponent.setProperty(jsonNodeConfiguration,
                 (ValueNode) JacksonUtils.createNode(true));
-        verify(element, Mockito.times(5)).executeJs(
-                ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(Object[].class));
+        verify(element).callJsFunction("_updatePropertyFromServer", "jsonNode",
+                "true");
+        webComponent.setProperty(jsonNodeConfiguration,
+                (IntNode) JacksonUtils.createNode(7));
+        verify(element).callJsFunction("_updatePropertyFromServer", "jsonNode",
+                7);
+        // A number that is not an integer stays a double rather than being
+        // read as one, which is what checking for an int node first is for
+        webComponent.setProperty(jsonNodeConfiguration,
+                (ValueNode) JacksonUtils.createNode(7.5));
+        verify(element).callJsFunction("_updatePropertyFromServer", "jsonNode",
+                7.5);
+        // while an object node is sent as it is, rather than written into the
+        // JavaScript, which a content security policy would refuse to compile
+        ObjectNode object = JacksonUtils.createObjectNode();
+        object.put("a", 1);
+        webComponent.setProperty(jsonNodeConfiguration, object);
+        verify(element).callJsFunction("_updatePropertyFromServer", "jsonNode",
+                object);
+
+        webComponent.setProperty(stringConfiguration, null);
+        verify(element).callJsFunction("_updatePropertyFromServer", "string",
+                null);
     }
 }
