@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-tools=`dirname $0`/../flow-build-tools/src/main/java/com/vaadin/flow/server/frontend/FrontendTools.java
+tools="$(dirname "$0")/../flow-build-tools/src/main/java/com/vaadin/flow/server/frontend/FrontendTools.java"
 
 node=$(sed -n 's/.*DEFAULT_NODE_VERSION = "v\{0,1\}\([0-9.]*\)".*/\1/p' "$tools")
 pnpm=$(sed -n 's/.*DEFAULT_PNPM_VERSION = "\([0-9.]*\)".*/\1/p' "$tools")

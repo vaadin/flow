@@ -562,7 +562,7 @@ jobs:
               RELEVANT=$(printf '%s\n' "$CHANGED" | grep -E \
                 '^(vaadin-quarkus/|flow-tests/vaadin-quarkus-tests/|pom\.xml$|\.github/workflows/validation\.yml$)' || true)
               if [ -z "$RELEVANT" ]; then
-                echo "No changes to the Quarkus modules, production alone covers this."
+                echo "No changes to the Quarkus modules, the ungated modules (embedded-plugin, production, codestarts) cover this."
                 run=false
               else
                 echo "Changes to the Quarkus modules:"
