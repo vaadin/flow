@@ -226,7 +226,7 @@ class VaadinQuarkusProcessor {
     public void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> layouts = item.getComputingIndex()
-                .getAllKnownImplementors(
+                .getAllKnownImplementations(
                         DotName.createSimple(RouterLayout.class.getName()));
         for (ClassInfo layoutInfo : layouts) {
             additionalBeanProducer.produce(AdditionalBeanBuildItem
@@ -238,7 +238,7 @@ class VaadinQuarkusProcessor {
     public void specifyErrorViewsBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> errors = item.getComputingIndex()
-                .getAllKnownImplementors(DotName
+                .getAllKnownImplementations(DotName
                         .createSimple(HasErrorParameter.class.getName()));
         for (ClassInfo errorInfo : errors) {
             additionalBeanProducer.produce(AdditionalBeanBuildItem
@@ -417,8 +417,9 @@ class VaadinQuarkusProcessor {
                 vaadinServlets);
         // TODO: check that we don't register 2 of the same mapping
         for (ClassInfo info : vaadinServlets) {
-            final AnnotationInstance webServletInstance = info.classAnnotation(
-                    DotName.createSimple(WebServlet.class.getName()));
+            final AnnotationInstance webServletInstance = info
+                    .declaredAnnotation(
+                            DotName.createSimple(WebServlet.class.getName()));
             if (webServletInstance == null) {
                 LOG.warn(
                         "Found unexpected {} extends VaadinServlet without @WebServlet, skipping",

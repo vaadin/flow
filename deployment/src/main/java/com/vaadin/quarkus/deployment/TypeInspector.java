@@ -137,7 +137,7 @@ class TypeInspector {
 
         case ARRAY:
             // For arrays, inspect the component type
-            collectConcreteTypes(type.asArrayType().component(), index,
+            collectConcreteTypes(type.asArrayType().constituent(), index,
                     collector, visited);
             break;
 
