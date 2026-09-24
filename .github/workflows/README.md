@@ -223,3 +223,33 @@ Configuration:
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
+
+## Pull request previews
+
+`pr-preview.yml` starts the integration test application a pull request
+changes and makes it reachable from a public address for close to six hours,
+so a reviewer can click through the test views of the change without building
+it locally. It is opt-in per pull request: add the `deploy preview` label and
+the preview starts, every commit pushed while the label is there restarts it,
+and removing the label or closing the pull request stops it.
+
+The views come from the changed files: a changed class with `@Route` under
+`flow-tests/*/src/main/java`, or a changed integration test whose view follows
+the `FooIT` → `FooView` naming convention. One module is started per preview,
+the one with the most such views, in the same development mode as its
+integration tests. A pull request that changes no test view gets no preview.
+
+There is no hosting behind it. The application runs on the runner of the job
+and a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/)
+publishes it on a random `trycloudflare.com` address, so the preview ends with
+the job and nothing has to be cleaned up. GitHub ends a job on a hosted runner
+after six hours, which is what limits how long a preview lives. While it is up,
+the job holds a runner of the organization.
+
+The preview runs the code of the pull request on a public address, so only
+branches of this repository get one: pushing such a branch takes write
+access. Labeling a pull request from a fork does nothing. No secret other
+than the token that writes the comment is used.
+
+The `deploy preview` label has to exist in the repository for it to be
+selectable.

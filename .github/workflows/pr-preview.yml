@@ -1,0 +1,264 @@
+name: Flow PR Preview
+
+# Starts the integration test application a pull request changes and makes it
+# reachable from a public address for a few hours, so that a reviewer can click
+# through the test views of the change without building it locally. The
+# preview is opt-in per pull request: it starts once the "deploy preview" label
+# is added, starts again for every commit pushed while the label is there, and
+# stops when the label is removed or the pull request is closed.
+#
+# There is no hosting behind it. The application runs on the runner of this job
+# and a Cloudflare quick tunnel publishes it, so the preview lives exactly as
+# long as the job does and nothing has to be cleaned up afterwards.
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  LABEL: deploy preview
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  MARKER: '<!-- flow-pr-preview -->'
+  # When the preview goes down, counted from the start of the job. GitHub ends
+  # a job on a hosted runner after six hours, the build included, so this
+  # leaves room for the step that marks the preview as ended.
+  PREVIEW_MINUTES: 345
+  # The address everything is published on. The port is forced on the command
+  # line, so modules that use another one in their integration tests are
+  # started on this one too.
+  PORT: 8888
+  CLOUDFLARED_VERSION: 2026.9.1
+  CLOUDFLARED_SHA256: 03f1f25d1cc93b9ad6c60569d44060bc4f17ed97075760ed8cfca4b12dcd68cc
+  # Same mapping as validation.yml: a pull request builds with the JDK of the
+  # branch it targets.
+  JAVA_VERSION: ${{ (startsWith(github.base_ref, '23.') && '11') || (startsWith(github.base_ref, '24.') && '17') || '21' }}
+
+jobs:
+  preview:
+    # The application runs whatever the pull request contains on a public
+    # address, so only branches of this repository get a preview: pushing one
+    # takes write access. Labeling a pull request from a fork does nothing.
+    #
+    # A `labeled` event for some other label must not start a preview, because
+    # starting one cancels the preview that is already running.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && github.event.action != 'closed'
+      && github.event.action != 'unlabeled'
+      && contains(github.event.pull_request.labels.*.name, 'deploy preview')
+      && (github.event.action != 'labeled' || github.event.label.name == 'deploy preview')
+    # One preview per pull request. The job level group, rather than a
+    # workflow level one, is what lets every other label change pass by
+    # without touching a running preview.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.number }}
+      cancel-in-progress: true
+    timeout-minutes: 360
+    runs-on: ubuntu-24.04
+    steps:
+      # The merge commit, not the head of the branch: it carries the scripts
+      # below for a branch that was started before they existed.
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          # The application below runs the code of the pull request, and a
+          # token left in .git/config would be readable by it.
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '26.10.0'
+      - name: Announce the preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "DEADLINE=$(date -u -d "+$PREVIEW_MINUTES minutes" +%s)" >> $GITHUB_ENV
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          cat > comment.md <<EOF
+          $MARKER
+          <!-- run:${{ github.run_id }} -->
+          ### 🛠️ Preview is being built
+
+          From ${_HEAD_SHA:0:7} ([run]($run_url)). This comment gets the address once the application is up.
+          EOF
+          .github/scripts/pr-preview-comment.sh comment.md
+      - name: Find the test views to preview
+        id: views
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/pulls/$_PR_NUMBER/files" --paginate \
+            --jq '.[] | select(.status != "removed") | .filename' > changed.txt
+          node .github/scripts/pr-preview-views.mjs changed.txt > views.txt
+          if [ ! -s views.txt ]; then
+            echo "🚫 The pull request changes no view under \`flow-tests/*/src/main/java\` and no integration test with a matching view" \
+              | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          # One application per preview: the module with the most changed
+          # views. The views of any other module are named in the comment as
+          # not deployed.
+          module=$(cut -f1 views.txt | sort | uniq -c | sort -k1,1nr -k2 | head -1 | awk '{print $2}')
+          echo "module=$module" >> $GITHUB_OUTPUT
+          cat views.txt | tee -a $GITHUB_STEP_SUMMARY
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        # Read only, for the reason pr-snapshot.yml gives: an entry per pull
+        # request would crowd out the entries the test jobs need.
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Build the module
+        env:
+          MODULE: ${{ steps.views.outputs.module }}
+        # The test modules are only in the reactor through their profiles:
+        # it-test-modules is activated by the absence of skipTests, which this
+        # build sets, and sharedModules adds the modules the others depend on.
+        # -am then narrows the reactor down to what the one module needs.
+        run: |
+          mvn install -B -ntp -DskipTests -DsharedModules -Pit-test-modules -pl "$MODULE" -am
+      - name: Start the application
+        env:
+          MODULE: ${{ steps.views.outputs.module }}
+        # The same server the integration tests of the module start, in the
+        # same development mode, but with the goal that keeps running instead
+        # of the one that returns once the server is up.
+        run: |
+          if grep -q '<artifactId>spring-boot-maven-plugin</artifactId>' "$MODULE/pom.xml"; then
+            goal=org.springframework.boot:spring-boot-maven-plugin:run
+            args="-Dspring-boot.run.arguments=--server.port=$PORT"
+            context=$(sed -n 's/^server\.servlet\.context-path=//p' "$MODULE"/src/main/resources/application*.properties 2>/dev/null | head -1)
+          else
+            goal=org.eclipse.jetty.ee10:jetty-ee10-maven-plugin:run
+            args="-Dserver.port=$PORT"
+            context=$(sed -n 's:.*<contextPath>\(.*\)</contextPath>.*:\1:p' "$MODULE/pom.xml" | head -1)
+          fi
+          context=${context%/}
+          echo "CONTEXT=$context" >> $GITHUB_ENV
+          nohup mvn -B -ntp -f "$MODULE/pom.xml" $goal $args > server.log 2>&1 &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+          # Any HTTP status means the server is taking requests. A 404 for the
+          # root is common: most test modules have no view there.
+          for _ in $(seq 1 180); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$PORT$context/" || true)
+            [ "$code" != 000 ] && exit 0
+            if ! kill -0 $! 2>/dev/null; then
+              tail -100 server.log
+              echo "🚫 The application stopped while starting, see the log of this step" | tee -a $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+            sleep 5
+          done
+          tail -100 server.log
+          echo "🚫 The application did not answer within 15 minutes" | tee -a $GITHUB_STEP_SUMMARY
+          exit 1
+      - name: Open the tunnel
+        run: |
+          curl -sfL -o cloudflared \
+            "https://github.com/cloudflare/cloudflared/releases/download/$CLOUDFLARED_VERSION/cloudflared-linux-amd64"
+          echo "$CLOUDFLARED_SHA256  cloudflared" | sha256sum -c -
+          chmod +x cloudflared
+          nohup ./cloudflared tunnel --no-autoupdate --url "http://localhost:$PORT" > tunnel.log 2>&1 &
+          echo "TUNNEL_PID=$!" >> $GITHUB_ENV
+          for _ in $(seq 1 60); do
+            url=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1 || true)
+            if [ -n "$url" ]; then
+              echo "PREVIEW_URL=$url" >> $GITHUB_ENV
+              exit 0
+            fi
+            sleep 2
+          done
+          cat tunnel.log
+          echo "🚫 The tunnel did not report an address" | tee -a $GITHUB_STEP_SUMMARY
+          exit 1
+      - name: Comment the address on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODULE: ${{ steps.views.outputs.module }}
+        run: |
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          until=$(date -u -d "@$DEADLINE" '+%H:%M UTC')
+          {
+            echo "$MARKER"
+            echo "<!-- run:${{ github.run_id }} -->"
+            echo "### 🔍 Preview is up until $until"
+            echo
+            echo "\`$MODULE\` built from ${_HEAD_SHA:0:7} ([run]($run_url)), in development mode:"
+            echo
+            # Modules built on flow-test-common serve their test views from
+            # the servlet it maps to /view/*, the others at the route itself.
+            # Probing the running application cannot tell the two apart: in
+            # development mode it answers 200 for every path.
+            prefix=""
+            grep -q '<artifactId>flow-test-common</artifactId>' "$MODULE/pom.xml" && prefix=/view
+            while IFS=$'\t' read -r module view route; do
+              [ "$module" = "$MODULE" ] || continue
+              echo "- [\`$view\`]($PREVIEW_URL$CONTEXT$prefix/$route)"
+            done < views.txt
+            others=$(awk -F'\t' -v m="$MODULE" '$1 != m {print "`" $2 "` in `" $1 "`"}' views.txt | paste -sd, - | sed 's/,/, /g')
+            if [ -n "$others" ]; then
+              echo
+              echo "Not deployed, one module per preview: $others."
+            fi
+            echo
+            echo "The first page load compiles the frontend and can take a minute. A route that needs a parameter has to be completed by hand."
+            echo
+            echo "Every new commit on this branch restarts the preview while the \`$LABEL\` label is there. Removing the label stops it."
+          } > comment.md
+          .github/scripts/pr-preview-comment.sh comment.md
+      - name: Keep the preview up
+        run: |
+          while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+            if ! kill -0 "$SERVER_PID" 2>/dev/null || ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+              tail -100 server.log
+              tail -20 tunnel.log
+              echo "🚫 The application or the tunnel stopped before the preview time was over" | tee -a $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+            sleep 30
+          done
+      - name: Mark the preview as ended
+        # Runs after a failure and a cancel too, so that the comment never
+        # hands out an address that is gone. Leaves the comment alone when a
+        # newer run has taken it over already.
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          case "$JOB_STATUS" in
+            success) reason="The preview time is over." ;;
+            cancelled) reason="Stopped: the \`$LABEL\` label was removed, the pull request was closed or a new commit restarted it." ;;
+            *) reason="The preview failed, see the [run]($run_url)." ;;
+          esac
+          cat > comment.md <<EOF
+          $MARKER
+          <!-- run:${{ github.run_id }} -->
+          ### ⏹️ Preview ended
+
+          $reason Remove and add the \`$LABEL\` label again to start a new one.
+          EOF
+          .github/scripts/pr-preview-comment.sh comment.md "<!-- run:${{ github.run_id }} -->"
+
+  stop:
+    # Cancels a running preview by joining its concurrency group. There is
+    # nothing else to stop: the application and the tunnel live on the runner
+    # of that job and end with it.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && (github.event.action == 'closed'
+        || (github.event.action == 'unlabeled' && github.event.label.name == 'deploy preview'))
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.number }}
+      cancel-in-progress: true
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Stopped the preview of pull request $_PR_NUMBER, if one was running"
