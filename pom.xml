@@ -646,9 +646,10 @@
         </plugin>
         <plugin>
           <!-- Indexes a module's own classes into META-INF/jandex.idx, which
-               is where Quarkus reads them from. Declared by the runtime
-               modules an application puts on its classpath; test and
-               build-tool modules have no use for an index. -->
+               is where the Quarkus extension reads them from. Declared by the
+               Flow modules a Quarkus application loads; the Spring and CDI
+               integrations, tooling and test modules have no Jandex consumer
+               and do not declare it. -->
           <groupId>io.smallrye</groupId>
           <artifactId>jandex-maven-plugin</artifactId>
           <version>${jandex.plugin.version}</version>
