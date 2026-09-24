@@ -234,6 +234,15 @@ class AppRuntimeTest {
     private static final String PAYARA_MICRO = "fish.payara.maven.plugins:"
             + "payara-micro-maven-plugin:2.6.0";
 
+    /**
+     * Open Liberty forks like the four above it, and differs in the one thing
+     * the table has to know: its channel carries one flag per property rather
+     * than all of them in one value. The coordinates are the ones this
+     * repository's own CDI suite declares.
+     */
+    private static final String LIBERTY = "io.openliberty.tools:"
+            + "liberty-maven-plugin:3.12.3";
+
     @Test
     void warWithWildflyPlugin_runsThroughTheBuild() throws IOException {
         Path app = serverModule("wf", WILDFLY, Map.of());
@@ -389,6 +398,74 @@ class AppRuntimeTest {
                 + " 8443 disabled per domain.xml"));
     }
 
+    @Test
+    void warWithLibertyPlugin_runsThroughTheBuild() throws IOException {
+        Path app = serverModule("ol", LIBERTY, Map.of());
+
+        assertEquals("liberty", runtimeOf(app).name());
+    }
+
+    /**
+     * Liberty's own line, logged once the application is installed and
+     * reachable - the same stronger-than-a-bound-socket signal Payara Server's
+     * entry reads. The message id and the URL are matched and the words between
+     * them stepped over, Liberty logging in the JVM's own locale out of a
+     * translated message catalogue.
+     */
+    @Test
+    void libertyReportsItIsServing_andWhichPort() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("ol", LIBERTY, Map.of()));
+
+        String line = "[INFO] [AUDIT   ] CWWKT0016I: Web application available"
+                + " (default_host): http://localhost:9080/devloop-app/";
+        assertTrue(runtime.serving(line));
+        assertEquals(OptionalInt.of(9080), runtime.port(line));
+        // And the same for an application deployed at the root context.
+        assertEquals(OptionalInt.of(8080),
+                runtime.port("CWWKT0016I: Web application available"
+                        + " (default_host): http://localhost:8080/"));
+    }
+
+    /**
+     * The line announcing the application being <em>removed</em> carries the
+     * very same URL, and the server-ready line carries no port at all. Reading
+     * either as the application serving would send the loop a port nobody was
+     * listening on, or none.
+     */
+    @Test
+    void libertyRemovingOrMerelyStartingIsNotTheServingLine()
+            throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("ol", LIBERTY, Map.of()));
+
+        assertFalse(runtime.serving("[INFO] [AUDIT   ] CWWKT0017I: Web"
+                + " application removed (default_host):"
+                + " http://localhost:9080/devloop-app/"));
+        assertFalse(runtime.serving("[INFO] [AUDIT   ] CWWKF0011I: The"
+                + " defaultServer server is ready to run a smarter planet."
+                + " The defaultServer server started in 8.028 seconds."));
+    }
+
+    /**
+     * Liberty deploys a loose-application XML pointing straight at
+     * {@code target/classes} by default, and its own application monitor polls
+     * what it deployed - so the server would restart the application under
+     * every apply. Unlike {@code jetty.scan} that monitor lives in the
+     * project's {@code server.xml}, where nothing in the table can reach it, so
+     * the deployment shape is what has to change: a packaged WAR does not
+     * change between restarts and leaves the loop in sole charge.
+     */
+    @Test
+    void libertyDeploysAPackagedWar() {
+        assertEquals(Map.of("looseApplication", "false"),
+                entry("liberty").goalProperties());
+
+        String forced = entry("liberty").forcedConfiguration();
+        assertTrue(forced.contains("looseApplication=false"), forced);
+        // And an embedded server would run in Maven's JVM, which reads no
+        // jvm.options and so would start with none of the loop's agents.
+        assertTrue(forced.contains("embedded=false"), forced);
+    }
+
     /**
      * Cargo's run mojo exposes no user property on any parameter that could
      * carry the loop's flags, so the only channel is a Maven project property
@@ -410,14 +487,19 @@ class AppRuntimeTest {
 
     /**
      * A project may declare Cargo for its integration tests alone, so the
-     * container's own plugin is the better answer when a pom has both.
+     * container's own plugin is the better answer when a pom has both. Cargo
+     * has a container of its own for Liberty too, so that entry has to sit
+     * ahead of Cargo's in the table just as TomEE's does.
      */
     @Test
     void theContainersOwnPluginBeatsCargo() throws IOException {
         Path app = module("both", "war", "");
         writeModel(app, List.of(CARGO, TOMEE));
-
         assertEquals("tomee", runtimeOf(app).name());
+
+        Path liberty = module("bothLiberty", "war", "");
+        writeModel(liberty, List.of(CARGO, LIBERTY));
+        assertEquals("liberty", runtimeOf(liberty).name());
     }
 
     /**
@@ -554,6 +636,10 @@ class AppRuntimeTest {
         // lying about in target from a previous build.
         assertEquals("package", entry("payara").phase());
         assertEquals("package", entry("payara-micro").phase());
+        // Liberty declares no @Execute either and still needs no phase: its
+        // run mojo invokes resources, compile and - for the WAR it is told to
+        // package - war:war itself, so naming one would build the WAR twice.
+        assertEquals("", entry("liberty").phase());
     }
 
     /**
@@ -636,6 +722,11 @@ class AppRuntimeTest {
         assertFalse(entry("jetty-ee10").skippedOutsideTheApplication());
         assertFalse(entry("wildfly").skippedOutsideTheApplication());
         assertFalse(entry("tomee").skippedOutsideTheApplication());
+        // Liberty is the only forked container that keeps itself to one module
+        // unasked: its mojo reads the session's ProjectDependencyGraph, runs
+        // the server on the farthest downstream project alone and skips pom
+        // packaging outright.
+        assertFalse(entry("liberty").skippedOutsideTheApplication());
     }
 
     /**
@@ -698,6 +789,9 @@ class AppRuntimeTest {
         // listed among the warnings a daemon without one produces.
         assertFalse(entry("payara").projectPropertyFlags());
         assertFalse(entry("payara-micro").projectPropertyFlags());
+        // And Liberty reads the system properties a -D sets as well as the
+        // project's own, so it needs no extension either.
+        assertFalse(entry("liberty").projectPropertyFlags());
     }
 
     /**
@@ -720,6 +814,27 @@ class AppRuntimeTest {
         assertFalse(entry("tomee").commaSplitFlags());
         assertFalse(entry("cargo").commaSplitFlags());
         assertFalse(entry("jetty-ee10").commaSplitFlags());
+        // A jvm.options line is taken whole, so a comma in one divides nothing.
+        assertFalse(entry("liberty").commaSplitFlags());
+    }
+
+    /**
+     * Liberty's channel carries one flag per property - each
+     * {@code liberty.jvm.*} becomes one line of the server's generated
+     * {@code jvm.options} - so the flags go out as a {@code -D} each. Every
+     * other channel is one value holding all of them, and splitting one of
+     * those up would name properties no plugin reads, leaving the server
+     * starting with no agents at all.
+     */
+    @Test
+    void onlyLibertyTakesOneFlagPerProperty() {
+        assertTrue(entry("liberty").perPropertyFlags());
+        assertFalse(entry("wildfly").perPropertyFlags());
+        assertFalse(entry("tomee").perPropertyFlags());
+        assertFalse(entry("payara").perPropertyFlags());
+        assertFalse(entry("payara-micro").perPropertyFlags());
+        assertFalse(entry("cargo").perPropertyFlags());
+        assertFalse(entry("jetty-ee10").perPropertyFlags());
     }
 
     /**
@@ -764,6 +879,8 @@ class AppRuntimeTest {
         // whitespace and nothing else.
         assertFalse(entry("payara").shellEscapedFlags());
         assertFalse(entry("payara-micro").shellEscapedFlags());
+        // And Liberty writes the value into a file verbatim.
+        assertFalse(entry("liberty").shellEscapedFlags());
     }
 
     @Test
@@ -781,6 +898,11 @@ class AppRuntimeTest {
         // that could carry the flags is nested and pom-only, but exec.args is
         // read straight off the session's user properties.
         assertEquals("exec.args", entry("payara-micro").jvmFlagsProperty());
+        assertFalse(entry("liberty").embedded());
+        // Not a property name but a prefix: Liberty takes one flag per
+        // property, and the flag's position is what makes the names distinct.
+        assertEquals("liberty.jvm.devloop",
+                entry("liberty").jvmFlagsProperty());
     }
 
     private static ServerPlugin entry(String name) {

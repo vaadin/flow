@@ -220,7 +220,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
-| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee`, `payara`, `payara-micro`, `cargo` (see `AppRuntime`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11`, `wildfly`, `tomee`, `payara`, `payara-micro`, `liberty`, `cargo` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -244,8 +244,8 @@ launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
 **A WAR** has no entry point, and its servlet container is a build plugin rather
 than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
 asks it to. Jetty runs the application in the build's own JVM; WildFly, TomEE,
-both Payaras and Cargo cannot, and the section after this one is about the
-difference.
+both Payaras, Liberty and Cargo cannot, and the section after this one is about
+the difference.
 
 ### A container that runs in the build's JVM
 
@@ -281,9 +281,10 @@ that table.
 
 ### A container that forks
 
-WildFly, TomEE, both Payaras and Cargo have no embedded mode: `wildfly:run`,
-`tomee:run`, `payara-server:start`, `payara-micro:start` and `cargo:run` each
-provision a server and start it as a **process of its own**.
+WildFly, TomEE, both Payaras, Liberty and Cargo have no embedded mode:
+`wildfly:run`, `tomee:run`, `payara-server:start`, `payara-micro:start`,
+`liberty:run` and `cargo:run` each provision a server and start it as a
+**process of its own**.
 Nothing on Maven's command line, and nothing in its environment, reaches a JVM
 that Maven forked, so the agents, the JVM flags and the settings the application
 reads all travel together in the one parameter each plugin hands on to that
@@ -296,11 +297,13 @@ JAVA_HOME=<the JDK Jvm chose>
        -Dwildfly.javaOpts="<agents, opens, -XX:...> <settings the app reads>"
 ```
 
-All three deploy the packaged WAR rather than the module's own output, so one
-has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)` and forks the
-packaging itself, which is why the command above names no phase; TomEE's and
-Cargo's fork nothing, so `package` goes on their command line instead — and
-naming it for WildFly too would only build the WAR twice. The parameter is
+Every one of them deploys the packaged WAR rather than the module's own
+output, so one has to exist. WildFly's goal declares `@Execute(phase = PACKAGE)`
+and forks the packaging itself, which is why the command above names no phase,
+and Liberty's runs `war:war` itself for the same effect; TomEE's, Cargo's and
+both Payaras' fork nothing, so `package` goes on their command line instead —
+and naming it for the other two would only build the WAR twice. The parameter
+is
 `wildfly.javaOpts`
 for WildFly, whose mojo splits the value on whitespace, and `tomee-plugin.args`
 for TomEE, which parses it the way a shell would — `javaagents` would read
@@ -441,9 +444,85 @@ only tells the plugin which port to talk to; the listener itself comes from the
 domain's `domain.xml`. Payara Micro's can — `-Dexec.args=-Dpayaramicro.port=<n>`
 — because Micro reads its own configuration from system properties.
 
+### Open Liberty
+
+`liberty:run` and never `liberty:dev`, whose file watcher redeploys on a
+schedule of its own. It forks — `embedded` defaults to `false` — and blocks on
+the server, which is the shape the loop needs. It declares no `@Execute` and
+still needs no phase, which no other entry manages: `RunServerMojo` runs
+`resources`, `compiler:compile` and `war:war` itself. And it is the one forked
+container that keeps itself to the application's own module unasked, reading the
+session's `ProjectDependencyGraph` to run the server on the farthest downstream
+project alone and skipping `pom` packaging outright — so none of the
+switch-the-goal-off-and-force-it-back machinery Cargo and both Payaras need
+appears here.
+
+```
+JAVA_HOME=<the JDK Jvm chose>
+  mvnw ... io.openliberty.tools:liberty-maven-plugin:<version>:run
+       -DlooseApplication=false
+       -Dliberty.jvm.devloop0=-javaagent:<hotswap-agent.jar>
+       -Dliberty.jvm.devloop1=-javaagent:<daemon jar>
+       -Dliberty.jvm.devloop2=-XX:+AllowEnhancedClassRedefinition
+       ...                    <one -D per flag, and per setting the app reads>
+```
+
+**The channel carries one flag per property**, which is the one thing the table
+did not already know how to say. Every Maven project *or system* property named
+`liberty.jvm.<key>` becomes one **line** of the server's generated
+`jvm.options`, and a line is one JVM argument — so the flags cannot be joined
+the way WildFly's and TomEE's are. `ServerPlugin.perPropertyFlags` marks that
+shape and `MavenGoalRuntime.flagProperties` answers it, keying each property by
+the flag's position. A line is taken whole, so a comma in one divides nothing
+and a backslash escapes nothing; the JVM argument file Payara Server needs is
+not reached here.
+
+What the key must *not* be relied on for is order. The plugin reads those
+properties out of a `Properties`, whose iteration order is unspecified, so the
+lines may be written in any order at all — which is a second and sharper reason
+for `MavenGoalRuntime.singleToken` to fold a module option onto its value,
+WildFly's sorting being only the first.
+
+**A pom cannot take the channel away**, which puts Liberty with the Payaras
+rather than with WildFly and TomEE: the generated file overwrites any
+`jvm.options` the project supplies, and `writeJvmOptions` appends a pom's own
+`<jvmOptions>` *after* the Maven properties rather than instead of them.
+
+**`looseApplication` is forced off, and that is the load-bearing setting.**
+Liberty's default deploys a loose-application XML pointing straight at
+`target/classes` — which would be the best hot-swap story of any WAR container
+except Jetty, were it not for Liberty's own `applicationMonitor`. That defaults
+to `updateTrigger="polled"`, so the server restarts the application whenever a
+class under `target/classes` changes: the competing rebuilder `jetty.scan` and
+TomEE's `reloadOnUpdate` are switched off for, except that this one cannot be
+switched off from the pom at all. It lives in the project's `server.xml`, where
+nothing in `ServerPlugin.Competing` can see it. A packaged WAR does not change
+between restarts, so the monitor has nothing to react to and the loop is in sole
+charge without the project having to write anything — at the cost every other
+forked container already carries, the section below this one.
+
+`embedded` is listed as competing but not passed as a `-D`: `false` is already
+the default, and the property is generic enough that setting it over the whole
+reactor would be worse than the warning. A pom that turned it on would run the
+server in Maven's own JVM, which reads no `jvm.options` at all.
+
+Readiness is Liberty's `CWWKT0016I: Web application available (default_host):
+http://host:9080/ctx/`, logged once the application is installed and reachable —
+the same stronger-than-a-bound-socket signal Payara Server's entry reads. It is
+matched on the **message id and the URL**, with the words between them stepped
+over, and that is where this entry departs from WildFly's and TomEE's: Liberty
+ships translated message catalogues and logs in the JVM's own locale, so the
+text is not dependable while the id and the URL are. Requiring the `://` is also
+what keeps `CWWKF0011I`, the server-ready line that carries no port, from
+answering for it.
+
+The JVM is Maven's: the plugin passes `JAVA_HOME` to the server only for a Maven
+toolchain, and otherwise the process inherits the environment Maven was started
+with — where the daemon has already put the JBR `Jvm` chose.
+
 ### What a deployed WAR costs a hot swap
 
-All three forked containers deploy a *copy* of the WAR, and the webapp class
+Every forked container deploys a *copy* of the WAR, and the webapp class
 loader reads that copy rather than the module's `target/classes`. A hot swap
 acts on classes already loaded, so it is unaffected — but a class the
 application has not loaded *yet* still loads its pre-edit bytes from the
@@ -787,10 +866,10 @@ loop itself is tested in `flow-tests/test-devloop`: `test-devloop-spring` for
 an entry point and `test-devloop-jetty` for a WAR under its own build plugin,
 over the shared ITs in `test-devloop-support`.
 
-**WildFly, TomEE and both Payaras have no fixture**, only the table's own unit
-tests. What those cannot answer is the one question that matters for a forked
-container — did the agents reach the server's JVM — so that is verified by hand
-against a WAR whose pom runs the plugin in question:
+**WildFly, TomEE, both Payaras and Liberty have no fixture**, only the table's
+own unit tests. What those cannot answer is the one question that matters for a
+forked container — did the agents reach the server's JVM — so that is verified
+by hand against a WAR whose pom runs the plugin in question:
 
 ```bash
 .vaadin/vaadin-dev start
@@ -798,7 +877,9 @@ against a WAR whose pom runs the plugin in question:
 #   target/devloop/app.log holds the readiness line the entry's pattern expects,
 #   and the "flags:" line holds the whole value handed to the plugin - for
 #   payara, check target/devloop/payara-args.txt exists and holds the flags
-#   with commas in them
+#   with commas in them, and for liberty, that
+#   target/liberty/wlp/usr/servers/defaultServer/jvm.options holds one line per
+#   flag with the agents among them
 #   edit a method body in a class the running page has already loaded, then:
 .vaadin/vaadin-dev apply
 #   expect: exit 0 and hot-reload, NOT "restarting". A restart here is the
@@ -808,4 +889,5 @@ against a WAR whose pom runs the plugin in question:
 
 A structural edit — adding a method — escalating to a restart *on a JBR* is the
 particular symptom of `-XX:+AllowEnhancedClassRedefinition` having been dropped,
-which is the failure the one-value trick above exists to prevent.
+which is the failure Payara's one-value trick and Liberty's one property per
+flag both exist to prevent.

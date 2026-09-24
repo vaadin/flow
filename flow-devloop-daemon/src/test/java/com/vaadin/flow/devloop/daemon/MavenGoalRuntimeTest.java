@@ -148,6 +148,24 @@ class MavenGoalRuntimeTest {
     }
 
     /**
+     * Liberty's channel carries one flag per property, each becoming one line
+     * of the server's generated jvm.options - so a line holding all of them
+     * would reach the JVM as a single argument. The key is the flag's position,
+     * which only has to make the names distinct.
+     */
+    @Test
+    void flagProperties_oneSettingPerFlag() {
+        assertEquals(List.of("-Dliberty.jvm.devloop0=-javaagent:/ha.jar",
+                "-Dliberty.jvm.devloop1="
+                        + "-XX:+AllowEnhancedClassRedefinition",
+                "-Dliberty.jvm.devloop2=-DdisabledPlugins=Vaadin,Spring"),
+                MavenGoalRuntime.flagProperties("liberty.jvm.devloop",
+                        List.of("-javaagent:/ha.jar",
+                                "-XX:+AllowEnhancedClassRedefinition",
+                                "-DdisabledPlugins=Vaadin,Spring")));
+    }
+
+    /**
      * And nothing is written when nothing needs it, so a channel of this shape
      * costs a launch with no comma in it neither a file nor a token.
      */
