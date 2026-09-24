@@ -43,9 +43,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
  * @since 2.0
  */
 public final class WebComponent<C extends Component> implements Serializable {
-    private static final String CUSTOM_EVENT = "this.dispatchEvent(new "
-            + "CustomEvent($0, %s));";
-
     private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
     private Element componentHost;
@@ -138,7 +135,10 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.set("detail",
                 objectData == null ? JacksonUtils.nullNode() : objectData);
 
-        componentHost.executeJs(String.format(CUSTOM_EVENT, object), eventName);
+        // The options are an argument of the call, so a quote in the detail
+        // is data instead of the end of a JavaScript string
+        componentHost.executeJs(CustomEventJs.class).fireEvent(eventName,
+                object);
     }
 
     /**
@@ -216,27 +216,26 @@ public final class WebComponent<C extends Component> implements Serializable {
         case null, default -> value;
         };
 
-        componentHost.executeJs(UpdatePropertyJs.class)
-                .updateProperty(propertyName, jsValue);
+        componentHost.callJsFunction("_updatePropertyFromServer", propertyName,
+                jsValue);
     }
 
     /**
-     * How a property value reaches the exported web component, as a JavaScript
+     * How an event of an exported web component is fired, as a JavaScript
      * definition for {@link Element#executeJs(Class)}.
      */
     @JsDefinition
-    public interface UpdatePropertyJs extends Serializable {
+    public interface CustomEventJs extends Serializable {
 
         /**
-         * Writes the value the server holds to the property of the web
-         * component.
+         * Fires an event on the host of the web component.
          *
-         * @param propertyName
-         *            the name of the property to write
-         * @param value
-         *            the value to write, or <code>null</code> to clear it
+         * @param eventName
+         *            the name of the event
+         * @param options
+         *            what the event is made of, including its detail
          */
-        @JsExpression("this._updatePropertyFromServer($0, $1);")
-        void updateProperty(String propertyName, Object value);
+        @JsExpression("this.dispatchEvent(new CustomEvent($0, $1));")
+        void fireEvent(String eventName, ObjectNode options);
     }
 }
