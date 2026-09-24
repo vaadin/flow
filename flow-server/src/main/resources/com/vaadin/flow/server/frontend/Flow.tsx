@@ -520,11 +520,12 @@ function Flow() {
             if (blockerHandled.current) {
                 // Blocker is handled and the new navigation
                 // gets queued to be executed after the current handling ends.
-                const { pathname, state } = blocker.location;
+                const { pathname, search, hash, state } = blocker.location;
                 // Clear base name to not get /baseName/basename/path
                 const pathNoBase = pathname.substring(basename.length);
                 // path should always start with / else react-router will append to current url
-                queuedNavigate(pathNoBase.startsWith('/') ? pathNoBase : '/' + pathNoBase, true, {
+                const path = pathNoBase.startsWith('/') ? pathNoBase : '/' + pathNoBase;
+                queuedNavigate(path + search + hash, true, {
                     state: state,
                     replace: true
                 });
