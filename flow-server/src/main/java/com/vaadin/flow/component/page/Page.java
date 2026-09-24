@@ -120,16 +120,11 @@ public class Page implements Serializable {
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
-            executeJs("""
-                    document.documentElement.removeAttribute('theme');
-                    document.documentElement.style.colorScheme = '';
-                    """);
+            executeJs(PageJs.class).resetColorScheme();
             getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
         } else {
-            executeJs("""
-                    document.documentElement.setAttribute('theme', $0);
-                    document.documentElement.style.colorScheme = $1;
-                    """, colorScheme.getThemeValue(), colorScheme.getValue());
+            executeJs(PageJs.class).setColorScheme(colorScheme.getThemeValue(),
+                    colorScheme.getValue());
             getExtendedClientDetails().setColorScheme(colorScheme);
         }
     }
@@ -275,7 +270,57 @@ public class Page implements Serializable {
      *            details
      */
     public void addJavaScript(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JAVASCRIPT, url, loadMode));
+        addJavaScript(url, loadMode, JavaScript.Type.SCRIPT);
+    }
+
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. You can prefix the URL with {@code context://} to make it
+     * relative to the context path or use an absolute URL to refer to files
+     * outside the frontend directory.
+     * <p>
+     * The {@code type} parameter selects the kind of {@code <script>} tag the
+     * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
+     * {@code <script>} element (the default of {@link #addJavaScript(String)});
+     * {@link JavaScript.Type#MODULE} renders a {@code <script type="module">}
+     * element, which is the recommended way to load runtime ES modules
+     * (replaces the deprecated {@link #addJsModule(String)}).
+     * <p>
+     * {@link JavaScript.Type#MODULE} supports {@link LoadMode#EAGER} and
+     * {@link LoadMode#LAZY}, but not {@link LoadMode#INLINE}: the browser
+     * cannot be given the contents of a module without also losing the module's
+     * identity, so use {@link JavaScript.Type#SCRIPT} if the contents must be
+     * inlined into the page.
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JavaScript @JavaScript} annotation.
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param type
+     *            the kind of {@code <script>} tag to render; {@code null} is
+     *            treated as {@link JavaScript.Type#SCRIPT}
+     * @throws IllegalArgumentException
+     *             if {@code type} is {@link JavaScript.Type#MODULE} and
+     *             {@code loadMode} is {@link LoadMode#INLINE}
+     */
+    public void addJavaScript(String url, LoadMode loadMode,
+            JavaScript.Type type) {
+        if (type == JavaScript.Type.MODULE && loadMode == LoadMode.INLINE) {
+            throw new IllegalArgumentException(
+                    "Inline load mode is not supported for JavaScript.Type.MODULE ("
+                            + url
+                            + "). Use LoadMode.EAGER or LoadMode.LAZY, or JavaScript.Type.SCRIPT if the contents must be inlined into the page.");
+        }
+        Type dependencyType = type == JavaScript.Type.MODULE ? Type.JS_MODULE
+                : Type.JAVASCRIPT;
+        addDependency(new Dependency(dependencyType, url, loadMode));
     }
 
     /**
@@ -288,8 +333,12 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @deprecated use {@link #addJavaScript(String, LoadMode, JavaScript.Type)}
+     *             with {@link JavaScript.Type#MODULE} instead. The new overload
+     *             also accepts a {@link LoadMode}.
      * @since 2.0
      */
+    @Deprecated(since = "25.4")
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
             addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
@@ -459,7 +508,7 @@ public class Page implements Serializable {
      * Reloads the page in the browser.
      */
     public void reload() {
-        executeJs("window.location.reload();");
+        executeJs(PageJs.class).reload();
     }
 
     /**
@@ -862,7 +911,7 @@ public class Page implements Serializable {
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
                 "Url consumer callback should not be null.");
-        executeJs(LocationJs.class).getHref().then(String.class, urlString -> {
+        executeJs(PageJs.class).getHref().then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
@@ -873,13 +922,13 @@ public class Page implements Serializable {
     }
 
     /**
-     * What the page reads of <code>window.location</code>, as a JavaScript
-     * definition for {@link #executeJs(Class)}: the build collects it into the
-     * bundle, so asking the browser where it is needs no expression and works
-     * under a content security policy without <code>unsafe-eval</code>.
+     * What this page asks of the browser, as a JavaScript definition for
+     * {@link #executeJs(Class)}: the build collects it into the bundle, so none
+     * of it needs an expression and all of it works under a content security
+     * policy without <code>unsafe-eval</code>.
      */
     @JsDefinition
-    interface LocationJs extends Serializable {
+    public interface PageJs extends Serializable {
 
         /**
          * The address the browser is at.
@@ -888,6 +937,44 @@ public class Page implements Serializable {
          */
         @JsExpression("return window.location.href")
         PendingJavaScriptResult getHref();
+
+        /**
+         * Lets the document follow the color scheme the user asked the browser
+         * for.
+         */
+        @JsExpression("""
+                document.documentElement.removeAttribute('theme');
+                document.documentElement.style.colorScheme = '';
+                """)
+        void resetColorScheme();
+
+        /**
+         * Pins the document to a color scheme.
+         *
+         * @param theme
+         *            the theme to set on the document
+         * @param colorScheme
+         *            the color scheme to set on the document
+         */
+        @JsExpression("""
+                document.documentElement.setAttribute('theme', $0);
+                document.documentElement.style.colorScheme = $1;
+                """)
+        void setColorScheme(String theme, String colorScheme);
+
+        /**
+         * Loads the page again.
+         */
+        @JsExpression("window.location.reload();")
+        void reload();
+
+        /**
+         * Reads the direction the document is read in.
+         *
+         * @return the pending direction
+         */
+        @JsExpression("return document.dir")
+        PendingJavaScriptResult readDirection();
     }
 
     /**
@@ -908,7 +995,7 @@ public class Page implements Serializable {
      * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
-        executeJs("return document.dir").then(String.class, dir -> {
+        executeJs(PageJs.class).readDirection().then(String.class, dir -> {
             Direction direction = getDirectionByClientName(dir);
             callback.accept(direction);
         });

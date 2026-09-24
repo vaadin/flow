@@ -24,9 +24,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,9 +52,11 @@ import org.springframework.core.type.classreading.MetadataReader;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -252,6 +256,44 @@ class VaadinServletContextInitializerTest {
     }
 
     @Test
+    void onStartup_allowedPackagesSet_devModeScansEveryFrameworkJsDefinition()
+            throws Exception {
+        initDefaultMocks();
+        Mockito.when(environment.getProperty("vaadin.allowed-packages"))
+                .thenReturn("com/example/app");
+        Mockito.when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(null);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[] { JsDefinition.class });
+
+        VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
+        List<String> scannedPackages = new ArrayList<>();
+        Mockito.doAnswer(invocation -> {
+            scannedPackages.addAll(invocation.getArgument(0));
+            return Stream.empty();
+        }).when(vaadinServletContextInitializer).findByAnnotationOrSuperType(
+                Mockito.anyCollection(), Mockito.any(), Mockito.anyCollection(),
+                Mockito.anyCollection());
+
+        vaadinServletContextInitializer.onStartup(servletContext);
+
+        // Development mode generates the declared JavaScript from the scanned
+        // classes, so a definition of the framework outside the scanned
+        // packages has no function to run in the browser
+        List<Class<?>> definitions = new VaadinServletContextInitializer(
+                new GenericApplicationContext())
+                .findByAnnotationOrSuperType(List.of("com.vaadin.flow"),
+                        new DefaultResourceLoader(),
+                        List.of(JsDefinition.class), List.of())
+                .filter(type -> !isTestClass(type)).toList();
+        assertThat(definitions).contains(Element.CallFunctionJs.class);
+        assertThat(definitions).allSatisfy(type -> assertThat(scannedPackages)
+                .as("packages scanned for %s", type.getName())
+                .anyMatch(pkg -> type.getPackageName().equals(pkg)
+                        || type.getPackageName().startsWith(pkg + ".")));
+    }
+
+    @Test
     void classPathScan_reusesApplicationContextSharedMetadataCache() {
         GenericApplicationContext context = new GenericApplicationContext();
 
@@ -273,6 +315,13 @@ class VaadinServletContextInitializerTest {
                 FilterableResourceResolver.class).count();
 
         assertThat(context.getResourceCache(MetadataReader.class)).isNotEmpty();
+    }
+
+    private static boolean isTestClass(Class<?> type) {
+        String location = type.getProtectionDomain().getCodeSource()
+                .getLocation().getPath();
+        return location.endsWith("-tests.jar")
+                || location.contains("/test-classes/");
     }
 
     private static String getResourcePath(Resource resource) {

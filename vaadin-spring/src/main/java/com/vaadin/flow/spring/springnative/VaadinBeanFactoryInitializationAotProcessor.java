@@ -29,6 +29,7 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -48,6 +49,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -151,6 +153,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, pkg, WebComponentExporter.class);
                 registerSubTypes(hints, pkg, I18NProvider.class);
                 registerSubTypes(hints, pkg, MenuAccessControl.class);
+
+                for (var c : getJsDefinitionTypes(pkg)) {
+                    registerJsDefinition(hints, c);
+                }
             }
         };
     }
@@ -289,6 +295,19 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 RouteAlias.Container.class, Layout.class);
     }
 
+    /**
+     * Registers what a JavaScript definition needs at runtime: the dynamic
+     * proxy Flow creates for the interface, which a native image only builds
+     * for a proxy that is known at build time, and reflection on the interface
+     * itself, which is how the annotations it is validated against are read.
+     */
+    private void registerJsDefinition(RuntimeHints hints,
+            Class<?> definitionType) {
+        hints.proxies().registerJdkProxy(definitionType);
+        hints.reflection().registerType(definitionType,
+                MemberCategory.INVOKE_PUBLIC_METHODS);
+    }
+
     private void registerResources(RuntimeHints hints, Class<?> c) {
         if (c.getCanonicalName() == null) {
             // See
@@ -417,7 +436,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
     // Visible for testing
     Collection<Class<?>> getAnnotatedClasses(String basePackage,
             Class<?>... annotations) {
-        Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
 
@@ -426,39 +444,57 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     (Class<? extends Annotation>) annotation));
         }
 
-        for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
-            try {
-                Class<?> clazz = Class.forName(bd.getBeanClassName());
-                result.add(clazz);
-            } catch (ClassNotFoundException e) {
-                logger.warn("Could not load class {}", bd.getBeanClassName(),
-                        e);
-            }
-        }
+        return loadCandidates(scanner, basePackage);
+    }
 
-        return result;
+    // Visible for testing
+    Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+        // A JavaScript definition is an interface, which the scanner leaves
+        // out by default as it only accepts what can be instantiated
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false) {
+            @Override
+            protected boolean isCandidateComponent(
+                    AnnotatedBeanDefinition beanDefinition) {
+                // Independence is what the default check keeps, and a local
+                // interface has no canonical name to register a hint for
+                return beanDefinition.getMetadata().isInterface()
+                        && beanDefinition.getMetadata().isIndependent();
+            }
+        };
+        scanner.addIncludeFilter(new AnnotationTypeFilter(JsDefinition.class));
+
+        return loadCandidates(scanner, basePackage);
     }
 
     // Visible for testing
     Collection<Class<?>> getSubtypesOf(String basePackage,
             Class<?> parentType) {
-        Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.addIncludeFilter(new AssignableTypeFilter(parentType));
 
+        Set<Class<?>> result = loadCandidates(scanner, basePackage);
+        result.remove(parentType);
+        return result;
+    }
+
+    /**
+     * Loads the classes a scan of the given package found, leaving out what the
+     * class loader can not load.
+     */
+    private Set<Class<?>> loadCandidates(
+            ClassPathScanningCandidateComponentProvider scanner,
+            String basePackage) {
+        Set<Class<?>> result = new HashSet<>();
         for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
             try {
-                Class<?> clazz = Class.forName(bd.getBeanClassName());
-                if (!parentType.equals(clazz)) {
-                    result.add(clazz);
-                }
+                result.add(Class.forName(bd.getBeanClassName()));
             } catch (ClassNotFoundException e) {
                 logger.warn("Could not load class {}", bd.getBeanClassName(),
                         e);
             }
         }
-
         return result;
     }
 
