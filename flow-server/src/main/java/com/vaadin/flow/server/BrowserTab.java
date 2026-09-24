@@ -79,9 +79,9 @@ import com.vaadin.flow.shared.Registration;
  * later, or from a tab that is being reloaded. A browser tab is therefore
  * destroyed only when no UI of the tab has sent a heartbeat for the same time
  * that it takes to close an inactive UI (three missed heartbeats, see
- * {@link DeploymentConfiguration#getHeartbeatInterval()}), or when the session
- * is destroyed. The check runs at the end of a request to the session, so a
- * browser tab can stay around for longer. Use
+ * {@link com.vaadin.flow.function.DeploymentConfiguration#getHeartbeatInterval()}),
+ * or when the session is destroyed. The check runs at the end of a request to
+ * the session, so a browser tab can stay around for longer. Use
  * {@link #addDestroyListener(Command)} to release resources held by the tab.
  * <p>
  * The browser tab is stored in the {@link VaadinSession} and all its methods
