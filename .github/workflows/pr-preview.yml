@@ -92,11 +92,12 @@ jobs:
         env:
           MODULE: ${{ steps.module.outputs.module }}
         # flow-maven-plugin is not a dependency of the module, so -am does not
-        # build it on its own. The profiles and -DsharedModules put every
-        # module of flow-tests in the reactor, which -DskipTests would leave
-        # partly out, so that any module scripts/previewModule.js picks builds.
+        # build it on its own. -Pit-test-modules and -DsharedModules put the
+        # test modules in the reactor, which -DskipTests would leave out. They
+        # match REACTOR_PROFILES in scripts/previewModule.js, which only picks
+        # modules they include.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -Pit-test-modules,nightly -DsharedModules -pl flow-plugins/flow-maven-plugin,$MODULE -am"
+          cmd="mvn install -B -ntp -DskipTests -Pit-test-modules -DsharedModules -pl flow-plugins/flow-maven-plugin,$MODULE -am"
           $cmd -T 2C -q || $cmd
       - name: Build the test module in production mode
         env:

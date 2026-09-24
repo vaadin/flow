@@ -40,20 +40,36 @@ const COMMENT_MARKER = '<!-- flow-pr-preview -->';
 // otherwise grow past what anyone reads.
 const MAX_LINKS = 20;
 
+// The flow-tests profiles the workflow builds the picked module with, next to
+// the modules listed outside any profile. Kept to the ones the pull request
+// validation runs, so that modules left to other builds, like the nightly
+// one, are not deployed either. The install step in pr-preview.yml activates
+// the same ones.
+const REACTOR_PROFILES = ['it-test-modules', 'it-shared-modules'];
+
+/** Names of the flow-tests modules in the reactor the workflow builds. */
+function reactorModules(readSource) {
+  const parent = readSource('flow-tests/pom.xml') || '';
+  const profiles = parent.match(/<profile>[\s\S]*?<\/profile>/g) || [];
+  const included = [parent.replace(/<profiles>[\s\S]*<\/profiles>/, '')].concat(
+    profiles.filter((profile) => REACTOR_PROFILES.includes(profile.match(/<id>([^<]*)<\/id>/)?.[1]))
+  );
+  return included.flatMap((part) => [...part.matchAll(/<module>([^<]*)<\/module>/g)].map((match) => match[1]));
+}
+
 /**
  * How a test module is deployed, `{ module, contextPath }`, or null if it
  * can't be. Read from the poms, so that a new test module is picked up
- * without listing it anywhere: it has to be a module of flow-tests, which
- * puts it in the reactor the workflow builds, and a single application the
+ * without listing it anywhere: it has to be a module of flow-tests in the
+ * reactor the workflow builds (see REACTOR_PROFILES), and a single application the
  * preview image can start - a war that its ITs run on Jetty, at a context
  * path the pom spells out, or a Spring Boot application. Anything else
  * (several wars, an application server, an aggregator) is left to the ITs.
  */
 function deployment(module, readSource) {
   const name = module.slice('flow-tests/'.length);
-  const parent = readSource('flow-tests/pom.xml') || '';
   const pom = readSource(`${module}/pom.xml`);
-  if (!pom || !parent.includes(`<module>${name}</module>`)) {
+  if (!pom || !reactorModules(readSource).includes(name)) {
     return null;
   }
   if (/<packaging>war<\/packaging>/.test(pom) && /<artifactId>jetty(-ee\d+)?-maven-plugin<\/artifactId>/.test(pom)) {

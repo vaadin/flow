@@ -9,9 +9,15 @@ const TEST = 'src/test/java/com/vaadin/flow/uitest/ui';
 
 // A flow-tests reactor with one module of each kind the poms tell apart
 const POMS = {
-  'flow-tests/pom.xml': ['test-default', 'test-misc', 'test-themes', 'test-ccdm', 'test-encoded', 'test-common']
-    .map((name) => `<module>${name}</module>`)
-    .join('\n'),
+  'flow-tests/pom.xml':
+    '<modules><module>test-common</module></modules>\n<profiles>\n' +
+    '<profile><id>it-test-modules</id><modules>\n' +
+    ['test-default', 'test-misc', 'test-themes', 'test-ccdm', 'test-encoded']
+      .map((name) => `<module>${name}</module>`)
+      .join('\n') +
+    '\n</modules></profile>\n' +
+    '<profile><id>nightly</id><modules><module>test-nightly</module></modules></profile>\n' +
+    '</profiles>',
   [`${DEFAULT}/pom.xml`]: '<packaging>jar</packaging>\n<artifactId>spring-boot-maven-plugin</artifactId>',
   'flow-tests/test-misc/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>',
   'flow-tests/test-themes/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>',
@@ -22,7 +28,9 @@ const POMS = {
     '<packaging>war</packaging>\n<artifactId>jetty-maven-plugin</artifactId>\n' +
     '<contextPath>${jettyContextPath}</contextPath>',
   'flow-tests/test-common/pom.xml': '<packaging>jar</packaging>',
-  // A war that is not a module of flow-tests, so not in the built reactor
+  // Wars outside the built reactor: only in a profile it leaves out, or not
+  // a module of flow-tests at all
+  'flow-tests/test-nightly/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>',
   'flow-tests/test-orphan/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>'
 };
 const select = (files) => selectDeployment(files, (file) => POMS[file] ?? null);
@@ -72,6 +80,7 @@ test('modules the preview cannot start fall back to test-default', () => {
     select([
       `flow-tests/test-common/${MAIN}/Foo.java`,
       `flow-tests/test-encoded/${MAIN}/AView.java`,
+      `flow-tests/test-nightly/${MAIN}/AView.java`,
       `flow-tests/test-orphan/${MAIN}/AView.java`,
       'flow-tests/pom.xml'
     ]).module,
