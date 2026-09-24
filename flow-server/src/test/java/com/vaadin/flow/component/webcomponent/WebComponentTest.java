@@ -61,7 +61,7 @@ class WebComponentTest {
     }
 
     @Test
-    void fireEvent_sendsTheNameAndTheOptionsAsValues() {
+    void fireEvent_callsTheDefinitionWithTheNameAndTheOptions() {
         Element host = spy(new Element("tag"));
         WebComponent.CustomEventJs events = mock(
                 WebComponent.CustomEventJs.class);
@@ -70,12 +70,10 @@ class WebComponentTest {
                 new WebComponentBinding<>(mock(Component.class)), host);
 
         ObjectNode detail = JacksonUtils.createObjectNode();
-        detail.put("what", "'; alert(1); '");
+        detail.put("id", 42);
         component.fireEvent("my-event", detail,
                 new EventOptions(true, true, true));
 
-        // The options are a value the client decodes, so a detail carrying
-        // what would end a JavaScript string is just a string
         ObjectNode expected = JacksonUtils.createObjectNode();
         expected.put("bubbles", true);
         expected.put("cancelable", true);

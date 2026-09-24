@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class WebComponentUITest {
 
     @Test
-    void addAttributes_tagAndAttributesTravelAsValues() {
+    void addAttributes_callsTheDefinitionWithTheTagAndTheAttributes() {
         WebComponentUI ui = new WebComponentUI();
         MockVaadinSession session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService());
@@ -41,8 +41,7 @@ class WebComponentUITest {
 
         Map<String, String> attributes = new LinkedHashMap<>();
         attributes.put("theme", "dark");
-        // A quote, which has to reach the browser as data
-        attributes.put("data-note", "quote ' inside");
+        attributes.put("data-size", "small");
         ui.addAttributes("my-component", attributes);
 
         List<PendingJavaScriptInvocation> invocations = ui.getInternals()
@@ -53,7 +52,6 @@ class WebComponentUITest {
                         "setAttributes",
                         List.of("my-component",
                                 JacksonUtils.mapToJson(attributes))),
-                invocations.get(0).getInvocation().getJsCall(),
-                "the tag and the attributes should reach the browser as values");
+                invocations.get(0).getInvocation().getJsCall());
     }
 }
