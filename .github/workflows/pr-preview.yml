@@ -2,8 +2,10 @@ name: Flow PR Preview
 
 # Deploys one test module of a pull request to Fly.io, so that its views can be
 # tried in a browser without building the branch, and destroys the deployment
-# when the pull request is closed. Every pull request is deployed, no label
-# needed.
+# when the pull request is closed. The deployment is opt-in per pull request,
+# like the snapshot build in pr-snapshot.yml: it starts once the
+# "deploy preview" label is added, runs again for every commit pushed while the
+# label is there, and is destroyed when the label is removed.
 #
 # The whole test suite does not fit in one deployment, so one module is picked
 # by scripts/previewModule.js: flow-tests/test-default, unless the pull request
@@ -13,15 +15,19 @@ name: Flow PR Preview
 # links to the views the pull request touches.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [labeled, unlabeled, synchronize, reopened, closed]
 
 permissions:
   contents: read
 
 concurrency:
-  # Only the newest commit is worth deploying, and closing the pull request
-  # supersedes any deployment still running.
-  group: ${{ github.workflow }}-${{ github.event.number }}
+  # Only the newest commit is worth deploying, and closing the pull request or
+  # removing the label supersedes any deployment still running. Adding or
+  # removing any other label changes nothing, so those runs get a group of
+  # their own instead of cancelling a deployment.
+  group: >-
+    ${{ github.workflow }}-${{ github.event.number }}${{
+    github.event.label && github.event.label.name != 'deploy preview' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 env:
@@ -42,7 +48,14 @@ jobs:
     # Secrets are only handed to pull requests from a branch of this
     # repository. Deploying a fork would mean running its code with the Fly.io
     # token, so forks are skipped.
-    if: github.event.action != 'closed' && !github.event.pull_request.head.repo.fork
+    #
+    # The label has to be present for every event type, and a `labeled` event
+    # for some other label must not start a deployment of its own.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && contains(github.event.pull_request.labels.*.name, 'deploy preview')
+      && (github.event.action == 'synchronize' || github.event.action == 'reopened'
+        || (github.event.action == 'labeled' && github.event.label.name == 'deploy preview'))
     timeout-minutes: 45
     runs-on: ubuntu-24.04
     permissions:
@@ -145,9 +158,14 @@ jobs:
           fi
 
   cleanup:
-    # Merged or not, a closed pull request needs no preview. A reopened one is
-    # deployed again.
-    if: github.event.action == 'closed' && !github.event.pull_request.head.repo.fork
+    # Merged or not, a closed pull request needs no preview, and neither does
+    # one the label is removed from. A reopened one that still has the label is
+    # deployed again. A pull request closed without the label has nothing left
+    # to destroy: removing the label already did it.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'deploy preview'))
+        || (github.event.action == 'unlabeled' && github.event.label.name == 'deploy preview'))
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     steps:
