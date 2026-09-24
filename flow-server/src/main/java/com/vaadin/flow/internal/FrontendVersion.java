@@ -30,6 +30,11 @@ import java.util.regex.Pattern;
 public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {
 
+    private static final Pattern NPM_ALIAS = Pattern.compile(
+            "^npm:((?:@[^/@\\s]+/)?[^/@\\s]+)@([~^]?\\d+(?:\\.\\d+){0,2}(?:-[0-9A-Za-z.-]+)?)$");
+
+    private static final Pattern VERSION_SEPARATOR = Pattern.compile("[.-]");
+
     /**
      * Parses the buildIdentifier to String + Integer. For instance beta1
      * returns 'beta' and '1'
@@ -45,9 +50,6 @@ public class FrontendVersion
     private final String version;
 
     private final String aliasTarget;
-
-    private static final Pattern NPM_ALIAS = Pattern.compile(
-            "^npm:((?:@[^/@\\s]+/)?[^/@\\s]+)@([~^]?\\d+(?:\\.\\d+){0,2}(?:-[0-9A-Za-z.-]+)?)$");
 
     /**
      * Major version number. For example 6 in 6.2.0.
@@ -173,7 +175,7 @@ public class FrontendVersion
                 : version.trim();
         this.version = aliasTarget == null ? numericVersion : originalVersion;
 
-        final String[] digits = numericVersion.split("[-.]", 4);
+        final String[] digits = VERSION_SEPARATOR.split(numericVersion, 4);
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
