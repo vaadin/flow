@@ -102,16 +102,7 @@ class JavaScriptBootstrapUITest {
     @Tag(Tag.H1)
     public static class DirtyChild extends Component
             implements BeforeLeaveObserver {
-        @Override
-        public void beforeLeave(BeforeLeaveEvent event) {
-            event.postpone();
-        }
-    }
-
-    @Route("postponing")
-    @Tag(Tag.DIV)
-    public static class Postponing extends Component
-            implements BeforeLeaveObserver {
+        // What the postponed leave hands out, for a case that decides it
         static ContinueNavigationAction action;
 
         @Override
@@ -208,8 +199,6 @@ class JavaScriptBootstrapUITest {
                 Clean.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("dirty",
                 Dirty.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("postponing",
-                Postponing.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
 
@@ -399,16 +388,16 @@ class JavaScriptBootstrapUITest {
         // over, so each way out of a postponed one has to answer - and answer
         // the right way round
         for (boolean proceed : new boolean[] { true, false }) {
-            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/postponing",
-                    "", "", null, ""));
+            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/dirty", "",
+                    "", null, ""));
             ui.leaveNavigation(new BrowserLeaveNavigationEvent(ui, true,
                     "/client-view", ""));
             dumpServerConnectedCalls();
 
             if (proceed) {
-                Postponing.action.proceed();
+                DirtyChild.action.proceed();
             } else {
-                Postponing.action.cancel();
+                DirtyChild.action.cancel();
             }
 
             assertEquals(List.of(!proceed), dumpServerConnectedCalls(),
