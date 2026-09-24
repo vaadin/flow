@@ -326,19 +326,49 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * {@code @Execute(phase = PACKAGE)} and forks the packaging itself, so no
      * phase is named here. Naming one would build the WAR twice.
      * <p>
+     * That holds for a single-module project alone, and
+     * {@link MavenGoalRuntime#invocation} says so: a goal's fork runs the
+     * lifecycle of the application's own module, so in a reactor a sibling
+     * module would stop at whatever phase the command line names, and one
+     * stopped at {@code compile} reaches the WAR as a directory rather than a
+     * jar.
+     * <p>
      * {@code javaHome} defaults to {@code ${java.home}}, so the server runs on
      * the JVM Maven runs on, and the JDK chosen for the application - a JBR,
      * and with it enhanced class redefinition - carries over unasked.
+     * <p>
+     * {@code wildfly.skip} with {@code <skip>false</skip>} forced back on top
+     * of it is how the goal is kept to the application's own module, the same
+     * inversion Cargo and both Payaras need and for the same reason: a goal
+     * named on a Maven command line runs on <em>every</em> project in the
+     * reactor, and the loop names one with {@code -pl :app -am}. Jetty's mojo
+     * supports {@code war} packaging alone and skips anything else;
+     * {@code RunMojo} does not look at the packaging at all. It builds the
+     * deployment's file name from {@code ${project.build.finalName}} and the
+     * project's own packaging and fails outright when no such file exists, so
+     * the reactor root ends the build with "The deployment
+     * 'target/&lt;root&gt;-&lt;version&gt;.pom' could not be found" before any
+     * server has started. A single-module project never shows it.
+     * <p>
+     * Only {@code run} is switched off. The {@code provision} goal an EAP
+     * project binds to its own build reads {@code wildfly.provision.skip}
+     * instead, so a server is still provisioned where one is asked for.
      */
     private static ServerPlugin wildfly() {
         return new ServerPlugin("wildfly", "org.wildfly.plugins",
                 "wildfly-maven-plugin", "run", "", "wildfly.javaOpts", false,
-                false, false, false, Map.of(),
-                List.of(new Competing("javaOpts", List.of(),
-                        "the agents the loop needs would be dropped, and every "
-                                + "apply would restart instead of hot reloading",
-                        "remove <javaOpts>; the dev loop needs that parameter "
-                                + "for its agents")),
+                false, false, false, Map.of("wildfly.skip", "true"),
+                List.of(new Competing("skip", List.of("false"),
+                        "the run goal would start a server for every module in "
+                                + "the reactor, or fail on the first one whose "
+                                + "packaging builds no deployment",
+                        "remove <skip>, or set it to false"),
+                        new Competing("javaOpts", List.of(),
+                                "the agents the loop needs would be dropped, "
+                                        + "and every apply would restart "
+                                        + "instead of hot reloading",
+                                "remove <javaOpts>; the dev loop needs that "
+                                        + "parameter for its agents")),
                 WILDFLY_SERVING);
     }
 
@@ -761,12 +791,13 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * the reactor, and the loop names one with {@code -pl :app -am} so that a
      * sibling module builds in the same session. Jetty's mojo supports
      * {@code war} packaging alone and skips the rest, so it never noticed;
-     * Cargo, Payara Server and Payara Micro all do notice. Measured against
-     * this repository's own multi-module fixture, {@code payara-micro:start}
-     * ran first on the reactor root, started a Payara Micro there, reported
-     * {@code Deployed 0 archive(s)} and blocked the reactor before the
-     * application module was ever built - the same shape Cargo failed in, and
-     * the reason this is a property of the table rather than of one entry.
+     * Cargo, Payara Server, Payara Micro and WildFly all do notice. Measured
+     * against this repository's own multi-module fixture,
+     * {@code payara-micro:start} ran first on the reactor root, started a
+     * Payara Micro there, reported {@code Deployed 0 archive(s)} and blocked
+     * the reactor before the application module was ever built - the same shape
+     * Cargo failed in, and the reason this is a property of the table rather
+     * than of one entry.
      * <p>
      * Read off {@link #competing} rather than stored, because the two halves
      * are already there: the {@code skip} the goal properties switch on, and

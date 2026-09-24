@@ -103,9 +103,15 @@ final class MavenGoalRuntime implements AppRuntime {
         // for it beyond the compile a multi-module reactor already needs. A
         // container that deploys a packaged WAR needs that WAR to exist, and
         // names the phase that makes one.
+        // An entry whose own goal forks the packaging names no phase, but that
+        // fork covers the application's module alone - a sibling stops at the
+        // phase named here. At `compile` it has no jar, and maven-war-plugin
+        // writes its target/classes directory into WEB-INF/lib under the jar's
+        // name: an empty entry, and the sibling's classes missing at runtime.
+        // So a forked container names `package` either way.
         String phase = plugin.phase();
         if (phase.isBlank() && reactor.isMultiModule()) {
-            phase = "compile";
+            phase = plugin.embedded() ? "compile" : "package";
         }
         if (!phase.isBlank()) {
             command.add(phase);
