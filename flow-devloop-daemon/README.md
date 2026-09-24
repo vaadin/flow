@@ -344,6 +344,7 @@ the model:
 
 ```
   mvnw ... -Dmaven.ext.class.path=<daemon jar>
+       -Dvaadin.devloop.ext.module=<the application module's artifactId>
        -Dvaadin.devloop.ext.property.cargo.jvmargs="<agents, -XX:...> <settings>"
        package org.codehaus.cargo:cargo-maven3-plugin:<version>:run
 ```
@@ -769,6 +770,16 @@ puts its own jar on `maven.ext.class.path` and `DevLoopBuildExtension` edits
 the effective model in memory before any mojo runs; nothing is written to the
 project, and the override is announced in the app log. From an exploded build
 directory there is no jar to point Maven at, and it can only warn.
+
+The application's module is named alongside the plugin, in
+`vaadin.devloop.ext.module`, and the rewrite is applied there and nowhere else.
+The model the extension edits is the *effective* one, so a plugin a reactor
+parent declares belongs to every module that inherits it — and the entries that
+are switched off across the reactor and forced back on with `<skip>false</skip>`
+(Cargo, WildFly, both Payaras) would be switched back on in the reactor root as
+well, which is the failure the skip exists to prevent. It is the same
+`artifactId` that `-pl :<app>` selects; with no module named, nothing is
+rewritten and the extension says so.
 
 **The build's class loaders are in the application's JVM**, so a second copy of
 every class the Vaadin Maven plugin scans is live in it. That loader is kept

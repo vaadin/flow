@@ -59,6 +59,10 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * extension also sets project properties for the run, named one at a time by
  * {@link #PROPERTY_PREFIX}.
  * <p>
+ * Both are applied to the one module the daemon names in
+ * {@link #MODULE_PROPERTY} and to no other; see there for why an inherited
+ * plugin makes that scope load-bearing rather than tidy.
+ * <p>
  * This class lives in the daemon's jar because that jar's path is the one thing
  * the daemon always knows - it is already its own {@code -javaagent} - so
  * putting the extension anywhere else would mean a second artifact to resolve
@@ -71,6 +75,28 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
 
     /** {@code groupId:artifactId} of the plugin to reconfigure. */
     public static final String PLUGIN_PROPERTY = "vaadin.devloop.ext.plugin";
+
+    /**
+     * {@code artifactId} of the module the daemon runs that plugin in.
+     * <p>
+     * Everything the extension forces is applied to that module and to no
+     * other, and the reason is that {@code getBuildPlugins} is the
+     * <em>effective</em> model: a plugin a reactor parent declares is in every
+     * module that inherits it, the reactor root among them. Reconfiguring each
+     * one would undo the very thing the reconfiguration is for - Cargo, WildFly
+     * and both Payaras are switched off across the reactor by a
+     * {@code -D<name>.skip=true} and switched back on for the application by a
+     * forced {@code <skip>false</skip>}, so a forced {@code false} everywhere
+     * would start a server in the reactor root, or fail there on a packaging
+     * that builds no deployment, before the build ever reached the
+     * application's own module.
+     * <p>
+     * The artifactId alone, because that is what the daemon already names the
+     * module with: the run is {@code -pl :<artifactId> -am}, so a reactor in
+     * which two modules answered to it is one Maven could not have been asked
+     * to run this goal in to begin with.
+     */
+    public static final String MODULE_PROPERTY = "vaadin.devloop.ext.module";
 
     /**
      * What to force on it, as {@code element=value} pairs separated by
@@ -273,9 +299,21 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
                 : session.getSystemProperties().getProperty(name);
     }
 
+    @SuppressWarnings("java:S106")
     private void reconfigure(MavenSession session) {
         String coordinates = property(session, PLUGIN_PROPERTY);
         if (coordinates == null || coordinates.isBlank()) {
+            return;
+        }
+        String module = property(session, MODULE_PROPERTY);
+        if (module == null || module.isBlank()) {
+            // Never fatal, for the reason afterProjectsRead gives: a run whose
+            // plugin keeps the pom's configuration is a degraded run, which
+            // the daemon warns about, while one that reconfigured every module
+            // in the reactor could fail before the application had started.
+            System.out.println("[vaadin-dev] no application module was named, "
+                    + "so the server plugin's configuration is left as the "
+                    + "project wrote it");
             return;
         }
         String force = property(session, FORCE_PROPERTY);
@@ -291,6 +329,12 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         String groupId = coordinates.substring(0, colon);
         String artifactId = coordinates.substring(colon + 1);
         for (MavenProject project : session.getProjects()) {
+            if (!module.equals(project.getArtifactId())) {
+                // Any other module in the reactor has the plugin by
+                // inheritance alone, and is exactly where the goal has to stay
+                // switched off.
+                continue;
+            }
             for (Plugin plugin : project.getBuildPlugins()) {
                 if (groupId.equals(plugin.getGroupId())
                         && artifactId.equals(plugin.getArtifactId())) {
