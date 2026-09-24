@@ -173,28 +173,6 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>webdrivermanager</id>
-      <activation>
-        <property>
-          <name>webdriver.chrome.driver</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <configuration>
-                <systemPropertyVariables>
-                  <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
-                </systemPropertyVariables>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
   </profiles>
 
 </project>
