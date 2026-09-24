@@ -147,8 +147,7 @@ public class RouteScopedContext extends AbstractContext {
                     .getExtendedClientDetails();
             RouteStorageKey key = new RouteStorageKey(owner, getUIStoreId(ui));
             if (details.getWindowName() == null) {
-                ui.getPage().retrieveExtendedClientDetails(
-                        det -> relocate(ui, key));
+                details.refresh(det -> relocate(ui, key));
             }
             return key;
         }

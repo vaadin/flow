@@ -381,6 +381,7 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
                 "resourceOutputDirectory");
     }
 
+    @Deprecated(since = "24.8", forRemoval = true)
     @Override
     public File webpackOutputDirectory() {
         return frontendOutputDirectory();

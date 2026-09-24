@@ -310,11 +310,10 @@ public class VaadinQuarkusNativeProcessor {
                 .builder()
                 .includeGlobs("META-INF/VAADIN/**", "com/vaadin/**",
                         "vaadin-i18n/**", "META-INF/frontend/FlowShortcut.js",
-                        "META-INF/frontend/FlowWebPush.js")
-                .includePatterns("org/atmosphere/util/version\\.properties")
-                .includePatterns(
-                        "META-INF/maven/com.vaadin/vaadin-core/pom\\.properties",
-                        "vaadin-featureflags\\.properties")
+                        "META-INF/frontend/FlowWebPush.js",
+                        "org/atmosphere/util/version.properties",
+                        "META-INF/maven/com.vaadin/vaadin-core/pom.properties",
+                        "vaadin-featureflags.properties")
                 .build());
 
         runtimeInitializedPackage
