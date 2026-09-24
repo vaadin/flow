@@ -46,6 +46,13 @@ import java.util.regex.Pattern;
  * differ in the shape of their channel is the argument for the table: neither
  * is a class, and neither is a special case anywhere else in the daemon.
  * <p>
+ * Open Liberty then cost one entry and one more field, and that one is worth
+ * knowing about because it is the first channel that is not a single value at
+ * all: {@code liberty.jvm.<key>} carries one flag, and the plugin writes each
+ * such property as its own line of the server's generated {@code jvm.options}.
+ * {@link #perPropertyFlags} is what says the flags are handed over one
+ * {@code -D} each rather than whitespace-separated in one.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param name
@@ -83,6 +90,13 @@ import java.util.regex.Pattern;
  *            {@code List<String>}. True only for a channel of that shape, and
  *            what {@link MavenGoalRuntime} answers by moving a comma-bearing
  *            flag into a JVM argument file
+ * @param perPropertyFlags
+ *            whether that property carries one flag rather than all of them,
+ *            its name being a prefix an index is appended to so that each flag
+ *            travels in a {@code -D} of its own. True only for a channel of
+ *            that shape, which is Liberty's: every {@code liberty.jvm.*}
+ *            property becomes one line of the server's generated
+ *            {@code jvm.options}
  * @param goalProperties
  *            properties passed on the Maven command line to keep the server in
  *            the build's own JVM and its rescanner switched off
@@ -95,8 +109,8 @@ import java.util.regex.Pattern;
 record ServerPlugin(String name, String groupId, String artifactId, String goal,
         String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
         boolean shellEscapedFlags, boolean commaSplitFlags,
-        Map<String, String> goalProperties, List<Competing> competing,
-        Pattern serving) {
+        boolean perPropertyFlags, Map<String, String> goalProperties,
+        List<Competing> competing, Pattern serving) {
 
     /**
      * Where a Jetty connector announces the port it bound.
@@ -140,6 +154,29 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static final Pattern TOMEE_SERVING = Pattern.compile(
             "Starting ProtocolHandler \\[\"http-(?:[^\"-]*+-)*+(\\d++)\"\\]");
+
+    /**
+     * Where Liberty announces the application it deployed.
+     * <p>
+     * {@code CWWKT0016I: Web application available (default_host):
+     * http://host:9080/ctx/}, logged once the application is installed and
+     * reachable - a stronger signal than a bound socket, and the same reasoning
+     * Payara Server's entry gives at greater length.
+     * <p>
+     * Anchored on the message <em>id</em> and on the URL rather than on the
+     * words between them, which is where this entry departs from WildFly's and
+     * TomEE's. Liberty ships translated message catalogues and logs in the
+     * JVM's own locale, so the text between the two is not dependable; the id
+     * and the URL the message is built from are. Requiring the {@code ://} is
+     * also what keeps {@code CWWKF0011I}, the server-ready line that carries no
+     * port at all, from answering for it.
+     * <p>
+     * One such line is logged per application, so a server with more than one
+     * deployed is read off the first - which is the right answer either way,
+     * every application on a Liberty server sharing its HTTP endpoint.
+     */
+    private static final Pattern LIBERTY_SERVING = Pattern
+            .compile("CWWKT0016I:.*?https?://[^\\s:/]*+:(\\d++)");
 
     /**
      * Where Cargo announces the port the container it started is listening on.
@@ -222,7 +259,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     static final List<ServerPlugin> KNOWN = List.of(jetty("ee10"),
             jetty("ee11"), wildfly(), tomee(), payara(), payaraMicro(),
-            cargo());
+            liberty(), cargo());
 
     /**
      * A configuration value the dev loop needs to hold but cannot set.
@@ -260,7 +297,8 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin jetty(String ee) {
         return new ServerPlugin("jetty-" + ee, "org.eclipse.jetty." + ee,
                 "jetty-" + ee + "-maven-plugin", "run", "", "", false, false,
-                false, Map.of("jetty.deployMode", "EMBED", "jetty.scan", "0"),
+                false, false,
+                Map.of("jetty.deployMode", "EMBED", "jetty.scan", "0"),
                 List.of(new Competing("deployMode", List.of("EMBED"),
                         "the application would be a grandchild of the daemon, "
                                 + "so its exit code would be lost and stopping "
@@ -295,7 +333,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin wildfly() {
         return new ServerPlugin("wildfly", "org.wildfly.plugins",
                 "wildfly-maven-plugin", "run", "", "wildfly.javaOpts", false,
-                false, false, Map.of(),
+                false, false, false, Map.of(),
                 List.of(new Competing("javaOpts", List.of(),
                         "the agents the loop needs would be dropped, and every "
                                 + "apply would restart instead of hot reloading",
@@ -333,7 +371,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin tomee() {
         return new ServerPlugin("tomee", "org.apache.tomee.maven",
                 "tomee-maven-plugin", "run", "package", "tomee-plugin.args",
-                false, true, false, Map.of(),
+                false, true, false, false, Map.of(),
                 List.of(new Competing("reloadOnUpdate", List.of("false"),
                         "the plugin would redeploy the webapp whenever its "
                                 + "synchronization copied a class, competing "
@@ -409,7 +447,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin payara() {
         return new ServerPlugin("payara", "fish.payara.maven.plugins",
                 "payara-server-maven-plugin", "start", "package",
-                "payara.javaCommandLineOptions", false, false, true,
+                "payara.javaCommandLineOptions", false, false, true, false,
                 Map.of("skip", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the start goal would run on every module in the "
@@ -484,7 +522,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin payaraMicro() {
         return new ServerPlugin("payara-micro", "fish.payara.maven.plugins",
                 "payara-micro-maven-plugin", "start", "package", "exec.args",
-                false, false, false,
+                false, false, false, false,
                 Map.of("payara.skip", "true", "payara.deploy.war", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the start goal would run on every module in the "
@@ -515,6 +553,95 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
                                         + "when a change goes live",
                                 "set <liveReload>false</liveReload>")),
                 PAYARA_MICRO_SERVING);
+    }
+
+    /**
+     * Open Liberty's Maven plugin.
+     * <p>
+     * A fork, like the four entries above it: {@code embedded} defaults to
+     * {@code false}, so {@code liberty:run} starts the server as a process of
+     * its own and blocks on it. It declares no {@code @Execute} and still needs
+     * no phase, which is a combination none of the others has -
+     * {@code RunServerMojo} runs {@code resources}, {@code compiler:compile}
+     * and, for a WAR it is to package, {@code war:war} itself. Naming
+     * {@code package} would only build the WAR twice.
+     * <p>
+     * It is also the one forked container that keeps itself to the
+     * application's own module unasked: the mojo reads the session's
+     * {@code ProjectDependencyGraph}, runs the server on the farthest
+     * downstream project alone, merely compiles the rest and skips {@code pom}
+     * packaging outright. So none of the switch-the-goal-off-and-force-it-back
+     * machinery Cargo and both Payaras need appears here.
+     * <p>
+     * The JVM it runs on is Maven's: the plugin sets {@code JAVA_HOME} for the
+     * server only when a Maven toolchain names one, and otherwise the process
+     * inherits the environment Maven was started with - where the daemon has
+     * already put the JDK {@link Jvm} chose. The JBR carries over unasked, as
+     * it does for WildFly and Cargo.
+     * <p>
+     * The channel is {@code liberty.jvm.<key>}, and it is a shape none of the
+     * others has. Every Maven project <em>or system</em> property with that
+     * prefix becomes one line of the server's generated {@code jvm.options}, so
+     * a {@code -D} on Maven's command line does reach the server's JVM - but
+     * each property carries one flag rather than all of them, which is what
+     * {@link #perPropertyFlags} says and what
+     * {@code MavenGoalRuntime.flagProperties} answers.
+     * <p>
+     * Two properties of that channel matter. A line is taken whole, so a comma
+     * in it divides nothing and a backslash escapes nothing - hence neither
+     * {@link #commaSplitFlags} nor {@link #shellEscapedFlags}. And the
+     * properties are read out of a {@code Properties}, whose iteration order is
+     * unspecified, so the lines may be written in any order at all: that is a
+     * second and sharper reason for {@code MavenGoalRuntime.singleToken} to
+     * fold a module option onto its value, WildFly's sorting being only the
+     * first.
+     * <p>
+     * A pom cannot take the channel away, which puts Liberty with the Payaras
+     * rather than with WildFly and TomEE: the generated file overwrites any
+     * {@code jvm.options} the project supplies, and {@code writeJvmOptions}
+     * appends a pom's own {@code <jvmOptions>} <em>after</em> the Maven
+     * properties rather than instead of them.
+     * <p>
+     * {@code looseApplication} is forced off, and that is the load-bearing
+     * setting here. Liberty's default deploys a loose-application XML pointing
+     * straight at {@code target/classes}, and Liberty's own
+     * {@code applicationMonitor} defaults to {@code updateTrigger="polled"} -
+     * so the server would restart the application under every apply, which is
+     * the competing rebuilder {@code jetty.scan} and TomEE's
+     * {@code reloadOnUpdate} are switched off for. That one cannot be switched
+     * off from the pom at all: it lives in the project's {@code server.xml},
+     * where nothing in this table can see it. A packaged WAR does not change
+     * between restarts, so the monitor has nothing to react to and the loop is
+     * in sole charge without the project having to write anything. What it
+     * costs is what every other forked container already costs - a class the
+     * application has not loaded yet reads its pre-edit bytes from the deployed
+     * copy until the next restart.
+     * <p>
+     * {@code embedded} is listed as competing but not passed as a {@code -D}:
+     * {@code false} is already the default, and the property is generic enough
+     * that setting it over the whole reactor would be worse than the warning. A
+     * pom that turned it on would run the server in Maven's own JVM, where the
+     * {@code jvm.options} just written is never read and the agents would be
+     * dropped in silence.
+     */
+    private static ServerPlugin liberty() {
+        return new ServerPlugin("liberty", "io.openliberty.tools",
+                "liberty-maven-plugin", "run", "", "liberty.jvm.devloop", false,
+                false, false, true, Map.of("looseApplication", "false"),
+                List.of(new Competing("looseApplication", List.of("false"),
+                        "Liberty's own application monitor polls the deployed "
+                                + "application and would restart it whenever a "
+                                + "class under target/classes changed, "
+                                + "competing with every apply",
+                        "set <looseApplication>false</looseApplication>"),
+                        new Competing("embedded", List.of("false"),
+                                "the server would run in Maven's own JVM, "
+                                        + "where the jvm.options carrying the "
+                                        + "loop's agents is never read, so "
+                                        + "every apply would restart instead "
+                                        + "of hot reloading",
+                                "remove <embedded>, or set it to false")),
+                LIBERTY_SERVING);
     }
 
     /**
@@ -606,7 +733,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin cargo() {
         return new ServerPlugin("cargo", "org.codehaus.cargo",
                 "cargo-maven3-plugin", "run", "package", "cargo.jvmargs", true,
-                false, false, Map.of("cargo.maven.skip", "true"),
+                false, false, false, Map.of("cargo.maven.skip", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the run goal would start a container for every module "
                                 + "in the reactor, or fail on the first one "

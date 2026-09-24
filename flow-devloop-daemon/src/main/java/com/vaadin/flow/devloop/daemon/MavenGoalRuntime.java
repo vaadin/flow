@@ -43,14 +43,14 @@ import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
  * then Maven's JVM, so the agents and the JVM flags travel in
  * {@code MAVEN_OPTS} and the JDK choice travels in {@code JAVA_HOME}.
  * <p>
- * WildFly, TomEE and Cargo offer no such mode: each starts the server as a
- * process of its own, so the application is a grandchild. Stopping one is still
- * reliable, because {@link AppProcess} ends a launch descendants-first; what is
- * lost is the application's own exit code, since the code the daemon waits on
- * is Maven's. For those the agents, the JVM flags and the settings the
- * application reads all travel in the plugin's own parameter - see
- * {@link #forkedJvmFlags} - because neither Maven's command line nor its
- * environment reaches a JVM that Maven forked.
+ * WildFly, TomEE, both Payaras, Liberty and Cargo offer no such mode: each
+ * starts the server as a process of its own, so the application is a
+ * grandchild. Stopping one is still reliable, because {@link AppProcess} ends a
+ * launch descendants-first; what is lost is the application's own exit code,
+ * since the code the daemon waits on is Maven's. For those the agents, the JVM
+ * flags and the settings the application reads all travel in the plugin's own
+ * parameter - see {@link #forkedJvmFlags} - because neither Maven's command
+ * line nor its environment reaches a JVM that Maven forked.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -121,7 +121,7 @@ final class MavenGoalRuntime implements AppRuntime {
             // space.
             command.addAll(systemProperties);
         } else {
-            command.add(forkedJvmFlags(jvmFlags, systemProperties));
+            command.addAll(forkedJvmFlags(jvmFlags, systemProperties));
         }
 
         writeHotswapAgentProperties(project);
@@ -167,7 +167,7 @@ final class MavenGoalRuntime implements AppRuntime {
     }
 
     /**
-     * Everything a forked server's JVM must start with, as one {@code -D}.
+     * Everything a forked server's JVM must start with, as {@code -D} settings.
      * <p>
      * Neither channel the embedded case uses reaches a forked server:
      * {@code MAVEN_OPTS} starts Maven, and a {@code -D} on Maven's command line
@@ -176,13 +176,17 @@ final class MavenGoalRuntime implements AppRuntime {
      * the plugin's own parameter, which is the one thing a forked server hands
      * on to the process it starts.
      * <p>
-     * Joined with spaces, because that is how all three plugins take it:
-     * WildFly's {@code setJavaOpts} splits the value on whitespace, TomEE
-     * parses {@code args} the way a shell would, and Cargo runs its own copy of
-     * Ant's {@code translateCommandline} over it. A value with a space in it is
-     * therefore as unsplittable here as in {@code MAVEN_OPTS}. The flags are
-     * already reported by {@code Launch}; the settings are not, and only reach
-     * this channel for a forked server, so they are checked here.
+     * Joined with spaces and passed as one setting, because that is how most of
+     * those plugins take it: WildFly's {@code setJavaOpts} splits the value on
+     * whitespace, TomEE parses {@code args} the way a shell would, and Cargo
+     * runs its own copy of Ant's {@code translateCommandline} over it. Liberty
+     * is the exception - its channel carries one flag per property, so there
+     * the same flags go out as one setting each; see {@link #flagProperties}.
+     * Either way a value with a space in it is as unsplittable as in
+     * {@code MAVEN_OPTS}, a {@code jvm.options} line being split on whitespace
+     * too. The flags are already reported by {@code Launch}; the settings are
+     * not, and only reach this channel for a forked server, so they are checked
+     * here.
      * <p>
      * The name on the left of the {@code =} is the plugin's own parameter for a
      * plugin that exposes one, and otherwise a request to the build extension
@@ -193,13 +197,11 @@ final class MavenGoalRuntime implements AppRuntime {
      *            the flags the loop needs the application JVM to start with
      * @param systemProperties
      *            the {@code -D} settings the application reads
-     * @return the single argument carrying them
+     * @return the arguments carrying them, one for most channels
      */
-    private String forkedJvmFlags(List<String> jvmFlags,
+    private List<String> forkedJvmFlags(List<String> jvmFlags,
             List<String> systemProperties) throws IOException {
-        unsplittable(systemProperties, plugin.artifactId() + " splits "
-                + plugin.jvmFlagsProperty() + " on whitespace")
-                .forEach(log::line);
+        unsplittable(systemProperties, splitter()).forEach(log::line);
         List<String> forked = new ArrayList<>(jvmFlags);
         forked.addAll(systemProperties);
         List<String> tokens = singleToken(forked);
@@ -210,7 +212,61 @@ final class MavenGoalRuntime implements AppRuntime {
             tokens = tokens.stream().map(MavenGoalRuntime::escapeBackslashes)
                     .toList();
         }
-        return "-D" + flagsSetting() + "=" + String.join(" ", tokens);
+        if (plugin.perPropertyFlags()) {
+            return flagProperties(flagsSetting(), tokens);
+        }
+        return List.of("-D" + flagsSetting() + "=" + String.join(" ", tokens));
+    }
+
+    /**
+     * One {@code -D} per flag, for a channel that carries a single flag in each
+     * property.
+     * <p>
+     * Liberty's shape, and the reason {@link #forkedJvmFlags} returns a list
+     * rather than one argument. Every Maven property named
+     * {@code liberty.jvm.<key>} becomes one line of the server's generated
+     * {@code jvm.options}, so the flags cannot be joined - a line holding all
+     * of them would reach the JVM as a single argument. The key only has to
+     * make the names distinct, so it is the flag's position, which also makes
+     * the launch line the daemon logs read in the order the flags were composed
+     * in.
+     * <p>
+     * The order they are <em>written</em> in is not this method's to decide:
+     * the plugin reads them out of a {@code Properties}, whose iteration order
+     * is unspecified. That is why {@link #singleToken} has already folded every
+     * module option onto its value by the time this is reached.
+     *
+     * @param prefix
+     *            the property name to append each flag's position to
+     * @param tokens
+     *            the flags, one per property
+     * @return the settings to pass, one per flag
+     */
+    static List<String> flagProperties(String prefix, List<String> tokens) {
+        List<String> settings = new ArrayList<>();
+        for (int index = 0; index < tokens.size(); index++) {
+            settings.add("-D" + prefix + index + "=" + tokens.get(index));
+        }
+        return settings;
+    }
+
+    /**
+     * What splits this plugin's channel, as a clause reading "and ...".
+     * <p>
+     * Naming {@code MAVEN_OPTS} would send a reader looking in the wrong place
+     * for a forked server, and so would naming the property for a channel that
+     * is not one value but a file the plugin writes from many.
+     *
+     * @return the clause for {@link #unsplittable}
+     */
+    private String splitter() {
+        if (plugin.perPropertyFlags()) {
+            return plugin.artifactId() + " writes " + plugin.jvmFlagsProperty()
+                    + "* into the server's jvm.options, whose lines its "
+                    + "launcher splits on whitespace";
+        }
+        return plugin.artifactId() + " splits " + plugin.jvmFlagsProperty()
+                + " on whitespace";
     }
 
     /**
@@ -256,9 +312,7 @@ final class MavenGoalRuntime implements AppRuntime {
         List<String> reduced = withCommasInArgFile(tokens, file);
         // The path travels in the same whitespace-separated value as the rest,
         // so a space in it breaks exactly as a space in any other flag does.
-        unsplittable(List.of("@" + file), plugin.artifactId() + " splits "
-                + plugin.jvmFlagsProperty() + " on whitespace")
-                .forEach(log::line);
+        unsplittable(List.of("@" + file), splitter()).forEach(log::line);
         log.line(affected + " flag(s) with a comma in them go to " + file
                 + ", which " + plugin.jvmFlagsProperty()
                 + " cannot carry intact");
