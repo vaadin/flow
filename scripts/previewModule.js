@@ -5,10 +5,11 @@
  *
  * Only one test module is deployed per pull request. flow-tests/test-default
  * is preferred: it is deployed whenever the pull request touches it, and also
- * when the pull request touches no deployable test module at all (a change to
- * the framework itself). Otherwise the deployable test module with the most
- * changed files is deployed, ties broken by name so the choice is stable
- * between pushes.
+ * when the pull request touches no deployable test module at all, as for a
+ * change to the framework itself. Otherwise the deployable test module with
+ * the most changed files is deployed, ties broken by name so the choice is
+ * stable between pushes. Which modules are deployable is read from their
+ * poms, see deployment().
  *
  * Links are generated to the views the pull request adds or changes, and to
  * the ones the integration tests it adds or changes open, resolved the way
@@ -35,59 +36,55 @@ const DEFAULT_MODULE = 'flow-tests/test-default';
 // comment instead of adding another
 const COMMENT_MARKER = '<!-- flow-pr-preview -->';
 
-// Test modules that run as a single application with the default build, so
-// the preview image can build and start them like the ITs do. Modules left
-// out need a special setup (several wars, an application server, a custom
-// frontend build) or only test the development tooling itself (live reload,
-// redeployment, the dev loop), which a deployed preview cannot exercise.
-const DEPLOYABLE_MODULES = {
-  'flow-tests/test-default': { contextPath: '' },
-  'flow-tests/test-root-context': { contextPath: '' },
-  'flow-tests/test-ccdm': { contextPath: '/foo' },
-  'flow-tests/test-ccdm-flow-navigation': { contextPath: '/context-path' },
-  'flow-tests/test-client-queue': { contextPath: '' },
-  'flow-tests/test-custom-route-registry': { contextPath: '' },
-  'flow-tests/test-eager-bootstrap': { contextPath: '' },
-  'flow-tests/test-legacy-frontend': { contextPath: '' },
-  'flow-tests/test-misc': { contextPath: '' },
-  'flow-tests/test-no-theme': { contextPath: '' },
-  'flow-tests/test-pwa': { contextPath: '' },
-  'flow-tests/test-pwa-disabled-offline': { contextPath: '' },
-  'flow-tests/test-push-startup': { contextPath: '' },
-  'flow-tests/test-react-adapter': { contextPath: '' },
-  'flow-tests/test-router-custom-context': {
-    contextPath: '/custom-context-router'
-  },
-  'flow-tests/test-servlet': { contextPath: '' },
-  'flow-tests/test-tailwindcss': { contextPath: '' },
-  'flow-tests/test-theme-no-polymer': { contextPath: '' },
-  'flow-tests/test-themes': { contextPath: '' },
-  'flow-tests/test-vaadin-router': { contextPath: '' },
-  'flow-tests/test-webpush': { contextPath: '' }
-};
-
 // Caps the links listed in the comment, which a large refactoring could
 // otherwise grow past what anyone reads.
 const MAX_LINKS = 20;
 
-/** The deployable test module a repository path belongs to, or null. */
-function moduleOf(file) {
-  return Object.keys(DEPLOYABLE_MODULES).find((module) => file.startsWith(module + '/')) || null;
+/**
+ * How a test module is deployed, `{ module, contextPath }`, or null if it
+ * can't be. Read from the poms, so that a new test module is picked up
+ * without listing it anywhere: it has to be a module of flow-tests, which
+ * puts it in the reactor the workflow builds, and a single application the
+ * preview image can start - a war that its ITs run on Jetty, at a context
+ * path the pom spells out, or a Spring Boot application. Anything else
+ * (several wars, an application server, an aggregator) is left to the ITs.
+ */
+function deployment(module, readSource) {
+  const name = module.slice('flow-tests/'.length);
+  const parent = readSource('flow-tests/pom.xml') || '';
+  const pom = readSource(`${module}/pom.xml`);
+  if (!pom || !parent.includes(`<module>${name}</module>`)) {
+    return null;
+  }
+  if (/<packaging>war<\/packaging>/.test(pom) && /<artifactId>jetty(-ee\d+)?-maven-plugin<\/artifactId>/.test(pom)) {
+    const contextPath = (pom.match(/<contextPath>([^<]*)<\/contextPath>/) || [null, ''])[1].trim();
+    // A context path set from a property differs between the builds of the
+    // module, and the plain one is not necessarily what the ITs expect
+    return contextPath.includes('${') ? null : { module, contextPath: contextPath.replace(/\/+$/, '') };
+  }
+  if (/<artifactId>spring-boot-maven-plugin<\/artifactId>/.test(pom)) {
+    return { module, contextPath: '' };
+  }
+  return null;
 }
 
-/** The test module to deploy for the given changed files. */
-function selectModule(changedFiles) {
+/**
+ * The deployment for the given changed files: test-default, unless they
+ * change only other deployable test modules.
+ */
+function selectDeployment(changedFiles, readSource) {
   const counts = new Map();
   for (const file of changedFiles) {
-    const module = moduleOf(file);
+    const module = file.match(/^flow-tests\/[^/]+(?=\/)/)?.[0];
     if (module) {
       counts.set(module, (counts.get(module) || 0) + 1);
     }
   }
-  if (counts.size === 0 || counts.has(DEFAULT_MODULE)) {
-    return DEFAULT_MODULE;
-  }
-  return [...counts.entries()].sort(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b))[0][0];
+  const candidates = [...counts.entries()]
+    .filter(([module]) => deployment(module, readSource))
+    .sort(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b));
+  const module = candidates.length === 0 || counts.has(DEFAULT_MODULE) ? DEFAULT_MODULE : candidates[0][0];
+  return deployment(module, readSource) || { module: DEFAULT_MODULE, contextPath: '' };
 }
 
 /** Fully qualified class name of a Java source file, or null. */
@@ -157,8 +154,7 @@ function viewOfTest(testFile, source) {
  * Paths, including the context path, of the views worth linking to: the ones
  * the pull request changes and the ones its changed integration tests open.
  */
-function viewPaths(module, changedFiles, readSource) {
-  const { contextPath } = DEPLOYABLE_MODULES[module];
+function viewPaths({ module, contextPath }, changedFiles, readSource) {
   const viewServlet = (readSource(`${module}/pom.xml`) || '').includes('<artifactId>flow-test-common</artifactId>');
   const paths = new Set();
   const addView = (view) => {
@@ -189,8 +185,8 @@ function viewPaths(module, changedFiles, readSource) {
 }
 
 /** The pull request comment body. */
-function comment(module, paths, previewUrl) {
-  const root = previewUrl + DEPLOYABLE_MODULES[module].contextPath + '/';
+function comment({ module, contextPath }, paths, previewUrl) {
+  const root = previewUrl + contextPath + '/';
   const lines = [COMMENT_MARKER, '', '## 🚀 Preview deployment', '', `Deployed \`${module}\`: ${root}`];
   if (paths.length > 0) {
     lines.push('', 'Views changed in this pull request:', '');
@@ -219,10 +215,10 @@ function main() {
     .filter(Boolean);
   const readSource = (file) => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null);
 
-  const module = selectModule(changedFiles);
-  const paths = viewPaths(module, changedFiles, readSource);
-  fs.writeFileSync('preview-comment.md', comment(module, paths, previewUrl));
-  const output = `module=${module}\n` + `context-path=${DEPLOYABLE_MODULES[module].contextPath}\n`;
+  const selected = selectDeployment(changedFiles, readSource);
+  const paths = viewPaths(selected, changedFiles, readSource);
+  fs.writeFileSync('preview-comment.md', comment(selected, paths, previewUrl));
+  const output = `module=${selected.module}\n` + `context-path=${selected.contextPath}\n`;
   if (process.env.GITHUB_OUTPUT) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, output);
   } else {
@@ -234,4 +230,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { selectModule, viewPaths, comment, DEFAULT_MODULE };
+module.exports = { selectDeployment, viewPaths, comment, DEFAULT_MODULE };

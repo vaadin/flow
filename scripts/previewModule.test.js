@@ -1,57 +1,80 @@
 // Run with: node --test scripts/previewModule.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const { selectModule, viewPaths, comment } = require('./previewModule');
+const { selectDeployment, viewPaths, comment } = require('./previewModule');
 
 const DEFAULT = 'flow-tests/test-default';
 const MAIN = 'src/main/java/com/vaadin/flow/uitest/ui';
 const TEST = 'src/test/java/com/vaadin/flow/uitest/ui';
 
+// A flow-tests reactor with one module of each kind the poms tell apart
+const POMS = {
+  'flow-tests/pom.xml': ['test-default', 'test-misc', 'test-themes', 'test-ccdm', 'test-encoded', 'test-common']
+    .map((name) => `<module>${name}</module>`)
+    .join('\n'),
+  [`${DEFAULT}/pom.xml`]: '<packaging>jar</packaging>\n<artifactId>spring-boot-maven-plugin</artifactId>',
+  'flow-tests/test-misc/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>',
+  'flow-tests/test-themes/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>',
+  'flow-tests/test-ccdm/pom.xml':
+    '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>\n' +
+    '<contextPath>/foo</contextPath>',
+  'flow-tests/test-encoded/pom.xml':
+    '<packaging>war</packaging>\n<artifactId>jetty-maven-plugin</artifactId>\n' +
+    '<contextPath>${jettyContextPath}</contextPath>',
+  'flow-tests/test-common/pom.xml': '<packaging>jar</packaging>',
+  // A war that is not a module of flow-tests, so not in the built reactor
+  'flow-tests/test-orphan/pom.xml': '<packaging>war</packaging>\n<artifactId>jetty-ee10-maven-plugin</artifactId>'
+};
+const select = (files) => selectDeployment(files, (file) => POMS[file] ?? null);
+
 test('framework-only change deploys test-default', () => {
-  assert.strictEqual(selectModule(['flow-server/src/main/java/com/vaadin/flow/Foo.java']), DEFAULT);
+  assert.deepStrictEqual(select(['flow-server/src/main/java/com/vaadin/flow/Foo.java']), {
+    module: DEFAULT,
+    contextPath: ''
+  });
 });
 
 test('test-default wins over other changed test modules', () => {
   assert.strictEqual(
-    selectModule([
-      `flow-tests/test-root-context/${MAIN}/AView.java`,
-      `flow-tests/test-root-context/${MAIN}/BView.java`,
+    select([
+      `flow-tests/test-misc/${MAIN}/AView.java`,
+      `flow-tests/test-misc/${MAIN}/BView.java`,
       `${DEFAULT}/src/main/java/com/vaadin/flow/test/CView.java`
-    ]),
+    ]).module,
     DEFAULT
   );
 });
 
-test('only another test module changed deploys that module', () => {
-  assert.strictEqual(
-    selectModule(['flow-server/src/main/java/com/vaadin/flow/Foo.java', `flow-tests/test-misc/${MAIN}/AView.java`]),
-    'flow-tests/test-misc'
+test('only another test module changed deploys it at its context path', () => {
+  assert.deepStrictEqual(
+    select(['flow-server/src/main/java/com/vaadin/flow/Foo.java', `flow-tests/test-ccdm/${MAIN}/AView.java`]),
+    { module: 'flow-tests/test-ccdm', contextPath: '/foo' }
   );
 });
 
 test('several test modules: most changed files, then name', () => {
   assert.strictEqual(
-    selectModule([
+    select([
       `flow-tests/test-misc/${MAIN}/AView.java`,
       `flow-tests/test-themes/${MAIN}/AView.java`,
       `flow-tests/test-themes/${TEST}/AIT.java`
-    ]),
+    ]).module,
     'flow-tests/test-themes'
   );
   assert.strictEqual(
-    selectModule([`flow-tests/test-themes/${MAIN}/AView.java`, `flow-tests/test-misc/${MAIN}/AView.java`]),
+    select([`flow-tests/test-themes/${MAIN}/AView.java`, `flow-tests/test-misc/${MAIN}/AView.java`]).module,
     'flow-tests/test-misc'
   );
 });
 
-test('non-deployable test modules fall back to test-default', () => {
+test('modules the preview cannot start fall back to test-default', () => {
   assert.strictEqual(
-    selectModule([
-      'flow-tests/test-live-reload/src/main/java/Foo.java',
-      'flow-tests/test-common/src/main/java/Bar.java',
-      // Prefix of a deployable module name, but a different module
-      'flow-tests/test-pwa-disabled-offline-x/pom.xml'
-    ]),
+    select([
+      `flow-tests/test-common/${MAIN}/Foo.java`,
+      `flow-tests/test-encoded/${MAIN}/AView.java`,
+      `flow-tests/test-orphan/${MAIN}/AView.java`,
+      'flow-tests/pom.xml'
+    ]).module,
     DEFAULT
   );
 });
@@ -73,7 +96,7 @@ test('links to views by @Route outside ViewTestServlet modules', () => {
   };
   assert.deepStrictEqual(
     viewPaths(
-      module,
+      { module, contextPath: '' },
       [
         `${module}/src/test/java/com/vaadin/flow/test/other/TargetIT.java`,
         `${module}/${pkg}/ConstantView.java`,
@@ -104,7 +127,7 @@ test('links to views by class name in ViewTestServlet modules', () => {
   };
   assert.deepStrictEqual(
     viewPaths(
-      module,
+      { module, contextPath: '/foo' },
       [`${module}/${TEST}/RoutedIT.java`, `${module}/${TEST}/PathIT.java`, `${module}/${TEST}/ComputedPathIT.java`],
       (file) => sources[file] ?? null
     ),
@@ -113,7 +136,7 @@ test('links to views by class name in ViewTestServlet modules', () => {
 });
 
 test('comment names the module and links to its root and views', () => {
-  const body = comment('flow-tests/test-ccdm', ['/foo/view/a.B'], 'https://p.fly.dev');
+  const body = comment({ module: 'flow-tests/test-ccdm', contextPath: '/foo' }, ['/foo/view/a.B'], 'https://p.fly.dev');
   assert.match(body, /Deployed `flow-tests\/test-ccdm`: https:\/\/p\.fly\.dev\/foo\//);
   assert.match(body, /- https:\/\/p\.fly\.dev\/foo\/view\/a\.B/);
 });
