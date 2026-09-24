@@ -64,13 +64,30 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v22.17.0";
+    public static final String DEFAULT_NODE_VERSION = "v22.23.2";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.9.2";
+    public static final String DEFAULT_NPM_VERSION = "10.9.8";
 
-    public static final String DEFAULT_PNPM_VERSION = "8.6.11";
+    /**
+     * The pnpm version Flow installs when the project does not use a global
+     * pnpm. It is pinned rather than taken as the newest release, because the
+     * newest releases changed which packages end up reachable from the project
+     * root and the frontend build then fails to resolve them. It also reads the
+     * lockfiles that recent pnpm releases write, so a project that has already
+     * built keeps working.
+     */
+    public static final String DEFAULT_PNPM_VERSION = "10.34.5";
+
+    /**
+     * The npm package specifier Flow hands to npx when it installs pnpm.
+     *
+     * @return the pnpm package with the version Flow pins
+     */
+    static String getPnpmPackageSpecifier() {
+        return "pnpm@" + DEFAULT_PNPM_VERSION;
+    }
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -994,15 +1011,14 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install latest pnpm version as the minimum node requirement is
-            // now at nodejs 16.14.0
-            // see https://pnpm.io/installation#compatibility
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm");
+                    "--quiet", getPnpmPackageSpecifier());
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
-                        "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
-                                + SUPPORTED_PNPM_VERSION.getFullVersion());
+                        "Failed to run " + getPnpmPackageSpecifier()
+                                + " through npx. Check that the machine can "
+                                + "reach the npm registry, or configure the "
+                                + "build to use a globally installed pnpm.");
             }
         }
         return pnpmCommand;

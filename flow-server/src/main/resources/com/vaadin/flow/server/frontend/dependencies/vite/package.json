@@ -11,10 +11,12 @@
   "devDependencies": {
     "vite": "6.4.1",
     "@vitejs/plugin-react": "4.5.2",
+    "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.5.2",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.1.4",
     "@babel/preset-react": "7.27.1",
+    "@babel/types": "7.27.7",
     "rollup-plugin-visualizer": "5.14.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.11.0",
