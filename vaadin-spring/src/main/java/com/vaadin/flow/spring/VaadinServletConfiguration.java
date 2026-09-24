@@ -233,7 +233,7 @@ public class VaadinServletConfiguration {
      *
      * @return a forwarding controller
      */
-    @Bean
+    @Bean(name = "vaadinForwardingController")
     public Controller vaadinForwardingController() {
         ServletForwardingController controller = new ServletForwardingController();
         controller.setServletName(

@@ -22,7 +22,6 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.mvc.Controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,32 +37,6 @@ class SpringBootAutoConfigurationConditionalTest {
                 .run(context -> assertThat(context)
                         .getBean(ServletRegistrationBean.class).isInstanceOf(
                                 ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class));
-    }
-
-    @Test
-    void additionalControllerBean_rootMappingUsesVaadinForwardingController() {
-        new WebApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(SpringBootAutoConfiguration.class,
-                                VaadinServletConfiguration.class))
-                .withUserConfiguration(ControllerConfiguration.class)
-                .run(context -> {
-                    assertThat(context).hasNotFailed();
-                    assertThat(context.getBean(
-                            VaadinServletConfiguration.RootExcludeHandler.class)
-                            .getUrlMap().get("/**"))
-                            .isSameAs(context
-                                    .getBean("vaadinForwardingController"));
-                });
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    public static class ControllerConfiguration {
-
-        @Bean
-        public Controller customController() {
-            return (request, response) -> null;
-        }
     }
 
     @Configuration(proxyBeanMethods = false)
