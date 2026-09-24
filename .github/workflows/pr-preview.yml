@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   # Only the newest commit is worth deploying, and closing the pull request
@@ -46,6 +45,10 @@ jobs:
     if: github.event.action != 'closed' && !github.event.pull_request.head.repo.fork
     timeout-minutes: 45
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # Only for the comment, which the cleanup job does not post
+      pull-requests: write
     steps:
       - name: Check configuration
         env:
