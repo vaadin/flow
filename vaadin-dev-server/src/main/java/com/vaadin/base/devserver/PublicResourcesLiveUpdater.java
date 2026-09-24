@@ -200,15 +200,24 @@ public class PublicResourcesLiveUpdater implements Closeable {
     /**
      * The bundler to resolve this push against.
      * <p>
-     * This project's own roots first, so a file that exists in both resolves to
-     * the application's copy - the same precedence the classpath gives it.
+     * This project's own source roots first, so a file that exists in both
+     * resolves to the application's copy - the same precedence the classpath
+     * gives it. The {@code jar-resources} folder goes last, though: a build
+     * with a reactor sibling's {@code target/classes} on its classpath copies
+     * that sibling's public resources there, and the copy is a snapshot that
+     * would otherwise shadow the sibling's own, edited, source.
      */
     private PublicStyleSheetBundler bundlerFor(List<File> extraRoots) {
         if (extraRoots.isEmpty()) {
             return bundler;
         }
-        List<File> combined = new ArrayList<>(roots);
+        List<File> combined = new ArrayList<>();
+        roots.stream().filter(
+                root -> !PublicStyleSheetBundler.isCopiedJarResourcesRoot(root))
+                .forEach(combined::add);
         extraRoots.stream().filter(root -> !combined.contains(root))
+                .forEach(combined::add);
+        roots.stream().filter(root -> !combined.contains(root))
                 .forEach(combined::add);
         return PublicStyleSheetBundler.forResourceLocations(combined);
     }
