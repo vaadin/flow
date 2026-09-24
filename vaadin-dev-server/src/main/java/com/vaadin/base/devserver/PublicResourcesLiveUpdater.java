@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,14 +212,12 @@ public class PublicResourcesLiveUpdater implements Closeable {
         if (extraRoots.isEmpty()) {
             return bundler;
         }
-        List<File> combined = new ArrayList<>();
-        roots.stream().filter(
+        List<File> sourceRoots = roots.stream().filter(
                 root -> !PublicStyleSheetBundler.isCopiedJarResourcesRoot(root))
-                .forEach(combined::add);
-        extraRoots.stream().filter(root -> !combined.contains(root))
-                .forEach(combined::add);
-        roots.stream().filter(root -> !combined.contains(root))
-                .forEach(combined::add);
+                .toList();
+        // Ordered and distinct, so each root keeps its first position.
+        List<File> combined = Stream.of(sourceRoots, extraRoots, roots)
+                .flatMap(List::stream).distinct().toList();
         return PublicStyleSheetBundler.forResourceLocations(combined);
     }
 
