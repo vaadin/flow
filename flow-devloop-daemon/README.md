@@ -127,7 +127,22 @@ and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
-`<module>/target/devloop/cp.txt`.
+`<module>/target/devloop/cp.txt` and `model.properties`.
+
+**`model.properties` is how the daemon knows what starts the application**,
+written by `DevLoopBuildExtension` as each resolve reads the projects and read
+back by `EffectiveModel`. Whether a profile is active, and what a module
+inherits from a parent outside the checkout, are Maven's to decide and cannot
+be worked out from the poms — so they are not guessed at: the extension writes
+down the effective `<build><plugins>`, the packaging and the active profiles,
+and that is the only source `Reactor.plugin` reads. A `<pluginManagement>`
+version is absent from it by construction, and so is a plugin from a profile
+that did not run. It is believed only while it is newer than the poms it was
+built from, and `compose` resolves before it asks, so the answer is always
+there by the time anything is launched. Its path is relative to the module and
+never to `${project.build.directory}`: the daemon has no Maven to ask where a
+project moved that to, so a moved build directory would leave the file written
+in one place and looked for in another.
 
 The HotswapAgent jar is *not* here: it is cached per machine under
 `~/.vaadin/devloop/`, pinned by version and verified against a SHA-256, so one
@@ -205,6 +220,7 @@ properties files, where the rest of the team can see it (see
 | Property | Default | Effect |
 |---|---|---|
 | `vaadin.dev.mainClass` | discovered | the class to launch (see `MainClass`) |
+| `vaadin.dev.runtime` | discovered | how the app is started: `main`, `jetty-ee10`, `jetty-ee11` (see `AppRuntime`) |
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
@@ -216,6 +232,47 @@ properties files, where the rest of the team can see it (see
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+## How the application is started
+
+`AppRuntime` decides which of two shapes this project is.
+
+**An entry point** — a Spring Boot class, or any `public static void main` — is
+launched directly as `java -cp <classpath> <MainClass>` (`MainClassRuntime`).
+
+**A WAR** has no entry point, and its servlet container is a build plugin rather
+than a dependency, so only the build knows how to start it. `MavenGoalRuntime`
+asks it to:
+
+```
+MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -DdisabledPlugins>
+JAVA_HOME=<the JDK Jvm chose>
+  mvnw -B -ntp -nsu [-f <root>/pom.xml -pl :<app> -am] -Dmaven.test.skip=true
+       [compile] <plugin>:<version>:run -Djetty.deployMode=EMBED -Djetty.scan=0
+       <-D settings the application reads>
+```
+
+Four parts are load-bearing. `EMBED` (the plugin's default) runs the server in
+the build's JVM, so the application is still a **direct child** of the daemon -
+a fork would lose its exit code and orphan it. `MAVEN_OPTS` and `JAVA_HOME` are
+the only way in, because the plugin's own `jvmArgs` applies to a fork only.
+`-pl :app -am compile` is what makes a sibling module resolve to its
+`target/classes` rather than an installed jar. And `-Dmaven.test.skip=true`
+keeps the goal's forked `test-compile` from building tests the loop has no use
+for.
+
+The `-D` settings split in two: JVM flags can only be given to a starting JVM,
+so they go in the environment, while settings the application reads go on the
+Maven command line, where each is its own argument and a value with a space in
+it survives. `disabledPlugins` is the exception - HotswapAgent reads it in
+`premain`, before Maven sets anything - so it has to be a real JVM flag.
+
+Which runtime a project gets, in order: `-Dvaadin.dev.runtime`; an entry point
+the build *names* (a jar manifest `Start-Class`, or `@SpringBootApplication`);
+a server plugin from `ServerPlugin.KNOWN`; then any `public static void main`.
+The order matters both ways - a Spring Boot app can be packaged as a WAR, and a
+WAR can carry an unrelated main method. Another container later is an entry in
+that table.
 
 ## Which JVM runs the app
 
@@ -252,281 +309,281 @@ the requirement wins; failing that, the closest JDK, and the log says what that 
 
 ## The frontend leg
 
-`Frontend` owns the whole of it: where the frontend folder is, and what a change under it
-means. It lives there and not in `TransactionEngine` for a practical reason — `Frontend` is
-constructible from a directory and a string, so every rule is unit-testable, while
-`TransactionEngine` needs a `Launch` and a running app and is only reachable from an IT.
-What is left in `TransactionEngine` is plumbing.
+`Frontend` owns it: where the frontend folder is, and what a change under it
+means. The rules live there rather than in `TransactionEngine` because
+`Frontend` is constructible from a directory and a string, so every one of them
+is unit-testable.
 
-**Finding the folder.** The zero-dependency rule means `FrontendUtils` is out of reach, so the
-precedence is `-Dvaadin.dev.frontend`, then `-Dvaadin.frontend.folder` (which `Launch` already
-forwards to the app, so the two agree by construction), then `frontendFolder` out of
-`target/classes/META-INF/VAADIN/config/flow-build-info.json`, then `src/main/frontend` and
-`frontend/`. The token is preferred over the convention because Flow wrote it after resolving
-both the legacy fallback and the plugin's `<frontendDirectory>`, which convention-matching
-cannot see — and it is readable before the app has ever started, because `prepare-frontend`
-runs at `process-resources` and the daemon's own resolve runs `compile`. Only
-`frontendFolder` is read from that file: it also records `frontend.hotdeploy`, and that one
-describes the *build*, not the mode the app is running in, which can be set in
-`application.properties` the build never read.
+**Finding the folder**, in order: `-Dvaadin.dev.frontend`,
+`-Dvaadin.frontend.folder` (which `Launch` forwards to the app, so the two
+agree by construction), `frontendFolder` out of
+`target/classes/META-INF/VAADIN/config/flow-build-info.json`, then
+`src/main/frontend` and `frontend/`. The build-info token beats the convention
+because Flow wrote it after resolving both the legacy fallback and the plugin's
+`<frontendDirectory>`, and it is readable before the app has ever started.
+Nothing else is read from that file: it also records `frontend.hotdeploy`,
+which describes the build rather than the mode the app is running in.
 
-**Deciding what to do.** Which mode the app is in is the whole question, and only the app can
+**Which mode the app is in decides everything else**, and only the app can
 answer it, so `FRONTEND` is asked once per apply and reused by every leg.
 
-- **Vite mode** — Vite's root *is* the frontend folder, so it applied the edit when the file
-  was saved and the daemon cannot suspend it the way it suspends Flow's own watchers. Nothing
-  is pushed and nothing escalates; `apply` names the files and says Vite did it. Pretending
-  otherwise would be the one thing this daemon exists not to do — which is also why a Vite
-  compile error is a `FAILED` apply and not a footnote under `Stable`. That error exists only
-  in the app log: the push succeeded, the app is running and no class failed to redefine, so
-  every other signal the daemon has says the change is live while the browser shows a red
-  overlay. `devServerFailure` is the rule, reading both the settled window and the errors
-  carried across from save time, and it does not escalate — a restart cannot compile a broken
-  module.
-- **Dev-bundle mode** — theme CSS is pushed through `ThemeLiveUpdater.push`, the same call
-  Flow's own watcher makes on save (and which the connector suspends, as it does
-  `PublicResourcesLiveUpdater`). `index.html` and theme assets are already served from the
-  folder, so they need only a reload. Everything else is in the bundle, and only a Vite build
-  can fold it in — so `apply` restarts, and the app's own startup path
-  (`NodeTasks` → `BundleValidationUtil.needsBuild` → `TaskRunDevBundleBuild`) rebuilds. The
+- **Vite mode** — Vite's root *is* the frontend folder, so it applied the edit
+  on save and the daemon cannot suspend it as it suspends Flow's own watchers.
+  Nothing is pushed and nothing escalates; `apply` names the files and says
+  Vite did it. A Vite compile error is therefore a `FAILED` apply rather than a
+  footnote under `Stable` (`devServerFailure`), and does not escalate — a
+  restart cannot compile a broken module.
+- **Dev-bundle mode** — theme CSS goes through `ThemeLiveUpdater.push`, the
+  call Flow's own watcher makes on save; `index.html` and theme assets are
+  served from the folder and need only a reload. Everything else is in the
+  bundle, so `apply` restarts and the startup path (`NodeTasks` →
+  `BundleValidationUtil.needsBuild` → `TaskRunDevBundleBuild`) rebuilds it. The
   restart is the mechanism here, not a fallback.
 
-**A frontend annotation on a Java class escalates too.** `@JsModule`, `@JavaScript`,
-`@CssImport`, `@NpmPackage` and `@Theme` are read by the build, not at runtime: they end up in
-`generated-flow-imports.js`, which `TaskUpdateImports` writes during startup, and the browser
-reaches them through a bundle chunk keyed by class name. The redefine succeeds and the class
-really does carry the new annotation, so nothing looks wrong - but the import is in no chunk the
-client can load. `REDEFINE` therefore reports `frontendImports=<classes>`, compared before and
-after through `AnnotationReader` (a `Class` discards its cached annotation data when
-`classRedefinedCount` moves, so the comparison is real), and `blockedReason` escalates. Note
-that no file under the frontend folder need have changed for this - which is why the frontend
-tree alone cannot catch it. `@StyleSheet` is deliberately excluded: those are live already
-through `StyleSheetHotswapper`, and restarting for one would be a regression.
+**A frontend annotation on a Java class escalates too.** `@JsModule`,
+`@JavaScript`, `@CssImport`, `@NpmPackage` and `@Theme` are read by the build
+into `generated-flow-imports.js`, and the browser reaches them through a bundle
+chunk keyed by class name — so the redefine succeeds, the class really does
+carry the new annotation, and the import is in no chunk the client can load.
+`REDEFINE` reports `frontendImports=<classes>`, compared before and after
+through `AnnotationReader`, and `blockedReason` escalates. No file under the
+frontend folder need have changed, which is why the tree alone cannot catch it.
+`@StyleSheet` is excluded: those are already live through
+`StyleSheetHotswapper`.
 
-**Every non-theme frontend file is treated as bundled**, whether or not anything imports it.
-The daemon cannot read `stats.json` — that would be a dependency — so it cannot know, and
-over-restarting is the honest error to make: the alternative is reporting a change live when
-it is not.
+**Every non-theme frontend file is treated as bundled**, imported or not:
+reading `stats.json` would be a dependency, so over-restarting is the honest
+error to make. Deletions are tracked here and not for Java sources,
+`frontendNotified` being a complete inventory, and a removed module the bundle
+still imports breaks the next build. The baseline is re-seeded on every
+registration (`seedFromDisk` → `seedFrontend`), without which the file that
+caused a restart would be offered again after it, for ever.
 
-Deletions are tracked for frontend files and not for Java sources, because `frontendNotified`
-is a complete inventory and there is no artifact to clean up. A removed module the bundle
-still imports breaks the next build, so it has to escalate.
+**A Vite compile error is found by asking the dev server, not by overhearing
+it.** Vite compiles a module when something *requests* it, so the log holds a
+report only if a browser happened to re-fetch while the daemon was watching —
+and a page already showing the overlay does not re-fetch at all. So
+`FRONTEND_CHECK <paths>` has the connector fetch each changed file through
+`DevModeHandler.prepareConnection`, on the base Vite was launched with
+(`ViteHandler.getPathToVaadin()`, so a context path works too). A `500` is a
+refusal carrying Vite's own message, a `200` means the module compiles, and a
+`404` means the path is not served at all and counts for nothing. Paths are
+joined with the unit separator (`U+001F`), a comma being legal in a Unix path.
+Each probe makes Vite compile on demand, so a timeout or a reset comes back
+*inconclusive* rather than as "served" and the verdict falls back to the log.
 
-The baseline is re-seeded on every registration (`seedFromDisk` → `seedFrontend`), and that is
-load-bearing rather than tidiness: a bundled edit escalates to a restart, the restart
-re-registers, and without the re-seed the same file would be offered again after the restart
-that already folded it into the bundle — restarting the app for ever.
+A `200` answers only what it was asked — can this module be *served*. Types are
+stripped without being checked, so a type error, or a stray `>` in JSX that oxc
+tolerates and `tsc` does not, comes back `200` and is still wrong. That failure
+exists only in the log, where `vite-plugin-checker` writes it (`CHECKER_ERROR`,
+told apart from `DEV_SERVER_ERROR` for exactly this reason) within about a
+hundred milliseconds of the *save* — which is why its errors are carried across
+`Watch.mark()` like the dev server's. Fatal only when the change-set touched a
+frontend file, so a Java-only edit is never failed by a type error somebody
+else left behind.
 
-**A Vite compile error is found by asking the dev server, not by overhearing it.** Vite compiles
-a module when something *requests* it - not on save, and not when `apply` runs. So the log holds a
-report only if a browser happened to re-fetch while the daemon was watching, and a page already
-showing the error overlay does not re-fetch at all; every other signal then says the change went
-fine, and the apply reports a clean `Stable` over a file the page cannot load. So the frontend leg
-asks. `FRONTEND_CHECK <paths>` has the connector fetch each changed file through
-`DevModeHandler.prepareConnection`, on the base Vite was actually launched with
-(`ViteHandler.getPathToVaadin()`, so an app on a context path works too). A `500` is a refusal and
-carries Vite's own message; a `200` means the module compiles. Only `500` counts - a `404` means
-the dev server does not serve that path at all. The paths are joined with the unit separator
-(`U+001F`) rather than a comma, which is a legal character in a Unix path. The check is bounded:
-each probe makes Vite compile on demand, and a cold or restarting dev server is slow, so the
-connector answers well inside the daemon's 30s wait and reports a timeout, a reset, or a
-request that could not be answered as *inconclusive* rather than as "served" - an unanswered
-request is not proof the module compiles, so the verdict falls back to the log instead of
-letting a swallowed error read as a `200`.
+The answer is authoritative **in both directions**: a refusal fails the apply
+(`Transaction.devServerRefusal`) and leaves the file unmarked, so the next
+apply asks again instead of reporting `no changes` over a module that never
+compiled, and a clean answer *overrules the log*
+(`Transaction.devServerAsked`), because the report still sitting there
+describes the version before the fix. The overruling is scoped to transform
+errors, the only ones the fetch answers for. The log stays the fallback for a
+dev server that cannot be asked, and it takes finding: Flow pipes Vite's output
+through `DevServerOutputTracker` at `INFO`, so `AppLog` matches those openers
+separately (`DEV_SERVER_ERROR`), and errors logged on save are carried across
+`Watch.mark()` (`Transaction.carriedLogErrors`).
 
-A `200` is not the whole story, though, because it answers only the question it was asked: can
-this module be *served*. Types are stripped without being checked, so a type error - and a
-stray `>` in JSX, which oxc tolerates and `tsc` does not - comes back `200`, runs, and is still
-wrong. That failure exists only in the log, where `vite-plugin-checker` writes it
-(`CHECKER_ERROR`, told apart from `DEV_SERVER_ERROR` for exactly this reason). It type-checks
-within about a hundred milliseconds of the *save*, so its report is already there by the time
-anyone runs `apply` - which is why the checker's errors are carried across `Watch.mark()` like
-the dev server's, and why not carrying them let a broken `.tsx` through as `Stable`. Fatal only
-when the change-set touched a frontend file, so a Java-only edit is never failed by a type
-error somebody else left behind.
+Either way the report is compacted to three parts — the opening line, the line
+naming the error, the source position — and **wrapped, not truncated**, the
+excerpt, caret diagram and JavaScript stack being dropped
+(`REPORT_DECORATION`). The parts are joined with a unit separator rather than a
+`|`, which an ASCII excerpt draws as its own gutter; `--json` and the one-line
+reason put ` | ` back. `quote` and `reasonRows` wrap at 100 columns, letting a
+long path overflow a row rather than be cut in half.
 
-The answer is authoritative **in both directions**, which is the point. A refusal fails the apply
-(`Transaction.devServerRefusal`) and leaves the file unmarked, so the next apply asks again rather
-than reporting `no changes` over a module that never compiled. And a clean answer *overrules the
-log* (`Transaction.devServerAsked`): once the file is fixed, the report still in the log describes
-the version before the fix - the daemon's own request for the broken one is among the things that
-put it there - so trusting the log would fail the very apply that repaired the problem. That
-overruling is scoped to transform errors, the only ones the fetch answers for; the checker's
-verdict is read from the log either way. The log stays the whole fallback for a dev server that
-cannot be asked: an app too old for the command, or one
-whose dev server has gone away. It takes finding, because Flow pipes Vite's output through
-`DevServerOutputTracker` at `INFO` - the level says `INFO`, "error" is lower case, and
-`[PARSE_ERROR]` has no word boundary before `ERROR` - so `AppLog` matches those openers separately
-(`DEV_SERVER_ERROR`). An error Vite logged on save is already there when `apply` starts, so
-dev-server errors are carried across `Watch.mark()` when a frontend file actually changed
-(`Transaction.carriedLogErrors`); one logged mid-apply is caught by settling, as in the redefine
-leg.
-
-Either way the report is compacted to three parts and **wrapped, not truncated**. The opening
-line, the line naming the error and the source position are kept; the excerpt, caret diagram and
-JavaScript stack are dropped (`REPORT_DECORATION`), because the excerpt is the developer's own
-code and a caret diagram cannot line up inside an indented summary. `AppLog.report` does this for
-a report that arrives whole from the connector and `Watch` line by line for one read out of the
-log, which is why the connector joins its lines with the separator rather than flattening them to
-spaces. The parts are joined with a unit separator rather than a `|`, because an ASCII excerpt is
-drawn as `1 | export function ...` and splitting on that lost the gutter; it never leaves the
-daemon, as `--json` and the one-line reason both put ` | ` back. `quote` and `reasonRows` then wrap
-at 100 columns, letting a long path overflow a row rather than be cut in half - a compiler message
-is the one output whose tail matters as much as its head, and truncating a refusal at 160
-characters cut off "Unterminated string constant" on a message whose head is an absolute path.
-
-**Vite mode is verified by hand**, because `hotdeploy` is baked into the app JVM from the
-daemon's own system properties and `flow-tests/test-devloop` deliberately shares one
-long-lived daemon; switching modes there means a shutdown, a cold start and a pnpm install.
-The decision logic is covered by `FrontendTest` in both modes. To check it end to end:
+**Vite mode is verified by hand**, because `hotdeploy` is baked into the app
+JVM from the daemon's own system properties and `flow-tests/test-devloop`
+shares one long-lived daemon; the decision logic itself is covered by
+`FrontendTest` in both modes.
 
 ```bash
 cd <app>
 .vaadin/vaadin-dev shutdown
-#   the variable is read only when a daemon is spawned, so a running one
-#   would ignore it - see Knobs
+#   read only when a daemon is spawned, so a running one would ignore it
 VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev start
-#   edit src/main/frontend/<something>.ts
+#   edit src/main/frontend/<something>.ts, then:
 .vaadin/vaadin-dev apply
 #   expect: hmr: N frontend file(s), applied by Vite (dev server up:<port>)
 
-#   then break the same file - a missing brace is enough - and, with nothing
-#   open in a browser, so the log stays silent about it:
+#   break the same file - a missing brace is enough - with nothing open in a
+#   browser, so the log stays silent about it:
 .vaadin/vaadin-dev apply
 #   expect: exit 1, "dev server: <file>: Transform failed ...", and the same
-#   answer again on a repeat apply and after re-saving the file still broken
-#   fix the file
+#   answer on a repeat apply and after re-saving the file still broken
+#   then fix it:
 .vaadin/vaadin-dev apply
 #   expect: exit 0, Stable - the report left in the log must not fail this one
 ```
 
+## Deletions
+
+A walk sees only what is there, so a deletion is found against the fingerprint
+inventory instead; a file created and deleted without a restart in between was
+never seeded, so its output is left for the next build to clear.
+
+**A deleted resource is un-copied** from `target/classes`. A public one then
+gets a `RESOURCES` call with nothing to push, which reloads the page; a startup
+one escalates as an edit to it would.
+
+**A deleted Java source is un-compiled, and then restarted** — a JVM cannot
+un-define a class it has loaded, and removing `Foo.class` and the `Foo$…class`
+files javac named after it is what stops the restart loading them straight
+back. Missed, this is the loudest failure in the change-set: a removed route,
+bean or entity goes on answering out of its stale `.class` under a `no changes`
+exit 0. The deletion stays in the change-set until a restart re-seeds the
+inventory.
+
+## HotswapAgent plugins
+
+`Vaadin`, `Spring`, `SpringBoot` and `Jetty` are disabled
+(`Launch.DISABLED_HOTSWAP_PLUGINS`), and nothing else: the Vaadin one fires a
+competing full page reload, the Spring ones were measured to lose the Spring
+Data repository bean under repeated redefinitions, and Jetty's hooks name
+`org.eclipse.jetty.webapp` and `org.mortbay` classes, which match nothing under
+Jetty 12.
+
+**Disabling has to reach the right class loader**, because HotswapAgent reads
+`hotswap-agent.properties` off the class's *own* loader — so
+`-DdisabledPlugins` never reached a webapp loader inside a build plugin's
+realm. `MavenGoalRuntime` therefore also writes the list into the app's
+`target/classes`, and with it an `extraClasspath` naming the HotswapAgent jar,
+without which that loader cannot see the agent itself; honouring the setting
+also needs `java.base/java.net` and `java.base/jdk.internal.loader` opened. The
+key is `disabledPlugins`, plural and unprefixed; a wrong one is accepted
+silently.
+
+## Under a build-plugin runtime
+
+A WAR runs inside a Maven build rather than beside one, so every restart costs
+a Maven invocation — seconds rather than a fraction, partly paid back because
+the daemon has already compiled into `target/classes`. Three things follow.
+
+**A pom's `<scan>` or `<deployMode>` would beat the dev loop, so the daemon
+rewrites them** — the same extension that records the effective model, in its
+other job. A `<configuration>` value wins over the user property the same
+parameter exposes, so `-Djetty.scan=0` does nothing to the `<scan>2</scan>` a
+generated WAR starter writes, and the plugin was measured redeploying the
+webapp underneath an `apply` that had reported a clean hot swap. The daemon
+puts its own jar on `maven.ext.class.path` and `DevLoopBuildExtension` edits
+the effective model in memory before any mojo runs; nothing is written to the
+project, and the override is announced in the app log. From an exploded build
+directory there is no jar to point Maven at, and it can only warn.
+
+**The build's class loaders are in the application's JVM**, so a second copy of
+every class the Vaadin Maven plugin scans is live in it. That loader is kept
+out of HotswapAgent (`MavenGoalRuntime.extraJvmFlags`), and the connector
+compares a class to its own previous state by `Class` identity rather than by
+name — keyed by name, one copy's "before" met the other's "after". The
+duplicates are still redefined, which is what
+`N duplicate class copy/copies also redefined` reports.
+
+**The daemon does not own the classpath**: the webapp loader is the plugin's to
+assemble, so `Launch.assemble`'s removal of a superseded jar does not apply,
+and a sibling module resolves to `target/classes` only because of the
+`-pl :app -am compile` in the command. JVM flags reach the app through
+`MAVEN_OPTS` alone, which Maven expands unquoted, so a path with a space is
+split by the shell — `MavenGoalRuntime.unsplittable` names the flag at launch
+rather than leaving a JVM that will not start.
+
 ## Known limits
 
-Operational facts a maintainer would otherwise rediscover the hard way. None of
-them is a bug in this module; all of them are why `apply` escalates or qualifies
-its answer rather than claiming success.
+Why `apply` escalates or qualifies its answer rather than claiming success.
+None of them is a bug in this module.
 
-- **JPA entity mappings do not hot-reload**, with or without HotswapAgent.
+### In the running JVM
+
+- **JPA entity mappings do not hot-reload**, with or without HotswapAgent:
   Hibernate's metamodel and schema are fixed at startup. The connector reports
-  the entity classes involved and `apply` refuses to call the change live. That
-  includes a class that is only now being given `@Entity`, and the annotation is
-  read out of the compiled bytes for it rather than off the class once it is
-  loaded: on a JVM with enhanced class redefinition the class is replaced rather
-  than edited in place, and its reflective view is refreshed by HotswapAgent's
-  own cache clearing, which is not ordered against the reply. Measured, that
-  made the answer depend on another thread's timing — the bytes say the same
-  thing on every JVM.
-- **A structural change to a proxied Spring bean must restart.** A method-body
-  change inside a bean is fine — the proxy delegates and the new body runs. A
-  change to the class's *shape* is not: the live proxy was generated against the
-  old one. This includes Spring Data repositories, which are bare interfaces with
-  no annotation to spot them by, so the connector keys on the loaded proxy
+  the entity classes and `apply` refuses to call the change live, reading
+  `@Entity` out of the compiled bytes rather than off the loaded class, whose
+  reflective view HotswapAgent refreshes on a schedule of its own.
+- **A structural change to a proxied Spring bean must restart** — the live
+  proxy was generated against the old shape, though a method-body change is
+  fine. That includes Spring Data repositories, bare interfaces with no
+  annotation to spot them by, so the connector keys on the loaded proxy
   instead.
 - **A bean or an entity the application has never seen must restart too.**
-  Component scanning runs once, at startup, over the classes that existed then,
-  and HA's Spring plugins that would rescan are disabled (below) — so a class
-  that is only now being given `@Component`, `@Service`, `@Repository`,
-  `@Controller`, `@RestController`, `@ControllerAdvice`,
-  `@RestControllerAdvice` or `@Configuration` gets no bean definition, and the
-  first injection point fails with `NoSuchBeanDefinitionException` naming
-  Spring rather than the loop. A brand-new `@Entity` is in exactly the same
-  position against a metamodel and a schema fixed at startup. It is the one
-  escalation with no redefine behind it: the class was never loaded, so there
-  is nothing to swap and every signal read off a loaded class is empty. It
-  takes both sides to say so, and deliberately: `REDEFINE` answers which of
-  the change-set's classes carry a stereotype (`stereotypes=`, read out of the
-  compiled bytes — the same reading `@Entity` already needed), and the
-  daemon's own inventory answers which of them the running application never
-  had. **Asking the app whether it has loaded the class does not work**:
-  HotswapAgent watches the output directory on its own schedule and defines a
-  new class when it sees one, so that answer flips between applies — and a
-  defined class is still not a bean definition. The inventory is re-seeded
-  from disk at every registration, so it does not flip. A stereotype composed
-  through a project's own meta-annotation is the known gap: only the custom
-  annotation is in the class's constant pool, so that one is still a restart
-  to ask for by hand.
+  Component scanning runs once, at startup, and the HotswapAgent plugins that
+  would rescan are disabled (above), so a class only now being given
+  `@Component`, `@Service`, `@Repository`, `@Controller`, `@RestController`,
+  `@ControllerAdvice`, `@RestControllerAdvice` or `@Configuration` gets no bean
+  definition and fails at the first injection point with
+  `NoSuchBeanDefinitionException`; a brand-new `@Entity` is in the same
+  position against a metamodel fixed at startup. Nothing was redefined, so it
+  takes both sides to spot: `REDEFINE` reports which classes carry a stereotype
+  (`stereotypes=`) and the daemon's own inventory which of them the app never
+  had. The known gap is a stereotype composed through a project's own
+  meta-annotation — only the custom annotation is in the constant pool, so that
+  one is a restart to ask for by hand.
 - **Hot-swap coverage differs sharply between stock HotSpot and a JBR.** Only a
   JBR gets `-XX:+AllowEnhancedClassRedefinition`; on stock HotSpot a structural
   change is simply rejected and escalates. A project needing a Java version no
-  installed JBR provides therefore runs on a stock JDK for the whole session —
-  the launch log line says so when it happens.
-- **A sibling module contributing routes, `@JsModule` or `@NpmPackage` needs a
-  restart**, not an `apply`: those are read at startup.
-- **Only resources under a public root can be made live.** `src/main/resources`
-  is split by who reads the file: `META-INF/resources/`, `static/`, `public/`
-  and `resources/` are served from the classpath per request, so the copy into
-  `target/classes` plus a `RESOURCES` push is the whole of the work. Everything
-  else — `application.properties` first among them — was read while the app was
-  starting and is never re-read, so the copy alone would leave the running JVM
-  on the old values. `apply` copies it anyway, to keep the classpath honest, and
-  then escalates to a restart rather than returning `Stable`.
-- **A deleted resource has to be un-copied.** A walk only sees what is there, so
-  the deletion is found against the fingerprint inventory instead — every
-  resource on disk at the last seed is a key in it. `target/classes` is what the
-  application actually reads, so the copy is removed; a public one then gets a
-  `RESOURCES` call of its own, which has nothing to push and therefore reloads
-  the page, and a startup one escalates exactly as an edit to it would. The
-  inventory is also what bounds this: a resource created and deleted without the
-  application restarting in between was never seeded, so its copy is left for
-  the next build to clear.
-- **A deleted Java source has to be un-compiled, and then restarted.** Found the
-  same way a deleted resource is — against the fingerprint inventory, since a
-  walk sees only what is there — and it is the change with the loudest failure
-  mode if it is missed: a removed route, bean or entity goes on answering out of
-  its stale `.class`, and `apply` reports `no changes` with exit 0 over it. The
-  artifact is removed (`Foo.class` and the `Foo$…class` files javac names after
-  it; a second top-level class in the same file is left for the next full
-  build), and then the apply escalates unconditionally — a JVM cannot un-define
-  a class it has loaded, so the type is live until the application starts again,
-  whatever else the change-set carries. Removing the artifact is what stops the
-  restart loading it straight back. Unlike a live resource the deletion is not
-  forgotten when it is acted on: it stays in the change-set until a restart
-  re-seeds the inventory from disk.
+  installed JBR provides runs on a stock JDK for the whole session, and the
+  launch log says so.
+- **A sibling module is in the loop only while the application depends on it**,
+  and its classes then follow the rules above: `@JsModule` and `@NpmPackage`
+  escalate as frontend annotations do anywhere, a never-loaded class as any
+  other new bean or entity would.
+
+### In the in-loop compile
+
 - **An edit that changes what a class promises its callers is not supported.**
-  `Compile` passes only the change-set to javac, so callers nobody edited keep
-  the bytecode they were compiled with. Rename or re-sign a method, move a
-  supertype, or change a `static final` constant, and those callers are stale —
-  a `NoSuchMethodError` at runtime, or for an inlined constant no error at all
-  and the old value — while `apply` reports `Stable`. The restart does not fix
-  it either: it loads the same class files. Recompile with Maven after such an
-  edit. A dependency-aware compile (or a whole-module recompile when the
-  compiled API changes) is the fix, and is not implemented.
-- **Annotation processors are not run.** The compile passes `-proc:none`, so a
-  Lombok-, MapStruct- or Dagger-backed source recompiled here loses every member
-  and every class the processor would have generated, and the redefine or the
-  restart then works from bytecode a normal Maven build would never have
-  produced. Such a project needs `mvn compile` rather than `apply`; honouring
-  the module's `proc` and `annotationProcessorPaths` configuration is not
-  implemented.
+  Only the change-set goes to javac, so callers nobody edited keep the bytecode
+  they were compiled with: rename or re-sign a method, move a supertype, or
+  change a `static final` constant, and they are stale — a `NoSuchMethodError`,
+  or for an inlined constant the old value and no error at all — while `apply`
+  reports `Stable` and the restart loads the same class files. Recompile with
+  Maven; a dependency-aware compile is not implemented.
+- **Annotation processors are not run** (`-proc:none`), so a Lombok-,
+  MapStruct- or Dagger-backed source recompiled here loses every member and
+  every class the processor would have generated, and what runs is bytecode a
+  normal build would never have produced. Such a project needs `mvn compile`
+  rather than `apply`.
 - **The compiler plugin's configuration is not read**, except for the release
-  level (see above). The option list is fixed — `--release`, `-encoding UTF-8`,
-  `-nowarn`, `-proc:none`, `-parameters`, `-g` — so `<compilerArgs>`,
-  `--enable-preview` and `-Werror` are not honoured. `-parameters` and `-g` are
-  passed unconditionally rather than looked up: a normal build has both on (the
-  plugin defaults `<debug>` to true, `spring-boot-starter-parent` sets
-  `<parameters>true</parameters>`), and both live in a parent outside the
-  checkout that the pom reader cannot see. Without `-parameters` a recompiled
-  Spring Data repository throws "for queries with named parameters you need to
-  provide names for method parameters", from code nobody edited.
-- **`target/classes` is shared with Maven, and the daemon writes into it last.**
-  A class newer than its source makes `mvn compile` a no-op, so after a session
-  `mvn verify` tests whatever the in-loop compile did differently — no
-  annotation processing, no project compiler arguments. `mvn clean` is the
-  recovery; compiling into an output directory of the daemon's own is not
-  implemented.
-- **HotswapAgent's `Vaadin`, `Spring` and `SpringBoot` plugins are disabled**
-  (`Launch`, `-DdisabledPlugins=…`). The Vaadin one targets an older package and
-  fires a competing full page reload; the Spring ones were measured to lose the
-  Spring Data repository bean under repeated redefinitions, after which the app
-  throws while the redefine still reported success. The property name is
-  `disabledPlugins`, plural and unprefixed — a wrong name is accepted silently
-  and disables nothing.
+  level. The option list is fixed — `--release`, `-encoding UTF-8`, `-nowarn`,
+  `-proc:none`, `-parameters`, `-g` — so `<compilerArgs>`, `--enable-preview`
+  and `-Werror` are not honoured. The last two are unconditional because a
+  normal build has both on and both live in a parent outside the checkout;
+  without `-parameters` a recompiled Spring Data repository throws about
+  missing parameter names, from code nobody edited.
+- **`target/classes` is shared with Maven, and the daemon writes into it
+  last.** A class newer than its source makes `mvn compile` a no-op, so
+  `mvn verify` after a session tests whatever the in-loop compile did
+  differently. `mvn clean` is the recovery.
+
+### Outside the change-set
+
+- **Only resources under a public root can be made live.**
+  `META-INF/resources/`, `static/`, `public/` and `resources/` are served from
+  the classpath per request, so the copy into `target/classes` plus a
+  `RESOURCES` push is the whole of the work. Everything else —
+  `application.properties` first among them — was read while the app was
+  starting and is never re-read, so `apply` copies it, to keep the classpath
+  honest, and then escalates.
+- **`src/main/webapp` is not watched.** A container serves it off disk, so an
+  edit there is already live but `apply` neither mentions it nor reloads the
+  page, and a `WEB-INF/web.xml` edit needs a `restart` asked for by hand. A
+  modern Vaadin WAR keeps static files under `META-INF/resources`, which is
+  tracked normally.
 
 ## Tests
 
-`src/test/java` covers the pure logic only — `Json`, `Handshake`, `Reactor`
-discovery against pom fixtures, `AppLog` failure-reason extraction,
-`Launch.membership`, `Compile`'s per-module grouping (with a real javac), and
-`MainClass` discovery. The end-to-end loop is tested in
-`flow-tests/test-devloop`, which drives the installed CLI against a real
-application.
+`src/test/java` covers what is decidable without a running application: `Json`,
+`Handshake`, `Reactor` discovery against pom fixtures, `AppRuntime`, `AppLog`,
+`AppProcess`, `Launch.membership`, `Compile`'s per-module grouping (with a real
+javac), `Frontend` in both frontend modes, `Jvm`, `HotswapAgentJar`,
+`MainClass`, and the verdicts `TransactionEngine` reaches without an app. The
+loop itself is tested in `flow-tests/test-devloop`: `test-devloop-spring` for
+an entry point and `test-devloop-jetty` for a WAR under its own build plugin,
+over the shared ITs in `test-devloop-support`.

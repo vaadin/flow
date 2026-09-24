@@ -18,6 +18,19 @@
   </properties>
 
   <build>
+    <resources>
+      <!-- The hand written client sources next to the TypeScript ones. tsc
+           only emits what it compiles, so these are copied as they are. -->
+      <resource>
+        <targetPath>META-INF/frontend</targetPath>
+        <directory>src/main/frontend</directory>
+        <includes>
+          <include>*.js</include>
+          <include>*.d.ts</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -35,17 +48,6 @@
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
           </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <configuration>
-          <typescript>
-            <excludes>
-              <exclude>src/main/frontend/FlowClient.js</exclude>
-            </excludes>
-          </typescript>
         </configuration>
       </plugin>
       <plugin>

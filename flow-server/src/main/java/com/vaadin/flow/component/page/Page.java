@@ -120,16 +120,11 @@ public class Page implements Serializable {
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
-            executeJs("""
-                    document.documentElement.removeAttribute('theme');
-                    document.documentElement.style.colorScheme = '';
-                    """);
+            executeJs(PageJs.class).resetColorScheme();
             getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
         } else {
-            executeJs("""
-                    document.documentElement.setAttribute('theme', $0);
-                    document.documentElement.style.colorScheme = $1;
-                    """, colorScheme.getThemeValue(), colorScheme.getValue());
+            executeJs(PageJs.class).setColorScheme(colorScheme.getThemeValue(),
+                    colorScheme.getValue());
             getExtendedClientDetails().setColorScheme(colorScheme);
         }
     }
@@ -459,7 +454,7 @@ public class Page implements Serializable {
      * Reloads the page in the browser.
      */
     public void reload() {
-        executeJs("window.location.reload();");
+        executeJs(PageJs.class).reload();
     }
 
     /**
@@ -862,7 +857,7 @@ public class Page implements Serializable {
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
                 "Url consumer callback should not be null.");
-        executeJs(LocationJs.class).getHref().then(String.class, urlString -> {
+        executeJs(PageJs.class).getHref().then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
@@ -873,13 +868,13 @@ public class Page implements Serializable {
     }
 
     /**
-     * What the page reads of <code>window.location</code>, as a JavaScript
-     * definition for {@link #executeJs(Class)}: the build collects it into the
-     * bundle, so asking the browser where it is needs no expression and works
-     * under a content security policy without <code>unsafe-eval</code>.
+     * What this page asks of the browser, as a JavaScript definition for
+     * {@link #executeJs(Class)}: the build collects it into the bundle, so none
+     * of it needs an expression and all of it works under a content security
+     * policy without <code>unsafe-eval</code>.
      */
     @JsDefinition
-    interface LocationJs extends Serializable {
+    public interface PageJs extends Serializable {
 
         /**
          * The address the browser is at.
@@ -888,6 +883,44 @@ public class Page implements Serializable {
          */
         @JsExpression("return window.location.href")
         PendingJavaScriptResult getHref();
+
+        /**
+         * Lets the document follow the color scheme the user asked the browser
+         * for.
+         */
+        @JsExpression("""
+                document.documentElement.removeAttribute('theme');
+                document.documentElement.style.colorScheme = '';
+                """)
+        void resetColorScheme();
+
+        /**
+         * Pins the document to a color scheme.
+         *
+         * @param theme
+         *            the theme to set on the document
+         * @param colorScheme
+         *            the color scheme to set on the document
+         */
+        @JsExpression("""
+                document.documentElement.setAttribute('theme', $0);
+                document.documentElement.style.colorScheme = $1;
+                """)
+        void setColorScheme(String theme, String colorScheme);
+
+        /**
+         * Loads the page again.
+         */
+        @JsExpression("window.location.reload();")
+        void reload();
+
+        /**
+         * Reads the direction the document is read in.
+         *
+         * @return the pending direction
+         */
+        @JsExpression("return document.dir")
+        PendingJavaScriptResult readDirection();
     }
 
     /**
@@ -908,7 +941,7 @@ public class Page implements Serializable {
      * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
-        executeJs("return document.dir").then(String.class, dir -> {
+        executeJs(PageJs.class).readDirection().then(String.class, dir -> {
             Direction direction = getDirectionByClientName(dir);
             callback.accept(direction);
         });
