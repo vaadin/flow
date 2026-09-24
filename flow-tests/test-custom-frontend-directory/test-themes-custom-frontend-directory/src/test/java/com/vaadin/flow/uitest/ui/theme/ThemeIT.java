@@ -261,11 +261,7 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertTrue("Font should have been loaded",
-                (boolean) executeScript(
-                        "return document.fonts.check(arguments[0])",
-                        "10px Itim"));
-
+        waitForFont("10px Itim");
     }
 
     @Test
