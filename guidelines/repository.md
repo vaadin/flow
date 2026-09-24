@@ -48,8 +48,9 @@ own classes in `META-INF/jandex.idx`, which is where the Quarkus extension
 reads it from. Modules get one by default; those with no Jandex consumer
 set the `jandex.skip` property to `true` in their `pom.xml`. That covers
 `vaadin-spring` and `vaadin-cdi`, since neither runs under Quarkus, the
-build tooling, and the test modules (`flow-tests` sets it for every
-integration test module).
+build tooling, the modules that package only resources (`flow-push`,
+`flow-client`, `flow-server-production-mode`), and the test modules
+(`flow-tests` sets it for every integration test module).
 
 ## Build plugins
 
