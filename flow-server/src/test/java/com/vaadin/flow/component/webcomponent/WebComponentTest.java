@@ -21,6 +21,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
@@ -31,6 +32,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -56,6 +58,28 @@ class WebComponentTest {
     @Test
     void fireEvent_doesNotThrowOnNullObjectData() {
         webComponent.fireEvent("name", (JsonNode) null);
+    }
+
+    @Test
+    void fireEvent_callsTheDefinitionWithTheNameAndTheOptions() {
+        Element host = spy(new Element("tag"));
+        WebComponent.CustomEventJs events = mock(
+                WebComponent.CustomEventJs.class);
+        doReturn(events).when(host).executeJs(WebComponent.CustomEventJs.class);
+        WebComponent<Component> component = new WebComponent<>(
+                new WebComponentBinding<>(mock(Component.class)), host);
+
+        ObjectNode detail = JacksonUtils.createObjectNode();
+        detail.put("id", 42);
+        component.fireEvent("my-event", detail,
+                new EventOptions(true, true, true));
+
+        ObjectNode expected = JacksonUtils.createObjectNode();
+        expected.put("bubbles", true);
+        expected.put("cancelable", true);
+        expected.put("composed", true);
+        expected.set("detail", detail);
+        verify(events).fireEvent("my-event", expected);
     }
 
     @Test
