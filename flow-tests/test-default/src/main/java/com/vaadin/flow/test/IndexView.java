@@ -37,29 +37,38 @@ import com.vaadin.flow.router.RouterLink;
 @Route("")
 public class IndexView extends Div {
 
-    public static final String ROUTES_ID = "routes";
-
     public IndexView() {
+        getStyle().set("font-family", "sans-serif").setPadding("1em 2em");
+
         UnorderedList routes = new UnorderedList();
-        routes.setId(ROUTES_ID);
+        routes.getStyle().setPadding("0").set("list-style", "none")
+                .set("line-height", "1.8");
         RouteConfiguration.forApplicationScope().getAvailableRoutes().stream()
                 .filter(route -> route.getNavigationTarget() != IndexView.class)
-                .sorted(Comparator.comparing(RouteData::getTemplate))
+                .sorted(Comparator.comparing(
+                        route -> route.getNavigationTarget().getSimpleName()))
                 .map(IndexView::createRouteItem).forEach(routes::add);
         add(new H1("Flow default configuration tests"), routes);
     }
 
     private static ListItem createRouteItem(RouteData route) {
         Class<? extends Component> target = route.getNavigationTarget();
-        String view = " (" + target.getSimpleName() + ")";
         boolean requiresParameters = route.getRouteParameters().values()
                 .stream().anyMatch(parameter -> !parameter.isOptional()
                         && !parameter.isVarargs());
         if (requiresParameters) {
-            return new ListItem(new Span(route.getTemplate() + view));
+            return new ListItem(new Span(target.getSimpleName()),
+                    createPath("/" + route.getTemplate()));
         }
         RouterLink link = new RouterLink(target);
-        link.setText(link.getHref() + view);
-        return new ListItem(link);
+        link.setText(target.getSimpleName());
+        link.getStyle().set("text-decoration", "none");
+        return new ListItem(link, createPath("/" + link.getHref()));
+    }
+
+    private static Span createPath(String path) {
+        Span span = new Span(" (" + path + ")");
+        span.getStyle().setColor("gray").set("font-family", "monospace");
+        return span;
     }
 }
