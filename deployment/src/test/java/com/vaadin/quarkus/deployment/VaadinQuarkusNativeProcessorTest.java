@@ -197,6 +197,27 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testVaadinNativeSupport_registersRuntimeLoadedProperties() {
+        List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
+
+        processor.vaadinNativeSupport(new CombinedIndexBuildItem(index, index),
+                item -> {
+                }, resources::add, item -> {
+                }, item -> {
+                });
+
+        assertTrue(
+                isIncluded(resources, "org/atmosphere/util/version.properties"),
+                "Atmosphere version properties should be included in the image");
+        assertTrue(
+                isIncluded(resources,
+                        "META-INF/maven/com.vaadin/vaadin-core/pom.properties"),
+                "Vaadin version properties should be included in the image");
+        assertTrue(isIncluded(resources, "vaadin-featureflags.properties"),
+                "Feature flags properties should be included in the image");
+    }
+
+    @Test
     void testGetJsDefinitions_onlyAnnotatedInterfaces() throws IOException {
         Indexer indexer = new Indexer();
         indexer.index(new ByteArrayInputStream(
