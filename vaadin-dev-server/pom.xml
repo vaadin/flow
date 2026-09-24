@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jandex.skip>false</jandex.skip>
     <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
@@ -189,10 +190,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -11,7 +11,9 @@
   <name>Flow HTML Components</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <jandex.skip>false</jandex.skip>
+  </properties>
   <dependencies>
 
     <dependency>
@@ -62,10 +64,6 @@
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -12,6 +12,10 @@
   <name>Flow React Component Support</name>
   <description>${project.name}</description>
 
+  <properties>
+    <jandex.skip>false</jandex.skip>
+  </properties>
+
   <dependencies>
     <!-- Project dependencies -->
 
@@ -45,10 +49,6 @@
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

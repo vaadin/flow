@@ -11,6 +11,10 @@
   <name>Flow Data</name>
   <description>${project.name}</description>
 
+  <properties>
+    <jandex.skip>false</jandex.skip>
+  </properties>
+
   <dependencies>
 
     <dependency>
@@ -124,10 +128,6 @@
             <excludedArtifactId>flow-server</excludedArtifactId>
           </excludedArtifactIds>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -12,7 +12,9 @@
   <name>Flow WebPush</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <jandex.skip>false</jandex.skip>
+  </properties>
 
   <dependencies>
     <!-- Project dependencies -->
@@ -101,12 +103,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
   </build>
 
 </project>
