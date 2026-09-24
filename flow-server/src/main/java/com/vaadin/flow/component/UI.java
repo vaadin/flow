@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -56,6 +57,8 @@ import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
@@ -372,6 +375,10 @@ public class UI extends Component
      * framework that the UI should be detached. Overriding it is not a reliable
      * way to catch UIs that are to be detached. Instead,
      * {@code #onDetach(DetachEvent)} should be overridden.
+     * <p>
+     * A UI that is serving an upload or download request is detached only once
+     * that request has been served, so that listeners and callbacks bound to
+     * this UI are still effective for the ongoing transfer.
      */
     public void close() {
         closing = true;
@@ -999,7 +1006,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.dir = $0", direction.getClientName());
+        getPage().executeJs(UiJs.class).setDirection(direction.getClientName());
     }
 
     /**
@@ -2277,7 +2284,7 @@ public class UI extends Component
     }
 
     public void navigateToClient(String clientRoute) {
-        getPage().executeJs(CLIENT_NAVIGATE_TO, clientRoute);
+        getPage().executeJs(UiJs.class).navigateToClient(clientRoute);
     }
 
     private void acknowledgeClient() {
@@ -2395,5 +2402,32 @@ public class UI extends Component
     @Tag(Tag.DIV)
     @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
+    }
+
+    /**
+     * What this UI asks of the page it is shown on, as a JavaScript definition
+     * for {@link Page#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface UiJs extends Serializable {
+
+        /**
+         * Sets the direction the document is read in.
+         *
+         * @param direction
+         *            the direction as the browser names it
+         */
+        @JsExpression("document.dir = $0")
+        void setDirection(String direction);
+
+        /**
+         * Hands a route to the client side router, which navigates to it
+         * without asking the server first.
+         *
+         * @param clientRoute
+         *            the route to navigate to
+         */
+        @JsExpression(CLIENT_NAVIGATE_TO)
+        void navigateToClient(String clientRoute);
     }
 }

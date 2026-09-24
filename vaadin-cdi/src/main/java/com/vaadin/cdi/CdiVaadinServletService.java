@@ -78,6 +78,7 @@ import static com.vaadin.cdi.BeanLookup.SERVICE;
  * </ul>
  *
  * @see CdiVaadinServlet
+ * @since 10.0
  */
 public class CdiVaadinServletService extends VaadinServletService {
 
@@ -167,6 +168,8 @@ public class CdiVaadinServletService extends VaadinServletService {
     /**
      * This class implements the actual instantiation and event brokering
      * functionality of {@link CdiVaadinServletService}.
+     * 
+     * @since 11.2
      */
     public static class CdiVaadinServiceDelegate implements Serializable {
 

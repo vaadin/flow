@@ -109,10 +109,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Hotswapper.class);
+    /** The sessions that have at least one UI, so that they can be updated. */
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
+
+    /** The service this hotswapper is registered on. */
     private final VaadinService vaadinService;
+
+    /** Used to tell the browser to refresh or reload, may be {@code null}. */
     private final BrowserLiveReload liveReload;
+
+    /** The hotswappers the events are delegated to, in priority order. */
     private final Collection<VaadinHotswapper> hotSwappers;
+
+    /** Set when the service is destroyed, so that late events are ignored. */
     private volatile boolean serviceDestroyed = false;
 
     Hotswapper(VaadinService vaadinService) {
@@ -154,7 +163,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Called by hotswap tools when one or more application classes have been
      * updated.
-     * <p>
      * <p>
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
@@ -625,7 +633,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
-     * <p>
      * <p>
      * The hotswapper is registered only in development mode.
      * <p>

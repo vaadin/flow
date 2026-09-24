@@ -137,8 +137,20 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
+// The JavaScript declared by the @JsDefinition interfaces, generated before the
+// build. Hashed into the stats like the banner above, so that a bundle whose
+// definitions changed is rebuilt instead of running with the functions it was
+// built with.
+const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
+const hasJsDefinitions = existsSync(jsDefinitionsFile);
 
-const target = ['es2023'];
+// The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
+// versions current today, Firefox ESR, and Safari 17 in its latest minor
+// version. Vite uses this as the cssTarget as well, and an ES year would map to
+// browsers that are much older than these, which makes Lightning CSS rewrite
+// light-dark() into custom properties that only follow the operating system
+// preference.
+const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -321,6 +333,12 @@ function statsExtracterPlugin(): PluginOption {
       if (hasCommercialBanner) {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+      }
+      if (hasJsDefinitions) {
+        const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
+          .update(fileBuffer, 'utf8')
+          .digest('hex');
       }
 
       const themeJsonContents: Record<string, string> = {};

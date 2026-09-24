@@ -268,6 +268,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
+                "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",

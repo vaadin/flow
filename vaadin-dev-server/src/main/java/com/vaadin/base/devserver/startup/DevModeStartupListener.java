@@ -40,6 +40,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -73,13 +74,21 @@ import com.vaadin.flow.theme.Theme;
         Template.class, LoadDependenciesOnStartup.class,
         TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
         Component.class, Layout.class, StyleSheet.class,
-        StyleSheet.Container.class })
+        StyleSheet.Container.class, JsDefinition.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
         ServletContextListener {
 
+    /** The manager that owns the dev mode handler, set during startup. */
     private DevModeHandlerManager devModeHandlerManager;
+
+    /**
+     * Creates the listener. The servlet container instantiates it.
+     */
+    public DevModeStartupListener() {
+        // Default constructor
+    }
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context)

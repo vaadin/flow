@@ -35,6 +35,8 @@ import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link VaadinServiceScoped @VaadinServiceScoped} beans.
+ * 
+ * @since 10.0
  */
 public class VaadinServiceScopedContext extends AbstractContext {
 

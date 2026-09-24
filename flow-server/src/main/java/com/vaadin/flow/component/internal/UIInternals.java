@@ -76,6 +76,10 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -97,6 +101,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -127,6 +132,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Object> parameters = new ArrayList<>();
+        private final @Nullable JsCall jsCall;
 
         /**
          * Creates a new invocation.
@@ -138,6 +144,23 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
+            this((JsCall) null, expression, parameters);
+        }
+
+        /**
+         * Creates a new invocation for the given call, whose expression and
+         * parameters the caller has already resolved.
+         *
+         * @param jsCall
+         *            the call that this invocation performs, or
+         *            <code>null</code> if the invocation is plain JavaScript
+         * @param expression
+         *            the expression to invoke
+         * @param parameters
+         *            a list of parameters to use when invoking the script
+         */
+        public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
+                Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -151,6 +174,7 @@ public class UIInternals implements Serializable {
 
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
+            this.jsCall = jsCall;
         }
 
         /**
@@ -169,6 +193,19 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * Gets the call that this invocation performs, for a caller that acts
+         * on the invocation instead of running its JavaScript — the client,
+         * which looks up the generated function rather than compiling the
+         * expression, and a driver of the client side that recognizes the call.
+         *
+         * @return the call, or <code>null</code> if the invocation is plain
+         *         JavaScript scheduled with an expression
+         */
+        public @Nullable JsCall getJsCall() {
+            return jsCall;
         }
     }
 
@@ -313,6 +350,15 @@ public class UIInternals implements Serializable {
     private ArrayDeque<Component> modalComponentStack;
 
     private Element wrapperElement;
+
+    /*
+     * Unlike the rest of the UI state, this is not protected by the session
+     * lock: an upload or download request is served without holding the lock,
+     * so the request thread registers and removes its own transfer while other
+     * threads may be checking or terminating the transfers of this UI.
+     */
+    private final Set<ActiveTransfer> activeTransfers = ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Creates a new instance for the given UI.
@@ -771,6 +817,58 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Adds an invocation of the given call to be sent to the client, owned by
+     * the root node of the state tree, which is what makes it an invocation of
+     * this UI rather than of anything in it.
+     * <p>
+     * The call runs on nothing in particular, the way JavaScript given to
+     * {@link Page#executeJs(String, Object...)} does, rather than on an element
+     * the way a call made on one does.
+     *
+     * @param call
+     *            the call to run, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
+        return addJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(null)));
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the root
+     * node of the state tree, which is what makes it an invocation of this UI
+     * rather than of anything in it.
+     *
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
+        return addJavaScriptInvocation(getStateTree().getRootNode(),
+                invocation);
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the given
+     * node, which is what decides when it is sent and what it is discarded
+     * with.
+     *
+     * @param owner
+     *            the node the invocation belongs to, not <code>null</code>
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
+            JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                owner, invocation);
+        addJavaScriptInvocation(pending);
+        return pending;
+    }
+
+    /**
      * Returns the next unique id for a JavaScript initializer registered
      * through {@link Element#addJsInitializer(String, Object...)} on any
      * element in this UI. Shared across the UI so cleanups can be keyed by the
@@ -910,27 +1008,16 @@ public class UIInternals implements Serializable {
     public void setTitle(String title) {
         assert title != null;
 
-        pendingTitleUpdateCanceler = ui.getPage()
-                .executeJs(generateTitleScript().stripIndent(), title);
-
-        this.title = title;
-    }
-
-    private String generateTitleScript() {
-        String setTitleScript = """
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """;
+        TitleJs titleJs = ui.getPage().executeJs(TitleJs.class);
         if (getSession().getConfiguration().isReactEnabled()) {
             // For react-router we should wait for navigation to finish
             // before updating the title.
-            setTitleScript = String.format(
-                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
-                    setTitleScript);
+            pendingTitleUpdateCanceler = titleJs.setTitleAfterNavigation(title);
+        } else {
+            pendingTitleUpdateCanceler = titleJs.setTitle(title);
         }
-        return setTitleScript;
+
+        this.title = title;
     }
 
     /**
@@ -1252,7 +1339,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addRuntimeDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1322,7 +1409,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1353,14 +1443,56 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addRuntimeDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**
@@ -2025,11 +2157,112 @@ public class UIInternals implements Serializable {
 
     /**
      * Get outlet element reference wrapper if set.
-     * 
+     *
      * @return wrapperElement if set else {@code null}
      * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;
+    }
+
+    /**
+     * Registers an upload or download request that is currently being served
+     * for this UI.
+     * <p>
+     * A UI that has active transfers is not detached from its session even if
+     * it is closed, so that listeners and callbacks bound to this UI are still
+     * effective while a transfer is ongoing. The returned registration must
+     * therefore be removed when the request has been served, so that a closed
+     * UI is eventually detached.
+     *
+     * @param transfer
+     *            the transfer to register, not {@code null}
+     * @return a registration for removing the transfer
+     * @since 25.4
+     */
+    public Registration registerActiveTransfer(ActiveTransfer transfer) {
+        return Registration.addAndRemove(activeTransfers, transfer);
+    }
+
+    /**
+     * Checks whether there are upload or download requests currently being
+     * served for this UI.
+     *
+     * @return {@code true} if there is at least one active transfer,
+     *         {@code false} otherwise
+     * @since 25.4
+     */
+    public boolean hasActiveTransfers() {
+        return !activeTransfers.isEmpty();
+    }
+
+    /**
+     * Terminates the upload and download requests that are currently being
+     * served for this UI, since the session they belong to is no longer valid.
+     * <p>
+     * The reason for the invalidation is not known here, so a session that has
+     * merely timed out is treated in the same way as one that has been
+     * invalidated for a security critical reason such as a password reset.
+     * 
+     * @since 25.4
+     */
+    public void terminateActiveTransfers() {
+        /*
+         * Terminating every transfer before logging about any of them, so that
+         * a failure while describing one cannot leave the rest running.
+         */
+        List<ActiveTransfer> terminated = List.copyOf(activeTransfers);
+        terminated.forEach(ActiveTransfer::terminate);
+
+        terminated.forEach(transfer -> getLogger().warn(
+                "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                ui.getUIId(), transfer.getDescription()));
+    }
+
+    /**
+     * How the title of the page is set, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface TitleJs extends Serializable {
+
+        /**
+         * What setting the title does, shared by the plain call and the one
+         * that waits for the navigation. The indentation ends up inside the
+         * body of the function the bundle carries, where JavaScript ignores it.
+         */
+        String SET_TITLE = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+
+        /**
+         * Sets the title of the page.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression(SET_TITLE)
+        PendingJavaScriptResult setTitle(String title);
+
+        /**
+         * Sets the title of the page once the client side router has finished
+         * navigating, so that the title of the page it navigated away from is
+         * not the one that sticks.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
+                + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
+        PendingJavaScriptResult setTitleAfterNavigation(String title);
     }
 }

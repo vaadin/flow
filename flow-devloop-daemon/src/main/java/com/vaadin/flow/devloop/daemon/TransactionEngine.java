@@ -87,6 +87,12 @@ final class TransactionEngine {
         volatile boolean superseded;
         volatile int duplicates;
         volatile String hotswapDetail = "";
+        /**
+         * What the resource push reported. Kept apart from
+         * {@link #hotswapDetail}: the redefine runs after the push, so one
+         * shared field would report only the later leg.
+         */
+        volatile String pushDetail = "";
         volatile String escalation = "";
         volatile int resources;
         /** Classpath copies removed because their source is gone. */
@@ -178,6 +184,7 @@ final class TransactionEngine {
                     + ",\"classes\":" + Json.strings(classes)
                     + ",\"diagnostics\":" + Json.array(diag)
                     + ",\"actionsTaken\":\"" + Json.escape(hotswapDetail)
+                    + "\",\"resourcePush\":\"" + Json.escape(pushDetail)
                     + "\",\"escalation\":"
                     + (escalation.isEmpty() ? "null"
                             : "\"" + Json.escape(escalation) + "\"")
@@ -1206,7 +1213,7 @@ final class TransactionEngine {
             }
             Map<String, String> fields = Connector.fields(reply.get());
             int pushed = parseInt(fields.get("pushed"));
-            tx.hotswapDetail = pushed > 0
+            tx.pushDetail = pushed > 0
                     ? "pushed " + pushed + " stylesheet(s) in place"
                     : "true".equals(fields.get("browserReload"))
                             ? "browser reload requested"
@@ -1585,6 +1592,19 @@ final class TransactionEngine {
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
         }
+        // The same imports, reached the other way: a class that now extends or
+        // implements something else inherits whatever frontend annotations the
+        // new supertype carries, while declaring exactly what it declared
+        // before - so the field above stays empty and the import is in no
+        // chunk the client can load. An enhanced-redefinition JVM accepts a
+        // hierarchy change, so the redefine reports success and this is the
+        // only thing left to catch it.
+        String hierarchy = fields.getOrDefault("hierarchy", "-");
+        if (!"-".equals(hierarchy)) {
+            return Optional.of("class hierarchy changed (" + hierarchy
+                    + "): a new supertype or interface brings imports that are"
+                    + " read at startup (dev bundle rebuild)");
+        }
         // A bean the running application has never seen. Component scanning is
         // a startup act, and HotswapAgent's Spring plugin - which would rescan
         // - is disabled for stability (see Launch), so no mechanism short of a
@@ -1795,8 +1815,8 @@ final class TransactionEngine {
                     + " resource(s) removed from the classpath");
         }
         if ((tx.resources > 0 || tx.resourcesRemoved > 0)
-                && !tx.hotswapDetail.isEmpty()) {
-            clauses.add(tx.hotswapDetail);
+                && !tx.pushDetail.isEmpty()) {
+            clauses.add(tx.pushDetail);
         }
         if (tx.themeFiles > 0) {
             clauses.add(tx.themeFiles + " theme file(s) pushed in place");
@@ -1813,9 +1833,19 @@ final class TransactionEngine {
                     + " frontend file(s) served live, browser reloaded");
         }
         if (clauses.isEmpty()) {
-            return tx.resources + " resource(s) copied, " + tx.hotswapDetail;
+            return tx.resources + " resource(s) copied, " + tx.pushDetail;
         }
         return String.join(", ", clauses);
+    }
+
+    /**
+     * Whether this change-set had a frontend half at all. Read from the counts
+     * the legs set as they succeeded, never from the change-set, so no line can
+     * name work that was not done.
+     */
+    private static boolean hasFrontendHalf(Transaction tx) {
+        return tx.resources > 0 || tx.resourcesRemoved > 0 || tx.themeFiles > 0
+                || tx.servedLive > 0 || "vite".equals(tx.frontendMode);
     }
 
     /**
@@ -1879,6 +1909,12 @@ final class TransactionEngine {
                 lines.add("hmr: " + hmrDetail(tx));
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
+                // A mixed change-set pushed its frontend half first, and
+                // without this line "pushed" and "no browser connected" look
+                // the same. In the order the legs ran.
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
                 lines.add("hot-reload: " + tx.hotswapDetail
                         + (tx.duplicates > 0 ? "; " + tx.duplicates
                                 + " duplicate class copy/copies also redefined"
