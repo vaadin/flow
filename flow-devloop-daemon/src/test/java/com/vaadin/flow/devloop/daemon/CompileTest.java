@@ -650,6 +650,60 @@ class CompileTest {
     }
 
     /**
+     * The classpath copy cannot answer "has the application been told this?",
+     * because this daemon is not the only thing that writes it. IntelliJ with
+     * auto-build on copies resources on save, so the copy holds the new value
+     * before the apply ever looks - and a check that compared the source with
+     * its copy would call that no change, leaving the application running on
+     * the value it read at startup with no restart in sight.
+     */
+    @Test
+    void staleResources_anEditAlreadyCopiedOutIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        // The edit, and the copy something other than the apply made of it.
+        Files.writeString(config, "server.port=9090");
+        compile.copyResources(List.of(config));
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().modified());
+    }
+
+    /** And having acted on those bytes is what makes it quiet again. */
+    @Test
+    void staleResources_actingOnAnEditAlreadyCopiedOutQuietensIt()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        Files.writeString(served, "body{margin:0}");
+        compile.copyResources(List.of(served));
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+
+        compile.markResourcesNotified(List.of(served));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a resource the browser has been shown is not a change");
+    }
+
+    /**
      * The comparison is against the classpath copy, so a resource that has
      * never been copied is a change however old it is - otherwise a first apply
      * on a module built by something other than this daemon would leave the
