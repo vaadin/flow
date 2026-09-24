@@ -69,6 +69,7 @@ final class FrontendClassVisitor extends ClassVisitor {
 
         boolean currentDevOnly = false;
         private String currentModule;
+        private boolean currentTypeIsModule = false;
 
         private LinkedHashSet<String> target;
         private LinkedHashSet<String> targetDevelopmentOnly;
@@ -92,9 +93,21 @@ final class FrontendClassVisitor extends ClassVisitor {
         }
 
         @Override
+        public void visitEnum(String name, String descriptor, String value) {
+            // The "type" attribute only exists on @JavaScript; @JsModule has
+            // no such attribute, so this method is a no-op for it.
+            if ("type".equals(name) && "MODULE".equals(value)) {
+                currentTypeIsModule = true;
+            }
+        }
+
+        @Override
         public void visitEnd() {
             super.visitEnd();
-            if (currentModule != null) {
+            // type=MODULE values are loaded at runtime as <script
+            // type="module">
+            // by UIInternals; they must not enter the bundle.
+            if (currentModule != null && !currentTypeIsModule) {
                 // This visitor is called also for the $Container annotation
                 if (currentDevOnly) {
                     targetDevelopmentOnly.add(currentModule);
@@ -104,6 +117,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             }
             currentModule = null;
             currentDevOnly = false;
+            currentTypeIsModule = false;
         }
 
     }
