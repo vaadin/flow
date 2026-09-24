@@ -29,12 +29,15 @@ fixtures the application modules depend on, not test modules.
 Everything but `codestarts` drives a real Chrome through TestBench, so a
 `~/.vaadin/proKey` is required and browser windows open while they run.
 
-Validation runs `embedded-plugin`, `production` and `codestarts` for every
-change, and `development` and `push-dispatch-it` when the Quarkus sources
-themselves change; see the `quarkus-tests` job in
-`.github/workflows/validation.yml`. The native image build needs GraalVM and
-takes about half an hour, so it runs nightly instead — see
-`.github/workflows/quarkus-native.yml`.
+Validation runs every module that sets the `validation.run` property in its
+POM, one job per module: `always` for every change - `embedded-plugin`,
+`production` and `codestarts` today - and `when-changed` only when the
+Quarkus sources change; see the `quarkus-tests` job in
+`.github/workflows/validation.yml`. A new test module gets a job by setting
+the property.
+
+The native image build needs GraalVM and takes about half an hour, so it runs
+nightly instead — see `.github/workflows/quarkus-native.yml`.
 
 The tests tagged `slow` are excluded by default:
 

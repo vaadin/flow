@@ -52,6 +52,7 @@ jobs:
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
+      matrix-quarkus: ${{ steps.set-matrix.outputs.matrix-quarkus }}
       # The Node.js and pnpm versions Flow installs by default, read from
       # FrontendTools so that CI does not carry its own copy of them.
       node-version: ${{ steps.frontend-tools.outputs.node-version }}
@@ -93,6 +94,7 @@ jobs:
         run: |
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=15 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=4 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-quarkus=$(./scripts/computeMatrix.js quarkus-tests)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -493,36 +495,21 @@ jobs:
     # Every module here boots a Quarkus application of its own instead of
     # deploying to a servlet container, which the generic it-tests matrix
     # cannot express, so the suite is not part of that matrix and runs here.
-    # Every change runs embedded-plugin, production and codestarts as a smoke
-    # test - embedded-plugin because building through the Vaadin plugin the
-    # extension embeds is how a Quarkus application is built by default now.
-    # development and push-dispatch only run when the Quarkus sources
-    # themselves change, since that is when a mode specific regression gets
-    # introduced. The native image build is not here at all - it needs GraalVM
-    # and takes about half an hour, so it runs nightly from
+    # Which modules run, and whether for every change or only when the
+    # Quarkus sources change, is declared by each module's validation.run
+    # property: embedded-plugin, production and codestarts run always, as a
+    # smoke test, the rest only when a mode specific regression could have
+    # been introduced. The native image build is not here at all - it needs
+    # GraalVM and takes about half an hour, so it runs nightly from
     # quarkus-native.yml. Needs the TestBench licence, so not for forks.
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 40
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: production
-            module: production
-            ungated: true
-          # Drives no browser: it generates a project from the codestart and
-          # compares it against the checked in snapshots.
-          - name: codestarts
-            module: codestarts
-            ungated: true
-          - name: development
-            module: development
-          - name: embedded-plugin
-            module: embedded-plugin
-            ungated: true
-          - name: push-dispatch
-            module: push-dispatch-it
+      # One job per module of the suite that declares validation.run in its
+      # POM; see flow-tests/vaadin-quarkus-tests/pom.xml.
+      matrix: ${{ fromJson(needs.build.outputs.matrix-quarkus) }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
@@ -562,7 +549,7 @@ jobs:
               RELEVANT=$(printf '%s\n' "$CHANGED" | grep -E \
                 '^(vaadin-quarkus/|flow-tests/vaadin-quarkus-tests/|pom\.xml$|\.github/workflows/validation\.yml$)' || true)
               if [ -z "$RELEVANT" ]; then
-                echo "No changes to the Quarkus modules, the ungated modules (embedded-plugin, production, codestarts) cover this."
+                echo "No changes to the Quarkus modules, the modules declared validation.run=always cover this."
                 run=false
               else
                 echo "Changes to the Quarkus modules:"

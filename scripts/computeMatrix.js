@@ -442,6 +442,32 @@ function formatSecs(s) {
 }
 
 /**
+ * The matrix of the quarkus-tests job in validation.yml. The suite is not a
+ * module of flow-tests (see flow-tests/pom.xml), so it is read from its own
+ * POM: every module of the suite that sets the validation.run property is a
+ * leg of the job, and the value says when it runs - `always` for every
+ * change, `when-changed` only when the Quarkus sources change. Modules
+ * without the property are fixtures the legs depend on.
+ */
+function getQuarkusTestsMatrix() {
+  const suite = 'flow-tests/vaadin-quarkus-tests';
+  const regexRun = /<validation\.run>\s*([\w-]+)\s*<\/validation\.run>/;
+  return getModules(suite).flatMap(path => {
+    const content = fs.readFileSync(path + '/pom.xml').toString()
+      .replace(regexComment, '');
+    const run = (regexRun.exec(content) || [])[1];
+    if (!run) {
+      return [];
+    }
+    if (run !== 'always' && run !== 'when-changed') {
+      throw new Error(`${path}/pom.xml: validation.run must be always or when-changed, not ${run}`);
+    }
+    const module = path.substring(suite.length + 1);
+    return [{ name: module, module, ungated: run === 'always' }];
+  });
+}
+
+/**
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
@@ -636,6 +662,8 @@ async function main() {
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
+  } else if (action == 'quarkus-tests') {
+    console.log(objectToString(getQuarkusTestsMatrix()));
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -652,6 +680,7 @@ Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
+  quarkus-tests      outputs the JSON matrix for the quarkus-tests job
   test-results       process test-results and outputs a matrix with weights
   clean-success      remove success xml test files to reduce uploaded artifact
 

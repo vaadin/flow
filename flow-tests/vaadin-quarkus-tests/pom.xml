@@ -13,6 +13,14 @@
   <name>Vaadin Quarkus tests</name>
   <description>Test modules for the Quarkus extension</description>
 
+  <!--
+    The quarkus-tests job in validation.yml runs every module below that sets
+    the validation.run property, one job per module: `always` runs it for
+    every change, `when-changed` only when the Quarkus sources change. A
+    module without the property is a fixture the others depend on and does
+    not get a job. scripts/computeMatrix.js quarkus-tests builds the job
+    matrix from this.
+  -->
   <modules>
     <!-- Builds the reusable theme jar -->
     <module>reusable-theme</module>
