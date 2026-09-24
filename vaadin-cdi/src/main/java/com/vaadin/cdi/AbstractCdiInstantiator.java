@@ -31,6 +31,9 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 
+/**
+ * @since 11.2
+ */
 abstract public class AbstractCdiInstantiator implements Instantiator {
 
     private static final String CANNOT_USE_CDI_BEANS_FOR_I18N = "Cannot use CDI beans for I18N, falling back to the default behavior.";

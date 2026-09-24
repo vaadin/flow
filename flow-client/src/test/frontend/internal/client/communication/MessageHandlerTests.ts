@@ -5,7 +5,13 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
-import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import {
+  MessageHandler,
+  parseJson,
+  resolveWhatRuns
+} from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../../main/frontend/internal/client/ResourceLoader';
 import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
@@ -240,7 +246,10 @@ describe('MessageHandler', () => {
 
       // syncId 5 while expecting 1 -> queued, not applied.
       handler.handleMessage({ syncId: 5, constants: { skipped: 1 } });
-      expect(registry.log.constants).to.deep.equal([{ first: 1 }]); // second not imported
+      // The constants of a message go into the pool as it arrives, since what
+      // an invocation of it runs is read out of there, but nothing of the
+      // message itself is applied
+      expect(registry.log.constants).to.deep.equal([{ first: 1 }, { skipped: 1 }]);
       expect(handler.getLastSeenServerSyncId()).to.equal(0);
     });
 
@@ -257,7 +266,9 @@ describe('MessageHandler', () => {
       // is ended.
       registry.startRequest();
       handler.handleMessage({ syncId: 0, constants: { stale: 1 } });
-      expect(registry.log.constants).to.deep.equal([]); // never applied any constants
+      // Nothing of the message is applied; its constants are in the pool the
+      // way those of any message that arrives are
+      expect(registry.log.constants).to.deep.equal([{ stale: 1 }]);
       expect(registry.log.endRequests).to.equal(endRequestsBefore + 1);
     });
 
@@ -453,7 +464,7 @@ describe('MessageHandler', () => {
         // sheet the same message is about to remove, leaving the page with
         // neither. Both the real loader and the real DependencyLoader are wired
         // in, as that dedup is the thing under test.
-        const url = '/stylesheet-swap.css';
+        const url = '/src/test/frontend/stylesheet-swap.css';
         const oldLink = document.createElement('link');
         oldLink.rel = 'stylesheet';
         oldLink.href = url;
@@ -476,8 +487,7 @@ describe('MessageHandler', () => {
           LoadingIndicatorStateHandler: { stopLoading: () => {} },
           ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
           URIResolver: { resolveVaadinUri: (uri: string) => uri },
-          // The swapped URL has no file behind it, so the load fails; the
-          // assertions below are made before it settles either way.
+          // The assertions below are made before the load settles either way
           SystemErrorHandler: { handleError: () => {} }
         });
         // initFromDom: true, as in the browser, so the sheet already on the page
@@ -514,6 +524,55 @@ describe('MessageHandler', () => {
         expect(profiling.length).to.be.at.least(3);
         profiling.forEach((value) => expect(value).to.be.finite);
         expect(profiling[0]).to.be.at.least(0);
+      });
+
+      it('reads what an invocation runs out of the pool', () => {
+        // Which decides whether a forced reload during a resynchronization is
+        // seen; the constants of a message go into the pool as it arrives, so
+        // the one it carries is there along with the ones before it.
+        const pool = new ConstantPool();
+        pool.importFromJson({ earlier: 'window.location.reload();' });
+
+        expect(resolveWhatRuns([{}, 'earlier'], pool)).to.equal('window.location.reload();');
+        expect(resolveWhatRuns([{}, 'neither'], pool)).to.be.null;
+        expect(resolveWhatRuns([], pool)).to.be.null;
+      });
+
+      it('takes the constants of a message the server re-sends', () => {
+        // The message is ignored as already seen, but its constants are read
+        // before that, as they are for any message that arrives. They name
+        // what the pool holds, which is what the pool makes of a key it has.
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
+
+        registry.startRequest();
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
+
+        expect(registry.log.constants).to.deep.equal([{ c: 'window.alert($0)' }, { c: 'window.alert($0)' }]);
+      });
+
+      it('takes the constants of a message in before deciding what to do with it', () => {
+        // What an invocation runs is read out of the pool, and a message that
+        // arrives while a resynchronization is ongoing is only queued, so its
+        // constants have to be in the pool by then.
+        const pool = new ConstantPool();
+        const registry = testRegistry({
+          MessageSender: {
+            getResynchronizationState: () => ResynchronizationState.WAITING_FOR_RESPONSE,
+            clearResynchronizationState: () => {},
+            setClientToServerMessageId: () => {}
+          },
+          ConstantPool: pool
+        });
+
+        new TestMessageHandler(registry).callHandleJSON({
+          syncId: 3,
+          constants: { c: 'window.alert($0)' },
+          execute: [['c']]
+        });
+
+        expect(pool.get<string>('c')).to.equal('window.alert($0)');
       });
 
       it('keeps processing a message whose stylesheetRemovals is null', () => {

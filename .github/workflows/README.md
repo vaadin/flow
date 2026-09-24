@@ -17,6 +17,7 @@ files directly — edit the source `.md` file and regenerate.
 |---|---|---|
 | `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes a pull request merged into `main` and opens a draft documentation pull request for it in `vaadin/docs`. |
 | `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
+| `guidelines-bot.md` | `guidelines-bot.lock.yml` | Guidelines bot that distils recurring code review feedback into `CONVENTIONS.md` and `guidelines/`. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
 Pinned action versions and SHAs used by the generated workflows are
@@ -48,12 +49,15 @@ documentation, cheapest first:
    `refactor:`, `chore:`, or `build:` (with or without a scope) are
    skipped. `fix:`, `feat:`, `docs:`, and `perf:` are not.
 4. **The agent itself.** It classifies the diff and stops when everything
-   in it is internal, test-only, or build-only, recording the reason in
-   the run log without commenting on the pull request.
+   in it is internal, test-only, or build-only.
 
-The bot leaves one standing comment on the source pull request linking to
-the documentation pull request; a later run replaces it rather than adding
-another. It says nothing at all when there is nothing to document.
+Every run that gets as far as the agent leaves one standing comment on the
+source pull request saying how it ended — a link to the documentation pull
+request, or the reason no documentation was needed. A later run replaces
+that comment rather than adding another. Whoever merged the pull request
+should not have to open a run log to find out whether the change was
+documented, which is why the "nothing to document" outcome is a comment
+and not just a line in the log.
 
 There is no manual trigger. A pull request the type filter passed over
 gets no documentation pull request, and the way to correct that is to
@@ -64,6 +68,21 @@ onto its branch instead of opening a second one.
 
 An abandoned documentation pull request closes itself: `expires: 30` marks
 it, and the scheduled `agentics-maintenance` workflow does the closing.
+
+The trigger is `pull_request_target`, not `pull_request`, because the
+workflow runs at the one moment the head branch no longer exists — GitHub
+deletes it on merge. For a `pull_request` trigger gh-aw always emits a
+"Checkout PR branch" step that fetches that branch, so every run failed it
+and wrote an expected-failure warning into its summary; gh-aw suppresses
+the step for `pull_request_target`. The workspace is pinned to the merge
+commit, which is already on `main`, and the workflow never builds or runs
+the project, so the usual `pull_request_target` hazard of executing
+untrusted fork code does not arise. `gh aw compile` warns about the
+trigger-and-checkout combination all the same, because it matches on the
+shape rather than on the ref. One behaviour follows from the switch:
+merged pull requests from forks are documented now. A `pull_request` run
+from a fork is given no secrets, so those merges used to go silently
+undocumented.
 
 ### Diagram Bot
 
@@ -80,6 +99,17 @@ The diagram is a Mermaid block, which GitHub renders inline in the
 comment. A re-run hides the previous comment instead of stacking another
 diagram onto the conversation.
 
+A block that does not parse renders as an error box rather than a
+picture, so the bot checks its figure before posting with
+`.github/scripts/validate-mermaid.mjs`, which parses it with the same
+Mermaid version GitHub uses and reports the line at fault. The script
+takes a `.mmd` file, a `.md` file whose fenced `mermaid` blocks it
+extracts, or the figure on stdin, and it is useful by hand too:
+
+```bash
+node .github/scripts/validate-mermaid.mjs .github/workflows/diagram-bot.md
+```
+
 To ask for a diagram on a pull request the bot passed over, add the
 `diagram` label. That skips the decision and draws the most useful figure
 the change supports.
@@ -87,6 +117,39 @@ the change supports.
 Like every agentic workflow, it runs only for pull requests from branches
 in this repository, opened by users with write access — `gh-aw` gates
 both. Pull requests from forks never trigger it.
+
+### Guidelines Bot
+
+`guidelines-bot.md` runs once a week and reads the review comments on every
+pull request merged into `main` since the previous run — around seventy of
+them, of which roughly half carry any inline comment. The window matches the
+cadence, so recurrence means the same point raised twice inside one week of
+reviews. Release branches are left alone: a backport is the same review a
+second time.
+
+It keeps only the comments that state a rule rather than report a defect,
+that it can show were acted on — the merged code obeys the point, or the
+hunk the comment was anchored to was rewritten after it, never an author's
+"done" on its own — and that `CONVENTIONS.md` and `guidelines/` do not
+already cover. A rule also has to survive a counter-example check: `grep`
+has to show that `main` mostly follows it already. From what is left it
+proposes at most three rules in a single draft pull request, and in most
+weeks it proposes nothing at all.
+
+A rule reaches the pull request only when it recurs — two pull requests or
+two reviewers — or when repeating the mistake once more would be expensive:
+a correctness or thread-safety trap, a break in public API compatibility, a
+security consequence, a broken build or release. Everything the bot weighed
+and dropped is listed in the pull request body, which is where you tune what
+it does next.
+
+The bot's own pull requests are its memory. Closing one without merging tells
+it never to propose those rules again; while one is open it proposes nothing
+new. It only ever edits `CONVENTIONS.md` and the chapters under `guidelines/`
+— never `CLAUDE.md`, never `guidelines/overview.md`, and never code.
+
+Run it by hand from the Actions tab with `workflow_dispatch`, optionally
+setting `lookback-days` to widen or narrow the window.
 
 ### When regeneration happens
 

@@ -18,6 +18,7 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -36,10 +37,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -55,6 +60,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * to end in {@code flow-tests/test-devloop}.
  */
 class DevLoopRedefinerTest {
+
+    private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
 
     @Test
     void redefine_withoutAnAgent_reportsTheReasonInTheProtocolVocabulary() {
@@ -159,6 +166,41 @@ class DevLoopRedefinerTest {
     static class NothingDeclared {
     }
 
+    @JsDefinition
+    interface GreeterJs extends Serializable {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        @JsExpression(SHOUT_EXPRESSION)
+        void shout(String greeting, Object... names);
+    }
+
+    @JsDefinition
+    interface EditedGreeterJs extends Serializable {
+        @JsExpression("window.alert('edited ' + $0)")
+        void showGreeting(String greeting);
+    }
+
+    /**
+     * A view over a component supertype that carries imports of its own, which
+     * is every real Vaadin view: {@code MainView extends VerticalLayout}.
+     */
+    static class ViewOverAnImportingSupertype extends SomeView {
+    }
+
+    /** An interface carrying imports, which is not @Inherited at all. */
+    @JsModule("./mixin.js")
+    interface ImportingMixin {
+    }
+
+    /** The same view after {@code implements ImportingMixin} was added. */
+    static class ViewWithTheMixin extends SomeView implements ImportingMixin {
+    }
+
+    /** And after its base class was swapped for the annotated one. */
+    static class ViewOverAnotherBase extends SomeView {
+    }
+
     @Test
     void frontendDependencies_seesTheThemeOnAnAppShellThatIsNoComponent() {
         // @Theme belongs on the AppShellConfigurator, which is never a
@@ -176,6 +218,36 @@ class DevLoopRedefinerTest {
     }
 
     @Test
+    void frontendDependencies_seesTheJavaScriptADefinitionDeclares() {
+        // The declared JavaScript is generated into the bundle by the build, so
+        // a redefined interface leaves the browser running the JavaScript the
+        // bundle was built with until a restart regenerates it.
+        String imports = DevLoopRedefiner.frontendDependencies(GreeterJs.class);
+
+        assertTrue(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId("window.alert($0)", 1, false)),
+                imports);
+        // A method that collects its trailing arguments generates a function
+        // with a rest parameter, which is not the function that the same
+        // JavaScript for the same number of fixed parameters generates - so
+        // turning Object... into Object[] has to be a change the browser is
+        // told about rather than the same fingerprint.
+        assertTrue(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, true)),
+                imports);
+        assertFalse(
+                imports.contains("jsdefinition:"
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, false)),
+                imports);
+        // What the browser has of a method is the function of what it
+        // declares, so an edited expression is a different one.
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
+    }
+
+    @Test
     void frontendDependencies_seesBuildTimeImportsOnANonComponent() {
         String imports = DevLoopRedefiner
                 .frontendDependencies(PlainFrontendHolder.class);
@@ -186,14 +258,60 @@ class DevLoopRedefinerTest {
 
     @Test
     void frontendDependencies_readsAComponentAndAnswersEmptyForNeither() {
-        // The Component path goes through AnnotationReader, so an import
-        // inherited from a supertype or picked up through @Uses still counts
-        // the way the build counts it.
         assertTrue(DevLoopRedefiner.frontendDependencies(SomeView.class)
                 .contains("js:./view.js"));
         // And a class that declares none is not a change to any.
         assertEquals("",
                 DevLoopRedefiner.frontendDependencies(NothingDeclared.class));
+    }
+
+    @Test
+    void ownedBy_acceptsTheApplicationAndItsChildrenOnly() {
+        // The shape that matters: under a build-plugin runtime the build runs
+        // in the application's JVM, so the Vaadin Maven plugin's scanning
+        // loader holds a second copy of every class it scanned. Redefining
+        // that copy serves nobody and gives HotswapAgent one more class loader
+        // to fail a transform in.
+        ClassLoader application = new java.net.URLClassLoader(
+                new java.net.URL[0], null);
+        ClassLoader childOfApplication = new java.net.URLClassLoader(
+                new java.net.URL[0], application);
+        ClassLoader buildPluginScanner = new java.net.URLClassLoader(
+                new java.net.URL[0], null);
+
+        assertTrue(DevLoopRedefiner.ownedBy(application, application));
+        // A framework may load application code in a child loader.
+        assertTrue(DevLoopRedefiner.ownedBy(childOfApplication, application));
+        assertFalse(DevLoopRedefiner.ownedBy(buildPluginScanner, application));
+        // A parent that merely happens to see the same jar is not the
+        // application either.
+        assertFalse(DevLoopRedefiner.ownedBy(null, application), "boot loader");
+    }
+
+    @Test
+    void frontendDependencies_ignoresWhatASupertypeDeclares() {
+        // The regression behind "a TextField label edit escalated to a
+        // restart". Every one of these annotations is @Inherited, so a view
+        // extending VerticalLayout inherits its component supertypes' whole
+        // import closure - and reading that closure means reading
+        // Class.annotationData, which is thrown away and rebuilt whenever
+        // classRedefinedCount moves. Comparing it across a redefine therefore
+        // compared two rebuilds of a library's annotations rather than the
+        // edited class's own.
+        //
+        // Nothing an edit to this class can do will change what its supertype
+        // declares, so the supertype has no business being in the comparison.
+        assertEquals("", DevLoopRedefiner
+                .frontendDependencies(ViewOverAnImportingSupertype.class));
+    }
+
+    @Test
+    void frontendDependencies_countsADeclaredImportExactlyOnce() {
+        // @Inherited already surfaces a supertype's annotation on the subclass,
+        // so walking the supertypes as well counted the same import twice.
+        String imports = DevLoopRedefiner.frontendDependencies(SomeView.class);
+
+        assertEquals("js:./view.js", imports);
     }
 
     @Test
@@ -335,6 +453,131 @@ class DevLoopRedefinerTest {
     }
 
     @Test
+    void hierarchy_changesWhenAnInterfaceIsAdded() {
+        // The gap declared-only reading leaves: these annotations are
+        // @Inherited across classes and not across interfaces at all, so a view
+        // that starts implementing an annotated mixin needs an import the
+        // generated imports file does not have - while declaring exactly what
+        // it declared before.
+        assertEquals(
+                DevLoopRedefiner.frontendDependencies(
+                        ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.frontendDependencies(ViewWithTheMixin.class));
+
+        assertNotEquals(
+                DevLoopRedefiner.hierarchy(ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class));
+        assertTrue(
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class)
+                        .contains(ImportingMixin.class.getName()),
+                DevLoopRedefiner.hierarchy(ViewWithTheMixin.class));
+    }
+
+    @Test
+    void hierarchy_changesWhenTheBaseClassIsSwapped() {
+        assertNotEquals(DevLoopRedefiner.hierarchy(NothingDeclared.class),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+        assertTrue(
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class)
+                        .contains("extends:" + SomeView.class.getName()),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+    }
+
+    @Test
+    void hierarchy_isTheSameForAClassThatOnlyChangedItsBodies() {
+        // What an ordinary edit looks like: same class, read twice. Names are
+        // plain strings, so this holds across a redefine as well - which is the
+        // reason for reading names rather than the supertypes' annotations.
+        assertEquals(DevLoopRedefiner.hierarchy(SomeView.class),
+                DevLoopRedefiner.hierarchy(SomeView.class));
+        // Two classes with the same supertype and no interfaces are the same
+        // shape, so neither is a change to the other.
+        assertEquals(
+                DevLoopRedefiner.hierarchy(ViewOverAnImportingSupertype.class),
+                DevLoopRedefiner.hierarchy(ViewOverAnotherBase.class));
+    }
+
+    @Test
+    void hierarchy_namesTheInterfacesInAStableOrder() {
+        // The compiler reports them in the order they were written, and moving
+        // one along the clause is not a change to what the class is.
+        assertEquals(
+                "extends:" + Object.class.getName() + ";implements:"
+                        + AppShellConfigurator.class.getName(),
+                DevLoopRedefiner.hierarchy(ThemedAppShell.class));
+    }
+
+    @Test
+    void hierarchyOf_readsTheSameAnswerOutOfTheBytes() throws IOException {
+        // The two halves have to agree exactly, or every apply would look like
+        // a hierarchy change and restart. Asserted over the shapes a class file
+        // spells differently from reflection: an interface, whose super_class
+        // is java/lang/Object in the file and null through reflection, and a
+        // nested class, which is its own class file.
+        for (Class<?> type : List.of(NothingDeclared.class, SomeView.class,
+                ViewWithTheMixin.class, ThemedAppShell.class,
+                ImportingMixin.class, Object.class)) {
+            assertEquals(DevLoopRedefiner.hierarchy(type),
+                    DevLoopRedefiner.hierarchyOf(bytesOf(type)),
+                    type.getName());
+        }
+    }
+
+    @Test
+    void hierarchyOf_answersNothingForWhatItCannotRead() {
+        // Not a failure: the reading after the redefine is still there, and
+        // every other check in the inspection is unaffected.
+        assertNull(DevLoopRedefiner.hierarchyOf(new byte[] { 1, 2, 3 }));
+        assertNull(DevLoopRedefiner.hierarchyOf(new byte[0]));
+    }
+
+    @Test
+    void inspect_refusesToRedefineAClassThatChangedItsHierarchy()
+            throws IOException {
+        // The edit, simulated the only way a unit test can: the bytes on the
+        // classpath belong to a class that implements the mixin, and the loaded
+        // class does not. Nothing is redefined - an enhanced-redefinition JVM
+        // has been seen to die on exactly this - and the daemon restarts, which
+        // is what regenerates the imports.
+        String name = ViewWithTheMixin.class.getName();
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name),
+                Map.of(name, List.of(ViewOverAnImportingSupertype.class)),
+                List.of(testClasses()));
+
+        // Named as a reader would name it, nested type and all.
+        String reported = "DevLoopRedefinerTest$ViewWithTheMixin";
+        assertEquals("ERR kind=hierarchy-changed class=" + reported
+                + " message=class hierarchy changed (" + reported + "): a new"
+                + " supertype or interface brings imports that are read at"
+                + " startup (dev bundle rebuild)", inspected.error());
+    }
+
+    @Test
+    void inspect_redefinesAClassWhoseHierarchyIsUnchanged() {
+        // The guard against restarting every apply: same class on both sides,
+        // which is what an ordinary edit looks like to this check.
+        String name = SomeView.class.getName();
+
+        DevLoopRedefiner.Inspection inspected = DevLoopRedefiner.inspect(
+                List.of(name), Map.of(name, List.of(SomeView.class)),
+                List.of(testClasses()));
+
+        assertNull(inspected.error());
+        assertEquals(1, inspected.definitions().size());
+    }
+
+    private static byte[] bytesOf(Class<?> type) throws IOException {
+        // Through the class itself, so a type in a named module - java.lang
+        // here - answers as readily as one on the class path.
+        try (InputStream in = type.getResourceAsStream(
+                "/" + type.getName().replace('.', '/') + ".class")) {
+            return in.readAllBytes();
+        }
+    }
+
+    @Test
     void reply_carriesEveryFieldTheDaemonReadsAVerdictFrom() {
         // The daemon splits this line on whitespace and reads by name, so a
         // renamed or dropped field is a silently different answer rather than
@@ -345,17 +588,17 @@ class DevLoopRedefinerTest {
                 Set.of("TaskListView"), null);
         DevLoopRedefiner.Applied applied = new DevLoopRedefiner.Applied(
                 Set.of("TaskService"), Set.of("TaskRepository"),
-                Set.of("TaskListView"), true, false, 4, 7);
+                Set.of("TaskListView"), Set.of("TaskEditor"), true, false, 4,
+                7);
 
         // hotswapAgent is read off this JVM, which has no agent on its
         // classpath.
-        assertEquals(
-                "OK redefined=0 notLoaded=1 dupes=1 completed=true"
-                        + " pageReload=false entities=Order beans=TaskService"
-                        + " proxied=TaskRepository structural=TaskService"
-                        + " ui=TaskListView frontendImports=TaskListView"
-                        + " hotswapAgent=false redefineMs=4 hotswapMs=7"
-                        + " stereotypes=com.example.NewBean",
+        assertEquals("OK redefined=0 notLoaded=1 dupes=1 completed=true"
+                + " pageReload=false entities=Order beans=TaskService"
+                + " proxied=TaskRepository structural=TaskService"
+                + " ui=TaskListView frontendImports=TaskListView"
+                + " hotswapAgent=false redefineMs=4 hotswapMs=7"
+                + " stereotypes=com.example.NewBean" + " hierarchy=TaskEditor",
                 DevLoopRedefiner.reply(inspected, applied));
     }
 
