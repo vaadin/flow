@@ -56,6 +56,10 @@ import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotPro
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringBootAutoConfiguration {
 
+    // By name, as @ConditionalOnMissingClass only accepts class names, so
+    // that both conditions visibly check the same class
+    private static final String SERVER_ENDPOINT_EXPORTER = "org.springframework.web.socket.server.standard.ServerEndpointExporter";
+
     @Autowired
     private WebApplicationContext context;
 
@@ -169,7 +173,7 @@ public class SpringBootAutoConfiguration {
      * through <code>spring-boot-starter-websocket</code>.
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(ServerEndpointExporter.class)
+    @ConditionalOnClass(name = SERVER_ENDPOINT_EXPORTER)
     static class WebsocketConfiguration {
 
         @Bean
@@ -183,7 +187,7 @@ public class SpringBootAutoConfiguration {
      * deployed, because push then silently falls back to long polling.
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnMissingClass("org.springframework.web.socket.server.standard.ServerEndpointExporter")
+    @ConditionalOnMissingClass(SERVER_ENDPOINT_EXPORTER)
     static class MissingWebsocketConfiguration {
 
         MissingWebsocketConfiguration() {
