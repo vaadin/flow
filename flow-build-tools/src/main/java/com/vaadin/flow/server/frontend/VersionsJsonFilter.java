@@ -118,7 +118,7 @@ class VersionsJsonFilter {
                         vaadinDep.get(key).asString());
                 FrontendVersion dep = new FrontendVersion(key,
                         dependencies.get(key).asString());
-                return !vaadin.isEqualTo(dep);
+                return !vaadin.isSameDependency(dep);
             } catch (NumberFormatException nfe) {
                 LoggerFactory.getLogger("VersionsFilter").debug(
                         "Received version with non numbers {} and {}",
