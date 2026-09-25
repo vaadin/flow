@@ -82,10 +82,14 @@ public class Table extends HtmlComponent
      * <pre>
      * table.removeClassName(Table.STYLES_CLASS_NAME);
      * </pre>
+     * <p>
+     * When an ancestor carries the class name too, removing it from the table
+     * is not enough; add the {@code vaadin-unthemed-html} class name to the
+     * table to leave it to the browser.
      *
      * @since 25.4
      */
-    public static final String STYLES_CLASS_NAME = "vaadin-themed-html-elements";
+    public static final String STYLES_CLASS_NAME = "vaadin-themed-html";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
