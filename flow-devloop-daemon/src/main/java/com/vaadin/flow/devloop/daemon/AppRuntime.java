@@ -16,6 +16,7 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,24 @@ interface AppRuntime {
     }
 
     /**
+     * Whether one line of the application's log says the deployment the launch
+     * itself made is in place.
+     * <p>
+     * For most runtimes that is the serving line: what is serving is what was
+     * launched. An application server that boots the deployments its
+     * configuration persisted and only then deploys the build's own over them
+     * is different - the first one registers, serves and is then undeployed -
+     * so a start is only over once the launch's own deployment says so.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the launch's own deployment is in place
+     */
+    default boolean deployed(String line) {
+        return serving(line);
+    }
+
+    /**
      * Configuration in this project that will fight the dev loop, in words, so
      * that a developer is told rather than left to deduce it from behaviour.
      *
@@ -114,6 +133,38 @@ interface AppRuntime {
      */
     default List<String> warnings() {
         return List.of();
+    }
+
+    /**
+     * The same, plus whatever the channel this runtime hands the flags to
+     * cannot carry intact.
+     * <p>
+     * A runtime that builds a real command line has nothing to add: an argument
+     * of its own carries a space. One that hands the flags to a string a shell
+     * or a plugin splits does, and only the runtime knows which string that is,
+     * which is why the question is asked here rather than answered for it.
+     *
+     * @param jvmFlags
+     *            the flags the launch will be composed with
+     * @return one line per problem, empty when there is none
+     */
+    default List<String> warnings(List<String> jvmFlags) {
+        return warnings();
+    }
+
+    /**
+     * How long this runtime's application may take to register before a start
+     * gives up on it.
+     * <p>
+     * Five minutes is generous for an application that only has to boot, and
+     * short enough that a start which is never going to work says so. A
+     * container that has to build a server before it can start one needs more
+     * than that, and overrides this.
+     *
+     * @return the window a start waits for registration
+     */
+    default Duration startupTimeout() {
+        return Duration.ofMinutes(5);
     }
 
     /**

@@ -15,9 +15,14 @@
        the dev loop has to tell apart: test-devloop-spring is an application
        with an entry point, launched as `java -cp ... <MainClass>`, and
        test-devloop-jetty is a WAR with none, run by the project's own build
-       plugin. Each is its own multi-module reactor, because the interesting
-       case - an edit in a sibling library reaching the running page - only
-       exists if there is a sibling.
+       plugin. test-devloop-cargo is that second shape again with the one
+       difference that costs the loop the most - the container runs as a process
+       of its own and is handed a deployed copy of the WAR, rather than serving
+       the module's output inside the build's JVM. Each is its own multi-module
+       reactor, because the interesting case - an edit in a sibling library
+       reaching the running page - only exists if there is a sibling, and each
+       runs the shared ITs out of test-devloop-support against its own
+       application.
 
        test-devloop-support sits here with them and is deliberately not listed
        below: flow-tests declares it among the modules it builds regardless of
@@ -27,6 +32,7 @@
   <modules>
     <module>test-devloop-spring</module>
     <module>test-devloop-jetty</module>
+    <module>test-devloop-cargo</module>
   </modules>
 
   <properties>

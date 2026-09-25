@@ -27,13 +27,17 @@ import javax.tools.ToolProvider;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -90,6 +94,22 @@ final class Compile {
      * millisecond rewrite of a different length is otherwise invisible.
      */
     record Stamp(long modified, long size) {
+    }
+
+    /**
+     * What a resource said the last time the daemon acted on it.
+     * <p>
+     * The stamp is the cheap filter that decides whether the file is worth
+     * reading at all; the digest is what the answer rests on, because a
+     * timestamp says a file was written and not that its content changed.
+     *
+     * @param stamp
+     *            the resource's stamp as of then
+     * @param digest
+     *            a fingerprint of the bytes the daemon acted on, or
+     *            {@code null} when they could not be read
+     */
+    private record Content(Stamp stamp, String digest) {
     }
 
     record Changes(List<Path> modified, List<Path> deleted) {
@@ -235,9 +255,16 @@ final class Compile {
             .newKeySet();
 
     /**
-     * Fingerprints as of the last browser notification, keyed by source path.
+     * What the daemon last told the application each resource says, keyed by
+     * source path.
+     * <p>
+     * A digest and not only a stamp, because "has the application been told
+     * this?" is a question about content that nothing on disk still answers:
+     * the classpath copy is not this daemon's alone to write, so by the time an
+     * apply looks at it, it may already hold bytes the application has never
+     * seen.
      */
-    private final Map<Path, Stamp> notified = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<Path, Content> notified = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * Fingerprints of frontend files as of the last time the daemon acted on
@@ -361,6 +388,18 @@ final class Compile {
      * Both questions are asked of every resource; only the consequence of a
      * "yes" differs, which is why the two kinds come back separately.
      * <p>
+     * Both are also asked of timestamps, and a timestamp says a file was
+     * written rather than that it changed. So a "yes" from either is confirmed
+     * against bytes before it counts - which is what keeps a build that
+     * regenerates its own resources from restarting the application over
+     * nothing. Each question is confirmed against its own bytes: the classpath
+     * copy for the first (see {@link #copyHasSameBytes}), the digest in
+     * {@link #notified} for the second. Answering the second from the copy as
+     * well would let an IDE that copies resources on save hide real edits -
+     * source and copy would agree on the new value while the running
+     * application still held the old one, and the restart that would have
+     * delivered it would never happen.
+     * <p>
      * Deletions are the third question, and the walk cannot answer it: a file
      * that is gone is not visited. The fingerprint map is the inventory that
      * can - every resource on disk at the last seed is a key in it - and a
@@ -380,10 +419,20 @@ final class Compile {
         java.util.Set<Path> seen = new java.util.HashSet<>();
         forEachResource((module, source, stamp) -> {
             seen.add(source);
-            if (!copyIsCurrent(module, source)
-                    || !stamp.equals(notified.get(source))) {
+            Content known = notified.get(source);
+            // Both questions above are asked of timestamps, and a build that
+            // regenerates a file answers yes to them without changing a byte.
+            // So a yes here only means the file is worth reading.
+            boolean looksChanged = !copyIsCurrent(module, source)
+                    || known == null || !stamp.equals(known.stamp());
+            if (!looksChanged) {
+                return;
+            }
+            if (changedBytes(module, source, known)) {
                 (resourceKindOf(module, source) == ResourceKind.LIVE ? live
                         : startup).add(source);
+            } else {
+                settle(module, source, stamp, known);
             }
         });
         for (Path source : notified.keySet()) {
@@ -399,6 +448,79 @@ final class Compile {
                 new Changes(sorted(startup), sorted(deletedStartup)));
     }
 
+    /**
+     * Records that a resource which looked changed is not, so that the next
+     * apply can answer from its stamp alone.
+     * <p>
+     * Without this the two cheap questions above go on failing for ever, and
+     * the file and its copy are read in full on every apply. That is exactly
+     * the population this exists for - measured in this repository, {@code tsc}
+     * rewrites nine byte-identical {@code .d.ts} files on every build - so the
+     * "settle an unchanged resource on its stamp alone" that
+     * {@link #seedResources()} promises has to hold after the first
+     * regenerating build, not only before it.
+     * <p>
+     * Both questions are settled because both drive the next answer. The stamp
+     * is the one the file has now, and the digest is the one already known -
+     * {@link #changedBytes} has just found the bytes to be that digest. The
+     * copy's modification time is brought up to the source's, because
+     * {@link #copyIsCurrent} compares the two and the copy would otherwise go
+     * on looking older; it is byte-for-byte the source, which is what makes
+     * saying so true.
+     *
+     * @param module
+     *            the module the resource belongs to
+     * @param source
+     *            the resource under {@code src/main/resources}
+     * @param stamp
+     *            the stamp the source has now
+     * @param known
+     *            what the daemon last acted on for it, never {@code null} here
+     */
+    @SuppressWarnings("java:S1166")
+    private void settle(Reactor.Module module, Path source, Stamp stamp,
+            Content known) {
+        notified.put(source, new Content(stamp, known.digest()));
+        try {
+            Files.setLastModifiedTime(module.targetFor(source),
+                    Files.getLastModifiedTime(source));
+        } catch (IOException ignored) {
+            // An optimisation and nothing more: the copy already holds the
+            // source's bytes, so a failure here costs one more pair of reads
+            // on the next apply and changes no answer.
+        }
+    }
+
+    /**
+     * Whether a resource that looks changed really is, asked of the bytes.
+     * <p>
+     * One "yes" is enough, and the two questions have different answers: the
+     * classpath copy can be stale for content the application read long ago,
+     * and the application can be running on content the copy no longer holds.
+     *
+     * @param module
+     *            the module the resource belongs to
+     * @param source
+     *            the resource under {@code src/main/resources}
+     * @param known
+     *            what the daemon last acted on for this resource, or
+     *            {@code null} for one it has never acted on
+     * @return {@code true} when the classpath copy or the running application
+     *         is behind the source
+     */
+    private boolean changedBytes(Reactor.Module module, Path source,
+            Content known) {
+        if (!copyHasSameBytes(module, source)) {
+            return true;
+        }
+        // A resource whose digest cannot be taken - at either end - is not one
+        // the daemon may quietly declare unchanged. Reporting it is also what
+        // heals an entry recorded without one: it is acted on, and acting on it
+        // records the bytes.
+        return known == null || known.digest() == null || digestOf(source)
+                .map(digest -> !digest.equals(known.digest())).orElse(true);
+    }
+
     private static List<Path> sorted(List<Path> paths) {
         return paths.stream().sorted(Comparator.naturalOrder()).toList();
     }
@@ -409,10 +531,16 @@ final class Compile {
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
      * {@link #seedFromDisk()} is what records that.
+     * <p>
+     * A file whose bytes cannot be read is still recorded, with no digest, for
+     * the reason {@link #seedResources()} gives: the key is the inventory a
+     * deletion is reported from. It reports changed until the bytes can be
+     * read, which is the safe way round.
      */
     void markResourcesNotified(List<Path> resources) {
         for (Path source : resources) {
-            stampOf(source).ifPresent(stamp -> notified.put(source, stamp));
+            contentOf(source)
+                    .ifPresent(content -> notified.put(source, content));
         }
     }
 
@@ -430,10 +558,26 @@ final class Compile {
         resources.forEach(notified::remove);
     }
 
-    /** Seeds the fingerprints, so an untouched project reports no changes. */
+    /**
+     * Seeds the fingerprints, so an untouched project reports no changes.
+     * <p>
+     * Reads every tracked resource, which is what a content fingerprint costs.
+     * It is paid once per application start, on a tree the walk has just
+     * brought into the page cache - and it is what lets every apply after it
+     * settle an unchanged resource on its stamp alone.
+     * <p>
+     * A resource whose bytes cannot be read - a lock, a scanner, a build
+     * rewriting it - is recorded anyway, with no digest. The key is what
+     * matters: {@code notified.keySet()} is also the inventory
+     * {@link #staleResources()} reports deletions from, so a resource left out
+     * of it could be deleted and never reported, and its copy under
+     * {@code target/classes} would go on being served until the next full Maven
+     * build.
+     */
     void seedResources() {
         notified.clear();
-        forEachResource((module, source, stamp) -> notified.put(source, stamp));
+        forEachResource((module, source, stamp) -> notified.put(source,
+                new Content(stamp, digestOf(source).orElse(null))));
     }
 
     /**
@@ -551,6 +695,52 @@ final class Compile {
         }
     }
 
+    /**
+     * Whether the classpath copy of a resource already holds the source's
+     * bytes.
+     * <p>
+     * A timestamp says a file was written; it does not say the file changed.
+     * Builds rewrite generated resources wholesale - measured in this
+     * repository, {@code tsc} rewrites nine {@code .d.ts} files under
+     * {@code vaadin-dev-server/src/main/resources} on every build with
+     * byte-identical content and a fresh modification time. They are
+     * startup-only resources, so each apply counted nine changes nothing could
+     * make live and restarted the application over an edit that was a method
+     * body and nothing else.
+     * <p>
+     * This answers only the first of the two questions
+     * {@link #staleResources()} asks - whether anything that re-fetches the
+     * file would get current bytes. It cannot answer the second, because the
+     * copy is not this daemon's alone to write: an IDE that copies resources on
+     * save makes it current the moment the edit is saved, while the running
+     * application is still configured with what it read at startup. That is
+     * what {@link #notified} is for.
+     * <p>
+     * {@link Files#mismatch} rather than reading both files: it stops at the
+     * first differing byte and compares lengths first, so the common case of a
+     * real edit costs almost nothing. Only a resource that already looks
+     * changed is ever read at all.
+     *
+     * @param module
+     *            the module the resource belongs to
+     * @param source
+     *            the resource under {@code src/main/resources}
+     * @return {@code true} when the copy exists and matches byte for byte
+     */
+    @SuppressWarnings("java:S1166")
+    private boolean copyHasSameBytes(Reactor.Module module, Path source) {
+        Path target = module.targetFor(source);
+        try {
+            return Files.isRegularFile(target)
+                    && Files.mismatch(source, target) == -1L;
+        } catch (IOException e) {
+            // Unreadable on either side: fall back to what the timestamps said,
+            // which is that this is a change. A resource the daemon cannot read
+            // is not one it may quietly drop.
+            return false;
+        }
+    }
+
     private boolean copyIsCurrent(Reactor.Module module, Path source) {
         Path target = module.targetFor(source);
         try {
@@ -569,6 +759,35 @@ final class Compile {
             return Optional.of(new Stamp(attrs.lastModifiedTime().toMillis(),
                     attrs.size()));
         } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Content> contentOf(Path file) {
+        return stampOf(file)
+                .map(stamp -> new Content(stamp, digestOf(file).orElse(null)));
+    }
+
+    /**
+     * A fingerprint of a file's bytes, or empty when they cannot be read.
+     * <p>
+     * Streamed rather than {@link Files#readAllBytes}: a resource tree holds
+     * whatever the application ships with it, and nothing here needs the file
+     * in memory. The digest is only ever compared with another digest taken the
+     * same way, so the choice of algorithm matters no further than collisions
+     * do.
+     */
+    @SuppressWarnings("java:S1166")
+    private Optional<String> digestOf(Path file) {
+        try (InputStream in = Files.newInputStream(file)) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[8192];
+            for (int read = in.read(buffer); read != -1; read = in
+                    .read(buffer)) {
+                digest.update(buffer, 0, read);
+            }
+            return Optional.of(HexFormat.of().formatHex(digest.digest()));
+        } catch (IOException | NoSuchAlgorithmException e) {
             return Optional.empty();
         }
     }
