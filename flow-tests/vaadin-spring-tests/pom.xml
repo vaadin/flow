@@ -146,6 +146,12 @@
       <groupId>jakarta.websocket</groupId>
       <artifactId>jakarta.websocket-client-api</artifactId>
     </dependency>
+    <!-- Websocket push in the embedded server, which Vaadin Spring leaves
+         to the application -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-websocket</artifactId>
+    </dependency>
 
     <dependency>
       <!-- Not directly used, but something in the depths of spring/swagger

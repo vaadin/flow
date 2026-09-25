@@ -31,6 +31,7 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
@@ -160,13 +161,30 @@ public class SpringBootAutoConfiguration {
     }
 
     /**
-     * Deploys JSR-356 websocket endpoints when Atmosphere is available.
-     *
-     * @return the server endpoint exporter which does the actual work.
+     * Deploys JSR-356 websocket endpoints when Atmosphere is available. Only
+     * active when the application has Spring WebSocket on the classpath, e.g.
+     * through <code>spring-boot-starter-websocket</code>.
      */
-    @Bean
-    public ServerEndpointExporter websocketEndpointDeployer() {
-        return new VaadinWebsocketEndpointExporter();
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(ServerEndpointExporter.class)
+    public static class WebsocketConfiguration {
+
+        /**
+         * Creates the configuration. Spring instantiates it.
+         */
+        public WebsocketConfiguration() {
+            // Default constructor
+        }
+
+        /**
+         * Creates the exporter which deploys the websocket endpoints.
+         *
+         * @return the server endpoint exporter which does the actual work.
+         */
+        @Bean
+        public ServerEndpointExporter websocketEndpointDeployer() {
+            return new VaadinWebsocketEndpointExporter();
+        }
     }
 
 }
