@@ -25,6 +25,8 @@ import java.io.Serializable;
  *
  * This data holder contains all necessary data you need to store a Contextual
  * Instance in a CDI Context.
+ * 
+ * @since 1.0
  */
 public class ContextualInstanceInfo<T> implements Serializable {
 

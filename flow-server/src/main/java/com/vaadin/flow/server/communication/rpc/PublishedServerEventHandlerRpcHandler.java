@@ -418,6 +418,8 @@ public class PublishedServerEventHandlerRpcHandler
      * {@link Element#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface PromiseJs extends Serializable {

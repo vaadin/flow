@@ -46,6 +46,8 @@ import com.vaadin.quarkus.annotation.VaadinSessionScoped;
 
 /**
  * Context for {@link NormalRouteScoped NormalRouteScoped} beans.
+ * 
+ * @since 1.0
  */
 public class RouteScopedContext extends AbstractContext {
 

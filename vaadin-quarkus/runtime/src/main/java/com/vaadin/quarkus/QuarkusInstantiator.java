@@ -39,6 +39,7 @@ import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
  * New instances are created by default by QuarkusInstantiatorFactory.
  *
  * @see InstantiatorFactory
+ * @since 1.0
  */
 public class QuarkusInstantiator implements Instantiator {
 

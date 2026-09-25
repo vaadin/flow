@@ -49,6 +49,7 @@ import com.vaadin.quarkus.AnyLiteral;
  * BeanManager during CDI container boot time.
  * </p>
  *
+ * @since 1.0
  */
 @Typed()
 public final class BeanProvider {

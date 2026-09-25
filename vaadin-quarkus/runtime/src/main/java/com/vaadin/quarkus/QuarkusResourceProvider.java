@@ -30,6 +30,8 @@ import com.vaadin.flow.di.ResourceProvider;
 /**
  * A {@link ResourceProvider} implementation that delegates resource loading to
  * current thread context ClassLoader.
+ * 
+ * @since 1.0
  */
 public class QuarkusResourceProvider implements ResourceProvider {
 

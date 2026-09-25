@@ -415,6 +415,8 @@ public class History implements Serializable {
     /**
      * What this history asks of the browser, as a JavaScript definition for
      * {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface HistoryJs extends Serializable {

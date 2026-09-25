@@ -33,6 +33,8 @@ import org.jboss.logging.Logger;
  * The provided logging documentation offers insights into the behavior and
  * implications of changing the dispatch behavior by altering the relevant
  * Quarkus configuration property.
+ * 
+ * @since 3.2
  */
 @Recorder
 public class PushDispatchRecorder {

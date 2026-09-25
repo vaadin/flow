@@ -170,6 +170,8 @@ public class JsonConstants implements Serializable {
      * JavaScript names, in place of the expression that an invocation of an
      * expression names. The value identifies the JavaScript that the bundle
      * holds, and says nothing about the Java that declared it.
+     * 
+     * @since 25.4
      */
     public static final String UIDL_KEY_JS_FUNCTION = "f";
 
@@ -178,6 +180,8 @@ public class JsonConstants implements Serializable {
      * carries, present only when the function collects them into a rest
      * parameter and the client therefore cannot read their number off the
      * function it looks up.
+     * 
+     * @since 25.4
      */
     public static final String UIDL_KEY_JS_ARGUMENT_COUNT = "n";
 

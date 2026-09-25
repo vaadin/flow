@@ -369,6 +369,8 @@ public final class WakeLock {
     /**
      * What a wake lock asks of its client-side bridge, as a JavaScript
      * definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface WakeLockJs extends Serializable {

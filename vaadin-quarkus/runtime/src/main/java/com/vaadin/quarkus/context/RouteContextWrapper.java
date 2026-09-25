@@ -31,6 +31,7 @@ import com.vaadin.quarkus.annotation.RouteScoped;
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
  *
+ * @since 1.0
  */
 public class RouteContextWrapper implements InjectableContext {
 

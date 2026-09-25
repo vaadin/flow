@@ -41,6 +41,7 @@ import java.util.Set;
  * file containing the implementation of this interface, Quarkus will instead
  * provide all available annotated endpoints found at build time.
  *
+ * @since 1.1
  */
 public class EnableWebsockets implements ServerApplicationConfig {
 

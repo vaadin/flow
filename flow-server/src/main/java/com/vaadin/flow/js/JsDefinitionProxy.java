@@ -39,6 +39,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * <p>
  * For internal use only. Call {@link Element#executeJs(Class)}, which runs the
  * call on the element the implementation was obtained from.
+ * 
+ * @since 25.4
  */
 public final class JsDefinitionProxy {
 

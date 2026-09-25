@@ -30,6 +30,8 @@ import com.vaadin.quarkus.annotation.UIScoped;
  * Used to bind multiple scope annotations to a single context. Will delegate
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
+ * 
+ * @since 1.0
  */
 public class UIContextWrapper implements InjectableContext {
 

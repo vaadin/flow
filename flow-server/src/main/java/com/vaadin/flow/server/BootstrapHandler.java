@@ -1405,7 +1405,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the bootstrap context of the UI being created
      * @param pushConfiguration
      *            the push configuration of the UI being created
-     * @since 25.3
+     * @since 25.2.10
      */
     protected void modifyPushConfiguration(BootstrapContext context,
             PushConfiguration pushConfiguration) {

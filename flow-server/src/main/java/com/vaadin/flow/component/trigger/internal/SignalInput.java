@@ -120,6 +120,8 @@ public class SignalInput<T> extends Action.Input<T> {
      * for {@link Element#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface MirrorJs extends Serializable {

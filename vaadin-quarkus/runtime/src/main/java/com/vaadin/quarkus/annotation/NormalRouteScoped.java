@@ -49,6 +49,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * The sister annotation to this is the {@link RouteScoped}. Both annotations
  * reference the same underlying scope, so it is possible to get both a proxy
  * and a direct reference to the same object by using different annotations.
+ * 
+ * @since 1.0
  */
 @NormalScope
 @Inherited

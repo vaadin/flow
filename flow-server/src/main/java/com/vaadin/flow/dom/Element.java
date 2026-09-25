@@ -1993,6 +1993,7 @@ public class Element extends Node<Element> {
      *             if the type is not an interface, is not annotated with
      *             {@link JsDefinition}, or has a method that can not be
      *             answered
+     * @since 25.4
      */
     public <T> T executeJs(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
@@ -2428,6 +2429,8 @@ public class Element extends Node<Element> {
      * however many arguments it takes, so the bundle carries a single function
      * for all of them and the browser is sent the name and the arguments of a
      * call rather than JavaScript that names the function.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface CallFunctionJs extends Serializable {
@@ -2462,6 +2465,8 @@ public class Element extends Node<Element> {
     /**
      * The JavaScript behind {@link #scrollIntoView(ScrollIntoViewOption...)},
      * as a JavaScript definition for {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ScrollIntoViewJs extends Serializable {
