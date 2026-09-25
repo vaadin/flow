@@ -425,9 +425,14 @@ final class Compile {
             // So a yes here only means the file is worth reading.
             boolean looksChanged = !copyIsCurrent(module, source)
                     || known == null || !stamp.equals(known.stamp());
-            if (looksChanged && changedBytes(module, source, known)) {
+            if (!looksChanged) {
+                return;
+            }
+            if (changedBytes(module, source, known)) {
                 (resourceKindOf(module, source) == ResourceKind.LIVE ? live
                         : startup).add(source);
+            } else {
+                settle(module, source, stamp, known);
             }
         });
         for (Path source : notified.keySet()) {
@@ -441,6 +446,48 @@ final class Compile {
         return new ResourceChanges(
                 new Changes(sorted(live), sorted(deletedLive)),
                 new Changes(sorted(startup), sorted(deletedStartup)));
+    }
+
+    /**
+     * Records that a resource which looked changed is not, so that the next
+     * apply can answer from its stamp alone.
+     * <p>
+     * Without this the two cheap questions above go on failing for ever, and
+     * the file and its copy are read in full on every apply. That is exactly
+     * the population this exists for - measured in this repository, {@code tsc}
+     * rewrites nine byte-identical {@code .d.ts} files on every build - so the
+     * "settle an unchanged resource on its stamp alone" that
+     * {@link #seedResources()} promises has to hold after the first
+     * regenerating build, not only before it.
+     * <p>
+     * Both questions are settled because both drive the next answer. The stamp
+     * is the one the file has now, and the digest is the one already known -
+     * {@link #changedBytes} has just found the bytes to be that digest. The
+     * copy's modification time is brought up to the source's, because
+     * {@link #copyIsCurrent} compares the two and the copy would otherwise go
+     * on looking older; it is byte-for-byte the source, which is what makes
+     * saying so true.
+     *
+     * @param module
+     *            the module the resource belongs to
+     * @param source
+     *            the resource under {@code src/main/resources}
+     * @param stamp
+     *            the stamp the source has now
+     * @param known
+     *            what the daemon last acted on for it, never {@code null} here
+     */
+    private void settle(Reactor.Module module, Path source, Stamp stamp,
+            Content known) {
+        notified.put(source, new Content(stamp, known.digest()));
+        try {
+            Files.setLastModifiedTime(module.targetFor(source),
+                    Files.getLastModifiedTime(source));
+        } catch (IOException ignored) {
+            // An optimisation and nothing more: the copy already holds the
+            // source's bytes, so a failure here costs one more pair of reads
+            // on the next apply and changes no answer.
+        }
     }
 
     /**
