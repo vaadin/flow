@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,6 +142,28 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static final String FALSE = "false";
 
     private static final String PACKAGE = "package";
+
+    /**
+     * Both Payara plugins open the application in a browser once they have
+     * deployed it, unconditionally and whatever goal runs: {@code openApp}
+     * builds a Selenium driver through WebDriverManager for the browser it
+     * finds installed, and falls back to {@code Desktop.browse} when that
+     * throws. So every start the loop made opened a window on the developer's
+     * desktop - and on a Linux machine with no browser in the places the plugin
+     * looks, WebDriverManager went to download geckodriver and failed with a
+     * {@code NoSuchMethodError} from the plugin's own clashing commons-io. That
+     * is an {@code Error}, not the {@code Exception} the plugin catches, and it
+     * reaches the goal's {@code finally}, which stops the server it has just
+     * started: measured, every start then ended in "Terminated payara-server".
+     * <p>
+     * A browser name the factory does not know throws an
+     * {@code UnsupportedOperationException} before WebDriverManager is touched,
+     * which the plugin does catch; and a headless Maven JVM makes the
+     * {@code Desktop} fallback decline too. Neither setting reaches the
+     * application, which runs in a JVM of its own.
+     */
+    private static final Map<String, String> NO_PAYARA_BROWSER = Map
+            .of("payara.browser", "none", "java.awt.headless", "true");
 
     private static final String REMOVE_SKIP = "remove <skip>, or set it to false";
 
@@ -568,7 +591,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return new ServerPlugin("payara", "fish.payara.maven.plugins",
                 "payara-server-maven-plugin", "start", PACKAGE,
                 "payara.javaCommandLineOptions", false, false, true, false,
-                false, Map.of("skip", "true"),
+                false, with(Map.of("skip", "true"), NO_PAYARA_BROWSER),
                 List.of(new Competing("skip", List.of(FALSE),
                         "the start goal would run on every module in the "
                                 + "reactor, and the first of them - the "
@@ -651,7 +674,8 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return new ServerPlugin("payara-micro", "fish.payara.maven.plugins",
                 "payara-micro-maven-plugin", "start", PACKAGE, "exec.args",
                 false, false, false, false, false,
-                Map.of("payara.skip", "true", "payara.deploy.war", "true"),
+                with(Map.of("payara.skip", "true", "payara.deploy.war", "true"),
+                        NO_PAYARA_BROWSER),
                 List.of(new Competing("skip", List.of(FALSE),
                         "the start goal would run on every module in the "
                                 + "reactor, and the first of them - the "
@@ -889,6 +913,14 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
                                 + "that is not a WAR",
                         REMOVE_SKIP)),
                 CARGO_SERVING);
+    }
+
+    /** One map of goal properties holding both, for an entry that needs two. */
+    private static Map<String, String> with(Map<String, String> own,
+            Map<String, String> shared) {
+        Map<String, String> both = new LinkedHashMap<>(own);
+        both.putAll(shared);
+        return Map.copyOf(both);
     }
 
     /**

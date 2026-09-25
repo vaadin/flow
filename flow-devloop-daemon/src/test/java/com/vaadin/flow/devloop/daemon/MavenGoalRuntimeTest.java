@@ -95,9 +95,12 @@ class MavenGoalRuntimeTest {
     void goalProperties_withoutTheExtension_dropTheSkipAndNothingElse() {
         ServerPlugin micro = entry("payara-micro");
 
-        assertEquals(Map.of("payara.deploy.war", "true"),
-                MavenGoalRuntime.goalProperties(micro, false));
-        assertEquals(Map.of("payara.skip", "true", "payara.deploy.war", "true"),
+        Map<String, String> without = MavenGoalRuntime.goalProperties(micro,
+                false);
+        assertFalse(without.containsKey("payara.skip"), without.toString());
+        assertEquals("true", without.get("payara.deploy.war"));
+        assertEquals("none", without.get("payara.browser"));
+        assertEquals(micro.goalProperties(),
                 MavenGoalRuntime.goalProperties(micro, true));
     }
 
@@ -160,8 +163,8 @@ class MavenGoalRuntimeTest {
      */
     @Test
     void goalProperties_theSkipIsSentEvenWithNoPrefix() {
-        assertEquals(Map.of("skip", "true"),
-                MavenGoalRuntime.goalProperties(entry("payara"), true));
+        assertEquals("true", MavenGoalRuntime
+                .goalProperties(entry("payara"), true).get("skip"));
     }
 
     /** And nothing else in the table goes out without a prefix. */
