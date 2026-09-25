@@ -52,6 +52,14 @@ import com.vaadin.flow.dom.Element;
  * row group by itself. Reach for {@link #getHead()} and friends only when you
  * need to address a section as a whole — to style it, or to hand it to
  * {@code bindChildren}.
+ * <p>
+ * The Aura and Lumo themes style every table in the application when
+ * {@link com.vaadin.flow.server.InitParameters#THEME_HTML_ELEMENTS_ENABLED} is
+ * enabled. A single table is left to the browser with
+ * {@code table.addClassName(Constants.UNTHEMED_HTML_CLASS_NAME)}, or styled on
+ * its own, without the property, with
+ * {@code table.addClassName(Constants.THEMED_HTML_CLASS_NAME)}; see
+ * {@link com.vaadin.flow.server.Constants}.
  *
  * @see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  *      HTML: Tabular data</a>
@@ -64,40 +72,6 @@ import com.vaadin.flow.dom.Element;
 @Tag(Tag.TABLE)
 public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
-
-    /**
-     * The class name that asks the theme to style a native element. On a
-     * <code>&lt;table&gt;</code> the Aura and Lumo themes draw a bordered box
-     * on the theme's background, cell padding, a header and footer told apart
-     * from the body, and a line between the rows, in the colors and spacing of
-     * the theme in use.
-     * <p>
-     * The usual way to get these styles is to enable
-     * {@code vaadin.theme.htmlElements.enabled}, which puts the class name on
-     * the page's {@code <body>} and so styles every table in the application.
-     * Add the class name to a single table to style just that one:
-     *
-     * <pre>
-     * table.addClassName(Table.THEMED_CLASS_NAME);
-     * </pre>
-     *
-     * @see #UNTHEMED_CLASS_NAME
-     */
-    public static final String THEMED_CLASS_NAME = "vaadin-themed-html";
-
-    /**
-     * The class name that keeps the theme's styles off a table when an
-     * ancestor, usually the page's {@code <body>} with
-     * {@code vaadin.theme.htmlElements.enabled}, asks for them. The table is
-     * then left to the browser, or to the application's own styles:
-     *
-     * <pre>
-     * table.addClassName(Table.UNTHEMED_CLASS_NAME);
-     * </pre>
-     *
-     * @see #THEMED_CLASS_NAME
-     */
-    public static final String UNTHEMED_CLASS_NAME = "vaadin-unthemed-html";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the

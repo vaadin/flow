@@ -1000,7 +1000,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         assertFalse(Jsoup.parse(responseOutput.toString(StandardCharsets.UTF_8))
-                .body().hasClass("vaadin-themed-html"));
+                .body().hasClass(Constants.THEMED_HTML_CLASS_NAME));
 
         responseOutput.reset();
         deploymentConfiguration.setApplicationOrSystemProperty(
@@ -1008,7 +1008,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         assertTrue(Jsoup.parse(responseOutput.toString(StandardCharsets.UTF_8))
-                .body().hasClass("vaadin-themed-html"));
+                .body().hasClass(Constants.THEMED_HTML_CLASS_NAME));
     }
 
     @Test

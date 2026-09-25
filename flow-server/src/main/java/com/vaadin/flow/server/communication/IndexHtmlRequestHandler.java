@@ -90,9 +90,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
-    // The class name that the Aura and Lumo themes style the native elements
-    // under
-    private static final String THEMED_HTML_CLASS_NAME = "vaadin-themed-html";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
@@ -206,7 +203,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addDevBundleTheme(indexDocument, context);
         applyColorScheme(indexDocument, context);
         if (config.isThemeHtmlElementsEnabled()) {
-            indexDocument.body().addClass(THEMED_HTML_CLASS_NAME);
+            indexDocument.body().addClass(Constants.THEMED_HTML_CLASS_NAME);
         }
 
         if (config.isDevToolsEnabled()) {
