@@ -56,7 +56,7 @@ jobs:
         # workspace: that artifact is built on Temurin and is gone by the time
         # this runs.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -DskipITs -P '!gradle'"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         env:
@@ -99,7 +99,15 @@ jobs:
     # GitHub issue kept in sync by title - the mechanism release-check.yml
     # already uses. Opened or updated when the native build breaks, closed
     # again once it is green, so nobody has to watch the Actions tab.
-    if: ${{ always() && github.repository == 'vaadin/flow' }}
+    #
+    # Only for the nightly and for manual runs on the default branch: a manual
+    # run on a feature branch would open an issue that only a green run on
+    # that same branch closes again. The schedule event has no repository in
+    # its payload, so it needs its own check.
+    if: >-
+      ${{ always() && github.repository == 'vaadin/flow' &&
+      (github.event_name == 'schedule' ||
+      github.ref_name == github.event.repository.default_branch) }}
     needs: native-tests
     permissions:
       contents: read
@@ -109,6 +117,8 @@ jobs:
       - name: Sync the native build issue
         env:
           GH_TOKEN: ${{ github.token }}
+          # The job has no checkout, so gh cannot read the repository from git.
+          GH_REPO: ${{ github.repository }}
           RESULT: ${{ needs.native-tests.result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           BRANCH: ${{ github.ref_name }}
@@ -149,7 +159,7 @@ jobs:
           Reproduce locally with GraalVM on the path:
 
           \`\`\`sh
-          mvn install -DskipTests -pl '!flow-plugins/flow-gradle-plugin'
+          mvn install -DskipTests -DskipITs -P '!gradle'
           mvn verify -f flow-tests/vaadin-quarkus-tests/pom.xml -pl embedded-plugin -am -Dnative
           \`\`\`
 
