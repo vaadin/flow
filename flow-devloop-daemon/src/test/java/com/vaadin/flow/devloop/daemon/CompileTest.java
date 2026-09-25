@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 
@@ -627,6 +628,44 @@ class CompileTest {
 
         assertTrue(compile.staleResources().isEmpty(),
                 "a rewrite that changed no bytes must not be a change");
+    }
+
+    /**
+     * And answering that once has to settle it. Both cheap questions failed on
+     * a regenerated file - the stamp moved, and the copy is now older than the
+     * source - and neither is mended by finding the bytes unchanged, so before
+     * this the daemon read the file and its copy in full on every apply, for
+     * ever.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsSettledOnce()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+        Path copy = app.classesDir().resolve("META-INF/resources/site.css");
+
+        // What a regenerating build does: same bytes, later modification time.
+        Files.writeString(served, "body{}");
+        Files.setLastModifiedTime(served, FileTime
+                .fromMillis(Files.getLastModifiedTime(copy).toMillis() + 5000));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+
+        assertTrue(
+                Files.getLastModifiedTime(copy)
+                        .compareTo(Files.getLastModifiedTime(served)) >= 0,
+                "the copy must not go on looking older than the source it "
+                        + "already holds");
+        assertTrue(compile.staleResources().isEmpty(),
+                "and it must still not be a change");
     }
 
     /** And a rewrite that did change something still is one. */
