@@ -21,11 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.atmosphere.cpr.ApplicationConfig;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -38,6 +40,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.spring.springnative.ClientCallableAotProcessor;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 
@@ -167,23 +170,30 @@ public class SpringBootAutoConfiguration {
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(ServerEndpointExporter.class)
-    public static class WebsocketConfiguration {
+    static class WebsocketConfiguration {
 
-        /**
-         * Creates the configuration. Spring instantiates it.
-         */
-        public WebsocketConfiguration() {
-            // Default constructor
-        }
-
-        /**
-         * Creates the exporter which deploys the websocket endpoints.
-         *
-         * @return the server endpoint exporter which does the actual work.
-         */
         @Bean
-        public ServerEndpointExporter websocketEndpointDeployer() {
+        ServerEndpointExporter websocketEndpointDeployer() {
             return new VaadinWebsocketEndpointExporter();
+        }
+    }
+
+    /**
+     * Warns when push is available but its websocket endpoints can not be
+     * deployed, because push then silently falls back to long polling.
+     */
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnMissingClass("org.springframework.web.socket.server.standard.ServerEndpointExporter")
+    static class MissingWebsocketConfiguration {
+
+        MissingWebsocketConfiguration() {
+            if (JSR356WebsocketInitializer.isAtmosphereAvailable()) {
+                LoggerFactory.getLogger(SpringBootAutoConfiguration.class)
+                        .warn("Spring WebSocket is not on the classpath, so "
+                                + "push can not use websockets in an embedded "
+                                + "server. Add spring-boot-starter-websocket "
+                                + "to the application to enable them.");
+            }
         }
     }
 

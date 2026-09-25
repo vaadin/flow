@@ -47,11 +47,15 @@ class SpringBootAutoConfigurationConditionalTest {
                 .withConfiguration(AutoConfigurations
                         .of(SpringBootAutoConfiguration.class));
         runner.run(context -> assertThat(context)
-                .hasSingleBean(VaadinWebsocketEndpointExporter.class));
+                .hasSingleBean(VaadinWebsocketEndpointExporter.class)
+                .doesNotHaveBean(
+                        SpringBootAutoConfiguration.MissingWebsocketConfiguration.class));
         runner.withClassLoader(
                 new FilteredClassLoader(ServerEndpointExporter.class))
                 .run(context -> assertThat(context).hasNotFailed()
-                        .doesNotHaveBean(ServerEndpointExporter.class));
+                        .doesNotHaveBean(ServerEndpointExporter.class)
+                        .hasSingleBean(
+                                SpringBootAutoConfiguration.MissingWebsocketConfiguration.class));
     }
 
     @Configuration(proxyBeanMethods = false)
