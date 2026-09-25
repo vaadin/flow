@@ -118,17 +118,22 @@
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-jandex</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-cdi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-quarkus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-quarkus-deployment</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

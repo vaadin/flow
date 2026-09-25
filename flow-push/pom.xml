@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
     <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>

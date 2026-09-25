@@ -24,6 +24,7 @@
   </modules>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- Don't care about coding style or licenses for tests -->
     <sonar.skip>true</sonar.skip>
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
@@ -385,6 +386,21 @@
 
         <module>vaadin-spring-tests</module>
         <module>vaadin-cdi-tests</module>
+        <!--
+          vaadin-quarkus-tests is deliberately not a module of this reactor.
+          Four of its modules use the `quarkus` packaging, which the Quarkus
+          Maven plugin provides as a build extension, and Maven loads an
+          extension for the whole session as soon as the project declaring it
+          is in the reactor. Listing the suite here therefore puts the Quarkus
+          bootstrap in front of every build of this repository, the ones the
+          dev loop runs included.
+
+          Nothing needs it listed: the quarkus-tests job in validation.yml
+          builds the suite from its own root with -f, computeMatrix.js
+          set-version rewrites POMs off the filesystem rather than off the
+          reactor, and the modules still inherit from this POM as their
+          parent.
+        -->
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>
