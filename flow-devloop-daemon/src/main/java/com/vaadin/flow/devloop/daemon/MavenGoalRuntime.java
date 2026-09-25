@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
  * For internal use only. May be renamed or removed in a future release.
  */
 final class MavenGoalRuntime implements AppRuntime {
+
+    private static final String WARNING = "WARNING: ";
 
     private final Launch launch;
     private final ServerPlugin plugin;
@@ -444,8 +447,8 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     private String flagsSetting() {
         return plugin.projectPropertyFlags()
-                ? DevLoopBuildExtension.PROPERTY_PREFIX
-                        + plugin.jvmFlagsProperty()
+                ? (DevLoopBuildExtension.PROPERTY_PREFIX
+                        + plugin.jvmFlagsProperty())
                 : plugin.jvmFlagsProperty();
     }
 
@@ -487,11 +490,12 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     static List<String> singleToken(List<String> flags) {
         List<String> folded = new ArrayList<>();
-        for (int index = 0; index < flags.size(); index++) {
-            String flag = flags.get(index);
+        Iterator<String> remaining = flags.iterator();
+        while (remaining.hasNext()) {
+            String flag = remaining.next();
             boolean wantsValue = flag.startsWith("--add-")
-                    && flag.indexOf('=') < 0 && index + 1 < flags.size();
-            folded.add(wantsValue ? flag + "=" + flags.get(++index) : flag);
+                    && flag.indexOf('=') < 0 && remaining.hasNext();
+            folded.add(wantsValue ? (flag + "=" + remaining.next()) : flag);
         }
         return folded;
     }
@@ -540,8 +544,8 @@ final class MavenGoalRuntime implements AppRuntime {
             // swap it has not been given the access to make, and log a failure
             // for it on every start.
             String extraClasspath = plugin.embedded()
-                    ? "extraClasspath=" + launch.ensureHotswapAgent().toUri()
-                            + System.lineSeparator()
+                    ? ("extraClasspath=" + launch.ensureHotswapAgent().toUri()
+                            + System.lineSeparator())
                     : "";
             Files.writeString(classes.resolve("hotswap-agent.properties"),
                     "# Written by the Vaadin dev loop; see MavenGoalRuntime."
@@ -674,7 +678,7 @@ final class MavenGoalRuntime implements AppRuntime {
         boolean rewritten = !configurationOverride().isEmpty();
         List<String> warnings = new ArrayList<>();
         if (plugin.projectPropertyFlags() && !rewritten) {
-            warnings.add("WARNING: " + plugin.artifactId() + " takes the JVM "
+            warnings.add(WARNING + plugin.artifactId() + " takes the JVM "
                     + "flags for the server it starts from the Maven project "
                     + "property " + plugin.jvmFlagsProperty() + ", which no "
                     + "command line can set - only the dev loop's build "
@@ -701,21 +705,18 @@ final class MavenGoalRuntime implements AppRuntime {
             // loop needs for itself, whose value is composed per launch. That
             // one is worth saying even when the extension is in play.
             boolean forceable = !competing.acceptable().isEmpty();
-            if (rewritten && forceable) {
-                continue;
-            }
             Optional<String> configured = declared
-                    .configured(competing.element());
-            if (configured.isEmpty()
-                    || competing.acceptable().stream().anyMatch(value -> value
-                            .equalsIgnoreCase(configured.get()))) {
+                    .configured(competing.element())
+                    .filter(value -> competing.acceptable().stream()
+                            .noneMatch(value::equalsIgnoreCase));
+            if ((rewritten && forceable) || configured.isEmpty()) {
                 continue;
             }
             String why = forceable
-                    ? "and this daemon is not running from a jar so it "
-                            + "cannot override that for you"
+                    ? ("and this daemon is not running from a jar so it "
+                            + "cannot override that for you")
                     : "which the dev loop needs for itself";
-            warnings.add("WARNING: " + plugin.artifactId() + " is configured "
+            warnings.add(WARNING + plugin.artifactId() + " is configured "
                     + "with <" + competing.element() + ">" + configured.get()
                     + "</" + competing.element() + ">, " + why + " - "
                     + competing.consequence() + ". Please " + competing.fix()
@@ -875,7 +876,7 @@ final class MavenGoalRuntime implements AppRuntime {
         List<String> warnings = new ArrayList<>();
         for (String flag : flags) {
             if (flag.chars().anyMatch(Character::isWhitespace)) {
-                warnings.add("WARNING: " + flag + " contains a space, and "
+                warnings.add(WARNING + flag + " contains a space, and "
                         + splitter + ", so the "
                         + "application JVM will not receive it intact. Move "
                         + "the file it names to a path without spaces.");

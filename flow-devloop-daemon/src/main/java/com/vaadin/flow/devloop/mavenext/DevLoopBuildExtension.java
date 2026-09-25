@@ -175,6 +175,8 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      */
     static final String BOUND_EXECUTION = "vaadin-devloop-run";
 
+    private static final String LOG_PREFIX = "[vaadin-dev] ";
+
     /**
      * Where each module's effective model is left, relative to the module's own
      * directory.
@@ -480,12 +482,13 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
                 return;
             }
             boolean adding = existing != null && !existing.isBlank();
-            String effective = adding ? existing.strip() + " " + value : value;
+            String effective = adding ? (existing.strip() + " " + value)
+                    : value;
             if (!effective.equals(existing)) {
                 // Said out loud for the same reason a forced element is: this
                 // run is not the build the pom describes.
-                System.out.println("[vaadin-dev] " + plugin.getArtifactId()
-                        + ": " + (adding ? "adding to" : "setting")
+                System.out.println(LOG_PREFIX + plugin.getArtifactId() + ": "
+                        + (adding ? "adding to" : "setting")
                         + " the project property " + name + " for this run in "
                         + project.getArtifactId());
             }
@@ -550,9 +553,9 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         }
         // Said out loud for the reason a forced element is: this run is not the
         // build the pom describes.
-        System.out.println("[vaadin-dev] " + plugin.getArtifactId()
-                + ": running " + goal + " at " + phase + " in "
-                + project.getArtifactId() + " for this run (the command line "
+        System.out.println(LOG_PREFIX + plugin.getArtifactId() + ": running "
+                + goal + " at " + phase + " in " + project.getArtifactId()
+                + " for this run (the command line "
                 + "names no goal, so it runs in that module and no other)");
     }
 
@@ -579,7 +582,7 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
                 // Said out loud, in the application's own log: the dev loop is
                 // overriding something the project asked for, and that is not
                 // something to do silently.
-                System.out.println("[vaadin-dev] " + plugin.getArtifactId()
+                System.out.println(LOG_PREFIX + plugin.getArtifactId()
                         + ": using <" + element + ">" + value + "</" + element
                         + "> for this run (the pom says "
                         + (child.getValue() == null ? "nothing"

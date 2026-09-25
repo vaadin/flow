@@ -213,7 +213,7 @@ final class DevLoopRegistration {
      *             if no loopback address accepted the connection, carrying the
      *             failure from the address the JVM itself prefers
      */
-    private static Socket connectToDaemon(int port) throws IOException {
+    static Socket connectToDaemon(int port) throws IOException {
         IOException refused = null;
         for (InetAddress address : loopbackAddresses()) {
             Socket socket = new Socket();
@@ -243,9 +243,10 @@ final class DevLoopRegistration {
     private static void close(Socket socket) {
         try {
             socket.close();
-        } catch (IOException ignored) {
+        } catch (IOException e) {
             // Nothing was connected, and the address that failed is already
             // being reported.
+            LOGGER.debug("Could not close an unconnected socket", e);
         }
     }
 
@@ -267,6 +268,7 @@ final class DevLoopRegistration {
             } catch (UnknownHostException e) {
                 // A stack without that family. The other candidate answers for
                 // it, and if neither does the connect below reports it.
+                LOGGER.debug("No loopback address {} on this host", literal, e);
             }
         }
         return candidates;

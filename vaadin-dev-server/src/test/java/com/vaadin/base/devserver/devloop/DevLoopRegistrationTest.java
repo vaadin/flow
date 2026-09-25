@@ -15,10 +15,13 @@
  */
 package com.vaadin.base.devserver.devloop;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.Set;
 
@@ -36,7 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.abort;
 
 /**
  * An application the daemon did not launch must be left entirely alone: the
@@ -259,13 +264,9 @@ class DevLoopRegistrationTest {
 
         assertTrue(candidates.contains(InetAddress.getLoopbackAddress()),
                 "the JVM's own preference has to be among them: " + candidates);
-        assertTrue(
-                candidates.stream()
-                        .anyMatch(address -> address instanceof Inet4Address),
+        assertTrue(candidates.stream().anyMatch(Inet4Address.class::isInstance),
                 "no IPv4 loopback among " + candidates);
-        assertTrue(
-                candidates.stream()
-                        .anyMatch(address -> address instanceof Inet6Address),
+        assertTrue(candidates.stream().anyMatch(Inet6Address.class::isInstance),
                 "no IPv6 loopback among " + candidates);
         assertTrue(candidates.stream().allMatch(InetAddress::isLoopbackAddress),
                 "nothing here may be reachable from off the machine: "
@@ -297,5 +298,47 @@ class DevLoopRegistrationTest {
     @Test
     void thereIsAlwaysAtLeastOneCandidate() {
         assertFalse(DevLoopRegistration.loopbackAddresses().isEmpty());
+    }
+
+    /**
+     * A daemon listening on the family this JVM does not prefer is still
+     * reached, after the preferred address has refused.
+     */
+    @Test
+    void aDaemonOnTheOtherFamilyIsStillReached() throws IOException {
+        InetAddress other = DevLoopRegistration.loopbackAddresses().stream()
+                .filter(address -> !address
+                        .equals(InetAddress.getLoopbackAddress()))
+                .findFirst().orElseThrow();
+        try (ServerSocket daemon = bind(other);
+                Socket socket = DevLoopRegistration
+                        .connectToDaemon(daemon.getLocalPort())) {
+            assertEquals(other, socket.getInetAddress());
+        }
+    }
+
+    /**
+     * With nothing listening on any loopback address the failure is thrown, so
+     * the application can say it runs unregistered.
+     */
+    @Test
+    void noDaemonListening_throws() throws IOException {
+        int port;
+        try (ServerSocket released = new ServerSocket(0, 1,
+                InetAddress.getLoopbackAddress())) {
+            port = released.getLocalPort();
+        }
+
+        assertThrows(IOException.class,
+                () -> DevLoopRegistration.connectToDaemon(port));
+    }
+
+    private static ServerSocket bind(InetAddress address) {
+        try {
+            return new ServerSocket(0, 1, address);
+        } catch (IOException e) {
+            // A stack without that family has nothing to fall back to.
+            return abort("cannot listen on " + address + ": " + e);
+        }
     }
 }
