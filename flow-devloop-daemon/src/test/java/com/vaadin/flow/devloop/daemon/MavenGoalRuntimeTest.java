@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -402,6 +403,13 @@ class MavenGoalRuntimeTest {
                 .contains("-javaagent:/ha.jar"));
         assertEquals(Reactor.real(repo).toString(),
                 invocation.environment().get("MAVEN_BASEDIR"));
+        // A forked server that finds no java configured runs the first one on
+        // the PATH, so the chosen JVM has to be that one.
+        assertTrue(
+                invocation.environment().get("PATH")
+                        .startsWith(launch.appJvm().home().resolve("bin")
+                                + File.pathSeparator),
+                invocation.environment().get("PATH"));
         assertFalse(hotswapAgentProperties(launch).contains("extraClasspath"));
     }
 

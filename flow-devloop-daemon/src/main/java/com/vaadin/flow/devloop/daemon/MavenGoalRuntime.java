@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -168,6 +169,14 @@ final class MavenGoalRuntime implements AppRuntime {
         // JetBrains Runtime that Jvm chose is the one the application runs on -
         // and with it, enhanced class redefinition.
         environment.put("JAVA_HOME", launch.appJvm().home().toString());
+        // And first on the PATH, for the forked servers: a plugin that is given
+        // no java of its own runs the first one it finds there, whatever
+        // JAVA_HOME says. Payara Micro's does, and on Linux that was a JDK
+        // without enhanced class redefinition, which refused the loop's flags
+        // and never started. Windows hid it by looking in the directory of
+        // the process that spawns first, which is Maven's own JVM.
+        environment.put("PATH", pathWith(launch.appJvm().home().resolve("bin"),
+                System.getenv("PATH")));
         // The launcher derives maven.multiModuleProjectDirectory by walking up
         // from the working directory looking for .mvn, and the working
         // directory here is the application module rather than the reactor
@@ -846,6 +855,23 @@ final class MavenGoalRuntime implements AppRuntime {
         }
         return needed.isEmpty() ? inherited.strip()
                 : inherited.strip() + " " + needed;
+    }
+
+    /**
+     * The {@code PATH} to launch with: the chosen JVM's {@code bin} first, then
+     * everything the daemon's own environment has, so that a tool the build
+     * runs by name is still found.
+     *
+     * @param jvmBin
+     *            the {@code bin} directory of the JVM the application runs on
+     * @param inherited
+     *            {@code PATH} as the daemon's environment has it, which may be
+     *            {@code null} or blank
+     * @return the value to launch with
+     */
+    static String pathWith(Path jvmBin, String inherited) {
+        return inherited == null || inherited.isBlank() ? jvmBin.toString()
+                : jvmBin + File.pathSeparator + inherited;
     }
 
     /**
