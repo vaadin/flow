@@ -423,7 +423,7 @@ public interface DeploymentConfiguration
      *         {@code false}
      * @see InitParameters#THEME_HTML_ELEMENTS
      */
-    default boolean isThemeHtmlElementsEnabled() {
+    default boolean isThemeHtmlElements() {
         return getBooleanProperty(InitParameters.THEME_HTML_ELEMENTS, false);
     }
 
