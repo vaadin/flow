@@ -53,6 +53,10 @@
          and swapped around by the slow-tests profile. -->
     <surefire.groups/>
     <surefire.excludedGroups>slow</surefire.excludedGroups>
+    <!-- Filled in by the Quarkus Maven extension with the JVM options its
+         tests need; see the surefire and failsafe argLine below. The empty
+         default keeps @{argLine} resolvable when the extension adds none. -->
+    <argLine/>
   </properties>
 
   <dependencyManagement>
@@ -121,6 +125,9 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <!-- The Quarkus Maven extension injects its JVM options through
+                 @{argLine}, and warns when an argLine leaves it out. -->
+            <argLine>@{argLine} @{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <systemPropertyVariables>
               <!-- Quarkus installs its own LogManager and fails the boot of a
                    test application if JUL has already been initialized. -->
@@ -132,6 +139,7 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
+            <argLine>@{argLine} ${failsafe.argLine}</argLine>
             <!-- The integration tests are JUnit 5, but inherit @RunWith from
                  the TestBench base class. JUnit 4 is on the test classpath, so
                  the Vintage engine also discovers them and reports "No runnable
