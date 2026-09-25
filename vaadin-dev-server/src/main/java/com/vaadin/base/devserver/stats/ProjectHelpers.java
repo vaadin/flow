@@ -232,10 +232,9 @@ public class ProjectHelpers {
         if (new File(projectFolder, "pom.xml").isFile()) {
             return StatisticsConstants.BUILD_TOOL_MAVEN;
         }
-        boolean gradle = Stream
-                .of("build.gradle", "build.gradle.kts", "settings.gradle",
-                        "settings.gradle.kts")
-                .anyMatch(name -> new File(projectFolder, name).isFile());
+        boolean gradle = findGradleSettingsFile(projectFolder) != null
+                || Stream.of("build.gradle", "build.gradle.kts").anyMatch(
+                        name -> new File(projectFolder, name).isFile());
         return gradle ? StatisticsConstants.BUILD_TOOL_GRADLE
                 : StatisticsConstants.MISSING_DATA;
     }

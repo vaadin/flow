@@ -324,6 +324,9 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
                 ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
                         "stats-data/gradle-kotlin-project-folder")));
+        assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
+                        "stats-data/gradle-build-script-only-folder")));
         assertEquals(StatisticsConstants.MISSING_DATA, ProjectHelpers
                 .getBuildTool(TestUtils.getTestFolder("stats-data/empty")));
     }
