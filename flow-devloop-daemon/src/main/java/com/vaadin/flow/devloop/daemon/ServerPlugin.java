@@ -638,6 +638,15 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * and, for a WAR it is to package, {@code war:war} itself. Naming
      * {@code package} would only build the WAR twice.
      * <p>
+     * That holds for a single-module project alone, exactly as WildFly's does,
+     * and {@link MavenGoalRuntime#invocation} names {@code package} in a
+     * reactor for both: what the mojo runs for itself, it runs for the
+     * application's module. A sibling stopped at {@code compile} has no jar,
+     * and {@code maven-war-plugin} writes its {@code target/classes} directory
+     * into {@code WEB-INF/lib} under the jar's name - an empty entry, and a
+     * {@code ClassNotFoundException} for every class in that module. One extra
+     * {@code war:war} is the cheaper of the two.
+     * <p>
      * It is also the one forked container that keeps itself to the
      * application's own module unasked: the mojo reads the session's
      * {@code ProjectDependencyGraph}, runs the server on the farthest
