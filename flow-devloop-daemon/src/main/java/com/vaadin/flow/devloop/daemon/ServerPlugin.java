@@ -130,6 +130,12 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         Map<String, String> goalProperties, List<Competing> competing,
         Pattern serving) {
 
+    private static final String FALSE = "false";
+
+    private static final String PACKAGE = "package";
+
+    private static final String REMOVE_SKIP = "remove <skip>, or set it to false";
+
     /**
      * Where a Jetty connector announces the port it bound.
      * <p>
@@ -376,11 +382,11 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return new ServerPlugin("wildfly", "org.wildfly.plugins",
                 "wildfly-maven-plugin", "run", "", "wildfly.javaOpts", false,
                 false, false, false, false, Map.of("wildfly.skip", "true"),
-                List.of(new Competing("skip", List.of("false"),
+                List.of(new Competing("skip", List.of(FALSE),
                         "the run goal would start a server for every module in "
                                 + "the reactor, or fail on the first one whose "
                                 + "packaging builds no deployment",
-                        "remove <skip>, or set it to false"),
+                        REMOVE_SKIP),
                         new Competing("javaOpts", List.of(),
                                 "the agents the loop needs would be dropped, "
                                         + "and every apply would restart "
@@ -442,9 +448,9 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static ServerPlugin tomee() {
         return new ServerPlugin("tomee", "org.apache.tomee.maven",
-                "tomee-maven-plugin", "run", "package", "tomee-plugin.args",
+                "tomee-maven-plugin", "run", PACKAGE, "tomee-plugin.args",
                 false, true, false, false, true, Map.of(),
-                List.of(new Competing("reloadOnUpdate", List.of("false"),
+                List.of(new Competing("reloadOnUpdate", List.of(FALSE),
                         "the plugin would redeploy the webapp whenever its "
                                 + "synchronization copied a class, competing "
                                 + "with every apply",
@@ -518,33 +524,33 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static ServerPlugin payara() {
         return new ServerPlugin("payara", "fish.payara.maven.plugins",
-                "payara-server-maven-plugin", "start", "package",
+                "payara-server-maven-plugin", "start", PACKAGE,
                 "payara.javaCommandLineOptions", false, false, true, false,
                 false, Map.of("skip", "true"),
-                List.of(new Competing("skip", List.of("false"),
+                List.of(new Competing("skip", List.of(FALSE),
                         "the start goal would run on every module in the "
                                 + "reactor, and the first of them - the "
                                 + "reactor root - would start a server with "
                                 + "the application deployed in it nowhere",
-                        "remove <skip>, or set it to false"),
-                        new Competing("daemon", List.of("false"),
+                        REMOVE_SKIP),
+                        new Competing("daemon", List.of(FALSE),
                                 "the goal would return as soon as the server had "
                                         + "started, leaving the daemon owning a Maven "
                                         + "that had already exited",
                                 "remove <daemon>, or set it to false"),
-                        new Competing("autoDeploy", List.of("false"),
+                        new Competing("autoDeploy", List.of(FALSE),
                                 "the plugin would rebuild and redeploy the "
                                         + "application on a schedule of its "
                                         + "own, competing with every apply",
                                 "set <autoDeploy>false</autoDeploy>"),
-                        new Competing("liveReload", List.of("false"),
+                        new Competing("liveReload", List.of(FALSE),
                                 "the plugin would rewrite every line the "
                                         + "server logs and refresh the browser "
                                         + "itself, so the loop could neither "
                                         + "read the server's output nor decide "
                                         + "when a change goes live",
                                 "set <liveReload>false</liveReload>"),
-                        new Competing("aiAgent", List.of("false"),
+                        new Competing("aiAgent", List.of(FALSE),
                                 "the plugin would read from standard input and "
                                         + "write escape sequences into the "
                                         + "application's log",
@@ -601,31 +607,31 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static ServerPlugin payaraMicro() {
         return new ServerPlugin("payara-micro", "fish.payara.maven.plugins",
-                "payara-micro-maven-plugin", "start", "package", "exec.args",
+                "payara-micro-maven-plugin", "start", PACKAGE, "exec.args",
                 false, false, false, false, false,
                 Map.of("payara.skip", "true", "payara.deploy.war", "true"),
-                List.of(new Competing("skip", List.of("false"),
+                List.of(new Competing("skip", List.of(FALSE),
                         "the start goal would run on every module in the "
                                 + "reactor, and the first of them - the "
                                 + "reactor root - would start a server with "
                                 + "the application deployed in it nowhere",
-                        "remove <skip>, or set it to false"),
+                        REMOVE_SKIP),
                         new Competing("deployWar", List.of("true"),
                                 "the goal would start a server with the "
                                         + "application deployed nowhere in it",
                                 "set <deployWar>true</deployWar>"),
-                        new Competing("daemon", List.of("false"),
+                        new Competing("daemon", List.of(FALSE),
                                 "the goal would return as soon as the server "
                                         + "had started, and would stop "
                                         + "forwarding its log at the same "
                                         + "moment",
                                 "remove <daemon>, or set it to false"),
-                        new Competing("autoDeploy", List.of("false"),
+                        new Competing("autoDeploy", List.of(FALSE),
                                 "the plugin would rebuild and redeploy the "
                                         + "application on a schedule of its "
                                         + "own, competing with every apply",
                                 "set <autoDeploy>false</autoDeploy>"),
-                        new Competing("liveReload", List.of("false"),
+                        new Competing("liveReload", List.of(FALSE),
                                 "the plugin would rewrite every line the "
                                         + "server logs and refresh the browser "
                                         + "itself, so the loop could neither "
@@ -722,14 +728,14 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin liberty() {
         return new ServerPlugin("liberty", "io.openliberty.tools",
                 "liberty-maven-plugin", "run", "", "liberty.jvm.devloop", false,
-                false, false, true, false, Map.of("looseApplication", "false"),
-                List.of(new Competing("looseApplication", List.of("false"),
+                false, false, true, false, Map.of("looseApplication", FALSE),
+                List.of(new Competing("looseApplication", List.of(FALSE),
                         "Liberty's own application monitor polls the deployed "
                                 + "application and would restart it whenever a "
                                 + "class under target/classes changed, "
                                 + "competing with every apply",
                         "set <looseApplication>false</looseApplication>"),
-                        new Competing("embedded", List.of("false"),
+                        new Competing("embedded", List.of(FALSE),
                                 "the server would run in Maven's own JVM, "
                                         + "where the jvm.options carrying the "
                                         + "loop's agents is never read, so "
@@ -827,13 +833,13 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static ServerPlugin cargo() {
         return new ServerPlugin("cargo", "org.codehaus.cargo",
-                "cargo-maven3-plugin", "run", "package", "cargo.jvmargs", true,
+                "cargo-maven3-plugin", "run", PACKAGE, "cargo.jvmargs", true,
                 false, false, false, false, Map.of("cargo.maven.skip", "true"),
-                List.of(new Competing("skip", List.of("false"),
+                List.of(new Competing("skip", List.of(FALSE),
                         "the run goal would start a container for every module "
                                 + "in the reactor, or fail on the first one "
                                 + "that is not a WAR",
-                        "remove <skip>, or set it to false")),
+                        REMOVE_SKIP)),
                 CARGO_SERVING);
     }
 
@@ -875,7 +881,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     boolean skippedOutsideTheApplication() {
         return competing.stream()
                 .anyMatch(value -> "skip".equals(value.element())
-                        && value.acceptable().contains("false"));
+                        && value.acceptable().contains(FALSE));
     }
 
     /**

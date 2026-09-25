@@ -16,29 +16,71 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Properties;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Under a build-plugin runtime the application JVM is Maven's own, so
  * {@code MAVEN_OPTS} is the only way in - and it is also where the developer's
  * project already keeps the flags its build needs. What goes in it is therefore
- * worth pinning down: the launch itself needs a real project and is covered by
- * {@code flow-tests/test-devloop}.
+ * worth pinning down. The command line is composed here from a project on disk;
+ * that Maven then starts the server from it needs a real project and is covered
+ * by {@code flow-tests/test-devloop}.
  */
 class MavenGoalRuntimeTest {
 
     private static final List<String> NEEDED = List.of("-javaagent:/ha.jar",
             "-XX:+AllowEnhancedClassRedefinition");
+
+    private static final String JETTY = "org.eclipse.jetty.ee10:"
+            + "jetty-ee10-maven-plugin:12.1.13";
+
+    private static final String WILDFLY = "org.wildfly.plugins:"
+            + "wildfly-maven-plugin:5.1.5.Final";
+
+    private static final String TOMEE = "org.apache.tomee.maven:"
+            + "tomee-maven-plugin:10.1.2";
+
+    private static final String PAYARA = "fish.payara.maven.plugins:"
+            + "payara-server-maven-plugin:1.3.0";
+
+    private static final String CARGO = "org.codehaus.cargo:"
+            + "cargo-maven3-plugin:1.10.29";
+
+    private static final String LIBERTY = "io.openliberty.tools:"
+            + "liberty-maven-plugin:3.12.3";
+
+    @TempDir
+    private Path repo;
+
+    private final List<String> logged = new ArrayList<>();
+
+    private final Launch.Log log = logged::add;
+
+    private final List<String> properties = new ArrayList<>();
+
+    @AfterEach
+    void clearProperties() {
+        properties.forEach(System::clearProperty);
+    }
 
     /**
      * Without the extension the skip cannot be switched back on for the
@@ -297,5 +339,250 @@ class MavenGoalRuntimeTest {
         assertEquals(NEEDED,
                 MavenGoalRuntime.withCommasInArgFile(NEEDED, file));
         assertFalse(Files.exists(file));
+    }
+
+    /**
+     * An embedded server is Maven's own JVM, so the loop's flags ride in
+     * {@code MAVEN_OPTS} and the system properties go on the command line, each
+     * as an argument of its own. Its webapp loader is where HotswapAgent has to
+     * find itself, which is what the extra class path is for.
+     */
+    @Test
+    void invocation_embeddedServer_flagsGoToMavensOwnJvm() throws IOException {
+        Path agent = Files.writeString(repo.resolve("ha.jar"), "");
+        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, agent.toString());
+        Launch launch = launchOf(module("jetty-app", JETTY));
+
+        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
+                projectOf(launch), NEEDED, List.of("-Dvaadin.x=a b"));
+
+        List<String> command = invocation.command();
+        assertTrue(command.contains("-Dvaadin.x=a b"), command.toString());
+        assertTrue(command.contains(JETTY + ":run"), command.toString());
+        // A module of its own compiles nothing for a sibling, so there is no
+        // phase to name.
+        assertFalse(command.contains("compile"), command.toString());
+        assertTrue(invocation.environment().get("MAVEN_OPTS")
+                .endsWith(String.join(" ", NEEDED)));
+        assertTrue(hotswapAgentProperties(launch)
+                .contains("extraClasspath=" + agent.toUri()));
+    }
+
+    /**
+     * A forked server takes its flags from one plugin parameter, so they are
+     * folded into one setting with every module option held together with its
+     * value, and none of them go to Maven's own JVM. In a reactor the WAR the
+     * server deploys has to be packaged, so the phase is named.
+     */
+    @Test
+    void invocation_forkedServerInAReactor_packsTheFlagsIntoItsParameter()
+            throws IOException {
+        Launch launch = launchOf(moduleInAReactor(WILDFLY));
+
+        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
+                projectOf(launch),
+                List.of("-javaagent:/ha.jar", "--add-opens",
+                        "java.base/java.lang=ALL-UNNAMED"),
+                List.of("-Dvaadin.x=1"));
+
+        List<String> command = invocation.command();
+        int modules = command.indexOf("-pl");
+        assertEquals(List.of("-pl", ":app", "-am"),
+                command.subList(modules, modules + 3));
+        assertTrue(command.contains("package"), command.toString());
+        assertTrue(command.contains(WILDFLY + ":run"), command.toString());
+        assertTrue(command.contains("-Dwildfly.javaOpts=-javaagent:/ha.jar "
+                + "--add-opens=java.base/java.lang=ALL-UNNAMED -Dvaadin.x=1"),
+                command.toString());
+        // Without the extension the skip cannot be undone for the application
+        // module, so it is not sent at all.
+        assertFalse(command.contains("-Dwildfly.skip=true"),
+                command.toString());
+        assertFalse(invocation.environment().get("MAVEN_OPTS")
+                .contains("-javaagent:/ha.jar"));
+        assertEquals(Reactor.real(repo).toString(),
+                invocation.environment().get("MAVEN_BASEDIR"));
+        assertFalse(hotswapAgentProperties(launch).contains("extraClasspath"));
+    }
+
+    /**
+     * Neither of the embedded server's extras applies to a forked one, which
+     * may also have to build a server before it can start it - and a flag the
+     * parameter would split is named for that parameter, not for
+     * {@code MAVEN_OPTS}.
+     */
+    @Test
+    void forkedServer_hasNoEmbeddedExtrasAndNamesItsOwnSplitter()
+            throws IOException {
+        MavenGoalRuntime runtime = runtimeOf(
+                launchOf(module("wildfly-app", WILDFLY)));
+
+        assertEquals(List.of(), runtime.extraJvmFlags());
+        assertEquals(Duration.ofMinutes(20), runtime.startupTimeout());
+        List<String> warnings = runtime
+                .warnings(List.of("-javaagent:/First Last/ha.jar"));
+        assertTrue(warnings.get(0).contains("wildfly.javaOpts"),
+                warnings.toString());
+    }
+
+    /**
+     * TomEE's goal has no skip, so without the extension to bind it in the
+     * application's module alone it would start a server in the reactor root
+     * and block the build there. Saying so beats a start that hangs.
+     */
+    @Test
+    void invocation_boundEntryWithoutTheExtension_isRefused()
+            throws IOException {
+        Launch launch = launchOf(moduleInAReactor(TOMEE));
+        MavenGoalRuntime runtime = runtimeOf(launch);
+        Launch.Project project = projectOf(launch);
+
+        IOException refused = assertThrows(IOException.class,
+                () -> runtime.invocation(project, NEEDED, List.of()));
+
+        assertTrue(refused.getMessage().contains("cannot be kept to app"),
+                refused.getMessage());
+    }
+
+    /**
+     * With the extension the goal is bound to the phase rather than named, and
+     * TomEE unescapes what it is handed, so a Windows path has its backslashes
+     * doubled to arrive whole.
+     */
+    @Test
+    void invocation_boundEntryWithTheExtension_bindsTheGoalInsteadOfNamingIt()
+            throws IOException {
+        Path extension = Files.writeString(repo.resolve("devloop.jar"), "");
+        setProperty("vaadin.dev.agentJar", extension.toString());
+        Launch launch = launchOf(moduleInAReactor(TOMEE));
+
+        List<String> command = runtimeOf(launch).invocation(projectOf(launch),
+                List.of("-javaagent:C:\\ha.jar"), List.of()).command();
+
+        assertTrue(command.contains("-Dmaven.ext.class.path=" + extension),
+                command.toString());
+        assertTrue(command.contains(
+                "-D" + DevLoopBuildExtension.BIND_PROPERTY + "=package:run"),
+                command.toString());
+        assertFalse(command.contains(TOMEE + ":run"), command.toString());
+        assertTrue(
+                command.contains("-Dtomee-plugin.args=-javaagent:C:\\\\ha.jar"),
+                command.toString());
+    }
+
+    /**
+     * Payara splits its parameter on commas too, so a flag holding one goes to
+     * an argument file the parameter names instead, and the log says where.
+     */
+    @Test
+    void invocation_commaSplitParameter_movesACommaFlagToAFile()
+            throws IOException {
+        Launch launch = launchOf(module("payara-app", PAYARA));
+
+        List<String> command = runtimeOf(launch)
+                .invocation(projectOf(launch),
+                        List.of("-javaagent:/ha.jar", "-Dlist=x,y"), List.of())
+                .command();
+
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("payara-args.txt");
+        assertTrue(command.contains("-Dpayara.javaCommandLineOptions="
+                + "-javaagent:/ha.jar @" + file), command.toString());
+        assertTrue(Files.readString(file).contains("-Dlist=x,y"));
+        assertTrue(
+                logged.stream().anyMatch(line -> line.contains(
+                        "1 flag(s) with a comma in them go to " + file)),
+                logged::toString);
+    }
+
+    /**
+     * Cargo reads its flags from a project property, which only the extension
+     * can set and is asked to by name; Liberty takes one flag per property.
+     */
+    @Test
+    void invocation_eachChannelIsNamedTheWayItsPluginReadsIt()
+            throws IOException {
+        Launch cargo = launchOf(module("cargo-app", CARGO));
+        Launch liberty = launchOf(module("liberty-app", LIBERTY));
+
+        List<String> cargoCommand = runtimeOf(cargo)
+                .invocation(projectOf(cargo), NEEDED, List.of()).command();
+        List<String> libertyCommand = runtimeOf(liberty)
+                .invocation(projectOf(liberty), NEEDED, List.of()).command();
+
+        assertTrue(
+                cargoCommand
+                        .contains("-D" + DevLoopBuildExtension.PROPERTY_PREFIX
+                                + "cargo.jvmargs=" + String.join(" ", NEEDED)),
+                cargoCommand.toString());
+        assertTrue(libertyCommand.containsAll(List.of(
+                "-Dliberty.jvm.devloop0=-javaagent:/ha.jar",
+                "-Dliberty.jvm.devloop1=-XX:+AllowEnhancedClassRedefinition")),
+                libertyCommand.toString());
+    }
+
+    private void setProperty(String name, String value) {
+        properties.add(name);
+        System.setProperty(name, value);
+    }
+
+    private Launch launchOf(Path app) {
+        // Named rather than searched for, and the JVM running the test rather
+        // than a scan of the machine's JDKs.
+        setProperty("vaadin.dev.maven", "mvn");
+        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
+        return new Launch(Reactor.discover(app, log), log);
+    }
+
+    private MavenGoalRuntime runtimeOf(Launch launch) throws IOException {
+        return (MavenGoalRuntime) AppRuntime.of(launch, log);
+    }
+
+    private static Launch.Project projectOf(Launch launch) {
+        return new Launch.Project(List.of(launch.reactor().app()), "", Map.of(),
+                OptionalInt.empty());
+    }
+
+    private static String hotswapAgentProperties(Launch launch)
+            throws IOException {
+        return Files.readString(launch.reactor().app().classesDir()
+                .resolve("hotswap-agent.properties"));
+    }
+
+    private Path moduleInAReactor(String coordinates) throws IOException {
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>root</artifactId>
+                  <packaging>pom</packaging>
+                  <modules>
+                    <module>app</module>
+                  </modules>
+                </project>
+                """);
+        return module("app", coordinates);
+    }
+
+    /** A WAR module, with the model a build of it would have left behind. */
+    private Path module(String name, String coordinates) throws IOException {
+        Path app = repo.resolve(name);
+        Files.createDirectories(
+                app.resolve("src").resolve("main").resolve("java"));
+        Files.createDirectories(app.resolve("target").resolve("classes"));
+        Files.writeString(app.resolve("pom.xml"), """
+                <project>
+                  <artifactId>%s</artifactId>
+                  <packaging>war</packaging>
+                </project>
+                """.formatted(name));
+        Properties model = new Properties();
+        model.setProperty("packaging", "war");
+        model.setProperty("plugins", "1");
+        model.setProperty("plugin.0", coordinates);
+        Path file = app.resolve(EffectiveModel.FILE);
+        Files.createDirectories(file.getParent());
+        try (Writer writer = Files.newBufferedWriter(file)) {
+            model.store(writer, "test fixture");
+        }
+        return app;
     }
 }

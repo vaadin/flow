@@ -483,6 +483,7 @@ final class Compile {
      * @param known
      *            what the daemon last acted on for it, never {@code null} here
      */
+    @SuppressWarnings("java:S1166")
     private void settle(Reactor.Module module, Path source, Stamp stamp,
             Content known) {
         notified.put(source, new Content(stamp, known.digest()));
@@ -762,6 +763,7 @@ final class Compile {
      *            the resource under {@code src/main/resources}
      * @return {@code true} when the copy exists and matches byte for byte
      */
+    @SuppressWarnings("java:S1166")
     private boolean copyHasSameBytes(Reactor.Module module, Path source) {
         Path target = module.targetFor(source);
         try {
@@ -811,6 +813,7 @@ final class Compile {
      * same way, so the choice of algorithm matters no further than collisions
      * do.
      */
+    @SuppressWarnings("java:S1166")
     private Optional<String> digestOf(Path file) {
         try (InputStream in = Files.newInputStream(file)) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

@@ -194,11 +194,6 @@ class AppRuntimeTest {
     }
 
     /**
-     * Maven splits MAVEN_OPTS on whitespace and no quoting survives it, so an
-     * agent jar under a path with a space has to be named rather than left to
-     * fail as a JVM that would not start.
-     */
-    /**
      * WildFly and TomEE are the two forked containers: neither has an embedded
      * mode, so the table entry carries a phase and a JVM-flag parameter that
      * Jetty's does not, and the readiness lines come from another catalogue
@@ -913,10 +908,6 @@ class AppRuntimeTest {
     }
 
     /**
-     * Jetty is the only one that runs in the build's JVM, so it is the only one
-     * whose flags go in MAVEN_OPTS rather than a parameter of the plugin.
-     */
-    /**
      * TomEE unescapes the value it is handed and WildFly does not, so only one
      * of them may have its backslashes doubled. Getting it the wrong way round
      * is invisible on Linux and stops the JVM starting on Windows.
@@ -939,6 +930,10 @@ class AppRuntimeTest {
         assertFalse(entry("liberty").shellEscapedFlags());
     }
 
+    /**
+     * Jetty is the only one that runs in the build's JVM, so it is the only one
+     * whose flags go in MAVEN_OPTS rather than a parameter of the plugin.
+     */
     @Test
     void onlyJettyIsEmbedded() {
         assertTrue(entry("jetty-ee10").embedded());
@@ -991,6 +986,11 @@ class AppRuntimeTest {
         }
     }
 
+    /**
+     * Maven splits MAVEN_OPTS on whitespace and no quoting survives it, so an
+     * agent jar under a path with a space has to be named rather than left to
+     * fail as a JVM that would not start.
+     */
     @Test
     void aFlagWithASpaceIsCalledOut() {
         List<String> warnings = MavenGoalRuntime.unsplittable(
