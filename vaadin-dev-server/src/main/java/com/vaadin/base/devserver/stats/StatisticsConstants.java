@@ -55,12 +55,15 @@ public class StatisticsConstants {
     static final String FIELD_VAADIN_VERSION = "vaadinVersion";
     static final String FIELD_HILLA_VERSION = "hillaVersion";
     static final String FIELD_SOURCE_ID = "sourceId";
+    static final String FIELD_BUILD_TOOL = "buildTool";
     static final String FIELD_PROKEY = "proKey";
     static final String FIELD_USER_KEY = "userKey";
     static final String FIELD_MACHINE_ID = "machineId";
     static final String FIELD_PROJECTS = "projects";
     static final String VAADIN_PROJECT_SOURCE_TEXT = "Vaadin project from";
     static final String PROJECT_SOURCE_TEXT = "Project from";
+    static final String BUILD_TOOL_MAVEN = "maven";
+    static final String BUILD_TOOL_GRADLE = "gradle";
 
     /*
      * Default data values and limits.
