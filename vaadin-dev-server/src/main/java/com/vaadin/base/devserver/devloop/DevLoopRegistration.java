@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -86,7 +87,7 @@ final class DevLoopRegistration {
      * The registration connection while it is open, so that an undeploy can
      * close it; see {@link #start}.
      */
-    private static volatile Socket registration;
+    private static final AtomicReference<Socket> REGISTRATION = new AtomicReference<>();
 
     private DevLoopRegistration() {
     }
@@ -298,7 +299,7 @@ final class DevLoopRegistration {
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         socket.getInputStream(), StandardCharsets.UTF_8))) {
             socket.setKeepAlive(true);
-            registration = socket;
+            REGISTRATION.set(socket);
             out.println(token + " register " + mode + " "
                     + ProcessHandle.current().pid());
             LOGGER.info("Registered with the dev-loop daemon on port {} ({})",
@@ -323,8 +324,7 @@ final class DevLoopRegistration {
      * application is gone while the JVM it ran in is not.
      */
     private static void closeRegistration() {
-        Socket open = registration;
-        registration = null;
+        Socket open = REGISTRATION.getAndSet(null);
         if (open == null) {
             return;
         }
