@@ -455,6 +455,12 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      * command line, and that command line carries the token the daemon
      * authenticates the application with; the name alone is enough to say what
      * happened.
+     * <p>
+     * Like {@link #bind}, it must survive being asked twice - Maven may read a
+     * model more than once - and unlike {@link #apply} it cannot do so by
+     * writing the same value again. A value that is already the loop's is left
+     * as it is, because appending it a second time would put the agents on the
+     * container's command line twice and run their premain twice.
      *
      * @param project
      *            the module running the plugin
@@ -469,6 +475,10 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         Properties model = project.getProperties();
         properties.forEach((name, value) -> {
             String existing = model.getProperty(name);
+            if (existing != null && (existing.equals(value)
+                    || existing.endsWith(" " + value))) {
+                return;
+            }
             boolean adding = existing != null && !existing.isBlank();
             String effective = adding ? existing.strip() + " " + value : value;
             if (!effective.equals(existing)) {
