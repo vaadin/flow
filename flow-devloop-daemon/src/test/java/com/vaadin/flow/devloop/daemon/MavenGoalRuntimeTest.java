@@ -219,6 +219,23 @@ class MavenGoalRuntimeTest {
         assertTrue(warnings.get(0).contains("MAVEN_OPTS"), warnings.get(0));
     }
 
+    /**
+     * And for a forked server it is not MAVEN_OPTS that splits them. Naming it
+     * anyway would send the developer looking in a variable the launch no
+     * longer puts these flags in at all.
+     */
+    @Test
+    void unsplittable_namesTheChannelTheForkedServerReadsFrom() {
+        List<String> warnings = MavenGoalRuntime.unsplittable(
+                List.of("-javaagent:/Program Files/ha.jar"),
+                MavenGoalRuntime.splitter(entry("wildfly")));
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(warnings.get(0).contains("wildfly.javaOpts"),
+                warnings.get(0));
+        assertFalse(warnings.get(0).contains("MAVEN_OPTS"), warnings.get(0));
+    }
+
     @Test
     void unsplittable_saysNothingWhenEveryFlagSurvives() {
         assertEquals(List.of(), MavenGoalRuntime.unsplittable(NEEDED));

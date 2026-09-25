@@ -285,7 +285,7 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     private List<String> forkedJvmFlags(List<String> jvmFlags,
             List<String> systemProperties) throws IOException {
-        unsplittable(systemProperties, splitter()).forEach(log::line);
+        unsplittable(systemProperties, splitter(plugin)).forEach(log::line);
         List<String> forked = new ArrayList<>(jvmFlags);
         forked.addAll(systemProperties);
         List<String> tokens = singleToken(forked);
@@ -341,9 +341,11 @@ final class MavenGoalRuntime implements AppRuntime {
      * for a forked server, and so would naming the property for a channel that
      * is not one value but a file the plugin writes from many.
      *
+     * @param plugin
+     *            the plugin whose channel carries the flags
      * @return the clause for {@link #unsplittable}
      */
-    private String splitter() {
+    static String splitter(ServerPlugin plugin) {
         if (plugin.perPropertyFlags()) {
             return plugin.artifactId() + " writes " + plugin.jvmFlagsProperty()
                     + "* into the server's jvm.options, whose lines its "
@@ -396,7 +398,7 @@ final class MavenGoalRuntime implements AppRuntime {
         List<String> reduced = withCommasInArgFile(tokens, file);
         // The path travels in the same whitespace-separated value as the rest,
         // so a space in it breaks exactly as a space in any other flag does.
-        unsplittable(List.of("@" + file), splitter()).forEach(log::line);
+        unsplittable(List.of("@" + file), splitter(plugin)).forEach(log::line);
         log.line(affected + " flag(s) with a comma in them go to " + file
                 + ", which " + plugin.jvmFlagsProperty()
                 + " cannot carry intact");
@@ -630,6 +632,24 @@ final class MavenGoalRuntime implements AppRuntime {
         } catch (NumberFormatException e) {
             return OptionalInt.empty();
         }
+    }
+
+    /**
+     * Those warnings, after the ones about a flag the channel would break.
+     * <p>
+     * Which channel that is depends on the plugin: an embedded server runs in
+     * Maven's own JVM and takes them from {@code MAVEN_OPTS}, while a forked
+     * one takes them from the plugin parameter {@link #forkedJvmFlags} packs
+     * them into. Naming the wrong one sends a reader looking in a variable that
+     * has nothing to do with the failure.
+     */
+    @Override
+    public List<String> warnings(List<String> jvmFlags) {
+        List<String> all = new ArrayList<>(
+                plugin.embedded() ? unsplittable(jvmFlags)
+                        : unsplittable(jvmFlags, splitter(plugin)));
+        all.addAll(warnings());
+        return all;
     }
 
     /**
