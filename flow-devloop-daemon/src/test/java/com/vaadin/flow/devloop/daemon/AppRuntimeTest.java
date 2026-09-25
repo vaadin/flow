@@ -541,6 +541,27 @@ class AppRuntimeTest {
                 + "default listening on 127.0.0.1:8443"));
     }
 
+    /**
+     * The deployment WildFly boots from its persisted configuration logs
+     * "Deployed" too, from the boot thread; only the goal's own deploy comes
+     * from the management handler, first time or replacing the booted one.
+     * Lines as JBoss EAP 8.1 logged them.
+     */
+    @Test
+    void wildflyIsDeployedOnlyByTheGoalsOwnDeployment() throws IOException {
+        AppRuntime runtime = runtimeOf(serverModule("wf", WILDFLY, Map.of()));
+
+        assertFalse(runtime.deployed("16:33:05,692 INFO  [org.jboss.as.server] "
+                + "(Controller Boot Thread) WFLYSRV0010: Deployed \"ROOT.war\" "
+                + "(runtime-name : \"ROOT.war\")"));
+        assertTrue(runtime.deployed("16:33:22,780 INFO  [org.jboss.as.server] "
+                + "(management-handler-thread - 2) WFLYSRV0016: Replaced "
+                + "deployment \"ROOT.war\" with deployment \"ROOT.war\""));
+        assertTrue(runtime.deployed("16:33:22,780 INFO  [org.jboss.as.server] "
+                + "(management-handler-thread - 1) WFLYSRV0010: Deployed "
+                + "\"ROOT.war\" (runtime-name : \"ROOT.war\")"));
+    }
+
     @Test
     void tomeeReportsItIsServing_andWhichPort() throws IOException {
         AppRuntime runtime = runtimeOf(serverModule("te", TOMEE, Map.of()));

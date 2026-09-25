@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
@@ -114,6 +115,13 @@ final class AppProcess {
         final Path logFile;
         final CountDownLatch registrationLatch = new CountDownLatch(1);
         final AtomicBoolean stopExpected = new AtomicBoolean();
+        /**
+         * Connections open for this launch. More than one at a time is how an
+         * application server redeploys: the deployment it booted from its
+         * persisted configuration registers, and the one the build plugin
+         * deploys over it registers too, before or after the first has closed.
+         */
+        final AtomicInteger openRegistrations = new AtomicInteger();
 
         Run(Process process, Path logFile) {
             this.process = process;
@@ -340,11 +348,26 @@ final class AppProcess {
             long settleBy = 0;
             boolean up = false;
             boolean serving = false;
+            boolean deployed = false;
 
             while (true) {
-                serving = serving
-                        || watching.drain().stream().anyMatch(runtime::serving);
-                if (up && (serving || System.nanoTime() >= settleBy)) {
+                List<String> lines = watching.drain();
+                serving = serving || lines.stream().anyMatch(runtime::serving);
+                deployed = deployed
+                        || lines.stream().anyMatch(runtime::deployed);
+                if (up && !registered) {
+                    // The deployment that registered was undeployed before
+                    // it was serving: an application server replacing the
+                    // deployment its configuration persisted with the one the
+                    // build plugin deploys. Returning now would hand every
+                    // apply to a copy that is gone, so the start waits for
+                    // the replacement to register.
+                    up = false;
+                    log.line("the app's registration closed before it was "
+                            + "serving; waiting for it to register again");
+                }
+                if (up && serving && deployed
+                        || up && System.nanoTime() >= settleBy) {
                     state = State.RUNNING;
                     return Startup.ok(serving ? "running"
                             : "running (registered; the app logged no server port)");
@@ -371,9 +394,10 @@ final class AppProcess {
                     // is
                     // decided by the flag the connector sets, not by the
                     // wake-up.
-                    if (up) {
+                    if (up || latch.getCount() == 0 && !registered) {
                         Thread.sleep(POLL_MILLIS);
-                    } else if (latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
+                    }
+                    if (!up && latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
                             && registered) {
                         up = true;
                         settleBy = System.nanoTime() + SETTLE.toNanos();
@@ -655,6 +679,7 @@ final class AppProcess {
             return Optional.empty();
         }
         this.mode = reportedMode;
+        current.openRegistrations.incrementAndGet();
         this.registered = true;
         this.state = State.RUNNING;
         current.registrationLatch.countDown();
@@ -700,13 +725,16 @@ final class AppProcess {
      * <p>
      * The socket of a superseded app closes on its own schedule, which can be
      * after a restart is already registered, so only the run still current may
-     * clear the flag.
+     * clear the flag - and only once no connection of that run is left open,
+     * since a deployment the server replaced can close after its replacement
+     * has registered.
      *
      * @param registration
      *            the run the closing connection registered for
      */
     void onUnregistered(Run registration) {
-        if (run == registration) {
+        if (registration.openRegistrations.decrementAndGet() <= 0
+                && run == registration) {
             registered = false;
         }
     }

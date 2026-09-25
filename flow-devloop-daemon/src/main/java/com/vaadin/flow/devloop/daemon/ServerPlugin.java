@@ -124,13 +124,35 @@ import java.util.regex.Pattern;
  * @param serving
  *            matches the line the server logs once it is listening, capturing
  *            the bound port in group 1
+ * @param deployed
+ *            matches the line saying the deployment the goal made is in place.
+ *            The serving line for every entry but one: WildFly boots whatever
+ *            deployment its configuration persisted from the last run before
+ *            the goal deploys the build's own over it, so the listener is up
+ *            and a deployment registered well before the one that stays
  */
 record ServerPlugin(String name, String groupId, String artifactId, String goal,
         String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
         boolean shellEscapedFlags, boolean commaSplitFlags,
         boolean perPropertyFlags, boolean boundInTheApplication,
         Map<String, String> goalProperties, List<Competing> competing,
-        Pattern serving) {
+        Pattern serving, Pattern deployed) {
+
+    /**
+     * An entry whose serving line already says the goal's own deployment is in
+     * place.
+     */
+    ServerPlugin(String name, String groupId, String artifactId, String goal,
+            String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
+            boolean shellEscapedFlags, boolean commaSplitFlags,
+            boolean perPropertyFlags, boolean boundInTheApplication,
+            Map<String, String> goalProperties, List<Competing> competing,
+            Pattern serving) {
+        this(name, groupId, artifactId, goal, phase, jvmFlagsProperty,
+                projectPropertyFlags, shellEscapedFlags, commaSplitFlags,
+                perPropertyFlags, boundInTheApplication, goalProperties,
+                competing, serving, serving);
+    }
 
     private static final String FALSE = "false";
 
@@ -167,6 +189,24 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static final Pattern WILDFLY_SERVING = Pattern
             .compile("WFLYUT0006: Undertow HTTP listener \\S++ listening on "
                     + "(?:[^\\s:]*+:)++(\\d++)");
+
+    /**
+     * Where WildFly says the goal's own deployment is in place.
+     * <p>
+     * {@code wildfly:run} deploys over the management API once the server has
+     * booted, and the operation persists into the server's configuration. So
+     * every start after the first boots the previous run's deployment, which
+     * registers with the daemon and is then replaced - measured on JBoss EAP
+     * 8.1, about fifteen seconds of a deployment that looks live and is about
+     * to be undeployed. Both halves of the goal's own deploy are logged by the
+     * management handler: {@code WFLYSRV0010} ("Deployed") for a server that
+     * booted with nothing, {@code WFLYSRV0016} ("Replaced deployment") for one
+     * that booted the previous run's. The boot-time deployment's
+     * {@code WFLYSRV0010} comes from the controller's boot thread instead,
+     * which is what tells the two apart.
+     */
+    private static final Pattern WILDFLY_DEPLOYED = Pattern
+            .compile("\\(management-handler-thread[^)]*+\\) WFLYSRV001[06]:");
 
     /**
      * Where TomEE's Tomcat announces the port it bound.
@@ -395,7 +435,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
                                         + "instead of hot reloading",
                                 "remove <javaOpts>; the dev loop needs that "
                                         + "parameter for its agents")),
-                WILDFLY_SERVING);
+                WILDFLY_SERVING, WILDFLY_DEPLOYED);
     }
 
     /**
