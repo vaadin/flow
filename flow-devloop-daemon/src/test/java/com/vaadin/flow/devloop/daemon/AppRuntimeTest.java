@@ -113,7 +113,7 @@ class AppRuntimeTest {
         // A real main method on the output, so that MainClass.discover would
         // find one. The build has still named nothing, and what the developer
         // deploys is the WAR.
-        compileInto(app, """
+        compileInto(app, "tools.Importer", """
                 package tools;
                 public class Importer {
                   public static void main(String[] args) { }
@@ -342,14 +342,58 @@ class AppRuntimeTest {
                 thrown.getMessage());
     }
 
+    /**
+     * Moving the application class to another package does not stop the daemon,
+     * so a restart has to launch the class the output now holds. The one found
+     * when the daemon came up no longer exists, and launching it again ends in
+     * a bare ClassNotFoundException.
+     */
+    @Test
+    void aRestartLaunchesTheMainClassTheOutputNowHolds() throws IOException {
+        Path app = module("app", "jar", "");
+        compileInto(app, "com.example.Application", """
+                package com.example;
+                public class Application {
+                  public static void main(String[] args) { }
+                }
+                """);
+        Launch launch = launchFor(app);
+        assertEquals("com.example.Application", launchedClass(launch, app));
+
+        // The package move, as the next compile leaves the output.
+        Files.delete(app.resolve("target").resolve("classes")
+                .resolve("com/example/Application.class"));
+        compileInto(app, "net.pkhapps.roihu.Application", """
+                package net.pkhapps.roihu;
+                public class Application {
+                  public static void main(String[] args) { }
+                }
+                """);
+
+        assertEquals("net.pkhapps.roihu.Application",
+                launchedClass(launch, app));
+    }
+
     private Launch launchFor(Path app) {
         return new Launch(Reactor.discover(app, log), log);
     }
 
+    /**
+     * The class a launch of the application starts: the command's last word.
+     */
+    private String launchedClass(Launch launch, Path app) throws IOException {
+        Launch.Project project = new Launch.Project(List.of(moduleOf(app)), "",
+                Map.of(), OptionalInt.empty());
+        List<String> command = launch.runtime()
+                .invocation(project, List.of(), List.of()).command();
+        return command.get(command.size() - 1);
+    }
+
     /** One source, compiled into the module's own output directory. */
-    private void compileInto(Path module, String source) throws IOException {
+    private void compileInto(Path module, String className, String source)
+            throws IOException {
         Path file = module.resolve("src").resolve("main").resolve("java")
-                .resolve("tools").resolve("Importer.java");
+                .resolve(className.replace('.', '/') + ".java");
         Files.createDirectories(file.getParent());
         Files.writeString(file, source);
         Path classes = module.resolve("target").resolve("classes");
