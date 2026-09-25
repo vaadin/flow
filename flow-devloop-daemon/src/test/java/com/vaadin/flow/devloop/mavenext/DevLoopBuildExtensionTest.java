@@ -322,6 +322,27 @@ class DevLoopBuildExtensionTest {
     }
 
     /**
+     * And being asked a second time adds nothing, the way binding a goal a
+     * second time adds no execution: two copies of the agents on the
+     * container's command line would run their premain twice.
+     */
+    @Test
+    void aProjectPropertyTheLoopAlreadySetIsNotAddedToAgain() {
+        Plugin cargo = cargo("1.10.29");
+        MavenProject project = project(cargo);
+        project.getProperties().setProperty("cargo.jvmargs", "-Xmx2g");
+        Properties asked = projectProperties(
+                "org.codehaus.cargo:cargo-maven3-plugin", "cargo.jvmargs",
+                "-javaagent:/ha.jar");
+
+        afterProjectsRead(asked, new Properties(), project);
+        afterProjectsRead(asked, new Properties(), project);
+
+        assertEquals("-Xmx2g -javaagent:/ha.jar",
+                project.getProperties().getProperty("cargo.jvmargs"));
+    }
+
+    /**
      * And a blank declaration is not something to append to, which would leave
      * the value with a space in front of it and every flag one position out.
      */
