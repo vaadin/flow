@@ -17,6 +17,9 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
+    <!-- Quarkus finds the endpoints through the index, so turn back on the
+         index that flow-tests switches off. -->
+    <jandex.skip>false</jandex.skip>
   </properties>
 
   <dependencies>
@@ -33,22 +36,4 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-        <version>3.6.0</version>
-        <executions>
-          <execution>
-            <id>make-index</id>
-            <goals>
-              <goal>jandex</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

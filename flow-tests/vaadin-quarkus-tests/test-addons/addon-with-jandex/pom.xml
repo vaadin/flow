@@ -17,6 +17,9 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
+    <!-- This add-on exists to ship an index, so turn back on the index that
+         flow-tests switches off. -->
+    <jandex.skip>false</jandex.skip>
   </properties>
 
   <dependencies>
@@ -50,19 +53,6 @@
             <exclude>META-INF/VAADIN/config/flow-build-info.json</exclude>
           </excludes>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>io.smallrye</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-        <version>3.6.0</version>
-        <executions>
-          <execution>
-            <id>make-index</id>
-            <goals>
-              <goal>jandex</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

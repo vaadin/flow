@@ -40,11 +40,6 @@
 
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-jandex</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.vaadin</groupId>
       <artifactId>vaadin-quarkus</artifactId>
     </dependency>
 
