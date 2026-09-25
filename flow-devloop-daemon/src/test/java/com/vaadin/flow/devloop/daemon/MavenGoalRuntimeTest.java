@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,6 +39,63 @@ class MavenGoalRuntimeTest {
 
     private static final List<String> NEEDED = List.of("-javaagent:/ha.jar",
             "-XX:+AllowEnhancedClassRedefinition");
+
+    /**
+     * Without the extension the skip cannot be switched back on for the
+     * application's module, so sending it would start nothing at all. What must
+     * not go with it is the rest of the map: Payara Micro's {@code deployWar}
+     * defaults to {@code false}, so a launch that dropped it brought up a Micro
+     * with the application deployed in it nowhere - on a single-module project
+     * too, where the skip was never needed at all.
+     */
+    @Test
+    void goalProperties_withoutTheExtension_dropTheSkipAndNothingElse() {
+        ServerPlugin micro = entry("payara-micro");
+
+        assertEquals(Map.of("payara.deploy.war", "true"),
+                MavenGoalRuntime.goalProperties(micro, false));
+        assertEquals(Map.of("payara.skip", "true", "payara.deploy.war", "true"),
+                MavenGoalRuntime.goalProperties(micro, true));
+    }
+
+    /**
+     * An entry that switches nothing off has no half to drop, so the map goes
+     * out whole either way.
+     */
+    @Test
+    void goalProperties_anEntryThatSwitchesNothingOffKeepsItsWholeMap() {
+        for (ServerPlugin plugin : ServerPlugin.KNOWN) {
+            if (plugin.skippedOutsideTheApplication()) {
+                continue;
+            }
+            assertEquals(plugin.goalProperties(),
+                    MavenGoalRuntime.goalProperties(plugin, false),
+                    plugin.name());
+        }
+    }
+
+    /**
+     * And the skip that is dropped is named by the table rather than guessed at
+     * here: every entry that switches its goal off has exactly one, under
+     * whatever prefix its own plugin gives it.
+     */
+    @Test
+    void everyEntryThatSwitchesItsGoalOffNamesTheProperty() {
+        for (ServerPlugin plugin : ServerPlugin.KNOWN) {
+            assertEquals(plugin.skippedOutsideTheApplication(),
+                    plugin.skipProperty().isPresent(), plugin.name());
+            plugin.skipProperty()
+                    .ifPresent(name -> assertTrue(
+                            plugin.goalProperties().containsKey(name),
+                            plugin.name()));
+        }
+    }
+
+    private static ServerPlugin entry(String name) {
+        return ServerPlugin.KNOWN.stream()
+                .filter(plugin -> name.equals(plugin.name())).findFirst()
+                .orElseThrow();
+    }
 
     @Test
     void mavenOpts_inheritedValueIsKept() {

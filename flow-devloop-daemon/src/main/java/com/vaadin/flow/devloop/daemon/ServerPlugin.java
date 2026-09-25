@@ -17,6 +17,7 @@ package com.vaadin.flow.devloop.daemon;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -852,6 +853,36 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return competing.stream()
                 .anyMatch(value -> "skip".equals(value.element())
                         && value.acceptable().contains("false"));
+    }
+
+    /**
+     * Which of {@link #goalProperties} is the skip half.
+     * <p>
+     * The map is not all one thing. Payara Micro's carries
+     * {@code payara.deploy.war} beside its skip, and that one has nothing to do
+     * with the reactor: {@code deployWar} defaults to {@code false} on
+     * {@code start}, so without it the server comes up with the application
+     * deployed in it nowhere. {@link MavenGoalRuntime} drops the skip when
+     * there is no extension to switch it back on, and has to be able to drop
+     * that half alone.
+     * <p>
+     * Read off the names rather than stored, the way
+     * {@link #skippedOutsideTheApplication} is read off {@link #competing}: the
+     * property that switches the goal off is the one named after the
+     * {@code skip} parameter it sets, whatever prefix its plugin gives it -
+     * {@code skip}, {@code wildfly.skip}, {@code payara.skip},
+     * {@code cargo.maven.skip}.
+     *
+     * @return the property name, or empty for an entry that switches its goal
+     *         off nowhere
+     */
+    Optional<String> skipProperty() {
+        if (!skippedOutsideTheApplication()) {
+            return Optional.empty();
+        }
+        return goalProperties.keySet().stream()
+                .filter(name -> "skip".equals(name) || name.endsWith(".skip"))
+                .findFirst();
     }
 
     /**
