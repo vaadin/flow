@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -56,6 +57,17 @@ final class DevLoopRegistration {
 
     static final String DAEMON_PORT_PROPERTY = "vaadin.devloop.daemonPort";
     static final String TOKEN_PROPERTY = "vaadin.devloop.token";
+
+    /**
+     * How long one loopback address is given to answer.
+     * <p>
+     * Both ends are on this machine and the daemon is already listening by the
+     * time it launches the application, so a connection that is going to happen
+     * happens in microseconds. The window is for the address that answers
+     * neither way - filtered rather than refused - and it is short because
+     * there is a second address to try after it.
+     */
+    private static final int CONNECT_TIMEOUT_MILLIS = 2000;
 
     /** Whitespace and C0 controls, which is everything that breaks a line. */
     private static final Pattern CONTROL_OR_SPACE_RUN = Pattern
@@ -187,6 +199,12 @@ final class DevLoopRegistration {
      * rather than either end being pinned to one family. Nothing is widened -
      * every candidate is a loopback address, so the daemon's port stays
      * unreachable from off the machine.
+     * <p>
+     * Each attempt is given {@link #CONNECT_TIMEOUT_MILLIS} rather than the
+     * operating system's default. A loopback that refuses answers at once, but
+     * one that is filtered rather than refused answers not at all - and the
+     * default would then be spent twice, once per address, before the
+     * application gave up registering and ran on invisible to the loop.
      *
      * @param port
      *            the port the daemon passed at launch
@@ -198,9 +216,13 @@ final class DevLoopRegistration {
     private static Socket connectToDaemon(int port) throws IOException {
         IOException refused = null;
         for (InetAddress address : loopbackAddresses()) {
+            Socket socket = new Socket();
             try {
-                return new Socket(address, port);
+                socket.connect(new InetSocketAddress(address, port),
+                        CONNECT_TIMEOUT_MILLIS);
+                return socket;
             } catch (IOException e) {
+                close(socket);
                 // Kept only if nothing else answers, and the first is the one
                 // worth reporting: it is the address this JVM would call the
                 // loopback, so it is the one a reader will go looking at.
@@ -209,7 +231,22 @@ final class DevLoopRegistration {
                 }
             }
         }
-        throw refused;
+        // getLoopbackAddress always yields one candidate, so the loop runs at
+        // least once - but nothing here enforces that, and an empty list would
+        // otherwise leave this method throwing a NullPointerException out of a
+        // signature that promises an IOException.
+        throw refused != null ? refused
+                : new IOException("no loopback address to reach the dev-loop "
+                        + "daemon on port " + port);
+    }
+
+    private static void close(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException ignored) {
+            // Nothing was connected, and the address that failed is already
+            // being reported.
+        }
     }
 
     /**
