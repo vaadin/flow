@@ -723,16 +723,6 @@ class AppRuntimeTest {
     }
 
     /**
-     * Both Payara entries pay Cargo's price, and for the same reason. Measured:
-     * {@code payara-micro:start} named on the command line ran first on the
-     * reactor <em>root</em>, started a Payara Micro there, reported
-     * {@code Deployed 0 archive(s)} and blocked the reactor before the
-     * application module was built at all. So the goal is switched off for the
-     * whole reactor by its user property and switched back on, by a
-     * {@code <configuration>} value the extension writes, for the one module
-     * that declares the plugin.
-     */
-    /**
      * Both plugins open the deployed application in a browser whatever goal
      * runs, and on a Linux machine with none installed where they look, the
      * driver download failed with an Error that stopped the server. An unknown
@@ -750,6 +740,16 @@ class AppRuntimeTest {
         }
     }
 
+    /**
+     * Both Payara entries pay Cargo's price, and for the same reason. Measured:
+     * {@code payara-micro:start} named on the command line ran first on the
+     * reactor <em>root</em>, started a Payara Micro there, reported
+     * {@code Deployed 0 archive(s)} and blocked the reactor before the
+     * application module was built at all. So the goal is switched off for the
+     * whole reactor by its user property and switched back on, by a
+     * {@code <configuration>} value the extension writes, for the one module
+     * that declares the plugin.
+     */
     @Test
     void bothPayarasRunOnTheApplicationsOwnModuleAlone() {
         assertEquals("true", entry("payara").goalProperties().get("skip"));

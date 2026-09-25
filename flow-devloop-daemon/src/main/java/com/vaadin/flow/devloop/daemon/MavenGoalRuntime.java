@@ -870,7 +870,7 @@ final class MavenGoalRuntime implements AppRuntime {
      * @return the value to launch with
      */
     static String pathWith(Path jvmBin, String inherited) {
-        return inherited == null || inherited.isBlank() ? jvmBin.toString()
+        return (inherited == null || inherited.isBlank()) ? jvmBin.toString()
                 : jvmBin + File.pathSeparator + inherited;
     }
 
