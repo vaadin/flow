@@ -1,0 +1,165 @@
+name: Quarkus Native Image
+on:
+  workflow_dispatch:
+  schedule:
+    # 02:40 UTC, after the day's merges have landed and well clear of the
+    # other scheduled workflows.
+    - cron: '40 2 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # The native image build needs GraalVM; the rest of validation runs on
+  # Temurin 21, which is what the compiler targets either way.
+  GRAALVM_VERSION: '25'
+jobs:
+  native-tests:
+    # The embedded-plugin suite packaged as a native image. Building it takes
+    # around half an hour, far too long to sit in front of every pull request,
+    # so it runs once a day instead. A failure here is a regression in the
+    # extension's native build configuration, not in the change that happened
+    # to be merged last, and the JVM leg of the same suite already runs in
+    # validation.
+    #
+    # Only in vaadin/flow: a schedule also fires in every fork that has
+    # Actions enabled, where there is no TestBench licence to run the tests
+    # with and the report job below would open issues in the fork.
+    if: ${{ github.repository == 'vaadin/flow' }}
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: ${{ steps.frontend-tools.outputs.pnpm-version }}
+      - name: Set up GraalVM
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: ${{ env.GRAALVM_VERSION }}
+          distribution: 'graalvm'
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Compile and Install Flow
+        # Builds its own reactor rather than reusing validation's saved
+        # workspace: that artifact is built on Temurin and is gone by the time
+        # this runs.
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Test with native image
+        timeout-minutes: 45
+        run: |
+          # -am because the install above skips tests, which deactivates the
+          # it-test-modules profile and leaves the fixture modules this one
+          # depends on out of the local repository.
+          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
+            -pl embedded-plugin -am -Dnative \
+            -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          set -x -e
+          LOG=mvn-quarkus-native.out
+          : > "$LOG"
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
+      - name: Package test-report files
+        if: ${{ always() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-quarkus-native.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: tests-output-quarkus-native
+          path: tests-report-*.tgz
+  report:
+    # A nightly has no pull request to annotate, so the failure signal is one
+    # GitHub issue kept in sync by title - the mechanism release-check.yml
+    # already uses. Opened or updated when the native build breaks, closed
+    # again once it is green, so nobody has to watch the Actions tab.
+    if: ${{ always() && github.repository == 'vaadin/flow' }}
+    needs: native-tests
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Sync the native build issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.native-tests.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TITLE="Quarkus native image build is failing on $BRANCH"
+          # Created before the lookup because `gh issue list --label` errors on
+          # a label the repository does not have yet.
+          gh label create quarkus-native \
+            --description "Nightly Quarkus native image build" \
+            --color B60205 2>/dev/null || true
+          # Matched on the exact title rather than through search, which would
+          # tokenize it; see the same lookup in release-check.yml.
+          EXISTING=$(gh issue list --state open --label quarkus-native --limit 100 \
+            --json number,title --jq ".[] | select(.title==\"$TITLE\") | .number" | head -n1)
+          if [ "$RESULT" = "success" ]; then
+            if [ -n "$EXISTING" ]; then
+              gh issue close "$EXISTING" \
+                --comment "The nightly native image build is green again: $RUN_URL. Closing automatically."
+              echo "Closed #$EXISTING"
+            else
+              echo "Native image build is green and no issue is open."
+            fi
+            exit 0
+          fi
+          cat > body.md <<EOF
+          The nightly \`Quarkus Native Image\` workflow finished with \`$RESULT\`.
+
+          Latest run: $RUN_URL
+
+          This builds \`flow-tests/vaadin-quarkus-tests/embedded-plugin\` as a
+          GraalVM native image and runs its integration tests against it. The
+          JVM leg of the same module runs in validation, so a failure here is
+          specific to the extension's native build configuration — usually a
+          missing reflection or resource hint in
+          \`vaadin-quarkus/deployment/src/main/java/com/vaadin/quarkus/deployment\`.
+
+          Reproduce locally with GraalVM on the path:
+
+          \`\`\`sh
+          mvn install -DskipTests -pl '!flow-plugins/flow-gradle-plugin'
+          mvn verify -f flow-tests/vaadin-quarkus-tests/pom.xml -pl embedded-plugin -am -Dnative
+          \`\`\`
+
+          This issue is updated by each nightly run and closed automatically
+          once the build is green.
+          EOF
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --body-file body.md
+            echo "Updated #$EXISTING"
+          else
+            gh issue create --title "$TITLE" --label quarkus-native --body-file body.md
+            echo "Created — $TITLE"
+          fi

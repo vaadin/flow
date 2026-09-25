@@ -93,6 +93,20 @@ jobs:
           artifacts: |
             vaadin-cdi
 
+      # vaadin-quarkus, the same again: under com.vaadin:vaadin-quarkus it ran
+      # its own 1.0-3.1 scheme, one line per supported Vaadin version, before
+      # the extension was imported into this repository and started releasing
+      # with Flow's version number. Its deployment artifact carries no public
+      # API of its own -- it is Quarkus build steps -- so only the runtime
+      # artifact is indexed.
+      - uses: vaadin/github-actions/reconcile-since-tags@2a6fabc668c09424c29ca789789e9bf0720de8ee
+        with:
+          group-id: com.vaadin
+          version: ${{ inputs.dev }}
+          index-dir: .since-index-quarkus
+          artifacts: |
+            vaadin-quarkus
+
       - name: Open pull request
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:

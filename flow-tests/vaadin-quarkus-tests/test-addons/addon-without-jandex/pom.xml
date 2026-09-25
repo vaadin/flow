@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-quarkus-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>test-addon-without-jandex</artifactId>
+  <packaging>jar</packaging>
+  <name>Sample Vaadin Addon without Jandex Index</name>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>false</addClasspath>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+            <manifestEntries>
+              <Vaadin-Addon>${project.build.finalName}.${project.packaging}</Vaadin-Addon>
+              <Vaadin-Package-Version>1</Vaadin-Package-Version>
+            </manifestEntries>
+          </archive>
+          <excludes>
+            <exclude>META-INF/VAADIN/config/flow-build-info.json</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
