@@ -1592,6 +1592,19 @@ final class TransactionEngine {
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
         }
+        // The same imports, reached the other way: a class that now extends or
+        // implements something else inherits whatever frontend annotations the
+        // new supertype carries, while declaring exactly what it declared
+        // before - so the field above stays empty and the import is in no
+        // chunk the client can load. An enhanced-redefinition JVM accepts a
+        // hierarchy change, so the redefine reports success and this is the
+        // only thing left to catch it.
+        String hierarchy = fields.getOrDefault("hierarchy", "-");
+        if (!"-".equals(hierarchy)) {
+            return Optional.of("class hierarchy changed (" + hierarchy
+                    + "): a new supertype or interface brings imports that are"
+                    + " read at startup (dev bundle rebuild)");
+        }
         // A bean the running application has never seen. Component scanning is
         // a startup act, and HotswapAgent's Spring plugin - which would rescan
         // - is disabled for stability (see Launch), so no mechanism short of a

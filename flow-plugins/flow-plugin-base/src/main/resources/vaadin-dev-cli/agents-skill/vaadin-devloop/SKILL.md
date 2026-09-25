@@ -90,6 +90,13 @@ configuration): the daemon owns the app, and a second process fights it for the 
 daemon auto-spawns on first use and survives between commands, so every command — from any
 shell, agent or IDE — answers for the same running app.
 
+That holds for a **WAR project** too, and there the daemon runs the project's own `jetty:run`
+for you — a WAR has no main class, and its servlet container is a build plugin rather than a
+dependency, so the build is the only thing that knows how to start it. Once started, `status`
+names the runtime it chose (`runtime=jetty-ee10`). Nothing in the pom needs changing: the
+daemon turns the plugin's own rescanner off for its run, because two things redeploying the app
+on separate schedules is what the loop exists to prevent, and it says so in the app log.
+
 **And do not reach for Maven to check an edit.** `mvn compile` and `mvn test` boot a fresh JVM
 and a fresh Spring context to answer what `apply` answers against the app already running, and
 they answer a narrower question: that the code compiles, not that the change is live in the
