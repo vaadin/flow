@@ -577,6 +577,14 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * restarting. The value is echoed in the launch line the daemon logs, which
      * is where to look first.
      * <p>
+     * The name is also not Payara's own. {@code exec.args} is the user property
+     * behind {@code exec-maven-plugin}'s {@code <commandlineArgs>}, so it has
+     * the reach {@code MavenGoalRuntime.goalProperties} keeps an unprefixed
+     * name away from: a reactor with an {@code exec:exec} execution that leaves
+     * its arguments to the command line receives the loop's flags as the
+     * arguments of whatever it runs. Payara Micro offers nothing narrower, so
+     * this entry carries the cost rather than losing the channel.
+     * <p>
      * Being a plain {@code String} rather than a {@code List<String>}, it
      * reaches the plugin exactly as written - no comma splitting, and hence no
      * {@link #commaSplitFlags} - and it is split on whitespace alone, with no
