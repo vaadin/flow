@@ -192,22 +192,43 @@ final class MavenGoalRuntime implements AppRuntime {
     /**
      * The {@code -D} settings that keep the plugin in the shape the loop needs.
      * <p>
-     * The table's, except for an entry that switches its own goal off for the
-     * whole reactor so that the extension can switch it back on for the
-     * application's own module alone - Cargo and both Payaras. Passing the
-     * first half without the second would start nothing at all, which is worse
-     * than the degraded run {@link #warnings()} describes, so when there is no
-     * extension neither half is sent and the goal runs everywhere instead. That
-     * is what the warning about it is for.
+     * The table's, except for the skip an entry sets across the whole reactor
+     * so that the extension can switch it back on for the application's own
+     * module alone - Cargo, WildFly and both Payaras. Sending the first half
+     * without the second would start nothing at all, which is worse than the
+     * degraded run {@link #warnings()} describes, so without an extension the
+     * skip is left out and the goal runs everywhere instead.
      *
      * @return the settings to pass
      */
     private Map<String, String> goalProperties() {
-        if (plugin.skippedOutsideTheApplication()
-                && configurationOverride().isEmpty()) {
-            return Map.of();
+        return goalProperties(plugin, !configurationOverride().isEmpty());
+    }
+
+    /**
+     * The same, as a function of the two things it depends on.
+     * <p>
+     * Only the skip is dropped, and that is the point: the rest of the map is
+     * not about the reactor at all. Payara Micro's
+     * {@code payara.deploy.war=true} is what makes {@code start} deploy the
+     * application, {@code deployWar} defaulting to {@code false} - dropping the
+     * whole map with the skip brought up a Micro with nothing in it, on a
+     * single-module project too, where the skip was never needed.
+     *
+     * @param plugin
+     *            the entry being launched
+     * @param rewritten
+     *            whether the build extension is there to force the other half
+     * @return the settings to pass
+     */
+    static Map<String, String> goalProperties(ServerPlugin plugin,
+            boolean rewritten) {
+        if (rewritten || !plugin.skippedOutsideTheApplication()) {
+            return plugin.goalProperties();
         }
-        return plugin.goalProperties();
+        Map<String, String> kept = new LinkedHashMap<>(plugin.goalProperties());
+        plugin.skipProperty().ifPresent(kept::remove);
+        return Map.copyOf(kept);
     }
 
     /**
