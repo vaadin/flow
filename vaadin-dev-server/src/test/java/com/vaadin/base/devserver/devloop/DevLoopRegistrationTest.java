@@ -286,4 +286,16 @@ class DevLoopRegistrationTest {
         assertEquals(candidates.size(), Set.copyOf(candidates).size(),
                 "duplicate candidates: " + candidates);
     }
+
+    /**
+     * The connect loop keeps the first failure and throws it once every
+     * candidate has been tried, so an empty list would throw a
+     * {@code NullPointerException} out of a method that promises an
+     * {@code IOException}. It cannot be empty - {@code getLoopbackAddress}
+     * always yields one - and this is what holds that true.
+     */
+    @Test
+    void thereIsAlwaysAtLeastOneCandidate() {
+        assertFalse(DevLoopRegistration.loopbackAddresses().isEmpty());
+    }
 }
