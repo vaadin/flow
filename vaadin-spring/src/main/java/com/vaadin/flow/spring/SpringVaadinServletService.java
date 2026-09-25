@@ -53,6 +53,11 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     static final String SPRING_BOOT_WEBPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
+    /**
+     * Names of the {@code TaskExecutor} beans that were candidates when more
+     * than one was found. Set means the choice is ambiguous, which
+     * {@link #getExecutor()} reports as an error.
+     */
     private Set<String> multipleExecutorCandidates;
 
     /**

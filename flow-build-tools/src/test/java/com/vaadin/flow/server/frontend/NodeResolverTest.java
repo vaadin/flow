@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -45,7 +44,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * Covers how {@link NodeResolver} treats the installations in
- * {@code ~/.vaadin}, both the one it takes into use and the ones it cleans up.
+ * {@code ~/.vaadin}, both the one it takes into use and the ones it cleans up,
+ * and which globally installed versions it accepts.
  */
 class NodeResolverTest {
 
@@ -67,8 +67,7 @@ class NodeResolverTest {
     @TempDir
     File downloadRoot;
 
-    @BeforeEach
-    void requireShellStubs() {
+    private void requireShellStubs() {
         assumeFalse(FrontendUtils.isWindows(),
                 "The node stub is a shell script, so it cannot be executed on Windows");
     }
@@ -76,6 +75,7 @@ class NodeResolverTest {
     @Test
     void resolve_existingInstallation_isUsedWithoutInstalling()
             throws IOException {
+        requireShellStubs();
         NodeInstallation installation = stubInstallation(VERSION);
 
         ActiveNodeInstallation active = resolve(VERSION);
@@ -90,6 +90,7 @@ class NodeResolverTest {
     @Test
     void resolve_existingInstallation_lastUsedMarkerIsRefreshed()
             throws IOException {
+        requireShellStubs();
         NodeInstallation installation = stubInstallation(VERSION);
         Files.writeString(
                 new File(installation.getDirectory(), LAST_USED_FILE).toPath(),
@@ -106,6 +107,7 @@ class NodeResolverTest {
     @Test
     void resolve_newVersionInstalled_installationsUnusedForOverSixMonthsAreRemoved()
             throws IOException {
+        requireShellStubs();
         NodeInstallation stale = pruningCandidate("node-v20.0.0", LONG_AGO);
         NodeInstallation recent = pruningCandidate("node-v22.0.0", RECENTLY);
         prepareDownloadableNode(VERSION);
@@ -138,9 +140,44 @@ class NodeResolverTest {
                 active.nodeVersion());
     }
 
+    @Test
+    void globalNode_versionsInTheSupportedRangeAreAccepted() {
+        NodeResolver resolver = resolver(VERSION);
+
+        assertTrue(
+                resolver.isSupportedGlobalVersion(
+                        FrontendTools.SUPPORTED_NODE_VERSION),
+                "The minimum supported version should be accepted");
+        assertTrue(
+                resolver.isSupportedGlobalVersion(new FrontendVersion(
+                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0)),
+                "A later release of the maximum supported major version should be accepted");
+    }
+
+    @Test
+    void globalNode_versionsOutsideTheSupportedRangeAreRejected() {
+        NodeResolver resolver = resolver(VERSION);
+        int minimumMajor = FrontendTools.SUPPORTED_NODE_VERSION
+                .getMajorVersion();
+        int maximumMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION;
+
+        assertFalse(
+                resolver.isSupportedGlobalVersion(
+                        new FrontendVersion(minimumMajor - 1, 99, 0)),
+                "A version older than the minimum should be rejected");
+        assertFalse(
+                resolver.isSupportedGlobalVersion(
+                        new FrontendVersion(maximumMajor + 1, 0, 0)),
+                "A version newer than the maximum major version should be rejected");
+    }
+
     private ActiveNodeInstallation resolve(String nodeVersion) {
+        return resolver(nodeVersion).resolve();
+    }
+
+    private NodeResolver resolver(String nodeVersion) {
         return new NodeResolver(vaadinHome.getAbsolutePath(), nodeVersion,
-                downloadRoot.toURI(), true, List.of(), null).resolve();
+                downloadRoot.toURI(), true, List.of(), null);
     }
 
     /**

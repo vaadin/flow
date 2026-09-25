@@ -163,26 +163,8 @@ class NodeResolver implements java.io.Serializable {
                     nodeExecutable, nodeExecutable.getParentFile(), null);
 
             if (installation != null) {
-                // Check version range
-                FrontendVersion version = new FrontendVersion(
-                        installation.nodeVersion());
-                if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
-                    getLogger().info(
-                            "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                            installation.nodeVersion(),
-                            FrontendTools.SUPPORTED_NODE_VERSION
-                                    .getFullVersion(),
-                            alternativeDir);
-                    return null;
-                }
-
-                if (version
-                        .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-                    getLogger().info(
-                            "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
-                            version.getMajorVersion(),
-                            FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                            alternativeDir);
+                if (!isSupportedGlobalVersion(
+                        new FrontendVersion(installation.nodeVersion()))) {
                     return null;
                 }
 
@@ -195,6 +177,40 @@ class NodeResolver implements java.io.Serializable {
             getLogger().error("Failed to get version for installed node.", e);
             return null;
         }
+    }
+
+    /**
+     * Checks that a globally installed Node.js is one that Flow is tested
+     * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
+     * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
+     * long-term support line Flow is built on.
+     *
+     * @param version
+     *            the version of the globally installed Node.js
+     * @return true when the globally installed Node.js can be used, false when
+     *         the one in the alternative directory should be used instead
+     */
+    boolean isSupportedGlobalVersion(FrontendVersion version) {
+        if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+            getLogger().info(
+                    "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
+                    version.getFullVersion(),
+                    FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                    alternativeDir);
+            return false;
+        }
+
+        if (version
+                .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
+            getLogger().info(
+                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
+                    version.getMajorVersion(),
+                    FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
+                    alternativeDir);
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -73,6 +73,13 @@ public class ClientCallableAotProcessor
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ClientCallableAotProcessor.class);
 
+    /**
+     * Creates the processor. Spring instantiates it.
+     */
+    public ClientCallableAotProcessor() {
+        // Default constructor
+    }
+
     @Override
     public BeanFactoryInitializationAotContribution processAheadOfTime(
             ConfigurableListableBeanFactory beanFactory) {

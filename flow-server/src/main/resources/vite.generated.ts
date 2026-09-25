@@ -24,6 +24,7 @@ import {
 } from 'vite';
 
 import brotli from 'rollup-plugin-brotli';
+import MagicString from 'magic-string';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
@@ -136,8 +137,20 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
+// The JavaScript declared by the @JsDefinition interfaces, generated before the
+// build. Hashed into the stats like the banner above, so that a bundle whose
+// definitions changed is rebuilt instead of running with the functions it was
+// built with.
+const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
+const hasJsDefinitions = existsSync(jsDefinitionsFile);
 
-const target = ['es2023'];
+// The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
+// versions current today, Firefox ESR, and Safari 17 in its latest minor
+// version. Vite uses this as the cssTarget as well, and an ES year would map to
+// browsers that are much older than these, which makes Lightning CSS rewrite
+// light-dark() into custom properties that only follow the operating system
+// preference.
+const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -321,6 +334,12 @@ function statsExtracterPlugin(): PluginOption {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
+      if (hasJsDefinitions) {
+        const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
+          .update(fileBuffer, 'utf8')
+          .digest('hex');
+      }
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -426,6 +445,9 @@ function themePlugin(opts: { devMode: boolean }): PluginOption {
       }
       const resourceThemeFolder = bareId.startsWith(themeFolder) ? themeFolder : themeOptions.themeResourceFolder;
       const [themeName] =  bareId.substring(resourceThemeFolder.length + 1).split('/');
+      // Null for a file with no url to rewrite, and the rewritten css together
+      // with a sourcemap for it otherwise, so that the sourcemap chain of the
+      // css file stays intact
       return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(resourceThemeFolder, themeName), console, opts);
     }
   };
@@ -465,24 +487,31 @@ function preserveUsageStats() {
   return {
     name: 'vaadin:preserve-usage-stats',
 
+    // A hook that returns code must return a sourcemap for it as well, or
+    // return null to leave the module as it is. Code without a map makes the
+    // bundler drop the module from the sourcemap of the chunk it ends up in,
+    // and this hook sees every module of the bundle.
     transform(src: string, id: string) {
-      if (id.includes('vaadin-usage-statistics')) {
-        if (src.includes('vaadin-dev-mode:start')) {
-          const expectedComment = '/*! vaadin-dev-mode:start';
-          const newSrc = src.replace(DEV_MODE_START_REGEXP, expectedComment);
-          if (newSrc === src) {
-            if (!src.includes(expectedComment)) {
-              console.error('vaadin-dev-mode:start tag not found');
-            }
-          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
-            console.error('New comment fails to match original regexp');
-          } else {
-            return { code: newSrc };
-          }
-        }
+      if (!id.includes('vaadin-usage-statistics') || !src.includes('vaadin-dev-mode:start')) {
+        return null;
       }
 
-      return { code: src };
+      const expectedComment = '/*! vaadin-dev-mode:start';
+      const magicString = new MagicString(src).replace(DEV_MODE_START_REGEXP, expectedComment);
+      if (!magicString.hasChanged()) {
+        if (!src.includes(expectedComment)) {
+          console.error('vaadin-dev-mode:start tag not found');
+        }
+        return null;
+      }
+
+      const code = magicString.toString();
+      if (!code.match(DEV_MODE_CODE_REGEXP)) {
+        console.error('New comment fails to match original regexp');
+        return null;
+      }
+
+      return { code, map: magicString.generateMap({ hires: true }) };
     }
   };
 }

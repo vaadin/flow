@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,16 +201,23 @@ public class PublicResourcesLiveUpdater implements Closeable {
     /**
      * The bundler to resolve this push against.
      * <p>
-     * This project's own roots first, so a file that exists in both resolves to
-     * the application's copy - the same precedence the classpath gives it.
+     * This project's own source roots first, so a file that exists in both
+     * resolves to the application's copy - the same precedence the classpath
+     * gives it. The {@code jar-resources} folder goes last, though: a build
+     * with a reactor sibling's {@code target/classes} on its classpath copies
+     * that sibling's public resources there, and the copy is a snapshot that
+     * would otherwise shadow the sibling's own, edited, source.
      */
     private PublicStyleSheetBundler bundlerFor(List<File> extraRoots) {
         if (extraRoots.isEmpty()) {
             return bundler;
         }
-        List<File> combined = new ArrayList<>(roots);
-        extraRoots.stream().filter(root -> !combined.contains(root))
-                .forEach(combined::add);
+        List<File> sourceRoots = roots.stream().filter(
+                root -> !PublicStyleSheetBundler.isCopiedJarResourcesRoot(root))
+                .toList();
+        // Ordered and distinct, so each root keeps its first position.
+        List<File> combined = Stream.of(sourceRoots, extraRoots, roots)
+                .flatMap(List::stream).distinct().toList();
         return PublicStyleSheetBundler.forResourceLocations(combined);
     }
 

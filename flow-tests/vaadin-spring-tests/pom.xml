@@ -14,7 +14,7 @@
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
-    <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
+    <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
   </properties>
 
   <dependencyManagement>
@@ -43,6 +43,16 @@
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-testbench-bom</artifactId>
         <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- A BOM imported here outranks the one inherited from flow-project,
+           so junit-bom goes before spring-boot-dependencies to keep the
+           JUnit version that Flow manages -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

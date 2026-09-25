@@ -89,7 +89,7 @@ public class FrontendUtils {
      * @since 25.4
      */
     public static final FrontendVersion MINIMUM_SUPPORTED_NODE_VERSION = new FrontendVersion(
-            24, 0, 0);
+            26, 0, 0);
 
     /**
      * Default folder used for source and generated folders.
@@ -221,6 +221,13 @@ public class FrontendUtils {
      * application code.
      */
     public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
+
+    /**
+     * File name of the generated file that registers the JavaScript of the
+     * {@code @JsDefinition} interfaces on the class path, so that the client
+     * can run a server-initiated call without compiling an expression.
+     */
+    public static final String JS_DEFINITIONS_FILE_NAME = "vaadin-js-definitions.js";
 
     /**
      * File name of the index.html in client side.

@@ -46,6 +46,13 @@ import com.vaadin.flow.shared.ui.Dependency;
  */
 public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
 
+    /**
+     * Creates the registrar. Spring instantiates it.
+     */
+    public VaadinHintsRegistrar() {
+        // Default constructor
+    }
+
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
         ReflectionHints ref = hints.reflection();
@@ -76,6 +83,12 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // RouteNotFoundError_prod.html
         hints.resources().registerPattern("com/vaadin/flow/server/**");
         hints.resources().registerPattern("com/vaadin/flow/router/**");
+
+        // Client-side helpers that are read from the classpath at runtime.
+        // The rest of META-INF/frontend is build-time input for Vite and is
+        // served from the production bundle, so it is deliberately left out.
+        hints.resources().registerPattern("META-INF/frontend/FlowShortcut.js");
+        hints.resources().registerPattern("META-INF/frontend/FlowWebPush.js");
     }
 
     private void registerResourceIfPresent(RuntimeHints hints, String path) {

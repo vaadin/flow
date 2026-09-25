@@ -15,6 +15,7 @@
   <modules>
     <module>test-resources</module>
     <module>test-common</module>
+    <module>test-devloop/test-devloop-support</module>
     <module>test-lumo</module>
     <module>test-express-build</module>
     <module>test-aura</module>
@@ -336,7 +337,6 @@
       </activation>
       <modules>
         <module>test-default</module>
-        <module>test-dev-mode</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
         <module>test-pwa-disabled-offline</module>
@@ -384,6 +384,7 @@
         <module>test-custom-frontend-directory</module>
 
         <module>vaadin-spring-tests</module>
+        <module>vaadin-cdi-tests</module>
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>

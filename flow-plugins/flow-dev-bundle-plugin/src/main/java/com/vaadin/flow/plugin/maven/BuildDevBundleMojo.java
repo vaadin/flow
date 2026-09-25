@@ -223,6 +223,13 @@ public class BuildDevBundleMojo extends AbstractMojo
      * {@code npm install} behaves the same way. Only when there is no such
      * value does the check default to {@code 1} day. The configuration of bun
      * cannot be read, so the default always applies for it.
+     * <p>
+     * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
+     * the check, so that a project can be built right after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 26.4.0 ships
+     * with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the command
+     * line, so with bun an installation may fail during the first day after a
+     * Vaadin release.
      */
     @Parameter(property = "vaadin."
             + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
@@ -239,6 +246,13 @@ public class BuildDevBundleMojo extends AbstractMojo
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
     private ClassFinder classFinder;
+
+    /**
+     * Creates the goal. Maven instantiates it and injects the parameters.
+     */
+    public BuildDevBundleMojo() {
+        // Default constructor
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -284,6 +298,14 @@ public class BuildDevBundleMojo extends AbstractMojo
                 "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
     }
 
+    /**
+     * Runs the goal once the isolated class loader is in place.
+     * <p>
+     * Called reflectively from {@link #execute()}, so it has to stay public.
+     *
+     * @throws MojoFailureException
+     *             if the bundle cannot be built
+     */
     public void executeInternal() throws MojoFailureException {
         long start = System.nanoTime();
 
