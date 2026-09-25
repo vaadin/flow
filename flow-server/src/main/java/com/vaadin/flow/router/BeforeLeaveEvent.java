@@ -78,9 +78,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 }
 
                 if (event.getUI().getInternals().getWrapperElement() != null) {
-                    // See UI.SERVER_CONNECTED and acknowledgeClient.
+                    // See UI.acknowledgeClient.
                     event.getUI().getInternals().getWrapperElement()
-                            .executeJs("this.serverConnected($0)", false);
+                            .callJsFunction("serverConnected", false);
                 }
 
                 handler.handle(event);
@@ -100,9 +100,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
             BeforeLeaveEvent.this.continueNavigationAction = null;
             if (handler != null && event != null && event.getUI().getInternals()
                     .getWrapperElement() != null) {
-                // See UI.SERVER_CONNECTED and cancelClient.
+                // See UI.cancelClient.
                 event.getUI().getInternals().getWrapperElement()
-                        .executeJs("this.serverConnected($0)", true);
+                        .callJsFunction("serverConnected", true);
             }
         }
     }
